@@ -1,0 +1,217 @@
+﻿Compiling lib\main.dart for the Web...                          
+flutter : Wasm dry run 
+findings:
+At line:1 char:1
++ flutter build web 
+--release > build_log.txt 
+2>&1
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo           
+   : NotSpecified: (Wasm dr  
+  y run findings::String)    
+ [], RemoteException
+    + FullyQualifiedErrorId  
+   : NativeCommandError
+ 
+Found incompatibilities with 
+WebAssembly.
+
+file:///C:/Users/user/AppData
+/Local/Pub/Cache/hosted/pub.d
+ev/dart_webrtc-1.6.0/lib/src/
+frame_cryptor_impl.dart 
+509:11 - invalid_runtime_chec
+k_with_js_interop_types lint 
+violation: Cast from 
+'List<InvalidType>' to 
+'JSObject' casts a Dart 
+value to a JS interop type, 
+which might not be 
+platform-consistent. (6)
+file:///C:/Users/user/AppData
+/Local/Pub/Cache/hosted/pub.d
+ev/dart_webrtc-1.6.0/lib/src/
+frame_cryptor_impl.dart 
+584:11 - invalid_runtime_chec
+k_with_js_interop_types lint 
+violation: Cast from 
+'List<InvalidType>' to 
+'JSObject' casts a Dart 
+value to a JS interop type, 
+which might not be 
+platform-consistent. (6)
+
+Consider addressing these 
+issues to enable wasm 
+builds. See docs for more 
+info: https://docs.flutter.de
+v/platform-integration/web/wa
+sm
+
+Use --no-wasm-dry-run to 
+disable these warnings.
+Target dart2js failed: 
+ProcessException: Process 
+exited abnormally with exit 
+code 1:
+lib/custom_code/widgets/pocke
+t_mates_dashboard.dart:301:11
+:
+Error: No named parameter 
+with the name 'mode'.
+          mode: 
+_selectedMode?.toLowerCase() 
+?? 'video',
+          ^^^^
+lib/custom_code/widgets/webrt
+c_call_screen.dart:71:9:
+Info: Found this candidate, 
+but the arguments don't 
+match.
+  const 
+WebRTCCallScreen({super.key, 
+required this.isVideoCall});
+        ^^^^^^^^^^^^^^^^
+Error: Compilation failed.
+  Command: C:\Users\user\Docu
+ments\flutter\bin\cache\dart-
+sdk\bin\dart.exe compile js -
+-platform-binaries=C:\Users\u
+ser\Documents\flutter\bin\cac
+he\flutter_web_sdk\kernel 
+--invoker=flutter_tool 
+-Ddart.vm.product=true 
+-DFLUTTER_VERSION=3.38.5 
+-DFLUTTER_CHANNEL=stable -DFL
+UTTER_GIT_URL=https://github.
+com/flutter/flutter.git -DFLU
+TTER_FRAMEWORK_REVISION=f6ff1
+529fd -DFLUTTER_ENGINE_REVISI
+ON=1527ae0ec5 -DFLUTTER_DART_
+VERSION=3.10.4 
+-DFLUTTER_WEB_USE_SKIA=true -
+DFLUTTER_WEB_USE_SKWASM=false
+ -DFLUTTER_WEB_CANVASKIT_URL=
+https://www.gstatic.com/flutt
+er-canvaskit/1527ae0ec577a4ef
+50e65f6fefcfc1326707d9bf/ 
+--native-null-assertions 
+--no-source-maps -O4 
+--minify -o F:\pocket-mates-a
+pp-ne72dv\.dart_tool\flutter_
+build\756ca330fe58b0308ba7f9f
+d82d2696b\app.dill --packages
+=F:\pocket-mates-app-ne72dv\.
+dart_tool\package_config.json
+ --cfe-only F:\pocket-mates-a
+pp-ne72dv\.dart_tool\flutter_
+build\756ca330fe58b0308ba7f9f
+d82d2696b\main.dart
+#0      
+RunResult.throwException (pac
+kage:flutter_tools/src/base/p
+rocess.dart:153:5)
+#1      
+_DefaultProcessUtils.run (pac
+kage:flutter_tools/src/base/p
+rocess.dart:379:19)
+<asynchronous suspension>
+#2      Dart2JSTarget.build (
+package:flutter_tools/src/bui
+ld_system/targets/web.dart:20
+7:5)
+<asynchronous suspension>
+#3      _BuildInstance._invok
+eInternal (package:flutter_to
+ols/src/build_system/build_sy
+stem.dart:895:9)
+<asynchronous suspension>
+#4      
+Future.wait.<anonymous 
+closure> (dart:async/future.d
+art:546:21)
+<asynchronous suspension>
+#5      
+_BuildInstance.invokeTarget (
+package:flutter_tools/src/bui
+ld_system/build_system.dart:8
+33:32)
+<asynchronous suspension>
+#6      
+Future.wait.<anonymous 
+closure> (dart:async/future.d
+art:546:21)
+<asynchronous suspension>
+#7      
+_BuildInstance.invokeTarget (
+package:flutter_tools/src/bui
+ld_system/build_system.dart:8
+33:32)
+<asynchronous suspension>
+#8      
+FlutterBuildSystem.build (pac
+kage:flutter_tools/src/build_
+system/build_system.dart:653:
+16)
+<asynchronous suspension>
+#9      WebBuilder.buildWeb (
+package:flutter_tools/src/web
+/compile.dart:94:34)
+<asynchronous suspension>
+#10     
+BuildWebCommand.runCommand (p
+ackage:flutter_tools/src/comm
+ands/build_web.dart:296:5)
+<asynchronous suspension>
+#11     FlutterCommand.run.<a
+nonymous closure> (package:fl
+utter_tools/src/runner/flutte
+r_command.dart:1559:27)
+<asynchronous suspension>
+#12     
+AppContext.run.<anonymous 
+closure> (package:flutter_too
+ls/src/base/context.dart:154:
+19)
+<asynchronous suspension>
+#13     
+CommandRunner.runCommand (pac
+kage:args/command_runner.dart
+:212:13)
+<asynchronous suspension>
+#14     FlutterCommandRunner.
+runCommand.<anonymous 
+closure> (package:flutter_too
+ls/src/runner/flutter_command
+_runner.dart:487:9)
+<asynchronous suspension>
+#15     
+AppContext.run.<anonymous 
+closure> (package:flutter_too
+ls/src/base/context.dart:154:
+19)
+<asynchronous suspension>
+#16     FlutterCommandRunner.
+runCommand (package:flutter_t
+ools/src/runner/flutter_comma
+nd_runner.dart:422:5)
+<asynchronous suspension>
+#17     run.<anonymous 
+closure>.<anonymous closure> 
+(package:flutter_tools/runner
+.dart:104:11)
+<asynchronous suspension>
+#18     
+AppContext.run.<anonymous 
+closure> (package:flutter_too
+ls/src/base/context.dart:154:
+19)
+<asynchronous suspension>
+#19     main (package:flutter
+_tools/executable.dart:103:3)
+<asynchronous suspension>
+
+Compiling lib\main.dart for the Web...                            122.0s
+Error: Failed to compile 
+application for the Web.
