@@ -1,8 +1,6 @@
 // Automatic FlutterFlow imports
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import 'index.dart'; // Imports other custom widgets
-import '/custom_code/actions/index.dart'; // Imports custom actions
 import 'package:flutter/material.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
@@ -16,6 +14,7 @@ import 'package:video_compress/video_compress.dart';
 import 'dart:typed_data';
 import 'package:image/image.dart' as img;
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'dart:io' as io;
 import 'package:video_player/video_player.dart';
 
@@ -200,9 +199,9 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 120, // Slightly taller for better spacing
+      height: 120,
       decoration: BoxDecoration(
-        color: Colors.black, // Dark background for premium feel
+        color: Colors.black,
         border: Border(
           bottom: BorderSide(color: Colors.white.withOpacity(0.05), width: 1),
         ),

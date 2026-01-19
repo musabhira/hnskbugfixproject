@@ -704,63 +704,82 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
           child:
               Text('No gallery items', style: TextStyle(color: textSecondary)));
 
-    return GridView.builder(
+    return MasonryGridView.count(
       padding: const EdgeInsets.all(16),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        mainAxisSpacing: 12,
-        crossAxisSpacing: 12,
-        childAspectRatio: 0.8,
-      ),
+      crossAxisCount: 2,
+      mainAxisSpacing: 16,
+      crossAxisSpacing: 16,
       itemCount: userGallery.length,
       itemBuilder: (context, index) {
         final item = userGallery[index];
         return Container(
           decoration: BoxDecoration(
             color: textcolor.withOpacity(0.03),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: textcolor.withOpacity(0.05)),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: textcolor.withOpacity(0.1)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: item['image_url'] != null
-                      ? Image.network(
-                          item['image_url'],
-                          fit: BoxFit.cover,
-                          width: double.infinity,
-                        )
-                      : Container(
-                          color: Colors.grey[900],
-                          child: const Icon(Icons.image,
-                              color: Colors.grey, size: 40),
-                        ),
-                ),
+                if (item['image_url'] != null)
+                  CachedNetworkImage(
+                    imageUrl: item['image_url'],
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => Container(
+                      height: 150,
+                      color: Colors.grey[900],
+                      child: const Center(
+                        child: CircularProgressIndicator(color: primaryColor),
+                      ),
+                    ),
+                    errorWidget: (context, url, error) => Container(
+                      height: 150,
+                      color: Colors.grey[900],
+                      child: const Icon(Icons.broken_image, color: Colors.grey),
+                    ),
+                  )
+                else
+                  Container(
+                    height: 150,
+                    color: Colors.grey[900],
+                    child:
+                        const Icon(Icons.image, color: Colors.grey, size: 40),
+                  ),
                 Padding(
-                  padding: const EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.all(12),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         item['title'] ?? 'Untitled',
                         style: TextStyle(
-                            color: textcolor,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12),
-                        maxLines: 1,
+                          color: textcolor,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                        maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      if (item['price'] != null)
+                      if (item['price'] != null) ...[
+                        const SizedBox(height: 6),
                         Text(
                           '₹${item['price']}',
                           style: const TextStyle(
-                              color: primaryColor,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12),
+                            color: primaryColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                          ),
                         ),
+                      ],
                     ],
                   ),
                 ),
@@ -792,5 +811,3 @@ class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
   @override
   bool shouldRebuild(_SliverAppBarDelegate oldDelegate) => false;
 }
-
-final supabase = SupaFlow.client;

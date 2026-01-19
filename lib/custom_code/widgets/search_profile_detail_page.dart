@@ -2,31 +2,25 @@
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:pocket_mates_app/custom_code/widgets/main_profile_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
 import 'package:pocket_mates_app/custom_code/widgets/search_page.dart';
 
 import '/backend/supabase/supabase.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import 'index.dart'; // Imports other custom widgets
-import '/custom_code/actions/index.dart'; // Imports custom actions
 import 'package:flutter/material.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
-import 'index.dart'; // Imports other custom widgets
-
 import 'package:cached_network_image/cached_network_image.dart';
-
 import 'package:share_plus/share_plus.dart';
-import 'dart:math' as math;
-
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/services.dart' as flutter;
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pocket_mates_app/src/features/profile/data/profile_repository.dart';
 
-class SearchProfileDetailPage extends StatefulWidget {
+class SearchProfileDetailPage extends ConsumerStatefulWidget {
   final double? width;
   final double? height;
   final String userId;
@@ -39,15 +33,15 @@ class SearchProfileDetailPage extends StatefulWidget {
   });
 
   @override
-  _SearchProfileDetailPageState createState() =>
+  ConsumerState<SearchProfileDetailPage> createState() =>
       _SearchProfileDetailPageState();
 }
 
-class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
+class _SearchProfileDetailPageState
+    extends ConsumerState<SearchProfileDetailPage>
     with SingleTickerProviderStateMixin {
   Map<String, dynamic>? _profileData;
   bool _isLoading = false;
-  final _supabase = SupaFlow.client;
 
   late TabController _tabController;
   int _followersCount = 0;
@@ -57,7 +51,6 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
   String _followingCountFormatted = '0';
   bool _isFollowing = false;
   bool _isCurrentUser = false;
-  String? _currentUserId;
   List<Map<String, dynamic>> userThreads = [];
   List<Map<String, dynamic>> userServices = [];
   List<Map<String, dynamic>> userGallery = [];
@@ -111,16 +104,11 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
   }
 
   Future<void> _getCurrentUser() async {
-    final user = _supabase.auth.currentUser;
-    if (user != null) {
-      safeSetState(() {
-        _currentUserId = user.id;
-      });
-    }
+    // Current user id is handled via SupaFlow.client directly when needed
   }
 
   void _checkIfCurrentUser() {
-    final currentUserId = _supabase.auth.currentUser?.id;
+    final currentUserId = SupaFlow.client.auth.currentUser?.id;
     safeSetState(() {
       _isCurrentUser = currentUserId == widget.userId;
     });
@@ -140,52 +128,37 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
 
   Future<void> _checkBlockStatus() async {
     try {
-      setState(() {
+      safeSetState(() {
         _checkingBlockStatus = true;
       });
 
-      // Check if current user blocked the receiver
-      final blockedByMe = await _supabase
-          .from('blocks')
-          .select('created_at')
-          .eq('blocker_id', _currentUserId.toString())
-          .eq('blocked_id', widget.userId)
-          .limit(1);
+      final currentUserId = SupaFlow.client.auth.currentUser?.id;
+      if (currentUserId == null) {
+        safeSetState(() => _checkingBlockStatus = false);
+        return;
+      }
 
-      // Check if receiver blocked the current user
-      final blockedByOther = await _supabase
-          .from('blocks')
-          .select('created_at')
-          .eq('blocker_id', widget.userId)
-          .eq('blocked_id', _currentUserId.toString())
-          .limit(1);
+      final result = await ref
+          .read(profileRepositoryProvider)
+          .checkBlockStatus(currentUserId, widget.userId);
 
       if (mounted) {
-        setState(() {
-          _isBlocked = blockedByMe.isNotEmpty;
-          _isBlockedByOther = blockedByOther.isNotEmpty;
-
-          // Store block times
-          if (_isBlocked && blockedByMe.isNotEmpty) {
-            _blockTime = DateTime.parse(blockedByMe.first['created_at']);
-          } else {
-            _blockTime = null;
-          }
-
-          if (_isBlockedByOther && blockedByOther.isNotEmpty) {
-            _blockedByOtherTime =
-                DateTime.parse(blockedByOther.first['created_at']);
-          } else {
-            _blockedByOtherTime = null;
-          }
-
+        safeSetState(() {
+          _isBlocked = result['isBlocked'];
+          _isBlockedByOther = result['isBlockedByOther'];
+          _blockTime = result['blockTime'] != null
+              ? DateTime.parse(result['blockTime'])
+              : null;
+          _blockedByOtherTime = result['blockedByOtherTime'] != null
+              ? DateTime.parse(result['blockedByOtherTime'])
+              : null;
           _checkingBlockStatus = false;
         });
       }
     } catch (e) {
       debugPrint('Error checking block status: $e');
       if (mounted) {
-        setState(() {
+        safeSetState(() {
           _checkingBlockStatus = false;
         });
       }
@@ -194,56 +167,28 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
 
   void fetchFollowCounts() async {
     try {
-      // Get followers count - people who follow this user
-      final followersResponse = await _supabase
-          .from('follows')
-          .select('id')
-          .eq('followed_id', widget.userId);
-
-      // Get following count - people this user follows
-      final followingResponse = await _supabase
-          .from('follows')
-          .select('id')
-          .eq('follower_id', widget.userId);
-
-      // Get followers count from users table
-      final userResponse = await _supabase
-          .from('users')
-          .select('followers')
-          .eq('id', widget.userId)
-          .single();
-
-      final double userTableFollowers =
-          userResponse['followers']?.toDouble() ?? 0.0;
-
-      final int followersCountRaw =
-          followersResponse.length + userTableFollowers.toInt();
-      final int followingCountRaw = followingResponse.length;
+      final repository = ref.read(profileRepositoryProvider);
+      final counts = await repository.fetchFollowCounts(widget.userId);
 
       safeSetState(() {
-        _followersCount = followersCountRaw;
-        _followingCount = followingCountRaw;
-        _followersCountFormatted = _formatCount(followersCountRaw);
-        _followingCountFormatted = _formatCount(followingCountRaw);
-        print('Followers count: $_followersCountFormatted');
-        print('Following count: $_followingCountFormatted');
+        _followersCount = counts['followers'] ?? 0;
+        _followingCount = counts['following'] ?? 0;
+        _followersCountFormatted = _formatCount(_followersCount);
+        _followingCountFormatted = _formatCount(_followingCount);
       });
     } catch (e) {
-      print('Error fetching follow counts: $e');
+      debugPrint('Error fetching follow counts: $e');
     }
   }
 
   Future<void> _loadServicesData() async {
     try {
-      final services = await _supabase
-          .from('service')
-          .select()
-          .eq('user_id', widget.userId)
-          .order('created_at', ascending: false);
-
+      final services = await ref
+          .read(profileRepositoryProvider)
+          .fetchUserServices(widget.userId);
       if (mounted) {
         safeSetState(() {
-          userServices = List<Map<String, dynamic>>.from(services);
+          userServices = services;
         });
       }
     } catch (e) {
@@ -253,15 +198,12 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
 
   Future<void> _loadGalleryData() async {
     try {
-      final gallery = await _supabase
-          .from('gallery')
-          .select()
-          .eq('user_id', widget.userId)
-          .order('created_at', ascending: false);
-
+      final gallery = await ref
+          .read(profileRepositoryProvider)
+          .fetchUserGallery(widget.userId);
       if (mounted) {
         safeSetState(() {
-          userGallery = List<Map<String, dynamic>>.from(gallery);
+          userGallery = gallery;
         });
       }
     } catch (e) {
@@ -275,16 +217,13 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
     });
 
     try {
-      // Fetch user threads
-      final threads = await _supabase
-          .from('threads_view')
-          .select()
-          .eq('user_id', widget.userId)
-          .order('created_at', ascending: false);
+      final threads = await ref
+          .read(profileRepositoryProvider)
+          .fetchUserThreads(widget.userId);
 
       if (mounted) {
         safeSetState(() {
-          userThreads = List<Map<String, dynamic>>.from(threads);
+          userThreads = threads;
           isLoading = false;
         });
       }
@@ -294,7 +233,7 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
           isLoading = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading profile: ${e.toString()}')),
+          SnackBar(content: Text('Error loading threads: ${e.toString()}')),
         );
       }
     }
@@ -306,29 +245,24 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
     });
 
     try {
-      final profileResponse = await _supabase.from('profile').select('''
-          id, created_at, user_id, name, phone_no, country, bio, 
-          shop_name, profile_image_url, banner_image_url, button_color_code, 
-          bg_color_code, bg_text_color, state, city, button_text_color, verified,insta_id,insta_link
-        ''').eq('user_id', widget.userId).limit(1);
-
-      Map<String, dynamic>? profile =
-          profileResponse.isNotEmpty ? profileResponse.first : null;
+      final repository = ref.read(profileRepositoryProvider);
+      final profile = await repository.fetchUserProfile(widget.userId);
 
       safeSetState(() {
         _profileData = profile;
         _isLoading = false;
       });
+      fetchFollowCounts();
     } catch (e) {
       safeSetState(() {
         _isLoading = false;
       });
-      print('Error fetching profile data: $e');
+      debugPrint('Error fetching profile data: $e');
     }
   }
 
   void _checkFollowStatus() async {
-    final currentUserId = _supabase.auth.currentUser?.id;
+    final currentUserId = SupaFlow.client.auth.currentUser?.id;
     if (currentUserId == null || currentUserId == widget.userId) {
       safeSetState(() {
         _isFollowing = false;
@@ -337,22 +271,19 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
     }
 
     try {
-      final response = await _supabase
-          .from('follows')
-          .select()
-          .eq('follower_id', currentUserId)
-          .eq('followed_id', widget.userId);
-
+      final isFollowing = await ref
+          .read(profileRepositoryProvider)
+          .checkFollowStatus(currentUserId, widget.userId);
       safeSetState(() {
-        _isFollowing = response.isNotEmpty;
+        _isFollowing = isFollowing;
       });
     } catch (e) {
-      print('Error checking follow status: $e');
+      debugPrint('Error checking follow status: $e');
     }
   }
 
   Future<void> toggleFollow() async {
-    final currentUserId = _supabase.auth.currentUser?.id;
+    final currentUserId = SupaFlow.client.auth.currentUser?.id;
     if (currentUserId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please log in to follow users')),
@@ -361,26 +292,21 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
     }
 
     try {
+      final repository = ref.read(profileRepositoryProvider);
       if (_isFollowing) {
-        await _supabase
-            .from('follows')
-            .delete()
-            .eq('follower_id', currentUserId)
-            .eq('followed_id', widget.userId);
+        await repository.unfollowUser(currentUserId, widget.userId);
       } else {
-        await _supabase.from('follows').insert({
-          'follower_id': currentUserId,
-          'followed_id': widget.userId,
-        });
+        await repository.followUser(currentUserId, widget.userId);
       }
 
       safeSetState(() {
         _isFollowing = !_isFollowing;
         _followersCount =
             _isFollowing ? _followersCount + 1 : _followersCount - 1;
+        _followersCountFormatted = _formatCount(_followersCount);
       });
     } catch (e) {
-      print('Error fetching profile data: $e');
+      debugPrint('Error updating follow status: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error updating follow status: $e')),
       );
@@ -422,23 +348,18 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
 
   Future<void> fetchHideStatus() async {
     try {
-      final user = _supabase.auth.currentUser;
+      final user = SupaFlow.client.auth.currentUser;
       if (user == null) return;
 
-      final response = await _supabase
-          .from('hide')
-          .select()
-          .eq('user_id', user.id)
-          .order('created_at', ascending: false)
-          .limit(1);
+      final result =
+          await ref.read(profileRepositoryProvider).fetchHideStatus(user.id);
 
       safeSetState(() {
-        print(response);
-        hideData = response.isNotEmpty ? response.first : null;
+        hideData = result;
         isLoading = false;
       });
     } catch (e) {
-      print('Error fetching hide status: $e');
+      debugPrint('Error fetching hide status: $e');
       safeSetState(() {
         isLoading = false;
       });
@@ -1586,21 +1507,21 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                       child: TabBarView(
                                         controller: _tabController,
                                         children: [
-                                          _buildThreadsList(
-                                              bgColor,
-                                              bgTextColor,
-                                              buttonColor,
-                                              buttonTextColor),
-                                          _buildServicesList(
-                                              bgColor,
-                                              bgTextColor,
-                                              buttonColor,
-                                              buttonTextColor),
-                                          _buildGalleryGrid(
-                                              bgColor,
-                                              bgTextColor,
-                                              buttonColor,
-                                              buttonTextColor),
+                                          ThreadsTabContent(
+                                            userId: widget.userId,
+                                            bgTextColor: bgTextColor,
+                                            buttonColor: buttonColor,
+                                          ),
+                                          ServicesTabContent(
+                                            userId: widget.userId,
+                                            bgTextColor: bgTextColor,
+                                            buttonColor: buttonColor,
+                                          ),
+                                          GalleryTabContent(
+                                            userId: widget.userId,
+                                            bgTextColor: bgTextColor,
+                                            buttonColor: buttonColor,
+                                          ),
                                         ],
                                       ),
                                     ),
@@ -1685,118 +1606,16 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
     );
   }
 
-  Widget _buildThreadsList(
-    Color bgColor,
-    Color bgTextColor,
-    Color buttonColor,
-    Color buttonTextColor,
-  ) {
-    if (isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
+  // Tab Content Widgets moved to bottom for better organization and performance
 
-    if (userThreads.isEmpty) {
-      return Center(
-        child: Text(
-          'No threads yet',
-          style: TextStyle(color: bgTextColor),
-        ),
-      );
-    }
-
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: userThreads.length,
-      itemBuilder: (context, index) {
-        final thread = userThreads[index];
-        final int likeCount = (thread['like_count'] as int?) ?? 0;
-        final int fakeLikes = (thread['fake_likes'] as int?) ?? 0;
-        final int totalLikes = likeCount + fakeLikes;
-        final String formattedLikes = _formatCount(totalLikes);
-
-        return Card(
-          color: buttonColor.withOpacity(0.1),
-          margin: const EdgeInsets.only(bottom: 12),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-            side: BorderSide(color: buttonColor.withOpacity(0.2)),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  timeago.format(DateTime.parse(thread['created_at'])),
-                  style: TextStyle(
-                    color: bgTextColor.withOpacity(0.5),
-                    fontSize: 12,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  thread['content'] ?? '',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: bgTextColor,
-                    height: 1.4,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    InkWell(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ThreadCommentsPage(
-                              threadContent: thread['content'],
-                              threadId: thread['id'],
-                            ),
-                          ),
-                        );
-                      },
-                      child: Row(
-                        children: [
-                          Icon(Icons.favorite_border,
-                              size: 18, color: buttonColor),
-                          const SizedBox(width: 4),
-                          Text(formattedLikes,
-                              style: TextStyle(color: bgTextColor)),
-                        ],
-                      ),
-                    ),
-                    InkWell(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ThreadCommentsPage(
-                              threadContent: thread['content'],
-                              threadId: thread['id'],
-                            ),
-                          ),
-                        );
-                      },
-                      child: Row(
-                        children: [
-                          Icon(Icons.chat_bubble_outline,
-                              size: 18, color: buttonColor),
-                          const SizedBox(width: 4),
-                          Text('${thread['comment_count'] ?? 0}',
-                              style: TextStyle(color: bgTextColor)),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        );
-      },
+  Widget _threadAction(IconData icon, String label, Color textcolor) {
+    return Row(
+      children: [
+        Icon(icon, size: 18, color: textcolor.withOpacity(0.5)),
+        const SizedBox(width: 4),
+        Text(label,
+            style: TextStyle(color: textcolor.withOpacity(0.5), fontSize: 13)),
+      ],
     );
   }
 
@@ -1870,9 +1689,12 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
 
   Future<void> _blockUser() async {
     try {
-      await _supabase.rpc('block_user', params: {
-        'target_user_id': widget.userId,
-      });
+      final currentUserId = SupaFlow.client.auth.currentUser?.id;
+      if (currentUserId == null) return;
+
+      await ref
+          .read(profileRepositoryProvider)
+          .blockUser(currentUserId, widget.userId);
 
       _showSuccessSnackBar('User blocked successfully');
       _checkBlockStatus();
@@ -1884,9 +1706,12 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
 
   Future<void> _unblockUser() async {
     try {
-      await _supabase.rpc('unblock_user', params: {
-        'target_user_id': widget.userId,
-      });
+      final currentUserId = SupaFlow.client.auth.currentUser?.id;
+      if (currentUserId == null) return;
+
+      await ref
+          .read(profileRepositoryProvider)
+          .unblockUser(currentUserId, widget.userId);
 
       _showSuccessSnackBar('User unblocked successfully');
       _checkBlockStatus();
@@ -1980,165 +1805,6 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
       return 'Just now';
     }
   }
-
-  Widget _buildServicesList(
-      Color bgcolor, Color textcolor, Color btncolor, Color btntextcolor) {
-    if (isLoading) return const Center(child: CircularProgressIndicator());
-    if (userServices.isEmpty) {
-      return Center(
-          child: Text('No services offered',
-              style: TextStyle(color: textcolor.withOpacity(0.5))));
-    }
-
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-      itemCount: userServices.length,
-      itemBuilder: (context, index) {
-        final service = userServices[index];
-        return Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: textcolor.withOpacity(0.03),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: textcolor.withOpacity(0.05)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Text(
-                      service['title'] ?? 'Untitled Service',
-                      style: TextStyle(
-                        color: textcolor,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-                  if (service['price'] != null)
-                    Text(
-                      '₹${service['price']}',
-                      style: TextStyle(
-                        color: btncolor,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                ],
-              ),
-              if (service['category'] != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 4),
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: btncolor.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      service['category'],
-                      style: TextStyle(
-                        color: btncolor,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
-              const SizedBox(height: 8),
-              Text(
-                service['description'] ?? '',
-                style:
-                    TextStyle(color: textcolor.withOpacity(0.7), fontSize: 13),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildGalleryGrid(
-      Color bgcolor, Color textcolor, Color btncolor, Color btntextcolor) {
-    if (isLoading) return const Center(child: CircularProgressIndicator());
-    if (userGallery.isEmpty) {
-      return Center(
-          child: Text('No gallery items',
-              style: TextStyle(color: textcolor.withOpacity(0.5))));
-    }
-
-    return GridView.builder(
-      padding: const EdgeInsets.all(16),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        mainAxisSpacing: 12,
-        crossAxisSpacing: 12,
-        childAspectRatio: 0.8,
-      ),
-      itemCount: userGallery.length,
-      itemBuilder: (context, index) {
-        final item = userGallery[index];
-        return Container(
-          decoration: BoxDecoration(
-            color: textcolor.withOpacity(0.03),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: textcolor.withOpacity(0.05)),
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: item['image_url'] != null
-                      ? Image.network(
-                          item['image_url'],
-                          fit: BoxFit.cover,
-                          width: double.infinity,
-                        )
-                      : Container(
-                          color: Colors.grey[900],
-                          child: const Icon(Icons.image,
-                              color: Colors.grey, size: 40),
-                        ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        item['title'] ?? 'Untitled',
-                        style: TextStyle(
-                            color: textcolor,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      if (item['price'] != null)
-                        Text(
-                          '₹${item['price']}',
-                          style: TextStyle(
-                              color: btncolor,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12),
-                        ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
 }
 
 class SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
@@ -2168,7 +1834,7 @@ class SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
   }
 }
 
-class AIAssistantWidget extends StatefulWidget {
+class AIAssistantWidget extends ConsumerStatefulWidget {
   final String userId;
   final Color? buttonColor;
   final Color? bgColor;
@@ -2185,17 +1851,17 @@ class AIAssistantWidget extends StatefulWidget {
   });
 
   @override
-  State<AIAssistantWidget> createState() => _AIAssistantWidgetState();
+  ConsumerState<AIAssistantWidget> createState() => _AIAssistantWidgetState();
 }
 
-class _AIAssistantWidgetState extends State<AIAssistantWidget>
+class _AIAssistantWidgetState extends ConsumerState<AIAssistantWidget>
     with TickerProviderStateMixin {
-  final SupabaseClient _supabase = SupaFlow.client;
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
   final List<ChatMessage> _messages = [];
-  final bool _isLoading = false;
+  // No unused _isLoading field
+
   bool _isTyping = false;
   bool _showSuggestedQuestions = true;
   Map<String, dynamic>? _profileData;
@@ -2284,25 +1950,30 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
 
   Future<void> _fetchProfileData() async {
     try {
-      // Fetch profile data
-      final profileResponse = await _supabase
-          .from('profile_gallery_service_likes_comments_view')
-          .select('''
-          profile_id, profile_created_at, user_id, name, phone_no, country, bio, 
-          shop_name, profile_image_url, banner_image_url, button_color_code, 
-          bg_color_code, bg_text_color, state, city, button_text_color, verified
-        ''')
-          .eq('user_id', widget.userId)
-          .limit(1);
+      final repository = ref.read(profileRepositoryProvider);
 
-      if (profileResponse.isNotEmpty) {
-        _profileData = profileResponse.first;
+      // Fetch profile data
+      final profile = await repository.fetchUserProfile(widget.userId);
+      if (profile != null) {
+        safeSetState(() {
+          _profileData = profile;
+        });
       }
 
+      // Fetch user threads for AI context
+      final threads = await repository.fetchUserThreads(widget.userId);
+      safeSetState(() {
+        userThreads = threads;
+      });
+
       // Fetch follow counts
-      await _fetchFollowCounts();
+      final counts = await repository.fetchFollowCounts(widget.userId);
+      safeSetState(() {
+        _followersCount = _formatCount(counts['followers'] ?? 0);
+        _followingCount = _formatCount(counts['following'] ?? 0);
+      });
     } catch (e) {
-      print('Error fetching data: $e');
+      debugPrint('Error fetching data for AI Assistant: $e');
     }
   }
 
@@ -2318,46 +1989,7 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
     }
   }
 
-  Future<void> _fetchFollowCounts() async {
-    try {
-      // Get followers count - people who follow this user
-      final followersResponse = await _supabase
-          .from('follows')
-          .select('id')
-          .eq('followed_id', widget.userId);
-
-      // Get following count - people this user follows
-      final followingResponse = await _supabase
-          .from('follows')
-          .select('id')
-          .eq('follower_id', widget.userId);
-
-      // Get followers count from users table
-      final userResponse = await _supabase
-          .from('users')
-          .select('followers')
-          .eq('id', widget.userId)
-          .single();
-
-      final double userTableFollowers =
-          userResponse['followers']?.toDouble() ?? 0.0;
-
-      final int followersCountRaw =
-          followersResponse.length + userTableFollowers.toInt();
-      final int followingCountRaw = followingResponse.length;
-
-      safeSetState(() {
-        // _followersCount = followersCountRaw;
-        // _followingCount = followingCountRaw;
-        _followersCount = _formatCount(followersCountRaw);
-        _followingCount = _formatCount(followingCountRaw);
-        print('Followers count: $_followersCount');
-        print('Following count: $_followingCount');
-      });
-    } catch (e) {
-      print('Error fetching follow counts: $e');
-    }
-  }
+  // Method logic moved into _fetchProfileData
 
   void _sendMessage([String? predefinedMessage]) async {
     final messageText = predefinedMessage ?? _messageController.text.trim();
@@ -3058,7 +2690,407 @@ class _CustomShimmerState extends State<CustomShimmer>
   }
 }
 
-class ThreadCommentsPage extends StatefulWidget {
+// -------------------------------------------------------------------------
+// Specialized Tab Content Widgets for High Performance & State Handling
+// -------------------------------------------------------------------------
+
+class ThreadsTabContent extends ConsumerStatefulWidget {
+  final String userId;
+  final Color bgTextColor;
+  final Color buttonColor;
+
+  const ThreadsTabContent({
+    super.key,
+    required this.userId,
+    required this.bgTextColor,
+    required this.buttonColor,
+  });
+
+  @override
+  ConsumerState<ThreadsTabContent> createState() => _ThreadsTabContentState();
+}
+
+class _ThreadsTabContentState extends ConsumerState<ThreadsTabContent>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    final threadsAsync = ref.watch(userThreadsProvider(widget.userId));
+
+    return threadsAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (err, stack) => Center(child: Text('Error: $err')),
+      data: (threads) {
+        if (threads.isEmpty) {
+          return Center(
+            child: Text(
+              'No threads yet',
+              style: TextStyle(color: widget.bgTextColor),
+            ),
+          );
+        }
+
+        return RepaintBoundary(
+          child: ListView.builder(
+            padding: const EdgeInsets.all(16),
+            physics: const AlwaysScrollableScrollPhysics(
+                parent: BouncingScrollPhysics()),
+            itemCount: threads.length,
+            itemBuilder: (context, index) {
+              final thread = threads[index];
+              return Card(
+                color: widget.buttonColor.withOpacity(0.05),
+                margin: const EdgeInsets.only(bottom: 12),
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  side: BorderSide(color: widget.buttonColor.withOpacity(0.1)),
+                ),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(16),
+                  onTap: () {
+                    flutter.HapticFeedback.lightImpact();
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ThreadCommentsPage(
+                          threadContent: thread['content'],
+                          threadId: thread['id'],
+                        ),
+                      ),
+                    );
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.access_time,
+                                size: 14, color: Colors.grey),
+                            const SizedBox(width: 6),
+                            Text(
+                              timeago
+                                  .format(DateTime.parse(thread['created_at'])),
+                              style: TextStyle(
+                                color: widget.bgTextColor.withOpacity(0.6),
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          thread['content'] ?? '',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: widget.bgTextColor,
+                            height: 1.5,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        Row(
+                          children: [
+                            _StatItem(
+                              icon: Icons.favorite_border,
+                              value:
+                                  '${(thread['like_count'] ?? 0) + (thread['fake_likes'] ?? 0)}',
+                              color: widget.buttonColor,
+                              textColor: widget.bgTextColor,
+                            ),
+                            const SizedBox(width: 20),
+                            _StatItem(
+                              icon: Icons.chat_bubble_outline,
+                              value: '${thread['comment_count'] ?? 0}',
+                              color: widget.buttonColor,
+                              textColor: widget.bgTextColor,
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+}
+
+class ServicesTabContent extends ConsumerStatefulWidget {
+  final String userId;
+  final Color bgTextColor;
+  final Color buttonColor;
+
+  const ServicesTabContent({
+    super.key,
+    required this.userId,
+    required this.bgTextColor,
+    required this.buttonColor,
+  });
+
+  @override
+  ConsumerState<ServicesTabContent> createState() => _ServicesTabContentState();
+}
+
+class _ServicesTabContentState extends ConsumerState<ServicesTabContent>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    final servicesAsync = ref.watch(userServicesProvider(widget.userId));
+
+    return servicesAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (err, stack) => Center(child: Text('Error: $err')),
+      data: (services) {
+        if (services.isEmpty) {
+          return Center(
+            child: Text(
+              'No services offered',
+              style: TextStyle(color: widget.bgTextColor.withOpacity(0.5)),
+            ),
+          );
+        }
+
+        return RepaintBoundary(
+          child: ListView.builder(
+            padding: const EdgeInsets.all(16),
+            physics: const AlwaysScrollableScrollPhysics(
+                parent: BouncingScrollPhysics()),
+            itemCount: services.length,
+            itemBuilder: (context, index) {
+              final service = services[index];
+              return Container(
+                margin: const EdgeInsets.only(bottom: 16),
+                decoration: BoxDecoration(
+                  color: widget.bgTextColor.withOpacity(0.04),
+                  borderRadius: BorderRadius.circular(20),
+                  border:
+                      Border.all(color: widget.bgTextColor.withOpacity(0.08)),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: IntrinsicHeight(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Container(
+                          width: 6,
+                          color: widget.buttonColor,
+                        ),
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.all(20),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        service['title'] ?? 'Untitled',
+                                        style: TextStyle(
+                                          color: widget.bgTextColor,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 18,
+                                        ),
+                                      ),
+                                    ),
+                                    if (service['price'] != null)
+                                      Text(
+                                        '₹${service['price']}',
+                                        style: TextStyle(
+                                          color: widget.buttonColor,
+                                          fontWeight: FontWeight.w800,
+                                          fontSize: 18,
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                if (service['category'] != null)
+                                  Container(
+                                    margin: const EdgeInsets.only(bottom: 12),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 10, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color:
+                                          widget.buttonColor.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      service['category'],
+                                      style: TextStyle(
+                                        color: widget.buttonColor,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                Text(
+                                  service['description'] ?? '',
+                                  style: TextStyle(
+                                    color: widget.bgTextColor.withOpacity(0.7),
+                                    fontSize: 14,
+                                    height: 1.4,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+}
+
+class GalleryTabContent extends ConsumerStatefulWidget {
+  final String userId;
+  final Color bgTextColor;
+  final Color buttonColor;
+
+  const GalleryTabContent({
+    super.key,
+    required this.userId,
+    required this.bgTextColor,
+    required this.buttonColor,
+  });
+
+  @override
+  ConsumerState<GalleryTabContent> createState() => _GalleryTabContentState();
+}
+
+class _GalleryTabContentState extends ConsumerState<GalleryTabContent>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    final galleryAsync = ref.watch(userGalleryProvider(widget.userId));
+
+    return galleryAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (err, stack) => Center(child: Text('Error: $err')),
+      data: (gallery) {
+        if (gallery.isEmpty) {
+          return Center(
+            child: Text(
+              'No gallery items',
+              style: TextStyle(color: widget.bgTextColor.withOpacity(0.5)),
+            ),
+          );
+        }
+
+        return RepaintBoundary(
+          child: MasonryGridView.count(
+            padding: const EdgeInsets.all(12),
+            crossAxisCount: 2,
+            mainAxisSpacing: 12,
+            crossAxisSpacing: 12,
+            itemCount: gallery.length,
+            physics: const AlwaysScrollableScrollPhysics(
+                parent: BouncingScrollPhysics()),
+            itemBuilder: (context, index) {
+              final item = gallery[index];
+              return Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: CachedNetworkImage(
+                    imageUrl: item['image_url'] ?? '',
+                    fit: BoxFit.cover,
+                    memCacheWidth: 400,
+                    placeholder: (context, url) => Container(
+                      height: 200,
+                      color: widget.bgTextColor.withOpacity(0.05),
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(widget.buttonColor),
+                        ),
+                      ),
+                    ),
+                    errorWidget: (context, url, error) => Container(
+                      height: 200,
+                      color: widget.bgTextColor.withOpacity(0.1),
+                      child: const Icon(Icons.broken_image, color: Colors.grey),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _StatItem extends StatelessWidget {
+  final IconData icon;
+  final String value;
+  final Color color;
+  final Color textColor;
+
+  const _StatItem({
+    required this.icon,
+    required this.value,
+    required this.color,
+    required this.textColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, size: 18, color: color),
+        const SizedBox(width: 6),
+        Text(
+          value,
+          style: TextStyle(
+            color: textColor,
+            fontWeight: FontWeight.w600,
+            fontSize: 14,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class ThreadCommentsPage extends ConsumerStatefulWidget {
   final String threadId;
   final String threadContent;
 
@@ -3069,10 +3101,10 @@ class ThreadCommentsPage extends StatefulWidget {
   });
 
   @override
-  State<ThreadCommentsPage> createState() => _ThreadCommentsPageState();
+  ConsumerState<ThreadCommentsPage> createState() => _ThreadCommentsPageState();
 }
 
-class _ThreadCommentsPageState extends State<ThreadCommentsPage>
+class _ThreadCommentsPageState extends ConsumerState<ThreadCommentsPage>
     with TickerProviderStateMixin {
   final TextEditingController _commentController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
@@ -3112,15 +3144,13 @@ class _ThreadCommentsPageState extends State<ThreadCommentsPage>
     });
 
     try {
-      final response = await supabase
-          .from('thread_comments_view')
-          .select()
-          .eq('thread_id', widget.threadId)
-          .order('created_at');
+      final response = await ref
+          .read(profileRepositoryProvider)
+          .fetchThreadComments(widget.threadId);
 
       if (mounted) {
         safeSetState(() {
-          comments = List<Map<String, dynamic>>.from(response);
+          comments = response;
           isLoading = false;
         });
         _fadeController.forward();
@@ -3142,14 +3172,14 @@ class _ThreadCommentsPageState extends State<ThreadCommentsPage>
       isPosting = true;
     });
 
-    final userId = supabase.auth.currentUser?.id ?? 'sample-user-id';
+    final userId = SupaFlow.client.auth.currentUser?.id ?? 'sample-user-id';
 
     try {
-      await supabase.from('thread_comments').insert({
-        'thread_id': widget.threadId,
-        'user_id': userId,
-        'content': _commentController.text.trim(),
-      });
+      await ref.read(profileRepositoryProvider).postThreadComment(
+            widget.threadId,
+            userId,
+            _commentController.text.trim(),
+          );
 
       _commentController.clear();
       await _fetchComments();
@@ -3213,7 +3243,9 @@ class _ThreadCommentsPageState extends State<ThreadCommentsPage>
 
     if (shouldDelete == true) {
       try {
-        await supabase.from('thread_comments').delete().eq('id', commentId);
+        await ref
+            .read(profileRepositoryProvider)
+            .deleteThreadComment(commentId);
 
         // Remove comment with animation
         safeSetState(() {
@@ -3250,7 +3282,7 @@ class _ThreadCommentsPageState extends State<ThreadCommentsPage>
   }
 
   Widget _buildCommentItem(Map<String, dynamic> comment, int index) {
-    final currentUserId = supabase.auth.currentUser?.id;
+    final currentUserId = SupaFlow.client.auth.currentUser?.id;
     final isOwner = comment['user_id'] == currentUserId;
 
     return AnimatedContainer(

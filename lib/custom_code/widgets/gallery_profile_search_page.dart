@@ -1,7 +1,6 @@
 // Automatic FlutterFlow imports
 import 'dart:async';
 
-import 'package:pocket_mates_app/custom_code/widgets/main_profile_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/search_profile_detail_page.dart';
 
 import '/backend/supabase/supabase.dart';
@@ -39,7 +38,7 @@ class GalleryProfileSearchPage extends StatefulWidget {
 
 class _GalleryProfileSearchPageState extends State<GalleryProfileSearchPage> {
   final TextEditingController _searchController = TextEditingController();
-  final SupabaseClient supabase = SupaFlow.client;
+  final SupabaseClient _supabase = SupaFlow.client;
   Color? _selectedColor;
   String? _colorCode;
   Color? _selectedColor1;
@@ -83,7 +82,7 @@ class _GalleryProfileSearchPageState extends State<GalleryProfileSearchPage> {
 
       if (widget.userid == null) return;
 
-      final profileResponse = await supabase
+      final profileResponse = await _supabase
           .from('profile')
           .select()
           .eq('user_id', widget.userid)
@@ -165,14 +164,14 @@ class _GalleryProfileSearchPageState extends State<GalleryProfileSearchPage> {
 
       if (widget.userid != null && widget.userid!.isNotEmpty) {
         // Query with user ID filter
-        response = await supabase
+        response = await _supabase
             .from('gallery_with_comments_view')
             .select()
             .eq('user_id', widget.userid)
             .order('gallery_created_at', ascending: false);
       } else {
         // Query without user ID filter
-        response = await supabase
+        response = await _supabase
             .from('gallery_with_comments_view')
             .select()
             .order('gallery_created_at', ascending: false);
@@ -984,7 +983,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
 
   Future<void> fetchUserProfile() async {
     try {
-      final response = await supabase
+      final response = await _supabase
           .from('profile')
           .select('user_id, name, profile_image_url, phone_no')
           .eq('user_id', widget.userid!)
@@ -1460,7 +1459,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
       );
 
       // Insert message to group
-      await supabase.from('group_messages').insert({
+      await _supabase.from('group_messages').insert({
         'group_id': groupId,
         'sender_id': _supabase.auth.currentUser?.id.toString() ?? '',
         'gallery_id': widget.item['gallery_id'],
@@ -1470,7 +1469,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
       });
 
       // Update group's last message
-      await supabase.from('groups').update({
+      await _supabase.from('groups').update({
         'last_message':
             '${widget.item['gallery_title']}\n${widget.item['gallery_description']}\n${widget.item['gallery_image_url']}',
         'last_message_time': DateTime.now().toIso8601String(),
@@ -2368,6 +2367,7 @@ class EnhancedCommentTile extends StatefulWidget {
 }
 
 class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
+  final _supabase = SupaFlow.client;
   final CommentLikeService _likeService = CommentLikeService();
   final CommentReplyService _replyService = CommentReplyService();
 
@@ -2574,8 +2574,7 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
                 icon:
                     const Icon(Icons.more_horiz, color: Colors.grey, size: 20),
                 onPressed: () {
-                  final supabase = SupaFlow.client;
-                  final currentUserId = supabase.auth.currentUser?.id;
+                  final currentUserId = _supabase.auth.currentUser?.id;
                   final bool isCommentOwner =
                       currentUserId == widget.comment['user_id'];
 
@@ -2619,7 +2618,7 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
 
                                 if (shouldDelete == true) {
                                   try {
-                                    await supabase
+                                    await _supabase
                                         .from('comments')
                                         .delete()
                                         .eq('id', widget.comment['comment_id']);

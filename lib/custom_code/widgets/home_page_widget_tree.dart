@@ -9,6 +9,7 @@ import '/custom_code/widgets/index.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class HomePageWidgetTree extends StatefulWidget {
@@ -124,126 +125,148 @@ class _HomePageWidgetTreeState extends State<HomePageWidgetTree> {
       child: Scaffold(
         key: scaffoldKey,
         backgroundColor: HomePageWidgetTree.backgroundColor,
-        appBar: AppBar(
-          backgroundColor: HomePageWidgetTree.backgroundColor,
-          automaticallyImplyLeading: false,
-          title: Text(
-            'Pocket Mates',
-            style: GoogleFonts.interTight(
-              color: HomePageWidgetTree.textPrimary,
-              fontSize: 22.0,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          actions: [],
-          centerTitle: false,
-          elevation: 0,
-          bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(1),
-            child: Container(
-              color: Colors.white.withOpacity(0.05),
-              height: 1,
-            ),
-          ),
-        ),
         bottomNavigationBar: _buildBottomNavigationBar(context),
         body: _isLoading
             ? const Center(child: CircularProgressIndicator())
             : SafeArea(
-                top: true,
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.max,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (supabase.auth.currentUser?.id != null)
-                        StatusDisplayWidget(
-                          currentUserId: supabase.auth.currentUser!.id,
+                top: false,
+                child: RefreshIndicator(
+                  onRefresh: _loadAllUserData,
+                  color: HomePageWidgetTree.primaryColor,
+                  backgroundColor: Colors.grey[900],
+                  child: CustomScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    slivers: [
+                      // Unified Dynamic Header (Stranger Rows + Status)
+                      SliverPersistentHeader(
+                        pinned: true,
+                        delegate: _UnifiedHomeHeaderDelegate(
+                          currentUserId: supabase.auth.currentUser?.id ?? '',
                           currentProfileId: profileId.toString(),
-                        ),
-                      Padding(
-                        padding: const EdgeInsets.all(24.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Welcome Back! 👋',
-                              style: GoogleFonts.outfit(
-                                fontSize: 28,
-                                fontWeight: FontWeight.bold,
-                                color: HomePageWidgetTree.textPrimary,
-                              ),
+                          onTapVideo: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  const WebRTCCallScreen(mode: 'Video'),
                             ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'What would you like to do today?',
-                              style: GoogleFonts.outfit(
-                                fontSize: 16,
-                                color: HomePageWidgetTree.textSecondary,
-                              ),
+                          ),
+                          onTapFriends: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content:
+                                      Text('Strangers Friends coming soon!')),
+                            );
+                          },
+                          onTapCall: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  const WebRTCCallScreen(mode: 'Voice'),
                             ),
-                          ],
-                        ),
-                      ),
-
-                      // PocketMates Entry Card
-                      _buildEntryPointCard(
-                        context,
-                        title: 'PocketMates',
-                        subtitle: 'Meet strangers. Instantly.',
-                        icon: FontAwesomeIcons.userGroup,
-                        colors: [
-                          HomePageWidgetTree.primaryColor,
-                          const Color(0xFF357ABD)
-                        ],
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const PocketMatesDashboard(),
+                          ),
+                          onTapText: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  const WebRTCCallScreen(mode: 'Text'),
+                            ),
                           ),
                         ),
                       ),
 
-                      const SizedBox(height: 20),
-
-                      // Quick Anonymous Chat Card
-                      _buildEntryPointCard(
-                        context,
-                        title: 'Quick Chat 🗨️',
-                        subtitle: 'Anonymous chatting. Instantly.',
-                        icon: FontAwesomeIcons.solidCommentDots,
-                        colors: [
-                          HomePageWidgetTree.secondaryColor,
-                          const Color(0xFFE04A76)
-                        ],
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const WebRTCCallScreen(
-                                mode: 'Text',
+                      // Main Content Sliver
+                      SliverToBoxAdapter(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(24.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Welcome Back! 👋',
+                                    style: GoogleFonts.outfit(
+                                      fontSize: 28,
+                                      fontWeight: FontWeight.bold,
+                                      color: HomePageWidgetTree.textPrimary,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'What would you like to do today?',
+                                    style: GoogleFonts.outfit(
+                                      fontSize: 16,
+                                      color: HomePageWidgetTree.textSecondary,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                          );
-                        },
+
+                            // PocketMates Entry Card
+                            _buildEntryPointCard(
+                              context,
+                              title: 'PocketMates',
+                              subtitle: 'Meet strangers. Instantly.',
+                              icon: FontAwesomeIcons.userGroup,
+                              colors: [
+                                HomePageWidgetTree.primaryColor,
+                                const Color(0xFF357ABD)
+                              ],
+                              onTap: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      const PocketMatesDashboard(),
+                                ),
+                              ),
+                            ),
+
+                            const SizedBox(height: 20),
+
+                            // Quick Anonymous Chat Card
+                            _buildEntryPointCard(
+                              context,
+                              title: 'Quick Chat 🗨️',
+                              subtitle: 'Anonymous chatting. Instantly.',
+                              icon: FontAwesomeIcons.solidCommentDots,
+                              colors: [
+                                HomePageWidgetTree.secondaryColor,
+                                const Color(0xFFE04A76)
+                              ],
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const WebRTCCallScreen(
+                                      mode: 'Text',
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+
+                            const SizedBox(height: 20),
+
+                            // AI Buddy Card (Placeholder using Accent Color)
+                            _buildEntryPointCard(
+                              context,
+                              title: 'AI Companion',
+                              subtitle: 'Talk to your virtual friend.',
+                              icon: FontAwesomeIcons.robot,
+                              colors: [
+                                HomePageWidgetTree.accentColor,
+                                const Color(0xFFE5A500)
+                              ],
+                              onTap: () {},
+                            ),
+
+                            const SizedBox(height: 40),
+                          ],
+                        ),
                       ),
-
-                      const SizedBox(height: 20),
-
-                      // AI Buddy Card (Placeholder using Accent Color)
-                      _buildEntryPointCard(
-                        context,
-                        title: 'AI Companion',
-                        subtitle: 'Talk to your virtual friend.',
-                        icon: FontAwesomeIcons.robot,
-                        colors: [
-                          HomePageWidgetTree.accentColor,
-                          const Color(0xFFE5A500)
-                        ],
-                        onTap: () {},
-                      ),
-
-                      const SizedBox(height: 40),
                     ],
                   ),
                 ),
@@ -499,6 +522,248 @@ class _HomePageWidgetTreeState extends State<HomePageWidgetTree> {
       ),
     );
   }
+}
+
+class _UnifiedHomeHeaderDelegate extends SliverPersistentHeaderDelegate {
+  final String currentUserId;
+  final String currentProfileId;
+  final VoidCallback onTapVideo;
+  final VoidCallback onTapFriends;
+  final VoidCallback onTapCall;
+  final VoidCallback onTapText;
+
+  _UnifiedHomeHeaderDelegate({
+    required this.currentUserId,
+    required this.currentProfileId,
+    required this.onTapVideo,
+    required this.onTapFriends,
+    required this.onTapCall,
+    required this.onTapText,
+  });
+
+  @override
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    // Calculate progress (0.0 = fully open, 1.0 = fully closed)
+    final double maxShrink = maxExtent - minExtent;
+    final double progress = (shrinkOffset / maxShrink).clamp(0.0, 1.0);
+
+    // Handle overscroll (pull down to expand)
+    final double overscroll = shrinkOffset < 0 ? -shrinkOffset : 0;
+    final double overscrollScale = 1.0 + (overscroll / 300);
+
+    return Container(
+      color: HomePageWidgetTree.backgroundColor,
+      child: Stack(
+        children: [
+          // 1. Collapsible Container (Stranger Rows)
+          // Using ClipRect + Transform for a structural "open/close" effect
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 120, // Constant height for the fixed status widget
+            child: ClipRect(
+              child: Transform.scale(
+                scale: overscrollScale,
+                alignment: Alignment.topCenter,
+                child: Transform.translate(
+                  // Parallax slide effect for "open/close" feel
+                  offset: Offset(0, -shrinkOffset * 0.4),
+                  child: SingleChildScrollView(
+                    physics: const NeverScrollableScrollPhysics(),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 16),
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF111111),
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.05),
+                            width: 1,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.3),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _buildQuickActionButton(
+                                    context,
+                                    icon: FontAwesomeIcons.video,
+                                    label: 'Strangers Video Call',
+                                    color: Colors.yellow,
+                                    onTap: onTapVideo,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: _buildQuickActionButton(
+                                    context,
+                                    icon: FontAwesomeIcons.userGroup,
+                                    label: 'Strangers Friends',
+                                    color: Colors.yellow,
+                                    onTap: onTapFriends,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _buildQuickActionButton(
+                                    context,
+                                    icon: FontAwesomeIcons.phone,
+                                    label: 'Call Stranger',
+                                    color: Colors.yellow,
+                                    onTap: onTapCall,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: _buildQuickActionButton(
+                                    context,
+                                    icon: FontAwesomeIcons.solidCommentDots,
+                                    label: 'Text Stranger',
+                                    color: Colors.yellow,
+                                    onTap: onTapText,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          // 3. Status Widget - STAYS AT TOP (PINNED logic via minExtent)
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              height: 120,
+              decoration: BoxDecoration(
+                color: HomePageWidgetTree.backgroundColor,
+                border: Border(
+                  top: BorderSide(
+                    color: Colors.white.withOpacity(0.05 * progress),
+                    width: 1,
+                  ),
+                ),
+              ),
+              child: StatusDisplayWidget(
+                currentUserId: currentUserId,
+                currentProfileId: currentProfileId,
+              ),
+            ),
+          ),
+
+          // Subtle Bottom Shadow when pinned
+          if (progress > 0.9)
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                height: 4,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.black.withOpacity(0.1),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuickActionButton(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      height: 52,
+      decoration: BoxDecoration(
+        color: Colors.grey[900],
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withOpacity(0.05), width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            HapticFeedback.mediumImpact();
+            onTap();
+          },
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, color: color, size: 18),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    label,
+                    style: GoogleFonts.interTight(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  double get maxExtent => 265;
+
+  @override
+  double get minExtent => 120;
+
+  @override
+  bool shouldRebuild(covariant _UnifiedHomeHeaderDelegate oldDelegate) => true;
 }
 
 class CircularProfileImage extends StatelessWidget {
