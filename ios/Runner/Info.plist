@@ -67,9 +67,13 @@
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
 	<key>NSCameraUsageDescription</key>
-	<string>This app needs camera access to make video calls.</string>
+	<string>This app needs camera access to take photos and make video calls.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>This app needs microphone access to make audio calls.</string>
+	<string>This app needs microphone access to record voice messages and make audio calls.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>This app needs access to your gallery to let you share photos with your friends.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>This app needs permission to save photos to your gallery.</string>
 
 </dict>
 </plist>
