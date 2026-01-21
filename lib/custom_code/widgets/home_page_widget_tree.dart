@@ -16,6 +16,7 @@ import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/whats_app_groups_provider.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chat/create_group_dialog.dart';
 
 class HomePageWidgetTree extends ConsumerStatefulWidget {
   const HomePageWidgetTree({
@@ -230,6 +231,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                             ),
                           ),
                           onTapSettings: _handleSettings,
+                          onRefresh: () => ref.refresh(conversationsProvider),
                         ),
                       ),
 
@@ -600,6 +602,7 @@ class _UnifiedHomeHeaderDelegate extends SliverPersistentHeaderDelegate {
   final VoidCallback onTapCall;
   final VoidCallback onTapText;
   final VoidCallback onTapSettings;
+  final VoidCallback onRefresh;
 
   _UnifiedHomeHeaderDelegate({
     required this.currentUserId,
@@ -609,6 +612,7 @@ class _UnifiedHomeHeaderDelegate extends SliverPersistentHeaderDelegate {
     required this.onTapCall,
     required this.onTapText,
     required this.onTapSettings,
+    required this.onRefresh,
   });
 
   @override
@@ -782,6 +786,40 @@ class _UnifiedHomeHeaderDelegate extends SliverPersistentHeaderDelegate {
                   icon:
                       const Icon(Icons.settings, color: Colors.white, size: 20),
                   onPressed: onTapSettings,
+                ),
+              ),
+            ),
+          ),
+
+          // Create Group Button (Top Left or Left of Settings)
+          Positioned(
+            top: topPadding + 8,
+            right: 64, // Spaced from settings
+            child: Opacity(
+              opacity: (1.0 - progress * 3).clamp(0.0, 1.0),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.3),
+                  shape: BoxShape.circle,
+                ),
+                child: IconButton(
+                  icon: const Icon(Icons.group_add,
+                      color: Colors.yellow, size: 20),
+                  onPressed: () async {
+                    final isAuthenticated =
+                        await AuthAlertBox.checkAuthAndShowAlert(
+                      context: context,
+                      customMessage: "Please login to create a group",
+                    );
+                    if (isAuthenticated) {
+                      showDialog(
+                        context: context,
+                        builder: (context) => CreateGroupDialog(
+                          onGroupCreated: onRefresh,
+                        ),
+                      );
+                    }
+                  },
                 ),
               ),
             ),

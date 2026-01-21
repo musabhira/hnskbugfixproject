@@ -140,22 +140,11 @@ class ChatMessages extends _$ChatMessages {
           .order('created_at', ascending: false)
           .range(offset, offset + _pageSize - 1);
 
-      final messages = (response as List).map((data) {
-        // Helper to safely extract Map from potential List
-        Map<String, dynamic>? safeGet(dynamic input) {
-          if (input is Map) return Map<String, dynamic>.from(input);
-          if (input is List && input.isNotEmpty) {
-            return Map<String, dynamic>.from(input.first);
-          }
-          return null;
-        }
-
-        // Handle nested sender -> profile
-        final sender = safeGet(data['sender']);
-        final senderProfile = safeGet(sender?['profile']);
-
-        // Handle reply_to
-        final replyTo = safeGet(data['reply_to']);
+      final List<dynamic> responseList = response as List;
+      final remoteMessages = responseList.map((data) {
+        final sender = _safeGet(data['sender']);
+        final senderProfile = _safeGet(sender?['profile']);
+        final replyTo = _safeGet(data['reply_to']);
 
         return ChatMessage.fromJson({
           ...data,
@@ -164,15 +153,23 @@ class ChatMessages extends _$ChatMessages {
         });
       }).toList();
 
-      _hasMoreMessages = messages.length == _pageSize;
+      // Merge with cache to keep messages that were deleted from server
+      final List<ChatMessage> cachedMessages = await _loadFromCache(groupId);
+
+      // Combine unique messages (favor remote/fresh data)
+      final Map<String, ChatMessage> combinedMap = {
+        for (var m in cachedMessages) m.id: m,
+        for (var m in remoteMessages) m.id: m,
+      };
+
+      final combined = combinedMap.values.toList();
+      combined.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
       if (isInitial) {
-        _saveToCache(groupId, messages);
-        return messages;
-      } else {
-        final currentMessages = state.asData?.value ?? [];
-        return [...currentMessages, ...messages];
+        _saveToCache(groupId, combined);
       }
+
+      return combined;
     } catch (e) {
       if (isInitial) {
         final cached = await _loadFromCache(groupId);
@@ -184,15 +181,16 @@ class ChatMessages extends _$ChatMessages {
 
   Future<void> cleanupOldMessages() async {
     try {
-      final cutoffTime = DateTime.now().subtract(const Duration(days: 30));
+      // Delete from Supabase messages older than 34 hours
+      final cutoffTime = DateTime.now().subtract(const Duration(hours: 34));
+
       await _supabase
           .from('group_messages')
           .delete()
           .eq('group_id', groupId)
           .lt('created_at', cutoffTime.toIso8601String());
 
-      // Also refresh state
-      ref.invalidateSelf();
+      debugPrint('Supabase 34h cleanup completed for group: $groupId');
     } catch (e) {
       debugPrint('Error during database cleanup: $e');
     }
@@ -299,9 +297,14 @@ class ChatMessages extends _$ChatMessages {
             )
           ''').single();
 
+      final sender = _safeGet(response['sender']);
+      final senderProfile = _safeGet(sender?['profile']);
+      final replyTo = _safeGet(response['reply_to']);
+
       final fullMessage = ChatMessage.fromJson({
         ...response,
-        'sender_profile': response['sender']?['profile'],
+        'sender_profile': senderProfile,
+        'reply_to': replyTo,
       });
 
       // Remove from optimistic list and update state
@@ -348,7 +351,7 @@ class ChatMessages extends _$ChatMessages {
     }
   }
 
-  // Cache Logic with compression for large message lists
+  // Cache Logic: Persist messages locally for 34h+ history
   Future<List<ChatMessage>> _loadFromCache(String groupId) async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -356,11 +359,8 @@ class ChatMessages extends _$ChatMessages {
       final jsonStr = prefs.getString(key);
       if (jsonStr != null) {
         final List decoded = jsonDecode(jsonStr);
-        // Only cache first page to keep cache size manageable
-        return decoded
-            .take(_pageSize)
-            .map((m) => ChatMessage.fromJson(m))
-            .toList();
+        // Store more messages locally so they persist after DB cleanup
+        return decoded.take(500).map((m) => ChatMessage.fromJson(m)).toList();
       }
     } catch (_) {}
     return [];
@@ -370,8 +370,8 @@ class ChatMessages extends _$ChatMessages {
     try {
       final prefs = await SharedPreferences.getInstance();
       final key = 'chat_messages_$groupId';
-      // Only cache first page to keep cache size manageable
-      final messagesToCache = messages.take(_pageSize).toList();
+      // Cache up to 500 messages locally
+      final messagesToCache = messages.take(500).toList();
       final jsonStr =
           jsonEncode(messagesToCache.map((m) => m.toJson()).toList());
       await prefs.setString(key, jsonStr);
@@ -397,18 +397,9 @@ class ChatMessages extends _$ChatMessages {
         )
       ''').eq('id', id).single();
 
-      // Helper to safely extract Map from potential List
-      Map<String, dynamic>? safeGet(dynamic input) {
-        if (input is Map) return Map<String, dynamic>.from(input);
-        if (input is List && input.isNotEmpty) {
-          return Map<String, dynamic>.from(input.first);
-        }
-        return null;
-      }
-
-      final sender = safeGet(response['sender']);
-      final senderProfile = safeGet(sender?['profile']);
-      final replyTo = safeGet(response['reply_to']);
+      final sender = _safeGet(response['sender']);
+      final senderProfile = _safeGet(sender?['profile']);
+      final replyTo = _safeGet(response['reply_to']);
 
       return ChatMessage.fromJson({
         ...response,
@@ -416,8 +407,19 @@ class ChatMessages extends _$ChatMessages {
         'reply_to': replyTo,
       });
     } catch (e) {
-      print('Error fetching message by id: $e');
+      debugPrint('Error fetching message by id: $e');
       return null;
     }
+  }
+
+  // Helper to safely extract Map from potential List (Supabase Joins)
+  Map<String, dynamic>? _safeGet(dynamic input) {
+    if (input == null) return null;
+    if (input is Map) return Map<String, dynamic>.from(input);
+    if (input is List && input.isNotEmpty) {
+      final first = input.first;
+      if (first is Map) return Map<String, dynamic>.from(first);
+    }
+    return null;
   }
 }

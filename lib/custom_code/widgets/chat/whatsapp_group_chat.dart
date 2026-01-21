@@ -50,6 +50,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
 
   late String _currentUserId;
   List<Map<String, dynamic>> _groupMembers = [];
+  String? _userRole; // 'admin' or 'member'
   bool _isSending = false;
   bool _showEmojiPicker = false;
   bool _showAttachMenu = false;
@@ -67,7 +68,8 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   @override
   void initState() {
     super.initState();
-    _currentUserId = _supabase.auth.currentUser!.id;
+    _currentUserId = _supabase.auth.currentUser?.id ?? '';
+    _fetchMembers();
 
     _attachMenuAnimationController = AnimationController(
       duration: const Duration(milliseconds: 200),
@@ -88,7 +90,16 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
       }
     });
 
-    _loadGroupMembers();
+    _focusNode.addListener(() {
+      if (!_focusNode.hasFocus) {
+        safeSetState(() => _showEmojiPicker = false);
+      }
+    });
+
+    // Cleanup trigger
+    Future.microtask(() => ref
+        .read(chatMessagesProvider(widget.groupId).notifier)
+        .cleanupOldMessages());
   }
 
   @override
@@ -100,19 +111,32 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     super.dispose();
   }
 
-  Future<void> _loadGroupMembers() async {
+  Future<void> _fetchMembers() async {
     try {
-      final response = await _supabase
-          .from('group_members')
-          .select('*, profile:profile!profile_id(*)')
-          .eq('group_id', widget.groupId)
-          .eq('is_active', true);
+      final supabase = ref.read(supabaseClientProvider);
+      final response = await supabase.from('group_members').select('''
+            *,
+            profile:profile!profile_id(name, profile_image_url)
+          ''').eq('group_id', widget.groupId).eq('is_active', true);
+
+      final List rawMembers = response as List;
+      final members = rawMembers.map((m) {
+        final profileData = _safeGet(m['profile']);
+        return {
+          ...Map<String, dynamic>.from(m),
+          'profile': profileData,
+        };
+      }).toList();
+
+      final myMember = members.firstWhere((m) => m['user_id'] == _currentUserId,
+          orElse: () => {});
 
       safeSetState(() {
-        _groupMembers = List<Map<String, dynamic>>.from(response);
+        _groupMembers = members;
+        _userRole = myMember['role'] ?? 'member';
       });
     } catch (e) {
-      debugPrint('Error loading group members: $e');
+      debugPrint('Error fetching members: $e');
     }
   }
 
@@ -163,9 +187,15 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   }
 
   Future<void> _handleRefresh() async {
-    // Refresh the provider
-    ref.invalidate(chatMessagesProvider(widget.groupId));
-    await _loadGroupMembers();
+    try {
+      // Invalidate the provider to force a fresh fetch from Supabase
+      ref.invalidate(chatMessagesProvider(widget.groupId));
+      // Wait for the next value to ensure loading state is handled
+      await ref.read(chatMessagesProvider(widget.groupId).future);
+      await _fetchMembers();
+    } catch (e) {
+      debugPrint('Refresh error: $e');
+    }
   }
 
   Widget _buildShimmerLoading() {
@@ -284,6 +314,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
             onSelected: (value) {
               if (value == 'refresh') _handleRefresh();
               if (value == 'info') _showGroupInfo();
+              if (value == 'leave') _showLeaveGroupDialog();
             },
             itemBuilder: (context) => [
               const PopupMenuItem(
@@ -294,6 +325,10 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
               const PopupMenuItem(
                 value: 'refresh',
                 child: Text('Refresh', style: TextStyle(color: Colors.white)),
+              ),
+              const PopupMenuItem(
+                value: 'leave',
+                child: Text('Leave Group', style: TextStyle(color: Colors.red)),
               ),
             ],
           ),
@@ -454,6 +489,24 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   }
 
   Widget _buildMessageTile(ChatMessage message, bool isMe) {
+    if (message.messageType == 'system') {
+      return Center(
+        child: Container(
+          margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 32),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1F2C34).withOpacity(0.8),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Text(
+            message.messageText ?? '',
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: Colors.white60, fontSize: 12),
+          ),
+        ),
+      );
+    }
+
     final radius = BorderRadius.circular(12);
     final borderRadius = isMe
         ? radius.copyWith(topRight: Radius.zero)
@@ -476,13 +529,34 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
             if (!isMe)
               Padding(
                 padding: const EdgeInsets.only(left: 4, bottom: 2),
-                child: Text(
-                  message.senderName ?? 'User',
-                  style: const TextStyle(
-                    color: Colors.yellow, // Matched to app theme
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      message.senderName ?? 'User',
+                      style: const TextStyle(
+                        color: Colors.yellow, // Matched to app theme
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    if (_isAdmin(message.senderId)) ...[
+                      const SizedBox(width: 4),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 4, vertical: 1),
+                        decoration: BoxDecoration(
+                          color: Colors.yellow.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(color: Colors.yellow, width: 0.5),
+                        ),
+                        child: const Text(
+                          'Admin',
+                          style: TextStyle(color: Colors.yellow, fontSize: 8),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ),
             Container(
@@ -547,8 +621,15 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                         ),
                         if (isMe) ...[
                           const SizedBox(width: 4),
-                          const Icon(Icons.done_all,
-                              size: 14, color: Colors.blue),
+                          Icon(
+                            message.isOptimistic
+                                ? Icons.access_time
+                                : Icons.done_all,
+                            size: 14,
+                            color: message.isOptimistic
+                                ? (isMe ? Colors.black54 : Colors.white54)
+                                : Colors.blue,
+                          ),
                         ]
                       ],
                     ),
@@ -832,57 +913,397 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     showModalBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1F2C34),
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            Container(
-              width: 40,
-              height: 4,
-              margin: const EdgeInsets.only(bottom: 20),
-              decoration: BoxDecoration(
-                color: Colors.grey[600],
-                borderRadius: BorderRadius.circular(2),
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.8,
+        maxChildSize: 0.95,
+        minChildSize: 0.5,
+        expand: false,
+        builder: (context, scrollController) => Container(
+          decoration: const BoxDecoration(
+            color: Color(0xFF0B141B), // Darker background for premium feel
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: Column(
+            children: [
+              // Pull Bar
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(top: 10, bottom: 20),
+                decoration: BoxDecoration(
+                  color: Colors.grey[600],
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
-            ),
-            const Text('Group Info',
-                style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold)),
-            const SizedBox(height: 20),
-            Expanded(
-              child: ListView.separated(
-                itemCount: _groupMembers.length,
-                separatorBuilder: (context, index) =>
-                    Divider(color: Colors.white.withOpacity(0.1)),
-                itemBuilder: (context, index) {
-                  final member = _groupMembers[index];
-                  final profile = member['profile'];
-                  return ListTile(
-                    leading: CircleAvatar(
-                      backgroundImage: profile?['profile_image_url'] != null
-                          ? NetworkImage(profile['profile_image_url'])
-                          : null,
-                      child: profile?['profile_image_url'] == null
-                          ? const Icon(Icons.person)
-                          : null,
+              Expanded(
+                child: ListView(
+                  controller: scrollController,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  children: [
+                    // Group Header
+                    Center(
+                      child: Column(
+                        children: [
+                          Hero(
+                            tag: 'group_avatar_info_${widget.groupId}',
+                            child: CircleAvatar(
+                              radius: 50,
+                              backgroundColor: Colors.grey[800],
+                              backgroundImage: widget.groupImage != null
+                                  ? NetworkImage(widget.groupImage!)
+                                  : null,
+                              child: widget.groupImage == null
+                                  ? const Icon(Icons.group,
+                                      color: Colors.white, size: 50)
+                                  : null,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            widget.groupName,
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Group · ${_groupMembers.length} members',
+                            style: const TextStyle(color: Colors.white60),
+                          ),
+                        ],
+                      ),
                     ),
-                    title: Text(profile?['name'] ?? 'Unknown',
-                        style: const TextStyle(color: Colors.white)),
-                    subtitle: Text(member['role'] ?? 'member',
-                        style: const TextStyle(color: Colors.grey)),
-                  );
-                },
+                    const SizedBox(height: 32),
+
+                    // Participants Section
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          '${_groupMembers.length} members',
+                          style: const TextStyle(
+                              color: Colors.grey, fontWeight: FontWeight.bold),
+                        ),
+                        if (_userRole == 'admin')
+                          IconButton(
+                            icon: const Icon(Icons.search, color: Colors.grey),
+                            onPressed: () {}, // TODO: Member search
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    if (_userRole == 'admin')
+                      ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: const CircleAvatar(
+                          backgroundColor: Colors.yellow,
+                          child: Icon(Icons.person_add, color: Colors.black),
+                        ),
+                        title: const Text('Add members',
+                            style: TextStyle(color: Colors.white)),
+                        onTap: () {
+                          Navigator.pop(context);
+                          _showAddMemberDialog();
+                        },
+                      ),
+                    ..._groupMembers.map((member) {
+                      final profile = member['profile'];
+                      final isMemberAdmin = member['role'] == 'admin';
+                      final isMe = member['user_id'] == _currentUserId;
+
+                      return ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: CircleAvatar(
+                          backgroundImage: profile?['profile_image_url'] != null
+                              ? NetworkImage(profile['profile_image_url'])
+                              : null,
+                          child: profile?['profile_image_url'] == null
+                              ? const Icon(Icons.person)
+                              : null,
+                        ),
+                        title: Text(
+                          isMe ? 'You' : (profile?['name'] ?? 'Unknown'),
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                        subtitle: Text(
+                          profile?['bio'] ?? 'Busy', // Or role if needed
+                          style: const TextStyle(color: Colors.grey),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        trailing: isMemberAdmin
+                            ? Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 2),
+                                decoration: BoxDecoration(
+                                  border: Border.all(color: Colors.yellow),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: const Text('Group Admin',
+                                    style: TextStyle(
+                                        color: Colors.yellow, fontSize: 10)),
+                              )
+                            : (_userRole == 'admin'
+                                ? IconButton(
+                                    icon: const Icon(
+                                        Icons.remove_circle_outline,
+                                        color: Colors.red),
+                                    onPressed: () =>
+                                        _removeMember(member['user_id']),
+                                  )
+                                : null),
+                      );
+                    }),
+                    const SizedBox(height: 32),
+
+                    // Exit Group Button
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.logout, color: Colors.red),
+                      title: const Text('Exit group',
+                          style: TextStyle(color: Colors.red)),
+                      onTap: () {
+                        Navigator.pop(context);
+                        _showLeaveGroupDialog();
+                      },
+                    ),
+                    if ((_userRole?.toLowerCase() ?? '') == 'admin')
+                      ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading:
+                            const Icon(Icons.delete_forever, color: Colors.red),
+                        title: const Text('Delete group',
+                            style: TextStyle(color: Colors.red)),
+                        onTap: () {
+                          Navigator.pop(context);
+                          _deleteGroup();
+                        },
+                      ),
+                    const SizedBox(height: 48),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
+  }
+
+  Future<void> _removeMember(String userId) async {
+    try {
+      final supabase = ref.read(supabaseClientProvider);
+      await supabase
+          .from('group_members')
+          .update({'is_active': false})
+          .eq('group_id', widget.groupId)
+          .eq('user_id', userId);
+
+      _fetchMembers();
+      if (mounted) Navigator.pop(context);
+    } catch (e) {
+      debugPrint('Error removing member: $e');
+    }
+  }
+
+  void _showAddMemberDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        final controller = TextEditingController();
+        return AlertDialog(
+          backgroundColor: const Color(0xFF1F2C34),
+          title: const Text('Add Member (Email)',
+              style: TextStyle(color: Colors.white)),
+          content: TextField(
+            controller: controller,
+            style: const TextStyle(color: Colors.white),
+            decoration: const InputDecoration(
+              hintText: 'Enter email address',
+              hintStyle: TextStyle(color: Colors.white30),
+            ),
+          ),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel')),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.yellow),
+              onPressed: () async {
+                final email = controller.text.trim();
+                if (email.isNotEmpty) {
+                  await _addMemberByEmail(email);
+                  if (mounted) Navigator.pop(context);
+                }
+              },
+              child: const Text('Add', style: TextStyle(color: Colors.black)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _deleteGroup() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1F2C34),
+        title:
+            const Text('Delete Group', style: TextStyle(color: Colors.white)),
+        content: const Text(
+          'Are you sure you want to delete this group? This action cannot be undone and all messages will be lost.',
+          style: TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child:
+                const Text('Cancel', style: TextStyle(color: Colors.white70)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    try {
+      final supabase = ref.read(supabaseClientProvider);
+
+      // Delete group image if exists
+      if (widget.groupImage != null && widget.groupImage!.isNotEmpty) {
+        try {
+          // Attempt to extract filename from URL.
+          // Standard Supabase URL: .../storage/v1/object/public/[bucket]/[filename]
+          // We assume filename is the last segment.
+          final uri = Uri.parse(widget.groupImage!);
+          final fileName = uri.pathSegments.last;
+
+          await supabase.storage
+              .from('group-profileimagesorginal')
+              .remove([fileName]);
+        } catch (e) {
+          debugPrint('Error deleting group image: $e');
+        }
+      }
+
+      // Delete group (Cascade should handle members and messages)
+      await supabase.from('groups').delete().eq('id', widget.groupId);
+
+      if (mounted) {
+        Navigator.pop(context); // Close chat screen
+      }
+    } catch (e) {
+      debugPrint('Error deleting group: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error deleting group: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _addMemberByEmail(String email) async {
+    try {
+      final supabase = ref.read(supabaseClientProvider);
+      // Find user by email
+      final userResponse = await supabase
+          .from('profile')
+          .select('user_id, id')
+          .eq('email', email)
+          .maybeSingle();
+
+      if (userResponse == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(const SnackBar(content: Text('User not found')));
+        }
+        return;
+      }
+
+      final userId = userResponse['user_id'];
+      final profileId = userResponse['id'];
+
+      // Add to group
+      await supabase.from('group_members').upsert({
+        'group_id': widget.groupId,
+        'user_id': userId,
+        'profile_id': profileId,
+        'role': 'member',
+        'is_active': true,
+      });
+
+      // Send system message
+      final addedName = userResponse['name'] ?? 'New member';
+      await sendMessage(
+        text: 'Added $addedName to the group',
+        messageType: 'system',
+      );
+
+      _fetchMembers();
+    } catch (e) {
+      debugPrint('Error adding member: $e');
+    }
+  }
+
+  bool _isAdmin(String userId) {
+    return _groupMembers.any((m) =>
+        m['user_id'] == userId &&
+        (m['role']?.toString().toLowerCase() ?? '') == 'admin');
+  }
+
+  void _showLeaveGroupDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1F2C34),
+        title: const Text('Leave Group', style: TextStyle(color: Colors.white)),
+        content: const Text('Are you sure you want to leave this group?',
+            style: TextStyle(color: Colors.white70)),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel')),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _leaveGroup();
+            },
+            child: const Text('Leave', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _leaveGroup() async {
+    try {
+      final supabase = ref.read(supabaseClientProvider);
+      await supabase
+          .from('group_members')
+          .update({'is_active': false})
+          .eq('group_id', widget.groupId)
+          .eq('user_id', _currentUserId);
+
+      // Send system message
+      await sendMessage(
+        text: 'Left the group',
+        messageType: 'system',
+      );
+
+      if (mounted) Navigator.pop(context);
+    } catch (e) {
+      debugPrint('Error leaving group: $e');
+    }
   }
 
   Future<void> _pickAndSendImage() async {
@@ -898,5 +1319,16 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
 
     await sendMessage(messageType: 'image', fileUrl: url);
     safeSetState(() => _showAttachMenu = false);
+  }
+
+  // Helper for safe data extraction from Supabase joins
+  Map<String, dynamic>? _safeGet(dynamic input) {
+    if (input == null) return null;
+    if (input is Map) return Map<String, dynamic>.from(input);
+    if (input is List && input.isNotEmpty) {
+      final first = input.first;
+      if (first is Map) return Map<String, dynamic>.from(first);
+    }
+    return null;
   }
 }

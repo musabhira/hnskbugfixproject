@@ -224,7 +224,7 @@ class Conversations extends _$Conversations {
       final groups = <ChatConversation>[];
 
       for (var item in response) {
-        final groupData = item['groups'];
+        final groupData = _safeGet(item['groups']);
         if (groupData != null) {
           final unreadCount =
               await _getGroupUnreadCount(groupData['id'], userId);
@@ -366,5 +366,15 @@ class Conversations extends _$Conversations {
     } catch (e) {
       // Handle error
     }
+  }
+
+  // Helper for safe data extraction from Supabase joins
+  Map<String, dynamic>? _safeGet(dynamic input) {
+    if (input == null) return null;
+    if (input is Map) return Map<String, dynamic>.from(input);
+    if (input is List && input.isNotEmpty) {
+      if (input.first is Map) return Map<String, dynamic>.from(input.first);
+    }
+    return null;
   }
 }

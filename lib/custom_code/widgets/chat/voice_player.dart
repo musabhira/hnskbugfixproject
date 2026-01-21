@@ -76,7 +76,7 @@ class _VoiceMessagePlayerState extends State<VoiceMessagePlayer> {
         await _audioPlayer.play(UrlSource(widget.fileUrl));
       }
     } catch (e) {
-// print('Error playing audio: $e');
+      debugPrint('Error playing audio: $e');
     }
   }
 

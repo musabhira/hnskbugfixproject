@@ -28,6 +28,8 @@ class _VoiceMessageRecorderState extends State<VoiceMessageRecorder> {
   Duration _duration = Duration.zero;
   Timer? _timer;
   String? _path;
+  double _dragOffset = 0.0;
+  bool _isCancelled = false;
 
   @override
   void dispose() {
@@ -48,6 +50,8 @@ class _VoiceMessageRecorderState extends State<VoiceMessageRecorder> {
 
         setState(() {
           _isRecording = true;
+          _isCancelled = false;
+          _dragOffset = 0.0;
           _duration = Duration.zero;
         });
 
@@ -63,15 +67,24 @@ class _VoiceMessageRecorderState extends State<VoiceMessageRecorder> {
   }
 
   Future<void> _stop() async {
+    if (!_isRecording) return;
+
     try {
       final path = await _audioRecorder.stop();
       _timer?.cancel();
+
+      final bool wasCancelled = _isCancelled || _dragOffset < -100;
+
       setState(() {
         _isRecording = false;
       });
 
-      if (path != null && _duration.inSeconds > 0) {
+      if (!wasCancelled && path != null && _duration.inSeconds > 0) {
         _uploadAndSend(path, _duration.inSeconds);
+      } else if (path != null) {
+        // Cancelled: Delete the file
+        final file = File(path);
+        if (await file.exists()) await file.delete();
       }
     } catch (e) {
       debugPrint('Error stopping recording: $e');
@@ -95,22 +108,96 @@ class _VoiceMessageRecorderState extends State<VoiceMessageRecorder> {
     }
   }
 
+  String _formatDuration(Duration d) {
+    final minutes = d.inMinutes.remainder(60).toString().padLeft(2, '0');
+    final seconds = d.inSeconds.remainder(60).toString().padLeft(2, '0');
+    return '$minutes:$seconds';
+  }
+
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onLongPress: _start,
-      onLongPressUp: _stop,
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: _isRecording ? Colors.red : Colors.yellow,
-          shape: BoxShape.circle,
+    return Stack(
+      clipBehavior: Clip.none,
+      alignment: Alignment.centerRight,
+      children: [
+        if (_isRecording)
+          Positioned(
+            right: 60,
+            child: TweenAnimationBuilder<double>(
+              tween: Tween(begin: 0.0, end: 1.0),
+              duration: const Duration(milliseconds: 200),
+              builder: (context, value, child) {
+                return Opacity(
+                  opacity: value,
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.black87,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.circle, color: Colors.red, size: 12),
+                        const SizedBox(width: 8),
+                        Text(
+                          _formatDuration(_duration),
+                          style: const TextStyle(
+                              color: Colors.white, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(width: 16),
+                        const Text(
+                          '< Slide to cancel',
+                          style: TextStyle(color: Colors.white70, fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        GestureDetector(
+          onLongPress: _start,
+          onLongPressMoveUpdate: (details) {
+            if (_isRecording) {
+              setState(() {
+                _dragOffset = details.localOffsetFromOrigin.dx;
+                if (_dragOffset < -100) _isCancelled = true;
+              });
+            }
+          },
+          onLongPressUp: _stop,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.all(12),
+            transform:
+                Matrix4.translationValues(_dragOffset.clamp(-120.0, 0.0), 0, 0),
+            decoration: BoxDecoration(
+              color: _isCancelled
+                  ? Colors.grey
+                  : (_isRecording ? Colors.red : Colors.yellow),
+              shape: BoxShape.circle,
+              boxShadow: _isRecording
+                  ? [
+                      BoxShadow(
+                          color: Colors.red.withOpacity(0.3),
+                          blurRadius: 10,
+                          spreadRadius: 5)
+                    ]
+                  : null,
+            ),
+            child: Icon(
+              _isCancelled
+                  ? Icons.delete_outline
+                  : (_isRecording ? Icons.mic : Icons.mic_none),
+              color:
+                  (_isRecording || _isCancelled) ? Colors.white : Colors.black,
+            ),
+          ),
         ),
-        child: Icon(
-          _isRecording ? Icons.mic : Icons.mic_none,
-          color: _isRecording ? Colors.white : Colors.black,
-        ),
-      ),
+      ],
     );
   }
 }
