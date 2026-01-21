@@ -6,17 +6,16 @@ import 'package:pocket_mates_app/custom_code/widgets/search_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/search_profile_detail_page.dart';
 
 import '/backend/supabase/supabase.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'index.dart'; // Imports other custom widgets
-import '/custom_code/actions/index.dart'; // Imports custom actions
+// Imports custom actions
 import 'package:flutter/material.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
 // Set your widget name, define your parameter, and then add the
 // boilerplate code using the green button on the right!
-import 'index.dart'; // Imports other custom widgets
+// Imports other custom widgets
 
 import 'package:cached_network_image/cached_network_image.dart';
 
@@ -55,7 +54,7 @@ class _VerfiedSearchProfileDetailPageState
   List<Map<String, dynamic>> _commentItems = [];
   bool _isLoading = false;
   final _supabase = SupaFlow.client;
-  ScrollController _scrollController = ScrollController();
+  final ScrollController _scrollController = ScrollController();
   late TabController _tabController;
   int _followersCount = 0;
   int _followingCount = 0;
@@ -67,7 +66,7 @@ class _VerfiedSearchProfileDetailPageState
   List<Map<String, dynamic>> userThreads = [];
   bool isLoading = true;
   Map<String, dynamic>? hideData;
-  List<Map<String, dynamic>> _comments = [];
+  final List<Map<String, dynamic>> _comments = [];
   String? _errorMessage;
   bool _isBlocked = false;
   bool _isBlockedByOther = false;
@@ -133,7 +132,7 @@ class _VerfiedSearchProfileDetailPageState
           .from('premiumbannergallery')
           .select(
               'id, user_id, title, description, price, category, image_url, created_at, updated_at')
-          .eq('user_id', widget.userId!)
+          .eq('user_id', widget.userId)
           .order('created_at', ascending: false);
 
       setState(() {
@@ -765,7 +764,7 @@ class _VerfiedSearchProfileDetailPageState
 
   @override
   void dispose() {
-    _tabController?.dispose();
+    _tabController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -878,7 +877,7 @@ class _VerfiedSearchProfileDetailPageState
         '${WhatsAppShareHelper.baseAppUrl}/verifiedProfile?userid=${widget.userId}';
     flutter.Clipboard.setData(flutter.ClipboardData(text: profileUrl));
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Link copied to clipboard ')),
+      const SnackBar(content: Text('Link copied to clipboard ')),
     );
   }
 
@@ -1168,18 +1167,18 @@ class _VerfiedSearchProfileDetailPageState
         // Helper methods
       ),
       body: _isLoading
-          ? ListViewShimmer(
+          ? const ListViewShimmer(
               cardHeight: 250.0,
-              baseColor: const Color.fromARGB(255, 30, 30, 30)!,
-              highlightColor: const Color.fromARGB(255, 43, 43, 43),
-              duration: const Duration(milliseconds: 2000),
+              baseColor: Color.fromARGB(255, 30, 30, 30),
+              highlightColor: Color.fromARGB(255, 43, 43, 43),
+              duration: Duration(milliseconds: 2000),
             )
           : _profileData == null
-              ? ListViewShimmer(
+              ? const ListViewShimmer(
                   cardHeight: 250.0,
-                  baseColor: const Color.fromARGB(255, 30, 30, 30)!,
-                  highlightColor: const Color.fromARGB(255, 43, 43, 43),
-                  duration: const Duration(milliseconds: 2000),
+                  baseColor: Color.fromARGB(255, 30, 30, 30),
+                  highlightColor: Color.fromARGB(255, 43, 43, 43),
+                  duration: Duration(milliseconds: 2000),
                 )
               : _checkingBlockStatus
                   ? const Center(child: CircularProgressIndicator())
@@ -2392,9 +2391,9 @@ class _VerfiedSearchProfileDetailPageState
                                         children: [
                                           Expanded(
                                             child: Container(
-                                              margin: EdgeInsets.symmetric(
+                                              margin: const EdgeInsets.symmetric(
                                                   horizontal: 3),
-                                              padding: EdgeInsets.symmetric(
+                                              padding: const EdgeInsets.symmetric(
                                                   horizontal: 8, vertical: 8),
                                               decoration: BoxDecoration(
                                                 gradient: LinearGradient(
@@ -2419,14 +2418,14 @@ class _VerfiedSearchProfileDetailPageState
                                                         .withOpacity(0.1),
                                                     blurRadius: 20,
                                                     spreadRadius: 0,
-                                                    offset: Offset(0, 8),
+                                                    offset: const Offset(0, 8),
                                                   ),
                                                   BoxShadow(
                                                     color: Colors.black
                                                         .withOpacity(0.05),
                                                     blurRadius: 6,
                                                     spreadRadius: 0,
-                                                    offset: Offset(0, 2),
+                                                    offset: const Offset(0, 2),
                                                   ),
                                                 ],
                                               ),
@@ -2463,7 +2462,7 @@ class _VerfiedSearchProfileDetailPageState
                                                             context),
                                                     child: Container(
                                                       padding:
-                                                          EdgeInsets.all(4),
+                                                          const EdgeInsets.all(4),
                                                       decoration: BoxDecoration(
                                                         gradient:
                                                             LinearGradient(
@@ -2493,7 +2492,7 @@ class _VerfiedSearchProfileDetailPageState
                                                                         0.8),
                                                             blurRadius: 8,
                                                             offset:
-                                                                Offset(0, 4),
+                                                                const Offset(0, 4),
                                                           ),
                                                         ],
                                                       ),
@@ -2602,14 +2601,14 @@ class _VerfiedSearchProfileDetailPageState
                                                       .withOpacity(0.1),
                                                   blurRadius: 20,
                                                   spreadRadius: 0,
-                                                  offset: Offset(0, 8),
+                                                  offset: const Offset(0, 8),
                                                 ),
                                                 BoxShadow(
                                                   color: Colors.black
                                                       .withOpacity(0.05),
                                                   blurRadius: 6,
                                                   spreadRadius: 0,
-                                                  offset: Offset(0, 2),
+                                                  offset: const Offset(0, 2),
                                                 ),
                                               ],
                                             ),
@@ -2663,7 +2662,7 @@ class _VerfiedSearchProfileDetailPageState
                                                                   .withOpacity(
                                                                       0.8),
                                                           blurRadius: 8,
-                                                          offset: Offset(0, 4),
+                                                          offset: const Offset(0, 4),
                                                         ),
                                                       ],
                                                     ),
@@ -2799,7 +2798,7 @@ class _VerfiedSearchProfileDetailPageState
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: EdgeInsets.all(8),
+        padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           color: color1.withOpacity(0.7),
           borderRadius: BorderRadius.circular(8),
@@ -4321,11 +4320,11 @@ class CircularShimmer extends StatelessWidget {
   final double size;
 
   const CircularShimmer({
-    Key? key,
+    super.key,
     required this.buttonColor,
     required this.bgColor,
     this.size = 40,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -4336,7 +4335,7 @@ class CircularShimmer extends StatelessWidget {
         child: Container(
           width: size,
           height: size,
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             color: Colors.white,
             shape: BoxShape.circle,
           ),
@@ -4653,7 +4652,7 @@ class _PopularGalleryBannerState extends State<PopularGalleryBanner> {
                         if (item['gallery_title'] != null)
                           Text(
                             item['gallery_title'],
-                            style: TextStyle(
+                            style: const TextStyle(
                               color: Colors.white,
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -4851,7 +4850,7 @@ class PopularPageViewBanner extends StatefulWidget {
 class _PopularPageViewBannerState extends State<PopularPageViewBanner>
     with TickerProviderStateMixin {
   List<Map<String, dynamic>> _userBanners = [];
-  PageController _pageController = PageController();
+  final PageController _pageController = PageController();
   final SupabaseClient _supabase = Supabase.instance.client;
   int _currentIndex = 0;
   Timer? _autoScrollTimer;
@@ -5549,12 +5548,12 @@ class ListViewShimmer extends StatefulWidget {
   final Duration duration;
 
   const ListViewShimmer({
-    Key? key,
+    super.key,
     this.cardHeight = 300.0,
     this.baseColor = const Color(0xFFE0E0E0),
     this.highlightColor = const Color(0xFFF5F5F5),
     this.duration = const Duration(milliseconds: 1500),
-  }) : super(key: key);
+  });
 
   @override
   State<ListViewShimmer> createState() => _ListViewShimmerState();

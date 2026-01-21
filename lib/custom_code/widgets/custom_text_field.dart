@@ -1,16 +1,14 @@
 // Automatic FlutterFlow imports
-import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import 'index.dart'; // Imports other custom widgets
-import '/custom_code/actions/index.dart'; // Imports custom actions
+// Imports other custom widgets
+// Imports custom actions
 import 'package:flutter/material.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
-import 'index.dart'; // Imports other custom widgets
+// Imports other custom widgets
 
-import 'index.dart'; // Imports other custom widgets
+// Imports other custom widgets
 
 class CustomTextField extends StatelessWidget {
   final TextEditingController controller;

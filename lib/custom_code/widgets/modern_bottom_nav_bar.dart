@@ -66,7 +66,7 @@ class ModernNavItem extends StatelessWidget {
   final bool isSelected;
   final VoidCallback onTap;
 
-  const ModernNavItem({
+  const ModernNavItem({super.key, 
     required this.icon,
     required this.label,
     required this.isSelected,

@@ -260,7 +260,7 @@ class _WebRTCCallScreenState extends State<WebRTCCallScreen> {
       await _setupPeerConnection();
 
       // Small delay to ensure everything is set up
-      await Future.delayed(Duration(milliseconds: 500));
+      await Future.delayed(const Duration(milliseconds: 500));
 
       // Then create and send offer
       await createOffer();
@@ -311,7 +311,7 @@ class _WebRTCCallScreenState extends State<WebRTCCallScreen> {
       },
     );
 
-    await roomChannel!.subscribe();
+    roomChannel!.subscribe();
 
     // Subscribe to signaling channel
     await subscribeToSignaling();
@@ -343,7 +343,7 @@ class _WebRTCCallScreenState extends State<WebRTCCallScreen> {
       },
     );
 
-    await signalingChannel!.subscribe();
+    signalingChannel!.subscribe();
     debugPrint('Subscribed to signaling channel: signaling_$roomId');
   }
 
@@ -640,12 +640,12 @@ class _WebRTCCallScreenState extends State<WebRTCCallScreen> {
   }
 
   void scrollToBottom() {
-    Future.delayed(Duration(milliseconds: 100), () {
+    Future.delayed(const Duration(milliseconds: 100), () {
       final controller = _activeScrollController ?? scrollController;
       if (controller.hasClients) {
         controller.animateTo(
           controller.position.maxScrollExtent,
-          duration: Duration(milliseconds: 300),
+          duration: const Duration(milliseconds: 300),
           curve: Curves.easeOut,
         );
       }
@@ -1003,7 +1003,7 @@ class _WebRTCCallScreenState extends State<WebRTCCallScreen> {
   Widget _buildMessageInput(FlutterFlowTheme theme) {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: Colors.black,
         border: Border(top: BorderSide(color: Colors.white10, width: 1)),
       ),
@@ -1018,12 +1018,12 @@ class _WebRTCCallScreenState extends State<WebRTCCallScreen> {
               child: TextField(
                 controller: messageController,
                 focusNode: messageFocusNode,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   hintText: 'Say something nice...',
-                  hintStyle: const TextStyle(color: Colors.white38),
+                  hintStyle: TextStyle(color: Colors.white38),
                   border: InputBorder.none,
                   contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                 ),
                 style: const TextStyle(color: Colors.white),
                 onSubmitted: (_) => sendMessage(),

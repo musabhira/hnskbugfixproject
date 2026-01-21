@@ -1,0 +1,2017 @@
+import 'dart:async';
+import 'dart:io';
+import 'dart:typed_data';
+
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/material.dart';
+import 'package:image/image.dart' as img;
+import 'package:image_picker/image_picker.dart';
+import 'package:just_audio/just_audio.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:photo_view/photo_view.dart';
+import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
+import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
+import 'package:record/record.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:timeago/timeago.dart' as timeago;
+import 'package:url_launcher/url_launcher.dart';
+import 'package:video_player/video_player.dart';
+
+import '/flutter_flow/flutter_flow_util.dart';
+
+class MessageScreen extends StatefulWidget {
+  final String receiverId;
+  final String receiverName;
+  final String? receiverProfileImage;
+  final String? phonenumber;
+
+  const MessageScreen({
+    super.key,
+    required this.receiverId,
+    required this.receiverName,
+    this.receiverProfileImage,
+    this.phonenumber,
+  });
+
+  @override
+  State<MessageScreen> createState() => _MessageScreenState();
+}
+
+class _MessageScreenState extends State<MessageScreen> {
+  final TextEditingController _messageController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+  final _supabase = Supabase.instance.client;
+  late String _senderId;
+  List<Map<String, dynamic>> _messages = [];
+  List<Map<String, dynamic>> _ephemeralMessages = [];
+  bool _isLoading = true;
+  bool isLoading = true;
+  Map<String, dynamic>? hideData;
+  Timer? _messageRefreshTimer;
+  Timer? _ephemeralCleanupTimer;
+  final StreamController<List<Map<String, dynamic>>> _messagesStreamController =
+      StreamController<List<Map<String, dynamic>>>.broadcast();
+
+  // Block functionality variables
+  bool _isBlocked = false;
+  bool _isBlockedByOther = false;
+  bool _checkingBlockStatus = true;
+  DateTime? _blockTime;
+  DateTime? _blockedByOtherTime;
+
+  // Media handling
+  final ImagePicker _imagePicker = ImagePicker();
+  bool _isRecording = false;
+  final AudioRecorder _audioRecorder = AudioRecorder();
+
+  final Map<String, Timer> _scheduledDeletions = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _senderId = _supabase.auth.currentUser!.id;
+    _checkBlockStatus();
+    _loadMessages();
+    _loadEphemeralMessages();
+    _setupMessageStream();
+    _setupEphemeralCleanup();
+    _markNotificationsAsRead();
+    fetchHideStatus();
+  }
+
+  // Enhanced block status check with time tracking
+  Future<void> _checkBlockStatus() async {
+    try {
+      if (!mounted) return;
+      setState(() {
+        _checkingBlockStatus = true;
+      });
+
+      final blockedByMe = await _supabase
+          .from('blocks')
+          .select('created_at')
+          .eq('blocker_id', _senderId)
+          .eq('blocked_id', widget.receiverId)
+          .limit(1);
+
+      final blockedByOther = await _supabase
+          .from('blocks')
+          .select('created_at')
+          .eq('blocker_id', widget.receiverId)
+          .eq('blocked_id', _senderId)
+          .limit(1);
+
+      if (mounted) {
+        setState(() {
+          _isBlocked = blockedByMe.isNotEmpty;
+          _isBlockedByOther = blockedByOther.isNotEmpty;
+
+          if (_isBlocked && blockedByMe.isNotEmpty) {
+            _blockTime = DateTime.parse(blockedByMe.first['created_at']);
+          } else {
+            _blockTime = null;
+          }
+
+          if (_isBlockedByOther && blockedByOther.isNotEmpty) {
+            _blockedByOtherTime =
+                DateTime.parse(blockedByOther.first['created_at']);
+          } else {
+            _blockedByOtherTime = null;
+          }
+
+          _checkingBlockStatus = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error checking block status: $e');
+      if (mounted) {
+        setState(() {
+          _checkingBlockStatus = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _blockUser() async {
+    try {
+      await _supabase.rpc('block_user', params: {
+        'target_user_id': widget.receiverId,
+      });
+
+      _showSuccessSnackBar('User blocked successfully');
+      _checkBlockStatus();
+    } catch (e) {
+      debugPrint('Error blocking user: $e');
+      _showErrorSnackBar('Failed to block user');
+    }
+  }
+
+  Future<void> _unblockUser() async {
+    try {
+      await _supabase.rpc('unblock_user', params: {
+        'target_user_id': widget.receiverId,
+      });
+
+      _showSuccessSnackBar('User unblocked successfully');
+      _checkBlockStatus();
+    } catch (e) {
+      debugPrint('Error unblocking user: $e');
+      _showErrorSnackBar('Failed to unblock user');
+    }
+  }
+
+  void _showBlockDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Colors.grey[900],
+          title: Text(
+            _isBlocked ? 'Unblock User' : 'Block User',
+            style: const TextStyle(color: Colors.white),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                _isBlocked
+                    ? 'Are you sure you want to unblock ${widget.receiverName}?'
+                    : 'Are you sure you want to block ${widget.receiverName}? You won\'t be able to send or receive messages.',
+                style: const TextStyle(color: Colors.white70),
+              ),
+              if (_isBlocked && _blockTime != null) ...[
+                const SizedBox(height: 16),
+                Text(
+                  'Blocked on: ${_formatBlockTime(_blockTime!)}',
+                  style: const TextStyle(
+                    color: Colors.white54,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                if (_isBlocked) {
+                  _unblockUser();
+                } else {
+                  _blockUser();
+                }
+              },
+              child: Text(
+                _isBlocked ? 'Unblock' : 'Block',
+                style: TextStyle(
+                  color: _isBlocked ? Colors.green : Colors.red,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  String _formatBlockTime(DateTime blockTime) {
+    final now = DateTime.now();
+    final difference = now.difference(blockTime);
+
+    if (difference.inDays > 0) {
+      return '${difference.inDays} day${difference.inDays > 1 ? 's' : ''} ago';
+    } else if (difference.inHours > 0) {
+      return '${difference.inHours} hour${difference.inHours > 1 ? 's' : ''} ago';
+    } else if (difference.inMinutes > 0) {
+      return '${difference.inMinutes} minute${difference.inMinutes > 1 ? 's' : ''} ago';
+    } else {
+      return 'Just now';
+    }
+  }
+
+  void _setupMessageStream() {
+    _messageRefreshTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!_isBlocked && !_isBlockedByOther) {
+        _loadMessages();
+        _loadEphemeralMessages();
+      }
+    });
+  }
+
+  Future<Uint8List> _compressImageBytes(Uint8List imageBytes) async {
+    try {
+      // Decode the image
+      img.Image? originalImage = img.decodeImage(imageBytes);
+      if (originalImage == null) {
+        throw Exception('Unable to decode image');
+      }
+
+      // Calculate new dimensions while maintaining aspect ratio
+      int maxWidth = 1200;
+      int maxHeight = 1200;
+
+      int newWidth = originalImage.width;
+      int newHeight = originalImage.height;
+
+      if (originalImage.width > maxWidth || originalImage.height > maxHeight) {
+        double aspectRatio = originalImage.width / originalImage.height;
+
+        if (originalImage.width > originalImage.height) {
+          newWidth = maxWidth;
+          newHeight = (maxWidth / aspectRatio).round();
+        } else {
+          newHeight = maxHeight;
+          newWidth = (maxHeight * aspectRatio).round();
+        }
+      }
+
+      // Resize image if needed
+      img.Image resizedImage;
+      if (newWidth != originalImage.width ||
+          newHeight != originalImage.height) {
+        resizedImage = img.copyResize(
+          originalImage,
+          width: newWidth,
+          height: newHeight,
+          interpolation: img.Interpolation.linear,
+        );
+      } else {
+        resizedImage = originalImage;
+      }
+
+      // Encode with high quality JPEG
+      List<int> compressedBytes = img.encodeJpg(
+        resizedImage,
+        quality: 85,
+      );
+
+      debugPrint(
+          'Image compressed: ${imageBytes.length} bytes -> ${compressedBytes.length} bytes');
+      return Uint8List.fromList(compressedBytes);
+    } catch (e) {
+      debugPrint('Error compressing image: $e');
+      return imageBytes;
+    }
+  }
+
+  void _setupEphemeralCleanup() {
+    _ephemeralCleanupTimer =
+        Timer.periodic(const Duration(minutes: 1), (timer) {
+      _cleanupExpiredEphemeralMessages();
+    });
+  }
+
+  Future<void> _markNotificationsAsRead() async {
+    try {
+      await _supabase
+          .from('message_notifications')
+          .update({'is_read': true})
+          .eq('user_id', _senderId)
+          .eq('sender_id', widget.receiverId)
+          .eq('is_read', false);
+    } catch (e) {
+      debugPrint('Error marking notifications as read: $e');
+    }
+  }
+
+  Future<void> fetchHideStatus() async {
+    try {
+      final user = _supabase.auth.currentUser;
+      if (user == null) return;
+
+      final response = await _supabase
+          .from('hide')
+          .select()
+          .eq('user_id', user.id)
+          .order('created_at', ascending: false)
+          .limit(1);
+
+      safeSetState(() {
+        hideData = response.isNotEmpty ? response.first : null;
+        isLoading = false;
+      });
+    } catch (e) {
+      debugPrint('Error fetching hide status: $e');
+      safeSetState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _loadMessages() async {
+    try {
+      final response = await _supabase
+          .from('messages')
+          .select()
+          .or('and(sender_id.eq.$_senderId,receiver_id.eq.${widget.receiverId}),and(sender_id.eq.${widget.receiverId},receiver_id.eq.$_senderId)')
+          .order('created_at', ascending: false)
+          .limit(50);
+
+      final messagesList = List<Map<String, dynamic>>.from(response);
+
+      _messagesStreamController.add(messagesList);
+
+      if (mounted) {
+        safeSetState(() {
+          _messages = messagesList;
+          _isLoading = false;
+        });
+      }
+
+      if (!_isBlocked && !_isBlockedByOther) {
+        await _supabase.from('messages').update({'is_read': true}).match({
+          'sender_id': widget.receiverId,
+          'receiver_id': _senderId,
+          'is_read': false
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading messages: $e');
+      if (mounted) {
+        safeSetState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  void _sendMessage() async {
+    if (_messageController.text.trim().isEmpty) return;
+    if (_isBlocked || _isBlockedByOther) return;
+
+    final messageText = _messageController.text.trim();
+    _messageController.clear();
+
+    try {
+      await _supabase.from('messages').insert({
+        'sender_id': _senderId,
+        'receiver_id': widget.receiverId,
+        'content': messageText,
+      });
+
+      _loadMessages();
+
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          0,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    } catch (e) {
+      debugPrint('Error sending message: $e');
+      _showErrorSnackBar('Failed to send message');
+    }
+  }
+
+  // EPHEMERAL MEDIA FUNCTIONS
+  Future<void> _pickAndSendImage() async {
+    if (_isBlocked || _isBlockedByOther) return;
+
+    try {
+      final XFile? image = await _imagePicker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 70,
+      );
+
+      if (image != null) {
+        _showLoadingDialog('Sending image...');
+        await _uploadEphemeralMedia(image.path, 'image');
+        if (!mounted) return;
+        Navigator.of(context).pop();
+      }
+    } catch (e) {
+      debugPrint('Error picking image: $e');
+      _showErrorSnackBar('Failed to pick image');
+    }
+  }
+
+  Future<void> _takeAndSendPhoto() async {
+    if (_isBlocked || _isBlockedByOther) return;
+
+    try {
+      final XFile? photo = await _imagePicker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 70,
+      );
+
+      if (photo != null) {
+        _showLoadingDialog('Sending photo...');
+        await _uploadEphemeralMedia(photo.path, 'image');
+        if (!mounted) return;
+        Navigator.of(context).pop();
+      }
+    } catch (e) {
+      debugPrint('Error taking photo: $e');
+      _showErrorSnackBar('Failed to take photo');
+    }
+  }
+
+  Future<void> _pickAndSendVideo() async {
+    if (_isBlocked || _isBlockedByOther) return;
+
+    try {
+      final XFile? video = await _imagePicker.pickVideo(
+        source: ImageSource.gallery,
+      );
+
+      if (video != null) {
+        _showLoadingDialog('Sending video...');
+        await _uploadEphemeralMedia(video.path, 'video');
+        if (!mounted) return;
+        Navigator.of(context).pop();
+      }
+    } catch (e) {
+      debugPrint('Error picking video: $e');
+      _showErrorSnackBar('Failed to pick video');
+    }
+  }
+
+  Future<void> _recordAndSendAudio() async {
+    if (_isBlocked || _isBlockedByOther) return;
+
+    if (_isRecording) {
+      // Stop recording
+      final path = await _audioRecorder.stop();
+      if (path != null) {
+        safeSetState(() {
+          _isRecording = false;
+        });
+
+        _showLoadingDialog('Sending audio...');
+        await _uploadEphemeralMedia(path, 'audio');
+        if (!mounted) return;
+        Navigator.of(context).pop();
+      }
+    } else {
+      // Start recording
+      final status = await Permission.microphone.request();
+      if (status.isGranted) {
+        final dir = await getTemporaryDirectory();
+        final path =
+            '${dir.path}/audio_${DateTime.now().millisecondsSinceEpoch}.m4a';
+
+        await _audioRecorder.start(
+          const RecordConfig(encoder: AudioEncoder.aacLc),
+          path: path,
+        );
+
+        safeSetState(() {
+          _isRecording = true;
+        });
+      } else {
+        _showErrorSnackBar('Microphone permission denied');
+      }
+    }
+  }
+
+  Future<File> _compressImageFile(String filePath) async {
+    try {
+      final file = File(filePath);
+      final imageBytes = await file.readAsBytes();
+
+      // Compress the bytes
+      final compressedBytes = await _compressImageBytes(imageBytes);
+
+      // Save to temporary file
+      final dir = await getTemporaryDirectory();
+      final targetPath =
+          '${dir.path}/compressed_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final compressedFile = File(targetPath);
+      await compressedFile.writeAsBytes(compressedBytes);
+
+      return compressedFile;
+    } catch (e) {
+      debugPrint('Error compressing image file: $e');
+      return File(filePath);
+    }
+  }
+
+  Future<void> _uploadEphemeralMedia(String filePath, String type) async {
+    File? compressedFile;
+    String? uploadedPath;
+
+    try {
+      File file = File(filePath);
+
+      // Verify file exists
+      if (!await file.exists()) {
+        throw Exception('Source file does not exist');
+      }
+
+      // Compress image before upload
+      if (type == 'image') {
+        compressedFile = await _compressImageFile(filePath);
+        file = compressedFile;
+        debugPrint('Using compressed image for upload');
+      }
+
+      final fileExt = type == 'image' ? 'jpg' : filePath.split('.').last;
+      final fileName = '${DateTime.now().millisecondsSinceEpoch}.$fileExt';
+      final storagePath = '$_senderId/$fileName';
+      uploadedPath = storagePath;
+
+      debugPrint(
+          'Uploading $type to: $storagePath (${await file.length()} bytes)');
+
+      // Upload to storage with error handling
+      try {
+        final uploadResponse =
+            await _supabase.storage.from('ephemeral_media').upload(
+                  storagePath,
+                  file,
+                  fileOptions: const FileOptions(
+                    cacheControl: '3600',
+                    upsert: false,
+                  ),
+                );
+
+        debugPrint('Upload response: $uploadResponse');
+      } catch (uploadError) {
+        debugPrint('Storage upload error: $uploadError');
+        throw Exception('Failed to upload to storage: $uploadError');
+      }
+
+      // Verify file was uploaded by checking if it exists
+      try {
+        final files = await _supabase.storage
+            .from('ephemeral_media')
+            .list(path: _senderId);
+
+        final fileExists = files.any((f) => f.name == fileName);
+
+        if (!fileExists) {
+          throw Exception('File not found in storage after upload');
+        }
+
+        debugPrint('Verified file exists in storage');
+      } catch (verifyError) {
+        debugPrint('Verification error: $verifyError');
+        throw Exception('Could not verify upload: $verifyError');
+      }
+
+      // Get public URL
+      final mediaUrl =
+          _supabase.storage.from('ephemeral_media').getPublicUrl(storagePath);
+
+      debugPrint('Media URL generated: $mediaUrl');
+
+      // Insert into database
+      try {
+        final response = await _supabase
+            .from('ephemeral_messages')
+            .insert({
+              'sender_id': _senderId,
+              'receiver_id': widget.receiverId,
+              'message_type': type,
+              'media_url': mediaUrl,
+              'expires_at': DateTime.now()
+                  .add(const Duration(hours: 24))
+                  .toIso8601String(),
+            })
+            .select()
+            .single();
+
+        final messageId = response['id'] as String;
+        debugPrint('Database record created: $messageId');
+
+        // Schedule automatic deletion after 24 hours
+        _scheduleEphemeralMessageDeletion(messageId, storagePath, type);
+
+        _loadEphemeralMessages();
+        _showSuccessSnackBar('$type sent successfully');
+      } catch (dbError) {
+        debugPrint('Database insert error: $dbError');
+
+        // Rollback: Delete uploaded file
+        try {
+          await _supabase.storage.from('ephemeral_media').remove([storagePath]);
+          debugPrint('Rolled back storage upload');
+        } catch (rollbackError) {
+          debugPrint('Rollback failed: $rollbackError');
+        }
+
+        throw Exception('Failed to create message record: $dbError');
+      }
+
+      // Delete temporary compressed file if it exists
+      if (compressedFile != null && compressedFile.path != filePath) {
+        try {
+          await compressedFile.delete();
+          debugPrint('Deleted temporary compressed file');
+        } catch (e) {
+          debugPrint('Error deleting temp file: $e');
+        }
+      }
+    } catch (e) {
+      debugPrint('Error uploading media: $e');
+      _showErrorSnackBar('Failed to send $type: ${e.toString()}');
+
+      // Clean up compressed file on error
+      if (compressedFile != null && compressedFile.path != filePath) {
+        try {
+          await compressedFile.delete();
+        } catch (cleanupError) {
+          debugPrint('Error during cleanup: $cleanupError');
+        }
+      }
+
+      // Clean up partially uploaded file
+      if (uploadedPath != null) {
+        try {
+          await _supabase.storage
+              .from('ephemeral_media')
+              .remove([uploadedPath]);
+          debugPrint('Cleaned up failed upload');
+        } catch (cleanupError) {
+          debugPrint('Upload cleanup failed: $cleanupError');
+        }
+      }
+    }
+  }
+
+  void _scheduleEphemeralMessageDeletion(
+      String messageId, String storagePath, String messageType) {
+    // Cancel any existing timer for this message
+    _scheduledDeletions[messageId]?.cancel();
+
+    // Schedule deletion after 24 hours
+    final timer = Timer(const Duration(hours: 24), () async {
+      try {
+        debugPrint('Auto-deleting ephemeral message: $messageId');
+
+        // Delete from storage
+        try {
+          await _supabase.storage.from('ephemeral_media').remove([storagePath]);
+          debugPrint('Deleted media from storage: $storagePath');
+        } catch (storageError) {
+          debugPrint('Error deleting from storage: $storageError');
+        }
+
+        // Mark as deleted in database
+        await _supabase.from('ephemeral_messages').update({
+          'is_deleted': true,
+          'deleted_at': DateTime.now().toIso8601String(),
+        }).eq('id', messageId);
+
+        debugPrint('Marked ephemeral message as deleted: $messageId');
+
+        // Remove timer from map
+        _scheduledDeletions.remove(messageId);
+
+        // Reload messages
+        if (mounted) {
+          _loadEphemeralMessages();
+        }
+      } catch (e) {
+        debugPrint('Error during scheduled ephemeral deletion: $e');
+      }
+    });
+
+    _scheduledDeletions[messageId] = timer;
+  }
+
+  Future<void> _loadEphemeralMessages() async {
+    try {
+      final response = await _supabase
+          .from('ephemeral_messages')
+          .select()
+          .or('and(sender_id.eq.$_senderId,receiver_id.eq.${widget.receiverId}),and(sender_id.eq.${widget.receiverId},receiver_id.eq.$_senderId)')
+          .eq('is_deleted', false)
+          .order('created_at', ascending: false)
+          .limit(50);
+
+      if (mounted) {
+        safeSetState(() {
+          _ephemeralMessages = List<Map<String, dynamic>>.from(response);
+        });
+
+        // Schedule deletions for all messages
+        for (var message in _ephemeralMessages) {
+          final messageId = message['id'] as String;
+          final mediaUrl = message['media_url'] as String;
+
+          final expiresAt = DateTime.parse(message['expires_at'] as String);
+          final now = DateTime.now();
+
+          // Only schedule if not already scheduled and not expired
+          if (!_scheduledDeletions.containsKey(messageId) &&
+              expiresAt.isAfter(now)) {
+            final timeUntilExpiry = expiresAt.difference(now);
+            final path = Uri.parse(mediaUrl).pathSegments.skip(3).join('/');
+
+            // Schedule with remaining time
+            final timer = Timer(timeUntilExpiry, () async {
+              try {
+                await _supabase.storage.from('ephemeral_media').remove([path]);
+                await _supabase.from('ephemeral_messages').update({
+                  'is_deleted': true,
+                  'deleted_at': DateTime.now().toIso8601String(),
+                }).eq('id', messageId);
+
+                _scheduledDeletions.remove(messageId);
+                if (mounted) _loadEphemeralMessages();
+              } catch (e) {
+                debugPrint('Error in scheduled deletion: $e');
+              }
+            });
+
+            _scheduledDeletions[messageId] = timer;
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Error loading ephemeral messages: $e');
+    }
+  }
+
+  Future<void> _viewEphemeralMessage(Map<String, dynamic> message) async {
+    final isMe = message['sender_id'] == _senderId;
+    final isViewed = message['is_viewed'] == true;
+    final messageId = message['id'] as String;
+
+    // Mark as viewed if receiver is viewing for the first time
+    if (!isMe && !isViewed) {
+      try {
+        await _supabase.from('ephemeral_messages').update({
+          'is_viewed': true,
+          'viewed_at': DateTime.now().toIso8601String(),
+        }).eq('id', messageId);
+
+        _loadEphemeralMessages();
+      } catch (e) {
+        debugPrint('Error marking as viewed: $e');
+      }
+    }
+
+    // Show the media in full screen
+    if (mounted) {
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => EphemeralMediaViewer(
+            message: message,
+            onClose: () {
+              // Delete immediately after receiver views it
+              if (!isMe && !isViewed) {
+                _deleteEphemeralMessageImmediately(message);
+              }
+            },
+          ),
+        ),
+      );
+    }
+  }
+
+  Future<void> _deleteEphemeralMessageImmediately(
+      Map<String, dynamic> message) async {
+    try {
+      final messageId = message['id'] as String;
+      final mediaUrl = message['media_url'] as String;
+      final path = Uri.parse(mediaUrl).pathSegments.skip(3).join('/');
+
+      // Cancel scheduled deletion
+      _scheduledDeletions[messageId]?.cancel();
+      _scheduledDeletions.remove(messageId);
+
+      // Delete from storage
+      try {
+        await _supabase.storage.from('ephemeral_media').remove([path]);
+        debugPrint('Deleted viewed media: $path');
+      } catch (storageError) {
+        debugPrint('Error deleting media: $storageError');
+      }
+
+      // Mark as deleted in database
+      await _supabase.from('ephemeral_messages').update({
+        'is_deleted': true,
+        'deleted_at': DateTime.now().toIso8601String(),
+      }).eq('id', messageId);
+
+      debugPrint('Deleted ephemeral message after viewing: $messageId');
+
+      if (mounted) {
+        _loadEphemeralMessages();
+      }
+    } catch (e) {
+      debugPrint('Error deleting ephemeral message: $e');
+    }
+  }
+
+  Future<void> _cleanupExpiredEphemeralMessages() async {
+    try {
+      // Get expired or viewed messages
+      final expiredMessages = await _supabase
+          .from('ephemeral_messages')
+          .select()
+          .or('expires_at.lt.${DateTime.now().toIso8601String()},is_viewed.eq.true')
+          .eq('is_deleted', false);
+
+      for (var message in expiredMessages) {
+        final messageId = message['id'] as String;
+        final mediaUrl = message['media_url'] as String;
+        final path = Uri.parse(mediaUrl).pathSegments.skip(3).join('/');
+
+        // Cancel scheduled deletion
+        _scheduledDeletions[messageId]?.cancel();
+        _scheduledDeletions.remove(messageId);
+
+        // Delete from storage
+        try {
+          await _supabase.storage.from('ephemeral_media').remove([path]);
+        } catch (e) {
+          debugPrint('Error deleting expired media: $e');
+        }
+
+        // Mark as deleted in database
+        await _supabase.from('ephemeral_messages').update({
+          'is_deleted': true,
+          'deleted_at': DateTime.now().toIso8601String(),
+        }).eq('id', messageId);
+      }
+
+      if (expiredMessages.isNotEmpty) {
+        _loadEphemeralMessages();
+      }
+    } catch (e) {
+      debugPrint('Error cleaning up ephemeral messages: $e');
+    }
+  }
+
+  void _showMediaOptionsDialog() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.grey[900],
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.camera_alt, color: Colors.yellow),
+                  title: const Text('Take Photo',
+                      style: TextStyle(color: Colors.white)),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _takeAndSendPhoto();
+                  },
+                ),
+                ListTile(
+                  leading:
+                      const Icon(Icons.photo_library, color: Colors.yellow),
+                  title: const Text('Photo Gallery',
+                      style: TextStyle(color: Colors.white)),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _pickAndSendImage();
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.videocam, color: Colors.yellow),
+                  title: const Text('Video',
+                      style: TextStyle(color: Colors.white)),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _pickAndSendVideo();
+                  },
+                ),
+                ListTile(
+                  leading: Icon(
+                    _isRecording ? Icons.stop : Icons.mic,
+                    color: _isRecording ? Colors.red : Colors.yellow,
+                  ),
+                  title: Text(
+                    _isRecording ? 'Stop Recording' : 'Record Audio',
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _recordAndSendAudio();
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showLoadingDialog(String message) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.grey[900],
+        content: Row(
+          children: [
+            const CircularProgressIndicator(),
+            const SizedBox(width: 20),
+            Text(message, style: const TextStyle(color: Colors.white)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _makePhoneCall() async {
+    if (_isBlocked || _isBlockedByOther) {
+      _showErrorSnackBar('Cannot make phone call to blocked user');
+      return;
+    }
+
+    try {
+      final phoneNumber = widget.phonenumber;
+
+      if (phoneNumber == null || phoneNumber.toString().isEmpty) {
+        _showErrorSnackBar('Phone number not available');
+        return;
+      }
+
+      String cleanNumber =
+          phoneNumber.toString().replaceAll(RegExp(r'[^\d+]'), '');
+
+      final phoneUrl = 'tel:$cleanNumber';
+      final Uri uri = Uri.parse(phoneUrl);
+
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri);
+      } else {
+        _showErrorSnackBar('Unable to make phone call');
+      }
+    } catch (e) {
+      _showErrorSnackBar('Error making phone call: ${e.toString()}');
+    }
+  }
+
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.redAccent,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
+  void _showSuccessSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.green,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _messageController.dispose();
+    _scrollController.dispose();
+    _messageRefreshTimer?.cancel();
+    _ephemeralCleanupTimer?.cancel();
+    _messagesStreamController.close();
+    _audioRecorder.dispose();
+    for (var timer in _scheduledDeletions.values) {
+      timer.cancel();
+    }
+    _scheduledDeletions.clear();
+
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
+        centerTitle: false,
+        title: InkWell(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) =>
+                    VerfiedSwitchPage(userId: widget.receiverId),
+              ),
+            );
+          },
+          child: Row(
+            children: [
+              CircleAvatar(
+                radius: 20,
+                backgroundImage: widget.receiverProfileImage != null
+                    ? NetworkImage(widget.receiverProfileImage!)
+                    : null,
+                backgroundColor: Colors.blue.shade100,
+                child: widget.receiverProfileImage == null
+                    ? Text(
+                        widget.receiverName[0].toUpperCase(),
+                        style: const TextStyle(
+                          color: Colors.yellow,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      )
+                    : null,
+              ),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.receiverName,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  Text(
+                    _isBlocked
+                        ? 'Blocked ${_blockTime != null ? _formatBlockTime(_blockTime!) : ''}'
+                        : (_isBlockedByOther
+                            ? 'Blocked you ${_blockedByOtherTime != null ? _formatBlockTime(_blockedByOtherTime!) : ''}'
+                            : 'Online'),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: _isBlocked || _isBlockedByOther
+                          ? Colors.red
+                          : Colors.green,
+                      fontWeight: FontWeight.normal,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          if (!_checkingBlockStatus)
+            PopupMenuButton<String>(
+              icon: const Icon(Icons.more_vert, color: Colors.white),
+              color: Colors.grey[800],
+              onSelected: (value) {
+                if (value == 'block' || value == 'unblock') {
+                  _showBlockDialog();
+                } else if (value == 'report') {
+                  ReportHelper.showReportDialog(
+                    context: context,
+                    contentType: 'chat',
+                    contentId: widget.receiverId.toString(),
+                    contentTitle: widget.receiverName,
+                    onReportSubmitted: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                              'Thank you for your report. We\'ll review it soon.'),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                    },
+                  );
+                }
+              },
+              itemBuilder: (BuildContext context) => [
+                PopupMenuItem<String>(
+                  value: _isBlocked ? 'unblock' : 'block',
+                  child: Row(
+                    children: [
+                      Icon(
+                        _isBlocked ? Icons.person_add : Icons.block,
+                        color: _isBlocked ? Colors.green : Colors.red,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        _isBlocked ? 'Unblock User' : 'Block User',
+                        style: TextStyle(
+                          color: _isBlocked ? Colors.green : Colors.red,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const PopupMenuItem(
+                  value: 'report',
+                  child: Row(
+                    children: [
+                      Icon(Icons.report, color: Colors.yellow),
+                      SizedBox(width: 8),
+                      Text(
+                        'Report',
+                        style: TextStyle(color: Colors.yellow),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          if (!_isBlocked &&
+              !_isBlockedByOther &&
+              !(hideData != null && hideData?['is_hidden'] == true))
+            IconButton(
+              icon: const Icon(Icons.phone),
+              onPressed: _makePhoneCall,
+              tooltip: 'Make Phone Call',
+              iconSize: 24,
+              color: Colors.green,
+            ),
+        ],
+      ),
+      body: GestureDetector(
+        onTap: () {
+          FocusScope.of(context).unfocus();
+        },
+        child: Container(
+          decoration: const BoxDecoration(
+            color: Color.fromARGB(255, 32, 31, 31),
+          ),
+          child: Column(
+            children: [
+              Expanded(
+                child: _checkingBlockStatus
+                    ? const Center(child: CircularProgressIndicator())
+                    : _isBlockedByOther
+                        ? _buildBlockedByOtherView()
+                        : _isBlocked
+                            ? _buildBlockedView()
+                            : _buildMessagesView(),
+              ),
+              if (!_isBlocked && !_isBlockedByOther)
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: Colors.black,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, -5),
+                      ),
+                    ],
+                  ),
+                  child: SafeArea(
+                    child: Row(
+                      children: [
+                        IconButton(
+                          icon: Icon(
+                            _isRecording
+                                ? Icons.stop_circle
+                                : Icons.add_circle_outline,
+                            color: _isRecording ? Colors.red : Colors.yellow,
+                          ),
+                          onPressed: _showMediaOptionsDialog,
+                        ),
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            decoration: BoxDecoration(
+                              color: const Color.fromARGB(255, 31, 27, 27),
+                              borderRadius: BorderRadius.circular(24),
+                            ),
+                            child: TextField(
+                              controller: _messageController,
+                              decoration: const InputDecoration(
+                                hintText: 'Type a message...',
+                                border: InputBorder.none,
+                                hintStyle: TextStyle(color: Colors.white),
+                                contentPadding:
+                                    EdgeInsets.symmetric(vertical: 10),
+                              ),
+                              style: const TextStyle(color: Colors.white),
+                              maxLines: null,
+                              textCapitalization: TextCapitalization.sentences,
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.send_rounded),
+                          color: Colors.yellow,
+                          onPressed: _sendMessage,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBlockedView() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(
+            Icons.block,
+            size: 80,
+            color: Colors.red,
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'Blocked Profile',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'You have blocked ${widget.receiverName}',
+            style: const TextStyle(
+              fontSize: 16,
+              color: Colors.white70,
+            ),
+          ),
+          if (_blockTime != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              'Blocked ${_formatBlockTime(_blockTime!)}',
+              style: const TextStyle(
+                fontSize: 14,
+                color: Colors.white54,
+              ),
+            ),
+          ],
+          const SizedBox(height: 8),
+          const Text(
+            'Messages and calls are disabled',
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.white54,
+            ),
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton(
+            onPressed: _unblockUser,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+              ),
+            ),
+            child: const Text(
+              'Unblock User',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBlockedByOtherView() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(
+            Icons.block,
+            size: 80,
+            color: Colors.red,
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'Blocked Profile',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'This user has blocked you',
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.white70,
+            ),
+          ),
+          if (_blockedByOtherTime != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              'Blocked ${_formatBlockTime(_blockedByOtherTime!)}',
+              style: const TextStyle(
+                fontSize: 14,
+                color: Colors.white54,
+              ),
+            ),
+          ],
+          const SizedBox(height: 8),
+          const Text(
+            'You cannot send or receive messages',
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.white54,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMessagesView() {
+    return _isLoading
+        ? const Center(child: CircularProgressIndicator())
+        : ListView.builder(
+            controller: _scrollController,
+            reverse: true,
+            padding: const EdgeInsets.symmetric(
+              vertical: 16,
+              horizontal: 12,
+            ),
+            itemCount: _messages.length + _ephemeralMessages.length,
+            itemBuilder: (context, index) {
+              // Show ephemeral messages first
+              if (index < _ephemeralMessages.length) {
+                return _buildEphemeralMessageBubble(_ephemeralMessages[index]);
+              }
+
+              // Then regular messages
+              final messageIndex = index - _ephemeralMessages.length;
+              final message = _messages[messageIndex];
+              return _buildRegularMessageBubble(message);
+            },
+          );
+  }
+
+  Widget _buildEphemeralMessageBubble(Map<String, dynamic> message) {
+    final isMe = message['sender_id'] == _senderId;
+    final isViewed = message['is_viewed'] == true;
+    final time = timeago.format(DateTime.parse(message['created_at']),
+        locale: 'en_short');
+    final expiresAt = DateTime.parse(message['expires_at']);
+    final now = DateTime.now();
+    final timeLeft = expiresAt.difference(now);
+    final hoursLeft = timeLeft.inHours;
+
+    String mediaIcon;
+    String mediaLabel;
+    switch (message['message_type']) {
+      case 'image':
+        mediaIcon = '📷';
+        mediaLabel = 'Photo';
+        break;
+      case 'video':
+        mediaIcon = '🎥';
+        mediaLabel = 'Video';
+        break;
+      case 'audio':
+        mediaIcon = '🎤';
+        mediaLabel = 'Audio';
+        break;
+      default:
+        mediaIcon = '📎';
+        mediaLabel = 'Media';
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(
+        mainAxisAlignment:
+            isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          if (!isMe)
+            CircleAvatar(
+              radius: 16,
+              backgroundImage: widget.receiverProfileImage != null
+                  ? NetworkImage(widget.receiverProfileImage!)
+                  : null,
+              backgroundColor: Colors.blue.shade100,
+              child: widget.receiverProfileImage == null
+                  ? Text(
+                      widget.receiverName[0].toUpperCase(),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.yellow,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    )
+                  : null,
+            ),
+          if (!isMe) const SizedBox(width: 8),
+          Flexible(
+            child: GestureDetector(
+              onTap: () => _viewEphemeralMessage(message),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: isMe
+                        ? [const Color(0xFFFF6B6B), const Color(0xFFFF8E53)]
+                        : [const Color(0xFF4ECDC4), const Color(0xFF44A08D)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.only(
+                    topLeft: const Radius.circular(24),
+                    topRight: const Radius.circular(24),
+                    bottomLeft: isMe
+                        ? const Radius.circular(24)
+                        : const Radius.circular(6),
+                    bottomRight: isMe
+                        ? const Radius.circular(6)
+                        : const Radius.circular(24),
+                  ),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.3),
+                    width: 2,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.2),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          mediaIcon,
+                          style: const TextStyle(fontSize: 24),
+                        ),
+                        const SizedBox(width: 8),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              mediaLabel,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              isViewed && !isMe ? 'Opened' : 'Tap to view',
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.8),
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.timer_outlined,
+                          size: 14,
+                          color: Colors.white.withValues(alpha: 0.8),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          hoursLeft > 0
+                              ? '${hoursLeft}h left'
+                              : '${timeLeft.inMinutes}m left',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.8),
+                            fontSize: 11,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          time,
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.8),
+                            fontSize: 11,
+                          ),
+                        ),
+                        if (isMe && isViewed) ...[
+                          const SizedBox(width: 6),
+                          const Icon(
+                            Icons.visibility,
+                            size: 14,
+                            color: Colors.white,
+                          ),
+                        ],
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          if (isMe) const SizedBox(width: 8),
+          if (isMe)
+            const CircleAvatar(
+              radius: 16,
+              backgroundColor: Colors.blue,
+              child: Text(
+                'M',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRegularMessageBubble(Map<String, dynamic> message) {
+    final isMe = message['sender_id'] == _senderId;
+    final time = timeago.format(DateTime.parse(message['created_at']),
+        locale: 'en_short');
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(
+        mainAxisAlignment:
+            isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          if (!isMe)
+            CircleAvatar(
+              radius: 16,
+              backgroundImage: widget.receiverProfileImage != null
+                  ? NetworkImage(widget.receiverProfileImage!)
+                  : null,
+              backgroundColor: Colors.blue.shade100,
+              child: widget.receiverProfileImage == null
+                  ? Text(
+                      widget.receiverName[0].toUpperCase(),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.yellow,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    )
+                  : null,
+            ),
+          if (!isMe) const SizedBox(width: 8),
+          Flexible(
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 12,
+              ),
+              decoration: BoxDecoration(
+                gradient: isMe
+                    ? const LinearGradient(
+                        colors: [
+                          Color(0xFF667eea),
+                          Color(0xFF764ba2),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      )
+                    : const LinearGradient(
+                        colors: [
+                          Color(0xFFf093fb),
+                          Color(0xFFf5576c),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                borderRadius: BorderRadius.only(
+                  topLeft: const Radius.circular(24),
+                  topRight: const Radius.circular(24),
+                  bottomLeft: isMe
+                      ? const Radius.circular(24)
+                      : const Radius.circular(6),
+                  bottomRight: isMe
+                      ? const Radius.circular(6)
+                      : const Radius.circular(24),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: isMe
+                        ? const Color(0xFF667eea).withValues(alpha: 0.3)
+                        : const Color(0xFFf093fb).withValues(alpha: 0.3),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                    spreadRadius: 0,
+                  ),
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.08),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                    spreadRadius: 0,
+                  ),
+                ],
+              ),
+              constraints: BoxConstraints(
+                maxWidth: MediaQuery.of(context).size.width * 0.7,
+              ),
+              child: Column(
+                crossAxisAlignment:
+                    isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    message['content'],
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      height: 1.4,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        time,
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.8),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                      if (isMe) ...[
+                        const SizedBox(width: 6),
+                        Icon(
+                          message['is_read'] == true
+                              ? Icons.done_all_rounded
+                              : Icons.done_rounded,
+                          size: 14,
+                          color: Colors.white.withValues(alpha: 0.9),
+                        ),
+                      ],
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+          if (isMe) const SizedBox(width: 8),
+          if (isMe)
+            const CircleAvatar(
+              radius: 16,
+              backgroundColor: Colors.blue,
+              child: Text(
+                'M',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  void safeSetState(VoidCallback fn) {
+    if (mounted) {
+      setState(fn);
+    }
+  }
+}
+
+// Ephemeral Media Viewer Widget
+class EphemeralMediaViewer extends StatefulWidget {
+  final Map<String, dynamic> message;
+  final VoidCallback onClose;
+
+  const EphemeralMediaViewer({
+    super.key,
+    required this.message,
+    required this.onClose,
+  });
+
+  @override
+  State<EphemeralMediaViewer> createState() => _EphemeralMediaViewerState();
+}
+
+class _EphemeralMediaViewerState extends State<EphemeralMediaViewer> {
+  VideoPlayerController? _videoController;
+  AudioPlayer? _audioPlayer;
+  bool _isPlaying = false;
+  bool _isLoading = true;
+  String? _errorMessage;
+  @override
+  void initState() {
+    super.initState();
+    _initializeMedia();
+  }
+
+  Future<void> _initializeMedia() async {
+    try {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null;
+      });
+
+      final type = widget.message['message_type'] as String;
+      final mediaUrl = widget.message['media_url'] as String;
+
+      debugPrint('Loading $type from: $mediaUrl');
+
+      if (type == 'video') {
+        _videoController =
+            VideoPlayerController.networkUrl(Uri.parse(mediaUrl));
+
+        await _videoController!.initialize();
+
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+          _videoController!.play();
+          _isPlaying = true;
+        }
+      } else if (type == 'audio') {
+        _audioPlayer = AudioPlayer();
+        await _audioPlayer!.setUrl(mediaUrl);
+
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+          await _audioPlayer!.play();
+          _isPlaying = true;
+        }
+      } else if (type == 'image') {
+        // For images, just remove loading state
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('Error initializing media: $e');
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'Failed to load media: ${e.toString()}';
+        });
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _videoController?.dispose();
+    _audioPlayer?.dispose();
+    widget.onClose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final type = widget.message['message_type'] as String;
+    final mediaUrl = widget.message['media_url'] as String;
+
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.close, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text(
+          'View Once',
+          style: TextStyle(color: Colors.white),
+        ),
+        actions: [
+          Container(
+            margin: const EdgeInsets.only(right: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.red.withValues(alpha: 0.8),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: const Row(
+              children: [
+                Icon(Icons.visibility_off, size: 16, color: Colors.white),
+                SizedBox(width: 4),
+                Text(
+                  'Auto-delete',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+      body: Center(
+        child: _isLoading
+            ? const Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(color: Colors.white),
+                  SizedBox(height: 16),
+                  Text(
+                    'Loading media...',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ],
+              )
+            : _errorMessage != null
+                ? Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(
+                        Icons.error_outline,
+                        size: 64,
+                        color: Colors.red,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        _errorMessage!,
+                        style: const TextStyle(color: Colors.white),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  )
+                : _buildMediaContent(type, mediaUrl),
+      ),
+    );
+  }
+
+  Widget _buildMediaContent(String type, String mediaUrl) {
+    switch (type) {
+      case 'image':
+        return PhotoView(
+          imageProvider: CachedNetworkImageProvider(mediaUrl),
+          backgroundDecoration: const BoxDecoration(color: Colors.black),
+          minScale: PhotoViewComputedScale.contained,
+          maxScale: PhotoViewComputedScale.covered * 2,
+          loadingBuilder: (context, event) => const Center(
+            child: CircularProgressIndicator(color: Colors.white),
+          ),
+          errorBuilder: (context, error, stackTrace) {
+            debugPrint('Image load error: $error');
+            return const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.broken_image, size: 64, color: Colors.red),
+                  SizedBox(height: 16),
+                  Text(
+                    'Failed to load image',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      case 'video':
+        return _videoController != null && _videoController!.value.isInitialized
+            ? AspectRatio(
+                aspectRatio: _videoController!.value.aspectRatio,
+                child: Stack(
+                  alignment: Alignment.bottomCenter,
+                  children: [
+                    VideoPlayer(_videoController!),
+                    VideoProgressIndicator(_videoController!,
+                        allowScrubbing: true),
+                    Center(
+                      child: IconButton(
+                        icon: Icon(
+                          _isPlaying ? Icons.pause : Icons.play_arrow,
+                          size: 50,
+                          color: Colors.white,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            if (_videoController!.value.isPlaying) {
+                              _videoController!.pause();
+                              _isPlaying = false;
+                            } else {
+                              _videoController!.play();
+                              _isPlaying = true;
+                            }
+                          });
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            : const CircularProgressIndicator();
+      case 'audio':
+        return Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.grey[900],
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.audiotrack, size: 60, color: Colors.yellow),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: Icon(
+                      _isPlaying ? Icons.pause_circle : Icons.play_circle,
+                      size: 60,
+                      color: Colors.white,
+                    ),
+                    onPressed: () {
+                      if (_audioPlayer != null) {
+                        if (_isPlaying) {
+                          _audioPlayer!.pause();
+                        } else {
+                          _audioPlayer!.play();
+                        }
+                        setState(() {
+                          _isPlaying = !_isPlaying;
+                        });
+                      }
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              const Text('Playing Audio Message',
+                  style: TextStyle(color: Colors.white)),
+            ],
+          ),
+        );
+      default:
+        return const Text('Unsupported media type',
+            style: TextStyle(color: Colors.white));
+    }
+  }
+}

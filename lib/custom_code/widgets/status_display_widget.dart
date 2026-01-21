@@ -1,17 +1,15 @@
 // Automatic FlutterFlow imports
 import '/backend/supabase/supabase.dart';
-import '/flutter_flow/flutter_flow_util.dart';
 import 'package:flutter/material.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
-import 'package:pocket_mates_app/custom_code/widgets/verfied_swtich_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:video_compress/video_compress.dart';
-import 'dart:typed_data';
 import 'package:image/image.dart' as img;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -392,12 +390,12 @@ class StatusViewerWrapper extends StatefulWidget {
   final String currentProfileId;
 
   const StatusViewerWrapper({
-    Key? key,
+    super.key,
     required this.allStatusGroups,
     required this.initialGroupIndex,
     required this.currentUserId,
     required this.currentProfileId,
-  }) : super(key: key);
+  });
 
   @override
   State<StatusViewerWrapper> createState() => _StatusViewerWrapperState();
@@ -485,13 +483,13 @@ class StatusViewerScreen extends StatefulWidget {
   final VoidCallback onPreviousGroup;
 
   const StatusViewerScreen({
-    Key? key,
+    super.key,
     required this.statusGroup,
     required this.currentUserId,
     required this.currentProfileId,
     required this.onNextGroup,
     required this.onPreviousGroup,
-  }) : super(key: key);
+  });
 
   @override
   State<StatusViewerScreen> createState() => _StatusViewerScreenState();
@@ -1511,10 +1509,10 @@ class StatusUploadWidget extends StatefulWidget {
   final String profileId;
 
   const StatusUploadWidget({
-    Key? key,
+    super.key,
     required this.userId,
     required this.profileId,
-  }) : super(key: key);
+  });
 
   @override
   State<StatusUploadWidget> createState() => _StatusUploadWidgetState();

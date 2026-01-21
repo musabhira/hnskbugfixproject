@@ -2,6 +2,7 @@
 import 'dart:async';
 
 import 'package:pocket_mates_app/custom_code/widgets/search_profile_detail_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/message_screen.dart';
 
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -11,8 +12,7 @@ import 'package:flutter/material.dart';
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
 import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
-import 'package:pocket_mates_app/custom_code/widgets/search_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/verfied_swtich_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
 
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter/services.dart';
@@ -39,21 +39,17 @@ class GalleryProfileSearchPage extends StatefulWidget {
 class _GalleryProfileSearchPageState extends State<GalleryProfileSearchPage> {
   final TextEditingController _searchController = TextEditingController();
   final SupabaseClient _supabase = SupaFlow.client;
-  Color? _selectedColor;
   String? _colorCode;
-  Color? _selectedColor1;
   String? _colorCode1;
-  Color? _selectedColor2;
   String? _colorCode2;
-  Color? _selectedColor3;
   String? _colorCode3;
   List<Map<String, dynamic>> galleryItems = [];
   List<Map<String, dynamic>> filteredItems = [];
   bool isLoading = true;
   bool isSearching = false;
+
   String selectedCategory = 'All';
   List<String> categories = ['All'];
-  bool _isLoading = false;
 
   @override
   void initState() {
@@ -78,16 +74,14 @@ class _GalleryProfileSearchPageState extends State<GalleryProfileSearchPage> {
 
   Future<void> _loadProfileData() async {
     try {
-      safeSetState(() => _isLoading = true);
-
-      if (widget.userid == null) return;
+      // safeSetState(() => _isLoading = true);
 
       final profileResponse = await _supabase
           .from('profile')
           .select()
           .eq('user_id', widget.userid)
           .maybeSingle();
-      print(profileResponse);
+      // print(profileResponse);
       if (profileResponse != null && mounted) {
         safeSetState(() {
           _colorCode = profileResponse['bg_color_code'] ?? '';
@@ -107,7 +101,7 @@ class _GalleryProfileSearchPageState extends State<GalleryProfileSearchPage> {
       }
     } finally {
       if (mounted) {
-        safeSetState(() => _isLoading = false);
+        // safeSetState(() => _isLoading = false);
       }
     }
   }
@@ -143,8 +137,7 @@ class _GalleryProfileSearchPageState extends State<GalleryProfileSearchPage> {
               (item['gallery_category']?.toString() == selectedCategory);
 
           // User ID filter - only show items for the specific user if userid is provided
-          bool matchesUser = widget.userid == null ||
-              widget.userid!.isEmpty ||
+          bool matchesUser = widget.userid.isEmpty ||
               (item['user_id']?.toString() == widget.userid);
 
           return matchesSearch && matchesCategory && matchesUser;
@@ -160,9 +153,9 @@ class _GalleryProfileSearchPageState extends State<GalleryProfileSearchPage> {
       });
 
       // Build the query with user ID filter if provided
-      late final response;
+      late final PostgrestList response;
 
-      if (widget.userid != null && widget.userid!.isNotEmpty) {
+      if (widget.userid.isNotEmpty) {
         // Query with user ID filter
         response = await _supabase
             .from('gallery_with_comments_view')
@@ -204,7 +197,7 @@ class _GalleryProfileSearchPageState extends State<GalleryProfileSearchPage> {
         isLoading = false;
       });
     } catch (e) {
-      print('Error fetching gallery data: $e');
+      // print('Error fetching gallery data: $e');
       safeSetState(() {
         isLoading = false;
       });
@@ -248,8 +241,8 @@ class _GalleryProfileSearchPageState extends State<GalleryProfileSearchPage> {
                       style: TextStyle(color: bgtextcolor),
                       decoration: InputDecoration(
                         hintText: 'Search gallery...',
-                        hintStyle:
-                            TextStyle(color: bgtextcolor.withOpacity(0.4)),
+                        hintStyle: TextStyle(
+                            color: bgtextcolor.withValues(alpha: 0.4)),
                         prefixIcon: Icon(Icons.search, color: bgtextcolor),
                         suffixIcon: _searchController.text.isNotEmpty
                             ? IconButton(
@@ -326,7 +319,7 @@ class _GalleryProfileSearchPageState extends State<GalleryProfileSearchPage> {
                     Text(
                       '${filteredItems.length} results',
                       style: TextStyle(
-                        color: bgtextcolor.withOpacity(0.6),
+                        color: bgtextcolor.withValues(alpha: 0.6),
                         fontSize: 14,
                       ),
                     ),
@@ -371,14 +364,14 @@ class _GalleryProfileSearchPageState extends State<GalleryProfileSearchPage> {
                                 Icons.search_off,
                                 size: 64,
                                 // ignore: deprecated_member_use
-                                color: bgtextcolor.withOpacity(0.5),
+                                color: bgtextcolor.withValues(alpha: 0.5),
                               ),
                               const SizedBox(height: 16),
                               Text(
                                 'No results found',
                                 style: TextStyle(
                                   // ignore: deprecated_member_use
-                                  color: bgtextcolor.withOpacity(0.8),
+                                  color: bgtextcolor.withValues(alpha: 0.8),
                                   fontSize: 18,
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -387,7 +380,7 @@ class _GalleryProfileSearchPageState extends State<GalleryProfileSearchPage> {
                               Text(
                                 'Try adjusting your search or filters',
                                 style: TextStyle(
-                                  color: bgtextcolor.withOpacity(0.6),
+                                  color: bgtextcolor.withValues(alpha: 0.6),
                                   fontSize: 14,
                                 ),
                               ),
@@ -478,9 +471,10 @@ class GallerySearchCard extends StatelessWidget {
       },
       child: Container(
         decoration: BoxDecoration(
-          color: bgtextcolor.withOpacity(0.1),
+          color: bgtextcolor.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: bgtextcolor.withOpacity(0.3)!, width: 1),
+          border:
+              Border.all(color: bgtextcolor.withValues(alpha: 0.3), width: 1),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -497,7 +491,7 @@ class GallerySearchCard extends StatelessWidget {
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) {
                           return Container(
-                            color: bgColor.withOpacity(0.8),
+                            color: bgColor.withValues(alpha: 0.8),
                             child: Icon(
                               Icons.image_not_supported,
                               color: bgtextcolor,
@@ -507,7 +501,7 @@ class GallerySearchCard extends StatelessWidget {
                         },
                       )
                     : Container(
-                        color: bgColor.withOpacity(0.8),
+                        color: bgColor.withValues(alpha: 0.8),
                         child: Icon(
                           Icons.image,
                           color: bgtextcolor,
@@ -543,7 +537,7 @@ class GallerySearchCard extends StatelessWidget {
                     Text(
                       item['gallery_description'],
                       style: TextStyle(
-                        color: bgtextcolor.withOpacity(0.8),
+                        color: bgtextcolor.withValues(alpha: 0.8),
                         fontSize: 12,
                       ),
                       maxLines: 2,
@@ -634,7 +628,7 @@ class GallerySearchCard extends StatelessWidget {
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: bgColor.withOpacity(0.4),
+                            color: bgColor.withValues(alpha: 0.4),
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(color: Colors.amber, width: 0.5),
                           ),
@@ -689,213 +683,18 @@ class GalleryDetailsprofilePage extends StatefulWidget {
 class _GalleryDetailsprofilePageState extends State<GalleryDetailsprofilePage> {
   late PageController _pageController;
   late int currentIndex;
-  bool isImageExpanded = false;
-  bool _isLoading = false;
-  List<Map<String, dynamic>> _comments = [];
-  bool _isLiked = false;
-  int _likeCount = 0;
-  String? _errorMessage;
-  final _supabase = SupaFlow.client;
-  bool isLoading = true;
-  Map<String, dynamic>? hideData;
-  String? sharetext;
-  final TextEditingController _commentController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     currentIndex = widget.initialIndex;
     _pageController = PageController(initialPage: currentIndex);
-    _loadComments();
-    _checkIfLiked();
-    _getLikeCount();
-    fetchHideStatus();
   }
 
   @override
   void dispose() {
     _pageController.dispose();
     super.dispose();
-  }
-
-  Future<void> fetchHideStatus() async {
-    try {
-      final user = _supabase.auth.currentUser;
-      if (user == null) return;
-
-      final response = await _supabase
-          .from('hide')
-          .select()
-          .eq('user_id', user.id)
-          .order('created_at', ascending: false)
-          .limit(1);
-
-      safeSetState(() {
-        print(response);
-        hideData = response.isNotEmpty ? response.first : null;
-        isLoading = false;
-      });
-    } catch (e) {
-      print('Error fetching hide status: $e');
-      safeSetState(() {
-        isLoading = false;
-      });
-    }
-  }
-
-  Future<void> _loadComments({String? contentFilter}) async {
-    safeSetState(() {
-      _isLoading = true;
-    });
-
-    try {
-      // Start with the base query filtering by gallery_id
-      var query = _supabase
-          .from('gallery_with_comments_view')
-          .select()
-          .eq('gallery_id', widget.item['gallery_id'])
-          // Only show rows where comment_content is not null
-          .not('comment_content', 'is', null);
-
-      // Add content filter if provided
-      if (contentFilter != null && contentFilter.isNotEmpty) {
-        // Filter comments that contain the search text
-        query = query.ilike('comment_content', '%$contentFilter%');
-      }
-
-      // Execute the query
-      final response = await query;
-
-      // Remove duplicates based on comment_content
-      final Map<String, Map<String, dynamic>> uniqueComments = {};
-
-      for (var comment in response) {
-        final commentContent = comment['comment_content']?.toString();
-        if (commentContent != null && commentContent.isNotEmpty) {
-          // Keep the first occurrence or the one with more recent timestamp
-          if (!uniqueComments.containsKey(commentContent) ||
-              _isMoreRecent(comment, uniqueComments[commentContent]!)) {
-            uniqueComments[commentContent] = comment;
-          }
-        }
-      }
-
-      // Convert back to list
-      final deduplicatedComments = uniqueComments.values.toList();
-
-      // Get unique profile_comment_ids from the deduplicated comments
-      final profileCommentIds = deduplicatedComments
-          .map((comment) => comment['profile_comment_id'])
-          .where((id) => id != null)
-          .toSet()
-          .toList();
-
-      // Fetch profile information for all comment authors
-      Map<String, Map<String, dynamic>> profilesMap = {};
-
-      if (profileCommentIds.isNotEmpty) {
-        final profilesResponse = await _supabase
-            .from('profile')
-            .select('id, name, profile_image_url')
-            .inFilter('id', profileCommentIds);
-
-        // Create a map for quick lookup
-        for (var profile in profilesResponse) {
-          profilesMap[profile['id'].toString()] = profile;
-        }
-      }
-
-      // Combine comment data with profile information
-      final List<Map<String, dynamic>> enrichedComments =
-          deduplicatedComments.map((comment) {
-        final profileCommentId = comment['profile_comment_id']?.toString();
-        final profileData = profilesMap[profileCommentId];
-
-        return {
-          ...comment,
-          // Add profile information to each comment
-          'commenter_name': profileData?['name'] ?? 'Unknown User',
-          'commenter_profile_image_url': profileData?['profile_image_url'],
-        };
-      }).toList();
-
-      // Sort comments by timestamp (newest first) - optional
-      enrichedComments.sort((a, b) {
-        final aTime = a['created_at'] ?? a['comment_created_at'];
-        final bTime = b['created_at'] ?? b['comment_created_at'];
-        if (aTime != null && bTime != null) {
-          return DateTime.parse(bTime.toString())
-              .compareTo(DateTime.parse(aTime.toString()));
-        }
-        return 0;
-      });
-
-      safeSetState(() {
-        _comments = enrichedComments;
-        _isLoading = false;
-        _errorMessage = null; // Clear any previous error
-      });
-    } catch (error) {
-      safeSetState(() {
-        _errorMessage = 'Failed to load comments: $error';
-        print(_errorMessage);
-        _isLoading = false;
-        // Don't clear _comments on error to preserve existing data
-      });
-    }
-  }
-
-// Helper method to determine if a comment is more recent
-  bool _isMoreRecent(
-      Map<String, dynamic> comment1, Map<String, dynamic> comment2) {
-    final time1 = comment1['created_at'] ?? comment1['comment_created_at'];
-    final time2 = comment2['created_at'] ?? comment2['comment_created_at'];
-
-    if (time1 == null || time2 == null) return false;
-
-    try {
-      return DateTime.parse(time1.toString())
-          .isAfter(DateTime.parse(time2.toString()));
-    } catch (e) {
-      return false;
-    }
-  }
-
-  Future<void> _getLikeCount() async {
-    try {
-      final response = await _supabase
-          .from('likes')
-          .select('count')
-          .eq('gallery_id', widget.item['gallery_id'])
-          .single();
-
-      safeSetState(() {
-        _likeCount = response['count'] ?? 0;
-      });
-    } catch (e) {
-      print('Error getting like count: $e');
-    }
-  }
-
-  Future<void> _checkIfLiked() async {
-    try {
-      final currentUserId = _supabase.auth.currentUser?.id;
-
-      if (currentUserId != null) {
-        final response = await _supabase
-            .from('likes')
-            .select()
-            .eq('gallery_id', widget.item['gallery_id'])
-            .eq('user_id', currentUserId)
-            .maybeSingle();
-
-        safeSetState(() {
-          _isLiked = response != null;
-        });
-      }
-    } catch (e) {
-      print('Error checking like status: $e');
-    }
   }
 
   @override
@@ -955,7 +754,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
   List<Map<String, dynamic>> _comments = [];
   bool _isLiked = false;
   int _likeCount = 0;
-  String? _errorMessage;
+
   final _supabase = SupaFlow.client;
   bool isLoading = true;
   Map<String, dynamic>? hideData;
@@ -990,14 +789,14 @@ class BuildDetailContentState extends State<BuildDetailContent> {
           .single();
 
       safeSetState(() {
-        print(response);
+        // print(response);
         receiverIdprofile = response['user_id'] ?? widget.userid;
         receiverNameprofile = response['name'] ?? 'User';
         receiverProfileImageP = response['profile_image_url'];
         phoneNumberProfile = response['phone_no'];
       });
     } catch (e) {
-      print('Error fetching user profile: $e');
+      // print('Error fetching user profile: $e');
     }
   }
 
@@ -1014,12 +813,12 @@ class BuildDetailContentState extends State<BuildDetailContent> {
           .limit(1);
 
       safeSetState(() {
-        print(response);
+        // print(response);
         hideData = response.isNotEmpty ? response.first : null;
         isLoading = false;
       });
     } catch (e) {
-      print('Error fetching hide status: $e');
+      // print('Error fetching hide status: $e');
       safeSetState(() {
         isLoading = false;
       });
@@ -1116,12 +915,10 @@ class BuildDetailContentState extends State<BuildDetailContent> {
       safeSetState(() {
         _comments = enrichedComments;
         _isLoading = false;
-        _errorMessage = null; // Clear any previous error
       });
     } catch (error) {
       safeSetState(() {
-        _errorMessage = 'Failed to load comments: $error';
-        print(_errorMessage);
+        // Don't clear _comments on error to preserve existing data
         _isLoading = false;
         // Don't clear _comments on error to preserve existing data
       });
@@ -1156,7 +953,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
         _likeCount = response['count'] ?? 0;
       });
     } catch (e) {
-      print('Error getting like count: $e');
+      // print('Error getting like count: $e');
     }
   }
 
@@ -1177,7 +974,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
         });
       }
     } catch (e) {
-      print('Error checking like status: $e');
+      // print('Error checking like status: $e');
     }
   }
 
@@ -1209,7 +1006,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                         height: 4,
                         decoration: BoxDecoration(
                           // ignore: deprecated_member_use
-                          color: widget.bgtextcolor.withOpacity(0.3),
+                          color: widget.bgtextcolor.withValues(alpha: 0.3),
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
@@ -1243,8 +1040,8 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                           decoration: InputDecoration(
                             hintText: 'Search comments...',
                             hintStyle: TextStyle(
-                                color: widget.bgtextcolor.withOpacity(
-                                    0.5)), // Optional: lighter hint
+                                color: widget.bgtextcolor.withValues(
+                                    alpha: 0.5)), // Optional: lighter hint
                             prefixIcon: Icon(
                               Icons.search,
                               color: widget.buttoncolorcode, // Yellow icon
@@ -1254,7 +1051,8 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                               borderSide: BorderSide.none,
                             ),
                             filled: true,
-                            fillColor: widget.bgtextcolor.withOpacity(0.1),
+                            fillColor:
+                                widget.bgtextcolor.withValues(alpha: 0.1),
                           ),
                           onChanged: (value) {
                             if (value.length >= 2 || value.isEmpty) {
@@ -1289,7 +1087,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                                           size: 80,
                                           // ignore: deprecated_member_use
                                           color: widget.bgtextcolor
-                                              .withOpacity(0.3),
+                                              .withValues(alpha: 0.3),
                                         ),
                                         const SizedBox(height: 16),
                                         Text(
@@ -1332,7 +1130,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                           boxShadow: [
                             BoxShadow(
                               // ignore: deprecated_member_use
-                              color: Colors.black.withOpacity(0.05),
+                              color: Colors.black.withValues(alpha: 0.05),
                               blurRadius: 10,
                               offset: const Offset(0, -3),
                             ),
@@ -1368,8 +1166,8 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                                     ),
                                     filled: true,
                                     // ignore: deprecated_member_use
-                                    fillColor:
-                                        widget.bgtextcolor.withOpacity(0.1),
+                                    fillColor: widget.bgtextcolor
+                                        .withValues(alpha: 0.1),
                                     contentPadding: const EdgeInsets.symmetric(
                                       horizontal: 16,
                                       vertical: 10,
@@ -1440,67 +1238,8 @@ class BuildDetailContentState extends State<BuildDetailContent> {
       });
     } catch (error) {
       setModalState(() {
-        _errorMessage = 'Failed to load comments: $error';
-        print(_errorMessage);
         _isLoading = false;
       });
-    }
-  }
-
-  Future<void> _shareToGroup(String groupId, String groupName) async {
-    try {
-      // Show loading
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => const Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
-
-      // Insert message to group
-      await _supabase.from('group_messages').insert({
-        'group_id': groupId,
-        'sender_id': _supabase.auth.currentUser?.id.toString() ?? '',
-        'gallery_id': widget.item['gallery_id'],
-        'message_text':
-            '${sharetext ?? widget.item['gallery_title']}\n${widget.item['gallery_description']}\n${widget.item['gallery_image_url']}',
-        'message_type': 'gallery',
-      });
-
-      // Update group's last message
-      await _supabase.from('groups').update({
-        'last_message':
-            '${widget.item['gallery_title']}\n${widget.item['gallery_description']}\n${widget.item['gallery_image_url']}',
-        'last_message_time': DateTime.now().toIso8601String(),
-        'updated_at': DateTime.now().toIso8601String(),
-      }).eq('id', groupId);
-
-      Navigator.pop(context); // Close loading
-
-      // Show success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Shared to $groupName successfully!'),
-          backgroundColor: Colors.green,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-        ),
-      );
-    } catch (e) {
-      Navigator.pop(context); // Close loading
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error sharing content: $e'),
-          backgroundColor: Colors.red,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-        ),
-      );
     }
   }
 
@@ -1531,11 +1270,8 @@ class BuildDetailContentState extends State<BuildDetailContent> {
         final String title =
             widget.item['gallery_title'] ?? 'Check out this art!';
         final String desc = widget.item['gallery_description'] ?? '';
-        final String itemLink = WhatsAppShareHelper.baseAppUrl +
-            '/item/' +
-            (widget.item['gallery_id']?.toString() ??
-                widget.item['id']?.toString() ??
-                '');
+        final String itemLink =
+            '${WhatsAppShareHelper.baseAppUrl}/item/${widget.item['gallery_id']?.toString() ?? widget.item['id']?.toString() ?? ''}';
 
         Share.share('$title\n\n$desc\n\n$itemLink');
       },
@@ -1562,11 +1298,8 @@ class BuildDetailContentState extends State<BuildDetailContent> {
             ],
           ),
           onTap: () {
-            final String itemLink = WhatsAppShareHelper.baseAppUrl +
-                '/item/' +
-                (widget.item['gallery_id']?.toString() ??
-                    widget.item['id']?.toString() ??
-                    '');
+            final String itemLink =
+                '${WhatsAppShareHelper.baseAppUrl}/item/${widget.item['gallery_id']?.toString() ?? widget.item['id']?.toString() ?? ''}';
             Clipboard.setData(ClipboardData(text: itemLink));
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Link copied to clipboard!')),
@@ -1587,7 +1320,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
           Text(
             '$label:',
             style: TextStyle(
-              color: widget.bgtextcolor.withOpacity(0.8),
+              color: widget.bgtextcolor.withValues(alpha: 0.8),
               fontSize: 14,
             ),
           ),
@@ -1596,7 +1329,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
             child: Text(
               value,
               style: TextStyle(
-                color: widget.bgtextcolor.withOpacity(0.8),
+                color: widget.bgtextcolor.withValues(alpha: 0.8),
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
@@ -1665,54 +1398,6 @@ class BuildDetailContentState extends State<BuildDetailContent> {
         : const SizedBox.shrink();
   }
 
-  Future<void> _toggleLike() async {
-    try {
-      final currentUserId = _supabase.auth.currentUser?.id;
-
-      if (currentUserId == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please log in to like items')),
-        );
-        return;
-      }
-
-      // Store previous values for rollback if needed
-      final previousIsLiked = _isLiked;
-      final previousLikeCount = _likeCount;
-
-      safeSetState(() {
-        _isLiked = !_isLiked;
-        _likeCount = _isLiked ? _likeCount + 1 : _likeCount - 1;
-      });
-
-      if (_isLiked) {
-        // Add like
-        await _supabase.from('likes').insert({
-          'gallery_id': widget.item['gallery_id'],
-          'user_id': currentUserId,
-        });
-      } else {
-        // Remove like
-        await _supabase
-            .from('likes')
-            .delete()
-            .eq('gallery_id', widget.item['gallery_id'])
-            .eq('user_id', currentUserId);
-      }
-    } catch (e) {
-      print('Error toggling like: $e');
-      // Revert state if error
-      safeSetState(() {
-        _isLiked = !_isLiked;
-        _likeCount = _isLiked ? _likeCount + 1 : _likeCount - 1;
-      });
-      // ignore: use_build_context_synchronously
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to update like status')),
-      );
-    }
-  }
-
   Future<void> _addComment() async {
     if (_commentController.text.trim().isEmpty) return;
 
@@ -1736,6 +1421,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
 
       final profileId = profileResponse['id'];
       if (profileId == null) {
+        if (!context.mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Profile not found')),
         );
@@ -1761,16 +1447,16 @@ class BuildDetailContentState extends State<BuildDetailContent> {
       // Re-fetch all comments to update the list
       await _loadComments();
 
-      // ignore: use_build_context_synchronously
+      if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Comment added successfully')),
       );
     } catch (e) {
-      // ignore: use_build_context_synchronously
+      if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error adding comment: $e')),
       );
-      print(e);
+      // print(e);
     }
   }
 
@@ -1811,6 +1497,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
               contentId: widget.item['gallery_id'].toString(),
               contentTitle: widget.item['gallery_title'] ?? 'Gallery Item',
               onReportSubmitted: () {
+                if (!context.mounted) return;
                 // Optional: Show feedback to user
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
@@ -1847,7 +1534,8 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                                   fit: BoxFit.cover,
                                   errorBuilder: (context, error, stackTrace) {
                                     return Container(
-                                      color: widget.bgColor.withOpacity(0.5),
+                                      color:
+                                          widget.bgColor.withValues(alpha: 0.5),
                                       child: Icon(
                                         Icons.image_not_supported,
                                         color: widget.bgtextcolor,
@@ -1857,7 +1545,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                                   },
                                 )
                               : Container(
-                                  color: widget.bgColor.withOpacity(0.5),
+                                  color: widget.bgColor.withValues(alpha: 0.5),
                                   child: Icon(
                                     Icons.image,
                                     color: widget.bgtextcolor,
@@ -1924,7 +1612,8 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                             Text(
                               item['gallery_description'],
                               style: TextStyle(
-                                color: widget.bgtextcolor.withOpacity(0.8),
+                                color:
+                                    widget.bgtextcolor.withValues(alpha: 0.8),
                                 fontSize: 16,
                                 height: 1.5,
                               ),
@@ -1953,6 +1642,8 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                                   "${WhatsAppShareHelper.baseAppUrl}/shareGallery?galleryId=${item['gallery_id']}";
                               await Clipboard.setData(
                                   ClipboardData(text: link));
+                              if (!context.mounted) return;
+                              // ignore: use_build_context_synchronously
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
                                   content: Text('Link copied to clipboard'),
@@ -1990,7 +1681,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                             margin: const EdgeInsets.symmetric(horizontal: 16),
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: widget.bgtextcolor.withOpacity(0.1),
+                              color: widget.bgtextcolor.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(
                                   color: Colors.grey[800]!, width: 1),
@@ -2031,7 +1722,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                                         'Creator',
                                         style: TextStyle(
                                           color: widget.bgtextcolor
-                                              .withOpacity(0.8),
+                                              .withValues(alpha: 0.8),
                                           fontSize: 14,
                                         ),
                                       ),
@@ -2050,7 +1741,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                     margin: const EdgeInsets.symmetric(horizontal: 16),
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: widget.bgtextcolor.withOpacity(0.1),
+                      color: widget.bgtextcolor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(color: Colors.grey[800]!, width: 1),
                     ),
@@ -2137,6 +1828,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                                 customMessage:
                                     "Please login to Chat with this user",
                               );
+                              if (!mounted) return;
                               if (isAuthenticated) {
                                 Navigator.push(
                                   context,
@@ -2144,13 +1836,10 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                                     builder: (context) => MessageScreen(
                                       receiverId:
                                           widget.userid ?? item['user_id'],
-                                      receiverName:
-                                          receiverNameprofile ?? item['name'],
+                                      receiverName: item['name'],
                                       receiverProfileImage:
-                                          receiverProfileImageP ??
-                                              item['profile_image_url'],
-                                      phonenumber: phoneNumberProfile ??
-                                          item['phone_no'],
+                                          item['profile_image_url'],
+                                      phonenumber: item['phone_no'],
                                     ),
                                   ),
                                 );
@@ -2261,14 +1950,15 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                                     'Add a comment...',
                                     style: TextStyle(
                                       // ignore: deprecated_member_use
-                                      color:
-                                          widget.bgtextcolor.withOpacity(0.8),
+                                      color: widget.bgtextcolor
+                                          .withValues(alpha: 0.8),
                                     ),
                                   ),
                                 ),
                                 Icon(
                                   Icons.send,
-                                  color: widget.bgtextcolor.withOpacity(0.8),
+                                  color:
+                                      widget.bgtextcolor.withValues(alpha: 0.8),
                                   size: 18,
                                 ),
                               ],
@@ -2294,7 +1984,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                                             size: 48,
                                             // ignore: deprecated_member_use
                                             color: widget.bgtextcolor
-                                                .withOpacity(0.8),
+                                                .withValues(alpha: 0.8),
                                           ),
                                           const SizedBox(height: 8),
                                           Text(
@@ -2305,7 +1995,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                                               color:
                                                   // ignore: deprecated_member_use
                                                   widget.bgtextcolor
-                                                      .withOpacity(0.9),
+                                                      .withValues(alpha: 0.9),
                                             ),
                                           ),
                                         ],
@@ -2458,11 +2148,11 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
         safeSetState(() {
           _isLoadingReplies = false;
         });
-        print(e);
+        // print(e);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to load replies: $e')),
         );
-        print(e);
+        // print(e);
       }
     }
   }
@@ -2494,7 +2184,7 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to add reply: $e')),
         );
-        print(e);
+        // print(e);
       }
     }
   }
@@ -2514,7 +2204,7 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
         boxShadow: [
           BoxShadow(
             // ignore: deprecated_member_use
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -2644,7 +2334,7 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
                                                 'Failed to delete comment: $e')),
                                       );
                                     }
-                                    print(e);
+                                    // print(e);
                                   }
                                 }
                               },
@@ -3135,11 +2825,11 @@ class CommentReplyService {
   Future<List<Map<String, dynamic>>> getReplies(String commentId) async {
     try {
       // First, let's check the actual column names
-      final commentColumns =
-          await _supabase.from('comments').select('*').limit(1);
+      /* final commentColumns =
+          await _supabase.from('comments').select('*').limit(1); */
 
-      print(
-          'Comment table columns: ${commentColumns.isNotEmpty ? commentColumns.first.keys : "No data"}');
+      /* print(
+          'Comment table columns: ${commentColumns.isNotEmpty ? commentColumns.first.keys : "No data"}'); */
 
       // Now use the correct column names in the join
       final response = await _supabase.from('comment_replies').select('''
@@ -3156,10 +2846,10 @@ class CommentReplyService {
         )
       ''').eq('comment_id', commentId).order('created_at');
 
-      print('Fetched replies: $response');
+      // print('Fetched replies: $response');
       return List<Map<String, dynamic>>.from(response);
     } catch (e) {
-      print('Error fetching replies: $e');
+      // print('Error fetching replies: $e');
       rethrow;
     }
   }
@@ -3201,10 +2891,10 @@ class CommentReplyService {
         'profile_image_url': profileResult['profile_image_url']
       };
 
-      print(reply);
+      // print(reply);
       return reply;
     } catch (e) {
-      print('Error in addReply: $e');
+      // print('Error in addReply: $e');
       rethrow;
     }
   }
@@ -3231,9 +2921,9 @@ class CommentReplyService {
       // Delete the reply
       await _supabase.from('comment_replies').delete().eq('id', replyId);
 
-      print('Reply deleted successfully: $replyId');
+      // print('Reply deleted successfully: $replyId');
     } catch (e) {
-      print('Error deleting reply: $e');
+      // print('Error deleting reply: $e');
       rethrow;
     }
   }
@@ -3256,7 +2946,7 @@ class AnimatedButtonWithMenu extends StatefulWidget {
   });
 
   @override
-  _AnimatedButtonWithMenuState createState() => _AnimatedButtonWithMenuState();
+  State<AnimatedButtonWithMenu> createState() => _AnimatedButtonWithMenuState();
 }
 
 class _AnimatedButtonWithMenuState extends State<AnimatedButtonWithMenu>
@@ -3344,12 +3034,12 @@ class _AnimatedButtonWithMenuState extends State<AnimatedButtonWithMenu>
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
             color: _isPressed
-                ? widget.mainColor.withOpacity(0.8)
+                ? widget.mainColor.withValues(alpha: 0.8)
                 : widget.mainColor,
             borderRadius: BorderRadius.circular(8),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.2),
+                color: Colors.black.withValues(alpha: 0.2),
                 offset: Offset(0, _isPressed ? 1 : 2),
                 blurRadius: _isPressed ? 3 : 5,
               ),

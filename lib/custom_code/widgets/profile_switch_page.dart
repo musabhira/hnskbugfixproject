@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/widgets/main_profile_widget.dart';
-import 'package:pocket_mates_app/custom_code/widgets/verfied_swtich_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
 import 'package:pocket_mates_app/flutter_flow/flutter_flow_util.dart';
 
 class ProfileSwitchPage extends StatefulWidget {

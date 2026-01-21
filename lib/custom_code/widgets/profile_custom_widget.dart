@@ -7,8 +7,8 @@ import 'package:pocket_mates_app/pages/home_page/home_page_widget.dart';
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import 'index.dart'; // Imports other custom widgets
-import '/custom_code/actions/index.dart'; // Imports custom actions
+// Imports other custom widgets
+// Imports custom actions
 import 'package:flutter/material.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
@@ -18,7 +18,6 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io' as io;
 import 'package:country_state_city_picker/country_state_city_picker.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui' as ui;
 import 'package:image/image.dart' as img;
 import 'package:flutter/services.dart';
 
@@ -1177,7 +1176,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                           Switch(
                             value: isHidden,
                             onChanged: (value) => saveHideStatus(value),
-                            activeColor: Colors.yellow,
+                            activeThumbColor: Colors.yellow,
                             inactiveThumbColor: Colors.white,
                             inactiveTrackColor: Colors.grey,
                           ),
@@ -1219,7 +1218,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                           flex: 1,
                           child: TextField(
                             controller: _dayController,
-                            style: TextStyle(color: Colors.white),
+                            style: const TextStyle(color: Colors.white),
                             keyboardType: TextInputType.number,
                             textAlign: TextAlign.center,
                             inputFormatters: [
@@ -1228,27 +1227,27 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                             ],
                             decoration: InputDecoration(
                               hintText: 'Day',
-                              hintStyle: TextStyle(color: Colors.white70),
+                              hintStyle: const TextStyle(color: Colors.white70),
                               filled: true,
                               fillColor: Colors.black,
                               enabledBorder: OutlineInputBorder(
-                                borderSide: BorderSide(color: Colors.white),
+                                borderSide: const BorderSide(color: Colors.white),
                                 borderRadius: BorderRadius.circular(4.0),
                               ),
                               focusedBorder: OutlineInputBorder(
-                                borderSide: BorderSide(color: Colors.white),
+                                borderSide: const BorderSide(color: Colors.white),
                                 borderRadius: BorderRadius.circular(4.0),
                               ),
                             ),
                           ),
                         ),
-                        SizedBox(width: 4),
+                        const SizedBox(width: 4),
                         // Month TextField
                         Expanded(
                           flex: 1,
                           child: TextField(
                             controller: _monthController,
-                            style: TextStyle(color: Colors.white),
+                            style: const TextStyle(color: Colors.white),
                             keyboardType: TextInputType.number,
                             textAlign: TextAlign.center,
                             inputFormatters: [
@@ -1257,27 +1256,27 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                             ],
                             decoration: InputDecoration(
                               hintText: 'Month',
-                              hintStyle: TextStyle(color: Colors.white70),
+                              hintStyle: const TextStyle(color: Colors.white70),
                               filled: true,
                               fillColor: Colors.black,
                               enabledBorder: OutlineInputBorder(
-                                borderSide: BorderSide(color: Colors.white),
+                                borderSide: const BorderSide(color: Colors.white),
                                 borderRadius: BorderRadius.circular(4.0),
                               ),
                               focusedBorder: OutlineInputBorder(
-                                borderSide: BorderSide(color: Colors.white),
+                                borderSide: const BorderSide(color: Colors.white),
                                 borderRadius: BorderRadius.circular(4.0),
                               ),
                             ),
                           ),
                         ),
-                        SizedBox(width: 4),
+                        const SizedBox(width: 4),
                         // Year TextField
                         Expanded(
                           flex: 2,
                           child: TextField(
                             controller: _yearController,
-                            style: TextStyle(color: Colors.white),
+                            style: const TextStyle(color: Colors.white),
                             keyboardType: TextInputType.number,
                             textAlign: TextAlign.center,
                             inputFormatters: [
@@ -1286,15 +1285,15 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                             ],
                             decoration: InputDecoration(
                               hintText: 'Year',
-                              hintStyle: TextStyle(color: Colors.white70),
+                              hintStyle: const TextStyle(color: Colors.white70),
                               filled: true,
                               fillColor: Colors.black,
                               enabledBorder: OutlineInputBorder(
-                                borderSide: BorderSide(color: Colors.white),
+                                borderSide: const BorderSide(color: Colors.white),
                                 borderRadius: BorderRadius.circular(4.0),
                               ),
                               focusedBorder: OutlineInputBorder(
-                                borderSide: BorderSide(color: Colors.white),
+                                borderSide: const BorderSide(color: Colors.white),
                                 borderRadius: BorderRadius.circular(4.0),
                               ),
                             ),
@@ -1368,22 +1367,22 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                           color: Colors.yellow.withOpacity(0.3),
                           blurRadius: 15.0,
                           spreadRadius: 2.0,
-                          offset: Offset(0, 5),
+                          offset: const Offset(0, 5),
                         ),
                         BoxShadow(
                           color: Colors.black.withOpacity(0.5),
                           blurRadius: 10.0,
                           spreadRadius: 1.0,
-                          offset: Offset(0, 3),
+                          offset: const Offset(0, 3),
                         ),
                       ],
                     ),
-                    padding: EdgeInsets.all(20.0),
+                    padding: const EdgeInsets.all(20.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         // Header
-                        Text(
+                        const Text(
                           'Live Color Preview',
                           style: TextStyle(
                             color: Colors.white,
@@ -1393,11 +1392,11 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                           ),
                           textAlign: TextAlign.center,
                         ),
-                        SizedBox(height: 20),
+                        const SizedBox(height: 20),
 
                         // Mini Profile Card
                         AnimatedContainer(
-                          duration: Duration(milliseconds: 300),
+                          duration: const Duration(milliseconds: 300),
                           decoration: BoxDecoration(
                             color: _selectedColor ??
                                 _convertStringToColor(_colorCode ?? '#FFFFFF'),
@@ -1406,11 +1405,11 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                               BoxShadow(
                                 color: Colors.black.withOpacity(0.1),
                                 blurRadius: 8.0,
-                                offset: Offset(0, 4),
+                                offset: const Offset(0, 4),
                               ),
                             ],
                           ),
-                          padding: EdgeInsets.all(20.0),
+                          padding: const EdgeInsets.all(20.0),
                           child: Column(
                             children: [
                               // Profile Picture
@@ -1428,7 +1427,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                                           _colorCode1 ?? '#757575'),
                                 ),
                               ),
-                              SizedBox(height: 12),
+                              const SizedBox(height: 12),
 
                               // Name
                               Text(
@@ -1441,7 +1440,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              SizedBox(height: 4),
+                              const SizedBox(height: 4),
 
                               // Email
                               Text(
@@ -1454,11 +1453,11 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                                   fontSize: 14.0,
                                 ),
                               ),
-                              SizedBox(height: 16),
+                              const SizedBox(height: 16),
 
                               // Action Button
                               AnimatedContainer(
-                                duration: Duration(milliseconds: 300),
+                                duration: const Duration(milliseconds: 300),
                                 decoration: BoxDecoration(
                                   color: _selectedColor2 ??
                                       _convertStringToColor(
@@ -1471,11 +1470,11 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                                                   _colorCode2 ?? '#2196F3'))
                                           .withOpacity(0.3),
                                       blurRadius: 6.0,
-                                      offset: Offset(0, 3),
+                                      offset: const Offset(0, 3),
                                     ),
                                   ],
                                 ),
-                                padding: EdgeInsets.symmetric(
+                                padding: const EdgeInsets.symmetric(
                                     horizontal: 24.0, vertical: 12.0),
                                 child: Center(
                                   child: Text(
@@ -1494,11 +1493,11 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                           ),
                         ),
 
-                        SizedBox(height: 20),
+                        const SizedBox(height: 20),
 
                         // Color Info Footer
                         Container(
-                          padding: EdgeInsets.all(12.0),
+                          padding: const EdgeInsets.all(12.0),
                           decoration: BoxDecoration(
                             color: Colors.grey[800],
                             borderRadius: BorderRadius.circular(12.0),
@@ -1641,10 +1640,10 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
             border: Border.all(color: Colors.white.withOpacity(0.3), width: 1),
           ),
         ),
-        SizedBox(height: 4),
+        const SizedBox(height: 4),
         Text(
           label,
-          style: TextStyle(
+          style: const TextStyle(
             color: Colors.white70,
             fontSize: 10.0,
             fontWeight: FontWeight.w500,
@@ -1652,7 +1651,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
         ),
         Text(
           colorCode.substring(1, 4).toUpperCase(),
-          style: TextStyle(
+          style: const TextStyle(
             color: Colors.white54,
             fontSize: 9.0,
           ),

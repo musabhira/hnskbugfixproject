@@ -1,18 +1,23 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.dart';
+import 'package:pocket_mates_app/custom_code/widgets/conversation_tile.dart';
 import 'package:pocket_mates_app/custom_code/widgets/profile_switch_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
-import 'package:pocket_mates_app/custom_code/widgets/verfied_swtich_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
 import 'package:pocket_mates_app/flutter_flow/flutter_flow_util.dart';
 
 import '/custom_code/widgets/index.dart';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chat/whats_app_groups_provider.dart';
 
-class HomePageWidgetTree extends StatefulWidget {
+class HomePageWidgetTree extends ConsumerStatefulWidget {
   const HomePageWidgetTree({
     super.key,
     this.width,
@@ -31,10 +36,10 @@ class HomePageWidgetTree extends StatefulWidget {
   static const Color textSecondary = Color(0xFF94A3B8);
 
   @override
-  State<HomePageWidgetTree> createState() => _HomePageWidgetTreeState();
+  ConsumerState<HomePageWidgetTree> createState() => _HomePageWidgetTreeState();
 }
 
-class _HomePageWidgetTreeState extends State<HomePageWidgetTree> {
+class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   final supabase = SupaFlow.client;
   final scaffoldKey = GlobalKey<ScaffoldState>();
   int _currentIndex = 0;
@@ -108,15 +113,68 @@ class _HomePageWidgetTreeState extends State<HomePageWidgetTree> {
   }
 
   String _formatCount(int count) {
-    if (count >= 1000000)
+    if (count >= 1000000) {
       return '${(count / 1000000).toStringAsFixed(1).replaceAll('.0', '')}M';
-    if (count >= 1000)
+    }
+    if (count >= 1000) {
       return '${(count / 1000).toStringAsFixed(1).replaceAll('.0', '')}k';
+    }
     return count.toString();
+  }
+
+  void _handleSettings() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1F2C34),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.symmetric(vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.logout, color: Colors.red),
+              title: const Text('Logout', style: TextStyle(color: Colors.red)),
+              onTap: () async {
+                Navigator.pop(context);
+                try {
+                  await supabase.auth.signOut();
+                  if (mounted) {
+                    Navigator.of(context).pushNamedAndRemoveUntil(
+                      'LandingPage',
+                      (route) => false,
+                    );
+                  }
+                } catch (e) {
+                  // Fallback if named route fails or generic error
+                  if (mounted) {
+                    Navigator.of(context)
+                        .pushNamedAndRemoveUntil('/', (route) => false);
+                  }
+                }
+              },
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final conversationsAsync = ref.watch(conversationsProvider);
+
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -171,106 +229,117 @@ class _HomePageWidgetTreeState extends State<HomePageWidgetTree> {
                                   const WebRTCCallScreen(mode: 'Text'),
                             ),
                           ),
+                          onTapSettings: _handleSettings,
                         ),
                       ),
 
-                      // Main Content Sliver
-                      SliverToBoxAdapter(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.all(24.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Welcome Back! 👋',
-                                    style: GoogleFonts.outfit(
-                                      fontSize: 28,
-                                      fontWeight: FontWeight.bold,
-                                      color: HomePageWidgetTree.textPrimary,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    'What would you like to do today?',
-                                    style: GoogleFonts.outfit(
-                                      fontSize: 16,
-                                      color: HomePageWidgetTree.textSecondary,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-
-                            // PocketMates Entry Card
-                            _buildEntryPointCard(
-                              context,
-                              title: 'PocketMates',
-                              subtitle: 'Meet strangers. Instantly.',
-                              icon: FontAwesomeIcons.userGroup,
-                              colors: [
-                                HomePageWidgetTree.primaryColor,
-                                const Color(0xFF357ABD)
-                              ],
-                              onTap: () => Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      const PocketMatesDashboard(),
-                                ),
-                              ),
-                            ),
-
-                            const SizedBox(height: 20),
-
-                            // Quick Anonymous Chat Card
-                            _buildEntryPointCard(
-                              context,
-                              title: 'Quick Chat 🗨️',
-                              subtitle: 'Anonymous chatting. Instantly.',
-                              icon: FontAwesomeIcons.solidCommentDots,
-                              colors: [
-                                HomePageWidgetTree.secondaryColor,
-                                const Color(0xFFE04A76)
-                              ],
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        const WebRTCCallScreen(
-                                      mode: 'Text',
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-
-                            const SizedBox(height: 20),
-
-                            // AI Buddy Card (Placeholder using Accent Color)
-                            _buildEntryPointCard(
-                              context,
-                              title: 'AI Companion',
-                              subtitle: 'Talk to your virtual friend.',
-                              icon: FontAwesomeIcons.robot,
-                              colors: [
-                                HomePageWidgetTree.accentColor,
-                                const Color(0xFFE5A500)
-                              ],
-                              onTap: () {},
-                            ),
-
-                            const SizedBox(height: 40),
-                          ],
-                        ),
-                      ),
+                      // Main Content Sliver - WhatsApp Chat List
+                      _buildChatListSliver(conversationsAsync),
                     ],
                   ),
                 ),
               ),
+      ),
+    );
+  }
+
+  Widget _buildChatListSliver(
+      AsyncValue<List<ChatConversation>> conversationsAsync) {
+    return conversationsAsync.when(
+      data: (conversations) {
+        if (conversations.isEmpty) {
+          return SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 100),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.chat_bubble_outline_rounded,
+                    size: 64,
+                    color: Colors.white.withOpacity(0.1),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'No conversations yet',
+                    style: GoogleFonts.inter(
+                      color: Colors.white.withOpacity(0.4),
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
+        return SliverList(
+          delegate: SliverChildBuilderDelegate(
+            (context, index) {
+              final conversation = conversations[index];
+              return ConversationTile(
+                key: ValueKey(conversation.id),
+                conversation: conversation,
+                currentUserId: _currentUserId ?? '',
+                onTap: () {
+                  if (conversation.isGroup) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => WhatsAppGroupChat(
+                          groupId: conversation.id,
+                          groupName: conversation.name,
+                          groupImage: conversation.imageUrl,
+                        ),
+                      ),
+                    );
+                  } else {
+                    // Mark as read for personal chat
+                    ref
+                        .read(conversationsProvider.notifier)
+                        .markAsRead(conversation.id, false);
+
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => MessageScreen(
+                          receiverId: conversation.id,
+                          receiverName: conversation.name,
+                          receiverProfileImage: conversation.imageUrl,
+                        ),
+                      ),
+                    );
+                  }
+                },
+                onLongPress: () {
+                  // Optional: Show options
+                },
+              );
+            },
+            childCount: conversations.length,
+          ),
+        );
+      },
+      loading: () => SliverToBoxAdapter(
+        child: Padding(
+          padding: const EdgeInsets.only(top: 50),
+          child: Center(
+            child: CircularProgressIndicator(
+              color: HomePageWidgetTree.primaryColor,
+            ),
+          ),
+        ),
+      ),
+      error: (error, stack) => SliverToBoxAdapter(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Center(
+            child: Text(
+              'Error loading chats',
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -448,7 +517,6 @@ class _HomePageWidgetTreeState extends State<HomePageWidgetTree> {
                   ),
                 );
               }
-              ;
             },
             child: CircularProfileImage(
               profileImageUrl: _profileImageUrl,
@@ -531,6 +599,7 @@ class _UnifiedHomeHeaderDelegate extends SliverPersistentHeaderDelegate {
   final VoidCallback onTapFriends;
   final VoidCallback onTapCall;
   final VoidCallback onTapText;
+  final VoidCallback onTapSettings;
 
   _UnifiedHomeHeaderDelegate({
     required this.currentUserId,
@@ -539,6 +608,7 @@ class _UnifiedHomeHeaderDelegate extends SliverPersistentHeaderDelegate {
     required this.onTapFriends,
     required this.onTapCall,
     required this.onTapText,
+    required this.onTapSettings,
   });
 
   @override
@@ -551,6 +621,7 @@ class _UnifiedHomeHeaderDelegate extends SliverPersistentHeaderDelegate {
     // Handle overscroll (pull down to expand)
     final double overscroll = shrinkOffset < 0 ? -shrinkOffset : 0;
     final double overscrollScale = 1.0 + (overscroll / 300);
+    final double topPadding = MediaQuery.of(context).padding.top;
 
     return Container(
       color: HomePageWidgetTree.backgroundColor,
@@ -695,6 +766,26 @@ class _UnifiedHomeHeaderDelegate extends SliverPersistentHeaderDelegate {
                 ),
               ),
             ),
+
+          // Settings Button (Fades out when scrolled)
+          Positioned(
+            top: topPadding + 8,
+            right: 16,
+            child: Opacity(
+              opacity: (1.0 - progress * 3).clamp(0.0, 1.0),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.3),
+                  shape: BoxShape.circle,
+                ),
+                child: IconButton(
+                  icon:
+                      const Icon(Icons.settings, color: Colors.white, size: 20),
+                  onPressed: onTapSettings,
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );

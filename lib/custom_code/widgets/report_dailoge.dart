@@ -2,10 +2,9 @@
 import 'package:pocket_mates_app/auth_page/auth_page_widget.dart';
 
 import '/backend/supabase/supabase.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import 'index.dart'; // Imports other custom widgets
-import '/custom_code/actions/index.dart'; // Imports custom actions
+// Imports other custom widgets
+// Imports custom actions
 import 'package:flutter/material.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
@@ -298,7 +297,7 @@ class _ReportDialogState extends State<ReportDialog>
                             activeColor: Colors.red.shade400,
                           ),
                         );
-                      }).toList(),
+                      }),
 
                       const SizedBox(height: 20),
 

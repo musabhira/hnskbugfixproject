@@ -281,22 +281,26 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         safeSetState(() {
           userThreads.removeWhere((t) => t['id'] == threadId);
         });
-        if (mounted)
+        if (mounted) {
           ScaffoldMessenger.of(context)
               .showSnackBar(const SnackBar(content: Text('Thread deleted')));
+        }
       } catch (e) {
-        if (mounted)
+        if (mounted) {
           ScaffoldMessenger.of(context)
               .showSnackBar(SnackBar(content: Text('Error: $e')));
+        }
       }
     }
   }
 
   String _formatCount(int count) {
-    if (count >= 1000000)
+    if (count >= 1000000) {
       return '${(count / 1000000).toStringAsFixed(1).replaceAll('.0', '')}M';
-    if (count >= 1000)
+    }
+    if (count >= 1000) {
       return '${(count / 1000).toStringAsFixed(1).replaceAll('.0', '')}k';
+    }
     return count.toString();
   }
 
@@ -619,10 +623,11 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   Widget _buildServicesList(
       Color bgcolor, Color textcolor, Color btncolor, Color btntextcolor) {
     if (isLoading) return const Center(child: CircularProgressIndicator());
-    if (userServices.isEmpty)
+    if (userServices.isEmpty) {
       return const Center(
           child: Text('No services offered',
               style: TextStyle(color: textSecondary)));
+    }
 
     return ListView.builder(
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
@@ -687,7 +692,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               const SizedBox(height: 8),
               Text(
                 service['description'] ?? '',
-                style: TextStyle(color: textSecondary, fontSize: 13),
+                style: const TextStyle(color: textSecondary, fontSize: 13),
               ),
             ],
           ),
@@ -699,10 +704,11 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   Widget _buildGalleryGrid(
       Color bgcolor, Color textcolor, Color btncolor, Color btntextcolor) {
     if (isLoading) return const Center(child: CircularProgressIndicator());
-    if (userGallery.isEmpty)
+    if (userGallery.isEmpty) {
       return const Center(
           child:
               Text('No gallery items', style: TextStyle(color: textSecondary)));
+    }
 
     return MasonryGridView.count(
       padding: const EdgeInsets.all(16),

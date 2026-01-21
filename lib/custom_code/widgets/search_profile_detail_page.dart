@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
 import 'package:pocket_mates_app/custom_code/widgets/search_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/message_screen.dart';
 
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -46,7 +47,7 @@ class _SearchProfileDetailPageState
   late TabController _tabController;
   int _followersCount = 0;
   int _followingCount = 0;
-  ScrollController _scrollController = ScrollController();
+  final ScrollController _scrollController = ScrollController();
   String _followersCountFormatted = '0';
   String _followingCountFormatted = '0';
   bool _isFollowing = false;
@@ -2589,11 +2590,11 @@ class CircularShimmer extends StatelessWidget {
   final double size;
 
   const CircularShimmer({
-    Key? key,
+    super.key,
     required this.buttonColor,
     required this.bgColor,
     this.size = 40,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -2604,7 +2605,7 @@ class CircularShimmer extends StatelessWidget {
         child: Container(
           width: size,
           height: size,
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             color: Colors.white,
             shape: BoxShape.circle,
           ),
@@ -3715,7 +3716,7 @@ class WhatsAppShareHelper {
   }) async {
     String formattedNumber = phoneNumber.replaceAll(RegExp(r'[^0-9+]'), '');
     if (!formattedNumber.startsWith('+')) {
-      formattedNumber = '$formattedNumber'; // Add your country code
+      formattedNumber = formattedNumber; // Add your country code
     }
 
     String encodedMessage = Uri.encodeComponent(message);
