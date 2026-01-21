@@ -103,12 +103,12 @@ class _VoiceMessageRecorderState extends State<VoiceMessageRecorder> {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: _isRecording ? Colors.red : const Color(0xFF00A884),
+          color: _isRecording ? Colors.red : Colors.yellow,
           shape: BoxShape.circle,
         ),
         child: Icon(
           _isRecording ? Icons.mic : Icons.mic_none,
-          color: Colors.white,
+          color: _isRecording ? Colors.white : Colors.black,
         ),
       ),
     );

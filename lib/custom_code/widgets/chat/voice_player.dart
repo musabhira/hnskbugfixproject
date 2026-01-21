@@ -91,9 +91,9 @@ class _VoiceMessagePlayerState extends State<VoiceMessagePlayer> {
   Widget build(BuildContext context) {
     // Determine colors based on sender
     // Optimized for performance with const constants where possible
-    final activeColor = widget.isFromCurrentUser ? Colors.white : Colors.teal;
+    final activeColor = widget.isFromCurrentUser ? Colors.black : Colors.yellow;
     final inactiveColor =
-        widget.isFromCurrentUser ? Colors.white38 : Colors.grey.shade400;
+        widget.isFromCurrentUser ? Colors.black38 : Colors.grey.shade600;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),

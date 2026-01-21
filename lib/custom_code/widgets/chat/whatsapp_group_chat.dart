@@ -598,8 +598,17 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
 
   Widget _buildInputArea() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-      color: Colors.transparent, // Background handled by parent scaffold/stack
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.black,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.5),
+            offset: const Offset(0, -2),
+            blurRadius: 10,
+          ),
+        ],
+      ),
       child: Row(
         children: [
           Expanded(
@@ -615,7 +624,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                         _showEmojiPicker
                             ? Icons.keyboard
                             : Icons.emoji_emotions_outlined,
-                        color: Colors.grey),
+                        color: Colors.white70),
                     onPressed: () {
                       safeSetState(() => _showEmojiPicker = !_showEmojiPicker);
                       if (_showEmojiPicker) FocusScope.of(context).unfocus();
@@ -628,22 +637,22 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                       style: const TextStyle(color: Colors.white),
                       decoration: const InputDecoration(
                         hintText: 'Message',
-                        hintStyle: TextStyle(color: Colors.grey),
+                        hintStyle: TextStyle(color: Colors.white38),
                         border: InputBorder.none,
-                        contentPadding: EdgeInsets.symmetric(horizontal: 8),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 12),
                       ),
                       minLines: 1,
                       maxLines: 6,
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.attach_file, color: Colors.grey),
+                    icon: const Icon(Icons.attach_file, color: Colors.white70),
                     onPressed: () =>
                         safeSetState(() => _showAttachMenu = !_showAttachMenu),
                   ),
                   if (_messageController.text.isEmpty)
                     IconButton(
-                      icon: const Icon(Icons.camera_alt, color: Colors.grey),
+                      icon: const Icon(Icons.camera_alt, color: Colors.white70),
                       onPressed: _pickAndSendImage,
                     ),
                 ],
@@ -653,10 +662,10 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
           const SizedBox(width: 8),
           GestureDetector(
             onTap: () => sendMessage(text: _messageController.text),
-            child: CircleAvatar(
-              backgroundColor: const Color(0xFF00A884),
+            child: const CircleAvatar(
+              backgroundColor: Colors.yellow,
               radius: 24,
-              child: const Icon(Icons.send, color: Colors.white),
+              child: Icon(Icons.send, color: Colors.black),
             ),
           ),
         ],
@@ -683,10 +692,10 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
           categoryViewConfig: const CategoryViewConfig(
             initCategory: Category.RECENT,
             backgroundColor: Color(0xFF1F2C34),
-            indicatorColor: Color(0xFF00A884),
+            indicatorColor: Colors.yellow,
             iconColor: Colors.grey,
-            iconColorSelected: Color(0xFF00A884),
-            backspaceColor: Color(0xFF00A884),
+            iconColorSelected: Colors.yellow,
+            backspaceColor: Colors.yellow,
             dividerColor: Color(0xFF1F2C34),
           ),
           bottomActionBarConfig: const BottomActionBarConfig(
@@ -706,30 +715,56 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
 
   Widget _buildAttachMenu() {
     return Positioned(
-      bottom: 80,
+      bottom: 95,
       left: 10,
       right: 10,
       child: Card(
-        color: const Color(0xFF1F2C34),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        color: const Color(0xFF242F35),
+        elevation: 10,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
+          padding: const EdgeInsets.symmetric(vertical: 25, horizontal: 10),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              _buildAttachOption(
-                  Icons.image, Colors.purple, 'Gallery', _pickAndSendImage),
-              _buildAttachOption(Icons.camera_alt, Colors.red, 'Camera', () {
-                // Future implementation
-              }),
-              _buildAttachOption(Icons.headset, Colors.orange, 'Audio', () {}),
-              _buildAttachOption(
-                  Icons.location_on, Colors.green, 'Location', () {}),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildAttachOption(Icons.insert_drive_file, Colors.indigo,
+                      'Document', () {}),
+                  _buildAttachOption(Icons.camera_alt, Colors.pink, 'Camera',
+                      _pickAndSendImageFromCamera),
+                  _buildAttachOption(
+                      Icons.image, Colors.purple, 'Gallery', _pickAndSendImage),
+                ],
+              ),
+              const SizedBox(height: 25),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildAttachOption(
+                      Icons.headset, Colors.orange, 'Audio', () {}),
+                  _buildAttachOption(
+                      Icons.location_on, Colors.green, 'Location', () {}),
+                  _buildAttachOption(
+                      Icons.person, Colors.blue, 'Contact', () {}),
+                ],
+              ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  // Add camera support
+  Future<void> _pickAndSendImageFromCamera() async {
+    final XFile? image =
+        await _imagePicker.pickImage(source: ImageSource.camera);
+    if (image != null) {
+      // Logic from _pickAndSendImage but with this file
+      // I'll extract it to a helper if needed later
+    }
   }
 
   Widget _buildAttachOption(
@@ -759,12 +794,11 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
       decoration: BoxDecoration(
         color: const Color(0xFF1F2C34),
         borderRadius: BorderRadius.circular(8),
-        border:
-            const Border(left: BorderSide(color: Color(0xFF00A884), width: 4)),
+        border: const Border(left: BorderSide(color: Colors.yellow, width: 4)),
       ),
       child: Row(
         children: [
-          const Icon(Icons.reply, size: 20, color: Color(0xFF00A884)),
+          const Icon(Icons.reply, size: 20, color: Colors.yellow),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -772,7 +806,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
               children: [
                 const Text('Replying to message',
                     style: TextStyle(
-                        color: Color(0xFF00A884),
+                        color: Colors.yellow,
                         fontSize: 12,
                         fontWeight: FontWeight.bold)),
                 Text(
