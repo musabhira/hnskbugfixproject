@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -193,7 +194,7 @@ class ChatMessages extends _$ChatMessages {
       // Also refresh state
       ref.invalidateSelf();
     } catch (e) {
-      print('Error during database cleanup: $e');
+      debugPrint('Error during database cleanup: $e');
     }
   }
 
@@ -276,14 +277,26 @@ class ChatMessages extends _$ChatMessages {
       'message_type': messageType,
       'file_url': fileUrl,
       'voice_duration': voiceDuration,
-      'reply_to_id': replyToId,
+      'reply_to_message_id': replyToId,
     };
 
     try {
       final response =
           await _supabase.from('group_messages').insert(messageData).select('''
             *,
-            sender:users!sender_id(profile:profile!user_id(name, profile_image_url))
+            reply_to:reply_to_message_id(
+              id,
+              message_text,
+              message_type,
+              file_url,
+              sender_id,
+              sender:users!sender_id(
+                profile:profile!user_id(name, profile_image_url)
+              )
+            ),
+            sender:users!sender_id(
+              profile:profile!user_id(name, profile_image_url)
+            )
           ''').single();
 
       final fullMessage = ChatMessage.fromJson({

@@ -58,7 +58,7 @@ class _VoiceMessageRecorderState extends State<VoiceMessageRecorder> {
         });
       }
     } catch (e) {
-      print('Error starting recording: $e');
+      debugPrint('Error starting recording: $e');
     }
   }
 
@@ -74,7 +74,7 @@ class _VoiceMessageRecorderState extends State<VoiceMessageRecorder> {
         _uploadAndSend(path, _duration.inSeconds);
       }
     } catch (e) {
-      print('Error stopping recording: $e');
+      debugPrint('Error stopping recording: $e');
     }
   }
 
@@ -91,7 +91,7 @@ class _VoiceMessageRecorderState extends State<VoiceMessageRecorder> {
 
       widget.onSendMessage('voice', url, duration);
     } catch (e) {
-      print('Error uploading voice: $e');
+      debugPrint('Error uploading voice: $e');
     }
   }
 
