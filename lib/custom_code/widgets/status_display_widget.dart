@@ -197,13 +197,13 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 120,
-      decoration: BoxDecoration(
-        color: Colors.black,
-        border: Border(
-          bottom: BorderSide(color: Colors.white.withOpacity(0.05), width: 1),
-        ),
-      ),
+      height: 120, // Adjusted height to fit
+      // decoration: BoxDecoration(
+      //   color: Colors.black,
+      //   border: Border(
+      //     bottom: BorderSide(color: Colors.white.withOpacity(0.05), width: 1),
+      //   ),
+      // ),
       child: _isLoading
           ? _buildShimmerLoading()
           : ListView.builder(

@@ -31,6 +31,7 @@ class ChatMessages extends _$ChatMessages {
   int _currentPage = 0;
   bool _hasMoreMessages = true;
   Timer? _debounceTimer;
+  Timer? _pollingTimer;
   final List<ChatMessage> _optimisticMessages = [];
 
   @override
@@ -44,7 +45,11 @@ class ChatMessages extends _$ChatMessages {
     ref.onDispose(() {
       _subscription?.unsubscribe();
       _debounceTimer?.cancel();
+      _pollingTimer?.cancel();
     });
+
+    // Start polling for 1-second updates as requested
+    _startPolling(groupId);
 
     // Initial fetch - load first page only
     return _fetchMessages(isInitial: true);
@@ -71,6 +76,37 @@ class ChatMessages extends _$ChatMessages {
           },
         )
         .subscribe();
+  }
+
+  void _startPolling(String groupId) {
+    _pollingTimer?.cancel();
+    _pollingTimer = Timer.periodic(const Duration(seconds: 1), (_) async {
+      try {
+        // Fetch latest messages (Page 0)
+        final latestMessages = await _fetchMessages(forceLatest: true);
+
+        // Merge with current state to preserve pagination/scroll history
+        state.whenData((currentMessages) {
+          final Map<String, ChatMessage> combinedMap = {
+            for (var m in currentMessages) m.id: m, // Keep existing (older)
+            for (var m in latestMessages)
+              m.id: m, // Overwrite with fresh (newer)
+          };
+
+          final combinedList = combinedMap.values.toList()
+            ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+          // Only update state if different to prevent unnecessary rebuilds
+          if (combinedList.length != currentMessages.length ||
+              combinedList.first.id != currentMessages.first.id ||
+              combinedList.first.createdAt != currentMessages.first.createdAt) {
+            state = AsyncData(combinedList);
+          }
+        });
+      } catch (e) {
+        // Ignore polling errors
+      }
+    });
   }
 
   void _handleRealtimeUpdate(dynamic payload) {
@@ -109,14 +145,18 @@ class ChatMessages extends _$ChatMessages {
     }
   }
 
-  Future<List<ChatMessage>> _fetchMessages({bool isInitial = false}) async {
+  Future<List<ChatMessage>> _fetchMessages(
+      {bool isInitial = false, bool forceLatest = false}) async {
     if (isInitial) {
       _currentPage = 0;
       _hasMoreMessages = true;
     }
 
+    // If forcing latest (polling), we temporarily look at page 0 without resetting main pagination state
+    final int pageToFetch = forceLatest ? 0 : _currentPage;
+
     try {
-      final offset = _currentPage * _pageSize;
+      final offset = pageToFetch * _pageSize;
 
       final response = await _supabase
           .from('group_messages')

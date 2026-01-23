@@ -17,6 +17,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/whats_app_groups_provider.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/create_group_dialog.dart';
+import 'package:pocket_mates_app/custom_code/widgets/active_users_provider.dart';
 
 class HomePageWidgetTree extends ConsumerStatefulWidget {
   const HomePageWidgetTree({
@@ -188,7 +189,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         body: _isLoading
             ? const Center(child: CircularProgressIndicator())
             : SafeArea(
-                top: false,
+                top: true,
                 child: RefreshIndicator(
                   onRefresh: _loadAllUserData,
                   color: HomePageWidgetTree.primaryColor,
@@ -202,12 +203,14 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                         delegate: _UnifiedHomeHeaderDelegate(
                           currentUserId: supabase.auth.currentUser?.id ?? '',
                           currentProfileId: profileId.toString(),
-                          onTapVideo: () => Navigator.push(
+                          activeUsersRef: ref.watch(activeUsersProvider(
+                              profileId
+                                  .toString())), // Pass the provider reference
+                          onTapVideo: () => _handleStrangerMatch(
                             context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  const WebRTCCallScreen(mode: 'Video'),
-                            ),
+                            ref,
+                            'Video',
+                            profileId.toString(),
                           ),
                           onTapFriends: () {
                             ScaffoldMessenger.of(context).showSnackBar(
@@ -216,24 +219,30 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                       Text('Strangers Friends coming soon!')),
                             );
                           },
-                          onTapCall: () => Navigator.push(
+                          onTapCall: () => _handleStrangerMatch(
                             context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  const WebRTCCallScreen(mode: 'Voice'),
-                            ),
+                            ref,
+                            'Voice',
+                            profileId.toString(),
                           ),
-                          onTapText: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  const WebRTCCallScreen(mode: 'Text'),
-                            ),
-                          ),
+                          onTapText: () => _handleStrangerChat(
+                              context, ref, profileId.toString()),
                           onTapSettings: _handleSettings,
                           onRefresh: () => ref.refresh(conversationsProvider),
                         ),
                       ),
+
+                      // Online/Active Users Widget
+                      if (profileId != null && _currentUserId != null)
+                        SliverToBoxAdapter(
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                            child: ActiveUsersWidget(
+                              currentUserId: _currentUserId!,
+                              currentProfileId: profileId!,
+                            ),
+                          ),
+                        ),
 
                       // Main Content Sliver - WhatsApp Chat List
                       _buildChatListSliver(conversationsAsync),
@@ -592,11 +601,99 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       ),
     );
   }
+  // Methods being added here
+
+  void _handleStrangerMatch(
+    BuildContext context,
+    WidgetRef ref,
+    String mode,
+    String currentProfileId,
+  ) async {
+    // 1. Get Active Users
+    final activeUsersState = ref.read(activeUsersProvider(currentProfileId));
+
+    if (!activeUsersState.hasValue) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Connecting to active network...')),
+      );
+      return;
+    }
+
+    final activeFriends = activeUsersState.value!.activeFriends;
+
+    // 2. Filter out self (already done in provider, but double check)
+    // and potentially filter by interests if we had that data.
+    if (activeFriends.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('No active users nearby to match with right now.')),
+      );
+      return;
+    }
+
+    // 3. Simple Random Match
+    final randomUser = (activeFriends..shuffle()).first;
+
+    // 4. Initiate Call
+    // Here we navigate to WebRTCCallScreen but passing the target user ID
+    // Note: WebRTCCallScreen might need updates to accept targetUserId if it was "Room" based before.
+    // Assuming WebRTCCallScreen can handle a direct call setup or we pass the target info.
+    // For now, I'll pass it as arguments or modify WebRTCCallScreen if needed.
+    // But since the user said "not go to room connect delete",
+    // it implies we call them directly.
+    // Let's assume WebRTCCallScreen has a 'targetUserId' parameter or similar.
+    // If not, we might need to use the MessageScreen for "Text" and a CallScreen for "Voice/Video".
+
+    if (mode == 'Text') {
+      _handleStrangerChat(context, ref, currentProfileId);
+      return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Matching with ${randomUser['name']}...')),
+    );
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => WebRTCCallScreen(
+          mode: mode,
+          targetUserId: randomUser['user_id'], // Pass matched user
+        ),
+      ),
+    );
+  }
+
+  void _handleStrangerChat(
+      BuildContext context, WidgetRef ref, String currentProfileId) {
+    final activeUsersState = ref.read(activeUsersProvider(currentProfileId));
+    final activeFriends = activeUsersState.value?.activeFriends ?? [];
+
+    if (activeFriends.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No active users to chat with.')),
+      );
+      return;
+    }
+
+    final randomUser = (activeFriends..shuffle()).first;
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => WebRTCCallScreen(
+          mode: 'Text',
+          targetUserId: randomUser['user_id'], // Pass matched user
+        ),
+      ),
+    );
+  }
 }
 
 class _UnifiedHomeHeaderDelegate extends SliverPersistentHeaderDelegate {
   final String currentUserId;
   final String currentProfileId;
+  final AsyncValue<ActiveUsersData> activeUsersRef; // Added param
   final VoidCallback onTapVideo;
   final VoidCallback onTapFriends;
   final VoidCallback onTapCall;
@@ -607,6 +704,7 @@ class _UnifiedHomeHeaderDelegate extends SliverPersistentHeaderDelegate {
   _UnifiedHomeHeaderDelegate({
     required this.currentUserId,
     required this.currentProfileId,
+    required this.activeUsersRef, // Added param
     required this.onTapVideo,
     required this.onTapFriends,
     required this.onTapCall,
@@ -637,7 +735,7 @@ class _UnifiedHomeHeaderDelegate extends SliverPersistentHeaderDelegate {
             top: 0,
             left: 0,
             right: 0,
-            bottom: 120, // Constant height for the fixed status widget
+            bottom: 150, // Constant height for the fixed status widget
             child: ClipRect(
               child: Transform.scale(
                 scale: overscrollScale,
@@ -733,7 +831,7 @@ class _UnifiedHomeHeaderDelegate extends SliverPersistentHeaderDelegate {
             left: 0,
             right: 0,
             child: Container(
-              height: 120,
+              height: 150,
               decoration: BoxDecoration(
                 color: HomePageWidgetTree.backgroundColor,
                 border: Border(
@@ -743,9 +841,53 @@ class _UnifiedHomeHeaderDelegate extends SliverPersistentHeaderDelegate {
                   ),
                 ),
               ),
-              child: StatusDisplayWidget(
-                currentUserId: currentUserId,
-                currentProfileId: currentProfileId,
+              // Row(
+              //   children: [],
+              // ),
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(
+                        left: 16.0, top: 12.0, bottom: 4.0),
+                    child: Consumer(
+                      builder: (context, ref, _) {
+                        final asyncData =
+                            ref.watch(activeUsersProvider(currentProfileId));
+                        return asyncData.when(
+                          data: (data) => Row(
+                            children: [
+                              Container(
+                                width: 8,
+                                height: 8,
+                                decoration: const BoxDecoration(
+                                  color: Colors.green,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                '${data.activeFriends.length} Online',
+                                style: GoogleFonts.inter(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                          loading: () => const SizedBox(height: 16),
+                          error: (_, __) => const SizedBox(),
+                        );
+                      },
+                    ),
+                  ),
+                  Expanded(
+                    child: StatusDisplayWidget(
+                      currentUserId: currentUserId,
+                      currentProfileId: currentProfileId,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -886,10 +1028,10 @@ class _UnifiedHomeHeaderDelegate extends SliverPersistentHeaderDelegate {
   }
 
   @override
-  double get maxExtent => 265;
+  double get maxExtent => 295;
 
   @override
-  double get minExtent => 120;
+  double get minExtent => 150;
 
   @override
   bool shouldRebuild(covariant _UnifiedHomeHeaderDelegate oldDelegate) => true;

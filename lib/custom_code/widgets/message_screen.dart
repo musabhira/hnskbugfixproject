@@ -17,6 +17,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:video_player/video_player.dart';
+import 'package:pocket_mates_app/custom_code/widgets/webrtc_call_screen.dart';
+import 'package:pocket_mates_app/custom_code/widgets/image_viewer.dart';
+import 'package:image_downloader/image_downloader.dart';
 
 import '/flutter_flow/flutter_flow_util.dart';
 
@@ -1103,6 +1106,34 @@ class _MessageScreenState extends State<MessageScreen> {
           ),
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.videocam, color: Colors.white),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => WebRTCCallScreen(
+                    mode: 'Video',
+                    targetUserId: widget.receiverId,
+                  ),
+                ),
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.call, color: Colors.white),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => WebRTCCallScreen(
+                    mode: 'Voice',
+                    targetUserId: widget.receiverId,
+                  ),
+                ),
+              );
+            },
+          ),
           if (!_checkingBlockStatus)
             PopupMenuButton<String>(
               icon: const Icon(Icons.more_vert, color: Colors.white),
@@ -1846,6 +1877,22 @@ class _EphemeralMediaViewerState extends State<EphemeralMediaViewer> {
           style: TextStyle(color: Colors.white),
         ),
         actions: [
+          if (type == 'image')
+            IconButton(
+              icon: const Icon(Icons.download_rounded, color: Colors.white),
+              onPressed: () async {
+                try {
+                  await ImageDownloader.downloadImage(mediaUrl);
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Image saved to gallery')),
+                    );
+                  }
+                } catch (e) {
+                  debugPrint('Download error: $e');
+                }
+              },
+            ),
           Container(
             margin: const EdgeInsets.only(right: 16),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),

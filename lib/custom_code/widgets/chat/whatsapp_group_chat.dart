@@ -16,9 +16,10 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/foundation.dart' hide Category;
 import 'package:flutter/services.dart';
-
 import 'package:image_picker/image_picker.dart';
 import 'package:shimmer/shimmer.dart';
+import '../webrtc_call_screen.dart';
+import '../image_viewer.dart';
 
 class WhatsAppGroupChat extends ConsumerStatefulWidget {
   final double? width;
@@ -63,6 +64,29 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   // UI related methods
   void safeSetState(VoidCallback fn) {
     if (mounted) setState(fn);
+  }
+
+  void _handleCall(String mode) {
+    // Find the first member who isn't the current user
+    String? targetId;
+    try {
+      final otherMember = _groupMembers.firstWhere(
+        (m) => m['user_id'] != _currentUserId,
+      );
+      targetId = otherMember['user_id'];
+    } catch (_) {
+      // If no other members yet, we can't call
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => WebRTCCallScreen(
+          mode: mode,
+          targetUserId: targetId,
+        ),
+      ),
+    );
   }
 
   @override
@@ -298,15 +322,11 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
         actions: [
           IconButton(
             icon: const Icon(Icons.videocam, color: Colors.white),
-            onPressed: () {
-              // Video call TODO
-            },
+            onPressed: () => _handleCall('Video'),
           ),
           IconButton(
             icon: const Icon(Icons.call, color: Colors.white),
-            onPressed: () {
-              // Audio call TODO
-            },
+            onPressed: () => _handleCall('Voice'),
           ),
           PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert, color: Colors.white),
@@ -644,25 +664,42 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   }
 
   String _formatTime(DateTime date) {
-    return '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+    final local = date.toLocal();
+    final hour =
+        local.hour > 12 ? local.hour - 12 : (local.hour == 0 ? 12 : local.hour);
+    final period = local.hour >= 12 ? 'PM' : 'AM';
+    return '${hour.toString().padLeft(2, '0')}:${local.minute.toString().padLeft(2, '0')} $period';
   }
 
   Widget _buildImageMessage(String url) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 4),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(8),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxHeight: 300),
-          child: CachedNetworkImage(
-            imageUrl: url,
-            fit: BoxFit.cover,
-            placeholder: (context, url) => Container(
-                height: 200,
-                width: 200,
-                color: Colors.black12,
-                child: const Center(child: CircularProgressIndicator())),
-            errorWidget: (context, url, error) => const Icon(Icons.error),
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ImageViewer(
+              imageUrl: url,
+              title: widget.groupName,
+            ),
+          ),
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 4),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxHeight: 300),
+            child: CachedNetworkImage(
+              imageUrl: url,
+              fit: BoxFit.cover,
+              placeholder: (context, url) => Container(
+                  height: 200,
+                  width: 200,
+                  color: Colors.black12,
+                  child: const Center(child: CircularProgressIndicator())),
+              errorWidget: (context, url, error) => const Icon(Icons.error),
+            ),
           ),
         ),
       ),

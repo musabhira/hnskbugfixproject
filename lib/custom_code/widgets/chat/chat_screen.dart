@@ -12,9 +12,11 @@ import 'package:record/record.dart';
 
 import 'package:timeago/timeago.dart' as timeago;
 
-import 'chat_models.dart';
-import 'chat_provider.dart';
-import 'voice_player.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chat/chat_models.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chat/chat_provider.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chat/voice_player.dart';
+import 'package:pocket_mates_app/custom_code/widgets/webrtc_call_screen.dart';
+import 'package:pocket_mates_app/custom_code/widgets/image_viewer.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
   final String groupId;
@@ -241,7 +243,34 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         ]),
         backgroundColor: const Color(0xFF1F2C34),
         actions: [
-          IconButton(icon: const Icon(Icons.call), onPressed: () {}),
+          IconButton(
+            icon: const Icon(Icons.videocam),
+            onPressed: () {
+              // Get first member who isn't me
+              // For simplicity, navigating to call screen
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const WebRTCCallScreen(
+                    mode: 'Video',
+                  ),
+                ),
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.call),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const WebRTCCallScreen(
+                    mode: 'Voice',
+                  ),
+                ),
+              );
+            },
+          ),
           IconButton(icon: const Icon(Icons.more_vert), onPressed: () {}),
         ],
       ),
@@ -513,17 +542,30 @@ class _MessageBubble extends StatelessWidget {
               if (message.replyToMessageId != null)
                 _ReplyBubble(replyId: message.replyToMessageId!),
               if (message.messageType == 'image' && message.fileUrl != null)
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: CachedNetworkImage(
-                    imageUrl: message.fileUrl!,
-                    placeholder: (_, __) => Container(
-                        height: 150,
-                        width: 150,
-                        color: Colors.black12,
-                        child:
-                            const Center(child: CircularProgressIndicator())),
-                    errorWidget: (_, __, ___) => const Icon(Icons.error),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ImageViewer(
+                          imageUrl: message.fileUrl!,
+                          title: message.senderProfile?['name'] ?? 'Image',
+                        ),
+                      ),
+                    );
+                  },
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: CachedNetworkImage(
+                      imageUrl: message.fileUrl!,
+                      placeholder: (_, __) => Container(
+                          height: 150,
+                          width: 150,
+                          color: Colors.black12,
+                          child:
+                              const Center(child: CircularProgressIndicator())),
+                      errorWidget: (_, __, ___) => const Icon(Icons.error),
+                    ),
                   ),
                 ),
               if (message.messageType == 'voice' && message.fileUrl != null)

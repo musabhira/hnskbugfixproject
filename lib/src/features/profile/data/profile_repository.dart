@@ -156,6 +156,61 @@ class ProfileRepository extends _$ProfileRepository {
       'following': followingResponse.length,
     };
   }
+
+  Future<List<dynamic>> fetchGalleriesWithSocialData(
+      String currentUserId, String filterUserId) async {
+    final response = await _supabase.rpc(
+      'get_galleries_with_social_data',
+      params: {
+        'p_current_user_id': currentUserId,
+        'p_filter_user_id': filterUserId,
+      },
+    );
+    return response as List<dynamic>;
+  }
+
+  Future<int> fetchWatchSessionCoins(String userId) async {
+    final session = await _supabase
+        .from('watch_sessions')
+        .select('total_coins_earned')
+        .eq('user_id', userId)
+        .eq('is_active', true)
+        .maybeSingle();
+    return session?['total_coins_earned'] ?? 0;
+  }
+
+  Future<void> deleteGalleryItem(String itemId, String? imageUrl) async {
+    if (imageUrl != null) {
+      final storagePathMatch =
+          RegExp(r'gallery_photos/(.+)').firstMatch(imageUrl);
+      if (storagePathMatch != null) {
+        final storagePath = storagePathMatch.group(1);
+        if (storagePath != null) {
+          await _supabase.storage.from('gallery_photos').remove([storagePath]);
+        }
+      }
+    }
+    await _supabase.from('gallery').delete().match({'id': itemId});
+  }
+
+  Future<void> deleteServiceItem(String itemId) async {
+    await _supabase.from('service').delete().match({'id': itemId});
+  }
+
+  Future<void> deleteThread(String threadId) async {
+    await _supabase.from('threads').delete().eq('id', threadId);
+  }
+
+  Future<List<dynamic>> fetchGalleryShowcase(
+      String userId, int offset, int limit) async {
+    final response = await _supabase
+        .from('gallery')
+        .select()
+        .eq('user_id', userId)
+        .order('created_at', ascending: false)
+        .range(offset, offset + limit - 1);
+    return response;
+  }
 }
 
 @riverpod
