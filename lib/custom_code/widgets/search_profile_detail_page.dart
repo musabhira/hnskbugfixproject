@@ -21,7 +21,27 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pocket_mates_app/src/features/profile/data/profile_repository.dart';
 
-class SearchProfileDetailPage extends ConsumerStatefulWidget {
+// Automatic FlutterFlow imports
+import '/backend/supabase/supabase.dart';
+import '/flutter_flow/flutter_flow_theme.dart';
+import '/flutter_flow/flutter_flow_util.dart';
+import 'index.dart'; // Imports other custom widgets
+import '/custom_code/actions/index.dart'; // Imports custom actions
+import 'package:flutter/material.dart';
+// Begin custom widget code
+// DO NOT REMOVE OR MODIFY THE CODE ABOVE!
+
+import 'index.dart'; // Imports other custom widgets
+
+import 'package:cached_network_image/cached_network_image.dart';
+
+import 'package:share_plus/share_plus.dart';
+import 'dart:math' as math;
+import 'package:timeago/timeago.dart' as timeago;
+import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter/services.dart' as flutter;
+
+class SearchProfileDetailPage extends StatefulWidget {
   final double? width;
   final double? height;
   final String userId;
@@ -34,30 +54,33 @@ class SearchProfileDetailPage extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<SearchProfileDetailPage> createState() =>
+  _SearchProfileDetailPageState createState() =>
       _SearchProfileDetailPageState();
 }
 
-class _SearchProfileDetailPageState
-    extends ConsumerState<SearchProfileDetailPage>
+class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
     with SingleTickerProviderStateMixin {
   Map<String, dynamic>? _profileData;
+  List<Map<String, dynamic>> _galleryItems = [];
+  List<Map<String, dynamic>> _serviceItems = [];
+  List<Map<String, dynamic>> _commentItems = [];
   bool _isLoading = false;
+  final _supabase = SupaFlow.client;
 
   late TabController _tabController;
   int _followersCount = 0;
   int _followingCount = 0;
-  final ScrollController _scrollController = ScrollController();
+  ScrollController _scrollController = ScrollController();
   String _followersCountFormatted = '0';
   String _followingCountFormatted = '0';
   bool _isFollowing = false;
   bool _isCurrentUser = false;
+  String? _currentUserId;
   List<Map<String, dynamic>> userThreads = [];
-  List<Map<String, dynamic>> userServices = [];
-  List<Map<String, dynamic>> userGallery = [];
   bool isLoading = true;
   Map<String, dynamic>? hideData;
-
+  List<Map<String, dynamic>> _comments = [];
+  String? _errorMessage;
   bool _isBlocked = false;
   bool _isBlockedByOther = false;
   bool _checkingBlockStatus = true;
@@ -75,8 +98,6 @@ class _SearchProfileDetailPageState
     _checkIfCurrentUser();
     _getCurrentUser();
     _loadProfilethreadsData();
-    _loadServicesData();
-    _loadGalleryData();
     fetchHideStatus();
     _checkBlockStatus();
     _initScrollListener();
@@ -105,14 +126,155 @@ class _SearchProfileDetailPageState
   }
 
   Future<void> _getCurrentUser() async {
-    // Current user id is handled via SupaFlow.client directly when needed
+    final user = _supabase.auth.currentUser;
+    if (user != null) {
+      safeSetState(() {
+        _currentUserId = user.id;
+      });
+    }
   }
 
   void _checkIfCurrentUser() {
-    final currentUserId = SupaFlow.client.auth.currentUser?.id;
+    final currentUserId = _supabase.auth.currentUser?.id;
     safeSetState(() {
       _isCurrentUser = currentUserId == widget.userId;
     });
+  }
+
+  String formatCount(int count) {
+    if (count >= 1000000) {
+      return '${(count / 1000000).toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '')}M';
+    } else if (count >= 1000) {
+      return '${(count / 1000).toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '')}k';
+    } else {
+      return count.toString();
+    }
+  }
+
+  Future<void> _checkBlockStatus() async {
+    try {
+      setState(() {
+        _checkingBlockStatus = true;
+      });
+
+      // Check if current user blocked the receiver
+      final blockedByMe = await _supabase
+          .from('blocks')
+          .select('created_at')
+          .eq('blocker_id', _currentUserId.toString())
+          .eq('blocked_id', widget.userId)
+          .limit(1);
+
+      // Check if receiver blocked the current user
+      final blockedByOther = await _supabase
+          .from('blocks')
+          .select('created_at')
+          .eq('blocker_id', widget.userId)
+          .eq('blocked_id', _currentUserId.toString())
+          .limit(1);
+
+      if (mounted) {
+        setState(() {
+          _isBlocked = blockedByMe.isNotEmpty;
+          _isBlockedByOther = blockedByOther.isNotEmpty;
+
+          // Store block times
+          if (_isBlocked && blockedByMe.isNotEmpty) {
+            _blockTime = DateTime.parse(blockedByMe.first['created_at']);
+          } else {
+            _blockTime = null;
+          }
+
+          if (_isBlockedByOther && blockedByOther.isNotEmpty) {
+            _blockedByOtherTime =
+                DateTime.parse(blockedByOther.first['created_at']);
+          } else {
+            _blockedByOtherTime = null;
+          }
+
+          _checkingBlockStatus = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error checking block status: $e');
+      if (mounted) {
+        setState(() {
+          _checkingBlockStatus = false;
+        });
+      }
+    }
+  }
+
+  void fetchFollowCounts() async {
+    try {
+      // Get followers count - people who follow this user
+      final followersResponse = await _supabase
+          .from('follows')
+          .select('id')
+          .eq('followed_id', widget.userId);
+
+      // Get following count - people this user follows
+      final followingResponse = await _supabase
+          .from('follows')
+          .select('id')
+          .eq('follower_id', widget.userId);
+
+      // Get followers count from users table
+      final userResponse = await _supabase
+          .from('users')
+          .select('followers')
+          .eq('id', widget.userId)
+          .single();
+
+      final double userTableFollowers =
+          userResponse['followers']?.toDouble() ?? 0.0;
+
+      final int followersCountRaw =
+          followersResponse.length + userTableFollowers.toInt();
+      final int followingCountRaw = followingResponse.length;
+
+      safeSetState(() {
+        _followersCount = followersCountRaw;
+        _followingCount = followingCountRaw;
+        _followersCountFormatted = formatCount(followersCountRaw);
+        _followingCountFormatted = formatCount(followingCountRaw);
+        print('Followers count: $_followersCountFormatted');
+        print('Following count: $_followingCountFormatted');
+      });
+    } catch (e) {
+      print('Error fetching follow counts: $e');
+    }
+  }
+
+  Future<void> _loadProfilethreadsData() async {
+    safeSetState(() {
+      isLoading = true;
+    });
+
+    try {
+      // Fetch user threads
+      final threads = await _supabase
+          .from('threads_view')
+          .select()
+          .eq('user_id', widget.userId)
+          .order('created_at', ascending: false);
+
+      if (mounted) {
+        safeSetState(() {
+          userThreads = List<Map<String, dynamic>>.from(threads);
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        safeSetState(() {
+          isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading profile: ${e.toString()}')),
+        );
+      }
+    }
   }
 
   String _formatCount(int count) {
@@ -127,143 +289,102 @@ class _SearchProfileDetailPageState
     }
   }
 
-  Future<void> _checkBlockStatus() async {
-    try {
-      safeSetState(() {
-        _checkingBlockStatus = true;
-      });
-
-      final currentUserId = SupaFlow.client.auth.currentUser?.id;
-      if (currentUserId == null) {
-        safeSetState(() => _checkingBlockStatus = false);
-        return;
-      }
-
-      final result = await ref
-          .read(profileRepositoryProvider)
-          .checkBlockStatus(currentUserId, widget.userId);
-
-      if (mounted) {
-        safeSetState(() {
-          _isBlocked = result['isBlocked'];
-          _isBlockedByOther = result['isBlockedByOther'];
-          _blockTime = result['blockTime'] != null
-              ? DateTime.parse(result['blockTime'])
-              : null;
-          _blockedByOtherTime = result['blockedByOtherTime'] != null
-              ? DateTime.parse(result['blockedByOtherTime'])
-              : null;
-          _checkingBlockStatus = false;
-        });
-      }
-    } catch (e) {
-      debugPrint('Error checking block status: $e');
-      if (mounted) {
-        safeSetState(() {
-          _checkingBlockStatus = false;
-        });
-      }
-    }
-  }
-
-  void fetchFollowCounts() async {
-    try {
-      final repository = ref.read(profileRepositoryProvider);
-      final counts = await repository.fetchFollowCounts(widget.userId);
-
-      safeSetState(() {
-        _followersCount = counts['followers'] ?? 0;
-        _followingCount = counts['following'] ?? 0;
-        _followersCountFormatted = _formatCount(_followersCount);
-        _followingCountFormatted = _formatCount(_followingCount);
-      });
-    } catch (e) {
-      debugPrint('Error fetching follow counts: $e');
-    }
-  }
-
-  Future<void> _loadServicesData() async {
-    try {
-      final services = await ref
-          .read(profileRepositoryProvider)
-          .fetchUserServices(widget.userId);
-      if (mounted) {
-        safeSetState(() {
-          userServices = services;
-        });
-      }
-    } catch (e) {
-      debugPrint('Error loading services: $e');
-    }
-  }
-
-  Future<void> _loadGalleryData() async {
-    try {
-      final gallery = await ref
-          .read(profileRepositoryProvider)
-          .fetchUserGallery(widget.userId);
-      if (mounted) {
-        safeSetState(() {
-          userGallery = gallery;
-        });
-      }
-    } catch (e) {
-      debugPrint('Error loading gallery: $e');
-    }
-  }
-
-  Future<void> _loadProfilethreadsData() async {
-    safeSetState(() {
-      isLoading = true;
-    });
-
-    try {
-      final threads = await ref
-          .read(profileRepositoryProvider)
-          .fetchUserThreads(widget.userId);
-
-      if (mounted) {
-        safeSetState(() {
-          userThreads = threads;
-          isLoading = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        safeSetState(() {
-          isLoading = false;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading threads: ${e.toString()}')),
-        );
-      }
-    }
-  }
-
   void _fetchProfileData() async {
     safeSetState(() {
       _isLoading = true;
     });
 
     try {
-      final repository = ref.read(profileRepositoryProvider);
-      final profile = await repository.fetchUserProfile(widget.userId);
+      final profileResponse = await _supabase
+          .from('profile_gallery_service_likes_comments_view')
+          .select('''
+          profile_id, profile_created_at, user_id, name, phone_no, country, bio, 
+          shop_name, profile_image_url, banner_image_url, button_color_code, 
+          bg_color_code, bg_text_color, state, city, button_text_color, verified,insta_id,insta_link
+        ''')
+          .eq('user_id', widget.userId)
+          .limit(1);
+
+      Map<String, dynamic>? profile =
+          profileResponse.isNotEmpty ? profileResponse.first : null;
+
+      final galleryResponse = await _supabase
+          .from('profile_gallery_service_likes_comments_view')
+          .select('''
+          gallery_id, gallery_title, profile_id, shop_name, gallery_description, 
+          gallery_price, gallery_image_url, gallery_category, like_id, like_created_at,comment_id,comment_content,comment_created_at,comment_updated_at
+        ''')
+          .eq('user_id', widget.userId)
+          .not('gallery_id', 'is', null)
+          .order('gallery_created_at', ascending: false);
+
+      final Map<String, Map<String, dynamic>> uniqueGalleryItems = {};
+      for (var item in galleryResponse) {
+        if (item['gallery_id'] != null) {
+          uniqueGalleryItems[item['gallery_id'].toString()] = item;
+        }
+      }
+      final commentResponse = await _supabase
+          .from('profile_gallery_service_likes_comments_view')
+          .select('''
+      gallery_id, gallery_created_at, gallery_title, gallery_description, 
+      gallery_price, gallery_image_url, gallery_category, like_id, like_created_at,
+      comment_id, comment_content, comment_created_at, comment_updated_at
+    ''')
+          .eq('user_id', widget.userId)
+          // Add this filter for the specific gallery
+          .not('gallery_id', 'is', null)
+          .order('gallery_created_at', ascending: false);
+
+      final Map<String, Map<String, dynamic>> uniquecommentItems = {};
+      for (var item in commentResponse) {
+        if (item['comment_id'] != null) {
+          uniquecommentItems[item['comment_id'].toString()] = item;
+        }
+      }
+      for (var item in galleryResponse) {
+        if (item['gallery_id'] != null) {
+          uniqueGalleryItems[item['gallery_id'].toString()] = item;
+        }
+      }
+      final serviceResponse = await _supabase
+          .from('profile_gallery_service_likes_comments_view')
+          .select('''
+          service_id, service_created_at, service_title, service_description, 
+          service_price, service_category
+        ''')
+          .eq('user_id', widget.userId)
+          .not('service_id', 'is', null)
+          .order('service_created_at', ascending: false);
+
+      final Map<String, Map<String, dynamic>> uniqueServiceItems = {};
+      for (var item in serviceResponse) {
+        if (item['service_id'] != null) {
+          uniqueServiceItems[item['service_id'].toString()] = item;
+        }
+      }
 
       safeSetState(() {
         _profileData = profile;
+        _galleryItems = uniqueGalleryItems.values.toList();
+        print(_galleryItems);
+        _serviceItems = uniqueServiceItems.values.toList();
+        _commentItems = uniquecommentItems.values.toList();
         _isLoading = false;
       });
-      fetchFollowCounts();
     } catch (e) {
       safeSetState(() {
         _isLoading = false;
       });
-      debugPrint('Error fetching profile data: $e');
+      print('Error fetching profile data: $e');
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   SnackBar(content: Text('Error fetching profile data: $e')),
+      // );
     }
   }
 
   void _checkFollowStatus() async {
-    final currentUserId = SupaFlow.client.auth.currentUser?.id;
+    final currentUserId = _supabase.auth.currentUser?.id;
     if (currentUserId == null || currentUserId == widget.userId) {
       safeSetState(() {
         _isFollowing = false;
@@ -272,19 +393,22 @@ class _SearchProfileDetailPageState
     }
 
     try {
-      final isFollowing = await ref
-          .read(profileRepositoryProvider)
-          .checkFollowStatus(currentUserId, widget.userId);
+      final response = await _supabase
+          .from('follows')
+          .select()
+          .eq('follower_id', currentUserId)
+          .eq('followed_id', widget.userId);
+
       safeSetState(() {
-        _isFollowing = isFollowing;
+        _isFollowing = response.isNotEmpty;
       });
     } catch (e) {
-      debugPrint('Error checking follow status: $e');
+      print('Error checking follow status: $e');
     }
   }
 
   Future<void> toggleFollow() async {
-    final currentUserId = SupaFlow.client.auth.currentUser?.id;
+    final currentUserId = _supabase.auth.currentUser?.id;
     if (currentUserId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please log in to follow users')),
@@ -293,21 +417,26 @@ class _SearchProfileDetailPageState
     }
 
     try {
-      final repository = ref.read(profileRepositoryProvider);
       if (_isFollowing) {
-        await repository.unfollowUser(currentUserId, widget.userId);
+        await _supabase
+            .from('follows')
+            .delete()
+            .eq('follower_id', currentUserId)
+            .eq('followed_id', widget.userId);
       } else {
-        await repository.followUser(currentUserId, widget.userId);
+        await _supabase.from('follows').insert({
+          'follower_id': currentUserId,
+          'followed_id': widget.userId,
+        });
       }
 
       safeSetState(() {
         _isFollowing = !_isFollowing;
         _followersCount =
             _isFollowing ? _followersCount + 1 : _followersCount - 1;
-        _followersCountFormatted = _formatCount(_followersCount);
       });
     } catch (e) {
-      debugPrint('Error updating follow status: $e');
+      print('Error fetching profile data: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error updating follow status: $e')),
       );
@@ -340,27 +469,1144 @@ class _SearchProfileDetailPageState
     );
   }
 
+  void _showGalleryItemDetails(Map<String, dynamic> item) {
+    // Initialize like countAnonymous
+    int likeCount = item['like_count'] ?? 0;
+    bool isLiked = item['like_id'] != null;
+    String galleryId = item['gallery_id'] ?? '';
+    String commentcontent = item['comment_content'] ?? '';
+    String galleryTitle = item['gallery_title'] ?? '';
+    String gallerySecondTitle = '';
+
+    List<Map<String, dynamic>> comments = [];
+    bool isLoading = true;
+    String? errorMessage;
+    bool _isMoreRecent(
+        Map<String, dynamic> comment1, Map<String, dynamic> comment2) {
+      final time1 = comment1['created_at'] ?? comment1['comment_created_at'];
+      final time2 = comment2['created_at'] ?? comment2['comment_created_at'];
+
+      if (time1 == null || time2 == null) return false;
+
+      try {
+        return DateTime.parse(time1.toString())
+            .isAfter(DateTime.parse(time2.toString()));
+      } catch (e) {
+        return false;
+      }
+    }
+
+    Future<void> fetchComments(StateSetter setModalState,
+        {String? contentFilter}) async {
+      setModalState(() {
+        _isLoading = true;
+      });
+
+      try {
+        // Start with the base query filtering by gallery_id
+        var query = _supabase
+            .from('gallery_with_comments_view')
+            .select()
+            .eq('gallery_id', galleryId)
+            // Only show rows where comment_content is not null
+            .not('comment_content', 'is', null);
+
+        // Add content filter if provided
+        if (contentFilter != null && contentFilter.isNotEmpty) {
+          // Filter comments that contain the search text
+          query = query.ilike('comment_content', '%$contentFilter%');
+        }
+
+        // Execute the query
+        final response = await query;
+
+        // Remove duplicates based on comment_content
+        final Map<String, Map<String, dynamic>> uniqueComments = {};
+
+        for (var comment in response) {
+          final commentContent = comment['comment_content']?.toString();
+          if (commentContent != null && commentContent.isNotEmpty) {
+            // Keep the first occurrence or the one with more recent timestamp
+            if (!uniqueComments.containsKey(commentContent) ||
+                _isMoreRecent(comment, uniqueComments[commentContent]!)) {
+              uniqueComments[commentContent] = comment;
+            }
+          }
+        }
+
+        // Convert back to list
+        final deduplicatedComments = uniqueComments.values.toList();
+
+        // Get unique profile_comment_ids from the deduplicated comments
+        final profileCommentIds = deduplicatedComments
+            .map((comment) => comment['profile_comment_id'])
+            .where((id) => id != null)
+            .toSet()
+            .toList();
+
+        // Fetch profile information for all comment authors
+        Map<String, Map<String, dynamic>> profilesMap = {};
+
+        if (profileCommentIds.isNotEmpty) {
+          final profilesResponse = await _supabase
+              .from('profile')
+              .select('id, name, profile_image_url')
+              .inFilter('id', profileCommentIds);
+
+          // Create a map for quick lookup
+          for (var profile in profilesResponse) {
+            profilesMap[profile['id'].toString()] = profile;
+          }
+        }
+
+        // Combine comment data with profile information
+        final List<Map<String, dynamic>> enrichedComments =
+            deduplicatedComments.map((comment) {
+          final profileCommentId = comment['profile_comment_id']?.toString();
+          final profileData = profilesMap[profileCommentId];
+
+          return {
+            ...comment,
+            // Add profile information to each comment
+            'commenter_name': profileData?['name'] ?? 'Unknown User',
+            'commenter_profile_image_url': profileData?['profile_image_url'],
+          };
+        }).toList();
+
+        // Sort comments by timestamp (newest first) - optional
+        enrichedComments.sort((a, b) {
+          final aTime = a['created_at'] ?? a['comment_created_at'];
+          final bTime = b['created_at'] ?? b['comment_created_at'];
+          if (aTime != null && bTime != null) {
+            return DateTime.parse(bTime.toString())
+                .compareTo(DateTime.parse(aTime.toString()));
+          }
+          return 0;
+        });
+
+        setModalState(() {
+          _comments = enrichedComments;
+          _isLoading = false;
+          _errorMessage = null; // Clear any previous error
+        });
+      } catch (error) {
+        setModalState(() {
+          _errorMessage = 'Failed to load comments: $error';
+          print(_errorMessage);
+          _isLoading = false;
+          // Don't clear _comments on error to preserve existing data
+        });
+      }
+    }
+
+// Alternative approach: Fetch gallery info separately for better performance
+    Future<void> fetchGalleryInfo() async {
+      try {
+        final response = await _supabase
+            .from('gallery_with_comments_view')
+            .select('gallery_title, gallery_second_title')
+            .eq('gallery_id', galleryId)
+            .limit(1)
+            .single();
+
+        galleryTitle = response['gallery_title'] ?? 'No Title';
+        gallerySecondTitle =
+            response['gallery_second_title'] ?? 'No Second Title';
+      } catch (error) {
+        print('Error fetching gallery info: $error');
+        galleryTitle = 'No Title';
+        gallerySecondTitle = 'No Second Title';
+      }
+    }
+
+    // Initialize comments list and controller
+    final TextEditingController commentController = TextEditingController();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) {
+          if (isLoading) {
+            fetchComments(setModalState);
+          }
+
+          // Define a local toggle like function within the modal
+          Future<void> modalToggleLike() async {
+            try {
+              final userId = _supabase.auth.currentUser?.id;
+              if (userId == null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                      content: Text('You need to be logged in to like items')),
+                );
+                return;
+              }
+
+              final galleryId = item['gallery_id'];
+              if (galleryId == null) return;
+
+              // If already liked, remove the like
+              if (isLiked) {
+                await _supabase
+                    .from('likes')
+                    .delete()
+                    .eq('id', item['like_id']);
+
+                // Update the state within the modal
+                setModalState(() {
+                  isLiked = false;
+                  likeCount = math.max(0, likeCount - 1);
+                });
+                // Update the main state
+                safeSetState(() {
+                  final index = _galleryItems.indexWhere(
+                      (element) => element['gallery_id'] == galleryId);
+                  if (index != -1) {
+                    _galleryItems[index]['like_id'] = null;
+                    _galleryItems[index]['like_created_at'] = null;
+                    _galleryItems[index]['like_count'] = math.max<int>(0,
+                        ((_galleryItems[index]['like_count'] ?? 0) as int) - 1);
+                  }
+                });
+
+                // Update the item for consistency
+                item['like_id'] = null;
+                item['like_created_at'] = null;
+                item['like_count'] =
+                    math.max<int>(0, ((item['like_count'] ?? 0) as int) - 1);
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Removed from likes')),
+                );
+              }
+              // If not liked, add a like
+              else {
+                final response = await _supabase
+                    .from('likes')
+                    .insert({
+                      'user_id': userId,
+                      'gallery_id': galleryId,
+                    })
+                    .select()
+                    .single();
+
+                // Update the state within the modal
+                setModalState(() {
+                  isLiked = true;
+                  likeCount = likeCount + 1;
+                });
+
+                // Update the main state
+                safeSetState(() {
+                  final index = _galleryItems.indexWhere(
+                      (element) => element['gallery_id'] == galleryId);
+                  if (index != -1) {
+                    _galleryItems[index]['like_id'] = response['id'];
+                    _galleryItems[index]['like_created_at'] =
+                        response['created_at'];
+                    _galleryItems[index]['like_count'] =
+                        (_galleryItems[index]['like_count'] ?? 0) + 1;
+                  }
+                });
+
+                // Update the item for consistency
+                item['like_id'] = response['id'];
+                item['like_created_at'] = response['created_at'];
+                item['like_count'] = (item['like_count'] ?? 0) + 1;
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Added to likes')),
+                );
+              }
+            } catch (e) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Error toggling like: $e')),
+              );
+            }
+          }
+
+          // Function to add a comment
+          Future<void> addComment() async {
+            if (commentController.text.trim().isEmpty) return;
+
+            try {
+              final userId = _supabase.auth.currentUser?.id;
+              if (userId == null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                      content: Text('You need to be logged in to comment')),
+                );
+                return;
+              }
+
+              final galleryId = item['gallery_id'];
+              if (galleryId == null) return;
+              final profileResponse = await _supabase
+                  .from('profile')
+                  .select('id')
+                  .eq('user_id', userId)
+                  .single();
+
+              final profileId = profileResponse['id'];
+              if (profileId == null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Profile not found')),
+                );
+                return;
+              }
+
+              // Add comment to database
+              await _supabase.from('comments').insert({
+                'user_id': userId,
+                'gallery_id': galleryId,
+                'content': commentController.text.trim(),
+                'profile_id': profileId,
+              });
+
+              // Clear the comment field
+              commentController.clear();
+
+              // Set loading to true to refresh comments list
+              setModalState(() {
+                isLoading = true;
+              });
+
+              // Re-fetch all comments to update the list
+              await fetchComments(setModalState);
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Comment added successfully')),
+              );
+            } catch (e) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Error adding comment: $e')),
+              );
+              print(e);
+            }
+          }
+
+          // Format timestamp to readable date
+          String formatTimestamp(dynamic timestamp) {
+            if (timestamp == null) return '';
+
+            try {
+              // If it's a string, parse it as DateTime
+              if (timestamp is String) {
+                final dateTime = DateTime.parse(timestamp);
+                // Format the date as needed
+                return '${dateTime.day}/${dateTime.month}/${dateTime.year}';
+              }
+              // If it's already a DateTime
+              else if (timestamp is DateTime) {
+                return '${timestamp.day}/${timestamp.month}/${timestamp.year}';
+              }
+              return '';
+            } catch (e) {
+              return '';
+            }
+          }
+
+          return FractionallySizedBox(
+            heightFactor: 0.9, // Increased height to accommodate comments
+            child: Container(
+              decoration: BoxDecoration(
+                color: _getBgColor(),
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(24)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    blurRadius: 20,
+                    spreadRadius: 5,
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(24)),
+                child: Column(
+                  children: [
+                    // Pull handle
+                    Center(
+                      child: Container(
+                        margin: const EdgeInsets.only(top: 12, bottom: 8),
+                        width: 40,
+                        height: 5,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade300,
+                          borderRadius: BorderRadius.circular(2.5),
+                        ),
+                      ),
+                    ),
+
+                    Expanded(
+                      child: SingleChildScrollView(
+                        physics: const BouncingScrollPhysics(),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Gallery Image with double-tap like functionality
+                            GestureDetector(
+                              onDoubleTap:
+                                  modalToggleLike, // Use the local function
+                              child: Stack(
+                                alignment: Alignment.bottomLeft,
+                                children: [
+                                  AspectRatio(
+                                    aspectRatio: 1,
+                                    child: Container(
+                                      width: double.infinity,
+                                      decoration: BoxDecoration(
+                                        image: DecorationImage(
+                                          image: CachedNetworkImageProvider(
+                                            item['gallery_image_url'] ??
+                                                'https://via.placeholder.com/400',
+                                          ),
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  // Like count overlay
+                                  // Padding(
+                                  //   padding: const EdgeInsets.all(16.0),
+                                  //   child: Container(
+                                  //     padding: const EdgeInsets.symmetric(
+                                  //       horizontal: 12,
+                                  //       vertical: 6,
+                                  //     ),
+                                  //     decoration: BoxDecoration(
+                                  //       color: _getBgColor().withOpacity(0.7),
+                                  //       borderRadius: BorderRadius.circular(20),
+                                  //     ),
+                                  //     child: Row(
+                                  //       mainAxisSize: MainAxisSize.min,
+                                  //       children: [
+                                  //         Icon(
+                                  //           Icons.favorite,
+                                  //           color: _getButtonColor(),
+                                  //           size: 18,
+                                  //         ),
+                                  //         // SizedBox(width: 6),
+                                  //         // Text(
+                                  //         //   likeCount.toString(),
+                                  //         //   style: TextStyle(
+                                  //         //     color: _getBgTextColor(),
+                                  //         //     fontWeight: FontWeight.bold,
+                                  //         //   ),
+                                  //         // ),
+                                  //       ],
+                                  //     ),
+                                  //   ),
+                                  // ),
+                                ],
+                              ),
+                            ),
+
+                            // Gallery Info
+                            Padding(
+                              padding: const EdgeInsets.all(20.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          item['gallery_title'] ?? 'Gallery',
+                                          style: TextStyle(
+                                            color: _getBgTextColor(),
+                                            fontSize: 24,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                      if (item['gallery_price'] != null)
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 12, vertical: 8),
+                                          decoration: BoxDecoration(
+                                            color: _getButtonColor(),
+                                            borderRadius:
+                                                BorderRadius.circular(16),
+                                          ),
+                                          child: Text(
+                                            '₹${item['gallery_price']}',
+                                            style: TextStyle(
+                                              color: _getButtonTextColor(),
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                        ),
+                                      ReportButton(
+                                        contentType: 'gallery',
+                                        contentId: item['gallery_id'],
+                                        contentTitle: item['gallery_title'] ??
+                                            'Gallery Item',
+                                        onReportSubmitted: () {
+                                          // Optional: Show feedback to user
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                  'Thank you for your report. We\'ll review it soon.'),
+                                              backgroundColor: Colors.green,
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ],
+                                  ),
+
+                                  if (item['gallery_category'] != null)
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 8.0),
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 10, vertical: 4),
+                                        decoration: BoxDecoration(
+                                          color: _getButtonColor(),
+                                          borderRadius:
+                                              BorderRadius.circular(20),
+                                        ),
+                                        child: Text(
+                                          item['gallery_category'],
+                                          style: TextStyle(
+                                            color: _getButtonTextColor(),
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+
+                                  if (item['gallery_description'] != null)
+                                    Container(
+                                      margin: const EdgeInsets.only(top: 8.0),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 4.0),
+                                      child: Text(
+                                        item['gallery_description'],
+                                        style: TextStyle(
+                                          color: _getButtonTextColor(),
+                                          fontSize: 16,
+                                          height: 1.5,
+                                        ),
+                                      ),
+                                    ),
+                                  const SizedBox(height: 8),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 4.0),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      children: [
+                                        Container(
+                                          height: 32,
+                                          width: 32,
+                                          decoration: BoxDecoration(
+                                            color: _getButtonColor(),
+                                            borderRadius:
+                                                BorderRadius.circular(6),
+                                          ),
+                                          child: IconButton(
+                                            padding: EdgeInsets.zero,
+                                            onPressed: () async {
+                                              final link =
+                                                  "${WhatsAppShareHelper.baseAppUrl}/shareGallery?galleryId=${item['gallery_id']}";
+                                              await flutter.Clipboard.setData(
+                                                  flutter.ClipboardData(
+                                                      text: link));
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                const SnackBar(
+                                                  content: Text(
+                                                      'Link copied to clipboard'),
+                                                  duration:
+                                                      Duration(seconds: 2),
+                                                ),
+                                              );
+                                            },
+                                            icon: Icon(
+                                              Icons.link,
+                                              size: 16,
+                                              color: _getButtonTextColor(),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 24),
+
+                                  // Action buttons for Like and Share
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const SizedBox(width: 6),
+                                      Expanded(
+                                        child: OutlinedButton.icon(
+                                          onPressed: () async {
+                                            final isAuthenticated =
+                                                await AuthAlertBox
+                                                    .checkAuthAndShowAlert(
+                                              context: context,
+                                              customMessage:
+                                                  "Please login to like this gallery",
+                                            );
+                                            if (isAuthenticated) {
+                                              // ignore: use_build_context_synchronously
+                                              modalToggleLike();
+                                            }
+                                          }, // Use the local function
+                                          icon: Padding(
+                                            padding: const EdgeInsets.only(
+                                                left: 8.0, right: 8),
+                                            child: Icon(
+                                              isLiked
+                                                  ? Icons.favorite
+                                                  : Icons.favorite_border,
+                                              color: isLiked
+                                                  ? Colors.red
+                                                  : _getButtonColor(),
+                                            ),
+                                          ),
+                                          label: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.start,
+                                            children: [
+                                              Text(isLiked ? 'Liked' : 'Like',
+                                                  style: TextStyle(
+                                                      color:
+                                                          _getBgTextColor())),
+                                              const SizedBox(width: 4),
+                                              // Text('$likeCount',
+                                              //     style: TextStyle(
+                                              //         color:
+                                              //             _getBgTextColor())),
+                                            ],
+                                          ),
+                                          style: OutlinedButton.styleFrom(
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 12),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                            ),
+                                            side: BorderSide(
+                                              color: _getButtonColor(),
+                                              // ✅ Replace with your desired color
+                                              width:
+                                                  2, // Optional: thickness of the border
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: ElevatedButton.icon(
+                                          onPressed: () {
+                                            _shareGalleryItem(item);
+                                          },
+                                          icon: const Icon(Icons.share),
+                                          label: const Text('Share'),
+                                          style: ElevatedButton.styleFrom(
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 12),
+                                            backgroundColor: _getButtonColor(),
+                                            foregroundColor:
+                                                _getButtonTextColor(),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+
+                                  // Comments section header
+                                  Padding(
+                                    padding: const EdgeInsets.only(
+                                        top: 32.0, bottom: 16.0),
+                                    child: Row(
+                                      children: [
+                                        Text(
+                                          'Comments',
+                                          style: TextStyle(
+                                            color: _getBgTextColor(),
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 8, vertical: 2),
+                                          decoration: BoxDecoration(
+                                            color: _getButtonColor()
+                                                .withOpacity(0.8),
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                          ),
+                                          child: Text(
+                                            '${_comments.length}',
+                                            style: TextStyle(
+                                              color: _getButtonTextColor(),
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+
+                                  // Comments list
+                                  if (_comments.isEmpty)
+                                    Center(
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 20.0),
+                                        child: Column(
+                                          children: [
+                                            Icon(
+                                              Icons.chat_bubble_outline,
+                                              size: 48,
+                                              color: _getButtonColor(),
+                                            ),
+                                            const SizedBox(height: 16),
+                                            Text(
+                                              'No comments yet',
+                                              style: TextStyle(
+                                                color: _getBgTextColor()
+                                                    .withOpacity(0.7),
+                                                fontSize: 16,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 8),
+                                            Text(
+                                              'Be the first to comment!',
+                                              style: TextStyle(
+                                                color: _getBgTextColor()
+                                                    .withOpacity(0.7),
+                                                fontSize: 14,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    )
+                                  else
+                                    ListView.separated(
+                                      physics:
+                                          const NeverScrollableScrollPhysics(),
+                                      shrinkWrap: true,
+                                      itemCount: _comments.length,
+                                      separatorBuilder: (context, index) =>
+                                          Divider(
+                                        color: Colors.grey.shade200,
+                                        height: 24,
+                                      ),
+                                      itemBuilder: (context, index) {
+                                        final comment = _comments[index];
+                                        final bool isCurrentUserComment =
+                                            comment['user_id'] ==
+                                                _supabase.auth.currentUser?.id;
+
+                                        // Define delete function in this scope
+                                        Future<void> deleteComment() async {
+                                          try {
+                                            final userId =
+                                                _supabase.auth.currentUser?.id;
+                                            if (userId == null) return;
+
+                                            // Only allow deletion if user owns the comment
+                                            if (comment['user_id'] != userId) {
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                const SnackBar(
+                                                    content: Text(
+                                                        'You can only delete your own comments')),
+                                              );
+                                              return;
+                                            }
+
+                                            final commentId =
+                                                comment['comment_id'];
+                                            if (commentId == null) return;
+
+                                            // Delete from database
+                                            await _supabase
+                                                .from('comments')
+                                                .delete()
+                                                .eq('id', commentId);
+
+                                            // Set loading to true to refresh comments list
+                                            setModalState(() {
+                                              isLoading = true;
+                                            });
+
+                                            // Re-fetch all comments to update the list
+                                            await fetchComments(setModalState);
+
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              const SnackBar(
+                                                  content:
+                                                      Text('Comment deleted')),
+                                            );
+                                          } catch (e) {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              SnackBar(
+                                                  content: Text(
+                                                      'Error deleting comment: $e')),
+                                            );
+                                            print(e);
+                                          }
+                                        }
+
+                                        return Container(
+                                          padding: const EdgeInsets.all(12),
+                                          decoration: BoxDecoration(
+                                            color: _getBgColor(),
+                                            borderRadius:
+                                                BorderRadius.circular(16),
+                                            border: Border.all(
+                                                color: _getBgColor()
+                                                    .withOpacity(0.6)),
+                                          ),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Row(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  // User avatar
+                                                  CircleAvatar(
+                                                    radius: 18,
+                                                    backgroundImage: comment[
+                                                                'commenter_profile_image_url'] !=
+                                                            null
+                                                        ? CachedNetworkImageProvider(
+                                                            comment['commenter_profile_image_url']
+                                                                as String)
+                                                        : null,
+                                                    child:
+                                                        comment['commenter_profile_image_url'] ==
+                                                                null
+                                                            ? const Icon(
+                                                                Icons.person)
+                                                            : null,
+                                                  ),
+                                                  const SizedBox(width: 12),
+
+                                                  // Comment content
+                                                  Expanded(
+                                                    child: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Row(
+                                                          children: [
+                                                            Text(
+                                                              (comment['commenter_name']
+                                                                      as String?) ??
+                                                                  'Anonymous',
+                                                              style: TextStyle(
+                                                                color:
+                                                                    _getBgTextColor(),
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                              ),
+                                                            ),
+                                                            const SizedBox(
+                                                                width: 6),
+                                                            Text(
+                                                              formatTimestamp(
+                                                                  comment[
+                                                                      'created_at']),
+                                                              style: TextStyle(
+                                                                fontSize: 12,
+                                                                color: _getBgTextColor()
+                                                                    .withOpacity(
+                                                                        0.7),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                        const SizedBox(
+                                                            height: 4),
+                                                        Text(
+                                                          comment['comment_content']
+                                                                  as String? ??
+                                                              'No content',
+                                                          style: TextStyle(
+                                                              color:
+                                                                  _getBgTextColor(),
+                                                              height: 1.3),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+
+                                                  // Delete option
+                                                  if (isCurrentUserComment)
+                                                    IconButton(
+                                                      icon: Icon(
+                                                        Icons.delete_outline,
+                                                        size: 18,
+                                                        color: _getBgTextColor()
+                                                            .withOpacity(0.7),
+                                                      ),
+                                                      onPressed: deleteComment,
+                                                    ),
+                                                  const Spacer(),
+                                                  ReportButton(
+                                                    contentType: 'comment',
+                                                    contentId:
+                                                        comment['comment_id'],
+                                                    contentTitle:
+                                                        comment['comment_content']
+                                                                as String? ??
+                                                            'Comment',
+                                                    onReportSubmitted: () {
+                                                      // Optional: Show feedback   to user
+                                                      ScaffoldMessenger.of(
+                                                              context)
+                                                          .showSnackBar(
+                                                        const SnackBar(
+                                                          content: Text(
+                                                              'Thank you for your report. We\'ll review it soon.'),
+                                                          backgroundColor:
+                                                              Colors.green,
+                                                        ),
+                                                      );
+                                                    },
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    // Comment input section
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: _getBgColor(),
+                        boxShadow: [
+                          BoxShadow(
+                            offset: const Offset(0, -2),
+                            blurRadius: 6,
+                            // ignore: deprecated_member_use
+                            color: Colors.black.withOpacity(0.05),
+                          ),
+                        ],
+                      ),
+                      child: SafeArea(
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                controller: commentController,
+                                decoration: InputDecoration(
+                                  hintText: 'Add a comment...',
+                                  hintStyle: TextStyle(
+                                      color:
+                                          _getBgTextColor()), // White hint text
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(24),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                  filled: true,
+                                  fillColor: _getBgColor().withOpacity(0.6),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 10,
+                                  ),
+                                ),
+                                style: TextStyle(
+                                    color:
+                                        _getBgTextColor()), // White input text
+                                maxLines: null,
+                                textCapitalization:
+                                    TextCapitalization.sentences,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            InkWell(
+                              onTap: () async {
+                                final isAuthenticated =
+                                    await AuthAlertBox.checkAuthAndShowAlert(
+                                  context: context,
+                                  customMessage:
+                                      "Please login to Comment to the gallery",
+                                );
+                                if (isAuthenticated) {
+                                  // ignore: use_build_context_synchronously
+                                  addComment();
+                                }
+                              },
+                              customBorder: const CircleBorder(),
+                              child: Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: _getButtonColor(),
+                                ),
+                                child: Icon(
+                                  Icons.send,
+                                  color: _getButtonTextColor(),
+                                  size: 20,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   @override
   void dispose() {
-    _tabController.dispose();
+    _tabController?.dispose();
     _scrollController.dispose();
     super.dispose();
   }
 
+  Future<void> _toggleLike(Map<String, dynamic> item) async {
+    try {
+      final userId = _supabase.auth.currentUser?.id;
+      if (userId == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('You need to be logged in to like items')),
+        );
+        return;
+      }
+
+      final galleryId = item['gallery_id'];
+      if (galleryId == null) return;
+
+      // If already liked, remove the like
+      if (item['like_id'] != null) {
+        await _supabase.from('likes').delete().eq('id', item['like_id']);
+
+        // Update local state
+        safeSetState(() {
+          final index = _galleryItems
+              .indexWhere((element) => element['gallery_id'] == galleryId);
+          if (index != -1) {
+            _galleryItems[index]['like_id'] = null;
+            _galleryItems[index]['like_created_at'] = null;
+          }
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Removed from likes')),
+        );
+      }
+      // If not liked, add a like
+      else {
+        final response = await _supabase
+            .from('likes')
+            .insert({
+              'user_id': userId,
+              'gallery_id': galleryId,
+            })
+            .select()
+            .single();
+
+        // Update local state
+        safeSetState(() {
+          final index = _galleryItems
+              .indexWhere((element) => element['gallery_id'] == galleryId);
+          if (index != -1) {
+            _galleryItems[index]['like_id'] = response['id'];
+            _galleryItems[index]['like_created_at'] = response['created_at'];
+          }
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Added to likes')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error toggling like: $e')),
+      );
+    }
+  }
+
+// Share gallery item
+  void _shareGalleryItem(Map<String, dynamic> item) async {
+    try {
+      // This is a simple implementation - you might want to use a share package
+      // like 'share_plus' for more features
+      final title = item['gallery_title'] ?? 'Check out this item';
+      final imageUrl = item['gallery_image_url'] ?? '';
+      final description = item['gallery_description'] ?? '';
+
+      // You would implement actual sharing functionality here with your preferred share plugin
+      await Share.share(
+        '$title\n\n$description\n\n$imageUrl',
+        subject: title,
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error sharing: $e')),
+      );
+    }
+  }
+
   Future<void> fetchHideStatus() async {
     try {
-      final user = SupaFlow.client.auth.currentUser;
+      final user = _supabase.auth.currentUser;
       if (user == null) return;
 
-      final result =
-          await ref.read(profileRepositoryProvider).fetchHideStatus(user.id);
+      final response = await _supabase
+          .from('hide')
+          .select()
+          .eq('user_id', user.id)
+          .order('created_at', ascending: false)
+          .limit(1);
 
       safeSetState(() {
-        hideData = result;
+        print(response);
+        hideData = response.isNotEmpty ? response.first : null;
         isLoading = false;
       });
     } catch (e) {
-      debugPrint('Error fetching hide status: $e');
+      print('Error fetching hide status: $e');
       safeSetState(() {
         isLoading = false;
       });
@@ -519,6 +1765,31 @@ class _SearchProfileDetailPageState
   }
 
 // Alternative version with custom message parameter
+  void _sendWhatsAppMessageWithText(String messageText) async {
+    try {
+      String phoneNumber = _profileData?['phone_no'];
+
+      if (phoneNumber.toString().isEmpty) {
+        _showErrorSnackBar('WhatsApp number not available');
+        return;
+      }
+
+      // Encode the message for URL
+      String encodedMessage = Uri.encodeComponent(messageText);
+
+      // Create WhatsApp URL with message
+      final whatsappUrl = 'https://wa.me/$phoneNumber?text=$encodedMessage';
+      final Uri uri = Uri.parse(whatsappUrl);
+
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        _showErrorSnackBar('WhatsApp is not installed or number is invalid');
+      }
+    } catch (e) {
+      _showErrorSnackBar('Error opening WhatsApp: ${e.toString()}');
+    }
+  }
 
 // Helper method to show error messages
   void _showErrorSnackBar(String message) {
@@ -559,7 +1830,7 @@ class _SearchProfileDetailPageState
     return _profileData != null && _profileData!['bg_text_color'] != null
         ? Color(int.parse('FF${_profileData!['bg_text_color'].substring(1)}',
             radix: 16))
-        : Colors.white;
+        : Colors.black;
   }
 
   Widget _buildStatWidget(
@@ -1299,23 +2570,34 @@ class _SearchProfileDetailPageState
                                                     children: [
                                                       _buildStatWidget(
                                                           context,
-                                                          _followersCountFormatted
+                                                          _galleryItems.length
                                                               .toString(),
-                                                          'Followers',
+                                                          'Gallery',
                                                           bgTextColor),
                                                       _buildStatWidget(
                                                           context,
-                                                          _followingCountFormatted
+                                                          _serviceItems.length
                                                               .toString(),
-                                                          'Friends',
+                                                          'Services',
                                                           bgTextColor),
-                                                      _buildStatWidget(
-                                                          context,
-                                                          _formatCount(
-                                                              userThreads
-                                                                  .length),
-                                                          'Threads',
-                                                          bgTextColor),
+                                                      GestureDetector(
+                                                        // onTap: _navigateToFollowers,
+                                                        child: _buildStatWidget(
+                                                            context,
+                                                            _followersCountFormatted
+                                                                .toString(),
+                                                            'Followers',
+                                                            bgTextColor),
+                                                      ),
+                                                      GestureDetector(
+                                                        // onTap: _navigateToFollowing,
+                                                        child: _buildStatWidget(
+                                                            context,
+                                                            _followingCountFormatted
+                                                                .toString(),
+                                                            'Following',
+                                                            bgTextColor),
+                                                      ),
                                                     ],
                                                   ),
                                                 ),
@@ -1494,9 +2776,15 @@ class _SearchProfileDetailPageState
                                             fontSize: 16,
                                           ),
                                           tabs: const [
-                                            Tab(text: 'Threads'),
-                                            Tab(text: 'Services'),
-                                            Tab(text: 'Gallery'),
+                                            Tab(
+                                                icon: Icon(Icons
+                                                    .photo_library_rounded)),
+                                            Tab(
+                                                icon: Icon(Icons
+                                                    .miscellaneous_services)),
+                                            Tab(
+                                                icon: Icon(
+                                                    Icons.chat_bubble_outline)),
                                           ],
                                         ),
                                         color: bgColor,
@@ -1505,25 +2793,491 @@ class _SearchProfileDetailPageState
 
                                     // Tab Content
                                     SliverFillRemaining(
-                                      child: TabBarView(
-                                        controller: _tabController,
-                                        children: [
-                                          ThreadsTabContent(
-                                            userId: widget.userId,
-                                            bgTextColor: bgTextColor,
-                                            buttonColor: buttonColor,
-                                          ),
-                                          ServicesTabContent(
-                                            userId: widget.userId,
-                                            bgTextColor: bgTextColor,
-                                            buttonColor: buttonColor,
-                                          ),
-                                          GalleryTabContent(
-                                            userId: widget.userId,
-                                            bgTextColor: bgTextColor,
-                                            buttonColor: buttonColor,
-                                          ),
-                                        ],
+                                      child: Container(
+                                        height: 800,
+                                        child: TabBarView(
+                                          controller: _tabController,
+                                          children: [
+                                            // Gallery Tab
+                                            _galleryItems.isEmpty
+                                                ? Center(
+                                                    child: Text('no gallery',
+                                                        style: TextStyle(
+                                                            color:
+                                                                bgTextColor)),
+                                                  )
+                                                // ? _buildEmptyState(
+                                                //     'No gallery items', Icons.photo_library)
+                                                : LayoutBuilder(
+                                                    builder:
+                                                        (context, constraints) {
+                                                      // Dynamically calculate number of columns based on width
+                                                      int crossAxisCount =
+                                                          _calculateColumnCount(
+                                                              constraints
+                                                                  .maxWidth);
+
+                                                      return GridView.builder(
+                                                        gridDelegate:
+                                                            SliverGridDelegateWithFixedCrossAxisCount(
+                                                          crossAxisCount:
+                                                              crossAxisCount,
+                                                          mainAxisSpacing: 1,
+                                                          crossAxisSpacing: 1,
+                                                          childAspectRatio: 1.0,
+                                                        ),
+                                                        itemCount: _galleryItems
+                                                            .length,
+                                                        // physics:
+                                                        //     const NeverScrollableScrollPhysics(),
+                                                        shrinkWrap: true,
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .only(
+                                                                bottom: 50),
+                                                        itemBuilder:
+                                                            (context, index) {
+                                                          final item =
+                                                              _galleryItems[
+                                                                  index];
+
+                                                          // Create staggered effect by varying aspect ratio
+                                                          // First item in each row gets different aspect ratio
+                                                          double aspectRatio =
+                                                              index % crossAxisCount ==
+                                                                      0
+                                                                  ? 0.75
+                                                                  : 1.0;
+
+                                                          return AspectRatio(
+                                                            aspectRatio:
+                                                                aspectRatio,
+                                                            child:
+                                                                GestureDetector(
+                                                              onTap: () =>
+                                                                  _showGalleryItemDetails(
+                                                                      item),
+                                                              child: ClipRRect(
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            5),
+                                                                child:
+                                                                    Container(
+                                                                  decoration:
+                                                                      BoxDecoration(
+                                                                    image:
+                                                                        DecorationImage(
+                                                                      image:
+                                                                          CachedNetworkImageProvider(
+                                                                        item['gallery_image_url'] ??
+                                                                            'https://via.placeholder.com/150',
+                                                                      ),
+                                                                      fit: BoxFit
+                                                                          .cover,
+                                                                    ),
+                                                                    boxShadow: [
+                                                                      BoxShadow(
+                                                                        color: Colors
+                                                                            .black
+                                                                            .withOpacity(0.2),
+                                                                        blurRadius:
+                                                                            10,
+                                                                        spreadRadius:
+                                                                            2,
+                                                                      ),
+                                                                    ],
+                                                                  ),
+                                                                  child:
+                                                                      Container(
+                                                                    decoration:
+                                                                        BoxDecoration(
+                                                                      gradient:
+                                                                          LinearGradient(
+                                                                        begin: Alignment
+                                                                            .topCenter,
+                                                                        end: Alignment
+                                                                            .bottomCenter,
+                                                                        colors: [
+                                                                          Colors
+                                                                              .transparent,
+                                                                          Colors
+                                                                              .black
+                                                                              .withOpacity(0.7),
+                                                                        ],
+                                                                        stops: const [
+                                                                          0.7,
+                                                                          1.0
+                                                                        ],
+                                                                      ),
+                                                                    ),
+                                                                    child:
+                                                                        Padding(
+                                                                      padding: const EdgeInsets
+                                                                          .all(
+                                                                          8.0),
+                                                                      child:
+                                                                          Column(
+                                                                        crossAxisAlignment:
+                                                                            CrossAxisAlignment.start,
+                                                                        mainAxisAlignment:
+                                                                            MainAxisAlignment.end,
+                                                                        children: [
+                                                                          if (item['gallery_title'] !=
+                                                                              null)
+                                                                            Text(
+                                                                              item['gallery_title'],
+                                                                              style: const TextStyle(
+                                                                                color: Colors.white,
+                                                                                fontWeight: FontWeight.bold,
+                                                                                fontSize: 14,
+                                                                              ),
+                                                                              maxLines: 1,
+                                                                              overflow: TextOverflow.ellipsis,
+                                                                            ),
+                                                                          if (item['gallery_price'] !=
+                                                                              null)
+                                                                            if (item['gallery_price'] != null &&
+                                                                                item['gallery_price'] != 0 &&
+                                                                                item['gallery_price'] != '0')
+                                                                              Text(
+                                                                                '₹${item['gallery_price']}',
+                                                                                style: const TextStyle(
+                                                                                  color: Colors.white,
+                                                                                  fontSize: 12,
+                                                                                ),
+                                                                              ),
+                                                                        ],
+                                                                      ),
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          );
+                                                        },
+                                                      );
+                                                    },
+                                                  ),
+
+                                            // Services Tab
+                                            _serviceItems.isEmpty
+                                                ? Center(
+                                                    child: Text('No services',
+                                                        style: TextStyle(
+                                                            color:
+                                                                bgTextColor)))
+                                                : ListView.builder(
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                            16),
+                                                    itemCount:
+                                                        _serviceItems.length,
+                                                    // physics:
+                                                    //     const NeverScrollableScrollPhysics(),
+                                                    itemBuilder:
+                                                        (context, index) {
+                                                      final service =
+                                                          _serviceItems[index];
+                                                      return Card(
+                                                        color: buttonColor,
+                                                        margin: const EdgeInsets
+                                                            .only(bottom: 16),
+                                                        elevation: 3,
+                                                        shape:
+                                                            RoundedRectangleBorder(
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(16),
+                                                        ),
+                                                        child: Padding(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .all(16.0),
+                                                          child: Column(
+                                                            crossAxisAlignment:
+                                                                CrossAxisAlignment
+                                                                    .start,
+                                                            children: [
+                                                              Row(
+                                                                mainAxisAlignment:
+                                                                    MainAxisAlignment
+                                                                        .spaceBetween,
+                                                                children: [
+                                                                  Text(
+                                                                    service['service_title'] ??
+                                                                        'No Title',
+                                                                    style:
+                                                                        TextStyle(
+                                                                      color:
+                                                                          buttonTextColor,
+                                                                      fontSize:
+                                                                          18,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .bold,
+                                                                    ),
+                                                                  ),
+                                                                  Chip(
+                                                                    label: Text(
+                                                                      '\₹${service['service_price'] ?? 0}',
+                                                                      style:
+                                                                          TextStyle(
+                                                                        color:
+                                                                            buttonColor,
+                                                                        fontWeight:
+                                                                            FontWeight.bold,
+                                                                      ),
+                                                                    ),
+                                                                    backgroundColor:
+                                                                        buttonTextColor,
+                                                                    padding: const EdgeInsets
+                                                                        .symmetric(
+                                                                        horizontal:
+                                                                            8),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                              if (service[
+                                                                      'service_category'] !=
+                                                                  null)
+                                                                Padding(
+                                                                  padding:
+                                                                      const EdgeInsets
+                                                                          .only(
+                                                                          top:
+                                                                              4.0),
+                                                                  child: Text(
+                                                                    service[
+                                                                        'service_category'],
+                                                                    style:
+                                                                        TextStyle(
+                                                                      color: buttonTextColor
+                                                                          .withOpacity(
+                                                                              0.8),
+                                                                      fontSize:
+                                                                          14,
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                              if (service[
+                                                                      'service_description'] !=
+                                                                  null)
+                                                                Padding(
+                                                                  padding:
+                                                                      const EdgeInsets
+                                                                          .only(
+                                                                          top:
+                                                                              8.0),
+                                                                  child: Text(
+                                                                    service[
+                                                                        'service_description'],
+                                                                    style:
+                                                                        TextStyle(
+                                                                      color: buttonTextColor
+                                                                          .withOpacity(
+                                                                              0.8),
+                                                                      height:
+                                                                          1.3,
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                              const SizedBox(
+                                                                  height: 16),
+                                                              Row(
+                                                                children: [
+                                                                  Expanded(
+                                                                    child:
+                                                                        ElevatedButton
+                                                                            .icon(
+                                                                      onPressed:
+                                                                          _navigateToMessages,
+                                                                      icon: const Icon(
+                                                                          Icons
+                                                                              .message,
+                                                                          size:
+                                                                              18),
+                                                                      label: const Text(
+                                                                          'Message'),
+                                                                      style: ElevatedButton
+                                                                          .styleFrom(
+                                                                        backgroundColor:
+                                                                            buttonTextColor,
+                                                                        foregroundColor:
+                                                                            buttonColor,
+                                                                        padding: const EdgeInsets
+                                                                            .symmetric(
+                                                                            vertical:
+                                                                                17),
+                                                                        shape:
+                                                                            RoundedRectangleBorder(
+                                                                          borderRadius:
+                                                                              BorderRadius.circular(12),
+                                                                        ),
+                                                                        elevation:
+                                                                            0,
+                                                                      ),
+                                                                    ),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                      );
+                                                    },
+                                                  ),
+                                            userThreads.isEmpty
+                                                ? Center(
+                                                    child: Text(
+                                                    'No threads yet',
+                                                    style: TextStyle(
+                                                        color: bgTextColor),
+                                                  ))
+                                                : ListView.builder(
+                                                    // physics:
+                                                    //     const NeverScrollableScrollPhysics(),
+                                                    itemCount:
+                                                        userThreads.length,
+                                                    itemBuilder:
+                                                        (context, index) {
+                                                      final thread =
+                                                          userThreads[index];
+                                                      //  final Map<String, dynamic> threads = userThreads[index];
+                                                      final int likeCount =
+                                                          (thread['like_count']
+                                                                  as int?) ??
+                                                              0;
+                                                      final int fakeLikes =
+                                                          (thread['fake_likes']
+                                                                  as int?) ??
+                                                              0;
+                                                      final int totalLikes =
+                                                          likeCount + fakeLikes;
+                                                      final String
+                                                          formattedLikes =
+                                                          _formatCount(
+                                                              totalLikes);
+                                                      return Card(
+                                                        color: buttonColor,
+                                                        margin: const EdgeInsets
+                                                            .symmetric(
+                                                          vertical: 1,
+                                                          horizontal: 16,
+                                                        ),
+                                                        child: Padding(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .all(16),
+                                                          child: Column(
+                                                            crossAxisAlignment:
+                                                                CrossAxisAlignment
+                                                                    .start,
+                                                            children: [
+                                                              Text(
+                                                                timeago.format(
+                                                                    DateTime.parse(
+                                                                        thread[
+                                                                            'created_at'])),
+                                                                style:
+                                                                    TextStyle(
+                                                                  color:
+                                                                      buttonTextColor,
+                                                                  fontSize: 12,
+                                                                ),
+                                                              ),
+                                                              const SizedBox(
+                                                                  height: 8),
+                                                              Text(
+                                                                thread[
+                                                                    'content'],
+                                                                style:
+                                                                    TextStyle(
+                                                                  fontSize: 14,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w500,
+                                                                  color:
+                                                                      buttonTextColor,
+                                                                ),
+                                                              ),
+                                                              const SizedBox(
+                                                                  height: 16),
+                                                              Row(
+                                                                mainAxisAlignment:
+                                                                    MainAxisAlignment
+                                                                        .spaceBetween,
+                                                                children: [
+                                                                  InkWell(
+                                                                    onTap: () =>
+                                                                        {
+                                                                      Navigator.push(
+                                                                          context,
+                                                                          MaterialPageRoute(
+                                                                              builder: (context) => ThreadCommentsPage(
+                                                                                    threadContent: thread['content'],
+                                                                                    threadId: thread['id'],
+                                                                                  )))
+                                                                    },
+                                                                    child: Row(
+                                                                      children: [
+                                                                        Icon(
+                                                                            Icons
+                                                                                .favorite,
+                                                                            size:
+                                                                                16,
+                                                                            color:
+                                                                                buttonTextColor),
+                                                                        const SizedBox(
+                                                                            width:
+                                                                                4),
+                                                                        Text(
+                                                                            formattedLikes,
+                                                                            style:
+                                                                                TextStyle(color: buttonTextColor)),
+                                                                      ],
+                                                                    ),
+                                                                  ),
+                                                                  InkWell(
+                                                                    onTap: () =>
+                                                                        {
+                                                                      Navigator.push(
+                                                                          context,
+                                                                          MaterialPageRoute(
+                                                                              builder: (context) => ThreadCommentsPage(
+                                                                                    threadContent: thread['content'],
+                                                                                    threadId: thread['id'],
+                                                                                  )))
+                                                                    },
+                                                                    child: Row(
+                                                                      children: [
+                                                                        Icon(
+                                                                            Icons
+                                                                                .comment,
+                                                                            size:
+                                                                                16,
+                                                                            color:
+                                                                                buttonTextColor),
+                                                                        const SizedBox(
+                                                                            width:
+                                                                                4),
+                                                                        Text(
+                                                                            '${thread['comment_count'] ?? 0}',
+                                                                            style:
+                                                                                TextStyle(color: buttonTextColor)),
+                                                                      ],
+                                                                    ),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                      );
+                                                    },
+                                                  ),
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -1607,19 +3361,6 @@ class _SearchProfileDetailPageState
     );
   }
 
-  // Tab Content Widgets moved to bottom for better organization and performance
-
-  Widget _threadAction(IconData icon, String label, Color textcolor) {
-    return Row(
-      children: [
-        Icon(icon, size: 18, color: textcolor.withOpacity(0.5)),
-        const SizedBox(width: 4),
-        Text(label,
-            style: TextStyle(color: textcolor.withOpacity(0.5), fontSize: 13)),
-      ],
-    );
-  }
-
   Widget _buildBlockedView() {
     return Center(
       child: Column(
@@ -1690,12 +3431,9 @@ class _SearchProfileDetailPageState
 
   Future<void> _blockUser() async {
     try {
-      final currentUserId = SupaFlow.client.auth.currentUser?.id;
-      if (currentUserId == null) return;
-
-      await ref
-          .read(profileRepositoryProvider)
-          .blockUser(currentUserId, widget.userId);
+      await _supabase.rpc('block_user', params: {
+        'target_user_id': widget.userId,
+      });
 
       _showSuccessSnackBar('User blocked successfully');
       _checkBlockStatus();
@@ -1707,12 +3445,9 @@ class _SearchProfileDetailPageState
 
   Future<void> _unblockUser() async {
     try {
-      final currentUserId = SupaFlow.client.auth.currentUser?.id;
-      if (currentUserId == null) return;
-
-      await ref
-          .read(profileRepositoryProvider)
-          .unblockUser(currentUserId, widget.userId);
+      await _supabase.rpc('unblock_user', params: {
+        'target_user_id': widget.userId,
+      });
 
       _showSuccessSnackBar('User unblocked successfully');
       _checkBlockStatus();
@@ -1835,7 +3570,31 @@ class SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
   }
 }
 
-class AIAssistantWidget extends ConsumerStatefulWidget {
+int _calculateColumnCount(double width) {
+  if (width < 400) {
+    return 3; // Very small mobile screens
+  } else if (width < 600) {
+    return 4; // Small mobiles
+  } else if (width < 750) {
+    return 5; // Mid-size mobiles / phablets
+  } else if (width < 900) {
+    return 6; // Large phones / small tablets
+  } else if (width < 1050) {
+    return 7; // Tablets
+  } else if (width < 1200) {
+    return 8; // Large tablets / small desktops
+  } else if (width < 1500) {
+    return 9; // Standard desktops
+  } else if (width < 1800) {
+    return 10; // Large desktops
+  } else if (width < 2100) {
+    return 11; // Ultra-wide screens
+  } else {
+    return 12; // Super ultra-wide screens
+  }
+}
+
+class AIAssistantWidget extends StatefulWidget {
   final String userId;
   final Color? buttonColor;
   final Color? bgColor;
@@ -1852,21 +3611,22 @@ class AIAssistantWidget extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<AIAssistantWidget> createState() => _AIAssistantWidgetState();
+  State<AIAssistantWidget> createState() => _AIAssistantWidgetState();
 }
 
-class _AIAssistantWidgetState extends ConsumerState<AIAssistantWidget>
+class _AIAssistantWidgetState extends State<AIAssistantWidget>
     with TickerProviderStateMixin {
+  final SupabaseClient _supabase = SupaFlow.client;
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
   final List<ChatMessage> _messages = [];
-  // No unused _isLoading field
-
+  final bool _isLoading = false;
   bool _isTyping = false;
   bool _showSuggestedQuestions = true;
   Map<String, dynamic>? _profileData;
-  List<Map<String, dynamic>> userThreads = [];
+  List<Map<String, dynamic>> _galleryItems = [];
+  List<Map<String, dynamic>> _serviceItems = [];
   String _followersCount = '0';
   String _followingCount = '0';
 
@@ -1877,9 +3637,12 @@ class _AIAssistantWidgetState extends ConsumerState<AIAssistantWidget>
   final List<String> _suggestedQuestions = [
     "Who is this person?",
     "Tell me about their profile",
-    "Tell me about their threads",
+    "Show me their gallery",
+    "What services do they offer?",
     "How can I contact them?",
     "Where are they located?",
+    "What are their prices?",
+    "Show me their best work",
   ];
 
   @override
@@ -1913,7 +3676,7 @@ class _AIAssistantWidgetState extends ConsumerState<AIAssistantWidget>
       final aiName = _getAIName();
       _addMessage(ChatMessage(
         text:
-            "Hello! I'm $aiName. I can help you with information about this profile, their threads, and more. What would you like to know?",
+            "Hello! I'm $aiName. I can help you with detailed information about this profile, show you gallery items with images, services, and much more. What would you like to know?",
         isUser: false,
         timestamp: DateTime.now(),
       ));
@@ -1951,46 +3714,102 @@ class _AIAssistantWidgetState extends ConsumerState<AIAssistantWidget>
 
   Future<void> _fetchProfileData() async {
     try {
-      final repository = ref.read(profileRepositoryProvider);
-
       // Fetch profile data
-      final profile = await repository.fetchUserProfile(widget.userId);
-      if (profile != null) {
-        safeSetState(() {
-          _profileData = profile;
-        });
+      final profileResponse = await _supabase
+          .from('profile_gallery_service_likes_comments_view')
+          .select('''
+          profile_id, profile_created_at, user_id, name, phone_no, country, bio, 
+          shop_name, profile_image_url, banner_image_url, button_color_code, 
+          bg_color_code, bg_text_color, state, city, button_text_color, verified
+        ''')
+          .eq('user_id', widget.userId)
+          .limit(1);
+
+      if (profileResponse.isNotEmpty) {
+        _profileData = profileResponse.first;
       }
 
-      // Fetch user threads for AI context
-      final threads = await repository.fetchUserThreads(widget.userId);
-      safeSetState(() {
-        userThreads = threads;
-      });
+      // Fetch gallery items
+      final galleryResponse = await _supabase
+          .from('profile_gallery_service_likes_comments_view')
+          .select('''
+          gallery_id, gallery_title, gallery_description, 
+          gallery_price, gallery_image_url, gallery_category
+        ''')
+          .eq('user_id', widget.userId)
+          .not('gallery_id', 'is', null);
+
+      _galleryItems = galleryResponse;
+
+      // Fetch services
+      final serviceResponse = await _supabase
+          .from('profile_gallery_service_likes_comments_view')
+          .select('''
+          service_id, service_title, service_description, 
+          service_price, service_category
+        ''')
+          .eq('user_id', widget.userId)
+          .not('service_id', 'is', null);
+
+      _serviceItems = serviceResponse;
 
       // Fetch follow counts
-      final counts = await repository.fetchFollowCounts(widget.userId);
-      safeSetState(() {
-        _followersCount = _formatCount(counts['followers'] ?? 0);
-        _followingCount = _formatCount(counts['following'] ?? 0);
-      });
+      await _fetchFollowCounts();
     } catch (e) {
-      debugPrint('Error fetching data for AI Assistant: $e');
+      print('Error fetching data: $e');
     }
   }
 
-  String _formatCount(int count) {
+  String formatCount(int count) {
     if (count >= 1000000) {
-      double millions = count / 1000000;
-      return '${millions == millions.truncateToDouble() ? millions.toInt() : millions.toStringAsFixed(1)}M';
+      return '${(count / 1000000).toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '')}M';
     } else if (count >= 1000) {
-      double thousands = count / 1000;
-      return '${thousands == thousands.truncateToDouble() ? thousands.toInt() : thousands.toStringAsFixed(1)}k';
+      return '${(count / 1000).toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '')}k';
     } else {
       return count.toString();
     }
   }
 
-  // Method logic moved into _fetchProfileData
+  Future<void> _fetchFollowCounts() async {
+    try {
+      // Get followers count - people who follow this user
+      final followersResponse = await _supabase
+          .from('follows')
+          .select('id')
+          .eq('followed_id', widget.userId);
+
+      // Get following count - people this user follows
+      final followingResponse = await _supabase
+          .from('follows')
+          .select('id')
+          .eq('follower_id', widget.userId);
+
+      // Get followers count from users table
+      final userResponse = await _supabase
+          .from('users')
+          .select('followers')
+          .eq('id', widget.userId)
+          .single();
+
+      final double userTableFollowers =
+          userResponse['followers']?.toDouble() ?? 0.0;
+
+      final int followersCountRaw =
+          followersResponse.length + userTableFollowers.toInt();
+      final int followingCountRaw = followingResponse.length;
+
+      safeSetState(() {
+        // _followersCount = followersCountRaw;
+        // _followingCount = followingCountRaw;
+        _followersCount = formatCount(followersCountRaw);
+        _followingCount = formatCount(followingCountRaw);
+        print('Followers count: $_followersCount');
+        print('Following count: $_followingCount');
+      });
+    } catch (e) {
+      print('Error fetching follow counts: $e');
+    }
+  }
 
   void _sendMessage([String? predefinedMessage]) async {
     final messageText = predefinedMessage ?? _messageController.text.trim();
@@ -2025,6 +3844,8 @@ class _AIAssistantWidgetState extends ConsumerState<AIAssistantWidget>
       text: aiResponse.text,
       isUser: false,
       timestamp: DateTime.now(),
+      galleryItems: aiResponse.galleryItems,
+      hasGalleryGrid: aiResponse.hasGalleryGrid,
     ));
   }
 
@@ -2061,6 +3882,9 @@ class _AIAssistantWidgetState extends ConsumerState<AIAssistantWidget>
           response += "About them:\n$bio\n\n";
         }
 
+        response +=
+            "They have ${_galleryItems.length} gallery items and ${_serviceItems.length} services available.";
+
         return AIResponse(text: response);
       }
       return AIResponse(
@@ -2069,9 +3893,9 @@ class _AIAssistantWidgetState extends ConsumerState<AIAssistantWidget>
     }
 
     // Profile information queries
-    if (message.contains('about') ||
-        message.contains('info') ||
-        message.contains('profile')) {
+    if (message.contains('profile') ||
+        message.contains('about') ||
+        message.contains('info')) {
       if (_profileData != null) {
         final joinDate = _profileData!['profile_created_at'] != null
             ? DateTime.parse(_profileData!['profile_created_at']).year
@@ -2086,26 +3910,198 @@ class _AIAssistantWidgetState extends ConsumerState<AIAssistantWidget>
                 "✅ Verified: ${_profileData!['verified'] == true ? 'Yes ✓' : 'No'}\n"
                 "📅 Member since: $joinDate\n"
                 "👥 Followers: $_followersCount\n"
-                "👤 Following: $_followingCount\n\n"
+                "👤 Following: $_followingCount\n"
+                "🖼️ Gallery Items: ${_galleryItems.length}\n"
+                "🛠️ Services: ${_serviceItems.length}\n\n"
                 "Bio: ${_profileData!['bio'] ?? 'No bio available'}");
       }
+      return AIResponse(
+          text:
+              "I'm still loading the profile information. Please wait a moment and try again.");
     }
 
-    // Threads queries
-    if (message.contains('thread') || message.contains('post')) {
-      if (userThreads.isNotEmpty) {
+    // Gallery queries with images
+    if (message.contains('gallery') ||
+        message.contains('show me') ||
+        message.contains('items') ||
+        message.contains('products') ||
+        message.contains('work') ||
+        message.contains('portfolio')) {
+      if (_galleryItems.isNotEmpty) {
         return AIResponse(
           text:
-              "This user has ${userThreads.length} threads. You can view them on the profile page.",
+              "Here are the gallery items (${_galleryItems.length} total). Tap on any item to view details:",
+          galleryItems: _galleryItems,
+          hasGalleryGrid: true,
         );
       }
-      return AIResponse(text: "This user hasn't posted any threads yet.");
+      return AIResponse(
+          text: "This profile doesn't have any gallery items yet.");
     }
 
-    // Default response
+    // Services queries
+    if (message.contains('service') || message.contains('services')) {
+      if (_serviceItems.isNotEmpty) {
+        String response =
+            "This profile offers ${_serviceItems.length} services:\n\n";
+        for (int i = 0; i < _serviceItems.length; i++) {
+          final item = _serviceItems[i];
+          response +=
+              "${i + 1}. ${item['service_title'] ?? 'Untitled Service'}\n";
+          if (item['service_description'] != null) {
+            response += "   📝 ${item['service_description']}\n";
+          }
+          if (item['service_price'] != null) {
+            response += "   💰 Price: ₹${item['service_price']}\n";
+          }
+          if (item['service_category'] != null) {
+            response += "   🏷️ Category: ${item['service_category']}\n";
+          }
+          response += "\n";
+        }
+        return AIResponse(text: response);
+      }
+      return AIResponse(text: "This profile doesn't offer any services yet.");
+    }
+
+    // Contact information
+    if (message.contains('contact') ||
+        message.contains('phone') ||
+        message.contains('call') ||
+        message.contains('reach')) {
+      if (_profileData != null && _profileData!['phone_no'] != null) {
+        return AIResponse(
+            text: "📞 Contact Information:\n\n"
+                "Phone: ${_profileData!['phone_no']}\n\n"
+                "You can also:\n"
+                "• Send them a direct message through the app\n"
+                "• Contact via WhatsApp\n"
+                "• Follow them to stay updated with their latest posts");
+      }
+      return AIResponse(
+          text: "Contact information is not available for this profile.");
+    }
+
+    // Location queries
+    if (message.contains('location') ||
+        message.contains('address') ||
+        message.contains('where')) {
+      if (_profileData != null) {
+        final city = _profileData!['city'];
+        final state = _profileData!['state'];
+        final country = _profileData!['country'];
+
+        if (city != null || state != null) {
+          return AIResponse(
+              text: "📍 Location Information:\n\n"
+                  "City: ${city ?? 'Unknown'}\n"
+                  "State: ${state ?? 'Unknown'}\n"
+                  "Country: ${country ?? 'Not specified'}\n\n"
+                  "This is where they are based and likely provide their services.");
+        }
+      }
+      return AIResponse(
+          text: "Location information is not available for this profile.");
+    }
+
+    // Best work queries
+    if (message.contains('best') ||
+        message.contains('top') ||
+        message.contains('featured')) {
+      if (_galleryItems.isNotEmpty) {
+        // Sort by price or show first few items as "best"
+        final bestItems = _galleryItems.take(3).toList();
+        return AIResponse(
+          text: "Here are some of their best works:",
+          galleryItems: bestItems,
+          hasGalleryGrid: true,
+        );
+      }
+      return AIResponse(
+          text: "No gallery items available to show their best work.");
+    }
+
+    // Price queries
+    if (message.contains('price') ||
+        message.contains('cost') ||
+        message.contains('expensive') ||
+        message.contains('cheap') ||
+        message.contains('budget')) {
+      List<int> prices = [];
+
+      for (var item in _galleryItems) {
+        if (item['gallery_price'] != null) {
+          prices.add(item['gallery_price'] as int);
+        }
+      }
+      for (var item in _serviceItems) {
+        if (item['service_price'] != null) {
+          prices.add(item['service_price'] as int);
+        }
+      }
+
+      if (prices.isNotEmpty) {
+        prices.sort();
+        return AIResponse(
+            text: "💰 Pricing Information:\n\n"
+                "• Lowest Price: ₹${prices.first}\n"
+                "• Highest Price: ₹${prices.last}\n"
+                "• Average Price: ₹${(prices.reduce((a, b) => a + b) / prices.length).round()}\n"
+                "• Total Priced Items: ${prices.length}\n\n"
+                "Prices may vary based on requirements and customization.");
+      }
+      return AIResponse(
+          text:
+              "No pricing information is available for this profile's items.");
+    }
+
+    // Help queries
+    if (message.contains('help') || message.contains('what can you do')) {
+      return AIResponse(
+          text: "I'm ${_getAIName()} and I can help you with:\n\n"
+              "🔍 Profile & Personal Information\n"
+              "🖼️ Gallery Items with Images\n"
+              "🛠️ Services & Offerings\n"
+              "📞 Contact Details\n"
+              "📍 Location Information\n"
+              "💰 Pricing Details\n"
+              "📊 Social Stats\n"
+              "🏷️ Categories & Types\n"
+              "⭐ Best Work & Featured Items\n\n"
+              "Just ask me anything about this profile! You can also tap on the suggested questions below.");
+    }
+
+    // Greeting responses
+    if (message.contains('hello') ||
+        message.contains('hi') ||
+        message.contains('hey') ||
+        message.contains('good morning') ||
+        message.contains('good afternoon')) {
+      return AIResponse(
+          text:
+              "Hello! I'm ${_getAIName()}. I'm here to help you learn everything about this profile. "
+              "You can ask me about their services, gallery items, contact information, or anything else you'd like to know!\n\n"
+              "Try asking: 'Who is this person?' or 'Show me their gallery'");
+    }
+
+    // Thank you responses
+    if (message.contains('thank') || message.contains('thanks')) {
+      return AIResponse(
+          text:
+              "You're welcome! I'm always here to help. Is there anything else you'd like to know about this profile? "
+              "I can show you more gallery items, services, or any other information you need.");
+    }
+
+    // Default response with suggestions
     return AIResponse(
         text:
-            "I'm ${_getAIName()} and I can help you with profile details, contact info, and more. Just ask!");
+            "I'm not sure about that specific question, but I'm ${_getAIName()} and I can help you with:\n\n"
+            "👤 Profile details and personal info\n"
+            "🖼️ Gallery items with images\n"
+            "🛠️ Services and offerings\n"
+            "📞 Contact and location info\n"
+            "💰 Pricing and social stats\n\n"
+            "Try asking: 'Who is this person?', 'Show me their gallery', or 'What services do they offer?'");
   }
 
   // "📱 Phone: ${_profileData!['phone_no'] ?? 'Not provided'}\n"
@@ -2475,7 +4471,282 @@ class _AIAssistantWidgetState extends ConsumerState<AIAssistantWidget>
               ],
             ],
           ),
+          // Gallery grid
+          if (message.hasGalleryGrid && message.galleryItems != null)
+            _buildGalleryGrid(message.galleryItems!),
         ],
+      ),
+    );
+  }
+
+  Widget _buildGalleryGrid(List<Map<String, dynamic>> items) {
+    return Container(
+      margin: const EdgeInsets.only(top: 12, left: 40),
+      child: GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          crossAxisSpacing: 8,
+          mainAxisSpacing: 8,
+          childAspectRatio: 0.8,
+        ),
+        itemCount: items.length,
+        itemBuilder: (context, index) {
+          final item = items[index];
+          return GestureDetector(
+            onTap: () => _showGalleryItemDetails(item),
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: _getButtonColor().withOpacity(0.2),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    flex: 3,
+                    child: Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(12),
+                        ),
+                        color: Colors.grey[200],
+                      ),
+                      child: item['gallery_image_url'] != null
+                          ? ClipRRect(
+                              borderRadius: const BorderRadius.vertical(
+                                top: Radius.circular(12),
+                              ),
+                              child: Image.network(
+                                item['gallery_image_url'],
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(
+                                    color: Colors.grey[300],
+                                    child: Icon(
+                                      Icons.image_not_supported,
+                                      color: Colors.grey[600],
+                                      size: 32,
+                                    ),
+                                  );
+                                },
+                              ),
+                            )
+                          : Container(
+                              decoration: BoxDecoration(
+                                color: _getButtonColor().withOpacity(0.1),
+                                borderRadius: const BorderRadius.vertical(
+                                  top: Radius.circular(12),
+                                ),
+                              ),
+                              child: Icon(
+                                Icons.image,
+                                color: _getButtonColor(),
+                                size: 32,
+                              ),
+                            ),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            item['gallery_title'] ?? 'Untitled',
+                            style: TextStyle(
+                              color: _getTextColor(),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4),
+                          if (item['gallery_price'] != null)
+                            Text(
+                              '₹${item['gallery_price']}',
+                              style: TextStyle(
+                                color: _getButtonColor(),
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          if (item['gallery_category'] != null)
+                            Text(
+                              item['gallery_category'],
+                              style: TextStyle(
+                                color: _getTextColor().withOpacity(0.6),
+                                fontSize: 10,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  void _showGalleryItemDetails(Map<String, dynamic> item) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.7,
+        decoration: BoxDecoration(
+          color: _getBgColor(),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          children: [
+            // Header
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: _getButtonColor(),
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      item['gallery_title'] ?? 'Gallery Item',
+                      style: TextStyle(
+                        color: _getButtonTextColor(),
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: Icon(
+                      Icons.close,
+                      color: _getButtonTextColor(),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Content
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Image
+                    if (item['gallery_image_url'] != null)
+                      Container(
+                        height: 200,
+                        width: double.infinity,
+                        margin: const EdgeInsets.only(bottom: 16),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: _getButtonColor().withOpacity(0.2),
+                          ),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.network(
+                            item['gallery_image_url'],
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                color: Colors.grey[300],
+                                child: Icon(
+                                  Icons.image_not_supported,
+                                  color: Colors.grey[600],
+                                  size: 64,
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    // Details
+                    if (item['gallery_price'] != null) ...[
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.currency_rupee,
+                            color: _getButtonColor(),
+                            size: 18,
+                          ),
+                          Text(
+                            '${item['gallery_price']}',
+                            style: TextStyle(
+                              color: _getButtonColor(),
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                    if (item['gallery_category'] != null) ...[
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.category,
+                            color: _getTextColor().withOpacity(0.7),
+                            size: 18,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            item['gallery_category'],
+                            style: TextStyle(
+                              color: _getTextColor().withOpacity(0.7),
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                    if (item['gallery_description'] != null) ...[
+                      Text(
+                        'Description',
+                        style: TextStyle(
+                          color: _getTextColor(),
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        item['gallery_description'],
+                        style: TextStyle(
+                          color: _getTextColor(),
+                          fontSize: 16,
+                          height: 1.5,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -2568,19 +4839,27 @@ class ChatMessage {
   final String text;
   final bool isUser;
   final DateTime timestamp;
+  final List<Map<String, dynamic>>? galleryItems;
+  final bool hasGalleryGrid;
 
   ChatMessage({
     required this.text,
     required this.isUser,
     required this.timestamp,
+    this.galleryItems,
+    this.hasGalleryGrid = false,
   });
 }
 
 class AIResponse {
   final String text;
+  final List<Map<String, dynamic>>? galleryItems;
+  final bool hasGalleryGrid;
 
   AIResponse({
     required this.text,
+    this.galleryItems,
+    this.hasGalleryGrid = false,
   });
 }
 
@@ -2590,11 +4869,11 @@ class CircularShimmer extends StatelessWidget {
   final double size;
 
   const CircularShimmer({
-    super.key,
+    Key? key,
     required this.buttonColor,
     required this.bgColor,
     this.size = 40,
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -2605,7 +4884,7 @@ class CircularShimmer extends StatelessWidget {
         child: Container(
           width: size,
           height: size,
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             color: Colors.white,
             shape: BoxShape.circle,
           ),

@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
 import 'package:just_audio/just_audio.dart';
@@ -11,14 +12,17 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
-import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
-import 'package:record/record.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:record/record.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:video_player/video_player.dart';
+import '/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/widgets/webrtc_call_screen.dart';
+import 'package:pocket_mates_app/custom_code/widgets/gallery_search_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/image_viewer.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chat/voice_player.dart';
 import 'package:image_downloader/image_downloader.dart';
 
 import '/flutter_flow/flutter_flow_util.dart';
@@ -351,7 +355,8 @@ class _MessageScreenState extends State<MessageScreen> {
     try {
       final response = await _supabase
           .from('messages')
-          .select()
+          .select(
+              '*, gallery:gallery_id(*, user:user_id(profile:profile(name, profile_image_url)))')
           .or('and(sender_id.eq.$_senderId,receiver_id.eq.${widget.receiverId}),and(sender_id.eq.${widget.receiverId},receiver_id.eq.$_senderId)')
           .order('created_at', ascending: false)
           .limit(50);
@@ -1232,7 +1237,7 @@ class _MessageScreenState extends State<MessageScreen> {
                     color: Colors.black,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.05),
+                        color: Colors.black.withOpacity(0.05),
                         blurRadius: 10,
                         offset: const Offset(0, -5),
                       ),
@@ -1511,12 +1516,12 @@ class _MessageScreenState extends State<MessageScreen> {
                         : const Radius.circular(24),
                   ),
                   border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.3),
+                    color: Colors.white.withOpacity(0.3),
                     width: 2,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.2),
+                      color: Colors.black.withOpacity(0.2),
                       blurRadius: 8,
                       offset: const Offset(0, 4),
                     ),
@@ -1547,7 +1552,7 @@ class _MessageScreenState extends State<MessageScreen> {
                             Text(
                               isViewed && !isMe ? 'Opened' : 'Tap to view',
                               style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.8),
+                                color: Colors.white.withOpacity(0.8),
                                 fontSize: 12,
                               ),
                             ),
@@ -1562,7 +1567,7 @@ class _MessageScreenState extends State<MessageScreen> {
                         Icon(
                           Icons.timer_outlined,
                           size: 14,
-                          color: Colors.white.withValues(alpha: 0.8),
+                          color: Colors.white.withOpacity(0.8),
                         ),
                         const SizedBox(width: 4),
                         Text(
@@ -1570,7 +1575,7 @@ class _MessageScreenState extends State<MessageScreen> {
                               ? '${hoursLeft}h left'
                               : '${timeLeft.inMinutes}m left',
                           style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.8),
+                            color: Colors.white.withOpacity(0.8),
                             fontSize: 11,
                           ),
                         ),
@@ -1578,7 +1583,7 @@ class _MessageScreenState extends State<MessageScreen> {
                         Text(
                           time,
                           style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.8),
+                            color: Colors.white.withOpacity(0.8),
                             fontSize: 11,
                           ),
                         ),
@@ -1616,10 +1621,457 @@ class _MessageScreenState extends State<MessageScreen> {
     );
   }
 
+  Widget _buildMessageContent(
+      Map<String, dynamic> message, String messageType, bool isMe) {
+    switch (messageType) {
+      case 'text':
+        final content = message['content'] ?? message['message_text'] ?? '';
+        final hasGalleryLink = content.contains('/gallery_photos/');
+
+        String displayText = content;
+        if (hasGalleryLink) {
+          final urlRegex = RegExp(r'https?://[^\s]+');
+          displayText = content.replaceAll(urlRegex, '').trim();
+        }
+
+        return Column(
+          crossAxisAlignment:
+              isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          children: [
+            if (hasGalleryLink) ...[
+              _buildLinkPreview(content, isMe),
+              if (displayText.isNotEmpty) const SizedBox(height: 8),
+            ],
+            if (displayText.isNotEmpty)
+              Text(
+                displayText,
+                style: TextStyle(
+                  color: isMe ? Colors.black : Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  height: 1.4,
+                ),
+              ),
+          ],
+        );
+      case 'image':
+        final imageUrl = message['file_url'] ?? '';
+        return GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ImageViewer(
+                  imageUrl: imageUrl,
+                  title: widget.receiverName,
+                ),
+              ),
+            );
+          },
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: CachedNetworkImage(
+              imageUrl: imageUrl,
+              width: 200,
+              height: 200,
+              fit: BoxFit.cover,
+              placeholder: (context, url) => Container(
+                color: Colors.grey[800],
+                width: 200,
+                height: 200,
+                child: const Center(
+                  child: CircularProgressIndicator(),
+                ),
+              ),
+              errorWidget: (context, url, error) => Container(
+                color: Colors.grey[800],
+                width: 200,
+                height: 200,
+                child: const Icon(Icons.error, color: Colors.white),
+              ),
+            ),
+          ),
+        );
+      case 'voice':
+        return VoiceMessagePlayer(
+          fileUrl: message['file_url'] ?? '',
+          duration: message['voice_duration'] ?? 0,
+          isFromCurrentUser: isMe,
+        );
+      case 'gallery':
+        final galleryData = message['gallery'] as Map<String, dynamic>?;
+        if (galleryData == null) return const SizedBox.shrink();
+
+        final galleryId = galleryData['gallery_id']?.toString() ??
+            galleryData['id']?.toString();
+        final title =
+            galleryData['gallery_title'] ?? galleryData['title'] ?? 'Untitled';
+        final desc = galleryData['gallery_description'] ??
+            galleryData['description'] ??
+            '';
+        final imageUrl =
+            galleryData['gallery_image_url'] ?? galleryData['image_url'] ?? '';
+        final userId = galleryData['user_id']?.toString();
+        final price = galleryData['price'];
+        final category = galleryData['category'];
+
+        final profile = (galleryData['user']?['profile'] is List &&
+                (galleryData['user']['profile'] as List).isNotEmpty)
+            ? (galleryData['user']['profile'] as List).first
+            : null;
+        final name = profile?['name'] ?? 'User';
+        final profileImageUrl = profile?['profile_image_url'];
+
+        // Prepare item for GalleryDetailsPage
+        final galleryItem = {
+          'gallery_id': galleryId,
+          'gallery_title': title,
+          'gallery_description': desc,
+          'gallery_image_url': imageUrl,
+          'user_id': userId,
+          'name': name,
+          'profile_image_url': profileImageUrl,
+        };
+
+        return GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => GalleryDetailsPage(
+                  item: galleryItem,
+                  allItems: [galleryItem],
+                  initialIndex: 0,
+                ),
+              ),
+            );
+          },
+          child: Container(
+            width: 260,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.grey[900]!,
+                  const Color(0xFF1E1E1E),
+                ],
+              ),
+              border:
+                  Border.all(color: Colors.white.withOpacity(0.1), width: 1),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // User Header
+                GestureDetector(
+                  onTap: () {
+                    if (userId != null) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              VerfiedSwitchPage(userId: userId),
+                        ),
+                      );
+                    }
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(10),
+                    child: Row(
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.amber, width: 1),
+                          ),
+                          child: CircleAvatar(
+                            radius: 14,
+                            backgroundImage: profileImageUrl != null
+                                ? NetworkImage(profileImageUrl)
+                                : null,
+                            child: profileImageUrl == null
+                                ? const Icon(Icons.person,
+                                    size: 14, color: Colors.white70)
+                                : null,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                name,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const Text(
+                                'Shared a gallery',
+                                style: TextStyle(
+                                  color: Colors.white54,
+                                  fontSize: 10,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Icon(Icons.arrow_forward_ios,
+                            size: 12, color: Colors.white30),
+                      ],
+                    ),
+                  ),
+                ),
+                // Main Image with Stack for Price
+                Stack(
+                  children: [
+                    ClipRRect(
+                      borderRadius:
+                          const BorderRadius.vertical(top: Radius.zero),
+                      child: CachedNetworkImage(
+                        imageUrl: imageUrl,
+                        height: 180,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) => Container(
+                          color: Colors.grey[850],
+                          height: 180,
+                          child: const Center(
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.amber,
+                            ),
+                          ),
+                        ),
+                        errorWidget: (context, url, error) => Container(
+                          color: Colors.grey[850],
+                          height: 180,
+                          child: const Icon(Icons.image_not_supported,
+                              color: Colors.white24, size: 40),
+                        ),
+                      ),
+                    ),
+                    if (price != null)
+                      Positioned(
+                        bottom: 8,
+                        right: 8,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.7),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.amber, width: 0.5),
+                          ),
+                          child: Text(
+                            '\$$price',
+                            style: const TextStyle(
+                              color: Colors.amber,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                // Details
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (category != null)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 2),
+                          margin: const EdgeInsets.only(bottom: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            category.toString().toUpperCase(),
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 9,
+                              fontWeight: FontWeight.w500,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          height: 1.2,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      if (desc.isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          desc,
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.6),
+                            fontSize: 12,
+                            height: 1.3,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      default:
+        return Text(
+          message['content'] ?? message['message_text'] ?? '',
+          style: TextStyle(
+            color: isMe ? Colors.black : Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+            height: 1.4,
+          ),
+        );
+    }
+  }
+
+  Widget _buildLinkPreview(String content, bool isMe) {
+    // Basic regex to find URL and potential split for "Kitty" style
+    final lines = content.split('\n');
+    String title = 'Shared Item';
+    String desc = '';
+    String? imageUrl;
+
+    for (var line in lines) {
+      if (line.trim().startsWith('http')) {
+        imageUrl = line.trim();
+      } else if (title == 'Shared Item' && line.trim().isNotEmpty) {
+        title = line.trim();
+      } else if (line.trim().isNotEmpty) {
+        desc += line.trim() + ' ';
+      }
+    }
+
+    return Container(
+      width: 250,
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E1E1E),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withOpacity(0.12), width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.4),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (imageUrl != null)
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(16)),
+                  child: CachedNetworkImage(
+                    imageUrl: imageUrl,
+                    height: 160,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => Container(
+                      height: 160,
+                      color: Colors.grey[850],
+                      child: const Center(
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.amber,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: 8,
+                  left: 8,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: Colors.black45,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child:
+                        const Icon(Icons.link, color: Colors.white, size: 14),
+                  ),
+                ),
+              ],
+            ),
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                    letterSpacing: 0.2,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (desc.isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                    desc.trim(),
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.65),
+                      fontSize: 12,
+                      height: 1.3,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildRegularMessageBubble(Map<String, dynamic> message) {
     final isMe = message['sender_id'] == _senderId;
     final time = timeago.format(DateTime.parse(message['created_at']),
         locale: 'en_short');
+    // Determine message type. If column exists use it, otherwise infer.
+    // We added 'message_type' column.
+    final messageType = message['message_type'] ?? 'text';
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
@@ -1648,97 +2100,116 @@ class _MessageScreenState extends State<MessageScreen> {
             ),
           if (!isMe) const SizedBox(width: 8),
           Flexible(
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 12,
-              ),
-              decoration: BoxDecoration(
-                gradient: isMe
-                    ? const LinearGradient(
-                        colors: [
-                          Color(0xFF667eea),
-                          Color(0xFF764ba2),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      )
-                    : const LinearGradient(
-                        colors: [
-                          Color(0xFFf093fb),
-                          Color(0xFFf5576c),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
+            child: GestureDetector(
+              onLongPress: () async {
+                if (message['content'] != null) {
+                  await Clipboard.setData(
+                      ClipboardData(text: message['content']));
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Message copied to clipboard'),
+                        duration: Duration(seconds: 2),
+                        behavior: SnackBarBehavior.floating,
                       ),
-                borderRadius: BorderRadius.only(
-                  topLeft: const Radius.circular(24),
-                  topRight: const Radius.circular(24),
-                  bottomLeft: isMe
-                      ? const Radius.circular(24)
-                      : const Radius.circular(6),
-                  bottomRight: isMe
-                      ? const Radius.circular(6)
-                      : const Radius.circular(24),
+                    );
+                  }
+                }
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: isMe
-                        ? const Color(0xFF667eea).withValues(alpha: 0.3)
-                        : const Color(0xFFf093fb).withValues(alpha: 0.3),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                    spreadRadius: 0,
+                decoration: BoxDecoration(
+                  gradient: isMe
+                      ? const LinearGradient(
+                          colors: [Color(0xFFFFD600), Color(0xFFFFAB00)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        )
+                      : null,
+                  color: isMe ? null : const Color(0xFF1F2C34),
+                  borderRadius: BorderRadius.only(
+                    topLeft: const Radius.circular(24),
+                    topRight: const Radius.circular(24),
+                    bottomLeft: isMe
+                        ? const Radius.circular(24)
+                        : const Radius.circular(6),
+                    bottomRight: isMe
+                        ? const Radius.circular(6)
+                        : const Radius.circular(24),
                   ),
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.08),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                    spreadRadius: 0,
-                  ),
-                ],
-              ),
-              constraints: BoxConstraints(
-                maxWidth: MediaQuery.of(context).size.width * 0.7,
-              ),
-              child: Column(
-                crossAxisAlignment:
-                    isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    message['content'],
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      height: 1.4,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        time,
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.8),
-                          fontSize: 11,
-                          fontWeight: FontWeight.w400,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.2),
+                      offset: const Offset(0, 2),
+                      blurRadius: 4,
+                    )
+                  ],
+                ),
+                constraints: BoxConstraints(
+                  maxWidth: MediaQuery.of(context).size.width * 0.7,
+                ),
+                child: Column(
+                  crossAxisAlignment:
+                      isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                  children: [
+                    _buildMessageContent(message, messageType, isMe),
+                    const SizedBox(height: 6),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          time,
+                          style: TextStyle(
+                            color: (isMe ? Colors.black : Colors.white)
+                                .withOpacity(0.6),
+                            fontSize: 10,
+                          ),
                         ),
-                      ),
-                      if (isMe) ...[
-                        const SizedBox(width: 6),
-                        Icon(
-                          message['is_read'] == true
-                              ? Icons.done_all_rounded
-                              : Icons.done_rounded,
-                          size: 14,
-                          color: Colors.white.withValues(alpha: 0.9),
-                        ),
+                        if (message['content'] != null &&
+                            message['content'].toString().isNotEmpty &&
+                            messageType == 'text') ...[
+                          const SizedBox(width: 8),
+                          InkWell(
+                            onTap: () async {
+                              await Clipboard.setData(
+                                  ClipboardData(text: message['content']));
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Copied'),
+                                    duration: Duration(seconds: 1),
+                                    behavior: SnackBarBehavior.floating,
+                                  ),
+                                );
+                              }
+                            },
+                            child: Icon(
+                              Icons.copy,
+                              size: 11,
+                              color: (isMe ? Colors.black : Colors.white)
+                                  .withOpacity(0.6),
+                            ),
+                          ),
+                        ],
+                        if (isMe) ...[
+                          const SizedBox(width: 6),
+                          Icon(
+                            message['is_read'] == true
+                                ? Icons.done_all_rounded
+                                : Icons.done_rounded,
+                            size: 14,
+                            color: message['is_read'] == true
+                                ? Colors.blue
+                                : Colors.black54,
+                          ),
+                        ],
                       ],
-                    ],
-                  ),
-                ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -1897,7 +2368,7 @@ class _EphemeralMediaViewerState extends State<EphemeralMediaViewer> {
             margin: const EdgeInsets.only(right: 16),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: Colors.red.withValues(alpha: 0.8),
+              color: Colors.red.withOpacity(0.8),
               borderRadius: BorderRadius.circular(20),
             ),
             child: const Row(

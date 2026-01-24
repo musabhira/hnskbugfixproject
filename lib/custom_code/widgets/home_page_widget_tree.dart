@@ -188,68 +188,73 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         bottomNavigationBar: _buildBottomNavigationBar(context),
         body: _isLoading
             ? const Center(child: CircularProgressIndicator())
-            : SafeArea(
-                top: true,
-                child: RefreshIndicator(
-                  onRefresh: _loadAllUserData,
-                  color: HomePageWidgetTree.primaryColor,
-                  backgroundColor: Colors.grey[900],
-                  child: CustomScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    slivers: [
-                      // Unified Dynamic Header (Stranger Rows + Status)
-                      SliverPersistentHeader(
-                        pinned: true,
-                        delegate: _UnifiedHomeHeaderDelegate(
-                          currentUserId: supabase.auth.currentUser?.id ?? '',
-                          currentProfileId: profileId.toString(),
-                          activeUsersRef: ref.watch(activeUsersProvider(
-                              profileId
-                                  .toString())), // Pass the provider reference
-                          onTapVideo: () => _handleStrangerMatch(
-                            context,
-                            ref,
-                            'Video',
-                            profileId.toString(),
-                          ),
-                          onTapFriends: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content:
-                                      Text('Strangers Friends coming soon!')),
-                            );
-                          },
-                          onTapCall: () => _handleStrangerMatch(
-                            context,
-                            ref,
-                            'Voice',
-                            profileId.toString(),
-                          ),
-                          onTapText: () => _handleStrangerChat(
-                              context, ref, profileId.toString()),
-                          onTapSettings: _handleSettings,
-                          onRefresh: () => ref.refresh(conversationsProvider),
-                        ),
-                      ),
-
-                      // Online/Active Users Widget
-                      if (profileId != null && _currentUserId != null)
-                        SliverToBoxAdapter(
-                          child: Padding(
-                            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                            child: ActiveUsersWidget(
-                              currentUserId: _currentUserId!,
-                              currentProfileId: profileId!,
+            : _currentIndex == 1
+                ? const MainMarketPage()
+                : SafeArea(
+                    top: true,
+                    child: RefreshIndicator(
+                      onRefresh: _loadAllUserData,
+                      color: HomePageWidgetTree.primaryColor,
+                      backgroundColor: Colors.grey[900],
+                      child: CustomScrollView(
+                        physics: const BouncingScrollPhysics(),
+                        slivers: [
+                          // Unified Dynamic Header (Stranger Rows + Status)
+                          SliverPersistentHeader(
+                            pinned: true,
+                            delegate: _UnifiedHomeHeaderDelegate(
+                              currentUserId:
+                                  supabase.auth.currentUser?.id ?? '',
+                              currentProfileId: profileId.toString(),
+                              activeUsersRef: ref.watch(activeUsersProvider(
+                                  profileId
+                                      .toString())), // Pass the provider reference
+                              onTapVideo: () => _handleStrangerMatch(
+                                context,
+                                ref,
+                                'Video',
+                                profileId.toString(),
+                              ),
+                              onTapFriends: () {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content: Text(
+                                          'Strangers Friends coming soon!')),
+                                );
+                              },
+                              onTapCall: () => _handleStrangerMatch(
+                                context,
+                                ref,
+                                'Voice',
+                                profileId.toString(),
+                              ),
+                              onTapText: () => _handleStrangerChat(
+                                  context, ref, profileId.toString()),
+                              onTapSettings: _handleSettings,
+                              onRefresh: () =>
+                                  ref.refresh(conversationsProvider),
                             ),
                           ),
-                        ),
 
-                      // Main Content Sliver - WhatsApp Chat List
-                      _buildChatListSliver(conversationsAsync),
-                    ],
+                          // Online/Active Users Widget
+                          if (profileId != null && _currentUserId != null)
+                            SliverToBoxAdapter(
+                              child: Padding(
+                                padding:
+                                    const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                                child: ActiveUsersWidget(
+                                  currentUserId: _currentUserId!,
+                                  currentProfileId: profileId!,
+                                ),
+                              ),
+                            ),
+
+                          // Main Content Sliver - WhatsApp Chat List
+                          _buildChatListSliver(conversationsAsync),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
-              ),
       ),
     );
   }
@@ -459,6 +464,12 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
             label: 'Home',
             isSelected: _currentIndex == 0,
             onTap: () => setState(() => _currentIndex = 0),
+          ),
+          _buildNavItem(
+            icon: Icons.store_mall_directory_rounded,
+            label: 'Market',
+            isSelected: _currentIndex == 1,
+            onTap: () => setState(() => _currentIndex = 1),
           ),
           _buildNavItem(
             icon: Icons.add_rounded,

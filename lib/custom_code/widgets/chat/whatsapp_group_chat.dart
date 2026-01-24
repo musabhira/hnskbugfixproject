@@ -20,6 +20,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:shimmer/shimmer.dart';
 import '../webrtc_call_screen.dart';
 import '../image_viewer.dart';
+import 'package:pocket_mates_app/custom_code/widgets/gallery_search_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
 
 class WhatsAppGroupChat extends ConsumerStatefulWidget {
   final double? width;
@@ -579,82 +581,128 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                   ],
                 ),
               ),
-            Container(
-              decoration: BoxDecoration(
-                // Gradient for Me (Golden/Yellow), Solid Dark for Others
-                gradient: isMe
-                    ? const LinearGradient(
-                        colors: [Color(0xFFFFD600), Color(0xFFFFAB00)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      )
-                    : null,
-                color: isMe ? null : const Color(0xFF1F2C34),
-                borderRadius: borderRadius,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
-                    offset: const Offset(0, 2),
-                    blurRadius: 4,
-                  )
-                ],
-              ),
-              padding: const EdgeInsets.all(4),
-              child: Stack(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(
-                        left: 8, right: 8, top: 4, bottom: 20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (message.messageType == 'image' &&
-                            message.fileUrl != null)
-                          _buildImageMessage(message.fileUrl!),
-                        if (message.messageType == 'voice' &&
-                            message.fileUrl != null)
-                          _buildVoiceMessage(message),
-                        if (message.messageText != null &&
-                            message.messageText!.isNotEmpty)
+
+            GestureDetector(
+              onLongPress: () async {
+                if (message.messageText != null &&
+                    message.messageText!.isNotEmpty) {
+                  await Clipboard.setData(
+                      ClipboardData(text: message.messageText!));
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Message copied'),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                  }
+                }
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                  // Gradient for Me (Golden/Yellow), Solid Dark for Others
+                  gradient: isMe
+                      ? const LinearGradient(
+                          colors: [Color(0xFFFFD600), Color(0xFFFFAB00)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        )
+                      : null,
+                  color: isMe ? null : const Color(0xFF1F2C34),
+                  borderRadius: borderRadius,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.2),
+                      offset: const Offset(0, 2),
+                      blurRadius: 4,
+                    )
+                  ],
+                ),
+                padding: const EdgeInsets.all(4),
+                child: Stack(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(
+                          left: 8, right: 8, top: 4, bottom: 20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (message.messageType == 'image' &&
+                              message.fileUrl != null)
+                            _buildImageMessage(message.fileUrl!),
+                          if (message.messageType == 'voice' &&
+                              message.fileUrl != null)
+                            _buildVoiceMessage(message),
+                          if (message.messageType == 'gallery' &&
+                              message.gallery != null)
+                            _buildGalleryMessage(message.gallery!, isMe),
+                          if (message.messageType == 'text' &&
+                              message.messageText != null &&
+                              message.messageText!.isNotEmpty)
+                            SelectableText(
+                              message.messageText!,
+                              style: TextStyle(
+                                  color: isMe ? Colors.black : Colors.white,
+                                  fontSize: 16),
+                            ),
+                        ],
+                      ),
+                    ),
+                    Positioned(
+                      bottom: 2,
+                      right: 6,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (message.messageText != null &&
+                              message.messageText!.isNotEmpty) ...[
+                            InkWell(
+                              onTap: () async {
+                                await Clipboard.setData(
+                                    ClipboardData(text: message.messageText!));
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Copied'),
+                                      duration: Duration(seconds: 1),
+                                    ),
+                                  );
+                                }
+                              },
+                              child: Icon(
+                                Icons.copy,
+                                size: 12,
+                                color: (isMe ? Colors.black : Colors.white)
+                                    .withOpacity(0.6),
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                          ],
                           Text(
-                            message.messageText!,
+                            _formatTime(message.createdAt),
                             style: TextStyle(
-                                color: isMe ? Colors.black : Colors.white,
-                                fontSize: 16),
+                              color: (isMe ? Colors.black : Colors.white)
+                                  .withOpacity(0.6),
+                              fontSize: 10,
+                            ),
                           ),
-                      ],
+                          if (isMe) ...[
+                            const SizedBox(width: 4),
+                            Icon(
+                              message.isOptimistic
+                                  ? Icons.access_time
+                                  : Icons.done_all,
+                              size: 14,
+                              color: message.isOptimistic
+                                  ? (isMe ? Colors.black54 : Colors.white54)
+                                  : Colors.blue,
+                            ),
+                          ]
+                        ],
+                      ),
                     ),
-                  ),
-                  Positioned(
-                    bottom: 2,
-                    right: 6,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          _formatTime(message.createdAt),
-                          style: TextStyle(
-                            color: (isMe ? Colors.black : Colors.white)
-                                .withOpacity(0.6),
-                            fontSize: 10,
-                          ),
-                        ),
-                        if (isMe) ...[
-                          const SizedBox(width: 4),
-                          Icon(
-                            message.isOptimistic
-                                ? Icons.access_time
-                                : Icons.done_all,
-                            size: 14,
-                            color: message.isOptimistic
-                                ? (isMe ? Colors.black54 : Colors.white54)
-                                : Colors.blue,
-                          ),
-                        ]
-                      ],
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ],
@@ -669,6 +717,265 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
         local.hour > 12 ? local.hour - 12 : (local.hour == 0 ? 12 : local.hour);
     final period = local.hour >= 12 ? 'PM' : 'AM';
     return '${hour.toString().padLeft(2, '0')}:${local.minute.toString().padLeft(2, '0')} $period';
+  }
+
+  Widget _buildGalleryMessage(Map<String, dynamic> galleryData, bool isMe) {
+    // Prepare item for GalleryDetailsPage
+    final galleryItem = {
+      'gallery_id': galleryData['id'],
+      'gallery_title': galleryData['title'],
+      'gallery_description': galleryData['description'],
+      'gallery_image_url': galleryData['image_url'],
+      'user_id': galleryData['user_id'],
+      'name': galleryData['user']?['profile'] is List &&
+              (galleryData['user']['profile'] as List).isNotEmpty
+          ? galleryData['user']['profile'][0]['name']
+          : 'User',
+      'profile_image_url': galleryData['user']?['profile'] is List &&
+              (galleryData['user']['profile'] as List).isNotEmpty
+          ? galleryData['user']['profile'][0]['profile_image_url']
+          : null,
+      // Add other fields if needed by GalleryDetailsPage, potentially formatted dates etc.
+    };
+
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => GalleryDetailsPage(
+              item: galleryItem,
+              allItems: [galleryItem],
+              initialIndex: 0,
+            ),
+          ),
+        );
+      },
+      child: Container(
+        width: 260,
+        margin: const EdgeInsets.only(top: 4, bottom: 4),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.grey[900]!,
+              const Color(0xFF1E1E1E),
+            ],
+          ),
+          border: Border.all(color: Colors.white.withOpacity(0.1), width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // User Header
+            GestureDetector(
+              onTap: () {
+                if (galleryData['user_id'] != null) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => VerfiedSwitchPage(
+                        userId: galleryData['user_id'],
+                      ),
+                    ),
+                  );
+                }
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(10),
+                child: Row(
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.amber, width: 1),
+                      ),
+                      child: CircleAvatar(
+                        radius: 14,
+                        backgroundColor: Colors.grey[800],
+                        backgroundImage: () {
+                          try {
+                            final profileList = galleryData['user']?['profile'];
+                            if (profileList is List && profileList.isNotEmpty) {
+                              final url = profileList[0]['profile_image_url'];
+                              if (url is String && url.isNotEmpty) {
+                                return NetworkImage(url);
+                              }
+                            }
+                          } catch (e) {
+                            // ignore
+                          }
+                          return null;
+                        }(),
+                        child: const Icon(Icons.person,
+                            size: 14, color: Colors.white70),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            () {
+                              try {
+                                final profileList =
+                                    galleryData['user']?['profile'];
+                                if (profileList is List &&
+                                    profileList.isNotEmpty) {
+                                  final name = profileList[0]['name'];
+                                  if (name is String) {
+                                    return name;
+                                  }
+                                }
+                              } catch (e) {
+                                // ignore
+                              }
+                              return 'Unknown';
+                            }(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const Text(
+                            'Shared a gallery',
+                            style: TextStyle(
+                              color: Colors.white54,
+                              fontSize: 10,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Icon(Icons.arrow_forward_ios,
+                        size: 12, color: Colors.white30),
+                  ],
+                ),
+              ),
+            ),
+
+            // Image Section
+            Stack(
+              children: [
+                if (galleryData['image_url'] != null)
+                  CachedNetworkImage(
+                    imageUrl: galleryData['image_url'],
+                    width: double.infinity,
+                    height: 180,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => Container(
+                      color: Colors.grey[850],
+                      height: 180,
+                      child: const Center(
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.amber,
+                        ),
+                      ),
+                    ),
+                    errorWidget: (context, url, error) => Container(
+                      color: Colors.grey[850],
+                      height: 180,
+                      child: const Icon(Icons.image_not_supported,
+                          color: Colors.white24, size: 40),
+                    ),
+                  ),
+
+                // Price Tag if available
+                if (galleryData['price'] != null)
+                  Positioned(
+                    bottom: 8,
+                    right: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.7),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.amber, width: 0.5),
+                      ),
+                      child: Text(
+                        '\$${galleryData['price']}',
+                        style: const TextStyle(
+                          color: Colors.amber,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+
+            // Details Footer
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (galleryData['category'] != null)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
+                      margin: const EdgeInsets.only(bottom: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        galleryData['category'].toString().toUpperCase(),
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 9,
+                          fontWeight: FontWeight.w500,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
+                  Text(
+                    galleryData['title'] ?? 'Untitled',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                      height: 1.2,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  if (galleryData['description'] != null &&
+                      galleryData['description'].toString().isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      galleryData['description'],
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.6),
+                        fontSize: 12,
+                        height: 1.3,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildImageMessage(String url) {

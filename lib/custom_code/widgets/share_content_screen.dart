@@ -17,12 +17,16 @@ class ShareContentScreen extends StatefulWidget {
     this.height,
     required this.contentToShare,
     required this.currentUserId,
+    this.contentId,
+    this.contentType = 'text',
   });
 
   final double? width;
   final double? height;
   final String contentToShare;
   final String currentUserId;
+  final String? contentId;
+  final String contentType;
 
   @override
   State<ShareContentScreen> createState() => _ShareContentScreenState();
@@ -104,7 +108,7 @@ class _ShareContentScreenState extends State<ShareContentScreen> {
                   Icon(Icons.group),
                   SizedBox(width: 8),
                   Text(
-                    'Share to Groups',
+                    'Share',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -131,8 +135,66 @@ class _ShareContentScreenState extends State<ShareContentScreen> {
           Navigator.pop(context);
           _shareToGroup(groupId, groupName);
         },
+        onPersonSelected: (userId, userName, userMessage) {
+          Navigator.pop(context);
+          _shareToPerson(userId, userName);
+        },
       ),
     );
+  }
+
+  Future<void> _shareToPerson(String userId, String userName) async {
+    try {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+
+      // Prepare payload
+      final messageData = {
+        'sender_id': widget.currentUserId,
+        'receiver_id': userId,
+        'content': widget.contentToShare, // This serves as title/description
+        'updated_at': DateTime.now().toIso8601String(),
+        'is_read': false,
+        'message_type': widget.contentType == 'gallery' ? 'gallery' : 'text',
+      };
+
+      // If sharing gallery content
+      if (widget.contentType == 'gallery' && widget.contentId != null) {
+        messageData['gallery_id'] = widget.contentId!;
+      }
+
+      await supabase.from('messages').insert(messageData);
+
+      Navigator.pop(context); // Close loading
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Shared to $userName successfully!'),
+          backgroundColor: Colors.green,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+      );
+    } catch (e) {
+      Navigator.pop(context); // Close loading
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error sharing content: $e'),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+      );
+    }
   }
 
   Future<void> _shareToGroup(String groupId, String groupName) async {
@@ -147,12 +209,30 @@ class _ShareContentScreenState extends State<ShareContentScreen> {
       );
 
       // Insert message to group
-      await supabase.from('group_messages').insert({
+      // Assuming group_messages table logic.
+      // If group_messages also needs gallery_id, I should check that too.
+      // For now, focusing on user request "show in personal chat".
+      // But let's check group_messages table if I have time, or just insert as text for now.
+      // Wait, the previous turn modified whatsapp_group_chat to display gallery messages.
+      // It expects 'gallery' key? Or join?
+      // In whatsapp_group_chat:
+      // gallery:gallery_id(*)
+
+      final messageData = {
         'group_id': groupId,
         'sender_id': widget.currentUserId,
         'message_text': widget.contentToShare,
-        'message_type': 'text',
-      });
+        'message_type': widget.contentType == 'gallery' ? 'gallery' : 'text',
+      };
+
+      if (widget.contentType == 'gallery' && widget.contentId != null) {
+        // Assuming group_messages has gallery_id. If not, this might fail or be ignored.
+        // Let's assume for now it handles it or I'll need to update schema.
+        // Based on whatsapp_group_chat query, it definitely expects gallery relation.
+        messageData['gallery_id'] = widget.contentId!;
+      }
+
+      await supabase.from('group_messages').insert(messageData);
 
       // Update group's last message
       await supabase.from('groups').update({
@@ -196,6 +276,9 @@ class GroupSelectionBottomSheet extends StatefulWidget {
   final String currentUserId;
   final Function(String groupId, String groupName, String userMessage)
       onGroupSelected;
+  final Function(String userId, String userName, String userMessage)?
+      onPersonSelected;
+  final VoidCallback? onWhatsAppShare;
   final String? messageHint;
   final bool showMessageInput;
 
@@ -204,6 +287,8 @@ class GroupSelectionBottomSheet extends StatefulWidget {
     required this.contentToShare,
     required this.currentUserId,
     required this.onGroupSelected,
+    this.onPersonSelected,
+    this.onWhatsAppShare,
     this.messageHint = 'Add a message (optional)...',
     this.showMessageInput = true,
   }) : super(key: key);
@@ -213,8 +298,10 @@ class GroupSelectionBottomSheet extends StatefulWidget {
       _GroupSelectionBottomSheetState();
 }
 
-class _GroupSelectionBottomSheetState extends State<GroupSelectionBottomSheet> {
+class _GroupSelectionBottomSheetState extends State<GroupSelectionBottomSheet>
+    with SingleTickerProviderStateMixin {
   List<Map<String, dynamic>> userGroups = [];
+  List<Map<String, dynamic>> recentPeople = [];
   bool isLoading = true;
   String searchQuery = '';
   String userMessage = '';
@@ -224,7 +311,16 @@ class _GroupSelectionBottomSheetState extends State<GroupSelectionBottomSheet> {
   @override
   void initState() {
     super.initState();
-    _fetchUserGroups();
+    _fetchAllData();
+  }
+
+  Future<void> _fetchAllData() async {
+    safeSetState(() => isLoading = true);
+    await Future.wait([
+      _fetchUserGroups(),
+      _fetchRecentPeople(),
+    ]);
+    safeSetState(() => isLoading = false);
   }
 
   @override
@@ -234,10 +330,40 @@ class _GroupSelectionBottomSheetState extends State<GroupSelectionBottomSheet> {
     super.dispose();
   }
 
+  Future<void> _fetchRecentPeople() async {
+    try {
+      final currentUserId = widget.currentUserId;
+
+      final response = await supabase
+          .from('conversations')
+          .select('*')
+          .or('user1_id.eq.$currentUserId,user2_id.eq.$currentUserId')
+          .order('updated_at', ascending: false)
+          .limit(20);
+
+      final userIds = <String>{};
+      for (final conv in response) {
+        if (conv['user1_id'] != currentUserId) userIds.add(conv['user1_id']);
+        if (conv['user2_id'] != currentUserId) userIds.add(conv['user2_id']);
+      }
+
+      if (userIds.isEmpty) return;
+
+      final profilesResponse = await supabase
+          .from('profile')
+          .select('user_id, name, profile_image_url')
+          .inFilter('user_id', userIds.toList());
+
+      safeSetState(() {
+        recentPeople = List<Map<String, dynamic>>.from(profilesResponse);
+      });
+    } catch (e) {
+      debugPrint('Error fetching recent people: $e');
+    }
+  }
+
   Future<void> _fetchUserGroups() async {
     try {
-      safeSetState(() => isLoading = true);
-
       final response = await supabase.from('group_members').select('''
             group_id,
             groups!inner (
@@ -262,16 +388,9 @@ class _GroupSelectionBottomSheetState extends State<GroupSelectionBottomSheet> {
             'max_members': group['max_members'],
           };
         }).toList();
-        isLoading = false;
       });
     } catch (e) {
-      safeSetState(() => isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error loading groups: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      debugPrint('Error loading groups: $e');
     }
   }
 
@@ -283,130 +402,90 @@ class _GroupSelectionBottomSheetState extends State<GroupSelectionBottomSheet> {
         .toList();
   }
 
+  List<Map<String, dynamic>> get filteredPeople {
+    if (searchQuery.isEmpty) return recentPeople;
+    return recentPeople
+        .where((person) => (person['name'] ?? '')
+            .toLowerCase()
+            .contains(searchQuery.toLowerCase()))
+        .toList();
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Insta-style: Dark rounded sheet
     return Container(
-      height: MediaQuery.of(context).size.height * 0.8,
+      height: MediaQuery.of(context).size.height * 0.85,
       decoration: const BoxDecoration(
-        color: Color(0xFF1A1A1A), // Dark background
+        color: Color(0xFF121212), // Deep black/grey
         borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(24),
-          topRight: Radius.circular(24),
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
         ),
       ),
       child: Column(
         children: [
-          // Handle bar
-          Container(
-            width: 50,
-            height: 5,
-            margin: const EdgeInsets.only(top: 16),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFFD700), // Yellow handle
-              borderRadius: BorderRadius.circular(3),
+          // Drag Handle
+          Center(
+            child: Container(
+              margin: const EdgeInsets.only(top: 12, bottom: 12),
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey[600],
+                borderRadius: BorderRadius.circular(2),
+              ),
             ),
           ),
-          // Header
+
+          // Header: Search & Message
           Padding(
-            padding: const EdgeInsets.fromLTRB(24, 24, 24, 20),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Column(
               children: [
-                // Title Row
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFFD700).withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(
-                        Icons.share_rounded,
-                        color: Color(0xFFFFD700),
-                        size: 24,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Text(
-                      'Share to Groups',
-                      style:
-                          Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                fontWeight: FontWeight.w800,
-                                color: Colors.white,
-                                letterSpacing: 0.5,
-                              ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                // Search bar
+                // Search Bar
                 Container(
+                  height: 44,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF2A2A2A),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: const Color(0xFF3A3A3A),
-                      width: 1,
-                    ),
+                    color: const Color(0xFF262626),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: TextField(
                     controller: searchController,
-                    onChanged: (value) {
-                      safeSetState(() => searchQuery = value);
-                    },
-                    style: const TextStyle(color: Colors.white),
+                    onChanged: (value) =>
+                        safeSetState(() => searchQuery = value),
+                    style: const TextStyle(color: Colors.white, fontSize: 14),
                     decoration: const InputDecoration(
-                      hintText: 'Search groups...',
-                      hintStyle: TextStyle(color: Color(0xFF888888)),
-                      prefixIcon: Icon(
-                        Icons.search_rounded,
-                        color: Color(0xFFFFD700),
-                        size: 22,
-                      ),
+                      hintText: 'Search',
+                      hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
+                      prefixIcon:
+                          Icon(Icons.search, color: Colors.grey, size: 20),
                       border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 16,
-                      ),
+                      contentPadding: EdgeInsets.symmetric(vertical: 10),
                     ),
                   ),
                 ),
-                // Message input field
                 if (widget.showMessageInput) ...[
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
+                  // Optional Message Input
                   Container(
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF2A2A2A),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: const Color(0xFF3A3A3A),
-                        width: 1,
-                      ),
-                    ),
+                    constraints: const BoxConstraints(maxHeight: 100),
                     child: TextField(
                       controller: messageController,
-                      onChanged: (value) {
-                        safeSetState(() => userMessage = value);
-                      },
-                      style: const TextStyle(color: Colors.white),
-                      maxLines: 3,
-                      minLines: 1,
+                      onChanged: (value) =>
+                          safeSetState(() => userMessage = value),
+                      style: const TextStyle(color: Colors.white, fontSize: 13),
+                      maxLines: null,
                       decoration: InputDecoration(
-                        hintText: widget.messageHint,
-                        hintStyle: const TextStyle(color: Color(0xFF888888)),
-                        prefixIcon: const Padding(
-                          padding: EdgeInsets.only(top: 12, left: 12, right: 8),
-                          child: Icon(
-                            Icons.message_rounded,
-                            color: Color(0xFFFFD700),
-                            size: 22,
-                          ),
-                        ),
+                        hintText: 'Write a message...',
+                        hintStyle:
+                            const TextStyle(color: Colors.grey, fontSize: 13),
+                        contentPadding: EdgeInsets.zero,
                         border: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 16,
-                        ),
+                        prefixIcon: userMessage.isNotEmpty
+                            ? null
+                            : const Icon(Icons.edit,
+                                color: Colors.grey, size: 16),
                       ),
                     ),
                   ),
@@ -414,176 +493,187 @@ class _GroupSelectionBottomSheetState extends State<GroupSelectionBottomSheet> {
               ],
             ),
           ),
-          // Groups list/grid
+
+          const Divider(color: Colors.white10, height: 1),
+
+          // Lists
           Expanded(
             child: isLoading
                 ? const Center(
                     child: CircularProgressIndicator(
-                      valueColor:
-                          AlwaysStoppedAnimation<Color>(Color(0xFFFFD700)),
-                      strokeWidth: 3,
-                    ),
-                  )
-                : filteredGroups.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(20),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF2A2A2A),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: const Icon(
-                                Icons.group_off_rounded,
-                                size: 48,
-                                color: Color(0xFFFFD700),
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-                            Text(
-                              searchQuery.isEmpty
-                                  ? 'No groups found'
-                                  : 'No groups match your search',
-                              style: const TextStyle(
-                                color: Color(0xFF888888),
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
+                        color: Colors.white, strokeWidth: 2))
+                : ListView(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    children: [
+                      // If searching, we show strictly what matches.
+                      // If not searching, we show Recent People then Groups? Or separate?
+                      // The user asked for "search time show a group and personal chat".
+                      // We'll show categorized results if searching or not searching.
+
+                      if (filteredPeople.isNotEmpty) ...[
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
+                          child: Text(
+                            searchQuery.isEmpty ? 'Recent People' : 'People',
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15),
+                          ),
                         ),
-                      )
-                    : Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24),
-                        child: ListView.separated(
-                          itemCount: filteredGroups.length,
-                          separatorBuilder: (context, index) =>
-                              const SizedBox(height: 12),
-                          itemBuilder: (context, index) {
-                            final group = filteredGroups[index];
-                            return _buildGroupCard(group);
-                          },
+                        ...filteredPeople
+                            .map((person) => _buildPersonTile(person)),
+                      ],
+
+                      if (filteredGroups.isNotEmpty) ...[
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
+                          child: Text(
+                            searchQuery.isEmpty ? 'Your Groups' : 'Groups',
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15),
+                          ),
                         ),
-                      ),
+                        ...filteredGroups
+                            .map((group) => _buildGroupTile(group)),
+                      ],
+
+                      if (filteredPeople.isEmpty && filteredGroups.isEmpty)
+                        _buildEmptyState('No matches found'),
+                    ],
+                  ),
           ),
-          const SizedBox(height: 24),
+
+          // Action Button (Whatsapp or other)
+          if (widget.onWhatsAppShare != null)
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    widget.onWhatsAppShare!();
+                  },
+                  icon: const Icon(Icons.share, size: 18),
+                  label: const Text('Share to WhatsApp'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF25D366), // WhatsApp Green
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8)),
+                    elevation: 0,
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );
   }
 
-  Widget _buildGroupCard(Map<String, dynamic> group) {
-    return GestureDetector(
-      onTap: () => widget.onGroupSelected(
-        group['id'],
-        group['name'],
-        userMessage.trim(),
-      ),
-      child: Container(
-        decoration: BoxDecoration(
-          color: const Color(0xFF2A2A2A),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: const Color(0xFF3A3A3A),
-            width: 1,
-          ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              // Group image/icon
-              Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  color: const Color(0xFF3A3A3A),
-                ),
-                child: group['group_image_url'] != null
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(16),
-                        child: Image.network(
-                          group['group_image_url'],
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) =>
-                              _buildDefaultGroupIcon(),
-                        ),
-                      )
-                    : _buildDefaultGroupIcon(),
-              ),
-              const SizedBox(width: 16),
-              // Group info
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      group['name'] ?? 'Unnamed Group',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 16,
-                        color: Colors.white,
-                        letterSpacing: 0.3,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 6),
-                    if (group['description'] != null)
-                      Text(
-                        group['description'],
-                        style: const TextStyle(
-                          color: Color(0xFF888888),
-                          fontSize: 13,
-                          fontWeight: FontWeight.w400,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                  ],
-                ),
-              ),
-              // Arrow icon
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFD700).withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  color: Color(0xFFFFD700),
-                  size: 16,
-                ),
-              ),
-            ],
-          ),
+  Widget _buildEmptyState(String message) {
+    return Padding(
+      padding: const EdgeInsets.all(30),
+      child: Center(
+        child: Text(
+          message,
+          style: const TextStyle(color: Colors.grey),
         ),
       ),
     );
   }
 
-  Widget _buildDefaultGroupIcon() {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            const Color(0xFFFFD700).withOpacity(0.8),
-            const Color(0xFFFFD700),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(16),
+  Widget _buildPersonTile(Map<String, dynamic> person) {
+    return ListTile(
+      leading: CircleAvatar(
+        radius: 22,
+        backgroundColor: Colors.grey[800],
+        backgroundImage: person['profile_image_url'] != null
+            ? NetworkImage(person['profile_image_url'])
+            : null,
+        child: person['profile_image_url'] == null
+            ? const Icon(Icons.person, color: Colors.white)
+            : null,
       ),
-      child: const Center(
-        child: Icon(
-          Icons.group_rounded,
-          size: 28,
-          color: Color(0xFF1A1A1A),
+      title: Text(
+        person['name'] ?? 'Unknown',
+        style: const TextStyle(
+            color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
+      ),
+      subtitle: const Text(
+        'Personal',
+        style: TextStyle(color: Colors.grey, fontSize: 12),
+      ),
+      trailing: _buildSendButton(() {
+        if (widget.onPersonSelected != null) {
+          widget.onPersonSelected!(
+            person['user_id'],
+            person['name'] ?? 'Unknown',
+            userMessage.trim(),
+          );
+        }
+      }),
+    );
+  }
+
+  Widget _buildGroupTile(Map<String, dynamic> group) {
+    return ListTile(
+      leading: Container(
+        width: 44,
+        height: 44,
+        decoration: BoxDecoration(
+          color: Colors.grey[800],
+          shape: BoxShape.circle,
+          image: group['group_image_url'] != null
+              ? DecorationImage(
+                  image: NetworkImage(group['group_image_url']),
+                  fit: BoxFit.cover)
+              : null,
+        ),
+        child: group['group_image_url'] == null
+            ? const Icon(Icons.group, color: Colors.white, size: 20)
+            : null,
+      ),
+      title: Text(
+        group['name'] ?? 'Group',
+        style: const TextStyle(
+            color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
+      ),
+      subtitle: Text(
+        '${group['max_members'] ?? 0} members',
+        style: const TextStyle(color: Colors.grey, fontSize: 12),
+      ),
+      trailing: _buildSendButton(() {
+        widget.onGroupSelected(
+          group['id'],
+          group['name'],
+          userMessage.trim(),
+        );
+      }),
+    );
+  }
+
+  Widget _buildSendButton(VoidCallback onTap) {
+    return Container(
+      height: 32,
+      width: 70,
+      decoration: BoxDecoration(
+        color: Colors.blue, // Insta blue
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: MaterialButton(
+        padding: EdgeInsets.zero,
+        onPressed: onTap,
+        child: const Text(
+          'Send',
+          style: TextStyle(
+              color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
         ),
       ),
     );

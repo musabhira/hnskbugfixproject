@@ -12,6 +12,7 @@ class ChatMessage {
   final Map<String, dynamic>? replyToMessage;
   final bool isOptimistic; // For optimistic UI updates
   final bool isEdited;
+  final Map<String, dynamic>? gallery;
   String? get senderName => senderProfile?['name'];
 
   ChatMessage({
@@ -28,6 +29,7 @@ class ChatMessage {
     this.replyToMessage,
     this.isOptimistic = false,
     this.isEdited = false,
+    this.gallery,
   });
 
   factory ChatMessage.fromJson(Map<String, dynamic> json) {
@@ -44,6 +46,7 @@ class ChatMessage {
       senderProfile: json['sender_profile'],
       replyToMessage: json['reply_to'],
       isEdited: json['is_edited'] ?? false,
+      gallery: json['gallery'],
     );
   }
 
@@ -61,6 +64,7 @@ class ChatMessage {
       'sender_profile': senderProfile,
       'reply_to': replyToMessage,
       'is_edited': isEdited,
+      'gallery': gallery,
     };
   }
 }

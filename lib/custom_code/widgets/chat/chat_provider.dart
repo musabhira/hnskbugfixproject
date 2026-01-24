@@ -174,6 +174,12 @@ class ChatMessages extends _$ChatMessages {
         ),
         sender:users!sender_id(
           profile:profile!user_id(name, profile_image_url)
+        ),
+        gallery:gallery_id(
+          *,
+          user:users!user_id(
+            profile:profile!user_id(name, profile_image_url)
+          )
         )
       ''')
           .eq('group_id', groupId)
@@ -190,6 +196,7 @@ class ChatMessages extends _$ChatMessages {
           ...data,
           'sender_profile': senderProfile,
           'reply_to': replyTo,
+          'gallery': _safeGet(data['gallery']),
         });
       }).toList();
 
@@ -334,6 +341,12 @@ class ChatMessages extends _$ChatMessages {
             ),
             sender:users!sender_id(
               profile:profile!user_id(name, profile_image_url)
+            ),
+            gallery:gallery_id(
+              *,
+              user:users!user_id(
+                profile:profile!user_id(name, profile_image_url)
+              )
             )
           ''').single();
 
@@ -345,6 +358,7 @@ class ChatMessages extends _$ChatMessages {
         ...response,
         'sender_profile': senderProfile,
         'reply_to': replyTo,
+        'gallery': _safeGet(response['gallery']),
       });
 
       // Remove from optimistic list and update state
@@ -434,6 +448,12 @@ class ChatMessages extends _$ChatMessages {
         ),
         sender:users!sender_id(
           profile:profile!user_id(name, profile_image_url)
+        ),
+        gallery:gallery_id(
+          *,
+          user:users!user_id(
+            profile:profile!user_id(name, profile_image_url)
+          )
         )
       ''').eq('id', id).single();
 
@@ -445,6 +465,7 @@ class ChatMessages extends _$ChatMessages {
         ...response,
         'sender_profile': senderProfile,
         'reply_to': replyTo,
+        'gallery': _safeGet(response['gallery']),
       });
     } catch (e) {
       debugPrint('Error fetching message by id: $e');

@@ -9,3 +9,7 @@ export 'followers_screen.dart' show FollowersScreen;
 export 'message_list_page.dart' show MessageListPage;
 export 'share_content_screen.dart' show ShareContentScreen;
 export 'active_users_widget.dart' show ActiveUsersWidget;
+export 'main_profile_widget.dart' show MainProfileWidget;
+export 'main_market_page.dart' show MainMarketPage;
+export 'tab_view.dart' show GalleryTabViewPage;
+export 'gallery_following_tab_view.dart' show GalleryFollowingTabViewPage;

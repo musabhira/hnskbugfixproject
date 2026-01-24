@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
@@ -17,6 +18,8 @@ import 'package:pocket_mates_app/custom_code/widgets/chat/chat_provider.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/voice_player.dart';
 import 'package:pocket_mates_app/custom_code/widgets/webrtc_call_screen.dart';
 import 'package:pocket_mates_app/custom_code/widgets/image_viewer.dart';
+import 'package:pocket_mates_app/custom_code/widgets/gallery_search_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
   final String groupId;
@@ -516,84 +519,351 @@ class _MessageBubble extends StatelessWidget {
           child: const Icon(Icons.reply, color: Colors.white70)),
       child: Align(
         alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-        child: Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-          padding: const EdgeInsets.all(4),
-          decoration: BoxDecoration(
-            color: isMe ? const Color(0xFF005C4B) : const Color(0xFF1F2C34),
-            borderRadius: BorderRadius.circular(12).copyWith(
-              bottomRight: isMe ? Radius.zero : null,
-              bottomLeft: isMe ? null : Radius.zero,
+        child: GestureDetector(
+          onLongPress: () async {
+            if (message.messageText != null &&
+                message.messageText!.isNotEmpty) {
+              await Clipboard.setData(
+                  ClipboardData(text: message.messageText!));
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Message copied'),
+                    duration: Duration(seconds: 2),
+                  ),
+                );
+              }
+            }
+          },
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: isMe ? const Color(0xFF005C4B) : const Color(0xFF1F2C34),
+              borderRadius: BorderRadius.circular(12).copyWith(
+                bottomRight: isMe ? Radius.zero : null,
+                bottomLeft: isMe ? null : Radius.zero,
+              ),
             ),
-          ),
-          constraints: BoxConstraints(
-              maxWidth: MediaQuery.of(context).size.width * 0.75),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (!isMe && (message.senderProfile != null))
-                Padding(
-                    padding: const EdgeInsets.only(left: 4, top: 4),
-                    child: Text(message.senderProfile!['name'] ?? 'User',
-                        style: TextStyle(
-                            color: Colors.teal[200],
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12))),
-              if (message.replyToMessageId != null)
-                _ReplyBubble(replyId: message.replyToMessageId!),
-              if (message.messageType == 'image' && message.fileUrl != null)
-                GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ImageViewer(
-                          imageUrl: message.fileUrl!,
-                          title: message.senderProfile?['name'] ?? 'Image',
+            constraints: BoxConstraints(
+                maxWidth: MediaQuery.of(context).size.width * 0.75),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (!isMe && (message.senderProfile != null))
+                  Padding(
+                      padding: const EdgeInsets.only(left: 4, top: 4),
+                      child: Text(message.senderProfile!['name'] ?? 'User',
+                          style: TextStyle(
+                              color: Colors.teal[200],
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12))),
+                if (message.replyToMessageId != null)
+                  _ReplyBubble(replyId: message.replyToMessageId!),
+                if (message.messageType == 'image' && message.fileUrl != null)
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ImageViewer(
+                            imageUrl: message.fileUrl!,
+                            title: message.senderProfile?['name'] ?? 'Image',
+                          ),
                         ),
+                      );
+                    },
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: CachedNetworkImage(
+                        imageUrl: message.fileUrl!,
+                        placeholder: (_, __) => Container(
+                            height: 150,
+                            width: 150,
+                            color: Colors.black12,
+                            child: const Center(
+                                child: CircularProgressIndicator())),
+                        errorWidget: (_, __, ___) => const Icon(Icons.error),
                       ),
-                    );
-                  },
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: CachedNetworkImage(
-                      imageUrl: message.fileUrl!,
-                      placeholder: (_, __) => Container(
-                          height: 150,
-                          width: 150,
-                          color: Colors.black12,
-                          child:
-                              const Center(child: CircularProgressIndicator())),
-                      errorWidget: (_, __, ___) => const Icon(Icons.error),
                     ),
                   ),
-                ),
-              if (message.messageType == 'voice' && message.fileUrl != null)
-                VoiceMessagePlayer(
-                    fileUrl: message.fileUrl!,
-                    duration: message.voiceDuration ?? 0,
-                    isFromCurrentUser: isMe),
-              if (message.messageText != null)
+                if (message.messageType == 'gallery' && message.gallery != null)
+                  GestureDetector(
+                    // Enable tap to navigate if needed
+                    child: _buildGalleryMessage(context, message.gallery!),
+                  ),
+                if (message.messageType == 'voice' && message.fileUrl != null)
+                  VoiceMessagePlayer(
+                      fileUrl: message.fileUrl!,
+                      duration: message.voiceDuration ?? 0,
+                      isFromCurrentUser: isMe),
+                if (message.messageText != null)
+                  Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    child: SelectableText(
+                      message.messageText!,
+                      style: const TextStyle(color: Colors.white, fontSize: 16),
+                    ),
+                  ),
                 Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  child: Text(
-                    message.messageText!,
-                    style: const TextStyle(color: Colors.white, fontSize: 16),
+                  padding: const EdgeInsets.only(right: 4, bottom: 2),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (message.messageText != null &&
+                          message.messageText!.isNotEmpty) ...[
+                        InkWell(
+                          onTap: () async {
+                            await Clipboard.setData(
+                                ClipboardData(text: message.messageText!));
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Copied'),
+                                  duration: Duration(seconds: 1),
+                                ),
+                              );
+                            }
+                          },
+                          child: Icon(
+                            Icons.copy,
+                            size: 10,
+                            color: Colors.white.withOpacity(0.6),
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                      ],
+                      Text(
+                        timeago.format(message.createdAt),
+                        style: const TextStyle(
+                            color: Colors.white54, fontSize: 10),
+                      ),
+                    ],
                   ),
                 ),
-              Padding(
-                padding: const EdgeInsets.only(right: 4, bottom: 2),
-                child: Align(
-                  alignment: Alignment.bottomRight,
-                  child: Text(
-                    timeago.format(message.createdAt),
-                    style: const TextStyle(color: Colors.white54, fontSize: 10),
-                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGalleryMessage(
+      BuildContext context, Map<String, dynamic> galleryData) {
+    // Prepare gallery item map as clearly as possible
+    final galleryItem = {
+      'gallery_id': galleryData['id'],
+      'gallery_title': galleryData['title'],
+      'gallery_description': galleryData['description'],
+      'gallery_image_url': galleryData['image_url'],
+      'user_id': galleryData['user_id'],
+      'price': galleryData['price'],
+      'category': galleryData['category'],
+      'name': galleryData['user']?['profile'] is List &&
+              (galleryData['user']['profile'] as List).isNotEmpty
+          ? galleryData['user']['profile'][0]['name']
+          : 'User',
+      'profile_image_url': galleryData['user']?['profile'] is List &&
+              (galleryData['user']['profile'] as List).isNotEmpty
+          ? galleryData['user']['profile'][0]['profile_image_url']
+          : null,
+    };
+
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => GalleryDetailsPage(
+              item: galleryItem,
+              allItems: [galleryItem],
+              initialIndex: 0,
+            ),
+          ),
+        );
+      },
+      child: Container(
+        width: 250,
+        margin: const EdgeInsets.symmetric(vertical: 4),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.grey[900]!,
+                const Color(0xFF1E1E1E),
+              ]),
+          border: Border.all(color: Colors.white12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            )
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header
+            GestureDetector(
+              onTap: () {
+                if (galleryData['user_id'] != null) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => VerfiedSwitchPage(
+                        userId: galleryData['user_id'],
+                      ),
+                    ),
+                  );
+                }
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(10),
+                child: Row(
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.amber, width: 1),
+                      ),
+                      child: CircleAvatar(
+                        radius: 12,
+                        backgroundColor: Colors.grey[800],
+                        backgroundImage: () {
+                          try {
+                            final profileList = galleryData['user']?['profile'];
+                            if (profileList is List && profileList.isNotEmpty) {
+                              final url = profileList[0]['profile_image_url'];
+                              if (url is String && url.isNotEmpty) {
+                                return NetworkImage(url);
+                              }
+                            }
+                          } catch (_) {}
+                          return null;
+                        }(),
+                        child: const Icon(Icons.person,
+                            size: 12, color: Colors.white70),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        () {
+                          try {
+                            final profileList = galleryData['user']?['profile'];
+                            if (profileList is List && profileList.isNotEmpty) {
+                              return profileList[0]['name']?.toString() ??
+                                  'User';
+                            }
+                          } catch (_) {}
+                          return 'User';
+                        }(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const Icon(Icons.arrow_forward_ios,
+                        size: 10, color: Colors.white30),
+                  ],
                 ),
               ),
-            ],
-          ),
+            ),
+
+            // Image
+            Stack(
+              children: [
+                if (galleryData['image_url'] != null)
+                  CachedNetworkImage(
+                    imageUrl: galleryData['image_url'],
+                    height: 160,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    placeholder: (_, __) => Container(
+                        height: 160,
+                        color: Colors.grey[850],
+                        child: const Center(
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2, color: Colors.amber))),
+                    errorWidget: (_, __, ___) => Container(
+                        height: 160,
+                        color: Colors.grey[850],
+                        child: const Icon(Icons.error, color: Colors.white24)),
+                  ),
+
+                // Price Tag
+                if (galleryData['price'] != null)
+                  Positioned(
+                    bottom: 8,
+                    right: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.7),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.amber, width: 0.5),
+                      ),
+                      child: Text(
+                        '\$${galleryData['price']}',
+                        style: const TextStyle(
+                            color: Colors.amber,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 10),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+
+            // Footer
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (galleryData['category'] != null)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
+                      margin: const EdgeInsets.only(bottom: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        galleryData['category'].toString().toUpperCase(),
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 9,
+                          fontWeight: FontWeight.w500,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
+                  Text(
+                    galleryData['title'] ?? '',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                      height: 1.2,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
