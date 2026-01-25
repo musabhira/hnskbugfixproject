@@ -6,6 +6,7 @@ import 'package:pocket_mates_app/custom_code/widgets/profile_switch_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
 import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
 import 'package:pocket_mates_app/flutter_flow/flutter_flow_util.dart';
+import 'package:pocket_mates_app/flutter_flow/flutter_flow_theme.dart';
 
 import '/custom_code/widgets/index.dart';
 
@@ -18,6 +19,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/whats_app_groups_provider.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/create_group_dialog.dart';
 import 'package:pocket_mates_app/custom_code/widgets/active_users_provider.dart';
+import 'package:pocket_mates_app/custom_code/widgets/create_gallery_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/create_service_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/event_create_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/thread_feed_page.dart';
 
 class HomePageWidgetTree extends ConsumerStatefulWidget {
   const HomePageWidgetTree({
@@ -231,6 +236,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                               onTapText: () => _handleStrangerChat(
                                   context, ref, profileId.toString()),
                               onTapSettings: _handleSettings,
+                              onTapAdd: () => _showAddBottomSheet(context),
                               onRefresh: () =>
                                   ref.refresh(conversationsProvider),
                             ),
@@ -600,6 +606,283 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   }
   // Methods being added here
 
+  void _showAddBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) {
+        // Use a StatefulBuilder if dynamic rebuilding is needed inside the sheet
+        return StatefulBuilder(builder: (context, setState) {
+          bool isExpanded = true;
+          return Container(
+            height: 400, // Adjust as needed
+            decoration: const BoxDecoration(
+              color: Color(0xFF111111), // Match theme
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(20),
+                topRight: Radius.circular(20),
+              ),
+            ),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  maxWidth: 700, // Set your desired max width
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // TOP ROW: ADD GALLERY (Full Width)
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 4.0),
+                            child: InkWell(
+                              onTap: () async {
+                                Navigator.pop(context); // Close sheet
+                                final isAuthenticated =
+                                    await AuthAlertBox.checkAuthAndShowAlert(
+                                  context: context,
+                                  customMessage:
+                                      "Please login to add to Gallery",
+                                );
+                                if (isAuthenticated) {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (_) =>
+                                            const CreateGalleryWidget(
+                                                width: double.infinity,
+                                                height: double.infinity)),
+                                  );
+                                }
+                              },
+                              child: Container(
+                                  height: 100,
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        FlutterFlowTheme.of(context)
+                                            .primary
+                                            .withOpacity(0.8),
+                                        FlutterFlowTheme.of(context)
+                                            .secondary
+                                            .withOpacity(0.8),
+                                      ],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
+                                    borderRadius: BorderRadius.circular(14.0),
+                                  ),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Icon(Icons.shopping_basket_sharp,
+                                          color: Colors.white, size: 30),
+                                      const SizedBox(height: 8),
+                                      Text('Add\nGallery',
+                                          textAlign: TextAlign.center,
+                                          style: GoogleFonts.poppins(
+                                              color: Colors.white,
+                                              fontSize: 12)),
+                                    ],
+                                  )),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+
+                    // BOTTOM ROW: SERVICE, THOUGHT, EVENT
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // ADD SERVICE
+                        Expanded(
+                          child: Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 4.0),
+                            child: InkWell(
+                              onTap: () async {
+                                Navigator.pop(context); // Close sheet
+                                final isAuthenticated =
+                                    await AuthAlertBox.checkAuthAndShowAlert(
+                                  context: context,
+                                  customMessage: "Please login to add Service",
+                                );
+                                if (isAuthenticated) {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (_) =>
+                                              const CreateServiceWidget(
+                                                  width: double.infinity,
+                                                  height: double.infinity)));
+                                }
+                              },
+                              child: Container(
+                                  height: 100,
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        FlutterFlowTheme.of(context)
+                                            .primary
+                                            .withOpacity(0.8),
+                                        FlutterFlowTheme.of(context)
+                                            .secondary
+                                            .withOpacity(0.8),
+                                      ],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
+                                    borderRadius: BorderRadius.circular(14.0),
+                                  ),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Icon(
+                                          Icons.miscellaneous_services_sharp,
+                                          color: Colors.white,
+                                          size: 30),
+                                      const SizedBox(height: 8),
+                                      Text('Add\nService',
+                                          textAlign: TextAlign.center,
+                                          style: GoogleFonts.poppins(
+                                              color: Colors.white,
+                                              fontSize: 12)),
+                                    ],
+                                  )),
+                            ),
+                          ),
+                        ),
+
+                        // ADD THOUGHT
+                        Expanded(
+                          child: Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 4.0),
+                            child: InkWell(
+                              onTap: () async {
+                                Navigator.pop(context);
+                                final isAuthenticated =
+                                    await AuthAlertBox.checkAuthAndShowAlert(
+                                  context: context,
+                                  customMessage: "Please login to add Thought",
+                                );
+                                if (isAuthenticated) {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (_) => CreateThreadPage(
+                                              userId: _currentUserId ?? '')));
+                                }
+                              },
+                              child: Container(
+                                  height: 100,
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        FlutterFlowTheme.of(context)
+                                            .primary
+                                            .withOpacity(0.8),
+                                        FlutterFlowTheme.of(context)
+                                            .secondary
+                                            .withOpacity(0.8),
+                                      ],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
+                                    borderRadius: BorderRadius.circular(14.0),
+                                  ),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Icon(Icons.psychology_alt_outlined,
+                                          color: Colors.white, size: 30),
+                                      const SizedBox(height: 8),
+                                      Text('Add\nThought',
+                                          textAlign: TextAlign.center,
+                                          style: GoogleFonts.poppins(
+                                              color: Colors.white,
+                                              fontSize: 12)),
+                                    ],
+                                  )),
+                            ),
+                          ),
+                        ),
+
+                        // ADD EVENT (Verified Only)
+                        if (_isVerified)
+                          Expanded(
+                            child: Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 4.0),
+                              child: InkWell(
+                                onTap: () async {
+                                  Navigator.pop(context);
+                                  final isAuthenticated =
+                                      await AuthAlertBox.checkAuthAndShowAlert(
+                                    context: context,
+                                    customMessage: "Please login to add Event",
+                                  );
+                                  if (isAuthenticated) {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (_) =>
+                                                const EventCreatePage()));
+                                  }
+                                },
+                                child: Container(
+                                    height: 100,
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          FlutterFlowTheme.of(context)
+                                              .primary
+                                              .withOpacity(0.8),
+                                          FlutterFlowTheme.of(context)
+                                              .secondary
+                                              .withOpacity(0.8),
+                                        ],
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                      ),
+                                      borderRadius: BorderRadius.circular(14.0),
+                                    ),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        const Icon(Icons.event,
+                                            color: Colors.white, size: 30),
+                                        const SizedBox(height: 8),
+                                        Text('Add\nEvent',
+                                            textAlign: TextAlign.center,
+                                            style: GoogleFonts.poppins(
+                                                color: Colors.white,
+                                                fontSize: 12)),
+                                      ],
+                                    )),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        });
+      },
+    );
+  }
+
   void _handleStrangerMatch(
     BuildContext context,
     WidgetRef ref,
@@ -696,17 +979,19 @@ class _UnifiedHomeHeaderDelegate extends SliverPersistentHeaderDelegate {
   final VoidCallback onTapCall;
   final VoidCallback onTapText;
   final VoidCallback onTapSettings;
+  final VoidCallback onTapAdd; // Added for Add Button
   final VoidCallback onRefresh;
 
   _UnifiedHomeHeaderDelegate({
     required this.currentUserId,
     required this.currentProfileId,
-    required this.activeUsersRef, // Added param
+    required this.activeUsersRef,
     required this.onTapVideo,
     required this.onTapFriends,
     required this.onTapCall,
     required this.onTapText,
     required this.onTapSettings,
+    required this.onTapAdd, // Added param
     required this.onRefresh,
   });
 
@@ -850,6 +1135,31 @@ class _UnifiedHomeHeaderDelegate extends SliverPersistentHeaderDelegate {
                         return asyncData.when(
                           data: (data) => Row(
                             children: [
+                              InkWell(
+                                onTap: onTapAdd,
+                                child: Container(
+                                  padding: const EdgeInsets.all(5),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.2),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.add,
+                                    size: 13,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Add',
+                                style: GoogleFonts.inter(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const Spacer(),
                               Container(
                                 width: 8,
                                 height: 8,
@@ -867,6 +1177,7 @@ class _UnifiedHomeHeaderDelegate extends SliverPersistentHeaderDelegate {
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
+                              const SizedBox(width: 16),
                             ],
                           ),
                           loading: () => const SizedBox(height: 16),

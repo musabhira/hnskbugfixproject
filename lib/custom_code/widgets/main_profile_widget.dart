@@ -1,17 +1,19 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:share_plus/share_plus.dart';
-
-import '/backend/supabase/supabase.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
+import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 
 class MainProfileWidget extends StatefulWidget {
-  final String? userId; // Optional if preloaded
+  final String? userId;
   final double? width;
   final double? height;
 
-  // Preloaded data support
   final Map<String, dynamic>? preloadedProfile;
   final String? followersCount;
   final String? followingCount;
@@ -19,7 +21,7 @@ class MainProfileWidget extends StatefulWidget {
 
   const MainProfileWidget({
     Key? key,
-    this.userId, // Made optional
+    this.userId,
     this.width,
     this.height,
     this.preloadedProfile,
@@ -38,53 +40,41 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   late TabController _tabController;
   final ScrollController _scrollController = ScrollController();
 
+  // Data State
   bool _isLoading = true;
   Map<String, dynamic>? _profileData;
   List<Map<String, dynamic>> _galleryItems = [];
   List<Map<String, dynamic>> _serviceItems = [];
 
-  // Follow system
+  // Theme Colors
+  Color? _bgColor;
+  Color? _textColor;
+  Color? _btnColor;
+  Color? _btnTextColor;
+
+  // Follow/Block State
   bool _isFollowing = false;
   int _followersCount = 0;
   int _followingCount = 0;
-
-  // Block system
   bool _isBlocked = false;
 
-  // Design constants
-  final double _headerHeight = 280.0;
-  final double _profileImageSize = 100.0;
+  final double _profileImageSize = 90.0;
 
   String get userId {
     if (widget.userId != null) return widget.userId!;
-    if (_profileData != null && _profileData!['user_id'] != null)
+    if (_profileData != null && _profileData!['user_id'] != null) {
       return _profileData!['user_id'].toString();
+    }
     return _supabase.auth.currentUser?.id ?? '';
   }
+
+  bool get isMe => userId == _supabase.auth.currentUser?.id;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-
-    // Initialize data from props if available
-    if (widget.preloadedProfile != null) {
-      _profileData = widget.preloadedProfile;
-      _isLoading = false; // Show content immediately
-
-      // Parse counts if they are strings (simplistic)
-      if (widget.followersCount != null) {
-        final clean = widget.followersCount!.replaceAll(RegExp(r'[^0-9]'), '');
-        _followersCount = int.tryParse(clean) ?? 0;
-      }
-      if (widget.followingCount != null) {
-        final clean = widget.followingCount!.replaceAll(RegExp(r'[^0-9]'), '');
-        _followingCount = int.tryParse(clean) ?? 0;
-      }
-    }
-
-    // Trigger fetch to ensure freshness or get data if not preloaded
-    _loadAllData();
+    _loadInitialData(); // Instant load strategy
   }
 
   @override
@@ -94,514 +84,528 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     super.dispose();
   }
 
-  Future<void> _loadAllData() async {
-    if (!mounted) return;
-    setState(() => _isLoading = true);
+  // --- Data Loading Logic ---
 
-    await Future.wait([
-      _fetchProfileData(),
-      _fetchFollowCounts(),
-      _checkFollowStatus(),
-      _checkBlockStatus(),
-    ]);
-
-    if (mounted) {
-      setState(() => _isLoading = false);
+  Future<void> _loadInitialData() async {
+    // 1. Use Props if available
+    if (widget.preloadedProfile != null) {
+      _applyProfileData(widget.preloadedProfile!);
+      if (widget.followersCount != null) {
+        _followersCount = _parseCount(widget.followersCount!);
+      }
+      if (widget.followingCount != null) {
+        _followingCount = _parseCount(widget.followingCount!);
+      }
+      _isLoading = false;
+    } else {
+      // 2. Try Cache (Local Storage)
+      final prefs = await SharedPreferences.getInstance();
+      final cachedProfile = prefs.getString('profile_cache_$userId');
+      if (cachedProfile != null) {
+        try {
+          final data = json.decode(cachedProfile);
+          if (mounted) {
+            setState(() {
+              _applyProfileData(data);
+              _isLoading = false;
+            });
+          }
+        } catch (e) {
+          debugPrint('Error parsing cached profile: $e');
+        }
+      }
     }
+
+    // 3. Fetch Fresh Data (Always)
+    _fetchFreshData();
   }
 
-  Future<void> _fetchProfileData() async {
-    try {
-      // Fetch profile
-      final profileResponse = await _supabase
-          .from('profile_gallery_service_likes_comments_view')
-          .select()
-          .eq('user_id', userId)
-          .limit(1);
+  void _applyProfileData(Map<String, dynamic> data) {
+    _profileData = data;
+    // Apply Colors
+    _bgColor = _parseColor(data['bg_color_code']);
+    _textColor = _parseColor(data['bg_text_color']);
+    _btnColor = _parseColor(data['button_color_code']);
+    _btnTextColor = _parseColor(data['button_text_color']);
+  }
 
-      if (profileResponse.isNotEmpty) {
-        _profileData = profileResponse.first;
+  Future<void> _fetchFreshData() async {
+    try {
+      if (mounted && _profileData == null) setState(() => _isLoading = true);
+
+      final responses = await Future.wait<dynamic>([
+        _supabase
+            .from('profile_gallery_service_likes_comments_view')
+            .select()
+            .eq('user_id', userId)
+            .limit(1), // Profile
+        _supabase
+            .from('profile_gallery_service_likes_comments_view')
+            .select()
+            .eq('user_id', userId)
+            .not('gallery_id', 'is', null)
+            .order('gallery_created_at', ascending: false)
+            .limit(20), // Recent Gallery (Limit for perf)
+        _fetchFollowCountsInt(), // Counts
+        _checkFollowStatusBool(),
+        _checkBlockStatusBool(),
+      ]);
+
+      if (!mounted) return;
+
+      final profileRes = responses[0] as List;
+      final galleryRes = responses[1] as List;
+
+      if (profileRes.isNotEmpty) {
+        final data = profileRes.first as Map<String, dynamic>;
+        setState(() {
+          _applyProfileData(data);
+          _isLoading = false;
+        });
+        // Cache this fresh data
+        final prefs = await SharedPreferences.getInstance();
+        prefs.setString('profile_cache_$userId', json.encode(data));
       }
 
-      // Fetch Gallery
-      final galleryResponse = await _supabase
-          .from('profile_gallery_service_likes_comments_view')
-          .select()
-          .eq('user_id', userId)
-          .not('gallery_id', 'is', null)
-          .order('gallery_created_at', ascending: false);
-
-      // Deduplicate gallery items
+      // Process Gallery
       final Map<String, Map<String, dynamic>> uniqueGallery = {};
-      for (var item in galleryResponse) {
+      for (var item in galleryRes) {
         if (item['gallery_id'] != null) {
           uniqueGallery[item['gallery_id'].toString()] = item;
         }
       }
-      _galleryItems = uniqueGallery.values.toList();
 
-      // Fetch Services
-      final serviceResponse = await _supabase
-          .from('profile_gallery_service_likes_comments_view')
-          .select()
-          .eq('user_id', userId)
-          .not('service_id', 'is', null)
-          .order('service_created_at', ascending: false);
+      setState(() {
+        _galleryItems = uniqueGallery.values.toList();
+        _followersCount = responses[2] as int; // Follower count
+        // _followingCount handle separately or in same query if precise
+        _isFollowing = responses[3] as bool;
+        _isBlocked = responses[4] as bool;
+      });
 
-      final Map<String, Map<String, dynamic>> uniqueServices = {};
-      for (var item in serviceResponse) {
-        if (item['service_id'] != null) {
-          uniqueServices[item['service_id'].toString()] = item;
-        }
-      }
-      _serviceItems = uniqueServices.values.toList();
+      // Lazy load full lists in background
+      _fetchFullLists();
     } catch (e) {
-      debugPrint('Error fetching data: $e');
+      debugPrint('Error fetching fresh data: $e');
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
-  Future<void> _fetchFollowCounts() async {
+  Future<void> _fetchFullLists() async {
+    // Fetch remaining gallery and services
     try {
-      final followers = await _supabase
-          .from('follows')
-          .select('id')
-          .eq('followed_id', userId);
-
-      final following = await _supabase
-          .from('follows')
-          .select('id')
-          .eq('follower_id', userId);
-
-      // Also get base followers from users table if any
-      final userRow = await _supabase
-          .from('users')
-          .select('followers')
-          .eq('id', userId)
-          .maybeSingle();
-
-      int baseFollowers = 0;
-      if (userRow != null && userRow['followers'] != null) {
-        baseFollowers = (userRow['followers'] as num).toInt();
-      }
+      final serviceRes = await _supabase
+          .from('services') // Query services table directly for better perf
+          .select()
+          .eq('user_id', userId)
+          .order('created_at', ascending: false);
 
       if (mounted) {
         setState(() {
-          _followersCount = followers.length + baseFollowers;
-          _followingCount = following.length;
+          _serviceItems = List<Map<String, dynamic>>.from(serviceRes);
         });
       }
     } catch (e) {
-      debugPrint('Follow count error: $e');
+      debugPrint('Error fetching full lists: $e');
     }
   }
 
-  Future<void> _checkFollowStatus() async {
-    final myId = _supabase.auth.currentUser?.id;
-    if (myId == null) return;
-
+  Future<int> _fetchFollowCountsInt() async {
     try {
       final res = await _supabase
           .from('follows')
-          .select()
-          .eq('follower_id', myId)
+          .select('id')
           .eq('followed_id', userId);
-      if (mounted) setState(() => _isFollowing = res.isNotEmpty);
-    } catch (e) {
-      debugPrint('Check follow error: $e');
+      // Get base followers
+      final userRow = await _supabase
+          .from('profile')
+          .select('followers')
+          .eq('user_id', userId)
+          .maybeSingle();
+
+      int base = 0;
+      if (userRow != null && userRow['followers'] != null) {
+        base = (userRow['followers'] as num).toInt();
+      }
+
+      return res.length + base;
+    } catch (_) {
+      return 0;
     }
   }
 
-  Future<void> _checkBlockStatus() async {
+  Future<bool> _checkFollowStatusBool() async {
     final myId = _supabase.auth.currentUser?.id;
-    if (myId == null) return;
+    if (myId == null) return false;
+    final res = await _supabase
+        .from('follows')
+        .select()
+        .eq('follower_id', myId)
+        .eq('followed_id', userId)
+        .maybeSingle();
+    return res != null;
+  }
 
+  Future<bool> _checkBlockStatusBool() async {
+    final myId = _supabase.auth.currentUser?.id;
+    if (myId == null) return false;
+    final res = await _supabase
+        .from('blocks')
+        .select()
+        .eq('blocker_id', myId)
+        .eq('blocked_id', userId)
+        .maybeSingle();
+    return res != null;
+  }
+
+  // --- Helpers ---
+
+  Color? _parseColor(String? code) {
+    if (code == null || code.isEmpty) return null;
     try {
-      final blockedByMe = await _supabase
-          .from('blocks')
-          .select()
-          .eq('blocker_id', myId)
-          .eq('blocked_id', userId)
-          .limit(1);
-
-      if (mounted && blockedByMe.isNotEmpty) {
-        setState(() => _isBlocked = true);
-      }
-    } catch (e) {
-      debugPrint('Check block error: $e');
+      return Color(int.parse(code.replaceFirst('#', '0xFF')));
+    } catch (_) {
+      return null;
     }
+  }
+
+  int _parseCount(String countStr) {
+    return int.tryParse(countStr.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
   }
 
   Future<void> _toggleFollow() async {
     final myId = _supabase.auth.currentUser?.id;
-    if (myId == null) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text("Login required")));
-      return;
-    }
+    if (myId == null) return;
+
+    setState(() {
+      _isFollowing = !_isFollowing;
+      _followersCount += _isFollowing ? 1 : -1;
+    });
 
     try {
       if (_isFollowing) {
         await _supabase
             .from('follows')
-            .delete()
-            .eq('follower_id', myId)
-            .eq('followed_id', userId);
-        setState(() {
-          _isFollowing = false;
-          _followersCount--;
-        });
+            .insert({'follower_id': myId, 'followed_id': userId});
       } else {
         await _supabase
             .from('follows')
-            .insert({'follower_id': myId, 'followed_id': widget.userId});
-        setState(() {
-          _isFollowing = true;
-          _followersCount++;
-        });
+            .delete()
+            .eq('follower_id', myId)
+            .eq('followed_id', userId);
       }
     } catch (e) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("Error: $e")));
+      // Revert on error
+      setState(() {
+        _isFollowing = !_isFollowing;
+        _followersCount += _isFollowing ? 1 : -1;
+      });
     }
   }
 
+  // --- UI Construction ---
+
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) return _buildShimmerLoading();
-    if (_profileData == null)
-      return const Center(child: Text("User not found"));
+    if (_isBlocked) {
+      return Scaffold(
+        backgroundColor: Colors.white,
+        appBar: AppBar(elevation: 0, backgroundColor: Colors.white),
+        body: const Center(child: Text("You have blocked this user.")),
+      );
+    }
 
-    // Check if blocked
-    if (_isBlocked)
-      return const Center(child: Text("You have blocked this user"));
+    // Defaults
+    final bgColor = _bgColor ?? const Color(0xFF000000);
+    final textColor = _textColor ?? const Color(0xFFFFFFFF);
+    final btnColor = _btnColor ?? const Color(0xFFFFD700);
+    final btnTextColor = _btnTextColor ?? const Color(0xFF000000);
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: bgColor,
       body: NestedScrollView(
         controller: _scrollController,
-        headerSliverBuilder: (ctx, innerBoxScrolled) {
+        headerSliverBuilder: (context, innerBoxIsScrolled) {
           return [
             SliverAppBar(
-              expandedHeight: _headerHeight,
-              pinned: true,
-              backgroundColor: Colors.white,
               elevation: 0,
-              iconTheme: const IconThemeData(color: Colors.black87),
-              flexibleSpace: FlexibleSpaceBar(
-                background: _buildHeaderContent(),
-                collapseMode: CollapseMode.parallax,
+              backgroundColor: bgColor,
+              expandedHeight: 200, // Reduced from 280 for better UX
+              pinned: true,
+              leading: IconButton(
+                icon: Icon(Icons.arrow_back_ios_new_rounded,
+                    color: textColor, size: 20),
+                onPressed: () => Navigator.of(context).pop(),
               ),
+              title: innerBoxIsScrolled
+                  ? Text(
+                      _profileData?['shop_name'] ?? _profileData?['name'] ?? '',
+                      style: GoogleFonts.outfit(
+                        color: textColor,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                    )
+                  : null,
+              centerTitle: true,
               actions: [
+                if (isMe)
+                  IconButton(
+                    icon: Icon(Icons.grid_view_rounded, color: textColor),
+                    tooltip: 'Dashbaord',
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => VerfiedSwitchPage(
+                            userId: userId,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
                 IconButton(
-                  icon: const Icon(Icons.share_outlined),
-                  onPressed: () {
-                    // Simple share
-                    Share.share(
-                        'Check out ${_profileData?['name']}\'s profile!');
-                  },
+                  icon: Icon(Icons.share, color: textColor, size: 22),
+                  onPressed: () => Share.share(
+                      'Check out ${_profileData?['name']}\'s profile on PocketMates!'),
                 ),
                 PopupMenuButton<String>(
+                  icon: Icon(Icons.more_vert, color: textColor),
+                  color: Colors.grey[900],
                   onSelected: (val) {
-                    // Implement report/block logic if needed
+                    if (val == 'block') {
+                      // Block logic
+                    }
                   },
-                  itemBuilder: (context) => [
-                    const PopupMenuItem(value: 'report', child: Text('Report')),
-                    const PopupMenuItem(value: 'block', child: Text('Block')),
+                  itemBuilder: (_) => [
+                    const PopupMenuItem(
+                        value: 'report',
+                        child: Text('Report',
+                            style: TextStyle(color: Colors.white))),
+                    const PopupMenuItem(
+                        value: 'block',
+                        child: Text('Block',
+                            style: TextStyle(color: Colors.redAccent))),
                   ],
                 ),
               ],
+              flexibleSpace: FlexibleSpaceBar(
+                background: _buildBanner(),
+                collapseMode: CollapseMode.parallax,
+              ),
             ),
             SliverToBoxAdapter(
-              child: _buildProfileInfo(),
+              child: _buildProfileHeader(textColor, btnColor, btnTextColor),
             ),
             SliverPersistentHeader(
+              pinned: true,
               delegate: _SliverAppBarDelegate(
                 TabBar(
                   controller: _tabController,
-                  labelColor: Colors.black,
-                  unselectedLabelColor: Colors.grey,
-                  indicatorColor: Colors.black,
+                  labelColor: textColor,
+                  unselectedLabelColor: textColor.withOpacity(0.5),
+                  indicatorColor: btnColor,
                   indicatorWeight: 3,
+                  labelStyle: GoogleFonts.outfit(fontWeight: FontWeight.bold),
                   tabs: const [
                     Tab(text: "Gallery"),
                     Tab(text: "Services"),
                   ],
                 ),
+                bgColor,
               ),
-              pinned: true,
             ),
           ];
         },
-        body: TabBarView(
-          controller: _tabController,
-          children: [
-            _OptimizationWrapper(
-              child: _GalleryTab(items: _galleryItems),
-            ),
-            _OptimizationWrapper(
-              child: _ServicesTab(items: _serviceItems),
-            ),
-          ],
+        body: Container(
+          color: bgColor,
+          child: TabBarView(
+            controller: _tabController,
+            children: [
+              _GalleryTab(items: _galleryItems, textColor: textColor),
+              _ServicesTab(items: _serviceItems, textColor: textColor),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildHeaderContent() {
+  Widget _buildBanner() {
     final bannerUrl = _profileData?['banner_image_url'];
-    final profileUrl = _profileData?['profile_image_url'];
-
-    return Stack(
-      children: [
-        // Banner Image
-        Positioned.fill(
-          bottom: 40,
-          child: bannerUrl != null && bannerUrl.isNotEmpty
-              ? CachedNetworkImage(
-                  imageUrl: bannerUrl,
-                  fit: BoxFit.cover,
-                  memCacheHeight: 600, // Optimize memory usage
-                  placeholder: (context, url) =>
-                      Container(color: Colors.grey[200]),
-                  errorWidget: (context, url, error) =>
-                      Container(color: Colors.grey[300]),
-                )
-              : Container(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Color(0xFF6A11CB), Color(0xFF2575FC)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                  ),
-                ),
-        ),
-        // Gradient overlay for better text visibility (optional)
-        Positioned.fill(
-          bottom: 40,
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.black.withOpacity(0.1),
-                  Colors.black.withOpacity(0.3)
-                ],
-              ),
-            ),
+    if (bannerUrl == null || bannerUrl.isEmpty) {
+      return Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.grey[900]!, Colors.black],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
           ),
         ),
-        // Rounded corners at bottom of banner area
-        Positioned(
-          bottom: 20,
-          left: 0,
-          right: 0,
-          height: 30,
-          child: Container(
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(30),
-                topRight: Radius.circular(30),
-              ),
-            ),
-          ),
-        ),
-        // Profile Image
-        Positioned(
-          bottom: 0,
-          left: 20,
-          child: Container(
-            padding: const EdgeInsets.all(4),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-            ),
-            child: CircleAvatar(
-              radius: _profileImageSize / 2,
-              backgroundImage: (profileUrl != null && profileUrl.isNotEmpty)
-                  ? CachedNetworkImageProvider(profileUrl,
-                      maxHeight: 200) // Optimize
-                  : null,
-              backgroundColor: Colors.grey[200],
-              child: (profileUrl == null || profileUrl.isEmpty)
-                  ? const Icon(Icons.person, size: 40, color: Colors.grey)
-                  : null,
-            ),
-          ),
-        ),
-      ],
+      );
+    }
+    return CachedNetworkImage(
+      imageUrl: bannerUrl,
+      fit: BoxFit.cover,
+      width: double.infinity,
+      memCacheHeight: 600,
+      placeholder: (context, url) => Container(color: Colors.grey[900]),
     );
   }
 
-  Widget _buildProfileInfo() {
+  Widget _buildProfileHeader(
+      Color textColor, Color btnColor, Color btnTextColor) {
+    if (_isLoading && _profileData == null) {
+      return _buildShimmerHeader();
+    }
+
     final name = _profileData?['name'] ?? 'User';
+    final shopName = _profileData?['shop_name'];
     final bio = _profileData?['bio'] ?? '';
+    final profileUrl = _profileData?['profile_image_url'];
     final isVerified = _profileData?['verified'] == true;
-    final city = _profileData?['city'];
-    final state = _profileData?['state'];
-    final location = (city != null && state != null)
-        ? "$city, $state"
-        : (city ?? state ?? "");
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Row with Image + Stats
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: btnColor, width: 2),
+                ),
+                child: CircleAvatar(
+                  radius: _profileImageSize / 2,
+                  backgroundColor: Colors.grey[800],
+                  backgroundImage: (profileUrl != null && profileUrl.isNotEmpty)
+                      ? CachedNetworkImageProvider(profileUrl)
+                      : null,
+                  child: (profileUrl == null || profileUrl.isEmpty)
+                      ? Icon(Icons.person,
+                          size: 40, color: Colors.white.withOpacity(0.5))
+                      : null,
+                ),
+              ),
+              const SizedBox(width: 20),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    Row(
-                      children: [
-                        Flexible(
-                          child: Text(
-                            name,
-                            style: const TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              height: 1.2,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        if (isVerified)
-                          const Padding(
-                            padding: EdgeInsets.only(left: 6),
-                            child: Icon(Icons.verified,
-                                color: Colors.blue, size: 22),
-                          ),
-                      ],
-                    ),
-                    if (location.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 4),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.location_on_outlined,
-                                size: 14, color: Colors.grey),
-                            const SizedBox(width: 4),
-                            Text(
-                              location,
-                              style: const TextStyle(
-                                  color: Colors.grey, fontSize: 13),
-                            ),
-                          ],
-                        ),
-                      ),
+                    _buildStatItem("Followers", _followersCount, textColor),
+                    _buildStatItem("Following", _followingCount, textColor),
+                    _buildStatItem("Posts", _galleryItems.length, textColor),
                   ],
                 ),
               ),
-              _buildActionsRow(),
             ],
           ),
           const SizedBox(height: 16),
-          // Stats Row
-          Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              _buildStatItem("Followers", _followersCount),
-              const SizedBox(width: 24),
-              _buildStatItem("Following", _followingCount),
-              const SizedBox(width: 24),
-              _buildStatItem("Posts", _galleryItems.length),
-            ],
+          // Name & Bio
+          Text(
+            shopName != null && shopName.isNotEmpty ? shopName : name,
+            style: GoogleFonts.outfit(
+              color: textColor,
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+            ),
           ),
-          const SizedBox(height: 16),
+          if (isVerified) ...[
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                const Icon(Icons.verified, color: Colors.blueAccent, size: 16),
+                const SizedBox(width: 4),
+                Text(
+                  "Verified Account",
+                  style: GoogleFonts.inter(
+                      color: textColor.withOpacity(0.7), fontSize: 12),
+                ),
+              ],
+            )
+          ],
           if (bio.isNotEmpty) ...[
+            const SizedBox(height: 8),
             Text(
               bio,
-              style: const TextStyle(
-                  fontSize: 14, height: 1.5, color: Colors.black87),
+              style: GoogleFonts.inter(
+                color: textColor.withOpacity(0.9),
+                fontSize: 14,
+                height: 1.4,
+              ),
               maxLines: 4,
               overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(height: 16),
           ],
+          const SizedBox(height: 20),
+          // Action Buttons
+          if (!isMe)
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: _toggleFollow,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor:
+                          _isFollowing ? Colors.grey[800] : btnColor,
+                      foregroundColor:
+                          _isFollowing ? Colors.white : btnTextColor,
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: Text(
+                      _isFollowing ? "Unfollow" : "Follow",
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () {
+                      // Message Logic
+                    },
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(color: textColor.withOpacity(0.3)),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: Text(
+                      "Message",
+                      style: TextStyle(
+                          color: textColor, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+              ],
+            ),
         ],
       ),
     );
   }
 
-  Widget _buildActionsRow() {
-    final isMe = userId == _supabase.auth.currentUser?.id;
-    if (isMe) {
-      return OutlinedButton(
-        onPressed: () {
-          // Edit profile or settings
-        },
-        style: OutlinedButton.styleFrom(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          side: const BorderSide(color: Colors.grey),
-        ),
-        child: const Text("Is Me", style: TextStyle(color: Colors.black)),
-      );
-    }
-
-    return Row(
-      children: [
-        // Follow Button
-        ElevatedButton(
-          onPressed: _toggleFollow,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: _isFollowing ? Colors.grey[200] : Colors.black,
-            foregroundColor: _isFollowing ? Colors.black : Colors.white,
-            elevation: 0,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
-          ),
-          child: Text(_isFollowing ? "Following" : "Follow"),
-        ),
-        const SizedBox(width: 8),
-        // Message Button (Icon only to save space)
-        InkWell(
-          onTap: () {
-            // Basic message action placeholder
-            final phone = _profileData?['phone_no'];
-            if (phone != null) {
-              // _sendWhatsApp(phone);
-            }
-          },
-          child: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey[300]!),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(Icons.chat_bubble_outline,
-                size: 20, color: Colors.black),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStatItem(String label, int count) {
+  Widget _buildStatItem(String label, int count, Color textColor) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           _formatCount(count),
-          style: const TextStyle(
+          style: GoogleFonts.outfit(
+            color: textColor,
             fontSize: 18,
             fontWeight: FontWeight.bold,
-            color: Colors.black,
           ),
         ),
         Text(
           label,
-          style: TextStyle(
+          style: GoogleFonts.inter(
+            color: textColor.withOpacity(0.6),
             fontSize: 12,
-            color: Colors.grey[600],
-            fontWeight: FontWeight.w500,
           ),
         ),
       ],
@@ -614,139 +618,28 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     return count.toString();
   }
 
-  // --- Shimmer Loading ---
-  Widget _buildShimmerLoading() {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SingleChildScrollView(
+  Widget _buildShimmerHeader() {
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: Shimmer.fromColors(
+        baseColor: Colors.grey[800]!,
+        highlightColor: Colors.grey[700]!,
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Banner & Profile Image
-            Stack(
-              clipBehavior: Clip.none,
+            Row(
               children: [
-                Shimmer.fromColors(
-                  baseColor: Colors.grey[300]!,
-                  highlightColor: Colors.grey[100]!,
-                  child: Container(height: 200, color: Colors.white),
-                ),
-                Positioned(
-                  bottom: -40,
-                  left: 20,
-                  child: Shimmer.fromColors(
-                    baseColor: Colors.grey[300]!,
-                    highlightColor: Colors.grey[100]!,
+                const CircleAvatar(radius: 45),
+                const SizedBox(width: 20),
+                Expanded(
                     child: Container(
-                      width: 100,
-                      height: 100,
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  ),
-                )
+                        height: 50,
+                        decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(10)))),
               ],
             ),
-            const SizedBox(height: 50),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Shimmer.fromColors(
-                    baseColor: Colors.grey[300]!,
-                    highlightColor: Colors.grey[100]!,
-                    child:
-                        Container(height: 24, width: 200, color: Colors.white),
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: List.generate(
-                        3,
-                        (index) => Padding(
-                              padding: const EdgeInsets.only(right: 24.0),
-                              child: Shimmer.fromColors(
-                                baseColor: Colors.grey[300]!,
-                                highlightColor: Colors.grey[100]!,
-                                child: Container(
-                                    height: 40, width: 60, color: Colors.white),
-                              ),
-                            )),
-                  ),
-                  const SizedBox(height: 24),
-                  Shimmer.fromColors(
-                    baseColor: Colors.grey[300]!,
-                    highlightColor: Colors.grey[100]!,
-                    child: Column(
-                      children: [
-                        Container(
-                            height: 12,
-                            width: double.infinity,
-                            color: Colors.white),
-                        const SizedBox(height: 8),
-                        Container(
-                            height: 12,
-                            width: double.infinity,
-                            color: Colors.white),
-                        const SizedBox(height: 8),
-                        Container(height: 12, width: 150, color: Colors.white),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 40),
-            // Grid Shimmer
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Column(
-                      children: List.generate(
-                          2,
-                          (i) => Padding(
-                                padding: const EdgeInsets.only(bottom: 8.0),
-                                child: Shimmer.fromColors(
-                                  baseColor: Colors.grey[300]!,
-                                  highlightColor: Colors.grey[100]!,
-                                  child: Container(
-                                      height: 200,
-                                      decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          borderRadius:
-                                              BorderRadius.circular(12))),
-                                ),
-                              )),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Column(
-                      children: List.generate(
-                          2,
-                          (i) => Padding(
-                                padding: const EdgeInsets.only(bottom: 8.0),
-                                child: Shimmer.fromColors(
-                                  baseColor: Colors.grey[300]!,
-                                  highlightColor: Colors.grey[100]!,
-                                  child: Container(
-                                      height: 240,
-                                      decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          borderRadius:
-                                              BorderRadius.circular(12))),
-                                ),
-                              )),
-                    ),
-                  ),
-                ],
-              ),
-            )
+            const SizedBox(height: 20),
+            Container(height: 20, width: 150, color: Colors.white),
           ],
         ),
       ),
@@ -756,12 +649,12 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
 class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
   final TabBar _tabBar;
+  final Color bgColor;
 
-  _SliverAppBarDelegate(this._tabBar);
+  _SliverAppBarDelegate(this._tabBar, this.bgColor);
 
   @override
   double get minExtent => _tabBar.preferredSize.height;
-
   @override
   double get maxExtent => _tabBar.preferredSize.height;
 
@@ -769,199 +662,130 @@ class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
   Widget build(
       BuildContext context, double shrinkOffset, bool overlapsContent) {
     return Container(
-      color: Colors.white,
+      color: bgColor,
       child: _tabBar,
     );
   }
 
   @override
   bool shouldRebuild(_SliverAppBarDelegate oldDelegate) {
-    return false;
-  }
-}
-
-// --- Optimization Wrappers & Child Widgets ---
-
-class _OptimizationWrapper extends StatefulWidget {
-  final Widget child;
-  const _OptimizationWrapper({Key? key, required this.child}) : super(key: key);
-
-  @override
-  State<_OptimizationWrapper> createState() => _OptimizationWrapperState();
-}
-
-class _OptimizationWrapperState extends State<_OptimizationWrapper>
-    with AutomaticKeepAliveClientMixin {
-  @override
-  bool get wantKeepAlive => true; // Keep state when switching tabs
-
-  @override
-  Widget build(BuildContext context) {
-    super.build(context);
-    return widget.child;
+    return oldDelegate.bgColor != bgColor;
   }
 }
 
 class _GalleryTab extends StatelessWidget {
   final List<Map<String, dynamic>> items;
-  const _GalleryTab({Key? key, required this.items}) : super(key: key);
+  final Color textColor;
+  const _GalleryTab({Key? key, required this.items, required this.textColor})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     if (items.isEmpty) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.grid_off, size: 48, color: Colors.grey),
-            SizedBox(height: 8),
-            Text("No posts yet", style: TextStyle(color: Colors.grey)),
+            Icon(Icons.grid_off, size: 48, color: textColor.withOpacity(0.3)),
+            const SizedBox(height: 8),
+            Text("No posts yet",
+                style: TextStyle(color: textColor.withOpacity(0.5))),
           ],
         ),
       );
     }
-
-    // Using MasonryGridView inside NestedScrollView requires careful physics
-    // But since it's a tab view, we should technically use CustomScrollView with Sliver types
-    // However, the simple fix for MasonryGridView inside NestedScrollView is ClampingScrollPhysics.
     return MasonryGridView.count(
       padding: const EdgeInsets.all(8),
       crossAxisCount: 2,
       mainAxisSpacing: 8,
       crossAxisSpacing: 8,
-      physics: const ClampingScrollPhysics(),
       itemCount: items.length,
       itemBuilder: (context, index) {
-        return _GalleryItem(item: items[index]);
-      },
-    );
-  }
-}
-
-class _GalleryItem extends StatelessWidget {
-  final Map<String, dynamic> item;
-  const _GalleryItem({Key? key, required this.item}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final imageUrl = item['gallery_image_url'] ?? item['image_url'];
-    final title = item['gallery_title'] ?? item['title'];
-
-    return GestureDetector(
-      onTap: () {
-        // Show details
-      },
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: Stack(
-          children: [
-            if (imageUrl != null)
-              CachedNetworkImage(
-                imageUrl: imageUrl,
-                fit: BoxFit.cover,
-                memCacheWidth: 400, // Memory optimization for thumbnails
-                placeholder: (context, url) => Container(
-                  height: 200,
-                  color: Colors.grey[200],
-                  child: const Center(
-                      child: CircularProgressIndicator(strokeWidth: 2)),
-                ),
-                errorWidget: (context, url, error) => Container(
-                    height: 150,
-                    color: Colors.grey[300],
-                    child: const Icon(Icons.error)),
-              )
-            else
-              Container(height: 150, color: Colors.grey[300]),
-            if (title != null)
-              Positioned(
-                bottom: 0,
-                left: 0,
-                right: 0,
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Colors.black54, Colors.transparent],
-                      begin: Alignment.bottomCenter,
-                      end: Alignment.topCenter,
-                    ),
+        final item = items[index];
+        final imageUrl = item['gallery_image_url'] ?? item['image_url'];
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: imageUrl != null
+              ? CachedNetworkImage(
+                  imageUrl: imageUrl,
+                  memCacheWidth: 400,
+                  placeholder: (context, url) => Container(
+                    height: 200,
+                    color: Colors.grey[900],
                   ),
-                  child: Text(
-                    title,
-                    style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              )
-          ],
-        ),
-      ),
+                  errorWidget: (context, url, error) => const Icon(Icons.error),
+                )
+              : Container(height: 200, color: Colors.grey[900]),
+        );
+      },
     );
   }
 }
 
 class _ServicesTab extends StatelessWidget {
   final List<Map<String, dynamic>> items;
-  const _ServicesTab({Key? key, required this.items}) : super(key: key);
+  final Color textColor;
+  const _ServicesTab({Key? key, required this.items, required this.textColor})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     if (items.isEmpty) {
-      return const Center(
-          child:
-              Text("No services listed", style: TextStyle(color: Colors.grey)));
+      return Center(
+        child: Text("No services listed",
+            style: TextStyle(color: textColor.withOpacity(0.5))),
+      );
     }
-
     return ListView.builder(
       padding: const EdgeInsets.all(16),
-      physics: const ClampingScrollPhysics(), // Matches parent
       itemCount: items.length,
       itemBuilder: (ctx, idx) {
-        return _ServiceItem(service: items[idx]);
-      },
-    );
-  }
-}
-
-class _ServiceItem extends StatelessWidget {
-  final Map<String, dynamic> service;
-  const _ServiceItem({Key? key, required this.service}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 2,
-      margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: ListTile(
-        contentPadding: const EdgeInsets.all(12),
-        leading: Container(
-          width: 50,
-          height: 50,
+        final service = items[idx];
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Colors.blueAccent.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(8),
+            color: Colors.white.withOpacity(0.05),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.white.withOpacity(0.1)),
           ),
-          child: const Icon(Icons.work_outline, color: Colors.blueAccent),
-        ),
-        title: Text(service['service_title'] ?? 'Service',
-            style: const TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Text(
-          service['service_description'] ?? 'No description',
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-        ),
-        trailing: service['service_price'] != null
-            ? Text('\$${service['service_price']}',
-                style: const TextStyle(
-                    fontWeight: FontWeight.bold, color: Colors.green))
-            : null,
-      ),
+          child: Row(
+            children: [
+              Container(
+                width: 50,
+                height: 50,
+                decoration: BoxDecoration(
+                  color: Colors.blueAccent.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.work_outline, color: Colors.blueAccent),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      service['service_name'] ?? 'Service',
+                      style: GoogleFonts.outfit(
+                          color: textColor,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16),
+                    ),
+                    if (service['price'] != null)
+                      Text(
+                        '\$${service['price']}',
+                        style: GoogleFonts.inter(
+                            color: Colors.greenAccent,
+                            fontWeight: FontWeight.bold),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
