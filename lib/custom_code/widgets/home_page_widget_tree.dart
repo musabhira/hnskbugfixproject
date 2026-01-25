@@ -236,20 +236,6 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                             ),
                           ),
 
-                          // Online/Active Users Widget
-                          if (profileId != null && _currentUserId != null)
-                            SliverToBoxAdapter(
-                              child: Padding(
-                                padding:
-                                    const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                                child: ActiveUsersWidget(
-                                  currentUserId: _currentUserId!,
-                                  currentProfileId: profileId!,
-                                ),
-                              ),
-                            ),
-
-                          // Main Content Sliver - WhatsApp Chat List
                           _buildChatListSliver(conversationsAsync),
                         ],
                       ),
@@ -852,9 +838,6 @@ class _UnifiedHomeHeaderDelegate extends SliverPersistentHeaderDelegate {
                   ),
                 ),
               ),
-              // Row(
-              //   children: [],
-              // ),
               child: Column(
                 children: [
                   Padding(

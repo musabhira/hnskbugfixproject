@@ -201,6 +201,37 @@ class _MessageScreenState extends State<MessageScreen> {
             ],
           ),
           actions: [
+            IconButton(
+              icon: const Icon(Icons.videocam, color: Colors.white),
+              onPressed: () {
+                if (_isBlocked || _isBlockedByOther) {
+                  _showErrorSnackBar('Cannot make video call to blocked user');
+                  return;
+                }
+
+                try {
+                  _supabase.from('messages').insert({
+                    'sender_id': _senderId,
+                    'receiver_id': widget.receiverId,
+                    'content': '📞 Video Call Started',
+                  });
+                  Future.delayed(
+                      const Duration(milliseconds: 500), _loadMessages);
+                } catch (e) {
+                  debugPrint('Error sending call message: $e');
+                }
+
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => WebRTCCallScreen(
+                      mode: 'Video',
+                      targetUserId: widget.receiverId,
+                    ),
+                  ),
+                );
+              },
+            ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
               child: const Text('Cancel', style: TextStyle(color: Colors.grey)),

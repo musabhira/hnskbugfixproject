@@ -148,6 +148,27 @@ class _WebRTCCallScreenState extends State<WebRTCCallScreen> {
     if (!mounted) return;
     _matchingLoopTimer?.cancel();
 
+    if (widget.targetUserId != null && widget.targetUserId!.isNotEmpty) {
+      if (_triedUserIds.contains(widget.targetUserId)) {
+        setState(() => _statusText = 'User not available or busy.');
+        return;
+      }
+
+      setState(() {
+        isSearching = true;
+        isConnected = false;
+        remoteUserId = widget.targetUserId;
+        _statusText = 'Calling...';
+      });
+
+      debugPrint('Direct Call: Attempting to call: ${widget.targetUserId}');
+      _triedUserIds.add(widget.targetUserId!);
+      webViewController?.evaluateJavascript(
+          source: 'callPeer("${widget.targetUserId}")');
+      _startConnectionTimeout();
+      return;
+    }
+
     setState(() {
       isSearching = true;
       isConnected = false;
@@ -172,12 +193,6 @@ class _WebRTCCallScreenState extends State<WebRTCCallScreen> {
       debugPrint('Error fetching active users: $e');
     }
 
-    if (widget.targetUserId != null &&
-        !_triedUserIds.contains(widget.targetUserId)) {
-      availableUserIds.remove(widget.targetUserId);
-      availableUserIds.insert(0, widget.targetUserId!);
-    }
-
     final candidates =
         availableUserIds.where((id) => !_triedUserIds.contains(id)).toList();
 
@@ -194,15 +209,8 @@ class _WebRTCCallScreenState extends State<WebRTCCallScreen> {
       return;
     }
 
-    String matchUserId;
-    if (widget.targetUserId != null &&
-        candidates.contains(widget.targetUserId) &&
-        !_triedUserIds.contains(widget.targetUserId)) {
-      matchUserId = widget.targetUserId!;
-    } else {
-      candidates.shuffle();
-      matchUserId = candidates.first;
-    }
+    candidates.shuffle();
+    String matchUserId = candidates.first;
 
     debugPrint('PeerJS: Attempting to call: $matchUserId');
     _triedUserIds.add(matchUserId);
@@ -220,8 +228,14 @@ class _WebRTCCallScreenState extends State<WebRTCCallScreen> {
     _connectionTimeoutTimer?.cancel();
     _connectionTimeoutTimer = Timer(const Duration(seconds: 15), () {
       if (mounted && !isConnected && isSearching) {
-        debugPrint('Connect timeout. Skipping user.');
-        nextStranger();
+        if (widget.targetUserId != null) {
+          debugPrint('Connect timeout. Retrying direct call.');
+          _triedUserIds.remove(widget.targetUserId);
+          nextStranger();
+        } else {
+          debugPrint('Connect timeout. Skipping user.');
+          nextStranger();
+        }
       }
     });
   }

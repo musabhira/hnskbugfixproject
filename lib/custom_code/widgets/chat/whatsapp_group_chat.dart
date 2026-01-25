@@ -80,6 +80,10 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
       // If no other members yet, we can't call
     }
 
+    try {
+      sendMessage(text: '📞 $mode Call Started');
+    } catch (_) {}
+
     Navigator.push(
       context,
       MaterialPageRoute(
