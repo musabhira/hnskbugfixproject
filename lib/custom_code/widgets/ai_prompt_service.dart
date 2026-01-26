@@ -2214,7 +2214,7 @@ class _EnhancedAIGeneratorState extends State<EnhancedAIGenerator>
                       child: kIsWeb
                           ? Image.network(_selectedImage!.path,
                               fit: BoxFit.cover) // For web
-                          : Image.file(_selectedImage! as File,
+                          : Image.file(File(_selectedImage!.path),
                               fit: BoxFit.cover), // For mobile
                     )
                   : Icon(Icons.add_photo_alternate,
