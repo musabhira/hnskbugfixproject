@@ -9,6 +9,9 @@ import 'package:pocket_mates_app/flutter_flow/flutter_flow_util.dart';
 import 'package:pocket_mates_app/flutter_flow/flutter_flow_theme.dart';
 
 import '/custom_code/widgets/index.dart';
+import '/custom_code/widgets/tools_page.dart';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -65,7 +68,40 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   @override
   void initState() {
     super.initState();
+    _loadCachedData();
     _loadAllUserData();
+  }
+
+  Future<void> _loadCachedData() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final userId = supabase.auth.currentUser?.id;
+      if (userId == null) return;
+
+      final cachedProfile = prefs.getString('cached_profile_$userId');
+      final cachedStats = prefs.getString('cached_stats_$userId');
+
+      if (cachedProfile != null) {
+        final profileMap = jsonDecode(cachedProfile);
+        safeSetState(() {
+          _preloadedProfile = profileMap;
+          profileId = profileMap['id']?.toString();
+          _profileImageUrl = profileMap['profile_image_url'];
+          _isVerified = profileMap['verified'] ?? false;
+          _isLoading = false; // Show UI immediately from cache
+        });
+      }
+
+      if (cachedStats != null) {
+        final statsMap = jsonDecode(cachedStats);
+        safeSetState(() {
+          _followersCount = statsMap['followers'] ?? '0';
+          _followingCount = statsMap['following'] ?? '0';
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading cached home data: $e');
+    }
   }
 
   Future<void> _loadAllUserData() async {
@@ -113,6 +149,19 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 
         _isLoading = false;
       });
+
+      // Cache the fresh data
+      final prefs = await SharedPreferences.getInstance();
+      if (profileResponse != null) {
+        await prefs.setString(
+            'cached_profile_$userId', jsonEncode(profileResponse));
+      }
+
+      final statsMap = {
+        'followers': _followersCount,
+        'following': _followingCount
+      };
+      await prefs.setString('cached_stats_$userId', jsonEncode(statsMap));
     } catch (e) {
       debugPrint('Error loading all user data: $e');
       safeSetState(() => _isLoading = false);
@@ -195,58 +244,60 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
             ? const Center(child: CircularProgressIndicator())
             : _currentIndex == 1
                 ? const MainMarketPage()
-                : SafeArea(
-                    top: true,
-                    child: RefreshIndicator(
-                      onRefresh: _loadAllUserData,
-                      color: HomePageWidgetTree.primaryColor,
-                      backgroundColor: Colors.grey[900],
-                      child: CustomScrollView(
-                        physics: const BouncingScrollPhysics(),
-                        slivers: [
-                          // Unified Dynamic Header (Stranger Rows + Status)
-                          SliverPersistentHeader(
-                            pinned: true,
-                            delegate: _UnifiedHomeHeaderDelegate(
-                              currentUserId:
-                                  supabase.auth.currentUser?.id ?? '',
-                              currentProfileId: profileId.toString(),
-                              activeUsersRef: ref.watch(activeUsersProvider(
-                                  profileId
-                                      .toString())), // Pass the provider reference
-                              onTapVideo: () => _handleStrangerMatch(
-                                context,
-                                ref,
-                                'Video',
-                                profileId.toString(),
+                : _currentIndex == 2
+                    ? const ToolsPage()
+                    : SafeArea(
+                        top: true,
+                        child: RefreshIndicator(
+                          onRefresh: _loadAllUserData,
+                          color: HomePageWidgetTree.primaryColor,
+                          backgroundColor: Colors.grey[900],
+                          child: CustomScrollView(
+                            physics: const BouncingScrollPhysics(),
+                            slivers: [
+                              // Unified Dynamic Header (Stranger Rows + Status)
+                              SliverPersistentHeader(
+                                pinned: true,
+                                delegate: _UnifiedHomeHeaderDelegate(
+                                  currentUserId:
+                                      supabase.auth.currentUser?.id ?? '',
+                                  currentProfileId: profileId.toString(),
+                                  activeUsersRef: ref.watch(activeUsersProvider(
+                                      profileId
+                                          .toString())), // Pass the provider reference
+                                  onTapVideo: () => _handleStrangerMatch(
+                                    context,
+                                    ref,
+                                    'Video',
+                                    profileId.toString(),
+                                  ),
+                                  onTapFriends: () {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                          content: Text(
+                                              'Strangers Friends coming soon!')),
+                                    );
+                                  },
+                                  onTapCall: () => _handleStrangerMatch(
+                                    context,
+                                    ref,
+                                    'Voice',
+                                    profileId.toString(),
+                                  ),
+                                  onTapText: () => _handleStrangerChat(
+                                      context, ref, profileId.toString()),
+                                  onTapSettings: _handleSettings,
+                                  onTapAdd: () => _showAddBottomSheet(context),
+                                  onRefresh: () =>
+                                      ref.refresh(conversationsProvider),
+                                ),
                               ),
-                              onTapFriends: () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                      content: Text(
-                                          'Strangers Friends coming soon!')),
-                                );
-                              },
-                              onTapCall: () => _handleStrangerMatch(
-                                context,
-                                ref,
-                                'Voice',
-                                profileId.toString(),
-                              ),
-                              onTapText: () => _handleStrangerChat(
-                                  context, ref, profileId.toString()),
-                              onTapSettings: _handleSettings,
-                              onTapAdd: () => _showAddBottomSheet(context),
-                              onRefresh: () =>
-                                  ref.refresh(conversationsProvider),
-                            ),
-                          ),
 
-                          _buildChatListSliver(conversationsAsync),
-                        ],
+                              _buildChatListSliver(conversationsAsync),
+                            ],
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
       ),
     );
   }
@@ -464,16 +515,10 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
             onTap: () => setState(() => _currentIndex = 1),
           ),
           _buildNavItem(
-            icon: Icons.add_rounded,
-            label: 'Add',
-            isCenter: true,
-            isSelected: false,
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => const Scaffold(
-                      backgroundColor: HomePageWidgetTree.backgroundColor)),
-            ),
+            icon: Icons.handyman_rounded,
+            label: 'Tools',
+            isSelected: _currentIndex == 2,
+            onTap: () => setState(() => _currentIndex = 2),
           ),
           InkWell(
             splashColor: Colors.transparent,

@@ -15,6 +15,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'dart:io' as io;
 import 'package:video_player/video_player.dart';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class StatusDisplayWidget extends StatefulWidget {
   final String currentUserId;
@@ -42,7 +44,35 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget> {
   @override
   void initState() {
     super.initState();
-    _loadStatusesApproach3();
+    _loadCachedStatuses();
+    _loadStatusesOptimized();
+  }
+
+  Future<void> _loadCachedStatuses() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final cachedString =
+          prefs.getString('cached_statuses_${widget.currentUserId}');
+      if (cachedString != null) {
+        final List<dynamic> decoded = jsonDecode(cachedString);
+        setState(() {
+          _statuses = List<Map<String, dynamic>>.from(decoded);
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading cached statuses: $e');
+    }
+  }
+
+  Future<void> _saveStatusesToCache(List<Map<String, dynamic>> statuses) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(
+          'cached_statuses_${widget.currentUserId}', jsonEncode(statuses));
+    } catch (e) {
+      debugPrint('Error saving statuses to cache: $e');
+    }
   }
 
   Future<void> _checkAndDeleteExpiredStatuses() async {
@@ -81,48 +111,27 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget> {
     }
   }
 
-  Future<void> _loadStatusesApproach3() async {
+  Future<void> _loadStatusesOptimized() async {
     try {
       await _checkAndDeleteExpiredStatuses();
-      // First, get statuses
-      final statusesResponse = await supabase
+
+      // Optimized Single Query with Join
+      final response = await supabase
           .from('statuses')
-          .select('*')
+          .select('*, profile:profile_id(id, name, profile_image_url)')
           .eq('is_active', true)
           .gt('expires_at', DateTime.now().toIso8601String())
           .order('created_at', ascending: false);
 
-      // Get unique profile IDs
-      final profileIds = statusesResponse
-          .map((s) => s['profile_id'] as String)
-          .toSet()
-          .toList();
+      final List<Map<String, dynamic>> data =
+          List<Map<String, dynamic>>.from(response);
 
-      if (profileIds.isEmpty) {
-        setState(() {
-          _statuses = [];
-          _isLoading = false;
-        });
-        return;
-      }
-
-      // Fetch profiles
-      final profilesResponse = await supabase
-          .from('profile')
-          .select('id, name, profile_image_url')
-          .inFilter('id', profileIds);
-
-      // Create a map for quick lookup
-      final profilesMap = {
-        for (var profile in profilesResponse) profile['id']: profile
-      };
-
-      // Combine data and group by profile
+      // Grouping logic
       final Map<String, Map<String, dynamic>> groupedStatuses = {};
 
-      for (var status in statusesResponse) {
+      for (var status in data) {
+        final profile = status['profile'];
         final profileId = status['profile_id'];
-        final profile = profilesMap[profileId];
 
         if (profile != null) {
           if (!groupedStatuses.containsKey(profileId)) {
@@ -136,7 +145,6 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget> {
         }
       }
 
-      // Convert to list and sort (own status first, then by most recent)
       final List<Map<String, dynamic>> combinedData =
           groupedStatuses.values.toList();
       combinedData.sort((a, b) {
@@ -150,17 +158,22 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget> {
         return DateTime.parse(bTime).compareTo(DateTime.parse(aTime));
       });
 
-      debugPrint('Combined data: $combinedData');
+      // Cache the result
+      _saveStatusesToCache(combinedData);
 
-      setState(() {
-        _statuses = combinedData;
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _statuses = combinedData;
+          _isLoading = false;
+        });
+      }
     } catch (e) {
-      debugPrint('Error: $e');
-      setState(() {
-        _isLoading = false;
-      });
+      debugPrint('Error loading statuses: $e');
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -190,14 +203,14 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget> {
     );
 
     if (result == true) {
-      _loadStatusesApproach3();
+      _loadStatusesOptimized();
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 120, // Adjusted height to fit
+      height: 135, // Adjusted height to fit
       // decoration: BoxDecoration(
       //   color: Colors.black,
       //   border: Border(
@@ -208,7 +221,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget> {
           ? _buildShimmerLoading()
           : ListView.builder(
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 1),
               itemCount: _statuses.length + 1,
               itemBuilder: (context, index) {
                 if (index == 0) {
@@ -300,7 +313,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget> {
             ),
             const SizedBox(height: 6),
             const Text(
-              'Your Mood',
+              'Your Vibes',
               style: TextStyle(
                 fontSize: 11,
                 color: Colors.white70,
@@ -527,7 +540,42 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
       duration: const Duration(milliseconds: 300),
     );
     _checkAndDeleteExpiredStatuses();
+    _initializeViewer();
+  }
+
+  Future<void> _initializeViewer() async {
+    await _loadWatchProgress();
     _startCurrentStatus();
+  }
+
+  Future<void> _saveWatchProgress() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final targetProfileId = widget.statusGroup['profile']['id'];
+      final key = 'status_progress_${widget.currentUserId}_$targetProfileId';
+      await prefs.setInt(key, _currentIndex);
+    } catch (e) {
+      debugPrint('Error saving watch progress: $e');
+    }
+  }
+
+  Future<void> _loadWatchProgress() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final targetProfileId = widget.statusGroup['profile']['id'];
+      final key = 'status_progress_${widget.currentUserId}_$targetProfileId';
+      final savedIndex = prefs.getInt(key);
+      if (savedIndex != null) {
+        final statuses = widget.statusGroup['statuses'] as List;
+        if (savedIndex < statuses.length) {
+          setState(() {
+            _currentIndex = savedIndex;
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('Error loading watch progress: $e');
+    }
   }
 
   @override
@@ -929,6 +977,7 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
       setState(() {
         _currentIndex++;
       });
+      _saveWatchProgress();
       _startCurrentStatus();
     } else {
       widget.onNextGroup();
@@ -1044,6 +1093,7 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
       setState(() {
         _currentIndex--;
       });
+      _saveWatchProgress();
       _startCurrentStatus();
     } else {
       widget.onPreviousGroup();
@@ -1279,8 +1329,7 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                         ),
                         const SizedBox(width: 10),
                         Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                          child: Row(
                             children: [
                               Text(
                                 profile['name'] ?? 'Unknown',
@@ -1290,11 +1339,13 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                                   fontSize: 15,
                                 ),
                               ),
+                              const SizedBox(width: 8),
                               Text(
                                 _getTimeAgo(currentStatus['created_at']),
                                 style: TextStyle(
-                                  color: Colors.white.withOpacity(0.7),
-                                  fontSize: 12,
+                                  color: Colors.white.withOpacity(0.6),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
                             ],
@@ -1495,11 +1546,11 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
     if (difference.inSeconds < 60) {
       return 'Just now';
     } else if (difference.inMinutes < 60) {
-      return '${difference.inMinutes}m ago';
+      return '${difference.inMinutes}m';
     } else if (difference.inHours < 24) {
-      return '${difference.inHours}h ago';
+      return '${difference.inHours}h';
     } else {
-      return '${difference.inDays}d ago';
+      return '${difference.inDays}d';
     }
   }
 }

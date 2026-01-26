@@ -18,3 +18,4 @@ export 'create_service_widget.dart' show CreateServiceWidget;
 export 'choice_chip_widget.dart' show CustomChoiceChips;
 export 'event_create_page.dart' show EventCreatePage;
 export 'thread_feed_page.dart' show ThreadFeedPage, CreateThreadPage;
+export 'tools_page.dart' show TaskManagerScreen;
