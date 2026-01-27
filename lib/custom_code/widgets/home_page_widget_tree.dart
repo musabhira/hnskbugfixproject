@@ -67,6 +67,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 
   final _searchController = TextEditingController();
   String _searchQuery = '';
+  int _chatTabIndex = 0;
 
   @override
   void initState() {
@@ -307,11 +308,33 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                 ),
                               ),
 
-                              _buildChatListSliver(conversationsAsync),
+                              SliverPersistentHeader(
+                                pinned: true,
+                                delegate: _ChatTabBarDelegate(
+                                  selectedIndex: _chatTabIndex,
+                                  onTap: (index) =>
+                                      setState(() => _chatTabIndex = index),
+                                ),
+                              ),
+
+                              if (_chatTabIndex == 0)
+                                _buildChatListSliver(conversationsAsync)
+                              else
+                                _buildVibesListSliver(),
                             ],
                           ),
                         ),
                       ),
+      ),
+    );
+  }
+
+  Widget _buildVibesListSliver() {
+    return SliverToBoxAdapter(
+      child: StatusDisplayWidget(
+        currentUserId: supabase.auth.currentUser?.id ?? '',
+        currentProfileId: profileId ?? '',
+        isVertical: true,
       ),
     );
   }
@@ -331,7 +354,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
           slivers: [
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
                 child: Container(
                   height: 50,
                   decoration: BoxDecoration(
@@ -1480,36 +1503,29 @@ class CircularProfileImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Stack(
+      clipBehavior: Clip.none,
       children: [
         Container(
           width: radius * 2,
           height: radius * 2,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            border: Border.all(
-              color: borderColor,
-              width: borderWidth,
-            ),
-          ),
-          child: ClipOval(
-            child: profileImageUrl != null
-                ? CachedNetworkImage(
-                    imageUrl: profileImageUrl!,
+            border: Border.all(color: borderColor, width: borderWidth),
+            image: profileImageUrl != null
+                ? DecorationImage(
+                    image: CachedNetworkImageProvider(profileImageUrl!),
                     fit: BoxFit.cover,
-                    placeholder: (context, url) => const Center(
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
-                    errorWidget: (context, url, error) =>
-                        const Icon(Icons.person),
                   )
-                : Image.network(
-                    'https://static.vecteezy.com/system/resources/previews/021/719/635/non_2x/portrait-of-a-rabbit-head-cute-bunny-isolated-on-yellow-background-suitable-for-profile-social-media-picture-web-print-sticker-and-more-cartoon-style-illustration-vector.jpg'),
+                : null,
           ),
+          child: profileImageUrl == null
+              ? Icon(Icons.person, color: Colors.grey, size: radius)
+              : null,
         ),
         if (isVerified)
           Positioned(
-            right: 0,
-            bottom: 0,
+            right: -2,
+            bottom: -2,
             child: Container(
               padding: const EdgeInsets.all(1.5),
               decoration: const BoxDecoration(
@@ -1519,11 +1535,79 @@ class CircularProfileImage extends StatelessWidget {
               child: const Icon(
                 Icons.verified,
                 color: Color(0xFFFFB703),
-                size: 10,
+                size: 12,
               ),
             ),
           ),
       ],
     );
+  }
+}
+
+class _ChatTabBarDelegate extends SliverPersistentHeaderDelegate {
+  final int selectedIndex;
+  final ValueChanged<int> onTap;
+
+  _ChatTabBarDelegate({required this.selectedIndex, required this.onTap});
+
+  @override
+  double get minExtent => 50.0;
+  @override
+  double get maxExtent => 50.0;
+
+  @override
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return Container(
+      color: HomePageWidgetTree.backgroundColor,
+      child: Column(
+        children: [
+          Row(
+            children: [
+              _buildTab('Chats', 0),
+              _buildTab('Vibes', 1),
+            ],
+          ),
+          const Divider(height: 1, color: Colors.white12),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTab(String label, int index) {
+    final isSelected = selectedIndex == index;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => onTap(index),
+        behavior: HitTestBehavior.opaque,
+        child: Container(
+          height: 49,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            border: isSelected
+                ? const Border(
+                    bottom: BorderSide(
+                      color: Color(0xFFE1306C),
+                      width: 2,
+                    ),
+                  )
+                : null,
+          ),
+          child: Text(
+            label,
+            style: GoogleFonts.inter(
+              color: isSelected ? Colors.white : Colors.grey,
+              fontWeight: FontWeight.w600,
+              fontSize: 15,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  bool shouldRebuild(_ChatTabBarDelegate oldDelegate) {
+    return oldDelegate.selectedIndex != selectedIndex;
   }
 }
