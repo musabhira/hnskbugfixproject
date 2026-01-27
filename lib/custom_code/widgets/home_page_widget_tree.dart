@@ -65,11 +65,25 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   String _followingCount = '0';
   List<Map<String, dynamic>> _userThreads = [];
 
+  final _searchController = TextEditingController();
+  String _searchQuery = '';
+
   @override
   void initState() {
     super.initState();
     _loadCachedData();
     _loadAllUserData();
+    _searchController.addListener(() {
+      setState(() {
+        _searchQuery = _searchController.text;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadCachedData() async {
@@ -306,77 +320,137 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       AsyncValue<List<ChatConversation>> conversationsAsync) {
     return conversationsAsync.when(
       data: (conversations) {
-        if (conversations.isEmpty) {
-          return SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 100),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.chat_bubble_outline_rounded,
-                    size: 64,
-                    color: Colors.white.withOpacity(0.1),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'No conversations yet',
-                    style: GoogleFonts.inter(
-                      color: Colors.white.withOpacity(0.4),
-                      fontSize: 16,
+        final filteredConversations = conversations.where((conversation) {
+          if (_searchQuery.isEmpty) return true;
+          return conversation.name
+              .toLowerCase()
+              .contains(_searchQuery.toLowerCase());
+        }).toList();
+
+        return SliverMainAxisGroup(
+          slivers: [
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                child: Container(
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.05),
+                    borderRadius: BorderRadius.circular(15),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.1),
+                      width: 1,
                     ),
                   ),
-                ],
+                  child: TextField(
+                    controller: _searchController,
+                    style: GoogleFonts.inter(color: Colors.white),
+                    decoration: InputDecoration(
+                      hintText: 'Search chats...',
+                      hintStyle: GoogleFonts.inter(
+                        color: Colors.white.withOpacity(0.3),
+                      ),
+                      prefixIcon: Icon(
+                        Icons.search_rounded,
+                        color: Colors.white.withOpacity(0.3),
+                        size: 20,
+                      ),
+                      suffixIcon: _searchQuery.isNotEmpty
+                          ? IconButton(
+                              icon: Icon(
+                                Icons.close_rounded,
+                                color: Colors.white.withOpacity(0.3),
+                                size: 20,
+                              ),
+                              onPressed: () {
+                                _searchController.clear();
+                              },
+                            )
+                          : null,
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ),
-          );
-        }
-
-        return SliverList(
-          delegate: SliverChildBuilderDelegate(
-            (context, index) {
-              final conversation = conversations[index];
-              return ConversationTile(
-                key: ValueKey(conversation.id),
-                conversation: conversation,
-                currentUserId: _currentUserId ?? '',
-                onTap: () {
-                  if (conversation.isGroup) {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => WhatsAppGroupChat(
-                          groupId: conversation.id,
-                          groupName: conversation.name,
-                          groupImage: conversation.imageUrl,
+            if (filteredConversations.isEmpty)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 60),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.search_off_rounded,
+                        size: 64,
+                        color: Colors.white.withOpacity(0.1),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        _searchQuery.isEmpty
+                            ? 'No conversations yet'
+                            : 'No chats found for "$_searchQuery"',
+                        style: GoogleFonts.inter(
+                          color: Colors.white.withOpacity(0.4),
+                          fontSize: 16,
                         ),
                       ),
-                    );
-                  } else {
-                    // Mark as read for personal chat
-                    ref
-                        .read(conversationsProvider.notifier)
-                        .markAsRead(conversation.id, false);
+                    ],
+                  ),
+                ),
+              )
+            else
+              SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    final conversation = filteredConversations[index];
+                    return ConversationTile(
+                      key: ValueKey(conversation.id),
+                      conversation: conversation,
+                      currentUserId: _currentUserId ?? '',
+                      onTap: () {
+                        if (conversation.isGroup) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => WhatsAppGroupChat(
+                                groupId: conversation.id,
+                                groupName: conversation.name,
+                                groupImage: conversation.imageUrl,
+                              ),
+                            ),
+                          );
+                        } else {
+                          // Mark as read for personal chat
+                          ref
+                              .read(conversationsProvider.notifier)
+                              .markAsRead(conversation.id, false);
 
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => MessageScreen(
-                          receiverId: conversation.id,
-                          receiverName: conversation.name,
-                          receiverProfileImage: conversation.imageUrl,
-                        ),
-                      ),
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => MessageScreen(
+                                receiverId: conversation.id,
+                                receiverName: conversation.name,
+                                receiverProfileImage: conversation.imageUrl,
+                              ),
+                            ),
+                          );
+                        }
+                      },
+                      onLongPress: () {
+                        // Optional: Show options
+                      },
                     );
-                  }
-                },
-                onLongPress: () {
-                  // Optional: Show options
-                },
-              );
-            },
-            childCount: conversations.length,
-          ),
+                  },
+                  childCount: filteredConversations.length,
+                ),
+              ),
+          ],
         );
       },
       loading: () => SliverToBoxAdapter(
