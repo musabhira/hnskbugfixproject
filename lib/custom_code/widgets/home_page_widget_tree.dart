@@ -1582,7 +1582,7 @@ class _ChatTabBarDelegate extends SliverPersistentHeaderDelegate {
             border: isSelected
                 ? const Border(
                     bottom: BorderSide(
-                      color: Colors.white,
+                      color: Colors.yellow,
                       width: 2,
                     ),
                   )
@@ -1591,7 +1591,7 @@ class _ChatTabBarDelegate extends SliverPersistentHeaderDelegate {
           child: Text(
             label,
             style: GoogleFonts.inter(
-              color: isSelected ? Colors.white : Colors.grey,
+              color: isSelected ? Colors.yellow : Colors.grey,
               fontWeight: FontWeight.w600,
               fontSize: 15,
             ),
