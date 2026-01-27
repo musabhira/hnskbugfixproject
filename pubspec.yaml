@@ -148,6 +148,7 @@ flutter:
     - assets/rive_animations/
     - assets/pdfs/
     - assets/jsons/
+    - shorebird.yaml
 
 
 

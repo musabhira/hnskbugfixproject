@@ -319,8 +319,10 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 
                               if (_chatTabIndex == 0)
                                 _buildChatListSliver(conversationsAsync)
+                              else if (_chatTabIndex == 1)
+                                _buildVibesListSliver()
                               else
-                                _buildVibesListSliver(),
+                                _buildAIListSliver(),
                             ],
                           ),
                         ),
@@ -335,6 +337,76 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         currentUserId: supabase.auth.currentUser?.id ?? '',
         currentProfileId: profileId ?? '',
         isVertical: true,
+      ),
+    );
+  }
+
+  Widget _buildAIListSliver() {
+    return SliverToBoxAdapter(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          children: [
+            const SizedBox(height: 40),
+            Icon(
+              Icons.smart_toy_outlined,
+              size: 80,
+              color: Colors.yellow.withOpacity(0.3),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'AI Assistant',
+              style: GoogleFonts.inter(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Your intelligent companion for creative tasks, image generation, and more.',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                fontSize: 15,
+                color: Colors.grey[400],
+              ),
+            ),
+            const SizedBox(height: 32),
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: Colors.yellow.withOpacity(0.2),
+                  width: 1,
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Coming Soon',
+                    style: GoogleFonts.inter(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.yellow,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    '• AI-powered chat conversations\n• Image generation & editing\n• Smart recommendations\n• Voice interactions',
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      color: Colors.grey[300],
+                      height: 1.6,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1305,8 +1377,8 @@ class _UnifiedHomeHeaderDelegate extends SliverPersistentHeaderDelegate {
                               Container(
                                 width: 8,
                                 height: 8,
-                                decoration: const BoxDecoration(
-                                  color: Colors.green,
+                                decoration: BoxDecoration(
+                                  color: Colors.yellow.withOpacity(0.5),
                                   shape: BoxShape.circle,
                                 ),
                               ),
@@ -1564,6 +1636,7 @@ class _ChatTabBarDelegate extends SliverPersistentHeaderDelegate {
         children: [
           _buildTab('Chats', 0),
           _buildTab('Vibes', 1),
+          _buildTab('AI', 2),
         ],
       ),
     );

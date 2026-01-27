@@ -231,7 +231,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget> {
     }
 
     return Container(
-      height: 135,
+      height: 110,
       child: _isLoading
           ? _buildShimmerLoading()
           : ListView.builder(
@@ -494,7 +494,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget> {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: Colors.greenAccent, // WhatsApp style
+                    color: Colors.yellow,
                     width: 2.5,
                   ),
                 ),
