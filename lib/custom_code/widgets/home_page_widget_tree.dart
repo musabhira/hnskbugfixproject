@@ -1560,15 +1560,10 @@ class _ChatTabBarDelegate extends SliverPersistentHeaderDelegate {
       BuildContext context, double shrinkOffset, bool overlapsContent) {
     return Container(
       color: HomePageWidgetTree.backgroundColor,
-      child: Column(
+      child: Row(
         children: [
-          Row(
-            children: [
-              _buildTab('Chats', 0),
-              _buildTab('Vibes', 1),
-            ],
-          ),
-          const Divider(height: 1, color: Colors.white12),
+          _buildTab('Chats', 0),
+          _buildTab('Vibes', 1),
         ],
       ),
     );
@@ -1581,13 +1576,13 @@ class _ChatTabBarDelegate extends SliverPersistentHeaderDelegate {
         onTap: () => onTap(index),
         behavior: HitTestBehavior.opaque,
         child: Container(
-          height: 49,
+          height: 50,
           alignment: Alignment.center,
           decoration: BoxDecoration(
             border: isSelected
                 ? const Border(
                     bottom: BorderSide(
-                      color: Color(0xFFE1306C),
+                      color: Colors.white,
                       width: 2,
                     ),
                   )
