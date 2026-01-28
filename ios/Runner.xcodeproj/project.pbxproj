@@ -480,8 +480,8 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.handskill.friends;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Distribution";
-				CODE_SIGN_IDENTITY = "Apple Distribution";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
+				CODE_SIGN_IDENTITY = "iPhone Distribution";
 				CODE_SIGN_STYLE = Manual;
 				DEVELOPMENT_TEAM = H47S9SN8N3;
 				PROVISIONING_PROFILE_SPECIFIER = handskillfirends;
