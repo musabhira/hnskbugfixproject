@@ -26,6 +26,8 @@ import 'package:pocket_mates_app/custom_code/widgets/create_gallery_widget.dart'
 import 'package:pocket_mates_app/custom_code/widgets/create_service_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/event_create_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/thread_feed_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/teams/teams_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/teams/notification_tile.dart';
 
 class HomePageWidgetTree extends ConsumerStatefulWidget {
   const HomePageWidgetTree({
@@ -411,6 +413,35 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     );
   }
 
+  Widget _buildNotificationsSliver() {
+    return StreamBuilder<List<Map<String, dynamic>>>(
+      stream: TeamsService().getNotificationsStream(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return const SliverToBoxAdapter(child: SizedBox.shrink());
+        }
+
+        // Filter for unread or relevant notifications if needed
+        final notifications = snapshot.data!;
+
+        return SliverList(
+          delegate: SliverChildBuilderDelegate(
+            (context, index) {
+              return NotificationTile(
+                notification: notifications[index],
+                onRefresh: () {
+                  setState(
+                      () {}); // Refresh to update (stream should handle it though)
+                },
+              );
+            },
+            childCount: notifications.length,
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildChatListSliver(
       AsyncValue<List<ChatConversation>> conversationsAsync) {
     return conversationsAsync.when(
@@ -424,6 +455,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 
         return SliverMainAxisGroup(
           slivers: [
+            _buildNotificationsSliver(), // Added notifications here
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),

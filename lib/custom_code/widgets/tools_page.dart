@@ -17,6 +17,7 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'dart:math';
+import 'package:pocket_mates_app/custom_code/widgets/teams/teams_home_widget.dart';
 
 class ToolsPage extends StatefulWidget {
   final double? width;
@@ -460,7 +461,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                             style: GoogleFonts.outfit(
                               fontSize: 20,
                               fontWeight: FontWeight.w600,
-                              color: const Color(0xFFFF6B9D),
+                              color: Colors.yellow,
                             ),
                           ),
                         ],
@@ -469,14 +470,14 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
-                            colors: [Color(0xFFFF6B9D), Color(0xFFFF8EBD)],
+                            colors: [Colors.yellow, Colors.yellowAccent],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFFFF6B9D).withOpacity(0.4),
+                              color: Colors.yellow.withOpacity(0.4),
                               blurRadius: 12,
                               offset: const Offset(0, 4),
                             ),
@@ -487,7 +488,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                           style: GoogleFonts.outfit(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: Colors.black,
                           ),
                         ),
                       ),
@@ -512,7 +513,9 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                         const SizedBox(width: 12),
                         _buildTabItem(3, 'Diagrams', Icons.schema_rounded),
                         const SizedBox(width: 12),
-                        _buildTabItem(4, 'AI Tools', Icons.auto_awesome),
+                        _buildTabItem(4, 'Teams', Icons.groups_rounded),
+                        const SizedBox(width: 12),
+                        _buildTabItem(5, 'AI Tools', Icons.auto_awesome),
                       ],
                     ),
                   ),
@@ -549,14 +552,14 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                                   (_selectedTab == 1 && _showAddTask) ||
                                   (_selectedTab == 2 && _showAddChallenge)
                               ? const Color(0xFF2C2C2C)
-                              : const Color(0xFFFF6B9D).withOpacity(0.1),
+                              : Colors.yellow.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
                             color: (_selectedTab == 0 && _showAddSchedule) ||
                                     (_selectedTab == 1 && _showAddTask) ||
                                     (_selectedTab == 2 && _showAddChallenge)
                                 ? const Color(0xFF424242)
-                                : const Color(0xFFFF6B9D).withOpacity(0.5),
+                                : Colors.yellow.withOpacity(0.5),
                           ),
                         ),
                         child: Row(
@@ -572,7 +575,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                                       (_selectedTab == 1 && _showAddTask) ||
                                       (_selectedTab == 2 && _showAddChallenge)
                                   ? Colors.white70
-                                  : const Color(0xFFFF6B9D),
+                                  : Colors.yellow,
                               size: 20,
                             ),
                             const SizedBox(width: 8),
@@ -594,7 +597,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                                         (_selectedTab == 1 && _showAddTask) ||
                                         (_selectedTab == 2 && _showAddChallenge)
                                     ? Colors.white70
-                                    : const Color(0xFFFF6B9D),
+                                    : Colors.yellow,
                               ),
                             ),
                           ],
@@ -719,8 +722,8 @@ class _TaskManagerScreenState extends State<ToolsPage> {
               onPressed: _addTask,
               child: Text('Add Task'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xFFFF6B9D),
-                foregroundColor: Colors.white,
+                backgroundColor: Colors.yellow,
+                foregroundColor: Colors.black,
                 padding: EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -755,16 +758,15 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                   child: Container(
                     padding: EdgeInsets.symmetric(vertical: 10),
                     decoration: BoxDecoration(
-                      color: !_useAISchedule
-                          ? Color(0xFFFF6B9D)
-                          : Color(0xFF424242),
+                      color:
+                          !_useAISchedule ? Colors.yellow : Color(0xFF424242),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
                       'Manual',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: Colors.white,
+                        color: !_useAISchedule ? Colors.black : Colors.white,
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
                       ),
@@ -779,9 +781,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                   child: Container(
                     padding: EdgeInsets.symmetric(vertical: 10),
                     decoration: BoxDecoration(
-                      color: _useAISchedule
-                          ? Color(0xFFFF6B9D)
-                          : Color(0xFF424242),
+                      color: _useAISchedule ? Colors.yellow : Color(0xFF424242),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
@@ -792,7 +792,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                         Text(
                           'AI Generate',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: _useAISchedule ? Colors.black : Colors.white,
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
                           ),
@@ -1644,6 +1644,8 @@ class _TaskManagerScreenState extends State<ToolsPage> {
       case 3:
         return _buildDiagramsTab();
       case 4:
+        return const TeamsHomeWidget();
+      case 5:
         return _buildAIToolsTab();
       default:
         return _buildScheduleTab();
