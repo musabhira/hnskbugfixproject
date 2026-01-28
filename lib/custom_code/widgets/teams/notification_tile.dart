@@ -21,6 +21,7 @@ class NotificationTile extends StatelessWidget {
     final teamsService = TeamsService();
 
     final isInvite = type == 'project_invite';
+    final isTaskAssign = type == 'task_assign';
     final isUnread = status == 'unread';
 
     // If it's already handled, maybe don't show buttons?
@@ -43,8 +44,12 @@ class NotificationTile extends StatelessWidget {
           children: [
             Row(
               children: [
-                const Icon(Icons.notifications_active,
-                    color: Colors.yellow, size: 20),
+                Icon(
+                    isTaskAssign
+                        ? Icons.assignment_ind
+                        : Icons.notifications_active,
+                    color: Colors.yellow,
+                    size: 20),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(

@@ -304,16 +304,37 @@ class TeamsService {
     final userId = _client.auth.currentUser?.id;
     if (userId == null) throw Exception('Not authenticated');
 
-    await _client.from('team_tasks').insert({
-      'team_id': teamId,
-      'title': title,
-      'description': description,
-      'assigned_to': assignedTo,
-      'created_by': userId,
-      'due_date': dueDate?.toIso8601String(),
-      'status': 'todo',
-      'priority': priority,
-    });
+    final response = await _client
+        .from('team_tasks')
+        .insert({
+          'team_id': teamId,
+          'title': title,
+          'description': description,
+          'assigned_to': assignedTo,
+          'created_by': userId,
+          'due_date': dueDate?.toIso8601String(),
+          'status': 'todo',
+          'priority': priority,
+        })
+        .select()
+        .single();
+
+    final newTaskId = response['id'];
+
+    if (assignedTo != null && assignedTo != userId) {
+      final teamRes =
+          await _client.from('teams').select('name').eq('id', teamId).single();
+      final teamName = teamRes['name'];
+
+      await _client.from('notifications').insert({
+        'user_id': assignedTo,
+        'type': 'task_assign',
+        'source_id': newTaskId,
+        'message':
+            'You have been assigned task "$title" in project "$teamName"',
+        'sender_id': userId,
+      });
+    }
   }
 
   Future<void> updateTaskStatus(String taskId, String status) async {
@@ -341,6 +362,30 @@ class TeamsService {
     await _client
         .from('team_tasks')
         .update({'assigned_to': userId}).eq('id', taskId);
+
+    if (userId != null) {
+      final currentUserId = _client.auth.currentUser?.id;
+      if (currentUserId != null && userId != currentUserId) {
+        // Fetch task details for notification
+        final taskRes = await _client
+            .from('team_tasks')
+            .select('title, team_id, teams(name)')
+            .eq('id', taskId)
+            .single();
+
+        final taskTitle = taskRes['title'];
+        final teamName = taskRes['teams']['name'];
+
+        await _client.from('notifications').insert({
+          'user_id': userId,
+          'type': 'task_assign',
+          'source_id': taskId,
+          'message':
+              'You have been assigned task "$taskTitle" in project "$teamName"',
+          'sender_id': currentUserId,
+        });
+      }
+    }
   }
 
   Future<void> deleteTask(String taskId) async {
