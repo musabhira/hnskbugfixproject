@@ -29,6 +29,9 @@ class ChatConversation {
     this.lastSenderId,
     this.isOnline = false,
     this.lastSeen,
+    this.isNotification = false,
+    this.notificationType,
+    this.sourceId,
   });
 
   factory ChatConversation.fromGroupJson(Map<String, dynamic> json) {
@@ -66,6 +69,25 @@ class ChatConversation {
       lastSenderId: json['last_sender_id'] as String?,
     );
   }
+  factory ChatConversation.fromNotification(Map<String, dynamic> json) {
+    return ChatConversation(
+      id: json['id'],
+      name: 'Notification',
+      lastMessage: json['message'],
+      lastMessageTime: json['created_at'] != null
+          ? DateTime.parse(json['created_at'])
+          : DateTime.now(),
+      unreadCount: 1,
+      isGroup: false,
+      isNotification: true,
+      notificationType: json['type'],
+      sourceId: json['source_id'],
+    );
+  }
+
+  final bool isNotification;
+  final String? notificationType;
+  final String? sourceId;
 }
 
 // Provider for Supabase Client
@@ -149,6 +171,18 @@ class Conversations extends _$Conversations {
         .onPostgresChanges(
           event: PostgresChangeEvent.all,
           schema: 'public',
+          table: 'messages',
+          callback: (payload) => _debouncedRefresh(),
+        )
+        .onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'notifications', // Listen to notifications table
+          callback: (payload) => _debouncedRefresh(),
+        )
+        .onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
           table: 'group_messages',
           callback: (payload) => _debouncedRefresh(),
         )
@@ -170,15 +204,26 @@ class Conversations extends _$Conversations {
       // Fetch groups and personal chats in parallel
       final groupsFuture = _fetchGroups(userId, profileId);
       final personalFuture = _fetchPersonalChats(userId);
+      final notificationsFuture =
+          _fetchNotifications(userId); // Fetch notifications
 
-      final results = await Future.wait([groupsFuture, personalFuture]);
+      final results = await Future.wait(
+          [groupsFuture, personalFuture, notificationsFuture]);
 
       final groups = results[0] as List<ChatConversation>;
       final personal = results[1] as List<ChatConversation>;
+      final notifications =
+          results[2] as List<ChatConversation>; // Get notifications
 
       // Combine and sort by last message time
-      final combined = [...groups, ...personal];
+      final combined = [
+        ...notifications,
+        ...groups,
+        ...personal
+      ]; // Prioritize notifications? Or just sort by time.
       combined.sort((a, b) {
+        // Notifications might want to be always on top? Or mixed in by time.
+        // Let's mix by time for now as requested "normal chat list like".
         final aTime = a.lastMessageTime;
         final bTime = b.lastMessageTime;
         if (aTime == null && bTime == null) return 0;
@@ -289,8 +334,23 @@ class Conversations extends _$Conversations {
           otherProfile: otherProfile,
         ));
       }
+    } catch (e) {
+      return [];
+    }
+  }
 
-      return chats;
+  Future<List<ChatConversation>> _fetchNotifications(String userId) async {
+    try {
+      final response = await _supabase
+          .from('notifications')
+          .select('*')
+          .eq('user_id', userId)
+          .order('created_at', ascending: false);
+
+      final data = response as List<dynamic>;
+      return data
+          .map((json) => ChatConversation.fromNotification(json))
+          .toList();
     } catch (e) {
       return [];
     }
@@ -365,6 +425,15 @@ class Conversations extends _$Conversations {
       ref.invalidateSelf();
     } catch (e) {
       // Handle error
+    }
+  }
+
+  Future<void> dismissNotification(String notificationId) async {
+    try {
+      await _supabase.from('notifications').delete().eq('id', notificationId);
+      ref.invalidateSelf();
+    } catch (e) {
+      print('Error dismissing notification: $e');
     }
   }
 

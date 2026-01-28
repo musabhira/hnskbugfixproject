@@ -24,7 +24,7 @@ class ConversationTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF1F2C34), // Dark background
         borderRadius: BorderRadius.circular(12),
-        border: conversation.unreadCount > 0
+        border: (conversation.unreadCount > 0 || conversation.isNotification)
             ? Border.all(color: Colors.yellow.withOpacity(0.3), width: 1)
             : null,
       ),
@@ -42,8 +42,12 @@ class ConversationTile extends StatelessWidget {
                   : null,
               child: conversation.imageUrl == null
                   ? Icon(
-                      conversation.isGroup ? Icons.group : Icons.person,
-                      color: Colors.white70,
+                      conversation.isNotification
+                          ? Icons.notifications_active
+                          : (conversation.isGroup ? Icons.group : Icons.person),
+                      color: conversation.isNotification
+                          ? Colors.yellow
+                          : Colors.white70,
                     )
                   : null,
             ),

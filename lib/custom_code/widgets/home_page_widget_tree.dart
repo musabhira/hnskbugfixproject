@@ -413,35 +413,6 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     );
   }
 
-  Widget _buildNotificationsSliver() {
-    return StreamBuilder<List<Map<String, dynamic>>>(
-      stream: TeamsService().getNotificationsStream(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return const SliverToBoxAdapter(child: SizedBox.shrink());
-        }
-
-        // Filter for unread or relevant notifications if needed
-        final notifications = snapshot.data!;
-
-        return SliverList(
-          delegate: SliverChildBuilderDelegate(
-            (context, index) {
-              return NotificationTile(
-                notification: notifications[index],
-                onRefresh: () {
-                  setState(
-                      () {}); // Refresh to update (stream should handle it though)
-                },
-              );
-            },
-            childCount: notifications.length,
-          ),
-        );
-      },
-    );
-  }
-
   Widget _buildChatListSliver(
       AsyncValue<List<ChatConversation>> conversationsAsync) {
     return conversationsAsync.when(
@@ -455,7 +426,9 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 
         return SliverMainAxisGroup(
           slivers: [
-            _buildNotificationsSliver(), // Added notifications here
+            // Notifications are now mixed in
+            // _buildNotificationsSliver(),
+
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
@@ -540,7 +513,9 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                       conversation: conversation,
                       currentUserId: _currentUserId ?? '',
                       onTap: () {
-                        if (conversation.isGroup) {
+                        if (conversation.isNotification) {
+                          _showNotificationDetails(context, conversation);
+                        } else if (conversation.isGroup) {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -1210,6 +1185,117 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         builder: (context) => WebRTCCallScreen(
           mode: 'Text',
           targetUserId: randomUser['user_id'], // Pass matched user
+        ),
+      ),
+    );
+  }
+
+  void _showNotificationDetails(
+      BuildContext context, ChatConversation notification) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1F2C34),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.notifications_active,
+                    color: Colors.yellow, size: 28),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Notification',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              notification.lastMessage ?? 'No details',
+              style: GoogleFonts.inter(
+                color: Colors.white.withOpacity(0.9),
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                if (notification.notificationType == 'project_invite' &&
+                    notification.sourceId != null) ...[
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () async {
+                        Navigator.pop(context);
+                        await TeamsService()
+                            .declineInvite(notification.sourceId!);
+                        await ref
+                            .read(conversationsProvider.notifier)
+                            .dismissNotification(notification.id);
+                      },
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(color: Colors.red.withOpacity(0.5)),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      child:
+                          Text('Decline', style: TextStyle(color: Colors.red)),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        Navigator.pop(context);
+                        await TeamsService()
+                            .acceptInvite(notification.sourceId!);
+                        await ref
+                            .read(conversationsProvider.notifier)
+                            .dismissNotification(notification.id);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Invitation accepted!')),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.yellow,
+                        foregroundColor: Colors.black,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      child: const Text('Accept'),
+                    ),
+                  ),
+                ] else ...[
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        Navigator.pop(context);
+                        await ref
+                            .read(conversationsProvider.notifier)
+                            .dismissNotification(notification.id);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.yellow,
+                        foregroundColor: Colors.black,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      child: const Text('Dismiss'), // Or "Mark Read"
+                    ),
+                  ),
+                ]
+              ],
+            ),
+            const SizedBox(height: 20),
+          ],
         ),
       ),
     );
