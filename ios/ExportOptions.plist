@@ -11,8 +11,7 @@
 		<key>com.handskill.friends</key>
 		<string>handskillfirends</string>
 	</dict>
-	<key>signingCertificate</key>
-	<string>Apple Distribution</string>
+
 	<key>signingStyle</key>
 	<string>manual</string>
 	<key>destination</key>
