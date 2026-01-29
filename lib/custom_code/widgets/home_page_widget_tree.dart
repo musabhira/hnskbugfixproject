@@ -27,7 +27,6 @@ import 'package:pocket_mates_app/custom_code/widgets/create_service_widget.dart'
 import 'package:pocket_mates_app/custom_code/widgets/event_create_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/thread_feed_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/teams/teams_service.dart';
-import 'package:pocket_mates_app/custom_code/widgets/teams/notification_tile.dart';
 
 class HomePageWidgetTree extends ConsumerStatefulWidget {
   const HomePageWidgetTree({

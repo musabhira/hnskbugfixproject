@@ -210,10 +210,9 @@ class Conversations extends _$Conversations {
       final results = await Future.wait(
           [groupsFuture, personalFuture, notificationsFuture]);
 
-      final groups = results[0] as List<ChatConversation>;
-      final personal = results[1] as List<ChatConversation>;
-      final notifications =
-          results[2] as List<ChatConversation>; // Get notifications
+      final groups = results[0];
+      final personal = results[1];
+      final notifications = results[2];
 
       // Combine and sort by last message time
       final combined = [
@@ -334,6 +333,8 @@ class Conversations extends _$Conversations {
           otherProfile: otherProfile,
         ));
       }
+
+      return chats;
     } catch (e) {
       return [];
     }
