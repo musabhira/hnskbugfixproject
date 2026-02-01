@@ -1,4 +1,6 @@
 // Automatic FlutterFlow imports
+import 'package:pocket_mates_app/custom_code/widgets/status_display_widget.dart';
+
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -117,6 +119,35 @@ class _ShareContentScreenState extends State<ShareContentScreen> {
                 ],
               ),
             ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () => _shareToStatus(),
+              style: ElevatedButton.styleFrom(
+                backgroundColor:
+                    Colors.pink, // Vibes uses pink/gradient usually
+                foregroundColor: Colors.white,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                elevation: 4,
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.auto_awesome),
+                  SizedBox(width: 8),
+                  Text(
+                    'Share to Vibes',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),
@@ -138,6 +169,10 @@ class _ShareContentScreenState extends State<ShareContentScreen> {
         onPersonSelected: (userId, userName, userMessage) {
           Navigator.pop(context);
           _shareToPerson(userId, userName);
+        },
+        onStatusSelected: (userMessage) {
+          Navigator.pop(context);
+          _shareToStatus(userMessage);
         },
       ),
     );
@@ -209,15 +244,6 @@ class _ShareContentScreenState extends State<ShareContentScreen> {
       );
 
       // Insert message to group
-      // Assuming group_messages table logic.
-      // If group_messages also needs gallery_id, I should check that too.
-      // For now, focusing on user request "show in personal chat".
-      // But let's check group_messages table if I have time, or just insert as text for now.
-      // Wait, the previous turn modified whatsapp_group_chat to display gallery messages.
-      // It expects 'gallery' key? Or join?
-      // In whatsapp_group_chat:
-      // gallery:gallery_id(*)
-
       final messageData = {
         'group_id': groupId,
         'sender_id': widget.currentUserId,
@@ -226,9 +252,6 @@ class _ShareContentScreenState extends State<ShareContentScreen> {
       };
 
       if (widget.contentType == 'gallery' && widget.contentId != null) {
-        // Assuming group_messages has gallery_id. If not, this might fail or be ignored.
-        // Let's assume for now it handles it or I'll need to update schema.
-        // Based on whatsapp_group_chat query, it definitely expects gallery relation.
         messageData['gallery_id'] = widget.contentId!;
       }
 
@@ -268,6 +291,61 @@ class _ShareContentScreenState extends State<ShareContentScreen> {
       );
     }
   }
+
+  Future<void> _shareToStatus([String? userMessage]) async {
+    // 1. Get Profile ID (We need this to pass to Upload Widget)
+    // Actually StatusUploadWidget might fetch it or needs it.
+    // The previous implementation fetched it.
+
+    try {
+      // We'll quickly fetch profile ID if we don't have it handy (though usually it should be in context/state or passed in).
+      // Assuming we need to fetch it:
+
+      final profileResponse = await supabase
+          .from('profile')
+          .select('id')
+          .eq('user_id', widget.currentUserId)
+          .single();
+      final profileId = profileResponse['id'] as String;
+
+      if (!mounted) return;
+
+      // 2. Navigate to StatusUploadWidget with shared content
+      // We pass userMessage as the initial caption if provided? Or just ignore userMessage here and let them type it in editor?
+      // The shared content (widget.contentToShare) is the main thing.
+      // If user typed a message in the bottom sheet (userMessage), we can pass it as 'sharedContent' for text, or append it?
+      // Let's assume widget.contentToShare is the CORE content.
+      // But userMessage from the bottom sheet input is also a "caption".
+      // StatusUploadWidget has _captionController. Text mode pre-fills it from sharedContent.
+      // If sharedContentType is 'gallery', contentToShare is the image URL.
+      // If sharedContentType is 'text', contentToShare is the text.
+      // We should probably respect the userMessage if they typed one in the bottom sheet.
+
+      String? actualSharedContent = widget.contentToShare;
+      // If text mode, maybe we want to combine them? Or just use contentToShare.
+      // Let's pass contentToShare to StatusUploadWidget.
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => StatusUploadWidget(
+            userId: widget.currentUserId,
+            profileId: profileId,
+            sharedContent: actualSharedContent,
+            sharedContentType: widget.contentType,
+            sharedContentId: widget.contentId,
+          ),
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error preparing status share: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
 }
 
 // Child Class - Bottom Sheet with Group Selection
@@ -278,6 +356,7 @@ class GroupSelectionBottomSheet extends StatefulWidget {
       onGroupSelected;
   final Function(String userId, String userName, String userMessage)?
       onPersonSelected;
+  final Function(String userMessage)? onStatusSelected;
   final VoidCallback? onWhatsAppShare;
   final String? messageHint;
   final bool showMessageInput;
@@ -288,6 +367,7 @@ class GroupSelectionBottomSheet extends StatefulWidget {
     required this.currentUserId,
     required this.onGroupSelected,
     this.onPersonSelected,
+    this.onStatusSelected,
     this.onWhatsAppShare,
     this.messageHint = 'Add a message (optional)...',
     this.showMessageInput = true,
@@ -308,6 +388,8 @@ class _GroupSelectionBottomSheetState extends State<GroupSelectionBottomSheet>
   final TextEditingController searchController = TextEditingController();
   final TextEditingController messageController = TextEditingController();
 
+  String? currentUserProfileImage;
+
   @override
   void initState() {
     super.initState();
@@ -319,8 +401,26 @@ class _GroupSelectionBottomSheetState extends State<GroupSelectionBottomSheet>
     await Future.wait([
       _fetchUserGroups(),
       _fetchRecentPeople(),
+      _fetchCurrentUserProfile(),
     ]);
     safeSetState(() => isLoading = false);
+  }
+
+  Future<void> _fetchCurrentUserProfile() async {
+    try {
+      final response = await supabase
+          .from('profile')
+          .select('profile_image_url')
+          .eq('user_id', widget.currentUserId)
+          .single();
+      if (response != null) {
+        safeSetState(() {
+          currentUserProfileImage = response['profile_image_url'];
+        });
+      }
+    } catch (e) {
+      debugPrint('Error fetching current user profile: $e');
+    }
   }
 
   @override
@@ -505,6 +605,11 @@ class _GroupSelectionBottomSheetState extends State<GroupSelectionBottomSheet>
                 : ListView(
                     padding: const EdgeInsets.symmetric(vertical: 10),
                     children: [
+                      if (widget.onStatusSelected != null) ...[
+                        _buildStatusTile(),
+                        const Divider(color: Colors.white10, height: 1),
+                      ],
+
                       // If searching, we show strictly what matches.
                       // If not searching, we show Recent People then Groups? Or separate?
                       // The user asked for "search time show a group and personal chat".
@@ -655,6 +760,87 @@ class _GroupSelectionBottomSheetState extends State<GroupSelectionBottomSheet>
           group['name'],
           userMessage.trim(),
         );
+      }),
+    );
+  }
+
+  Widget _buildStatusTile() {
+    return ListTile(
+      leading: Stack(
+        children: [
+          Container(
+            width: 50,
+            height: 50,
+            padding: const EdgeInsets.all(2), // Gradient border width
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              // Instagram Story Gradient
+              gradient: LinearGradient(
+                begin: Alignment.topRight,
+                end: Alignment.bottomLeft,
+                colors: [
+                  Color(0xFF833AB4), // Purple
+                  Color(0xFFC13584), // Magenta
+                  Color(0xFFE1306C), // Pink/Red
+                  Color(0xFFFD1D1D), // Red
+                  Color(0xFFF56040), // Orange
+                  Color(0xFFF77737), // Orange-Yellow
+                  Color(0xFFFCAF45), // Yellow
+                  Color(0xFFFFDC80), // Light Yellow
+                ],
+              ),
+            ),
+            child: Container(
+              decoration: const BoxDecoration(
+                color: Colors.black, // Inner border color (gap)
+                shape: BoxShape.circle,
+              ),
+              padding: const EdgeInsets.all(2), // Gap width
+              child: CircleAvatar(
+                backgroundColor: Colors.grey[800],
+                backgroundImage: currentUserProfileImage != null
+                    ? NetworkImage(currentUserProfileImage!)
+                    : null,
+                child: currentUserProfileImage == null
+                    ? const Icon(Icons.person, color: Colors.white)
+                    : null,
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: 0,
+            right: 0,
+            child: Container(
+              padding: const EdgeInsets.all(2),
+              decoration: BoxDecoration(
+                color: Colors.black, // Match background of sheet
+                shape: BoxShape.circle,
+              ),
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: const BoxDecoration(
+                  color: Colors.blue,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.add, size: 12, color: Colors.white),
+              ),
+            ),
+          ),
+        ],
+      ),
+      title: const Text(
+        'Your Vibes',
+        style: TextStyle(
+            color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600),
+      ),
+      subtitle: const Text(
+        'Tap to share',
+        style: TextStyle(color: Colors.grey, fontSize: 13),
+      ),
+      trailing: _buildSendButton(() {
+        if (widget.onStatusSelected != null) {
+          widget.onStatusSelected!(userMessage.trim());
+        }
       }),
     );
   }

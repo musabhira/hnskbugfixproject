@@ -7,6 +7,7 @@ import 'package:pocket_mates_app/custom_code/widgets/message_screen.dart';
 import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
 import 'package:pocket_mates_app/custom_code/widgets/search_profile_detail_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/share_content_screen.dart';
+import 'package:pocket_mates_app/custom_code/widgets/status_display_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
 import 'package:pocket_mates_app/flutter_flow/flutter_flow_theme.dart';
 import 'package:pocket_mates_app/flutter_flow/flutter_flow_util.dart';
@@ -810,6 +811,41 @@ class BuildDetailContentState extends State<BuildDetailContent> {
           sharetext = userMessage;
           Navigator.pop(context);
           _shareToPerson(userId, userName);
+        },
+        onStatusSelected: (userMessage) async {
+          Navigator.pop(context);
+          try {
+            final currentUser = _supabase.auth.currentUser;
+            if (currentUser == null) return;
+
+            // Fetch current user's profile ID
+            final profileResponse = await _supabase
+                .from('profile')
+                .select('id')
+                .eq('user_id', currentUser.id)
+                .single();
+            final profileId = profileResponse['id'] as String;
+
+            if (context.mounted) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => StatusUploadWidget(
+                    userId: currentUser.id,
+                    profileId: profileId,
+                    sharedContent: widget.item['gallery_image_url'],
+                    sharedContentType: 'gallery',
+                    sharedContentId: widget.item['gallery_id'],
+                  ),
+                ),
+              );
+            }
+          } catch (e) {
+            print('Error preparing status share: $e');
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Could not prepare share')),
+            );
+          }
         },
         onWhatsAppShare: () {
           WhatsAppShareHelper.shareToWhatsApp(

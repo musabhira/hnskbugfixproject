@@ -9,6 +9,7 @@ import 'package:shimmer/shimmer.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:pocket_mates_app/custom_code/widgets/gallery_profile_search_page.dart'; // Import for Gallery Detail Page
 import 'package:video_compress/video_compress.dart';
 import 'package:image/image.dart' as img;
 import 'package:flutter/foundation.dart';
@@ -1623,7 +1624,8 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
 
             // Caption
             if (currentStatus['caption'] != null &&
-                currentStatus['caption'].toString().isNotEmpty)
+                currentStatus['caption'].toString().isNotEmpty &&
+                currentStatus['media_type'] != 'text')
               Positioned(
                 bottom: 30,
                 left: 16,
@@ -1720,8 +1722,36 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
   }
 
   Widget _buildMediaContent(Map<String, dynamic> status) {
-    if (status['media_type'] == 'image') {
-      return CachedNetworkImage(
+    Widget content;
+
+    if (status['media_type'] == 'text') {
+      content = Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFFCC2B5E), Color(0xFF753A88)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        padding: const EdgeInsets.all(32),
+        alignment: Alignment.center,
+        child: SingleChildScrollView(
+          child: Text(
+            status['caption'] ?? '',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              height: 1.4,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
+    } else if (status['media_type'] == 'image') {
+      content = CachedNetworkImage(
         imageUrl: status['media_url'],
         fit: BoxFit.contain,
         width: double.infinity,
@@ -1745,10 +1775,16 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
         ),
       );
     } else {
+      // Video
       if (_currentVideoController != null && _isCurrentVideoReady) {
-        return AspectRatio(
-          aspectRatio: _currentVideoController!.value.aspectRatio,
-          child: VideoPlayer(_currentVideoController!),
+        content = Container(
+          color: Colors.black,
+          child: Center(
+            child: AspectRatio(
+              aspectRatio: _currentVideoController!.value.aspectRatio,
+              child: VideoPlayer(_currentVideoController!),
+            ),
+          ),
         );
       } else {
         return const Center(
@@ -1758,6 +1794,84 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
           ),
         );
       }
+    }
+
+    // Wrap with Gallery Link logic if applicable
+    if (status['gallery_id'] != null) {
+      return GestureDetector(
+        onTap: () => _navigateToGalleryDetail(status['gallery_id']),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            content,
+            Positioned(
+              bottom: 100, // Above caption/reply area
+              left: 0,
+              right: 0,
+              child: Center(
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.6),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.white24),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Tap to view post',
+                        style: TextStyle(color: Colors.white, fontSize: 12),
+                      ),
+                      SizedBox(width: 4),
+                      Icon(Icons.arrow_forward_ios,
+                          color: Colors.white, size: 10),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return content;
+  }
+
+  Future<void> _navigateToGalleryDetail(String galleryId) async {
+    try {
+      // Fetch gallery item details
+      final response = await supabase
+          .from('gallery_with_comments_view') // content_view logic
+          .select()
+          .eq('gallery_id', galleryId)
+          .single(); // Assuming ID exists
+
+      if (!mounted) return;
+
+      final item = Map<String, dynamic>.from(response);
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => GalleryDetailsprofilePage(
+            item: item,
+            allItems: [item], // Single item list
+            initialIndex: 0,
+            bgColor: Colors.black,
+            bgtextcolor: Colors.white,
+            buttoncolorcode: const Color(0xFFF58529), // Example theme
+            buttontextcolor: Colors.white,
+            userid: widget.currentUserId,
+          ),
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not load post: $e')),
+      );
     }
   }
 
@@ -1781,11 +1895,17 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
 class StatusUploadWidget extends StatefulWidget {
   final String userId;
   final String profileId;
+  final String? sharedContent;
+  final String? sharedContentType; // 'text' or 'gallery' (image url)
+  final String? sharedContentId; // gallery_id
 
   const StatusUploadWidget({
     super.key,
     required this.userId,
     required this.profileId,
+    this.sharedContent,
+    this.sharedContentType,
+    this.sharedContentId,
   });
 
   @override
@@ -1800,6 +1920,19 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
   double _uploadProgress = 0.0;
 
   final supabase = Supabase.instance.client;
+  bool _isSharingMode = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.sharedContent != null) {
+      _isSharingMode = true;
+      // Pre-fill caption if text mode, specifically if it's strictly text content
+      if (widget.sharedContentType == 'text') {
+        _captionController.text = widget.sharedContent!;
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -1850,77 +1983,140 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
         padding: EdgeInsets.only(
           bottom: MediaQuery.of(context).viewInsets.bottom,
         ),
-        child: Column(
-          children: [
-            const SizedBox(height: 12),
-            Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                    color: Colors.white24,
-                    borderRadius: BorderRadius.circular(2))),
-            const SizedBox(height: 20),
-            Expanded(
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(20),
-                child: FutureBuilder(
-                  future: file.readAsBytes(),
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData) {
-                      return mediaType == 'image'
-                          ? Image.memory(snapshot.data as Uint8List,
-                              fit: BoxFit.contain)
-                          : const Center(
-                              child: Icon(Icons.video_library,
-                                  size: 100, color: Colors.white24));
-                    }
-                    return const Center(child: CircularProgressIndicator());
-                  },
+        child: _buildEditorUI(file: file, mediaType: mediaType, isModal: true),
+      ),
+    );
+  }
+
+  Widget _buildEditorUI({
+    XFile? file,
+    String? mediaType,
+    bool isModal = false,
+  }) {
+    // Determine content widget
+    Widget contentWidget;
+    if (file != null) {
+      contentWidget = FutureBuilder(
+        future: file.readAsBytes(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            return mediaType == 'image'
+                ? Image.memory(snapshot.data as Uint8List, fit: BoxFit.contain)
+                : const Center(
+                    child: Icon(Icons.video_library,
+                        size: 100, color: Colors.white24));
+          }
+          return const Center(child: CircularProgressIndicator());
+        },
+      );
+    } else if (widget.sharedContent != null) {
+      if (widget.sharedContentType == 'text') {
+        contentWidget = Container(
+          width: double.infinity,
+          height: double.infinity,
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFFCC2B5E), Color(0xFF753A88)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          alignment: Alignment.center,
+          padding: const EdgeInsets.all(32),
+          child: Text(
+            widget.sharedContent!,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        );
+      } else {
+        // Gallery/URL
+        contentWidget = CachedNetworkImage(
+          imageUrl: widget.sharedContent!,
+          fit: BoxFit.contain,
+          errorWidget: (context, url, error) => const Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.error, color: Colors.white),
+              SizedBox(height: 8),
+              Text('Could not load image',
+                  style: TextStyle(color: Colors.white)),
+            ],
+          ),
+        );
+      }
+    } else {
+      contentWidget = const SizedBox();
+    }
+
+    return Column(
+      children: [
+        const SizedBox(height: 12),
+        if (isModal)
+          Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                  color: Colors.white24,
+                  borderRadius: BorderRadius.circular(2))),
+        const SizedBox(height: 20),
+        Expanded(
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: contentWidget,
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Row(
+            children: [
+              // Hide caption input if it is purely text status, as the text IS the status
+              if (widget.sharedContentType != 'text')
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: TextField(
+                      controller: _captionController,
+                      style: const TextStyle(color: Colors.white),
+                      decoration: const InputDecoration(
+                        hintText: 'Add a caption...',
+                        hintStyle: TextStyle(color: Colors.white38),
+                        border: InputBorder.none,
+                      ),
+                    ),
+                  ),
+                )
+              else
+                const Spacer(),
+              const SizedBox(width: 12),
+              GestureDetector(
+                onTap: () {
+                  if (file != null) {
+                    Navigator.pop(context);
+                    _uploadStatus(file, mediaType!);
+                  } else {
+                    _postSharedStatus();
+                  }
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: const BoxDecoration(
+                      color: Colors.yellow, shape: BoxShape.circle),
+                  child: const Icon(Icons.send, color: Colors.black, size: 24),
                 ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: TextField(
-                        controller: _captionController,
-                        style: const TextStyle(color: Colors.white),
-                        decoration: const InputDecoration(
-                          hintText: 'Add a caption...',
-                          hintStyle: TextStyle(color: Colors.white38),
-                          border: InputBorder.none,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.pop(context);
-                      _uploadStatus(file, mediaType);
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: const BoxDecoration(
-                          color: Colors.yellow, shape: BoxShape.circle),
-                      child:
-                          const Icon(Icons.send, color: Colors.black, size: 24),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
+      ],
     );
   }
 
@@ -2128,6 +2324,65 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
     }
   }
 
+  Future<void> _postSharedStatus() async {
+    setState(() {
+      _isUploading = true;
+      _uploadProgress = 0.5;
+    });
+
+    try {
+      final mediaType =
+          widget.sharedContentType == 'gallery' ? 'image' : 'text';
+      // If text, the shared content IS the caption.
+      // If image, caption is from controller.
+      String? caption;
+      String? mediaUrl;
+
+      if (mediaType == 'text') {
+        caption = widget.sharedContent;
+        mediaUrl = '';
+      } else {
+        // Image
+        mediaUrl = widget.sharedContent;
+        caption = _captionController.text.trim().isEmpty
+            ? null
+            : _captionController.text.trim();
+      }
+
+      await supabase.from('statuses').insert({
+        'user_id': widget.userId,
+        'profile_id': widget.profileId,
+        'media_type': mediaType,
+        'media_url': mediaUrl,
+        'thumbnail_url': null,
+        'caption': caption,
+        'gallery_id': widget.sharedContentId,
+        'duration': 5,
+        'expires_at':
+            DateTime.now().add(const Duration(hours: 24)).toIso8601String(),
+      });
+
+      setState(() => _uploadProgress = 1.0);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Status uploaded!'),
+            backgroundColor: Colors.yellow,
+          ),
+        );
+        Navigator.pop(context, true);
+      }
+    } catch (e) {
+      _showErrorSnackBar('Error sharing status: $e');
+    } finally {
+      setState(() {
+        _isUploading = false;
+        _uploadProgress = 0.0;
+      });
+    }
+  }
+
   Future<String> _uploadBytes(
       Uint8List bytes, String type, String fileExt) async {
     final fileName =
@@ -2226,6 +2481,8 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
                 ],
               ),
             )
+          else if (_isSharingMode)
+            _buildEditorUI()
           else
             Column(
               children: [
