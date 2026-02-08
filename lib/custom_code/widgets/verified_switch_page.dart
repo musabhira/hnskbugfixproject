@@ -6,7 +6,8 @@ import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 // Imports other custom widgets
 // Imports custom actions
-import 'package:flutter/material.dart';
+import 'package:fluent_ui/fluent_ui.dart' hide Colors;
+import 'package:flutter/material.dart' as material show Colors, Icons, Theme;
 
 class VerfiedSwitchPage extends StatefulWidget {
   const VerfiedSwitchPage({
@@ -39,7 +40,7 @@ class _VerfiedSwitchPageState extends State<VerfiedSwitchPage> {
   String? selectedCountry;
   String? selectedState;
   String? selectedCity;
-  final scaffoldKey = GlobalKey<ScaffoldState>();
+  // final scaffoldKey = GlobalKey<ScaffoldState>(); // Removed material scaffold key
   final TextEditingController _shopNameController = TextEditingController();
   final _supabase = SupaFlow.client;
 
@@ -60,15 +61,6 @@ class _VerfiedSwitchPageState extends State<VerfiedSwitchPage> {
     _loadPremiumFeatures();
   }
 
-  // Future<void> _getCurrentUser() async {
-  //   final user = _supabase.auth.currentUser;
-  //   if (user != null) {
-  //     safeSetState(() {
-  //       _currentUserId = user.id;
-  //     });
-  //   }
-  // }
-
   // New method to load premium features
   Future<void> _loadPremiumFeatures() async {
     try {
@@ -79,13 +71,13 @@ class _VerfiedSwitchPageState extends State<VerfiedSwitchPage> {
           .maybeSingle();
 
       if (premiumResponse != null && mounted) {
-        safeSetState(() {
+        setState(() {
           _selectedHomeDesign = premiumResponse['selected_home_design'] ?? 1;
           _hasPremiumFeatures = true;
         });
       } else {
         // User doesn't have premium features, use default
-        safeSetState(() {
+        setState(() {
           _selectedHomeDesign = 1; // Default design
           _hasPremiumFeatures = false;
         });
@@ -94,7 +86,7 @@ class _VerfiedSwitchPageState extends State<VerfiedSwitchPage> {
       print('Error loading premium features: $error');
       // Use default if error occurs
       if (mounted) {
-        safeSetState(() {
+        setState(() {
           _selectedHomeDesign = 1;
           _hasPremiumFeatures = false;
         });
@@ -104,7 +96,7 @@ class _VerfiedSwitchPageState extends State<VerfiedSwitchPage> {
 
   Future<void> _loadProfileData() async {
     try {
-      safeSetState(() => _isLoading = true);
+      setState(() => _isLoading = true);
 
       // Fetch profile data including verification status
       final profileResponse = await _supabase
@@ -117,7 +109,7 @@ class _VerfiedSwitchPageState extends State<VerfiedSwitchPage> {
       print(profileResponse);
 
       if (profileResponse != null && mounted) {
-        safeSetState(() {
+        setState(() {
           _shopNameController.text = profileResponse['shop_name'] ?? '';
           _colorCode = profileResponse['bg_color_code'] ?? '';
           _colorCode1 = profileResponse['bg_text_color'] ?? '';
@@ -128,16 +120,23 @@ class _VerfiedSwitchPageState extends State<VerfiedSwitchPage> {
       }
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+        showDialog(
+          context: context,
+          builder: (context) => ContentDialog(
+            title: const Text('Error'),
             content: Text('Error loading profile: $error'),
-            backgroundColor: Colors.red,
+            actions: [
+              Button(
+                child: const Text('OK'),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ],
           ),
         );
       }
     } finally {
       if (mounted) {
-        safeSetState(() => _isLoading = false);
+        setState(() => _isLoading = false);
       }
     }
   }
@@ -146,7 +145,7 @@ class _VerfiedSwitchPageState extends State<VerfiedSwitchPage> {
   Widget _getSelectedDesignWidget() {
     if (_isLoading) {
       return const Center(
-        child: CircularProgressIndicator(),
+        child: ProgressRing(),
       );
     }
 
@@ -158,29 +157,9 @@ class _VerfiedSwitchPageState extends State<VerfiedSwitchPage> {
       // Verified user - show verified designs
       switch (_selectedHomeDesign) {
         case 1:
-          return VerfiedSearchProfileDetailPage(
-            width: screenWidth,
-            height: screenHeight,
-            userId: widget.userId,
-          );
         case 2:
-          return VerfiedSearchProfileDetailPage(
-            width: screenWidth,
-            height: screenHeight,
-            userId: widget.userId,
-          );
         case 3:
-          return VerfiedSearchProfileDetailPage(
-            width: screenWidth,
-            height: screenHeight,
-            userId: widget.userId,
-          );
         case 4:
-          return VerfiedSearchProfileDetailPage(
-            width: screenWidth,
-            height: screenHeight,
-            userId: widget.userId,
-          );
         default:
           return VerfiedSearchProfileDetailPage(
             width: screenWidth,
@@ -192,12 +171,6 @@ class _VerfiedSwitchPageState extends State<VerfiedSwitchPage> {
       // Non-verified user - show different designs
       switch (_selectedHomeDesign) {
         case 1:
-          return SearchProfileDetailPage(
-            width: screenWidth,
-            height: screenHeight,
-            userId: widget.userId,
-          );
-
         default:
           return SearchProfileDetailPage(
             width: screenWidth,
@@ -217,19 +190,17 @@ class _VerfiedSwitchPageState extends State<VerfiedSwitchPage> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.black,
+      color: material.Colors.black,
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          ClipRRect(
-            borderRadius: const BorderRadius.only(
-              bottomLeft: Radius.circular(10),
-              bottomRight: Radius.circular(10),
-            ),
-            child: SizedBox(
-              height: MediaQuery.of(context).size.height,
-              width: MediaQuery.of(context).size.width,
-              child:
-                  _getSelectedDesignWidget(), // Use the selected design widget
+          Expanded(
+            child: ClipRRect(
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(10),
+                bottomRight: Radius.circular(10),
+              ),
+              child: _getSelectedDesignWidget(),
             ),
           ),
         ],
@@ -237,4 +208,3 @@ class _VerfiedSwitchPageState extends State<VerfiedSwitchPage> {
     );
   }
 }
-// https://handskillapp.web.app/?userid=67f21fa3-3cc9-4bad-9554-be88b8c4b740

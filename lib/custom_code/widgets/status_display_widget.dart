@@ -19,6 +19,7 @@ import 'package:video_player/video_player.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:google_fonts/google_fonts.dart';
 
 class StatusDisplayWidget extends StatefulWidget {
   final String currentUserId;
@@ -170,6 +171,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget> {
           _statuses = combinedData;
           _isLoading = false;
         });
+        _precacheAllStatuses();
       }
     } catch (e) {
       debugPrint('Error loading statuses: $e');
@@ -177,6 +179,27 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget> {
         setState(() {
           _isLoading = false;
         });
+      }
+    }
+  }
+
+  void _precacheAllStatuses() {
+    for (var group in _statuses) {
+      final statuses = group['statuses'] as List;
+      if (statuses.isNotEmpty) {
+        final firstStatus = statuses.first;
+        if (firstStatus['media_type'] == 'image') {
+          precacheImage(
+            CachedNetworkImageProvider(firstStatus['media_url']),
+            context,
+          );
+        } else if (firstStatus['media_type'] == 'video') {
+          // Warm up video URL (some players handle this better if called early)
+          VideoPlayerController.networkUrl(Uri.parse(firstStatus['media_url']))
+            ..initialize().then((_) {
+              // Just initialize and dispose to warm up cache if supported by OS
+            });
+        }
       }
     }
   }
@@ -213,40 +236,38 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.isVertical) {
-      return _isLoading
-          ? _buildVerticalShimmer()
-          : ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: _statuses.length + 1,
-              itemBuilder: (context, index) {
-                if (index == 0) {
-                  return _buildAddStatusButton();
-                }
-                final statusGroup = _statuses[index - 1];
-                return _buildStatusItem(statusGroup, index - 1);
-              },
-            );
-    }
-
-    return Container(
-      height: 110,
-      child: _isLoading
-          ? _buildShimmerLoading()
-          : ListView.builder(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 1),
-              itemCount: _statuses.length + 1,
-              itemBuilder: (context, index) {
-                if (index == 0) {
-                  return _buildAddStatusButton();
-                }
-
-                final statusGroup = _statuses[index - 1];
-                return _buildStatusItem(statusGroup, index - 1);
-              },
+    return Material(
+      color: Colors.transparent,
+      child: widget.isVertical
+          ? (_isLoading
+              ? _buildVerticalShimmer()
+              : ListView.builder(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: _statuses.length + 1,
+                  itemBuilder: (context, index) {
+                    if (index == 0) return _buildAddStatusButton();
+                    final statusGroup = _statuses[index - 1];
+                    return _buildStatusItem(statusGroup, index - 1);
+                  },
+                ))
+          : Container(
+              height: 120,
+              child: _isLoading
+                  ? _buildShimmerLoading()
+                  : ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 6),
+                      itemCount: _statuses.length + 1,
+                      itemBuilder: (context, index) {
+                        if (index == 0) return _buildAddStatusButton();
+                        final statusGroup = _statuses[index - 1];
+                        return _buildStatusItem(statusGroup, index - 1);
+                      },
+                    ),
             ),
     );
   }
@@ -257,115 +278,108 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget> {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: 6,
-      itemBuilder: (context, index) {
-        return Shimmer.fromColors(
-          baseColor: Colors.grey[800]!,
-          highlightColor: Colors.grey[700]!,
-          child: Padding(
-            padding: const EdgeInsets.only(bottom: 16),
-            child: Row(
-              children: [
-                Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.grey[800],
+      itemBuilder: (context, index) => Padding(
+        padding: const EdgeInsets.only(bottom: 20),
+        child: Shimmer.fromColors(
+          baseColor: Colors.white.withOpacity(0.05),
+          highlightColor: Colors.white.withOpacity(0.1),
+          child: Row(
+            children: [
+              Container(
+                width: 64,
+                height: 64,
+                decoration: const BoxDecoration(
+                    color: Colors.white, shape: BoxShape.circle),
+              ),
+              const SizedBox(width: 16),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 140,
+                    height: 14,
+                    decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(7)),
                   ),
-                ),
-                const SizedBox(width: 16),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      width: 120,
-                      height: 14,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[800],
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      width: 80,
-                      height: 10,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[800],
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+                  const SizedBox(height: 8),
+                  Container(
+                    width: 80,
+                    height: 10,
+                    decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(5)),
+                  ),
+                ],
+              ),
+            ],
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 
   Widget _buildShimmerLoading() {
     return ListView.builder(
       scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       itemCount: 6,
-      itemBuilder: (context, index) {
-        return Shimmer.fromColors(
-          baseColor: Colors.grey[800]!,
-          highlightColor: Colors.grey[700]!,
-          child: Container(
-            width: 70,
-            margin: const EdgeInsets.only(right: 8),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  width: 80,
-                  height: 80,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.grey[800],
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Container(
-                  width: 50,
-                  height: 12,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[800],
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                ),
-              ],
-            ),
+      itemBuilder: (context, index) => Container(
+        width: 80,
+        margin: const EdgeInsets.only(right: 16),
+        child: Shimmer.fromColors(
+          baseColor: Colors.white.withOpacity(0.05),
+          highlightColor: Colors.white.withOpacity(0.1),
+          child: Column(
+            children: [
+              Container(
+                width: 72,
+                height: 72,
+                decoration: const BoxDecoration(
+                    color: Colors.white, shape: BoxShape.circle),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                width: 50,
+                height: 10,
+                decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(5)),
+              ),
+            ],
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 
   Widget _buildAddStatusButton() {
     if (widget.isVertical) {
-      return GestureDetector(
+      return InkWell(
         onTap: _openStatusUpload,
+        borderRadius: BorderRadius.circular(20),
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
+          padding: const EdgeInsets.symmetric(vertical: 12),
           child: Row(
             children: [
               Stack(
                 children: [
                   Container(
-                    width: 56,
-                    height: 56,
+                    width: 64,
+                    height: 64,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Colors.grey[900],
-                      border: Border.all(color: Colors.grey[700]!, width: 1),
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.yellow.withOpacity(0.2),
+                          Colors.yellow.withOpacity(0.05),
+                        ],
+                      ),
+                      border: Border.all(
+                          color: Colors.yellow.withOpacity(0.3), width: 1),
                     ),
-                    child: Center(
-                      child:
-                          Icon(Icons.add, size: 24, color: Colors.yellow[600]),
-                    ),
+                    child: const Icon(Icons.add_rounded,
+                        size: 26, color: Colors.yellow),
                   ),
                   Positioned(
                     bottom: 0,
@@ -373,11 +387,9 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget> {
                     child: Container(
                       padding: const EdgeInsets.all(4),
                       decoration: const BoxDecoration(
-                        color: Colors.yellow,
-                        shape: BoxShape.circle,
-                      ),
+                          color: Colors.yellow, shape: BoxShape.circle),
                       child:
-                          const Icon(Icons.add, size: 12, color: Colors.black),
+                          const Icon(Icons.add, size: 14, color: Colors.black),
                     ),
                   ),
                 ],
@@ -386,22 +398,15 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'My Status',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
+                  Text('My Vibes',
+                      style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 17,
+                          fontWeight: FontWeight.w600)),
                   const SizedBox(height: 4),
-                  Text(
-                    'Tap to add status update',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey[500],
-                    ),
-                  ),
+                  Text('Share your moment',
+                      style: GoogleFonts.outfit(
+                          color: Colors.white.withOpacity(0.5), fontSize: 13)),
                 ],
               ),
             ],
@@ -413,7 +418,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget> {
     return GestureDetector(
       onTap: _openStatusUpload,
       child: Container(
-        width: 76,
+        width: 80,
         margin: const EdgeInsets.only(right: 12),
         child: Column(
           children: [
@@ -424,37 +429,42 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget> {
                   height: 72,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Colors.grey[900],
-                    border: Border.all(color: Colors.grey[800]!, width: 1),
+                    color: Colors.white.withOpacity(0.03),
+                    border: Border.all(
+                        color: Colors.white.withOpacity(0.1), width: 1),
                   ),
                   child: Center(
-                    child: Icon(Icons.add, size: 28, color: Colors.yellow[600]),
+                    child: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.yellow.withOpacity(0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.add_rounded,
+                          size: 24, color: Colors.yellow),
+                    ),
                   ),
                 ),
                 Positioned(
                   bottom: 2,
                   right: 2,
                   child: Container(
-                    padding: const EdgeInsets.all(2),
+                    padding: const EdgeInsets.all(3),
                     decoration: const BoxDecoration(
-                      color: Colors.yellow,
-                      shape: BoxShape.circle,
-                    ),
+                        color: Colors.yellow, shape: BoxShape.circle),
                     child: const Icon(Icons.add, size: 14, color: Colors.black),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 6),
-            const Text(
-              'Your Vibes',
-              style: TextStyle(
-                fontSize: 11,
-                color: Colors.white70,
-                fontWeight: FontWeight.w500,
-              ),
-              overflow: TextOverflow.ellipsis,
-            ),
+            const SizedBox(height: 2),
+            Text('Your Vibe',
+                style: GoogleFonts.outfit(
+                  color: Colors.white.withOpacity(0.6),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+                overflow: TextOverflow.ellipsis),
           ],
         ),
       ),
@@ -467,87 +477,34 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget> {
     final name = profile['name'] ?? 'Unknown';
     final profileImageUrl = profile['profile_image_url'];
     final statuses = statusGroup['statuses'] as List;
-    final lastStatus = statuses.first; // Latest status
+    final lastStatus = statuses.first;
     final createdAt = DateTime.parse(lastStatus['created_at']);
-
-    // Simplistic time formatting
-    final now = DateTime.now();
-    final difference = now.difference(createdAt);
-    String timeString = '';
-    if (difference.inMinutes < 60) {
-      timeString = '${difference.inMinutes}m ago';
-    } else if (difference.inHours < 24) {
-      timeString = '${difference.inHours}h ago';
-    } else {
-      timeString = '${difference.inDays}d ago';
-    }
+    final timeString = timeago.format(createdAt, locale: 'en_short');
 
     if (widget.isVertical) {
-      return GestureDetector(
+      return InkWell(
         onTap: () => _openStatusViewer(index),
+        borderRadius: BorderRadius.circular(20),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 8),
           child: Row(
             children: [
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Colors.yellow,
-                    width: 2.5,
-                  ),
-                ),
-                padding: const EdgeInsets.all(3),
-                child: Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.grey[900],
-                  ),
-                  child: ClipOval(
-                    child: profileImageUrl != null
-                        ? CachedNetworkImage(
-                            imageUrl: profileImageUrl,
-                            fit: BoxFit.cover,
-                            placeholder: (context, url) =>
-                                Container(color: Colors.grey[800]),
-                            errorWidget: (context, url, error) =>
-                                const Icon(Icons.person, color: Colors.white54),
-                          )
-                        : Center(
-                            child: Text(
-                              name[0].toUpperCase(),
-                              style: const TextStyle(
-                                  fontSize: 18,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                  ),
-                ),
-              ),
+              _buildAvatarWithRing(profileImageUrl, name, 64),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      isOwn ? 'My Vibes' : name,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
+                    Text(isOwn ? 'My Status' : name,
+                        style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontSize: 17,
+                            fontWeight: FontWeight.w600)),
                     const SizedBox(height: 4),
-                    Text(
-                      timeString,
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.grey[500],
-                      ),
-                    ),
+                    Text(timeString,
+                        style: GoogleFonts.outfit(
+                            color: Colors.white.withOpacity(0.5),
+                            fontSize: 13)),
                   ],
                 ),
               ),
@@ -560,60 +517,66 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget> {
     return GestureDetector(
       onTap: () => _openStatusViewer(index),
       child: Container(
-        width: 76,
+        width: 80,
         margin: const EdgeInsets.only(right: 12),
         child: Column(
           children: [
-            Container(
-              width: 72,
-              height: 72,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: Colors.yellow,
-                  width: 2.5,
+            _buildAvatarWithRing(profileImageUrl, name, 72),
+            const SizedBox(height: 2),
+            Text(isOwn ? 'My Status' : name,
+                style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
                 ),
-              ),
-              padding: const EdgeInsets.all(3),
-              child: Container(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.grey[900],
-                ),
-                child: ClipOval(
-                  child: profileImageUrl != null
-                      ? CachedNetworkImage(
-                          imageUrl: profileImageUrl,
-                          fit: BoxFit.cover,
-                          placeholder: (context, url) =>
-                              Container(color: Colors.grey[800]),
-                          errorWidget: (context, url, error) =>
-                              const Icon(Icons.person, color: Colors.white54),
-                        )
-                      : Center(
-                          child: Text(
-                            name[0].toUpperCase(),
-                            style: const TextStyle(
-                                fontSize: 22,
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              isOwn ? 'My Vibes' : name,
-              style: const TextStyle(
-                fontSize: 11,
-                color: Colors.white,
-                fontWeight: FontWeight.w500,
-              ),
-              overflow: TextOverflow.ellipsis,
-              maxLines: 1,
-            ),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAvatarWithRing(String? url, String name, double size) {
+    return Container(
+      width: size,
+      height: size,
+      padding: const EdgeInsets.all(3),
+      decoration: const BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: LinearGradient(
+          colors: [
+            Color(0xFFFFB703),
+            Color(0xFFFB8500),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(2),
+        decoration:
+            const BoxDecoration(color: Colors.black, shape: BoxShape.circle),
+        child: ClipOval(
+          child: url != null
+              ? CachedNetworkImage(
+                  imageUrl: url,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) =>
+                      Container(color: const Color(0xFF1A1A1A)),
+                  errorWidget: (context, url, error) =>
+                      const Icon(Icons.person, color: Colors.white24),
+                )
+              : Container(
+                  color: const Color(0xFF262626),
+                  child: Center(
+                    child: Text(name[0].toUpperCase(),
+                        style: GoogleFonts.outfit(
+                            fontSize: size * 0.4,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold)),
+                  ),
+                ),
         ),
       ),
     );
@@ -625,6 +588,7 @@ class StatusViewerWrapper extends StatefulWidget {
   final int initialGroupIndex;
   final String currentUserId;
   final String currentProfileId;
+  final bool isFromGroup;
 
   const StatusViewerWrapper({
     super.key,
@@ -632,6 +596,7 @@ class StatusViewerWrapper extends StatefulWidget {
     required this.initialGroupIndex,
     required this.currentUserId,
     required this.currentProfileId,
+    this.isFromGroup = false,
   });
 
   @override
@@ -666,10 +631,14 @@ class _StatusViewerWrapperState extends State<StatusViewerWrapper> {
         if (firstStatus['media_type'] == 'image') {
           precacheImage(
               CachedNetworkImageProvider(firstStatus['media_url']), context);
-        } else if (firstStatus['media_type'] == 'video' && !kIsWeb) {
-          // Video pre-loading is complex, but we can at least warm up the URL
-          // No direct way to preload multiple controllers easily without memory issues,
-          // so we stick to image pre-caching for now as it's the most impactful.
+        } else if (firstStatus['media_type'] == 'video') {
+          // Warm up the video by initializing it in background
+          final controller = VideoPlayerController.networkUrl(
+              Uri.parse(firstStatus['media_url']));
+          controller.initialize().then((_) {
+            // Once initialized, it's in the underlying OS cache for this URL
+            controller.dispose();
+          });
         }
       }
     } catch (e) {
@@ -945,6 +914,22 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
           debugPrint('Error preloading next video: $e');
           _isPreloadedVideoReady = false;
         }
+      } else if (nextStatus['media_type'] == 'image') {
+        precacheImage(
+          CachedNetworkImageProvider(nextStatus['media_url']),
+          context,
+        );
+      }
+    }
+
+    // Also precache the 2nd next image if possible for even faster transitions
+    if (_currentIndex + 2 < statuses.length) {
+      final nextNextStatus = statuses[_currentIndex + 2];
+      if (nextNextStatus['media_type'] == 'image') {
+        precacheImage(
+          CachedNetworkImageProvider(nextNextStatus['media_url']),
+          context,
+        );
       }
     }
   }
@@ -1756,10 +1741,14 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
         fit: BoxFit.contain,
         width: double.infinity,
         height: double.infinity,
-        placeholder: (context, url) => const Center(
-          child: CircularProgressIndicator(
-            color: Colors.white,
-            strokeWidth: 2,
+        memCacheWidth: 1080, // Optimized for status viewing
+        placeholder: (context, url) => Container(
+          color: Colors.black,
+          child: const Center(
+            child: CircularProgressIndicator(
+              color: Colors.white,
+              strokeWidth: 2,
+            ),
           ),
         ),
         errorWidget: (context, url, error) => const Center(
@@ -1918,7 +1907,9 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
   bool _isUploading = false;
   bool _isCompressingImage = false;
   double _uploadProgress = 0.0;
-
+  String? _selectedGroupId;
+  String? _selectedGroupName;
+  VideoPlayerController? _videoPreviewController;
   final supabase = Supabase.instance.client;
   bool _isSharingMode = false;
 
@@ -1937,6 +1928,7 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
   @override
   void dispose() {
     _captionController.dispose();
+    _videoPreviewController?.dispose();
     super.dispose();
   }
 
@@ -1962,10 +1954,33 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
       );
 
       if (video != null) {
+        await _initVideoPreview(video);
         _showCaptionDialog(video, 'video');
       }
     } catch (e) {
       _showErrorSnackBar('Error picking video: $e');
+    }
+  }
+
+  Future<void> _initVideoPreview(XFile file) async {
+    try {
+      if (_videoPreviewController != null) {
+        await _videoPreviewController!.dispose();
+      }
+
+      if (kIsWeb) {
+        _videoPreviewController = VideoPlayerController.network(file.path);
+      } else {
+        _videoPreviewController =
+            VideoPlayerController.file(io.File(file.path));
+      }
+
+      await _videoPreviewController!.initialize();
+      await _videoPreviewController!.setLooping(true);
+      await _videoPreviewController!.play();
+      setState(() {});
+    } catch (e) {
+      debugPrint('Error initializing video preview: $e');
     }
   }
 
@@ -2000,11 +2015,21 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
         future: file.readAsBytes(),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            return mediaType == 'image'
-                ? Image.memory(snapshot.data as Uint8List, fit: BoxFit.contain)
-                : const Center(
-                    child: Icon(Icons.video_library,
-                        size: 100, color: Colors.white24));
+            if (mediaType == 'image') {
+              return Image.memory(snapshot.data as Uint8List,
+                  fit: BoxFit.contain);
+            } else {
+              if (_videoPreviewController != null &&
+                  _videoPreviewController!.value.isInitialized) {
+                return Center(
+                  child: AspectRatio(
+                    aspectRatio: _videoPreviewController!.value.aspectRatio,
+                    child: VideoPlayer(_videoPreviewController!),
+                  ),
+                );
+              }
+              return const Center(child: CircularProgressIndicator());
+            }
           }
           return const Center(child: CircularProgressIndicator());
         },
@@ -2071,24 +2096,79 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
           ),
         ),
         Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+          child: InkWell(
+            onTap: _showGroupSelection,
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: _selectedGroupId != null
+                      ? Colors.yellow.withOpacity(0.5)
+                      : Colors.white10,
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.group_add_rounded,
+                    size: 16,
+                    color: _selectedGroupId != null
+                        ? Colors.yellow
+                        : Colors.white60,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    _selectedGroupName ?? 'Mention a Group',
+                    style: TextStyle(
+                      color: _selectedGroupId != null
+                          ? Colors.yellow
+                          : Colors.white60,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  if (_selectedGroupId != null) ...[
+                    const SizedBox(width: 8),
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _selectedGroupId = null;
+                          _selectedGroupName = null;
+                        });
+                      },
+                      child:
+                          const Icon(Icons.close, size: 14, color: Colors.red),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ),
+        Padding(
           padding: const EdgeInsets.all(20.0),
           child: Row(
             children: [
-              // Hide caption input if it is purely text status, as the text IS the status
               if (widget.sharedContentType != 'text')
                 Expanded(
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1),
+                      color: Colors.white.withOpacity(0.08),
                       borderRadius: BorderRadius.circular(30),
+                      border: Border.all(color: Colors.white12),
                     ),
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: TextField(
                       controller: _captionController,
-                      style: const TextStyle(color: Colors.white),
+                      style: GoogleFonts.inter(color: Colors.white),
                       decoration: const InputDecoration(
-                        hintText: 'Add a caption...',
-                        hintStyle: TextStyle(color: Colors.white38),
+                        hintText: 'Add a vibe caption...',
+                        hintStyle:
+                            TextStyle(color: Colors.white38, fontSize: 14),
                         border: InputBorder.none,
                       ),
                     ),
@@ -2097,7 +2177,7 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
               else
                 const Spacer(),
               const SizedBox(width: 12),
-              GestureDetector(
+              InkWell(
                 onTap: () {
                   if (file != null) {
                     Navigator.pop(context);
@@ -2110,7 +2190,8 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
                   padding: const EdgeInsets.all(16),
                   decoration: const BoxDecoration(
                       color: Colors.yellow, shape: BoxShape.circle),
-                  child: const Icon(Icons.send, color: Colors.black, size: 24),
+                  child: const Icon(Icons.send_rounded,
+                      color: Colors.black, size: 24),
                 ),
               ),
             ],
@@ -2193,6 +2274,123 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
     }
   }
 
+  Future<void> _showGroupSelection() async {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.grey[900],
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(builder: (context, setModalState) {
+          return Container(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Select Group to Mention',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close, color: Colors.white),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: FutureBuilder(
+                    future: supabase.rpc('get_my_groups_v2', params: {
+                      'p_user_id': widget.userId,
+                    }),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      if (snapshot.hasError) {
+                        // Fallback to manual query if RPC fails
+                        return FutureBuilder(
+                          future: supabase.from('group_members').select('''
+                            group_id,
+                            groups!inner (
+                              id,
+                              name,
+                              group_image_url
+                            )
+                          ''').eq('user_id', widget.userId),
+                          builder: (context, innerSnapshot) {
+                            if (innerSnapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return const Center(
+                                  child: CircularProgressIndicator());
+                            }
+                            final data = innerSnapshot.data as List?;
+                            if (data == null || data.isEmpty) {
+                              return const Center(
+                                  child: Text('No groups found',
+                                      style: TextStyle(color: Colors.white70)));
+                            }
+                            return _buildGroupList(data, setModalState);
+                          },
+                        );
+                      }
+                      final data = snapshot.data as List?;
+                      if (data == null || data.isEmpty) {
+                        return const Center(
+                            child: Text('No groups found',
+                                style: TextStyle(color: Colors.white70)));
+                      }
+                      return _buildGroupList(data, setModalState);
+                    },
+                  ),
+                ),
+              ],
+            ),
+          );
+        });
+      },
+    );
+  }
+
+  Widget _buildGroupList(List data, StateSetter setModalState) {
+    return ListView.builder(
+      itemCount: data.length,
+      itemBuilder: (context, index) {
+        final item = data[index];
+        final group = item['groups'] ?? item;
+        final groupId = group['id'];
+        final groupName = group['name'] ?? 'Unnamed Group';
+        final groupImg = group['group_image_url'];
+
+        return ListTile(
+          leading: CircleAvatar(
+            backgroundImage: groupImg != null ? NetworkImage(groupImg) : null,
+            child: groupImg == null ? const Icon(Icons.group) : null,
+          ),
+          title: Text(groupName, style: const TextStyle(color: Colors.white)),
+          trailing: _selectedGroupId == groupId
+              ? const Icon(Icons.check_circle, color: Colors.yellow)
+              : null,
+          onTap: () {
+            setState(() {
+              _selectedGroupId = groupId;
+              _selectedGroupName = groupName;
+            });
+            Navigator.pop(context);
+          },
+        );
+      },
+    );
+  }
+
   Future<io.File?> _compressVideoFile(String filePath) async {
     if (kIsWeb) {
       debugPrint('Video compression not supported on web');
@@ -2219,6 +2417,88 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
       debugPrint('Error compressing video: $e');
       return io.File(filePath);
     }
+  }
+
+  Future<Uint8List> _compressImageFile(XFile file) async {
+    final bytes = await file.readAsBytes();
+    return await _compressImage(bytes);
+  }
+
+  Future<io.File?> _compressVideoFile(String path) async {
+    return await _compressVideo(path);
+  }
+
+  void _showGroupSelection() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.grey[900],
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Consumer(
+          builder: (context, ref, child) {
+            final groupsAsync = ref.watch(conversationsProvider);
+            return groupsAsync.when(
+              data: (conversations) {
+                final groups = conversations.where((c) => c.isGroup).toList();
+                if (groups.isEmpty) {
+                  return const Center(
+                      child: Padding(
+                    padding: EdgeInsets.all(24.0),
+                    child: Text('You are not in any groups',
+                        style: TextStyle(color: Colors.grey)),
+                  ));
+                }
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: Text('Mention a Group',
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold)),
+                    ),
+                    Flexible(
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: groups.length,
+                        itemBuilder: (context, index) {
+                          final group = groups[index];
+                          return ListTile(
+                            leading: CircleAvatar(
+                              backgroundImage: group.imageUrl != null
+                                  ? NetworkImage(group.imageUrl!)
+                                  : null,
+                              child: group.imageUrl == null
+                                  ? const Icon(Icons.group)
+                                  : null,
+                            ),
+                            title: Text(group.name,
+                                style: const TextStyle(color: Colors.white)),
+                            onTap: () {
+                              setState(() {
+                                _selectedGroupId = group.id;
+                                _selectedGroupName = group.name;
+                              });
+                              Navigator.pop(context);
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                );
+              },
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, st) => Center(child: Text('Error: $e')),
+            );
+          },
+        );
+      },
+    );
   }
 
   Future<io.File?> _generateVideoThumbnail(String videoPath) async {
@@ -2299,6 +2579,7 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
         'duration': duration,
         'expires_at':
             DateTime.now().add(const Duration(hours: 24)).toIso8601String(),
+        'mentioned_group_id': _selectedGroupId,
       });
 
       setState(() => _uploadProgress = 1.0);
@@ -2360,6 +2641,7 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
         'duration': 5,
         'expires_at':
             DateTime.now().add(const Duration(hours: 24)).toIso8601String(),
+        'mentioned_group_id': _selectedGroupId,
       });
 
       setState(() => _uploadProgress = 1.0);
@@ -2534,11 +2816,12 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
     );
   }
 
-  Widget _buildUploadOption(
-      {required IconData icon,
-      required String label,
-      required Color color,
-      required VoidCallback onTap}) {
+  Widget _buildUploadOption({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(

@@ -80,27 +80,27 @@ class ChatMessages extends _$ChatMessages {
 
   void _startPolling(String groupId) {
     _pollingTimer?.cancel();
-    _pollingTimer = Timer.periodic(const Duration(seconds: 1), (_) async {
+    _pollingTimer = Timer.periodic(const Duration(seconds: 5), (_) async {
       try {
         // Fetch latest messages (Page 0)
         final latestMessages = await _fetchMessages(forceLatest: true);
 
         // Merge with current state to preserve pagination/scroll history
         state.whenData((currentMessages) {
+          if (latestMessages.isEmpty) return;
+
           final Map<String, ChatMessage> combinedMap = {
-            for (var m in currentMessages) m.id: m, // Keep existing (older)
-            for (var m in latestMessages)
-              m.id: m, // Overwrite with fresh (newer)
+            for (var m in currentMessages) m.id: m,
+            for (var m in latestMessages) m.id: m,
           };
 
           final combinedList = combinedMap.values.toList()
             ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
-          // Only update state if different to prevent unnecessary rebuilds
+          // Only update state if content is different
           if (combinedList.length != currentMessages.length ||
-              combinedList.first.id != currentMessages.first.id ||
-              combinedList.first.createdAt != currentMessages.first.createdAt) {
-            state = AsyncData(combinedList);
+              combinedList.first.id != latestMessages.first.id) {
+            state = AsyncValue.data(combinedList);
           }
         });
       } catch (e) {
@@ -145,8 +145,10 @@ class ChatMessages extends _$ChatMessages {
     }
   }
 
-  Future<List<ChatMessage>> _fetchMessages(
-      {bool isInitial = false, bool forceLatest = false}) async {
+  Future<List<ChatMessage>> _fetchMessages({
+    bool isInitial = false,
+    bool forceLatest = false,
+  }) async {
     if (isInitial) {
       _currentPage = 0;
       _hasMoreMessages = true;

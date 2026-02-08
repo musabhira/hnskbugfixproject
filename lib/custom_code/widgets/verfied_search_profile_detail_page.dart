@@ -1,32 +1,24 @@
-// Automatic FlutterFlow imports
-import 'package:pocket_mates_app/custom_code/widgets/event_display_home_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/gallery_profile_search_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
-import 'package:pocket_mates_app/custom_code/widgets/search_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/search_profile_detail_page.dart';
-
-import '/backend/supabase/supabase.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import 'index.dart'; // Imports other custom widgets
-// Imports custom actions
-import 'package:flutter/material.dart';
-// Begin custom widget code
-// DO NOT REMOVE OR MODIFY THE CODE ABOVE!
-
-// Set your widget name, define your parameter, and then add the
-// boilerplate code using the green button on the right!
-// Imports other custom widgets
-
+import 'dart:async';
+import 'package:fluent_ui/fluent_ui.dart' hide Colors, IconButton, Tooltip;
+import 'package:flutter/material.dart' as material;
 import 'package:cached_network_image/cached_network_image.dart';
-
+import 'package:pocket_mates_app/flutter_flow/flutter_flow_util.dart';
 import 'package:share_plus/share_plus.dart';
-
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/services.dart' as flutter;
-
-import 'dart:async';
-import 'package:flutter_staggered_grid_view/src/widgets/masonry_grid_view.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:pocket_mates_app/backend/supabase/supabase.dart';
+import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
+import 'package:pocket_mates_app/custom_code/widgets/search_profile_detail_page.dart'
+    hide ThreadCommentsPage;
+import 'package:pocket_mates_app/custom_code/widgets/gallery_profile_search_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/thread_feed_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/message_list_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/search_page.dart'
+    show FollowButton;
+import 'package:pocket_mates_app/custom_code/widgets/event_display_home_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/message_screen.dart';
 
 class VerfiedSearchProfileDetailPage extends StatefulWidget {
   const VerfiedSearchProfileDetailPage({
@@ -47,7 +39,7 @@ class VerfiedSearchProfileDetailPage extends StatefulWidget {
 
 class _VerfiedSearchProfileDetailPageState
     extends State<VerfiedSearchProfileDetailPage>
-    with SingleTickerProviderStateMixin {
+    with material.SingleTickerProviderStateMixin {
   Map<String, dynamic>? _profileData;
   List<Map<String, dynamic>> _galleryItems = [];
   List<Map<String, dynamic>> _serviceItems = [];
@@ -55,19 +47,16 @@ class _VerfiedSearchProfileDetailPageState
   bool _isLoading = false;
   final _supabase = SupaFlow.client;
   final ScrollController _scrollController = ScrollController();
-  late TabController _tabController;
+  late material.TabController _tabController;
   int _followersCount = 0;
   int _followingCount = 0;
   String _followersCountFormatted = '0';
   String _followingCountFormatted = '0';
   bool _isFollowing = false;
-  bool _isCurrentUser = false;
   String? _currentUserId;
   List<Map<String, dynamic>> userThreads = [];
   bool isLoading = true;
   Map<String, dynamic>? hideData;
-  final List<Map<String, dynamic>> _comments = [];
-  String? _errorMessage;
   bool _isBlocked = false;
   bool _isBlockedByOther = false;
   bool _checkingBlockStatus = true;
@@ -84,11 +73,10 @@ class _VerfiedSearchProfileDetailPageState
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = material.TabController(length: 3, vsync: this);
     _fetchProfileData();
     _checkFollowStatus();
     fetchFollowCounts();
-    _checkIfCurrentUser();
     _getCurrentUser();
     _loadProfilethreadsData();
     fetchHideStatus();
@@ -96,6 +84,12 @@ class _VerfiedSearchProfileDetailPageState
     _initScrollListener();
     _initializeData();
     _checkEventsTable();
+  }
+
+  void safeSetState(VoidCallback fn) {
+    if (mounted) {
+      setState(fn);
+    }
   }
 
   Future<void> _initializeData() async {
@@ -172,13 +166,6 @@ class _VerfiedSearchProfileDetailPageState
         _currentUserId = user.id;
       });
     }
-  }
-
-  void _checkIfCurrentUser() {
-    final currentUserId = _supabase.auth.currentUser?.id;
-    safeSetState(() {
-      _isCurrentUser = currentUserId == widget.userId;
-    });
   }
 
   String formatCount(int count) {
@@ -310,8 +297,9 @@ class _VerfiedSearchProfileDetailPageState
         safeSetState(() {
           isLoading = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading profile: ${e.toString()}')),
+        material.ScaffoldMessenger.of(context).showSnackBar(
+          material.SnackBar(
+              content: Text('Error loading profile: ${e.toString()}')),
         );
       }
     }
@@ -467,8 +455,8 @@ class _VerfiedSearchProfileDetailPageState
   Future<void> toggleFollow() async {
     final currentUserId = _supabase.auth.currentUser?.id;
     if (currentUserId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please log in to follow users')),
+      material.ScaffoldMessenger.of(context).showSnackBar(
+        const material.SnackBar(content: Text('Please log in to follow users')),
       );
       return;
     }
@@ -494,15 +482,15 @@ class _VerfiedSearchProfileDetailPageState
       });
     } catch (e) {
       print('Error fetching profile data: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error updating follow status: $e')),
+      material.ScaffoldMessenger.of(context).showSnackBar(
+        material.SnackBar(content: Text('Error updating follow status: $e')),
       );
     }
   }
 
   void _navigateToMessages() {
     Navigator.of(context).push(
-      MaterialPageRoute(
+      material.MaterialPageRoute(
         builder: (context) => MessageScreen(
           receiverId: widget.userId,
           receiverName: _profileData?['name'] ?? 'User',
@@ -518,9 +506,9 @@ class _VerfiedSearchProfileDetailPageState
 
     return Container(
       margin: const EdgeInsets.only(left: 4),
-      child: Icon(
-        Icons.verified,
-        color: color ?? Colors.blue,
+      child: material.Icon(
+        material.Icons.verified,
+        color: color ?? material.Colors.blue,
         size: 20,
       ),
     );
@@ -541,8 +529,8 @@ class _VerfiedSearchProfileDetailPageState
         subject: title,
       );
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error sharing: $e')),
+      material.ScaffoldMessenger.of(context).showSnackBar(
+        material.SnackBar(content: Text('Error sharing: $e')),
       );
     }
   }
@@ -576,15 +564,16 @@ class _VerfiedSearchProfileDetailPageState
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: Colors.black87,
+        return material.AlertDialog(
+          backgroundColor: material.Colors.black87,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
           titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
           title: const Row(
             children: [
-              Icon(Icons.message, color: Colors.white, size: 24),
+              material.Icon(material.Icons.message,
+                  color: material.Colors.white, size: 24),
               SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -592,7 +581,7 @@ class _VerfiedSearchProfileDetailPageState
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: material.Colors.white,
                   ),
                 ),
               ),
@@ -603,7 +592,7 @@ class _VerfiedSearchProfileDetailPageState
             'Choose how you would like to send a message:',
             style: TextStyle(
               fontSize: 16,
-              color: Colors.white,
+              color: material.Colors.white,
             ),
           ),
           actionsPadding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
@@ -613,33 +602,33 @@ class _VerfiedSearchProfileDetailPageState
               children: [
                 hideData != null && hideData?['is_hidden'] == true
                     ? const SizedBox() // Hide WhatsApp button
-                    : TextButton.icon(
+                    : material.TextButton.icon(
                         onPressed: () {
                           Navigator.of(context).pop();
                           _sendWhatsAppMessage();
                         },
-                        icon: const Icon(Icons.chat,
-                            color: Colors.green, size: 20),
+                        icon: const Icon(material.Icons.chat,
+                            color: material.Colors.green, size: 20),
                         label: const Text(
                           'WhatsApp',
                           style: TextStyle(
-                            color: Colors.green,
+                            color: material.Colors.green,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
-                        style: TextButton.styleFrom(
+                        style: material.TextButton.styleFrom(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 16, vertical: 12),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
-                            side:
-                                const BorderSide(color: Colors.green, width: 1),
+                            side: const BorderSide(
+                                color: material.Colors.green, width: 1),
                           ),
                         ),
                       ),
                 const SizedBox(height: 12),
                 // In-App Message Option
-                ElevatedButton.icon(
+                material.ElevatedButton.icon(
                   onPressed: () async {
                     Navigator.of(context).pop();
                     final isAuthenticated =
@@ -652,11 +641,11 @@ class _VerfiedSearchProfileDetailPageState
                       _navigateToMessages();
                     }
                   },
-                  icon: const Icon(Icons.message, size: 20),
+                  icon: const Icon(material.Icons.message, size: 20),
                   label: const Text('In-App Message'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white10,
-                    foregroundColor: Colors.white,
+                  style: material.ElevatedButton.styleFrom(
+                    backgroundColor: material.Colors.white10,
+                    foregroundColor: material.Colors.white,
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 12),
                     shape: RoundedRectangleBorder(
@@ -723,40 +712,13 @@ class _VerfiedSearchProfileDetailPageState
     return cleaned;
   }
 
-// Alternative version with custom message parameter
-  void _sendWhatsAppMessageWithText(String messageText) async {
-    try {
-      String phoneNumber = _profileData?['phone_no'];
-
-      if (phoneNumber.toString().isEmpty) {
-        _showErrorSnackBar('WhatsApp number not available');
-        return;
-      }
-
-      // Encode the message for URL
-      String encodedMessage = Uri.encodeComponent(messageText);
-
-      // Create WhatsApp URL with message
-      final whatsappUrl = 'https://wa.me/$phoneNumber?text=$encodedMessage';
-      final Uri uri = Uri.parse(whatsappUrl);
-
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      } else {
-        _showErrorSnackBar('WhatsApp is not installed or number is invalid');
-      }
-    } catch (e) {
-      _showErrorSnackBar('Error opening WhatsApp: ${e.toString()}');
-    }
-  }
-
 // Helper method to show error messages
   void _showErrorSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
+    material.ScaffoldMessenger.of(context).showSnackBar(
+      material.SnackBar(
         content: Text(message),
-        backgroundColor: Colors.redAccent,
-        behavior: SnackBarBehavior.floating,
+        backgroundColor: material.Colors.redAccent,
+        behavior: material.SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
     );
@@ -774,14 +736,14 @@ class _VerfiedSearchProfileDetailPageState
         ? Color(int.parse(
             'FF${_profileData!['button_color_code'].substring(1)}',
             radix: 16))
-        : Colors.yellow;
+        : material.Colors.yellow;
   }
 
   Color _getBgColor() {
     return _profileData != null && _profileData!['bg_color_code'] != null
         ? Color(int.parse('FF${_profileData!['bg_color_code'].substring(1)}',
             radix: 16))
-        : Colors.black;
+        : material.Colors.black;
   }
 
   Color _getButtonTextColor() {
@@ -789,14 +751,14 @@ class _VerfiedSearchProfileDetailPageState
         ? Color(int.parse(
             'FF${_profileData!['button_text_color'].substring(1)}',
             radix: 16))
-        : Colors.white;
+        : material.Colors.white;
   }
 
   Color _getBgTextColor() {
     return _profileData != null && _profileData!['bg_text_color'] != null
         ? Color(int.parse('FF${_profileData!['bg_text_color'].substring(1)}',
             radix: 16))
-        : Colors.black;
+        : material.Colors.black;
   }
 
   Widget _buildStatWidget(
@@ -829,10 +791,10 @@ class _VerfiedSearchProfileDetailPageState
   }
 
   void _showAIAssistant(BuildContext context) {
-    showModalBottomSheet(
+    material.showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      backgroundColor: material.Colors.transparent,
       builder: (context) => AIAssistantWidget(
         userId: widget.userId,
         bgColor: _getBgColor(),
@@ -867,8 +829,8 @@ class _VerfiedSearchProfileDetailPageState
         '${WhatsAppShareHelper.baseAppUrl}/verifiedProfile?userid=${widget.userId}';
     // Instagram doesn't support direct text sharing, so copy to clipboard
     flutter.Clipboard.setData(flutter.ClipboardData(text: profileUrl));
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Link copied! Paste in Instagram')),
+    material.ScaffoldMessenger.of(context).showSnackBar(
+      const material.SnackBar(content: Text('Link copied! Paste in Instagram')),
     );
   }
 
@@ -876,8 +838,8 @@ class _VerfiedSearchProfileDetailPageState
     String profileUrl =
         '${WhatsAppShareHelper.baseAppUrl}/verifiedProfile?userid=${widget.userId}';
     flutter.Clipboard.setData(flutter.ClipboardData(text: profileUrl));
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Link copied to clipboard ')),
+    material.ScaffoldMessenger.of(context).showSnackBar(
+      const material.SnackBar(content: Text('Link copied to clipboard ')),
     );
   }
 
@@ -901,11 +863,11 @@ class _VerfiedSearchProfileDetailPageState
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: Colors.grey[900],
+        return material.AlertDialog(
+          backgroundColor: material.Colors.grey[900],
           title: Text(
             _isBlocked ? 'Unblock User' : 'Block User',
-            style: const TextStyle(color: Colors.white),
+            style: const TextStyle(color: material.Colors.white),
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -915,14 +877,14 @@ class _VerfiedSearchProfileDetailPageState
                 _isBlocked
                     ? 'Are you sure you want to unblock ${_profileData!['name'] ?? 'No Name'}?'
                     : 'Are you sure you want to block  ${_profileData!['name'] ?? 'No Name'}? You won\'t be able to send or receive messages.',
-                style: const TextStyle(color: Colors.white70),
+                style: const TextStyle(color: material.Colors.white70),
               ),
               if (_isBlocked && _blockTime != null) ...[
                 const SizedBox(height: 16),
                 Text(
                   'Blocked on: ${_formatBlockTime(_blockTime!)}',
                   style: const TextStyle(
-                    color: Colors.white54,
+                    color: material.Colors.white54,
                     fontSize: 12,
                   ),
                 ),
@@ -930,11 +892,12 @@ class _VerfiedSearchProfileDetailPageState
             ],
           ),
           actions: [
-            TextButton(
+            material.TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+              child: const Text('Cancel',
+                  style: TextStyle(color: material.Colors.grey)),
             ),
-            TextButton(
+            material.TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
                 if (_isBlocked) {
@@ -946,7 +909,8 @@ class _VerfiedSearchProfileDetailPageState
               child: Text(
                 _isBlocked ? 'Unblock' : 'Block',
                 style: TextStyle(
-                  color: _isBlocked ? Colors.green : Colors.red,
+                  color:
+                      _isBlocked ? material.Colors.green : material.Colors.red,
                 ),
               ),
             ),
@@ -968,16 +932,17 @@ class _VerfiedSearchProfileDetailPageState
     Color buttonTextColor = _getButtonTextColor();
     Color bgTextColor = _getBgTextColor();
 
-    return Scaffold(
+    return material.Scaffold(
       backgroundColor: bgColor,
       extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
+      appBar: material.AppBar(
+        backgroundColor: material.Colors.transparent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
+        iconTheme: const IconThemeData(color: material.Colors.white),
         actions: [
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert, color: Colors.white),
+          material.PopupMenuButton<String>(
+            icon: const Icon(material.Icons.more_vert,
+                color: material.Colors.white),
             color: bgColor, // Pass as parameter
             onSelected: (String value) async {
               switch (value) {
@@ -1031,11 +996,11 @@ class _VerfiedSearchProfileDetailPageState
                       contentTitle: _profileData!['name'].toString(),
                       onReportSubmitted: () {
                         Navigator.of(context).pop(); // Go back to previous page
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
+                        material.ScaffoldMessenger.of(context).showSnackBar(
+                          material.SnackBar(
                             content: Text(
                                 'Thank you for your report. We\'ll review it soon.'),
-                            backgroundColor: Colors.green,
+                            backgroundColor: material.Colors.green,
                           ),
                         );
                       },
@@ -1054,11 +1019,11 @@ class _VerfiedSearchProfileDetailPageState
               }
             },
             itemBuilder: (BuildContext context) => [
-              PopupMenuItem<String>(
+              material.PopupMenuItem<String>(
                 value: 'whatsapp',
                 child: Row(
                   children: [
-                    Icon(Icons.message,
+                    Icon(material.Icons.message,
                         color: buttonColor), // Pass as parameter
                     const SizedBox(width: 8),
                     Text('Share to WhatsApp',
@@ -1066,11 +1031,11 @@ class _VerfiedSearchProfileDetailPageState
                   ],
                 ),
               ),
-              PopupMenuItem<String>(
+              material.PopupMenuItem<String>(
                 value: 'instagram',
                 child: Row(
                   children: [
-                    Icon(Icons.camera_alt, color: buttonColor),
+                    Icon(material.Icons.camera_alt, color: buttonColor),
                     const SizedBox(width: 8),
                     Text('Share to Instagram',
                         style: TextStyle(color: bgTextColor)),
@@ -1079,7 +1044,7 @@ class _VerfiedSearchProfileDetailPageState
               ),
               if (_profileData!['insta_link'] != null &&
                   _profileData!['insta_link'].toString().isNotEmpty)
-                PopupMenuItem<String>(
+                material.PopupMenuItem<String>(
                   value: 'insta_profile',
                   child: Row(
                     children: [
@@ -1090,7 +1055,7 @@ class _VerfiedSearchProfileDetailPageState
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Icon(
-                          Icons.person,
+                          material.Icons.person,
                           size: 16,
                           color: buttonTextColor,
                         ),
@@ -1101,60 +1066,66 @@ class _VerfiedSearchProfileDetailPageState
                     ],
                   ),
                 ),
-              PopupMenuItem<String>(
+              material.PopupMenuItem<String>(
                 value: 'share',
                 child: Row(
                   children: [
-                    Icon(Icons.share, color: buttonColor),
+                    Icon(material.Icons.share, color: buttonColor),
                     const SizedBox(width: 8),
                     Text('Share to anywhere',
                         style: TextStyle(color: bgTextColor)),
                   ],
                 ),
               ),
-              PopupMenuItem<String>(
+              material.PopupMenuItem<String>(
                 value: 'copy',
                 child: Row(
                   children: [
-                    Icon(Icons.copy, color: buttonColor),
+                    Icon(material.Icons.copy, color: buttonColor),
                     const SizedBox(width: 8),
                     Text('Copy Link', style: TextStyle(color: bgTextColor)),
                   ],
                 ),
               ),
-              PopupMenuItem<String>(
+              material.PopupMenuItem<String>(
                 value: 'navigate',
                 child: Row(
                   children: [
-                    Icon(Icons.home, color: buttonColor),
+                    Icon(material.Icons.home, color: buttonColor),
                     const SizedBox(width: 8),
                     Text('Home Page', style: TextStyle(color: bgTextColor)),
                   ],
                 ),
               ),
-              PopupMenuItem<String>(
+              material.PopupMenuItem<String>(
                 value: 'report',
                 child: Row(
                   children: [
-                    Icon(Icons.flag, color: buttonColor),
+                    Icon(material.Icons.flag, color: buttonColor),
                     const SizedBox(width: 8),
                     Text('Report', style: TextStyle(color: bgTextColor)),
                   ],
                 ),
               ),
-              PopupMenuItem<String>(
+              material.PopupMenuItem<String>(
                 value: 'block',
                 child: Row(
                   children: [
                     Icon(
-                      _isBlocked ? Icons.person_add : Icons.block,
-                      color: _isBlocked ? Colors.green : Colors.red,
+                      _isBlocked
+                          ? material.Icons.person_add
+                          : material.Icons.block,
+                      color: _isBlocked
+                          ? material.Colors.green
+                          : material.Colors.red,
                     ),
                     const SizedBox(width: 8),
                     Text(
                       _isBlocked ? 'Unblock User' : 'Block User',
                       style: TextStyle(
-                        color: _isBlocked ? Colors.green : Colors.red,
+                        color: _isBlocked
+                            ? material.Colors.green
+                            : material.Colors.red,
                       ),
                     ),
                   ],
@@ -1181,7 +1152,7 @@ class _VerfiedSearchProfileDetailPageState
                   duration: Duration(milliseconds: 2000),
                 )
               : _checkingBlockStatus
-                  ? const Center(child: CircularProgressIndicator())
+                  ? const Center(child: material.CircularProgressIndicator())
                   : _isBlockedByOther
                       ? _buildBlockedByOtherView()
                       : _isBlocked
@@ -1213,7 +1184,7 @@ class _VerfiedSearchProfileDetailPageState
                                         begin: Alignment.topCenter,
                                         end: Alignment.bottomCenter,
                                         colors: [
-                                          Colors.transparent,
+                                          material.Colors.transparent,
                                           bgColor.withOpacity(0.8),
                                           bgColor,
                                         ],
@@ -1261,7 +1232,7 @@ class _VerfiedSearchProfileDetailPageState
                                                     BorderRadius.circular(20),
                                                 boxShadow: [
                                                   BoxShadow(
-                                                    color: Colors.black
+                                                    color: material.Colors.black
                                                         .withOpacity(0.1),
                                                     blurRadius: 15,
                                                     spreadRadius: 2,
@@ -1297,7 +1268,8 @@ class _VerfiedSearchProfileDetailPageState
                                                             ),
                                                             boxShadow: [
                                                               BoxShadow(
-                                                                color: Colors
+                                                                color: material
+                                                                    .Colors
                                                                     .black
                                                                     .withOpacity(
                                                                         0.1),
@@ -1324,8 +1296,10 @@ class _VerfiedSearchProfileDetailPageState
                                                                       fit: BoxFit
                                                                           .cover,
                                                                     )
-                                                                  : Icon(
-                                                                      Icons
+                                                                  : material
+                                                                      .Icon(
+                                                                      material
+                                                                          .Icons
                                                                           .person,
                                                                       size: 40,
                                                                       color: bgTextColor
@@ -1407,8 +1381,10 @@ class _VerfiedSearchProfileDetailPageState
                                                                             3.0),
                                                                     child: Row(
                                                                       children: [
-                                                                        Icon(
-                                                                          Icons
+                                                                        material
+                                                                            .Icon(
+                                                                          material
+                                                                              .Icons
                                                                               .location_on,
                                                                           size:
                                                                               14,
@@ -1457,11 +1433,11 @@ class _VerfiedSearchProfileDetailPageState
                                                         ),
                                                         const SizedBox(
                                                             width: 5),
-                                                        Icon(
+                                                        material.Icon(
                                                           _isExpanded
-                                                              ? Icons
+                                                              ? material.Icons
                                                                   .arrow_drop_up
-                                                              : Icons
+                                                              : material.Icons
                                                                   .arrow_forward_ios,
                                                           color: bgTextColor,
                                                           size: 16,
@@ -1490,7 +1466,8 @@ class _VerfiedSearchProfileDetailPageState
                                                                   CrossAxisAlignment
                                                                       .start,
                                                               children: [
-                                                                Divider(
+                                                                material
+                                                                    .Divider(
                                                                   color: buttonColor
                                                                       .withOpacity(
                                                                           0.2),
@@ -1537,8 +1514,10 @@ class _VerfiedSearchProfileDetailPageState
                                                                     null)
                                                                   Row(
                                                                     children: [
-                                                                      Icon(
-                                                                        Icons
+                                                                      material
+                                                                          .Icon(
+                                                                        material
+                                                                            .Icons
                                                                             .link,
                                                                         size:
                                                                             16,
@@ -1638,7 +1617,8 @@ class _VerfiedSearchProfileDetailPageState
                                                                             20),
                                                                     boxShadow: [
                                                                       BoxShadow(
-                                                                        color: Colors
+                                                                        color: material
+                                                                            .Colors
                                                                             .black
                                                                             .withOpacity(0.08),
                                                                         blurRadius:
@@ -1660,17 +1640,17 @@ class _VerfiedSearchProfileDetailPageState
                                                                     children: [
                                                                       // Message Button
                                                                       Expanded(
-                                                                        child: ElevatedButton
+                                                                        child: material.ElevatedButton
                                                                             .icon(
                                                                           onPressed:
                                                                               _showMessageOptions,
                                                                           icon: const Icon(
-                                                                              Icons.message,
+                                                                              material.Icons.message,
                                                                               size: 18),
                                                                           label:
                                                                               const Text('Message'),
                                                                           style:
-                                                                              ElevatedButton.styleFrom(
+                                                                              material.ElevatedButton.styleFrom(
                                                                             backgroundColor:
                                                                                 buttonColor,
                                                                             foregroundColor:
@@ -1745,39 +1725,42 @@ class _VerfiedSearchProfileDetailPageState
                                     SliverPersistentHeader(
                                       pinned: true,
                                       delegate: SliverAppBarDelegate(
-                                        TabBar(
+                                        material.TabBar(
                                           controller: _tabController,
                                           labelColor: buttonColor,
                                           unselectedLabelColor:
                                               bgTextColor.withOpacity(0.7),
                                           indicatorColor: buttonColor,
                                           indicatorWeight: 3,
-                                          indicatorSize:
-                                              TabBarIndicatorSize.label,
+                                          indicatorSize: material
+                                              .TabBarIndicatorSize.label,
                                           labelStyle: const TextStyle(
                                             fontWeight: FontWeight.bold,
                                             fontSize: 16,
                                           ),
                                           tabs: const [
-                                            Tab(
-                                                icon: Icon(Icons
+                                            material.Tab(
+                                                icon: material.Icon(material
+                                                    .Icons
                                                     .photo_library_rounded)),
-                                            Tab(
-                                                icon: Icon(Icons
+                                            material.Tab(
+                                                icon: material.Icon(material
+                                                    .Icons
                                                     .miscellaneous_services)),
-                                            Tab(
-                                                icon: Icon(
-                                                    Icons.chat_bubble_outline)),
+                                            material.Tab(
+                                                icon: material.Icon(material
+                                                    .Icons
+                                                    .chat_bubble_outline)),
                                           ],
                                         ),
                                         color: bgColor,
                                       ),
                                     ),
                                     SliverFillRemaining(
-                                      child: TabBarView(
+                                      child: material.TabBarView(
                                         controller: _tabController,
                                         children: [
-                                          // Gallery Tab
+                                          // Gallery material.Tab
                                           _galleryItems.isEmpty
                                               ? Center(
                                                   child: Text('no gallery',
@@ -1788,11 +1771,6 @@ class _VerfiedSearchProfileDetailPageState
                                                   builder:
                                                       (context, constraints) {
                                                     // Dynamically calculate number of columns based on width
-                                                    int crossAxisCount =
-                                                        _calculateColumnCount(
-                                                            constraints
-                                                                .maxWidth);
-
                                                     return Column(
                                                       children: [
                                                         // Category Filter Chips
@@ -1833,8 +1811,8 @@ class _VerfiedSearchProfileDetailPageState
                                                                           .only(
                                                                           right:
                                                                               8.0),
-                                                                  child:
-                                                                      FilterChip(
+                                                                  child: material
+                                                                      .FilterChip(
                                                                     label: Text(
                                                                       category,
                                                                       style:
@@ -1857,7 +1835,8 @@ class _VerfiedSearchProfileDetailPageState
                                                                           category);
                                                                     },
                                                                     backgroundColor: isSelected
-                                                                        ? Colors
+                                                                        ? material
+                                                                            .Colors
                                                                             .transparent
                                                                         : bgColor,
                                                                     selectedColor: _profileData?['button_color_code'] !=
@@ -1865,14 +1844,15 @@ class _VerfiedSearchProfileDetailPageState
                                                                         ? Color(int.parse(_profileData!['button_color_code'].replaceAll(
                                                                             '#',
                                                                             '0xFF')))
-                                                                        : Colors
+                                                                        : material
+                                                                            .Colors
                                                                             .blue,
                                                                     side:
                                                                         BorderSide(
                                                                       color: isSelected
                                                                           ? (_profileData?['button_color_code'] != null
                                                                               ? Color(int.parse(_profileData!['button_color_code'].replaceAll('#', '0xFF')))
-                                                                              : Colors.blue)
+                                                                              : material.Colors.blue)
                                                                           : bgColor,
                                                                       width: 0,
                                                                     ),
@@ -1934,7 +1914,7 @@ class _VerfiedSearchProfileDetailPageState
                                                                               onTap: () {
                                                                                 Navigator.push(
                                                                                   context,
-                                                                                  MaterialPageRoute(
+                                                                                  material.MaterialPageRoute(
                                                                                     builder: (context) => GalleryDetailsprofilePage(
                                                                                       userid: widget.userId,
                                                                                       item: item,
@@ -1954,7 +1934,7 @@ class _VerfiedSearchProfileDetailPageState
                                                                                   borderRadius: BorderRadius.circular(12),
                                                                                   boxShadow: [
                                                                                     BoxShadow(
-                                                                                      color: Colors.black.withOpacity(0.15),
+                                                                                      color: material.Colors.black.withOpacity(0.15),
                                                                                       blurRadius: 8,
                                                                                       spreadRadius: 1,
                                                                                       offset: const Offset(0, 2),
@@ -1986,10 +1966,10 @@ class _VerfiedSearchProfileDetailPageState
                                                                                               begin: Alignment.topCenter,
                                                                                               end: Alignment.bottomCenter,
                                                                                               colors: [
-                                                                                                Colors.transparent,
-                                                                                                Colors.transparent,
-                                                                                                Colors.black.withOpacity(0.1),
-                                                                                                Colors.black.withOpacity(0.7),
+                                                                                                material.Colors.transparent,
+                                                                                                material.Colors.transparent,
+                                                                                                material.Colors.black.withOpacity(0.1),
+                                                                                                material.Colors.black.withOpacity(0.7),
                                                                                               ],
                                                                                               stops: const [
                                                                                                 0.0,
@@ -2016,13 +1996,13 @@ class _VerfiedSearchProfileDetailPageState
                                                                                                 Container(
                                                                                                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                                                                                   decoration: BoxDecoration(
-                                                                                                    color: Colors.black.withOpacity(0.3),
+                                                                                                    color: material.Colors.black.withOpacity(0.3),
                                                                                                     borderRadius: BorderRadius.circular(6),
                                                                                                   ),
                                                                                                   child: Text(
                                                                                                     item['gallery_title'],
                                                                                                     style: const TextStyle(
-                                                                                                      color: Colors.white,
+                                                                                                      color: material.Colors.white,
                                                                                                       fontWeight: FontWeight.bold,
                                                                                                       fontSize: 13,
                                                                                                     ),
@@ -2035,13 +2015,13 @@ class _VerfiedSearchProfileDetailPageState
                                                                                                 Container(
                                                                                                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                                                                                   decoration: BoxDecoration(
-                                                                                                    color: Colors.green.withOpacity(0.8),
+                                                                                                    color: material.Colors.green.withOpacity(0.8),
                                                                                                     borderRadius: BorderRadius.circular(6),
                                                                                                   ),
                                                                                                   child: Text(
                                                                                                     '₹${item['gallery_price']}',
                                                                                                     style: const TextStyle(
-                                                                                                      color: Colors.white,
+                                                                                                      color: material.Colors.white,
                                                                                                       fontSize: 12,
                                                                                                       fontWeight: FontWeight.w600,
                                                                                                     ),
@@ -2081,7 +2061,7 @@ class _VerfiedSearchProfileDetailPageState
                                                       (context, index) {
                                                     final service =
                                                         _serviceItems[index];
-                                                    return Card(
+                                                    return material.Card(
                                                       color: buttonColor,
                                                       margin:
                                                           const EdgeInsets.only(
@@ -2121,7 +2101,7 @@ class _VerfiedSearchProfileDetailPageState
                                                                             .bold,
                                                                   ),
                                                                 ),
-                                                                Chip(
+                                                                material.Chip(
                                                                   label: Text(
                                                                     '\₹${service['service_price'] ?? 0}',
                                                                     style:
@@ -2190,19 +2170,22 @@ class _VerfiedSearchProfileDetailPageState
                                                             Row(
                                                               children: [
                                                                 Expanded(
-                                                                  child:
-                                                                      ElevatedButton
-                                                                          .icon(
+                                                                  child: material
+                                                                          .ElevatedButton
+                                                                      .icon(
                                                                     onPressed:
                                                                         _navigateToMessages,
-                                                                    icon: const Icon(
-                                                                        Icons
+                                                                    icon: const material
+                                                                        .Icon(
+                                                                        material
+                                                                            .Icons
                                                                             .message,
                                                                         size:
                                                                             18),
                                                                     label: const Text(
                                                                         'Message'),
-                                                                    style: ElevatedButton
+                                                                    style: material
+                                                                            .ElevatedButton
                                                                         .styleFrom(
                                                                       backgroundColor:
                                                                           buttonTextColor,
@@ -2260,7 +2243,7 @@ class _VerfiedSearchProfileDetailPageState
                                                         formattedLikes =
                                                         _formatCount(
                                                             totalLikes);
-                                                    return Card(
+                                                    return material.Card(
                                                       color: buttonColor,
                                                       margin: const EdgeInsets
                                                           .symmetric(
@@ -2307,11 +2290,12 @@ class _VerfiedSearchProfileDetailPageState
                                                                   MainAxisAlignment
                                                                       .spaceBetween,
                                                               children: [
-                                                                InkWell(
+                                                                material
+                                                                    .InkWell(
                                                                   onTap: () => {
                                                                     Navigator.push(
                                                                         context,
-                                                                        MaterialPageRoute(
+                                                                        material.MaterialPageRoute(
                                                                             builder: (context) => ThreadCommentsPage(
                                                                                   threadContent: thread['content'],
                                                                                   threadId: thread['id'],
@@ -2319,8 +2303,9 @@ class _VerfiedSearchProfileDetailPageState
                                                                   },
                                                                   child: Row(
                                                                     children: [
-                                                                      Icon(
-                                                                          Icons
+                                                                      material.Icon(
+                                                                          material
+                                                                              .Icons
                                                                               .favorite,
                                                                           size:
                                                                               16,
@@ -2336,11 +2321,12 @@ class _VerfiedSearchProfileDetailPageState
                                                                     ],
                                                                   ),
                                                                 ),
-                                                                InkWell(
+                                                                material
+                                                                    .InkWell(
                                                                   onTap: () => {
                                                                     Navigator.push(
                                                                         context,
-                                                                        MaterialPageRoute(
+                                                                        material.MaterialPageRoute(
                                                                             builder: (context) => ThreadCommentsPage(
                                                                                   threadContent: thread['content'],
                                                                                   threadId: thread['id'],
@@ -2348,8 +2334,9 @@ class _VerfiedSearchProfileDetailPageState
                                                                   },
                                                                   child: Row(
                                                                     children: [
-                                                                      Icon(
-                                                                          Icons
+                                                                      material.Icon(
+                                                                          material
+                                                                              .Icons
                                                                               .comment,
                                                                           size:
                                                                               16,
@@ -2391,10 +2378,13 @@ class _VerfiedSearchProfileDetailPageState
                                         children: [
                                           Expanded(
                                             child: Container(
-                                              margin: const EdgeInsets.symmetric(
-                                                  horizontal: 3),
-                                              padding: const EdgeInsets.symmetric(
-                                                  horizontal: 8, vertical: 8),
+                                              margin:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 3),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 8,
+                                                      vertical: 8),
                                               decoration: BoxDecoration(
                                                 gradient: LinearGradient(
                                                   colors: [
@@ -2414,14 +2404,14 @@ class _VerfiedSearchProfileDetailPageState
                                                 ),
                                                 boxShadow: [
                                                   BoxShadow(
-                                                    color: Colors.black
+                                                    color: material.Colors.black
                                                         .withOpacity(0.1),
                                                     blurRadius: 20,
                                                     spreadRadius: 0,
                                                     offset: const Offset(0, 8),
                                                   ),
                                                   BoxShadow(
-                                                    color: Colors.black
+                                                    color: material.Colors.black
                                                         .withOpacity(0.05),
                                                     blurRadius: 6,
                                                     spreadRadius: 0,
@@ -2439,13 +2429,15 @@ class _VerfiedSearchProfileDetailPageState
                                                   _buildNavButton(
                                                     color1:
                                                         _getButtonTextColor(),
-                                                    icon: Icons.search_rounded,
+                                                    icon: material
+                                                        .Icons.search_rounded,
                                                     label: 'Search',
                                                     color: _getButtonColor(),
                                                     onTap: () {
                                                       Navigator.push(
                                                         context,
-                                                        MaterialPageRoute(
+                                                        material
+                                                            .MaterialPageRoute(
                                                           builder: (context) =>
                                                               GalleryProfileSearchPage(
                                                                   userid: widget
@@ -2456,13 +2448,14 @@ class _VerfiedSearchProfileDetailPageState
                                                   ),
 
                                                   // AI Assistant Button (Center - Featured)
-                                                  InkWell(
+                                                  material.InkWell(
                                                     onTap: () =>
                                                         _showAIAssistant(
                                                             context),
                                                     child: Container(
                                                       padding:
-                                                          const EdgeInsets.all(4),
+                                                          const EdgeInsets.all(
+                                                              4),
                                                       decoration: BoxDecoration(
                                                         gradient:
                                                             LinearGradient(
@@ -2492,12 +2485,13 @@ class _VerfiedSearchProfileDetailPageState
                                                                         0.8),
                                                             blurRadius: 8,
                                                             offset:
-                                                                const Offset(0, 4),
+                                                                const Offset(
+                                                                    0, 4),
                                                           ),
                                                         ],
                                                       ),
-                                                      child: Icon(
-                                                        Icons
+                                                      child: material.Icon(
+                                                        material.Icons
                                                             .smart_toy_rounded, // AI assistant icon
                                                         color:
                                                             _getButtonColor(),
@@ -2510,7 +2504,7 @@ class _VerfiedSearchProfileDetailPageState
                                                   // _buildNavButton(
                                                   //   color1:
                                                   //       _getButtonTextColor(),
-                                                  //   icon: Icons.person_rounded,
+                                                  //   icon: material.Icons.person_rounded,
                                                   //   label: 'Profile',
                                                   //   color: _getButtonColor(),
                                                   //   onTap: () async {
@@ -2597,14 +2591,14 @@ class _VerfiedSearchProfileDetailPageState
                                               ),
                                               boxShadow: [
                                                 BoxShadow(
-                                                  color: Colors.black
+                                                  color: material.Colors.black
                                                       .withOpacity(0.1),
                                                   blurRadius: 20,
                                                   spreadRadius: 0,
                                                   offset: const Offset(0, 8),
                                                 ),
                                                 BoxShadow(
-                                                  color: Colors.black
+                                                  color: material.Colors.black
                                                       .withOpacity(0.05),
                                                   blurRadius: 6,
                                                   spreadRadius: 0,
@@ -2617,7 +2611,7 @@ class _VerfiedSearchProfileDetailPageState
                                                   MainAxisAlignment.spaceEvenly,
                                               mainAxisSize: MainAxisSize.min,
                                               children: [
-                                                InkWell(
+                                                material.InkWell(
                                                   onTap: () async {
                                                     final isAuthenticated =
                                                         await AuthAlertBox
@@ -2629,7 +2623,8 @@ class _VerfiedSearchProfileDetailPageState
                                                     if (isAuthenticated) {
                                                       Navigator.push(
                                                         context,
-                                                        MaterialPageRoute(
+                                                        material
+                                                            .MaterialPageRoute(
                                                           builder: (context) =>
                                                               const MessageListPage(),
                                                         ),
@@ -2662,12 +2657,13 @@ class _VerfiedSearchProfileDetailPageState
                                                                   .withOpacity(
                                                                       0.8),
                                                           blurRadius: 8,
-                                                          offset: const Offset(0, 4),
+                                                          offset: const Offset(
+                                                              0, 4),
                                                         ),
                                                       ],
                                                     ),
-                                                    child: Icon(
-                                                      Icons
+                                                    child: material.Icon(
+                                                      material.Icons
                                                           .message_rounded, // AI assistant icon
                                                       color: _getButtonColor(),
                                                       size: 18,
@@ -2690,9 +2686,9 @@ class _VerfiedSearchProfileDetailPageState
                                     left: 0,
                                     right: 0,
                                     child: Center(
-                                      child: Material(
-                                        color: Colors.transparent,
-                                        child: InkWell(
+                                      child: material.Material(
+                                        color: material.Colors.transparent,
+                                        child: material.InkWell(
                                           onTap: _scrollToTop,
                                           borderRadius:
                                               BorderRadius.circular(25),
@@ -2721,7 +2717,8 @@ class _VerfiedSearchProfileDetailPageState
                                                               8),
                                                       boxShadow: [
                                                         BoxShadow(
-                                                          color: Colors.black
+                                                          color: material
+                                                              .Colors.black
                                                               // ignore: deprecated_member_use
                                                               .withOpacity(0.2),
                                                           blurRadius: 8,
@@ -2743,8 +2740,8 @@ class _VerfiedSearchProfileDetailPageState
                                                       mainAxisSize:
                                                           MainAxisSize.min,
                                                       children: [
-                                                        Icon(
-                                                          Icons
+                                                        material.Icon(
+                                                          material.Icons
                                                               .keyboard_arrow_up,
                                                           color:
                                                               buttonTextColor,
@@ -2780,7 +2777,7 @@ class _VerfiedSearchProfileDetailPageState
       //         ? null // Hide FAB when blocked
       //         : FloatingActionButton.extended(
       //             onPressed: () => _showAIAssistant(context),
-      //             icon: const Icon(Icons.smart_toy_rounded),
+      //             icon: const Icon(material.Icons.smart_toy_rounded),
       //             label: const Text('Ask AI'),
       //             backgroundColor: _getButtonColor(),
       //             foregroundColor: _getButtonTextColor(),
@@ -2803,7 +2800,7 @@ class _VerfiedSearchProfileDetailPageState
           color: color1.withOpacity(0.7),
           borderRadius: BorderRadius.circular(8),
         ),
-        child: Icon(
+        child: material.Icon(
           icon,
           color: color,
           size: 17,
@@ -2817,10 +2814,10 @@ class _VerfiedSearchProfileDetailPageState
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
-            Icons.block,
+          const material.Icon(
+            material.Icons.block,
             size: 80,
-            color: Colors.red,
+            color: material.Colors.red,
           ),
           const SizedBox(height: 16),
           const Text(
@@ -2828,7 +2825,7 @@ class _VerfiedSearchProfileDetailPageState
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: material.Colors.white,
             ),
           ),
           const SizedBox(height: 8),
@@ -2836,7 +2833,7 @@ class _VerfiedSearchProfileDetailPageState
             'You have blocked ',
             style: TextStyle(
               fontSize: 16,
-              color: Colors.white70,
+              color: material.Colors.white70,
             ),
           ),
           if (_blockTime != null) ...[
@@ -2845,7 +2842,7 @@ class _VerfiedSearchProfileDetailPageState
               'Blocked ${_formatBlockTime(_blockTime!)}',
               style: const TextStyle(
                 fontSize: 14,
-                color: Colors.white54,
+                color: material.Colors.white54,
               ),
             ),
           ],
@@ -2854,14 +2851,14 @@ class _VerfiedSearchProfileDetailPageState
             'Messages and calls are disabled',
             style: TextStyle(
               fontSize: 14,
-              color: Colors.white54,
+              color: material.Colors.white54,
             ),
           ),
           const SizedBox(height: 24),
-          ElevatedButton(
+          material.ElevatedButton(
             onPressed: _unblockUser,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
+            style: material.ElevatedButton.styleFrom(
+              backgroundColor: material.Colors.green,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(24),
@@ -2870,7 +2867,7 @@ class _VerfiedSearchProfileDetailPageState
             child: const Text(
               'Unblock User',
               style: TextStyle(
-                color: Colors.white,
+                color: material.Colors.white,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -2909,11 +2906,11 @@ class _VerfiedSearchProfileDetailPageState
   }
 
   void _showSuccessSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
+    material.ScaffoldMessenger.of(context).showSnackBar(
+      material.SnackBar(
         content: Text(message),
-        backgroundColor: Colors.green,
-        behavior: SnackBarBehavior.floating,
+        backgroundColor: material.Colors.green,
+        behavior: material.SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         duration: const Duration(seconds: 3),
       ),
@@ -2925,10 +2922,10 @@ class _VerfiedSearchProfileDetailPageState
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
-            Icons.block,
+          const material.Icon(
+            material.Icons.block,
             size: 80,
-            color: Colors.red,
+            color: material.Colors.red,
           ),
           const SizedBox(height: 16),
           const Text(
@@ -2936,7 +2933,7 @@ class _VerfiedSearchProfileDetailPageState
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: material.Colors.white,
             ),
           ),
           const SizedBox(height: 8),
@@ -2944,7 +2941,7 @@ class _VerfiedSearchProfileDetailPageState
             'This user has blocked you',
             style: TextStyle(
               fontSize: 16,
-              color: Colors.white70,
+              color: material.Colors.white70,
             ),
           ),
           if (_blockedByOtherTime != null) ...[
@@ -2953,7 +2950,7 @@ class _VerfiedSearchProfileDetailPageState
               'Blocked ${_formatBlockTime(_blockedByOtherTime!)}',
               style: const TextStyle(
                 fontSize: 14,
-                color: Colors.white54,
+                color: material.Colors.white54,
               ),
             ),
           ],
@@ -2962,7 +2959,7 @@ class _VerfiedSearchProfileDetailPageState
             'You cannot send or receive messages',
             style: TextStyle(
               fontSize: 14,
-              color: Colors.white54,
+              color: material.Colors.white54,
             ),
           ),
           const SizedBox(height: 8),
@@ -2970,7 +2967,7 @@ class _VerfiedSearchProfileDetailPageState
             'Phone calls are also disabled',
             style: TextStyle(
               fontSize: 14,
-              color: Colors.white54,
+              color: material.Colors.white54,
             ),
           ),
         ],
@@ -2995,7 +2992,7 @@ class _VerfiedSearchProfileDetailPageState
 }
 
 class SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
-  final TabBar tabBar;
+  final material.TabBar tabBar;
   final Color color;
 
   SliverAppBarDelegate(this.tabBar, {required this.color});
@@ -3095,6 +3092,12 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
     "What are their prices?",
     "Show me their best work",
   ];
+
+  void safeSetState(VoidCallback fn) {
+    if (mounted) {
+      setState(fn);
+    }
+  }
 
   @override
   void initState() {
@@ -3562,7 +3565,7 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
             ? Color(int.parse(
                 'FF${_profileData!['button_color_code'].substring(1)}',
                 radix: 16))
-            : Colors.yellow);
+            : material.Colors.yellow);
   }
 
   Color _getBgColor() {
@@ -3571,7 +3574,7 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
             ? Color(int.parse(
                 'FF${_profileData!['bg_color_code'].substring(1)}',
                 radix: 16))
-            : Colors.black);
+            : material.Colors.black);
   }
 
   Color _getTextColor() {
@@ -3580,7 +3583,7 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
             ? Color(int.parse(
                 'FF${_profileData!['bg_text_color'].substring(1)}',
                 radix: 16))
-            : Colors.white);
+            : material.Colors.white);
   }
 
   Color _getButtonTextColor() {
@@ -3589,7 +3592,7 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
             ? Color(int.parse(
                 'FF${_profileData!['button_text_color'].substring(1)}',
                 radix: 16))
-            : Colors.black);
+            : material.Colors.black);
   }
 
   @override
@@ -3610,7 +3613,7 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
                   const BorderRadius.vertical(top: Radius.circular(24)),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: material.Colors.black.withOpacity(0.1),
                   blurRadius: 20,
                   spreadRadius: 5,
                 ),
@@ -3651,8 +3654,8 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
                                 color: _getButtonTextColor().withOpacity(0.2),
                                 borderRadius: BorderRadius.circular(12),
                               ),
-                              child: Icon(
-                                Icons.smart_toy_rounded,
+                              child: material.Icon(
+                                material.Icons.smart_toy_rounded,
                                 color: _getButtonTextColor(),
                                 size: 24,
                               ),
@@ -3681,10 +3684,10 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
                                 ],
                               ),
                             ),
-                            IconButton(
+                            material.IconButton(
                               onPressed: () => Navigator.pop(context),
-                              icon: Icon(
-                                Icons.close_rounded,
+                              icon: material.Icon(
+                                material.Icons.close_rounded,
                                 color: _getButtonTextColor(),
                               ),
                             ),
@@ -3715,14 +3718,14 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
                                   color: _getButtonColor().withOpacity(0.2),
                                 ),
                               ),
-                              child: TextField(
+                              child: material.TextField(
                                 controller: _messageController,
-                                decoration: InputDecoration(
+                                decoration: material.InputDecoration(
                                   hintText: 'Ask me anything...',
                                   hintStyle: TextStyle(
                                     color: _getTextColor().withOpacity(0.5),
                                   ),
-                                  border: InputBorder.none,
+                                  border: material.InputBorder.none,
                                   contentPadding: const EdgeInsets.symmetric(
                                     horizontal: 20,
                                     vertical: 12,
@@ -3731,7 +3734,7 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
                                 style: TextStyle(color: _getTextColor()),
                                 maxLines: null,
                                 textCapitalization:
-                                    TextCapitalization.sentences,
+                                    material.TextCapitalization.sentences,
                                 onSubmitted: (_) => _sendMessage(),
                               ),
                             ),
@@ -3752,8 +3755,8 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
                                   ),
                                 ],
                               ),
-                              child: Icon(
-                                Icons.send_rounded,
+                              child: material.Icon(
+                                material.Icons.send_rounded,
                                 color: _getButtonTextColor(),
                                 size: 20,
                               ),
@@ -3862,7 +3865,7 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Icon(
-                    Icons.smart_toy_rounded,
+                    material.Icons.smart_toy_rounded,
                     color: _getButtonColor(),
                     size: 20,
                   ),
@@ -3910,11 +3913,11 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
               ),
               if (isUser) ...[
                 const SizedBox(width: 8),
-                CircleAvatar(
+                material.CircleAvatar(
                   radius: 16,
                   backgroundColor: _getButtonColor().withOpacity(0.1),
                   child: Icon(
-                    Icons.person_rounded,
+                    material.Icons.person_rounded,
                     color: _getButtonColor(),
                     size: 20,
                   ),
@@ -3965,7 +3968,7 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
                         borderRadius: const BorderRadius.vertical(
                           top: Radius.circular(12),
                         ),
-                        color: Colors.grey[200],
+                        color: material.Colors.grey[200],
                       ),
                       child: item['gallery_image_url'] != null
                           ? ClipRRect(
@@ -3977,10 +3980,10 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
                                 fit: BoxFit.cover,
                                 errorBuilder: (context, error, stackTrace) {
                                   return Container(
-                                    color: Colors.grey[300],
+                                    color: material.Colors.grey[300],
                                     child: Icon(
-                                      Icons.image_not_supported,
-                                      color: Colors.grey[600],
+                                      material.Icons.image_not_supported,
+                                      color: material.Colors.grey[600],
                                       size: 32,
                                     ),
                                   );
@@ -3995,7 +3998,7 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
                                 ),
                               ),
                               child: Icon(
-                                Icons.image,
+                                material.Icons.image,
                                 color: _getButtonColor(),
                                 size: 32,
                               ),
@@ -4053,10 +4056,10 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
   }
 
   void _showGalleryItemDetails(Map<String, dynamic> item) {
-    showModalBottomSheet(
+    material.showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      backgroundColor: material.Colors.transparent,
       builder: (context) => Container(
         height: MediaQuery.of(context).size.height * 0.7,
         decoration: BoxDecoration(
@@ -4085,10 +4088,10 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
                       ),
                     ),
                   ),
-                  IconButton(
+                  material.IconButton(
                     onPressed: () => Navigator.pop(context),
                     icon: Icon(
-                      Icons.close,
+                      material.Icons.close,
                       color: _getButtonTextColor(),
                     ),
                   ),
@@ -4097,7 +4100,7 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
             ),
             // Content
             Expanded(
-              child: SingleChildScrollView(
+              child: material.SingleChildScrollView(
                 padding: const EdgeInsets.all(20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -4121,10 +4124,10 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
                             fit: BoxFit.cover,
                             errorBuilder: (context, error, stackTrace) {
                               return Container(
-                                color: Colors.grey[300],
+                                color: material.Colors.grey[300],
                                 child: Icon(
-                                  Icons.image_not_supported,
-                                  color: Colors.grey[600],
+                                  material.Icons.image_not_supported,
+                                  color: material.Colors.grey[600],
                                   size: 64,
                                 ),
                               );
@@ -4137,7 +4140,7 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
                       Row(
                         children: [
                           Icon(
-                            Icons.currency_rupee,
+                            material.Icons.currency_rupee,
                             color: _getButtonColor(),
                             size: 18,
                           ),
@@ -4157,7 +4160,7 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
                       Row(
                         children: [
                           Icon(
-                            Icons.category,
+                            material.Icons.category,
                             color: _getTextColor().withOpacity(0.7),
                             size: 18,
                           ),
@@ -4214,7 +4217,7 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
               borderRadius: BorderRadius.circular(20),
             ),
             child: Icon(
-              Icons.smart_toy_rounded,
+              material.Icons.smart_toy_rounded,
               color: _getButtonColor(),
               size: 20,
             ),
@@ -4336,7 +4339,7 @@ class CircularShimmer extends StatelessWidget {
           width: size,
           height: size,
           decoration: const BoxDecoration(
-            color: Colors.white,
+            color: material.Colors.white,
             shape: BoxShape.circle,
           ),
         ),
@@ -4466,7 +4469,7 @@ class _PopularGalleryBannerState extends State<PopularGalleryBanner> {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(
+          material.MaterialPageRoute(
             builder: (context) => GalleryDetailsprofilePage(
               item: _displayedItems[index],
               allItems: _displayedItems,
@@ -4491,7 +4494,7 @@ class _PopularGalleryBannerState extends State<PopularGalleryBanner> {
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.15),
+              color: material.Colors.black.withOpacity(0.15),
               blurRadius: 20,
               spreadRadius: 0,
               offset: const Offset(0, 8),
@@ -4533,7 +4536,7 @@ class _PopularGalleryBannerState extends State<PopularGalleryBanner> {
                             ),
                           ),
                           child: Center(
-                            child: CircularProgressIndicator(
+                            child: material.CircularProgressIndicator(
                               color: widget.buttonColor,
                               strokeWidth: 2,
                             ),
@@ -4557,7 +4560,7 @@ class _PopularGalleryBannerState extends State<PopularGalleryBanner> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Icon(
-                                  Icons.image_outlined,
+                                  material.Icons.image_outlined,
                                   size: 48,
                                   color: widget.buttonColor.withOpacity(0.6),
                                 ),
@@ -4586,10 +4589,10 @@ class _PopularGalleryBannerState extends State<PopularGalleryBanner> {
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                         colors: [
-                          Colors.transparent,
-                          Colors.transparent,
-                          Colors.black.withOpacity(0.3),
-                          Colors.black.withOpacity(0.8),
+                          material.Colors.transparent,
+                          material.Colors.transparent,
+                          material.Colors.black.withOpacity(0.3),
+                          material.Colors.black.withOpacity(0.8),
                         ],
                         stops: const [0.0, 0.3, 0.7, 1.0],
                       ),
@@ -4610,7 +4613,7 @@ class _PopularGalleryBannerState extends State<PopularGalleryBanner> {
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
+                            color: material.Colors.black.withOpacity(0.1),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
@@ -4620,7 +4623,7 @@ class _PopularGalleryBannerState extends State<PopularGalleryBanner> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
-                            Icons.star,
+                            material.Icons.star,
                             color: widget.buttonTextColor,
                             size: 14,
                           ),
@@ -4653,7 +4656,7 @@ class _PopularGalleryBannerState extends State<PopularGalleryBanner> {
                           Text(
                             item['gallery_title'],
                             style: const TextStyle(
-                              color: Colors.white,
+                              color: material.Colors.white,
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
                               letterSpacing: 0.5,
@@ -4666,7 +4669,7 @@ class _PopularGalleryBannerState extends State<PopularGalleryBanner> {
                           Text(
                             item['gallery_description'],
                             style: TextStyle(
-                              color: Colors.white.withOpacity(0.9),
+                              color: material.Colors.white.withOpacity(0.9),
                               fontSize: 12,
                               height: 1.3,
                             ),
@@ -4709,7 +4712,7 @@ class _PopularGalleryBannerState extends State<PopularGalleryBanner> {
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: Icon(
-                                Icons.arrow_forward_ios,
+                                material.Icons.arrow_forward_ios,
                                 color: widget.bgtextcolor,
                                 size: 12,
                               ),
@@ -4750,7 +4753,7 @@ class _PopularGalleryBannerState extends State<PopularGalleryBanner> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
-                    Icons.trending_up,
+                    material.Icons.trending_up,
                     color: widget.buttonColor,
                     size: 20,
                   ),
@@ -4913,9 +4916,9 @@ class _PopularPageViewBannerState extends State<PopularPageViewBanner>
   void _showBottomSheet(Map<String, dynamic> item, int index) {
     _pauseAutoScroll();
 
-    showModalBottomSheet(
+    material.showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.transparent,
+      backgroundColor: material.Colors.transparent,
       isScrollControlled: true,
       builder: (context) => Container(
         decoration: BoxDecoration(
@@ -4923,7 +4926,7 @@ class _PopularPageViewBannerState extends State<PopularPageViewBanner>
           borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.3),
+              color: material.Colors.black.withOpacity(0.3),
               blurRadius: 20,
               spreadRadius: 5,
             ),
@@ -4959,7 +4962,7 @@ class _PopularPageViewBannerState extends State<PopularPageViewBanner>
                     borderRadius: BorderRadius.circular(15),
                   ),
                   child: Icon(
-                    Icons.auto_awesome,
+                    material.Icons.auto_awesome,
                     color: widget.buttonColor,
                     size: 24,
                   ),
@@ -4987,7 +4990,7 @@ class _PopularPageViewBannerState extends State<PopularPageViewBanner>
                     ],
                   ),
                 ),
-                IconButton(
+                material.IconButton(
                   onPressed: () => Navigator.pop(context),
                   icon: Container(
                     padding: const EdgeInsets.all(8),
@@ -4996,7 +4999,7 @@ class _PopularPageViewBannerState extends State<PopularPageViewBanner>
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(
-                      Icons.close,
+                      material.Icons.close,
                       color: widget.buttonColor,
                       size: 20,
                     ),
@@ -5009,7 +5012,7 @@ class _PopularPageViewBannerState extends State<PopularPageViewBanner>
 
             // Content
             Flexible(
-              child: SingleChildScrollView(
+              child: material.SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -5044,7 +5047,7 @@ class _PopularPageViewBannerState extends State<PopularPageViewBanner>
                                 ),
                                 child: Center(
                                   child: Icon(
-                                    Icons.image_not_supported,
+                                    material.Icons.image_not_supported,
                                     color: widget.buttonColor,
                                     size: 48,
                                   ),
@@ -5065,11 +5068,11 @@ class _PopularPageViewBannerState extends State<PopularPageViewBanner>
                           contentTitle: item['title'] ?? '',
                           onReportSubmitted: () {
                             // Optional: Show feedback to user
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
+                            material.ScaffoldMessenger.of(context).showSnackBar(
+                              const material.SnackBar(
                                 content: Text(
                                     'Thank you for your report. We\'ll review it soon.'),
-                                backgroundColor: Colors.green,
+                                backgroundColor: material.Colors.green,
                               ),
                             );
                           },
@@ -5078,14 +5081,15 @@ class _PopularPageViewBannerState extends State<PopularPageViewBanner>
                     ),
                     // Title
                     if (item['title'] != null) ...[
-                      _buildDetailRow(Icons.title, 'Title', item['title'],
+                      _buildDetailRow(
+                          material.Icons.title, 'Title', item['title'],
                           isTitle: true),
                       const SizedBox(height: 20),
                     ],
 
                     // Description
                     if (item['description'] != null) ...[
-                      _buildDetailRow(Icons.description, 'Description',
+                      _buildDetailRow(material.Icons.description, 'Description',
                           item['description']),
                       const SizedBox(height: 20),
                     ],
@@ -5163,7 +5167,7 @@ class _PopularPageViewBannerState extends State<PopularPageViewBanner>
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.category, color: widget.buttonColor, size: 16),
+          Icon(material.Icons.category, color: widget.buttonColor, size: 16),
           const SizedBox(width: 8),
           Text(
             category,
@@ -5197,7 +5201,8 @@ class _PopularPageViewBannerState extends State<PopularPageViewBanner>
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.currency_rupee, color: widget.buttonTextColor, size: 18),
+          material.Icon(material.Icons.currency_rupee,
+              color: widget.buttonTextColor, size: 18),
           Text(
             price.toString(),
             style: TextStyle(
@@ -5229,7 +5234,7 @@ class _PopularPageViewBannerState extends State<PopularPageViewBanner>
           borderRadius: BorderRadius.circular(28),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(isActive ? 0.25 : 0.15),
+              color: material.Colors.black.withOpacity(isActive ? 0.25 : 0.15),
               blurRadius: isActive ? 25 : 15,
               spreadRadius: 0,
               offset: Offset(0, isActive ? 12 : 6),
@@ -5279,7 +5284,7 @@ class _PopularPageViewBannerState extends State<PopularPageViewBanner>
                             ),
                           ),
                           child: Center(
-                            child: CircularProgressIndicator(
+                            child: material.CircularProgressIndicator(
                               color: widget.buttonColor,
                               strokeWidth: 3,
                             ),
@@ -5303,7 +5308,7 @@ class _PopularPageViewBannerState extends State<PopularPageViewBanner>
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Icon(
-                                  Icons.auto_awesome,
+                                  material.Icons.auto_awesome,
                                   size: 72,
                                   color: widget.buttonColor.withOpacity(0.7),
                                 ),
@@ -5333,10 +5338,10 @@ class _PopularPageViewBannerState extends State<PopularPageViewBanner>
                 //         begin: Alignment.topCenter,
                 //         end: Alignment.bottomCenter,
                 //         colors: [
-                //           Colors.transparent,
-                //           Colors.black.withOpacity(0.1),
-                //           Colors.black.withOpacity(0.4),
-                //           Colors.black.withOpacity(0.85),
+                //           material.Colors.transparent,
+                //           material.Colors.black.withOpacity(0.1),
+                //           material.Colors.black.withOpacity(0.4),
+                //           material.Colors.black.withOpacity(0.85),
                 //         ],
                 //         stops: const [0.0, 0.4, 0.7, 1.0],
                 //       ),
@@ -5352,13 +5357,13 @@ class _PopularPageViewBannerState extends State<PopularPageViewBanner>
                     padding:
                         const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.7),
+                      color: material.Colors.black.withOpacity(0.7),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
                       '${index + 1}/${_userBanners.length}',
                       style: const TextStyle(
-                        color: Colors.white,
+                        color: material.Colors.white,
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
                       ),
@@ -5410,7 +5415,7 @@ class _PopularPageViewBannerState extends State<PopularPageViewBanner>
                   ),
                 ),
                 child: Icon(
-                  Icons.auto_awesome,
+                  material.Icons.auto_awesome,
                   color: widget.buttonColor,
                   size: 20,
                 ),

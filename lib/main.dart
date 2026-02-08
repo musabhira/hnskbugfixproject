@@ -1,6 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter/material.dart';
+import 'package:fluent_ui/fluent_ui.dart';
 
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
@@ -34,7 +34,7 @@ class MyApp extends StatefulWidget {
       context.findAncestorStateOfType<_MyAppState>()!;
 }
 
-class MyAppScrollBehavior extends MaterialScrollBehavior {
+class MyAppScrollBehavior extends ScrollBehavior {
   @override
   Set<PointerDeviceKind> get dragDevices => {
         PointerDeviceKind.touch,
@@ -86,23 +86,24 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
+    return FluentApp.router(
       debugShowCheckedModeBanner: false,
       title: 'PocketMates App',
       scrollBehavior: MyAppScrollBehavior(),
       localizationsDelegates: [
+        FluentLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
       supportedLocales: const [Locale('en', '')],
-      theme: ThemeData(
+      theme: FluentThemeData(
         brightness: Brightness.light,
-        useMaterial3: false,
+        accentColor: Colors.blue,
       ),
-      darkTheme: ThemeData(
+      darkTheme: FluentThemeData(
         brightness: Brightness.dark,
-        useMaterial3: false,
+        accentColor: Colors.blue,
       ),
       themeMode: _themeMode,
       routerConfig: _router,

@@ -32,6 +32,8 @@ class ChatConversation {
     this.isNotification = false,
     this.notificationType,
     this.sourceId,
+    this.hasStatus = false,
+    this.statusData,
   });
 
   factory ChatConversation.fromGroupJson(Map<String, dynamic> json) {
@@ -88,6 +90,8 @@ class ChatConversation {
   final bool isNotification;
   final String? notificationType;
   final String? sourceId;
+  final bool hasStatus;
+  final List<Map<String, dynamic>>? statusData;
 }
 
 // Provider for Supabase Client
@@ -265,29 +269,57 @@ class Conversations extends _$Conversations {
           referencedTable: 'groups',
           ascending: false);
 
-      final groups = <ChatConversation>[];
+      final groupList = List<Map<String, dynamic>>.from(response);
 
-      for (var item in response) {
+      // Fetch all unread counts in parallel for all groups
+      final List<Future<ChatConversation?>> conversationFutures =
+          groupList.map((item) async {
         final groupData = _safeGet(item['groups']);
-        if (groupData != null) {
-          final unreadCount =
-              await _getGroupUnreadCount(groupData['id'], userId);
+        if (groupData == null) return null;
 
-          groups.add(ChatConversation(
-            id: groupData['id'],
-            name: groupData['name'] ?? 'Unnamed Group',
-            imageUrl: groupData['group_image_url'],
-            lastMessage: groupData['last_message'],
-            lastMessageTime: groupData['last_message_time'] != null
-                ? DateTime.parse(groupData['last_message_time'])
-                : null,
-            unreadCount: unreadCount,
-            isGroup: true,
-          ));
-        }
-      }
+        // Fetch unread count and statuses in parallel
+        final results = await Future.wait([
+          _getGroupUnreadCount(groupData['id'], userId),
+          _getGroupStatuses(groupData['id']),
+        ]);
 
-      return groups;
+        final unreadCount = results[0] as int;
+        final statusList = results[1] as List<Map<String, dynamic>>;
+
+        return ChatConversation(
+          id: groupData['id'],
+          name: groupData['name'] ?? 'Unnamed Group',
+          imageUrl: groupData['group_image_url'],
+          lastMessage: groupData['last_message'],
+          lastMessageTime: groupData['last_message_time'] != null
+              ? DateTime.parse(groupData['last_message_time'])
+              : null,
+          unreadCount: unreadCount,
+          isGroup: true,
+          hasStatus: statusList.isNotEmpty,
+          statusData: statusList,
+        );
+      }).toList();
+
+      final List<ChatConversation?> conversations =
+          await Future.wait(conversationFutures);
+      return conversations.whereType<ChatConversation>().toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> _getGroupStatuses(String groupId) async {
+    try {
+      final now = DateTime.now().toIso8601String();
+      final response = await _supabase
+          .from('statuses')
+          .select('*, profile:profile_id(*)')
+          .eq('mentioned_group_id', groupId)
+          .eq('is_active', true)
+          .gt('expires_at', now)
+          .order('created_at', ascending: true);
+      return List<Map<String, dynamic>>.from(response);
     } catch (e) {
       return [];
     }

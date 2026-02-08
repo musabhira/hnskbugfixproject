@@ -24,6 +24,7 @@ import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/image_viewer.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/voice_player.dart';
 import 'package:image_downloader/image_downloader.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chat/voice_recorder.dart';
 
 import '/flutter_flow/flutter_flow_util.dart';
 
@@ -201,37 +202,6 @@ class _MessageScreenState extends State<MessageScreen> {
             ],
           ),
           actions: [
-            IconButton(
-              icon: const Icon(Icons.videocam, color: Colors.white),
-              onPressed: () {
-                if (_isBlocked || _isBlockedByOther) {
-                  _showErrorSnackBar('Cannot make video call to blocked user');
-                  return;
-                }
-
-                try {
-                  _supabase.from('messages').insert({
-                    'sender_id': _senderId,
-                    'receiver_id': widget.receiverId,
-                    'content': '📞 Video Call Started',
-                  });
-                  Future.delayed(
-                      const Duration(milliseconds: 500), _loadMessages);
-                } catch (e) {
-                  debugPrint('Error sending call message: $e');
-                }
-
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => WebRTCCallScreen(
-                      mode: 'Video',
-                      targetUserId: widget.receiverId,
-                    ),
-                  ),
-                );
-              },
-            ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
               child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
@@ -274,7 +244,7 @@ class _MessageScreenState extends State<MessageScreen> {
   }
 
   void _setupMessageStream() {
-    _messageRefreshTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+    _messageRefreshTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
       if (!_isBlocked && !_isBlockedByOther) {
         _loadMessages();
         _loadEphemeralMessages();
@@ -1142,34 +1112,14 @@ class _MessageScreenState extends State<MessageScreen> {
           ),
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.videocam, color: Colors.white),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => WebRTCCallScreen(
-                    mode: 'Video',
-                    targetUserId: widget.receiverId,
-                  ),
-                ),
-              );
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.call, color: Colors.white),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => WebRTCCallScreen(
-                    mode: 'Voice',
-                    targetUserId: widget.receiverId,
-                  ),
-                ),
-              );
-            },
-          ),
+          if (!_isBlocked &&
+              !_isBlockedByOther &&
+              !(hideData != null && hideData?['is_hidden'] == true))
+            IconButton(
+              icon: const Icon(Icons.phone, color: Colors.green),
+              onPressed: _makePhoneCall,
+              tooltip: 'Normal Call',
+            ),
           if (!_checkingBlockStatus)
             PopupMenuButton<String>(
               icon: const Icon(Icons.more_vert, color: Colors.white),
@@ -1229,16 +1179,6 @@ class _MessageScreenState extends State<MessageScreen> {
                 ),
               ],
             ),
-          if (!_isBlocked &&
-              !_isBlockedByOther &&
-              !(hideData != null && hideData?['is_hidden'] == true))
-            IconButton(
-              icon: const Icon(Icons.phone),
-              onPressed: _makePhoneCall,
-              tooltip: 'Make Phone Call',
-              iconSize: 24,
-              color: Colors.green,
-            ),
         ],
       ),
       body: GestureDetector(
@@ -1263,7 +1203,7 @@ class _MessageScreenState extends State<MessageScreen> {
               if (!_isBlocked && !_isBlockedByOther)
                 Container(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: Colors.black,
                     boxShadow: [
@@ -1288,31 +1228,66 @@ class _MessageScreenState extends State<MessageScreen> {
                         ),
                         Expanded(
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
                             decoration: BoxDecoration(
                               color: const Color.fromARGB(255, 31, 27, 27),
                               borderRadius: BorderRadius.circular(24),
                             ),
-                            child: TextField(
-                              controller: _messageController,
-                              decoration: const InputDecoration(
-                                hintText: 'Type a message...',
-                                border: InputBorder.none,
-                                hintStyle: TextStyle(color: Colors.white),
-                                contentPadding:
-                                    EdgeInsets.symmetric(vertical: 10),
-                              ),
-                              style: const TextStyle(color: Colors.white),
-                              maxLines: null,
-                              textCapitalization: TextCapitalization.sentences,
-                            ),
+                            child: _isRecording
+                                ? const Padding(
+                                    padding:
+                                        EdgeInsets.symmetric(horizontal: 16),
+                                    child: Text('Recording...',
+                                        style: TextStyle(
+                                            color: Colors.red,
+                                            fontWeight: FontWeight.bold)))
+                                : TextField(
+                                    controller: _messageController,
+                                    decoration: const InputDecoration(
+                                      hintText: 'Type a message...',
+                                      border: InputBorder.none,
+                                      hintStyle:
+                                          TextStyle(color: Colors.white54),
+                                      contentPadding:
+                                          EdgeInsets.symmetric(vertical: 6),
+                                    ),
+                                    onChanged: (text) => safeSetState(() {}),
+                                    style: const TextStyle(color: Colors.white),
+                                    maxLines: null,
+                                    textCapitalization:
+                                        TextCapitalization.sentences,
+                                  ),
                           ),
                         ),
-                        IconButton(
-                          icon: const Icon(Icons.send_rounded),
-                          color: Colors.yellow,
-                          onPressed: _sendMessage,
-                        ),
+                        const SizedBox(width: 8),
+                        _isRecording || _messageController.text.trim().isEmpty
+                            ? VoiceMessageRecorder(
+                                receiverId: widget.receiverId,
+                                currentUserId: _senderId,
+                                onSendMessage: (type, url, duration) async {
+                                  try {
+                                    await _supabase.from('messages').insert({
+                                      'sender_id': _senderId,
+                                      'receiver_id': widget.receiverId,
+                                      'content': 'Voice message',
+                                      'message_type': 'voice',
+                                      'file_url': url,
+                                      'voice_duration': duration,
+                                    });
+                                    _loadMessages();
+                                  } catch (e) {
+                                    debugPrint('Error sending voice: $e');
+                                  }
+                                },
+                                onRecordingStateChanged: (recording) {
+                                  safeSetState(() => _isRecording = recording);
+                                },
+                              )
+                            : IconButton(
+                                icon: const Icon(Icons.send_rounded),
+                                color: Colors.yellow,
+                                onPressed: _sendMessage,
+                              ),
                       ],
                     ),
                   ),
@@ -1449,8 +1424,8 @@ class _MessageScreenState extends State<MessageScreen> {
             controller: _scrollController,
             reverse: true,
             padding: const EdgeInsets.symmetric(
-              vertical: 16,
-              horizontal: 12,
+              vertical: 8,
+              horizontal: 8,
             ),
             itemCount: _messages.length + _ephemeralMessages.length,
             itemBuilder: (context, index) {
@@ -1498,7 +1473,7 @@ class _MessageScreenState extends State<MessageScreen> {
     }
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.only(bottom: 6),
       child: Row(
         mainAxisAlignment:
             isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
@@ -1665,6 +1640,9 @@ class _MessageScreenState extends State<MessageScreen> {
           displayText = content.replaceAll(urlRegex, '').trim();
         }
 
+        final isCallStarting =
+            content.contains('📞') && content.contains('Call Started');
+
         return Column(
           crossAxisAlignment:
               isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
@@ -1673,7 +1651,7 @@ class _MessageScreenState extends State<MessageScreen> {
               _buildLinkPreview(content, isMe),
               if (displayText.isNotEmpty) const SizedBox(height: 8),
             ],
-            if (displayText.isNotEmpty)
+            if (displayText.isNotEmpty && !isCallStarting)
               Text(
                 displayText,
                 style: TextStyle(
@@ -1681,6 +1659,62 @@ class _MessageScreenState extends State<MessageScreen> {
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
                   height: 1.4,
+                ),
+              ),
+            if (isCallStarting)
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.white.withOpacity(0.2)),
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          content.contains('Video')
+                              ? Icons.videocam
+                              : Icons.call,
+                          color: isMe ? Colors.black : Colors.yellow,
+                          size: 24,
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          content,
+                          style: TextStyle(
+                            color: isMe ? Colors.black : Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => WebRTCCallScreen(
+                              mode:
+                                  content.contains('Video') ? 'Video' : 'Voice',
+                              targetUserId: widget.receiverId,
+                            ),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: isMe ? Colors.black : Colors.yellow,
+                        foregroundColor: isMe ? Colors.yellow : Colors.black,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                      child: const Text('Join Call'),
+                    ),
+                  ],
                 ),
               ),
           ],
@@ -2105,7 +2139,7 @@ class _MessageScreenState extends State<MessageScreen> {
     final messageType = message['message_type'] ?? 'text';
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.only(bottom: 6),
       child: Row(
         mainAxisAlignment:
             isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
@@ -2149,8 +2183,8 @@ class _MessageScreenState extends State<MessageScreen> {
               },
               child: Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
+                  horizontal: 12,
+                  vertical: 8,
                 ),
                 decoration: BoxDecoration(
                   gradient: isMe

@@ -273,15 +273,18 @@ class _MessageListPageState extends State<MessageListPage> {
                         _deleteConversation(conversation['id']);
                       },
                       child: Container(
-                        margin: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 4),
                         decoration: BoxDecoration(
-                          color: Colors.grey.shade900,
-                          borderRadius: BorderRadius.circular(12),
+                          color: Colors.black,
+                          border: Border(
+                            bottom: BorderSide(
+                              color: Colors.white.withOpacity(0.05),
+                              width: 1,
+                            ),
+                          ),
                         ),
                         child: ListTile(
                           contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 8),
+                              horizontal: 16, vertical: 4),
                           leading: CircleAvatar(
                             radius: 28,
                             backgroundImage: otherUser['avatar'] != null

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:fluent_ui/fluent_ui.dart';
 import 'package:pocket_mates_app/custom_code/widgets/main_profile_widget.dart';
 
 class ProfileSwitchPage extends StatelessWidget {

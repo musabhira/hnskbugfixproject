@@ -1,5 +1,6 @@
 import 'dart:convert';
-import 'package:flutter/material.dart';
+import 'package:fluent_ui/fluent_ui.dart' hide Colors, IconButton, Tooltip;
+import 'package:flutter/material.dart' as material;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -8,6 +9,8 @@ import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
+import 'package:pocket_mates_app/custom_code/widgets/message_screen.dart';
+import 'package:pocket_mates_app/custom_code/widgets/gallery_profile_search_page.dart';
 
 class MainProfileWidget extends StatefulWidget {
   final String? userId;
@@ -35,9 +38,9 @@ class MainProfileWidget extends StatefulWidget {
 }
 
 class _MainProfileWidgetState extends State<MainProfileWidget>
-    with TickerProviderStateMixin {
+    with material.TickerProviderStateMixin {
   final _supabase = SupaFlow.client;
-  late TabController _tabController;
+  late material.TabController _tabController;
   final ScrollController _scrollController = ScrollController();
 
   // Data State
@@ -57,6 +60,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   int _followersCount = 0;
   int _followingCount = 0;
   bool _isBlocked = false;
+  String _selectedCategory = 'All';
+  List<String> _categories = ['All'];
+  List<Map<String, dynamic>> _filteredGalleryItems = [];
 
   final double _profileImageSize = 90.0;
 
@@ -73,7 +79,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = material.TabController(length: 2, vsync: this);
     _loadInitialData(); // Instant load strategy
   }
 
@@ -169,16 +175,23 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
       // Process Gallery
       final Map<String, Map<String, dynamic>> uniqueGallery = {};
+      Set<String> categorySet = {'All'};
+
       for (var item in galleryRes) {
         if (item['gallery_id'] != null) {
           uniqueGallery[item['gallery_id'].toString()] = item;
+          if (item['gallery_category'] != null &&
+              item['gallery_category'].toString().trim().isNotEmpty) {
+            categorySet.add(item['gallery_category'].toString().trim());
+          }
         }
       }
 
       setState(() {
         _galleryItems = uniqueGallery.values.toList();
+        _categories = categorySet.toList();
+        _filteredGalleryItems = _galleryItems;
         _followersCount = responses[2] as int; // Follower count
-        // _followingCount handle separately or in same query if precise
         _isFollowing = responses[3] as bool;
         _isBlocked = responses[4] as bool;
       });
@@ -258,6 +271,19 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     return res != null;
   }
 
+  void _filterGalleryByCategory(String category) {
+    setState(() {
+      _selectedCategory = category;
+      if (category == 'All') {
+        _filteredGalleryItems = _galleryItems;
+      } else {
+        _filteredGalleryItems = _galleryItems.where((item) {
+          return item['gallery_category']?.toString().trim() == category;
+        }).toList();
+      }
+    });
+  }
+
   // --- Helpers ---
 
   Color? _parseColor(String? code) {
@@ -308,10 +334,11 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   @override
   Widget build(BuildContext context) {
     if (_isBlocked) {
-      return Scaffold(
-        backgroundColor: Colors.white,
-        appBar: AppBar(elevation: 0, backgroundColor: Colors.white),
-        body: const Center(child: Text("You have blocked this user.")),
+      return ScaffoldPage(
+        content: Container(
+          color: material.Colors.white,
+          child: const Center(child: Text("You have blocked this user.")),
+        ),
       );
     }
 
@@ -321,110 +348,172 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     final btnColor = _btnColor ?? const Color(0xFFFFD700);
     final btnTextColor = _btnTextColor ?? const Color(0xFF000000);
 
-    return Scaffold(
-      backgroundColor: bgColor,
-      body: NestedScrollView(
-        controller: _scrollController,
-        headerSliverBuilder: (context, innerBoxIsScrolled) {
-          return [
-            SliverAppBar(
-              elevation: 0,
-              backgroundColor: bgColor,
-              expandedHeight: 200, // Reduced from 280 for better UX
-              pinned: true,
-              leading: IconButton(
-                icon: Icon(Icons.arrow_back_ios_new_rounded,
-                    color: textColor, size: 20),
-                onPressed: () => Navigator.of(context).pop(),
-              ),
-              title: innerBoxIsScrolled
-                  ? Text(
-                      _profileData?['shop_name'] ?? _profileData?['name'] ?? '',
-                      style: GoogleFonts.outfit(
-                        color: textColor,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                      ),
-                    )
-                  : null,
-              centerTitle: true,
-              actions: [
-                if (isMe)
-                  IconButton(
-                    icon: Icon(Icons.grid_view_rounded, color: textColor),
-                    tooltip: 'Dashbaord',
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => VerfiedSwitchPage(
-                            userId: userId,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                IconButton(
-                  icon: Icon(Icons.share, color: textColor, size: 22),
-                  onPressed: () => Share.share(
-                      'Check out ${_profileData?['name']}\'s profile on PocketMates!'),
+    return ScaffoldPage(
+      content: Container(
+        color: bgColor,
+        child: material.NestedScrollView(
+          controller: _scrollController,
+          headerSliverBuilder: (context, innerBoxIsScrolled) {
+            return [
+              material.SliverAppBar(
+                elevation: 0,
+                expandedHeight: 200,
+                pinned: true,
+                leading: material.IconButton(
+                  icon: Icon(FluentIcons.back, color: textColor, size: 20),
+                  onPressed: () => Navigator.of(context).pop(),
                 ),
-                PopupMenuButton<String>(
-                  icon: Icon(Icons.more_vert, color: textColor),
-                  color: Colors.grey[900],
-                  onSelected: (val) {
-                    if (val == 'block') {
-                      // Block logic
-                    }
-                  },
-                  itemBuilder: (_) => [
-                    const PopupMenuItem(
-                        value: 'report',
-                        child: Text('Report',
-                            style: TextStyle(color: Colors.white))),
-                    const PopupMenuItem(
-                        value: 'block',
-                        child: Text('Block',
-                            style: TextStyle(color: Colors.redAccent))),
-                  ],
+                title: innerBoxIsScrolled
+                    ? Text(
+                        _profileData?['shop_name'] ??
+                            _profileData?['name'] ??
+                            '',
+                        style: GoogleFonts.outfit(
+                          color: textColor,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
+                      )
+                    : null,
+                centerTitle: true,
+                actions: [
+                  if (isMe)
+                    material.IconButton(
+                      icon: Icon(FluentIcons.view_dashboard, color: textColor),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          material.MaterialPageRoute(
+                            builder: (context) => VerfiedSwitchPage(
+                              userId: userId,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  material.IconButton(
+                    icon: Icon(FluentIcons.share, color: textColor, size: 22),
+                    onPressed: () => Share.share(
+                        'Check out ${_profileData?['name']}\'s profile on PocketMates!'),
+                  ),
+                  material.Padding(
+                    padding: const EdgeInsets.only(right: 8.0),
+                    child: DropDownButton(
+                      leading: Icon(FluentIcons.more, color: textColor),
+                      items: [
+                        MenuFlyoutItem(
+                          text: const Text('Report'),
+                          onPressed: () {
+                            // Report logic
+                          },
+                        ),
+                        MenuFlyoutItem(
+                          text: const Text('Block',
+                              style: TextStyle(color: material.Colors.red)),
+                          onPressed: () {
+                            // Block logic
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+                flexibleSpace: material.FlexibleSpaceBar(
+                  background: _buildBanner(),
+                  collapseMode: material.CollapseMode.parallax,
+                ),
+              ),
+              material.SliverToBoxAdapter(
+                child: _buildProfileHeader(textColor, btnColor, btnTextColor),
+              ),
+              material.SliverPersistentHeader(
+                pinned: true,
+                delegate: _SliverAppBarDelegate(
+                  material.TabBar(
+                    controller: _tabController,
+                    labelColor: textColor,
+                    unselectedLabelColor: textColor.withOpacity(0.5),
+                    indicatorColor: btnColor,
+                    indicatorWeight: 3,
+                    labelStyle: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+                    tabs: const [
+                      material.Tab(text: "Gallery"),
+                      material.Tab(text: "Services"),
+                    ],
+                  ),
+                  bgColor,
+                ),
+              ),
+            ];
+          },
+          body: Container(
+            color: bgColor,
+            child: Column(
+              children: [
+                // Category Selector
+                if (_categories.length > 1)
+                  Container(
+                    height: 50,
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: _categories.length,
+                      itemBuilder: (context, index) {
+                        final cat = _categories[index];
+                        final isSelected = _selectedCategory == cat;
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: Button(
+                            onPressed: () => _filterGalleryByCategory(cat),
+                            style: ButtonStyle(
+                              backgroundColor: ButtonState.all(
+                                isSelected
+                                    ? btnColor
+                                    : material.Colors.transparent,
+                              ),
+                              shape: ButtonState.all(RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                                side: BorderSide(
+                                  color: isSelected
+                                      ? btnColor
+                                      : textColor.withOpacity(0.2),
+                                ),
+                              )),
+                            ),
+                            child: Text(
+                              cat,
+                              style: TextStyle(
+                                color: isSelected ? btnTextColor : textColor,
+                                fontSize: 12,
+                                fontWeight: isSelected
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                Expanded(
+                  child: material.TabBarView(
+                    controller: _tabController,
+                    children: [
+                      _GalleryTab(
+                        userId: userId,
+                        items: _filteredGalleryItems,
+                        textColor: textColor,
+                        bgColor: bgColor,
+                        btnColor: btnColor,
+                        btnTextColor: btnTextColor,
+                      ),
+                      _ServicesTab(items: _serviceItems, textColor: textColor),
+                    ],
+                  ),
                 ),
               ],
-              flexibleSpace: FlexibleSpaceBar(
-                background: _buildBanner(),
-                collapseMode: CollapseMode.parallax,
-              ),
             ),
-            SliverToBoxAdapter(
-              child: _buildProfileHeader(textColor, btnColor, btnTextColor),
-            ),
-            SliverPersistentHeader(
-              pinned: true,
-              delegate: _SliverAppBarDelegate(
-                TabBar(
-                  controller: _tabController,
-                  labelColor: textColor,
-                  unselectedLabelColor: textColor.withOpacity(0.5),
-                  indicatorColor: btnColor,
-                  indicatorWeight: 3,
-                  labelStyle: GoogleFonts.outfit(fontWeight: FontWeight.bold),
-                  tabs: const [
-                    Tab(text: "Gallery"),
-                    Tab(text: "Services"),
-                  ],
-                ),
-                bgColor,
-              ),
-            ),
-          ];
-        },
-        body: Container(
-          color: bgColor,
-          child: TabBarView(
-            controller: _tabController,
-            children: [
-              _GalleryTab(items: _galleryItems, textColor: textColor),
-              _ServicesTab(items: _serviceItems, textColor: textColor),
-            ],
           ),
         ),
       ),
@@ -437,7 +526,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       return Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.grey[900]!, Colors.black],
+            colors: [const Color(0xFF1A1A1A), const Color(0xFF000000)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -449,7 +538,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       fit: BoxFit.cover,
       width: double.infinity,
       memCacheHeight: 600,
-      placeholder: (context, url) => Container(color: Colors.grey[900]),
+      placeholder: (context, url) => Container(color: const Color(0xFF1A1A1A)),
     );
   }
 
@@ -480,13 +569,14 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 ),
                 child: CircleAvatar(
                   radius: _profileImageSize / 2,
-                  backgroundColor: Colors.grey[800],
+                  backgroundColor: const Color(0xFF202020),
                   backgroundImage: (profileUrl != null && profileUrl.isNotEmpty)
                       ? CachedNetworkImageProvider(profileUrl)
                       : null,
                   child: (profileUrl == null || profileUrl.isEmpty)
-                      ? Icon(Icons.person,
-                          size: 40, color: Colors.white.withOpacity(0.5))
+                      ? Icon(FluentIcons.contact,
+                          size: 40,
+                          color: material.Colors.white.withOpacity(0.5))
                       : null,
                 ),
               ),
@@ -517,7 +607,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             const SizedBox(height: 4),
             Row(
               children: [
-                const Icon(Icons.verified, color: Colors.blueAccent, size: 16),
+                const Icon(FluentIcons.verified_brand,
+                    color: Color(0xFF0078D4), size: 16),
                 const SizedBox(width: 4),
                 Text(
                   "Verified Account",
@@ -546,17 +637,22 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             Row(
               children: [
                 Expanded(
-                  child: ElevatedButton(
+                  child: Button(
                     onPressed: _toggleFollow,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor:
-                          _isFollowing ? Colors.grey[800] : btnColor,
-                      foregroundColor:
-                          _isFollowing ? Colors.white : btnTextColor,
-                      elevation: 0,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
+                    style: ButtonStyle(
+                      backgroundColor: ButtonState.all(
+                        _isFollowing ? const Color(0xFF333333) : btnColor,
+                      ),
+                      foregroundColor: ButtonState.all(
+                        _isFollowing ? material.Colors.white : btnTextColor,
+                      ),
+                      padding: ButtonState.all(
+                        const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      shape: ButtonState.all(
+                        RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                      ),
                     ),
                     child: Text(
                       _isFollowing ? "Unfollow" : "Follow",
@@ -566,21 +662,50 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: OutlinedButton(
+                  child: Button(
                     onPressed: () {
-                      // Message Logic
+                      Navigator.push(
+                        context,
+                        material.MaterialPageRoute(
+                          builder: (context) => MessageScreen(
+                            receiverId: userId,
+                            receiverName: name,
+                            receiverProfileImage: profileUrl,
+                            phonenumber: _profileData?['phone_no'],
+                          ),
+                        ),
+                      );
                     },
-                    style: OutlinedButton.styleFrom(
-                      side: BorderSide(color: textColor.withOpacity(0.3)),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
+                    style: ButtonStyle(
+                      shape: ButtonState.all(
+                        RoundedRectangleBorder(
+                            side: BorderSide(color: textColor.withOpacity(0.3)),
+                            borderRadius: BorderRadius.circular(12)),
+                      ),
                     ),
                     child: Text(
                       "Message",
                       style: TextStyle(
                           color: textColor, fontWeight: FontWeight.bold),
                     ),
+                  ),
+                ),
+              ],
+            ),
+          const SizedBox(height: 12),
+          if (_profileData != null &&
+              _profileData!['phone_no'] != null &&
+              _profileData!['phone_no'].toString().isNotEmpty)
+            Row(
+              children: [
+                Icon(FluentIcons.phone,
+                    color: textColor.withOpacity(0.6), size: 14),
+                const SizedBox(width: 8),
+                Text(
+                  _profileData!['phone_no'],
+                  style: GoogleFonts.inter(
+                    color: textColor.withOpacity(0.8),
+                    fontSize: 13,
                   ),
                 ),
               ],
@@ -622,8 +747,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     return Padding(
       padding: const EdgeInsets.all(20),
       child: Shimmer.fromColors(
-        baseColor: Colors.grey[800]!,
-        highlightColor: Colors.grey[700]!,
+        baseColor: const Color(0xFF333333),
+        highlightColor: const Color(0xFF444444),
         child: Column(
           children: [
             Row(
@@ -631,15 +756,18 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 const CircleAvatar(radius: 45),
                 const SizedBox(width: 20),
                 Expanded(
-                    child: Container(
-                        height: 50,
-                        decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(10)))),
+                  child: Container(
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: material.Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 20),
-            Container(height: 20, width: 150, color: Colors.white),
+            Container(height: 20, width: 150, color: material.Colors.white),
           ],
         ),
       ),
@@ -647,8 +775,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   }
 }
 
-class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
-  final TabBar _tabBar;
+class _SliverAppBarDelegate extends material.SliverPersistentHeaderDelegate {
+  final material.TabBar _tabBar;
   final Color bgColor;
 
   _SliverAppBarDelegate(this._tabBar, this.bgColor);
@@ -674,10 +802,22 @@ class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
 }
 
 class _GalleryTab extends StatelessWidget {
+  final String userId;
   final List<Map<String, dynamic>> items;
   final Color textColor;
-  const _GalleryTab({Key? key, required this.items, required this.textColor})
-      : super(key: key);
+  final Color bgColor;
+  final Color btnColor;
+  final Color btnTextColor;
+
+  const _GalleryTab({
+    Key? key,
+    required this.userId,
+    required this.items,
+    required this.textColor,
+    required this.bgColor,
+    required this.btnColor,
+    required this.btnTextColor,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -686,9 +826,10 @@ class _GalleryTab extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.grid_off, size: 48, color: textColor.withOpacity(0.3)),
+            Icon(FluentIcons.grid_view_medium,
+                size: 48, color: textColor.withOpacity(0.3)),
             const SizedBox(height: 8),
-            Text("No posts yet",
+            Text("No posts found",
                 style: TextStyle(color: textColor.withOpacity(0.5))),
           ],
         ),
@@ -703,19 +844,67 @@ class _GalleryTab extends StatelessWidget {
       itemBuilder: (context, index) {
         final item = items[index];
         final imageUrl = item['gallery_image_url'] ?? item['image_url'];
-        return ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: imageUrl != null
-              ? CachedNetworkImage(
-                  imageUrl: imageUrl,
-                  memCacheWidth: 400,
-                  placeholder: (context, url) => Container(
-                    height: 200,
-                    color: Colors.grey[900],
+        final title = item['gallery_title'] ?? item['title'];
+
+        return GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              material.MaterialPageRoute(
+                builder: (context) => GalleryDetailsprofilePage(
+                  userid: userId,
+                  item: item,
+                  allItems: items,
+                  initialIndex: index,
+                  bgColor: bgColor,
+                  bgtextcolor: textColor,
+                  buttoncolorcode: btnColor,
+                  buttontextcolor: btnTextColor,
+                ),
+              ),
+            );
+          },
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              color: textColor.withOpacity(0.05),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ClipRRect(
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(12)),
+                  child: imageUrl != null && imageUrl.toString().isNotEmpty
+                      ? CachedNetworkImage(
+                          imageUrl: imageUrl,
+                          memCacheWidth: 400,
+                          placeholder: (context, url) => Container(
+                            height: 150,
+                            color: const Color(0xFF1A1A1A),
+                          ),
+                          errorWidget: (context, url, error) =>
+                              const Icon(FluentIcons.error),
+                        )
+                      : Container(height: 150, color: const Color(0xFF1A1A1A)),
+                ),
+                if (title != null && title.toString().isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      title,
+                      style: GoogleFonts.outfit(
+                        color: textColor,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
-                  errorWidget: (context, url, error) => const Icon(Icons.error),
-                )
-              : Container(height: 200, color: Colors.grey[900]),
+              ],
+            ),
+          ),
         );
       },
     );
@@ -741,13 +930,18 @@ class _ServicesTab extends StatelessWidget {
       itemCount: items.length,
       itemBuilder: (ctx, idx) {
         final service = items[idx];
+        final title =
+            service['service_title'] ?? service['service_name'] ?? 'Service';
+        final price = service['service_price'] ?? service['price'];
+        final desc = service['service_description'] ?? service['description'];
+
         return Container(
           margin: const EdgeInsets.only(bottom: 12),
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
+            color: textColor.withOpacity(0.05),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.white.withOpacity(0.1)),
+            border: Border.all(color: textColor.withOpacity(0.1)),
           ),
           child: Row(
             children: [
@@ -755,10 +949,11 @@ class _ServicesTab extends StatelessWidget {
                 width: 50,
                 height: 50,
                 decoration: BoxDecoration(
-                  color: Colors.blueAccent.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(8),
+                  color: const Color(0xFF0078D4).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(Icons.work_outline, color: Colors.blueAccent),
+                child:
+                    const Icon(FluentIcons.toolbox, color: Color(0xFF0078D4)),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -766,22 +961,37 @@ class _ServicesTab extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      service['service_name'] ?? 'Service',
+                      title,
                       style: GoogleFonts.outfit(
                           color: textColor,
                           fontWeight: FontWeight.bold,
                           fontSize: 16),
                     ),
-                    if (service['price'] != null)
-                      Text(
-                        '\$${service['price']}',
-                        style: GoogleFonts.inter(
-                            color: Colors.greenAccent,
-                            fontWeight: FontWeight.bold),
+                    if (desc != null && desc.toString().isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 2),
+                        child: Text(
+                          desc,
+                          style: GoogleFonts.inter(
+                            color: textColor.withOpacity(0.6),
+                            fontSize: 12,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                   ],
                 ),
               ),
+              if (price != null)
+                Text(
+                  '₹${price}',
+                  style: GoogleFonts.outfit(
+                    color: const Color(0xFF00CC6A),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
             ],
           ),
         );

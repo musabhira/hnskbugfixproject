@@ -1,13 +1,15 @@
 // Automatic FlutterFlow imports
 import 'dart:async';
+import 'dart:math';
 
 import 'package:pocket_mates_app/custom_code/widgets/search_profile_detail_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/message_screen.dart';
+import 'package:flutter/material.dart' as material;
 
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import 'package:flutter/material.dart';
+import 'package:fluent_ui/fluent_ui.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
@@ -43,6 +45,13 @@ class _GalleryProfileSearchPageState extends State<GalleryProfileSearchPage> {
   String? _colorCode1;
   String? _colorCode2;
   String? _colorCode3;
+
+  void safeSetState(VoidCallback fn) {
+    if (mounted) {
+      setState(fn);
+    }
+  }
+
   List<Map<String, dynamic>> galleryItems = [];
   List<Map<String, dynamic>> filteredItems = [];
   bool isLoading = true;
@@ -92,12 +101,13 @@ class _GalleryProfileSearchPageState extends State<GalleryProfileSearchPage> {
       }
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+        displayInfoBar(context, builder: (context, close) {
+          return InfoBar(
+            title: const Text('Error'),
             content: Text('Error loading profile: $error'),
-            backgroundColor: Colors.red,
-          ),
-        );
+            severity: InfoBarSeverity.error,
+          );
+        });
       }
     } finally {
       if (mounted) {
@@ -212,206 +222,201 @@ class _GalleryProfileSearchPageState extends State<GalleryProfileSearchPage> {
         _convertStringToColor(_colorCode2 ?? '#FFFF00');
     final Color buttontextcolor =
         _convertStringToColor(_colorCode3 ?? '#000000');
-    return Scaffold(
-      backgroundColor: bgcolorcode,
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Search Bar
-            const SizedBox(height: 8),
-            Container(
-              // height: 50,
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: Row(
-                children: [
-                  if (widget.showAppBar == true)
-                    GestureDetector(
-                      onTap: () => Navigator.of(context).pop(),
-                      child: Icon(
-                        Icons.arrow_back_ios_new,
-                        color: bgtextcolor,
-                        size: 20,
+    return ScaffoldPage(
+      content: ColoredBox(
+        color: bgcolorcode,
+        child: SafeArea(
+          child: Column(
+            children: [
+              // Search Bar
+              const SizedBox(height: 8),
+              Container(
+                // height: 50,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Row(
+                  children: [
+                    if (widget.showAppBar == true)
+                      GestureDetector(
+                        onTap: () => Navigator.of(context).pop(),
+                        child: Icon(
+                          FluentIcons.back,
+                          color: bgtextcolor,
+                          size: 20,
+                        ),
                       ),
-                    ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    // <-- this fixes layout issue!
-                    child: TextField(
-                      controller: _searchController,
-                      style: TextStyle(color: bgtextcolor),
-                      decoration: InputDecoration(
-                        hintText: 'Search gallery...',
-                        hintStyle: TextStyle(
-                            color: bgtextcolor.withValues(alpha: 0.4)),
-                        prefixIcon: Icon(Icons.search, color: bgtextcolor),
-                        suffixIcon: _searchController.text.isNotEmpty
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: TextBox(
+                        controller: _searchController,
+                        placeholder: 'Search gallery...',
+                        prefix: Padding(
+                          padding: const EdgeInsets.only(left: 8.0),
+                          child: Icon(FluentIcons.search, color: bgtextcolor),
+                        ),
+                        suffix: _searchController.text.isNotEmpty
                             ? IconButton(
-                                icon: Icon(Icons.clear, color: bgtextcolor),
+                                icon:
+                                    Icon(FluentIcons.clear, color: bgtextcolor),
                                 onPressed: () {
                                   _searchController.clear();
                                 },
                               )
                             : null,
-                        filled: true,
-                        fillColor: Colors.grey[900],
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(19),
-                          borderSide: BorderSide.none,
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(25),
-                          borderSide: BorderSide(color: bgtextcolor, width: 2),
-                        ),
+                        onChanged: (text) => _onSearchChanged(),
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Category Filter
-            Container(
-              height: 50,
-              padding: const EdgeInsets.only(left: 16),
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: categories.length,
-                itemBuilder: (context, index) {
-                  final category = categories[index];
-                  final isSelected = selectedCategory == category;
-
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 12),
-                    child: FilterChip(
-                      label: Text(
-                        category,
-                        style: TextStyle(
-                          color: isSelected ? buttontextcolor : bgtextcolor,
-                          fontWeight:
-                              isSelected ? FontWeight.bold : FontWeight.normal,
-                        ),
-                      ),
-                      selected: isSelected,
-                      onSelected: (selected) {
-                        safeSetState(() {
-                          selectedCategory = category;
-                          _filterItems();
-                        });
-                      },
-                      backgroundColor: bgcolorcode,
-                      selectedColor: buttoncolorcode,
-                      checkmarkColor: buttontextcolor,
-                      side: BorderSide(
-                        color: isSelected ? buttoncolorcode : bgtextcolor,
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-
-            // Results Count
-            if (!isLoading)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  children: [
-                    Text(
-                      '${filteredItems.length} results',
-                      style: TextStyle(
-                        color: bgtextcolor.withValues(alpha: 0.6),
-                        fontSize: 14,
-                      ),
-                    ),
-                    const Spacer(),
-                    if (_searchController.text.isNotEmpty ||
-                        selectedCategory != 'All')
-                      TextButton.icon(
-                        onPressed: () {
-                          safeSetState(() {
-                            _searchController.clear();
-                            selectedCategory = 'All';
-                            _filterItems();
-                          });
-                        },
-                        icon:
-                            Icon(Icons.clear_all, color: bgtextcolor, size: 16),
-                        label: Text(
-                          'Clear filters',
-                          style: TextStyle(color: bgtextcolor, fontSize: 12),
-                        ),
-                      ),
                   ],
                 ),
               ),
 
-            const SizedBox(height: 8),
+              // Category Filter
+              Container(
+                height: 50,
+                padding: const EdgeInsets.only(left: 16),
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: categories.length,
+                  itemBuilder: (context, index) {
+                    final category = categories[index];
+                    final isSelected = selectedCategory == category;
 
-            // Gallery Grid
-            Expanded(
-              child: isLoading
-                  ? Center(
-                      child: CircularProgressIndicator(
-                        color: bgtextcolor,
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 12),
+                      child: Button(
+                        onPressed: () {
+                          safeSetState(() {
+                            selectedCategory = category;
+                            _filterItems();
+                          });
+                        },
+                        style: ButtonStyle(
+                          backgroundColor: isSelected
+                              ? ButtonState.all(buttoncolorcode)
+                              : ButtonState.all(bgcolorcode),
+                        ),
+                        child: Text(
+                          category,
+                          style: TextStyle(
+                            color: isSelected ? buttontextcolor : bgtextcolor,
+                            fontWeight: isSelected
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                          ),
+                        ),
                       ),
-                    )
-                  : filteredItems.isEmpty
-                      ? Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                    );
+                  },
+                ),
+              ),
+
+              // Results Count
+              if (!isLoading)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    children: [
+                      Text(
+                        '${filteredItems.length} results',
+                        style: TextStyle(
+                          color: bgtextcolor.withValues(alpha: 0.6),
+                          fontSize: 14,
+                        ),
+                      ),
+                      const Spacer(),
+                      if (_searchController.text.isNotEmpty ||
+                          selectedCategory != 'All')
+                        Button(
+                          onPressed: () {
+                            safeSetState(() {
+                              _searchController.clear();
+                              selectedCategory = 'All';
+                              _filterItems();
+                            });
+                          },
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(
-                                Icons.search_off,
-                                size: 64,
-                                // ignore: deprecated_member_use
-                                color: bgtextcolor.withValues(alpha: 0.5),
-                              ),
-                              const SizedBox(height: 16),
+                              Icon(FluentIcons.clear_filter,
+                                  color: bgtextcolor, size: 16),
+                              const SizedBox(width: 4),
                               Text(
-                                'No results found',
-                                style: TextStyle(
-                                  // ignore: deprecated_member_use
-                                  color: bgtextcolor.withValues(alpha: 0.8),
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'Try adjusting your search or filters',
-                                style: TextStyle(
-                                  color: bgtextcolor.withValues(alpha: 0.6),
-                                  fontSize: 14,
-                                ),
+                                'Clear filters',
+                                style:
+                                    TextStyle(color: bgtextcolor, fontSize: 12),
                               ),
                             ],
                           ),
-                        )
-                      : Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: MasonryGridView.count(
-                            crossAxisCount: 2,
-                            mainAxisSpacing: 12,
-                            crossAxisSpacing: 12,
-                            itemCount: filteredItems.length,
-                            itemBuilder: (context, index) {
-                              final item = filteredItems[index];
-                              return GallerySearchCard(
-                                userId: widget.userid,
-                                item: item,
-                                allItems:
-                                    filteredItems, // Pass the filtered items list
-                                initialIndex: index,
-                                bgColor: bgcolorcode,
-                                bgtextcolor: bgtextcolor,
-                                buttoncolorcode: buttoncolorcode,
-                                buttontextcolor: buttontextcolor,
-                              );
-                            },
-                          ),
                         ),
-            ),
-          ],
+                    ],
+                  ),
+                ),
+
+              const SizedBox(height: 8),
+
+              // Gallery Grid
+              Expanded(
+                child: isLoading
+                    ? const Center(
+                        child: ProgressRing(),
+                      )
+                    : filteredItems.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  FluentIcons.search,
+                                  size: 64,
+                                  // ignore: deprecated_member_use
+                                  color: bgtextcolor.withValues(alpha: 0.5),
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'No results found',
+                                  style: TextStyle(
+                                    // ignore: deprecated_member_use
+                                    color: bgtextcolor.withValues(alpha: 0.8),
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Try adjusting your search or filters',
+                                  style: TextStyle(
+                                    color: bgtextcolor.withValues(alpha: 0.6),
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        : Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: MasonryGridView.count(
+                              crossAxisCount: 2,
+                              mainAxisSpacing: 12,
+                              crossAxisSpacing: 12,
+                              itemCount: filteredItems.length,
+                              itemBuilder: (context, index) {
+                                final item = filteredItems[index];
+                                return GallerySearchCard(
+                                  userId: widget.userid,
+                                  item: item,
+                                  allItems:
+                                      filteredItems, // Pass the filtered items list
+                                  initialIndex: index,
+                                  bgColor: bgcolorcode,
+                                  bgtextcolor: bgtextcolor,
+                                  buttoncolorcode: buttoncolorcode,
+                                  buttontextcolor: buttontextcolor,
+                                );
+                              },
+                            ),
+                          ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -443,7 +448,7 @@ class GallerySearchCard extends StatelessWidget {
       List<Map<String, dynamic>> allItems, int index) {
     Navigator.push(
       context,
-      MaterialPageRoute(
+      FluentPageRoute(
         builder: (context) => GalleryDetailsprofilePage(
           userid: userId,
           item: item,
@@ -493,7 +498,7 @@ class GallerySearchCard extends StatelessWidget {
                           return Container(
                             color: bgColor.withValues(alpha: 0.8),
                             child: Icon(
-                              Icons.image_not_supported,
+                              FluentIcons.error_badge,
                               color: bgtextcolor,
                               size: 48,
                             ),
@@ -503,7 +508,7 @@ class GallerySearchCard extends StatelessWidget {
                     : Container(
                         color: bgColor.withValues(alpha: 0.8),
                         child: Icon(
-                          Icons.image,
+                          FluentIcons.photo2,
                           color: bgtextcolor,
                           size: 48,
                         ),
@@ -547,11 +552,11 @@ class GallerySearchCard extends StatelessWidget {
                   const SizedBox(height: 8),
 
                   // Creator info and price
-                  InkWell(
+                  GestureDetector(
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
+                        FluentPageRoute(
                           builder: (context) => VerfiedSwitchPage(
                             userId: item['user_id'],
                           ),
@@ -561,19 +566,23 @@ class GallerySearchCard extends StatelessWidget {
                     child: Row(
                       children: [
                         // Profile image
-                        CircleAvatar(
-                          radius: 12,
-                          backgroundColor: bgtextcolor,
-                          backgroundImage: item['profile_image_url'] != null
-                              ? NetworkImage(item['profile_image_url'])
-                              : null,
-                          child: item['profile_image_url'] == null
-                              ? Icon(
-                                  Icons.person,
-                                  size: 14,
-                                  color: bgtextcolor,
-                                )
-                              : null,
+                        ClipOval(
+                          child: Container(
+                            width: 24,
+                            height: 24,
+                            decoration: BoxDecoration(
+                              color: bgtextcolor,
+                              shape: BoxShape.circle,
+                            ),
+                            child: item['profile_image_url'] != null
+                                ? Image.network(item['profile_image_url'],
+                                    fit: BoxFit.cover)
+                                : Icon(
+                                    FluentIcons.contact,
+                                    size: 14,
+                                    color: Colors.white,
+                                  ),
+                          ),
                         ),
                         const SizedBox(width: 6),
 
@@ -630,7 +639,8 @@ class GallerySearchCard extends StatelessWidget {
                           decoration: BoxDecoration(
                             color: bgColor.withValues(alpha: 0.4),
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.amber, width: 0.5),
+                            border:
+                                Border.all(color: Colors.yellow, width: 0.5),
                           ),
                           child: Text(
                             item['gallery_category'],
@@ -684,6 +694,12 @@ class _GalleryDetailsprofilePageState extends State<GalleryDetailsprofilePage> {
   late PageController _pageController;
   late int currentIndex;
 
+  void safeSetState(VoidCallback fn) {
+    if (mounted) {
+      setState(fn);
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -699,9 +715,10 @@ class _GalleryDetailsprofilePageState extends State<GalleryDetailsprofilePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: SafeArea(
+    return ScaffoldPage(
+        content: ColoredBox(
+      color: Colors.black,
+      child: SafeArea(
         child: PageView.builder(
           controller: _pageController,
           itemCount: widget.allItems.length,
@@ -723,7 +740,7 @@ class _GalleryDetailsprofilePageState extends State<GalleryDetailsprofilePage> {
           },
         ),
       ),
-    );
+    ));
   }
 }
 
@@ -765,11 +782,17 @@ class BuildDetailContentState extends State<BuildDetailContent> {
   String? receiverProfileImageP;
   String? phoneNumberProfile;
 
+  void safeSetState(VoidCallback fn) {
+    if (mounted) {
+      setState(fn);
+    }
+  }
+
   @override
   void initState() {
     super.initState();
     fetchUserProfile();
-    _loadComments();
+    fetchComments(null);
     _checkIfLiked();
     _getLikeCount();
     fetchHideStatus();
@@ -825,8 +848,11 @@ class BuildDetailContentState extends State<BuildDetailContent> {
     }
   }
 
-  Future<void> _loadComments({String? contentFilter}) async {
-    safeSetState(() {
+  Future<void> fetchComments(StateSetter? setModalState,
+      {String? contentFilter}) async {
+    final updateState = setModalState ?? safeSetState;
+
+    updateState(() {
       _isLoading = true;
     });
 
@@ -912,15 +938,14 @@ class BuildDetailContentState extends State<BuildDetailContent> {
         return 0;
       });
 
-      safeSetState(() {
+      updateState(() {
         _comments = enrichedComments;
         _isLoading = false;
       });
     } catch (error) {
-      safeSetState(() {
+      updateState(() {
         // Don't clear _comments on error to preserve existing data
         _isLoading = false;
-        // Don't clear _comments on error to preserve existing data
       });
     }
   }
@@ -979,232 +1004,201 @@ class BuildDetailContentState extends State<BuildDetailContent> {
   }
 
   void _showCommentsModal() {
-    showModalBottomSheet(
+    showDialog(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
       builder: (context) {
         return StatefulBuilder(
-          builder: (BuildContext context, StateSetter setModalState) {
-            return DraggableScrollableSheet(
-              initialChildSize: 0.9,
-              minChildSize: 0.5,
-              maxChildSize: 0.95,
-              builder: (_, scrollController) {
-                return Container(
-                  decoration: BoxDecoration(
-                    color: widget.bgColor,
-                    borderRadius:
-                        const BorderRadius.vertical(top: Radius.circular(20)),
-                  ),
-                  child: Column(
-                    children: [
-                      // Drag handle
-                      Container(
-                        margin: const EdgeInsets.only(top: 10),
-                        width: 40,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          // ignore: deprecated_member_use
-                          color: widget.bgtextcolor.withValues(alpha: 0.3),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
+          builder: (context, setModalState) {
+            return ContentDialog(
+              constraints: const BoxConstraints(
+                  maxWidth: 600), // Limit width for better desktop look
+              title: Text(
+                'Comments (${_comments.length})',
+                style: TextStyle(
+                  color: widget.bgtextcolor,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              content: Container(
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.of(context).size.height * 0.7,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Drag handle
+                    Container(
+                      margin: const EdgeInsets.only(top: 10),
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        // ignore: deprecated_member_use
+                        color: widget.bgtextcolor.withValues(alpha: 0.3),
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      // Header
-                      Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Comments (${_comments.length})',
-                              style: TextStyle(
-                                color: widget.bgtextcolor,
-                                fontWeight: FontWeight.w500,
-                              ),
+                    ),
+                    // Header
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Comments (${_comments.length})',
+                            style: TextStyle(
+                              color: widget.bgtextcolor,
+                              fontWeight: FontWeight.bold,
                             ),
-                            IconButton(
-                              icon:
-                                  Icon(Icons.close, color: widget.bgtextcolor),
-                              onPressed: () => Navigator.pop(context),
-                            ),
-                          ],
-                        ),
-                      ),
-                      // Search bar
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        child: TextField(
-                          style: TextStyle(
-                              color: widget.bgtextcolor), // White input text
-                          decoration: InputDecoration(
-                            hintText: 'Search comments...',
-                            hintStyle: TextStyle(
-                                color: widget.bgtextcolor.withValues(
-                                    alpha: 0.5)), // Optional: lighter hint
-                            prefixIcon: Icon(
-                              Icons.search,
-                              color: widget.buttoncolorcode, // Yellow icon
-                            ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(30),
-                              borderSide: BorderSide.none,
-                            ),
-                            filled: true,
-                            fillColor:
-                                widget.bgtextcolor.withValues(alpha: 0.1),
                           ),
-                          onChanged: (value) {
-                            if (value.length >= 2 || value.isEmpty) {
-                              Future.delayed(const Duration(milliseconds: 500),
-                                  () {
-                                fetchComments(setModalState,
-                                    contentFilter: value);
-                              });
-                            }
-                          },
-                        ),
+                          IconButton(
+                            icon: Icon(FluentIcons.clear,
+                                color: widget.bgtextcolor),
+                            onPressed: () => Navigator.pop(context),
+                          ),
+                        ],
                       ),
-
-                      const SizedBox(height: 10),
-
-                      // Comments list
-                      Expanded(
-                        child: _isLoading
-                            ? Center(
-                                child: CircularProgressIndicator(
-                                  color: widget.buttoncolorcode,
-                                ),
-                              )
-                            : _comments.isEmpty
-                                ? Center(
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Icon(
-                                          Icons.chat_bubble_outline,
-                                          size: 80,
-                                          // ignore: deprecated_member_use
-                                          color: widget.bgtextcolor
-                                              .withValues(alpha: 0.3),
-                                        ),
-                                        const SizedBox(height: 16),
-                                        Text(
-                                          'No comments yet',
-                                          style: TextStyle(
-                                            color: widget.bgtextcolor,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 8),
-                                        Text(
-                                          'Be the first to share your thoughts!',
-                                          style: TextStyle(
-                                            color: widget.bgtextcolor,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  )
-                                : ListView.builder(
-                                    controller: scrollController,
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 16),
-                                    itemCount: _comments.length,
-                                    itemBuilder: (context, index) {
-                                      final comment = _comments[index];
-                                      return EnhancedCommentTile(
-                                          comment: comment);
-                                    },
-                                  ),
-                      ),
-
-                      // Comment input area
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 12),
-                        decoration: BoxDecoration(
-                          color: widget.bgColor, // White background color
-                          boxShadow: [
-                            BoxShadow(
-                              // ignore: deprecated_member_use
-                              color: Colors.black.withValues(alpha: 0.05),
-                              blurRadius: 10,
-                              offset: const Offset(0, -3),
-                            ),
-                          ],
+                    ),
+                    // Search bar
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: TextBox(
+                        placeholder: 'Search comments...',
+                        prefix: Padding(
+                          padding: const EdgeInsets.only(left: 8.0),
+                          child: Icon(
+                            FluentIcons.search,
+                            color: widget.buttoncolorcode,
+                          ),
                         ),
-                        child: SafeArea(
-                          child: Row(
-                            children: [
-                              // CircleAvatar(
-                              //   radius: 18,
-                              //   backgroundImage: NetworkImage(
-                              //     _supabase.auth.currentUser
-                              //             ?.userMetadata?[''] ??
-                              //         'https://via.placeholder.com/36',
-                              //   ),
-                              //   backgroundColor: Colors.grey[300],
-                              // ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: TextField(
-                                  controller: _commentController,
-                                  maxLines: null,
-                                  textCapitalization:
-                                      TextCapitalization.sentences,
-                                  style: TextStyle(color: widget.bgtextcolor),
-                                  decoration: InputDecoration(
-                                    hintText: 'Add a comment...',
-                                    hintStyle:
-                                        TextStyle(color: widget.bgtextcolor),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(24),
-                                      borderSide: BorderSide.none,
-                                    ),
-                                    filled: true,
-                                    // ignore: deprecated_member_use
-                                    fillColor: widget.bgtextcolor
-                                        .withValues(alpha: 0.1),
-                                    contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 10,
-                                    ),
+                        onChanged: (value) {
+                          if (value.length >= 2 || value.isEmpty) {
+                            Future.delayed(const Duration(milliseconds: 500),
+                                () {
+                              fetchComments(setModalState,
+                                  contentFilter: value);
+                            });
+                          }
+                        },
+                      ),
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    // Comments list
+                    Expanded(
+                      child: _isLoading
+                          ? const Center(
+                              child: ProgressRing(),
+                            )
+                          : _comments.isEmpty
+                              ? Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        FluentIcons.comment,
+                                        size: 80,
+                                        color: widget.bgtextcolor
+                                            .withValues(alpha: 0.3),
+                                      ),
+                                      const SizedBox(height: 16),
+                                      Text(
+                                        'No comments yet',
+                                        style: TextStyle(
+                                          color: widget.bgtextcolor,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        'Be the first to share your thoughts!',
+                                        style: TextStyle(
+                                          color: widget.bgtextcolor,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ],
                                   ),
+                                )
+                              : ListView.builder(
+                                  controller: ScrollController(),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16),
+                                  itemCount: _comments.length,
+                                  itemBuilder: (context, index) {
+                                    final comment = _comments[index];
+                                    return EnhancedCommentTile(
+                                      comment: comment,
+                                      onDataChanged: () =>
+                                          fetchComments(setModalState),
+                                      onCommentDeleted: () =>
+                                          fetchComments(setModalState),
+                                    );
+                                  },
                                 ),
-                              ),
-                              const SizedBox(width: 8),
-                              MaterialButton(
-                                onPressed: () {
-                                  _addComment();
-                                  // After adding comment, refresh comments list
-                                  Future.delayed(
-                                      const Duration(milliseconds: 300), () {
-                                    fetchComments(setModalState);
-                                  });
+                    ),
+
+                    // Comment input area
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: widget.bgColor, // White background color
+                        boxShadow: [
+                          BoxShadow(
+                            // ignore: deprecated_member_use
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, -3),
+                          ),
+                        ],
+                      ),
+                      child: SafeArea(
+                        child: Row(
+                          children: [
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: TextBox(
+                                controller: _commentController,
+                                maxLines: null,
+                                placeholder: 'Add a comment...',
+                                onSubmitted: (value) async {
+                                  await _addComment();
+                                  if (mounted) fetchComments(setModalState);
                                 },
-                                color: widget.buttoncolorcode,
-                                textColor: widget.buttontextcolor,
-                                minWidth: 0,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            GestureDetector(
+                              onTap: () async {
+                                await _addComment();
+                                // After adding comment, refresh comments list
+                                if (mounted) fetchComments(setModalState);
+                              },
+                              child: Container(
+                                width: 36,
                                 height: 36,
-                                padding: const EdgeInsets.all(25),
-                                shape: const CircleBorder(),
+                                decoration: BoxDecoration(
+                                  color: widget.buttoncolorcode,
+                                  shape: BoxShape.circle,
+                                ),
+                                padding: const EdgeInsets.all(8),
+                                alignment: Alignment.center,
                                 child: Icon(
-                                  Icons.send,
+                                  FluentIcons.send,
                                   size: 14,
                                   color: widget.buttontextcolor,
                                 ),
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ),
-                    ],
-                  ),
-                );
-              },
+                    ),
+                  ],
+                ),
+              ),
             );
           },
         );
@@ -1212,39 +1206,8 @@ class BuildDetailContentState extends State<BuildDetailContent> {
     );
   }
 
-  Future<void> fetchComments(StateSetter setModalState,
-      {String? contentFilter}) async {
-    try {
-      // Start with the base query filtering by gallery_id
-      var query = _supabase
-          .from('gallery_with_comments_view')
-          .select()
-          .eq('gallery_id', widget.item['gallery_id'])
-          // Only show rows where comment_content is not null
-          .not('comment_content', 'is', null);
-
-      // Add content filter if provided
-      if (contentFilter != null && contentFilter.isNotEmpty) {
-        // Filter comments that contain the search text
-        query = query.ilike('comment_content', '%$contentFilter%');
-      }
-
-      // Execute the query
-      final response = await query;
-
-      setModalState(() {
-        _comments = List<Map<String, dynamic>>.from(response);
-        _isLoading = false;
-      });
-    } catch (error) {
-      setModalState(() {
-        _isLoading = false;
-      });
-    }
-  }
-
   // void _showGroupSelectionBottomSheet(BuildContext context) {
-  //   showModalBottomSheet(
+  //   showDialog(
   //     context: context,
   //     backgroundColor: Colors.transparent,
   //     isScrollControlled: true,
@@ -1263,9 +1226,9 @@ class BuildDetailContentState extends State<BuildDetailContent> {
 
   Widget buildAnimatedShareButton(BuildContext context) {
     return AnimatedButtonWithMenu(
-      mainIcon: Icons.share,
+      mainIcon: FluentIcons.share,
       mainLabel: 'Share',
-      mainColor: Colors.blueAccent,
+      mainColor: Colors.blue,
       onMainTap: () {
         final String title =
             widget.item['gallery_title'] ?? 'Check out this art!';
@@ -1276,33 +1239,34 @@ class BuildDetailContentState extends State<BuildDetailContent> {
         Share.share('$title\n\n$desc\n\n$itemLink');
       },
       menuItems: [
-        PopupMenuItem(
-          child: const Row(
-            children: [
+        MenuFlyoutItem(
+          leading:
               Icon(FontAwesomeIcons.whatsapp, size: 16, color: Colors.green),
-              SizedBox(width: 8),
-              Text('WhatsApp'),
-            ],
-          ),
-          onTap: () => WhatsAppShareHelper.shareToWhatsApp(
+          text: const Text('WhatsApp'),
+          onPressed: () => WhatsAppShareHelper.shareToWhatsApp(
             context: context,
             item: widget.item,
           ),
         ),
-        PopupMenuItem(
-          child: const Row(
+        MenuFlyoutItem(
+          text: const Row(
             children: [
-              Icon(Icons.copy, size: 16),
+              Icon(FluentIcons.copy, size: 16),
               SizedBox(width: 8),
               Text('Copy Link'),
             ],
           ),
-          onTap: () {
+          onPressed: () {
             final String itemLink =
                 '${WhatsAppShareHelper.baseAppUrl}/item/${widget.item['gallery_id']?.toString() ?? widget.item['id']?.toString() ?? ''}';
             Clipboard.setData(ClipboardData(text: itemLink));
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Link copied to clipboard!')),
+            displayInfoBar(
+              context,
+              builder: (context, close) => const InfoBar(
+                title: Text('Copied'),
+                content: Text('Link copied to clipboard!'),
+                severity: InfoBarSeverity.success,
+              ),
             );
           },
         ),
@@ -1353,9 +1317,9 @@ class BuildDetailContentState extends State<BuildDetailContent> {
     return widget.item['phone_no'] != null &&
             widget.item['phone_no'].toString().isNotEmpty
         ? AnimatedButtonWithMenu(
-            mainIcon: Icons.message,
+            mainIcon: FluentIcons.message,
             mainLabel: 'Message on WhatsApp',
-            mainColor: Colors.green.shade700,
+            mainColor: Colors.green,
             onMainTap: () => WhatsAppShareHelper.shareToSpecificWhatsAppNumber(
               context: context,
               item: widget.item,
@@ -1363,30 +1327,32 @@ class BuildDetailContentState extends State<BuildDetailContent> {
               includeFullDetails: false, // Simple message for direct contact
             ),
             menuItems: [
-              PopupMenuItem(
-                child: const Row(
+              MenuFlyoutItem(
+                text: const Row(
                   children: [
-                    Icon(Icons.chat_bubble_outline, size: 16),
+                    Icon(FluentIcons.chat, size: 16),
                     SizedBox(width: 8),
                     Text('Send simple message'),
                   ],
                 ),
-                onTap: () => WhatsAppShareHelper.shareToSpecificWhatsAppNumber(
+                onPressed: () =>
+                    WhatsAppShareHelper.shareToSpecificWhatsAppNumber(
                   context: context,
                   item: widget.item,
                   phoneNumber: widget.item['phone_no'].toString(),
                   includeFullDetails: false,
                 ),
               ),
-              PopupMenuItem(
-                child: const Row(
+              MenuFlyoutItem(
+                text: Row(
                   children: [
-                    Icon(Icons.info_outline, size: 16),
+                    Icon(FluentIcons.chat, size: 16),
                     SizedBox(width: 8),
                     Text('Send with full details'),
                   ],
                 ),
-                onTap: () => WhatsAppShareHelper.shareToSpecificWhatsAppNumber(
+                onPressed: () =>
+                    WhatsAppShareHelper.shareToSpecificWhatsAppNumber(
                   context: context,
                   item: widget.item,
                   phoneNumber: widget.item['phone_no'].toString(),
@@ -1404,8 +1370,13 @@ class BuildDetailContentState extends State<BuildDetailContent> {
     try {
       final userId = _supabase.auth.currentUser?.id;
       if (userId == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('You need to be logged in to comment')),
+        displayInfoBar(
+          context,
+          builder: (context, close) => const InfoBar(
+            title: Text('Error'),
+            content: Text('You need to be logged in to comment'),
+            severity: InfoBarSeverity.error,
+          ),
         );
         return;
       }
@@ -1422,8 +1393,13 @@ class BuildDetailContentState extends State<BuildDetailContent> {
       final profileId = profileResponse['id'];
       if (profileId == null) {
         if (!context.mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Profile not found')),
+        displayInfoBar(
+          context,
+          builder: (context, close) => const InfoBar(
+            title: Text('Error'),
+            content: Text('Profile not found'),
+            severity: InfoBarSeverity.error,
+          ),
         );
         return;
       }
@@ -1445,18 +1421,27 @@ class BuildDetailContentState extends State<BuildDetailContent> {
       });
 
       // Re-fetch all comments to update the list
-      await _loadComments();
+      await fetchComments(null);
 
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Comment added successfully')),
+      displayInfoBar(
+        context,
+        builder: (context, close) => const InfoBar(
+          title: Text('Success'),
+          content: Text('Comment added successfully'),
+          severity: InfoBarSeverity.success,
+        ),
       );
     } catch (e) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error adding comment: $e')),
+      displayInfoBar(
+        context,
+        builder: (context, close) => InfoBar(
+          title: const Text('Error'),
+          content: Text('Error adding comment: $e'),
+          severity: InfoBarSeverity.error,
+        ),
       );
-      // print(e);
     }
   }
 
@@ -1476,39 +1461,32 @@ class BuildDetailContentState extends State<BuildDetailContent> {
   ) {
     return CustomScrollView(
       slivers: [
-        // App Bar
-        SliverAppBar(
-          backgroundColor: widget.bgColor,
-          elevation: 0,
-          floating: true,
-          pinned: true,
-          leading: IconButton(
-            icon: Icon(Icons.arrow_back, color: widget.bgtextcolor),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-          actions: [
-            // LikeButton(
-            //   isLiked: _isLiked,
-            //   likeCount: _likeCount,
-            //   onTap: _toggleLike,
-            // ),
-            ReportButton(
-              contentType: 'gallery',
-              contentId: widget.item['gallery_id'].toString(),
-              contentTitle: widget.item['gallery_title'] ?? 'Gallery Item',
-              onReportSubmitted: () {
-                if (!context.mounted) return;
-                // Optional: Show feedback to user
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                        'Thank you for your report. We\'ll review it soon.'),
-                    backgroundColor: Colors.green,
+        SliverToBoxAdapter(
+          child: Container(
+            color: widget.bgColor,
+            child: PageHeader(
+              leading: IconButton(
+                icon: Icon(FluentIcons.back, color: widget.bgtextcolor),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+              title: Text(
+                widget.item['gallery_title'] ?? 'Gallery Detail',
+                style: TextStyle(color: widget.bgtextcolor),
+              ),
+              commandBar: CommandBar(
+                mainAxisAlignment: MainAxisAlignment.end,
+                primaryItems: [
+                  CommandBarButton(
+                    icon: Icon(FluentIcons.warning, color: widget.bgtextcolor),
+                    label: const Text('Report'),
+                    onPressed: () {
+                      // Implement report logic
+                    },
                   ),
-                );
-              },
+                ],
+              ),
             ),
-          ],
+          ),
         ),
 
         // Main Content
@@ -1537,7 +1515,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                                       color:
                                           widget.bgColor.withValues(alpha: 0.5),
                                       child: Icon(
-                                        Icons.image_not_supported,
+                                        FluentIcons.photo2,
                                         color: widget.bgtextcolor,
                                         size: 64,
                                       ),
@@ -1547,7 +1525,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                               : Container(
                                   color: widget.bgColor.withValues(alpha: 0.5),
                                   child: Icon(
-                                    Icons.image,
+                                    FluentIcons.photo2,
                                     color: widget.bgtextcolor,
                                     size: 64,
                                   ),
@@ -1577,7 +1555,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                                     ),
                                   ),
                                 ),
-                              // ElevatedButton(
+                              // Button(
                               //   onPressed: () async {
                               //     final isAuthenticated =
                               //         await AuthAlertBox.checkAuthAndShowAlert(
@@ -1590,7 +1568,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                               //       _showGroupSelectionBottomSheet(context);
                               //     }
                               //   },
-                              //   style: ElevatedButton.styleFrom(
+                              //   style: Button.styleFrom(
                               //     backgroundColor: widget.buttoncolorcode,
                               //     foregroundColor: widget.buttontextcolor,
                               //     padding: const EdgeInsets.all(13),
@@ -1636,7 +1614,6 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: IconButton(
-                            padding: EdgeInsets.zero,
                             onPressed: () async {
                               final link =
                                   "${WhatsAppShareHelper.baseAppUrl}/shareGallery?galleryId=${item['gallery_id']}";
@@ -1644,15 +1621,17 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                                   ClipboardData(text: link));
                               if (!context.mounted) return;
                               // ignore: use_build_context_synchronously
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
+                              displayInfoBar(
+                                context,
+                                builder: (context, close) => const InfoBar(
+                                  title: Text('Copied'),
                                   content: Text('Link copied to clipboard'),
-                                  duration: Duration(seconds: 2),
+                                  severity: InfoBarSeverity.success,
                                 ),
                               );
                             },
                             icon: Icon(
-                              Icons.link,
+                              FluentIcons.link,
                               size: 16,
                               color: widget.buttontextcolor,
                             ),
@@ -1666,11 +1645,11 @@ class BuildDetailContentState extends State<BuildDetailContent> {
 
                   // Creator Info Card
                   item['name'] != null
-                      ? InkWell(
+                      ? GestureDetector(
                           onTap: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(
+                              FluentPageRoute(
                                 builder: (context) => VerfiedSwitchPage(
                                   userId: item['user_id'] ?? widget.userid,
                                 ),
@@ -1684,11 +1663,11 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                               color: widget.bgtextcolor.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(
-                                  color: Colors.grey[800]!, width: 1),
+                                  color: material.Colors.grey[800]!, width: 1),
                             ),
                             child: Row(
                               children: [
-                                CircleAvatar(
+                                material.CircleAvatar(
                                   radius: 30,
                                   backgroundColor: widget.buttoncolorcode,
                                   backgroundImage: item['profile_image_url'] !=
@@ -1697,7 +1676,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                                       : null,
                                   child: item['profile_image_url'] == null
                                       ? Icon(
-                                          Icons.person,
+                                          FluentIcons.contact,
                                           size: 30,
                                           color: widget.buttontextcolor,
                                         )
@@ -1743,7 +1722,8 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                     decoration: BoxDecoration(
                       color: widget.bgtextcolor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.grey[800]!, width: 1),
+                      border: Border.all(
+                          color: material.Colors.grey[800]!, width: 1),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1761,7 +1741,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                         // Price
                         if (item['gallery_price'] != null)
                           _buildDetailRow(
-                            Icons.attach_money,
+                            FluentIcons.money,
                             'Price',
                             '₹${item['gallery_price']}',
                           ),
@@ -1769,7 +1749,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                         // Category
                         if (item['gallery_category'] != null)
                           _buildDetailRow(
-                            Icons.category,
+                            FluentIcons.list,
                             'Category',
                             item['gallery_category'],
                           ),
@@ -1777,7 +1757,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                         // Created Date
                         if (item['gallery_created_at'] != null)
                           _buildDetailRow(
-                            Icons.calendar_today,
+                            FluentIcons.calendar,
                             'Created',
                             _formatDate(item['gallery_created_at']),
                           ),
@@ -1820,7 +1800,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                     child: Row(
                       children: [
                         Expanded(
-                          child: ElevatedButton.icon(
+                          child: Button(
                             onPressed: () async {
                               final isAuthenticated =
                                   await AuthAlertBox.checkAuthAndShowAlert(
@@ -1832,7 +1812,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                               if (isAuthenticated) {
                                 Navigator.push(
                                   context,
-                                  MaterialPageRoute(
+                                  FluentPageRoute(
                                     builder: (context) => MessageScreen(
                                       receiverId:
                                           widget.userid ?? item['user_id'],
@@ -1845,21 +1825,29 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                                 );
                               }
                             },
-                            icon: Icon(Icons.chat_bubble_outline,
-                                color: widget.buttontextcolor),
-                            label: Text(
-                              'Chat',
-                              style: TextStyle(
-                                color: widget.buttontextcolor,
-                                fontWeight: FontWeight.bold,
-                              ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(FluentIcons.chat,
+                                    color: widget.buttontextcolor),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Chat',
+                                  style: TextStyle(
+                                    color: widget.buttontextcolor,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
                             ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: widget.buttoncolorcode,
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(
+                            style: ButtonStyle(
+                              backgroundColor:
+                                  ButtonState.all(widget.buttoncolorcode),
+                              padding: ButtonState.all(
+                                  const EdgeInsets.symmetric(vertical: 16)),
+                              shape: ButtonState.all(RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
-                              ),
+                              )),
                             ),
                           ),
                         ),
@@ -1883,14 +1871,20 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            TextButton.icon(
-                              icon: Icon(Icons.chat_bubble_outline,
-                                  size: 18, color: widget.buttoncolorcode),
-                              label: Text(
-                                'View All (${_comments.length})',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: widget.buttoncolorcode),
+                            Button(
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(FluentIcons.chat,
+                                      size: 18, color: widget.buttoncolorcode),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'View All (${_comments.length})',
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: widget.buttoncolorcode),
+                                  ),
+                                ],
                               ),
                               onPressed: () async {
                                 final isAuthenticated =
@@ -1904,8 +1898,9 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                                   _showCommentsModal();
                                 }
                               },
-                              style: TextButton.styleFrom(
-                                foregroundColor: widget.buttoncolorcode,
+                              style: ButtonStyle(
+                                foregroundColor:
+                                    ButtonState.all(widget.buttoncolorcode),
                               ),
                             ),
                           ],
@@ -1913,7 +1908,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                         const SizedBox(height: 12),
 
                         // Comment input (compact version)
-                        InkWell(
+                        GestureDetector(
                           onTap: () async {
                             final isAuthenticated =
                                 await AuthAlertBox.checkAuthAndShowAlert(
@@ -1935,7 +1930,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                             ),
                             child: Row(
                               children: [
-                                CircleAvatar(
+                                material.CircleAvatar(
                                   radius: 16,
                                   backgroundImage: NetworkImage(
                                     _supabase.auth.currentUser
@@ -1956,7 +1951,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                                   ),
                                 ),
                                 Icon(
-                                  Icons.send,
+                                  FluentIcons.send,
                                   color:
                                       widget.bgtextcolor.withValues(alpha: 0.8),
                                   size: 18,
@@ -1971,8 +1966,10 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                         // Comments preview (3 most recent)
                         _isLoading
                             ? Center(
-                                child: CircularProgressIndicator(
-                                    color: widget.bgtextcolor))
+                                child: ProgressRing(
+                                value: 0.5,
+                                strokeWidth: 2,
+                              ))
                             : _comments.isEmpty
                                 ? Center(
                                     child: Padding(
@@ -1980,7 +1977,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                                       child: Column(
                                         children: [
                                           Icon(
-                                            Icons.chat_bubble_outline,
+                                            FluentIcons.chat,
                                             size: 48,
                                             // ignore: deprecated_member_use
                                             color: widget.bgtextcolor
@@ -2013,7 +2010,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                                         Padding(
                                           padding:
                                               const EdgeInsets.only(top: 8.0),
-                                          child: TextButton(
+                                          child: Button(
                                             onPressed: _showCommentsModal,
                                             child: Text(
                                               'View ${_comments.length - 3} more comments',
@@ -2069,6 +2066,12 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
   final TextEditingController _replyController = TextEditingController();
   bool _isReplying = false;
 
+  void safeSetState(VoidCallback fn) {
+    if (mounted) {
+      setState(fn);
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -2118,8 +2121,13 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
       });
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to update like: $e')),
+        displayInfoBar(
+          context,
+          builder: (context, close) => InfoBar(
+            title: const Text('Error'),
+            content: Text('Failed to update like: $e'),
+            severity: InfoBarSeverity.error,
+          ),
         );
       }
     }
@@ -2149,8 +2157,13 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
           _isLoadingReplies = false;
         });
         // print(e);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to load replies: $e')),
+        displayInfoBar(
+          context,
+          builder: (context, close) => InfoBar(
+            title: const Text('Error'),
+            content: Text('Failed to load replies: $e'),
+            severity: InfoBarSeverity.error,
+          ),
         );
         // print(e);
       }
@@ -2181,8 +2194,13 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to add reply: $e')),
+        displayInfoBar(
+          context,
+          builder: (context, close) => InfoBar(
+            content: Text('Failed to add reply: $e'),
+            title: const Text('Error'),
+            severity: InfoBarSeverity.error,
+          ),
         );
         // print(e);
       }
@@ -2232,9 +2250,9 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
                       return Container(
                         width: 32,
                         height: 32,
-                        color: Colors.grey[800],
-                        child: Icon(Icons.person,
-                            size: 18, color: Colors.grey[400]),
+                        color: material.Colors.grey[800],
+                        child: Icon(FluentIcons.contact,
+                            size: 18, color: material.Colors.grey[400]),
                       );
                     },
                   ),
@@ -2261,14 +2279,14 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
                 ),
               ),
               IconButton(
-                icon:
-                    const Icon(Icons.more_horiz, color: Colors.grey, size: 20),
+                icon: Icon(FluentIcons.more,
+                    color: material.Colors.grey, size: 20),
                 onPressed: () {
                   final currentUserId = _supabase.auth.currentUser?.id;
                   final bool isCommentOwner =
                       currentUserId == widget.comment['user_id'];
 
-                  showModalBottomSheet(
+                  showDialog(
                     context: context,
                     builder: (context) => Container(
                       padding: const EdgeInsets.symmetric(vertical: 20),
@@ -2276,29 +2294,29 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           if (isCommentOwner)
-                            ListTile(
-                              leading: const Icon(Icons.delete_outline,
-                                  color: Colors.red),
+                            material.ListTile(
+                              leading: const Icon(FluentIcons.delete,
+                                  color: material.Colors.red),
                               title: const Text('Delete comment'),
                               onTap: () async {
                                 Navigator.pop(context);
 
                                 final shouldDelete = await showDialog<bool>(
                                   context: context,
-                                  builder: (context) => AlertDialog(
+                                  builder: (context) => ContentDialog(
                                     title: const Text('Delete Comment'),
                                     content: const Text(
                                         'Are you sure you want to delete this comment? This action cannot be undone.'),
                                     actions: [
-                                      TextButton(
+                                      Button(
                                         child: const Text('Cancel'),
                                         onPressed: () =>
                                             Navigator.of(context).pop(false),
                                       ),
-                                      TextButton(
+                                      Button(
                                         child: const Text('Delete',
-                                            style:
-                                                TextStyle(color: Colors.red)),
+                                            style: TextStyle(
+                                                color: material.Colors.red)),
                                         onPressed: () =>
                                             Navigator.of(context).pop(true),
                                       ),
@@ -2314,11 +2332,15 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
                                         .eq('id', widget.comment['comment_id']);
 
                                     if (context.mounted) {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        const SnackBar(
-                                            content: Text(
-                                                'Comment deleted successfully')),
+                                      displayInfoBar(
+                                        context,
+                                        builder: (context, close) =>
+                                            const InfoBar(
+                                          title: const Text('Success'),
+                                          content: const Text(
+                                              'Comment deleted successfully'),
+                                          severity: InfoBarSeverity.success,
+                                        ),
                                       );
 
                                       if (widget.onCommentDeleted != null) {
@@ -2327,11 +2349,14 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
                                     }
                                   } catch (e) {
                                     if (context.mounted) {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        SnackBar(
-                                            content: Text(
-                                                'Failed to delete comment: $e')),
+                                      displayInfoBar(
+                                        context,
+                                        builder: (context, close) => InfoBar(
+                                          title: const Text('Error'),
+                                          content: Text(
+                                              'Failed to delete comment: $e'),
+                                          severity: InfoBarSeverity.error,
+                                        ),
                                       );
                                     }
                                     // print(e);
@@ -2339,8 +2364,8 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
                                 }
                               },
                             ),
-                          ListTile(
-                            leading: const Icon(Icons.flag_outlined),
+                          material.ListTile(
+                            leading: const Icon(FluentIcons.flag),
                             title: const Text('Report comment'),
                             onTap: () {
                               Navigator.pop(context);
@@ -2355,32 +2380,39 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
                                         'Comment',
                                 onReportSubmitted: () {
                                   // Optional: Show feedback to user
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
+                                  displayInfoBar(
+                                    context,
+                                    builder: (context, close) => const InfoBar(
                                       content: Text(
                                           'Thank you for your report. We\'ll review it soon.'),
-                                      backgroundColor: Colors.green,
+                                      title: Text('Reported'),
                                     ),
                                   );
                                 },
                               );
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Reported')),
+                              displayInfoBar(
+                                context,
+                                builder: (context, close) => const InfoBar(
+                                  title: Text('Reported'),
+                                  severity: InfoBarSeverity.success,
+                                ),
                               );
                             },
                           ),
-                          ListTile(
-                            leading: const Icon(Icons.copy),
+                          material.ListTile(
+                            leading: const Icon(FluentIcons.copy),
                             title: const Text('Copy text'),
                             onTap: () {
                               Navigator.pop(context);
                               Clipboard.setData(ClipboardData(
                                   text:
                                       widget.comment['comment_content'] ?? ''));
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                    content:
-                                        Text('Comment copied to clipboard')),
+                              displayInfoBar(
+                                context,
+                                builder: (context, close) => const InfoBar(
+                                  content: Text('Comment copied to clipboard'),
+                                  title: Text('Copied'),
+                                ),
                               );
                             },
                           ),
@@ -2400,43 +2432,34 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
           const SizedBox(height: 12),
           Row(
             children: [
-              TextButton.icon(
-                icon: Icon(
-                  _isLiked ? Icons.thumb_up : Icons.thumb_up_outlined,
-                  size: 16,
-                  color: _isLiked
-                      ? FlutterFlowTheme.of(context).primary
-                      : Colors.grey,
-                ),
-                label: Text(
-                  _likeCount > 0 ? '$_likeCount' : 'Like',
-                  style: TextStyle(
-                    color: _isLiked
-                        ? FlutterFlowTheme.of(context).primary
-                        : Colors.grey,
-                  ),
-                ),
-                style: TextButton.styleFrom(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  minimumSize: const Size(0, 0),
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
+              Button(
                 onPressed: _toggleLike,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      _isLiked
+                          ? material.Icons.thumb_up
+                          : material.Icons.thumb_up_outlined,
+                      size: 16,
+                      color: _isLiked
+                          ? FlutterFlowTheme.of(context).primary
+                          : material.Colors.grey,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      _likeCount > 0 ? '$_likeCount' : 'Like',
+                      style: TextStyle(
+                        color: _isLiked
+                            ? FlutterFlowTheme.of(context).primary
+                            : material.Colors.grey,
+                      ),
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(width: 16),
-              TextButton.icon(
-                icon: const Icon(Icons.reply, size: 16),
-                label: Text(_replies.isNotEmpty
-                    ? 'Replies (${_replies.length})'
-                    : 'Reply'),
-                style: TextButton.styleFrom(
-                  foregroundColor: Colors.grey,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  minimumSize: const Size(0, 0),
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
+              Button(
                 onPressed: () {
                   if (_showReplies) {
                     safeSetState(() {
@@ -2452,16 +2475,30 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
                     }
                   }
                 },
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(FluentIcons.reply, size: 16),
+                    const SizedBox(width: 8),
+                    Text(_replies.isNotEmpty
+                        ? 'Replies (${_replies.length})'
+                        : 'Reply'),
+                  ],
+                ),
               ),
             ],
           ),
           if (_showReplies) ...[
-            const Divider(height: 24, thickness: 0.5),
+            Container(
+              height: 0.5,
+              color: material.Colors.grey.withOpacity(0.5),
+              margin: const EdgeInsets.symmetric(vertical: 12),
+            ),
             if (_isLoadingReplies)
               const Center(
                 child: Padding(
                   padding: EdgeInsets.all(8.0),
-                  child: CircularProgressIndicator(strokeWidth: 2),
+                  child: ProgressRing(strokeWidth: 2),
                 ),
               )
             else if (_replies.isEmpty)
@@ -2509,7 +2546,7 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
                                   width: 24,
                                   height: 24,
                                   color: Colors.grey[800],
-                                  child: Icon(Icons.person,
+                                  child: Icon(FluentIcons.contact,
                                       size: 14, color: Colors.grey[400]),
                                 );
                               },
@@ -2554,13 +2591,10 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
                         if (reply['user_id'] ==
                             SupaFlow.client.auth.currentUser?.id)
                           IconButton(
-                            icon: const Icon(Icons.more_vert,
+                            icon: Icon(FluentIcons.more,
                                 size: 16, color: Colors.grey),
-                            constraints: const BoxConstraints(
-                                minWidth: 20, minHeight: 20),
-                            padding: EdgeInsets.zero,
                             onPressed: () {
-                              showModalBottomSheet(
+                              showDialog(
                                 context: context,
                                 builder: (context) => Container(
                                   padding:
@@ -2568,10 +2602,9 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
                                   child: Column(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      ListTile(
-                                        leading: const Icon(
-                                            Icons.delete_outline,
-                                            color: Colors.red),
+                                      material.ListTile(
+                                        leading: const Icon(FluentIcons.delete,
+                                            color: material.Colors.red),
                                         title: const Text('Delete reply'),
                                         onTap: () async {
                                           Navigator.pop(context);
@@ -2579,21 +2612,22 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
                                           final shouldDelete =
                                               await showDialog<bool>(
                                             context: context,
-                                            builder: (context) => AlertDialog(
+                                            builder: (context) => ContentDialog(
                                               title: const Text('Delete Reply'),
                                               content: const Text(
                                                   'Are you sure you want to delete this reply?'),
                                               actions: [
-                                                TextButton(
+                                                Button(
                                                   child: const Text('Cancel'),
                                                   onPressed: () =>
                                                       Navigator.of(context)
                                                           .pop(false),
                                                 ),
-                                                TextButton(
+                                                Button(
                                                   child: const Text('Delete',
                                                       style: TextStyle(
-                                                          color: Colors.red)),
+                                                          color: material
+                                                              .Colors.red)),
                                                   onPressed: () =>
                                                       Navigator.of(context)
                                                           .pop(true),
@@ -2613,39 +2647,54 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
                                                 });
 
                                                 // ignore: use_build_context_synchronously
-                                                ScaffoldMessenger.of(context)
-                                                    .showSnackBar(
-                                                  const SnackBar(
-                                                      content: Text(
-                                                          'Reply deleted successfully')),
+                                                displayInfoBar(
+                                                  context,
+                                                  builder: (context, close) =>
+                                                      const InfoBar(
+                                                    title:
+                                                        const Text('Success'),
+                                                    content: const Text(
+                                                        'Reply deleted successfully'),
+                                                    severity:
+                                                        InfoBarSeverity.success,
+                                                  ),
                                                 );
                                               }
                                             } catch (e) {
                                               if (mounted) {
                                                 // ignore: use_build_context_synchronously
-                                                ScaffoldMessenger.of(context)
-                                                    .showSnackBar(
-                                                  SnackBar(
-                                                      content: Text(
-                                                          'Failed to delete reply: $e')),
+                                                displayInfoBar(
+                                                  context,
+                                                  builder: (context, close) =>
+                                                      InfoBar(
+                                                    title: const Text('Error'),
+                                                    content: Text(
+                                                        'Failed to delete reply: $e'),
+                                                    severity:
+                                                        InfoBarSeverity.error,
+                                                  ),
                                                 );
                                               }
                                             }
                                           }
                                         },
                                       ),
-                                      ListTile(
-                                        leading: const Icon(Icons.copy),
+                                      material.ListTile(
+                                        leading: const Icon(FluentIcons.copy),
                                         title: const Text('Copy text'),
                                         onTap: () {
                                           Navigator.pop(context);
                                           Clipboard.setData(ClipboardData(
                                               text: reply['content'] ?? ''));
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(
-                                            const SnackBar(
-                                                content: Text(
-                                                    'Reply copied to clipboard')),
+                                          displayInfoBar(
+                                            context,
+                                            builder: (context, close) =>
+                                                const InfoBar(
+                                              title: const Text('Copied'),
+                                              content: const Text(
+                                                  'Reply copied to clipboard'),
+                                              severity: InfoBarSeverity.success,
+                                            ),
                                           );
                                         },
                                       ),
@@ -2695,7 +2744,7 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
                               width: 24,
                               height: 24,
                               color: Colors.grey[800],
-                              child: Icon(Icons.person,
+                              child: Icon(FluentIcons.contact,
                                   size: 14, color: Colors.grey[400]),
                             );
                           },
@@ -2704,23 +2753,21 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
                     ),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: TextField(
+                      child: TextBox(
                         controller: _replyController,
                         onChanged: (value) {
                           safeSetState(() {
                             _isReplying = value.trim().isNotEmpty;
                           });
                         },
-                        decoration: InputDecoration(
-                          hintText: 'Write a reply...',
-                          hintStyle:
-                              FlutterFlowTheme.of(context).bodySmall.copyWith(
-                                    color: Colors.grey,
-                                  ),
-                          border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(
-                              vertical: 8, horizontal: 8),
-                        ),
+                        placeholder: 'Write a reply...',
+                        placeholderStyle:
+                            FlutterFlowTheme.of(context).bodySmall.copyWith(
+                                  color: Colors.grey,
+                                ),
+                        decoration: ButtonState.all(BoxDecoration(
+                          border: Border.all(style: BorderStyle.none),
+                        )),
                         minLines: 1,
                         maxLines: 5,
                         style: FlutterFlowTheme.of(context).bodySmall,
@@ -2729,8 +2776,8 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
                     if (_isReplying)
                       IconButton(
                         icon: Icon(
-                          Icons.send_rounded,
-                          color: FlutterFlowTheme.of(context).primary,
+                          FluentIcons.send,
+                          color: material.Colors.blue,
                           size: 20,
                         ),
                         onPressed: _submitReply,
@@ -2934,7 +2981,7 @@ class AnimatedButtonWithMenu extends StatefulWidget {
   final String mainLabel;
   final Color mainColor;
   final VoidCallback onMainTap;
-  final List<PopupMenuItem> menuItems;
+  final List<MenuFlyoutItem> menuItems;
 
   const AnimatedButtonWithMenu({
     super.key,
@@ -2953,7 +3000,14 @@ class _AnimatedButtonWithMenuState extends State<AnimatedButtonWithMenu>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
+  final FlyoutController _flyoutController = FlyoutController();
   bool _isPressed = false;
+
+  void safeSetState(VoidCallback fn) {
+    if (mounted) {
+      setState(fn);
+    }
+  }
 
   @override
   void initState() {
@@ -2971,99 +3025,92 @@ class _AnimatedButtonWithMenuState extends State<AnimatedButtonWithMenu>
   @override
   void dispose() {
     _controller.dispose();
+    _flyoutController.dispose();
     super.dispose();
   }
 
   void _showMenu() async {
-    final RenderBox button = context.findRenderObject() as RenderBox;
-    final RenderBox overlay =
-        Overlay.of(context).context.findRenderObject() as RenderBox;
-    final RelativeRect position = RelativeRect.fromRect(
-      Rect.fromPoints(
-        button.localToGlobal(Offset.zero, ancestor: overlay),
-        button.localToGlobal(button.size.bottomRight(Offset.zero),
-            ancestor: overlay),
-      ),
-      Offset.zero & overlay.size,
+    await _flyoutController.showFlyout(
+      builder: (context) {
+        return MenuFlyout(items: widget.menuItems);
+      },
     );
 
-    await showMenu(
-      context: context,
-      position: position,
-      items: widget.menuItems,
-      elevation: 8,
-    );
-
-    safeSetState(() {
-      _isPressed = false;
-    });
-    _controller.reverse();
+    if (mounted) {
+      safeSetState(() {
+        _isPressed = false;
+      });
+      _controller.reverse();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTapDown: (_) {
-        safeSetState(() {
-          _isPressed = true;
-        });
-        _controller.forward();
-      },
-      onTapUp: (_) {
-        // Small delay to show animation
-        Timer(const Duration(milliseconds: 100), () {
-          if (mounted) {
-            safeSetState(() {
-              _isPressed = false;
-            });
-            _controller.reverse();
-          }
-        });
-      },
-      onTapCancel: () {
-        safeSetState(() {
-          _isPressed = false;
-        });
-        _controller.reverse();
-      },
-      onLongPress: _showMenu,
-      onTap: widget.onMainTap,
-      child: ScaleTransition(
-        scale: _scaleAnimation,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: BoxDecoration(
-            color: _isPressed
-                ? widget.mainColor.withValues(alpha: 0.8)
-                : widget.mainColor,
-            borderRadius: BorderRadius.circular(8),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.2),
-                offset: Offset(0, _isPressed ? 1 : 2),
-                blurRadius: _isPressed ? 3 : 5,
-              ),
-            ],
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(widget.mainIcon, color: Colors.white),
-              const SizedBox(width: 8),
-              Text(
-                widget.mainLabel,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
+    return FlyoutTarget(
+      controller: _flyoutController,
+      child: GestureDetector(
+        onTapDown: (_) {
+          safeSetState(() {
+            _isPressed = true;
+          });
+          _controller.forward();
+        },
+        onTapUp: (_) {
+          // Small delay to show animation
+          Timer(const Duration(milliseconds: 100), () {
+            if (mounted) {
+              safeSetState(() {
+                _isPressed = false;
+              });
+              _controller.reverse();
+            }
+          });
+        },
+        onTapCancel: () {
+          safeSetState(() {
+            _isPressed = false;
+          });
+          _controller.reverse();
+        },
+        onLongPress: _showMenu,
+        onTap: widget.onMainTap,
+        child: ScaleTransition(
+          scale: _scaleAnimation,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: _isPressed
+                  ? widget.mainColor.withValues(alpha: 0.8)
+                  : widget.mainColor,
+              borderRadius: BorderRadius.circular(8),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.2),
+                  offset: Offset(0, _isPressed ? 1 : 2),
+                  blurRadius: _isPressed ? 3 : 5,
                 ),
-              ),
-              const SizedBox(width: 4),
-              const Icon(
-                Icons.arrow_drop_down,
-                color: Colors.white70,
-                size: 16,
-              ),
-            ],
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(widget.mainIcon, color: Colors.white),
+                const SizedBox(width: 8),
+                Text(
+                  widget.mainLabel,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                const Icon(
+                  FluentIcons.chevron_down,
+                  color: Colors.grey,
+                  size: 10,
+                ),
+              ],
+            ),
           ),
         ),
       ),

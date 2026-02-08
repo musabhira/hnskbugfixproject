@@ -52,6 +52,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   final _imagePicker = ImagePicker();
 
   late String _currentUserId;
+  bool _isRecording = false;
   List<Map<String, dynamic>> _groupMembers = [];
   String? _userRole; // 'admin' or 'member'
   bool _isSending = false;
@@ -69,19 +70,12 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   }
 
   void _handleCall(String mode) {
-    // Find the first member who isn't the current user
-    String? targetId;
-    try {
-      final otherMember = _groupMembers.firstWhere(
-        (m) => m['user_id'] != _currentUserId,
-      );
-      targetId = otherMember['user_id'];
-    } catch (_) {
-      // If no other members yet, we can't call
-    }
+    // For group calling, we send a notification to all active members
+    // and join a shared room ID (using the groupId as a base)
+    final roomId = 'group_${widget.groupId}';
 
     try {
-      sendMessage(text: '📞 $mode Call Started');
+      sendMessage(text: '📞 Joined Group $mode Call');
     } catch (_) {}
 
     Navigator.push(
@@ -89,7 +83,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
       MaterialPageRoute(
         builder: (context) => WebRTCCallScreen(
           mode: mode,
-          targetUserId: targetId,
+          targetUserId: roomId, // Using groupId-based room for group calling
         ),
       ),
     );
@@ -98,7 +92,11 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   @override
   void initState() {
     super.initState();
-    _currentUserId = _supabase.auth.currentUser?.id ?? '';
+    _currentUserId = _supabase.auth.currentUser?.id ?? ''; // Original line
+    // Assuming currentUserIdProvider is defined elsewhere if needed, otherwise keep original
+    // _currentUserId = ref.read(currentUserIdProvider); // New line from user's snippet, commented out to avoid compile error if not defined
+    _messageController.addListener(_onMessageChanged);
+    // _setupSystemColor(); // New line from user's snippet, commented out to avoid compile error if not defined
     _fetchMembers();
 
     _attachMenuAnimationController = AnimationController(
@@ -132,8 +130,14 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
         .cleanupOldMessages());
   }
 
+  void _onMessageChanged() {
+    // Force rebuild to swap send/mic buttons
+    if (mounted) setState(() {});
+  }
+
   @override
   void dispose() {
+    _messageController.removeListener(_onMessageChanged);
     _messageController.dispose();
     _scrollController.dispose();
     _focusNode.dispose();
@@ -218,13 +222,17 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
 
   Future<void> _handleRefresh() async {
     try {
-      // Invalidate the provider to force a fresh fetch from Supabase
+      // Invalidate the provider and wait for fresh data
       ref.invalidate(chatMessagesProvider(widget.groupId));
-      // Wait for the next value to ensure loading state is handled
       await ref.read(chatMessagesProvider(widget.groupId).future);
       await _fetchMembers();
     } catch (e) {
       debugPrint('Refresh error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Refresh failed: $e')),
+        );
+      }
     }
   }
 
@@ -401,7 +409,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                       child: ListView.builder(
                         controller: _scrollController,
                         reverse: true,
-                        padding: const EdgeInsets.only(bottom: 12, top: 12),
+                        padding: const EdgeInsets.only(bottom: 8, top: 8),
                         itemCount: filteredMessages.length,
                         itemBuilder: (context, index) {
                           final message = filteredMessages[index];
@@ -437,8 +445,10 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                         Text('Error: $e',
                             style: const TextStyle(color: Colors.white)),
                         TextButton(
-                          onPressed: () => ref.refresh(
-                              chatMessagesProvider(widget.groupId).future),
+                          onPressed: () {
+                            ref.invalidate(
+                                chatMessagesProvider(widget.groupId));
+                          },
                           child: const Text('Retry'),
                         ),
                       ],
@@ -464,18 +474,6 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
             ),
           if (_showAttachMenu) _buildAttachMenu(),
         ],
-      ),
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 60),
-        child: VoiceMessageRecorder(
-          groupId: widget.groupId,
-          currentUserId: _currentUserId,
-          onSendMessage: (type, url, duration) => sendMessage(
-            messageType: type,
-            fileUrl: url,
-            voiceDuration: duration,
-          ),
-        ),
       ),
     );
   }
@@ -542,10 +540,10 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
         margin: EdgeInsets.only(
-          top: 4,
-          bottom: 4,
-          left: isMe ? 64 : 16,
-          right: isMe ? 16 : 64,
+          top: 2,
+          bottom: 2,
+          left: isMe ? 48 : 8,
+          right: isMe ? 8 : 48,
         ),
         child: Column(
           crossAxisAlignment:
@@ -627,7 +625,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                   children: [
                     Padding(
                       padding: const EdgeInsets.only(
-                          left: 8, right: 8, top: 4, bottom: 20),
+                          left: 2, right: 2, top: 1, bottom: 16),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -1060,19 +1058,28 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                     },
                   ),
                   Expanded(
-                    child: TextField(
-                      controller: _messageController,
-                      focusNode: _focusNode,
-                      style: const TextStyle(color: Colors.white),
-                      decoration: const InputDecoration(
-                        hintText: 'Message',
-                        hintStyle: TextStyle(color: Colors.white38),
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.symmetric(horizontal: 12),
-                      ),
-                      minLines: 1,
-                      maxLines: 6,
-                    ),
+                    child: _isRecording
+                        ? const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 12),
+                            child: Text('Recording...',
+                                style: TextStyle(
+                                    color: Colors.red,
+                                    fontWeight: FontWeight.bold)),
+                          )
+                        : TextField(
+                            controller: _messageController,
+                            focusNode: _focusNode,
+                            style: const TextStyle(color: Colors.white),
+                            decoration: const InputDecoration(
+                              hintText: 'Message',
+                              hintStyle: TextStyle(color: Colors.white38),
+                              border: InputBorder.none,
+                              contentPadding:
+                                  EdgeInsets.symmetric(horizontal: 12),
+                            ),
+                            minLines: 1,
+                            maxLines: 6,
+                          ),
                   ),
                   IconButton(
                     icon: const Icon(Icons.attach_file, color: Colors.white70),
@@ -1082,21 +1089,34 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                   if (_messageController.text.isEmpty)
                     IconButton(
                       icon: const Icon(Icons.camera_alt, color: Colors.white70),
-                      onPressed: _pickAndSendImage,
+                      onPressed: () => _pickAndUploadImage(ImageSource.camera),
                     ),
                 ],
               ),
             ),
           ),
           const SizedBox(width: 8),
-          GestureDetector(
-            onTap: () => sendMessage(text: _messageController.text),
-            child: const CircleAvatar(
-              backgroundColor: Colors.yellow,
-              radius: 24,
-              child: Icon(Icons.send, color: Colors.black),
-            ),
-          ),
+          _messageController.text.isNotEmpty
+              ? GestureDetector(
+                  onTap: () => sendMessage(text: _messageController.text),
+                  child: const CircleAvatar(
+                    backgroundColor: Colors.yellow,
+                    radius: 24,
+                    child: Icon(Icons.send, color: Colors.black),
+                  ),
+                )
+              : VoiceMessageRecorder(
+                  groupId: widget.groupId,
+                  currentUserId: _currentUserId,
+                  onSendMessage: (type, url, duration) => sendMessage(
+                    messageType: type,
+                    fileUrl: url,
+                    voiceDuration: duration,
+                  ),
+                  onRecordingStateChanged: (isRecording) {
+                    safeSetState(() => _isRecording = isRecording);
+                  },
+                ),
         ],
       ),
     );
@@ -1162,9 +1182,9 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                   _buildAttachOption(Icons.insert_drive_file, Colors.indigo,
                       'Document', () {}),
                   _buildAttachOption(Icons.camera_alt, Colors.pink, 'Camera',
-                      _pickAndSendImageFromCamera),
-                  _buildAttachOption(
-                      Icons.image, Colors.purple, 'Gallery', _pickAndSendImage),
+                      () => _pickAndUploadImage(ImageSource.camera)),
+                  _buildAttachOption(Icons.image, Colors.purple, 'Gallery',
+                      () => _pickAndUploadImage(ImageSource.gallery)),
                 ],
               ),
               const SizedBox(height: 25),
@@ -1186,13 +1206,35 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     );
   }
 
-  // Add camera support
-  Future<void> _pickAndSendImageFromCamera() async {
-    final XFile? image =
-        await _imagePicker.pickImage(source: ImageSource.camera);
-    if (image != null) {
-      // Logic from _pickAndSendImage but with this file
-      // I'll extract it to a helper if needed later
+  Future<void> _pickAndUploadImage(ImageSource source) async {
+    try {
+      final image = await _imagePicker.pickImage(
+        source: source,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 80,
+      );
+      if (image == null) return;
+
+      final bytes = await image.readAsBytes();
+      final fileName = 'img_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final path = '$_currentUserId/$fileName';
+
+      await _supabase.storage.from('group-images').uploadBinary(path, bytes);
+      final url = _supabase.storage.from('group-images').getPublicUrl(path);
+
+      await sendMessage(messageType: 'image', fileUrl: url);
+      safeSetState(() {
+        _showAttachMenu = false;
+        _showEmojiPicker = false;
+      });
+    } catch (e) {
+      debugPrint('Error picking/uploading image: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+        );
+      }
     }
   }
 
@@ -1405,6 +1447,18 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                                         _removeMember(member['user_id']),
                                   )
                                 : null),
+                        onTap: () {
+                          if (member['user_id'] != null) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => VerfiedSwitchPage(
+                                  userId: member['user_id'].toString(),
+                                ),
+                              ),
+                            );
+                          }
+                        },
                       );
                     }),
                     const SizedBox(height: 32),
@@ -1652,21 +1706,6 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     } catch (e) {
       debugPrint('Error leaving group: $e');
     }
-  }
-
-  Future<void> _pickAndSendImage() async {
-    final image = await _imagePicker.pickImage(source: ImageSource.gallery);
-    if (image == null) return;
-
-    final bytes = await image.readAsBytes();
-    final fileName = 'img_${DateTime.now().millisecondsSinceEpoch}.jpg';
-    final path = '$_currentUserId/$fileName';
-
-    await _supabase.storage.from('group-images').uploadBinary(path, bytes);
-    final url = _supabase.storage.from('group-images').getPublicUrl(path);
-
-    await sendMessage(messageType: 'image', fileUrl: url);
-    safeSetState(() => _showAttachMenu = false);
   }
 
   // Helper for safe data extraction from Supabase joins

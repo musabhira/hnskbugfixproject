@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:fluent_ui/fluent_ui.dart';
 
 class FlutterFlowIconButton extends StatefulWidget {
   const FlutterFlowIconButton({
@@ -43,14 +43,19 @@ class _FlutterFlowIconButtonState extends State<FlutterFlowIconButton> {
           child: SizedBox(
             width: (widget.buttonSize ?? 40) * 0.5,
             height: (widget.buttonSize ?? 40) * 0.5,
-            child: CircularProgressIndicator(
-              color: widget.borderColor,
+            child: ProgressRing(
+              activeColor: widget.borderColor ?? Colors.blue,
               strokeWidth: 2,
             ),
           ),
         ),
       );
     }
+
+    // Wrap in a specialized container or just style the IconButton if possible.
+    // However, the original code used a Container for border/radius/fill, then an IconButton child.
+    // Fluent IconButton does not typically have "fillColor" property directly in the same way (it uses style).
+    // Keeping the Container wrapper is the safest way to preserve visual behavior.
 
     return Container(
       width: widget.buttonSize,
@@ -86,8 +91,8 @@ class _FlutterFlowIconButtonState extends State<FlutterFlowIconButton> {
                   }
                 }
               },
-        splashRadius: widget.buttonSize,
-        padding: EdgeInsets.zero,
+        // splashRadius: widget.buttonSize, // Fluent UI IconButton handles hover/press differently.
+        // padding: EdgeInsets.zero, // Fluent UI IconButton usually centers content.
       ),
     );
   }

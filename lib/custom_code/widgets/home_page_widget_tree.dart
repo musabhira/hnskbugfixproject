@@ -13,11 +13,10 @@ import '/custom_code/widgets/tools_page.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:flutter/material.dart';
+import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter/material.dart' as material;
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:flutter/services.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/whats_app_groups_provider.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/create_group_dialog.dart';
@@ -27,6 +26,8 @@ import 'package:pocket_mates_app/custom_code/widgets/create_service_widget.dart'
 import 'package:pocket_mates_app/custom_code/widgets/event_create_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/thread_feed_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/teams/teams_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/notifications_list_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/status_display_widget.dart';
 
 class HomePageWidgetTree extends ConsumerStatefulWidget {
   const HomePageWidgetTree({
@@ -39,10 +40,10 @@ class HomePageWidgetTree extends ConsumerStatefulWidget {
   final double? height;
 
   // Hardcoded Color Palette
-  static const Color primaryColor = Colors.yellow;
-  static const Color secondaryColor = Colors.yellow;
-  static const Color accentColor = Colors.yellow;
-  static const Color backgroundColor = Colors.black;
+  static Color primaryColor = material.Colors.yellow;
+  static Color secondaryColor = material.Colors.yellow;
+  static Color accentColor = material.Colors.yellow;
+  static const Color backgroundColor = material.Colors.black;
   static const Color textPrimary = Color(0xFFFFFFFF);
   static const Color textSecondary = Color(0xFF94A3B8);
 
@@ -52,7 +53,7 @@ class HomePageWidgetTree extends ConsumerStatefulWidget {
 
 class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   final supabase = SupaFlow.client;
-  final scaffoldKey = GlobalKey<ScaffoldState>();
+  // final scaffoldKey = GlobalKey<ScaffoldState>(); // Removed ScaffoldKey
   int _currentIndex = 0;
   String? profileId;
   String? _profileImageUrl;
@@ -195,50 +196,46 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   }
 
   void _handleSettings() {
-    showModalBottomSheet(
+    showDialog(
       context: context,
-      backgroundColor: const Color(0xFF1F2C34),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40,
-              height: 4,
-              margin: const EdgeInsets.symmetric(vertical: 12),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(2),
+      builder: (context) => ContentDialog(
+        title: const Text('Settings'),
+        content: material.Material(
+          color: material.Colors.transparent,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              material.ListTile(
+                leading: Icon(FluentIcons.sign_out, color: material.Colors.red),
+                title: const Text('Logout',
+                    style: TextStyle(color: material.Colors.red)),
+                onTap: () async {
+                  Navigator.pop(context);
+                  try {
+                    await supabase.auth.signOut();
+                    if (mounted) {
+                      Navigator.of(context).pushNamedAndRemoveUntil(
+                        'LandingPage',
+                        (route) => false,
+                      );
+                    }
+                  } catch (e) {
+                    if (mounted) {
+                      Navigator.of(context)
+                          .pushNamedAndRemoveUntil('/', (route) => false);
+                    }
+                  }
+                },
               ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.logout, color: Colors.red),
-              title: const Text('Logout', style: TextStyle(color: Colors.red)),
-              onTap: () async {
-                Navigator.pop(context);
-                try {
-                  await supabase.auth.signOut();
-                  if (mounted) {
-                    Navigator.of(context).pushNamedAndRemoveUntil(
-                      'LandingPage',
-                      (route) => false,
-                    );
-                  }
-                } catch (e) {
-                  // Fallback if named route fails or generic error
-                  if (mounted) {
-                    Navigator.of(context)
-                        .pushNamedAndRemoveUntil('/', (route) => false);
-                  }
-                }
-              },
-            ),
-            const SizedBox(height: 16),
-          ],
+            ],
+          ),
         ),
+        actions: [
+          Button(
+            child: const Text('Cancel'),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ],
       ),
     );
   }
@@ -252,80 +249,85 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         FocusScope.of(context).unfocus();
         FocusManager.instance.primaryFocus?.unfocus();
       },
-      child: Scaffold(
-        key: scaffoldKey,
-        backgroundColor: HomePageWidgetTree.backgroundColor,
-        bottomNavigationBar: _buildBottomNavigationBar(context),
-        body: _isLoading
-            ? const Center(child: CircularProgressIndicator())
+      child: ScaffoldPage(
+        // key: scaffoldKey, // No key in ScaffoldPage
+        // backgroundColor: HomePageWidgetTree.backgroundColor, // Use padding or background implies by theme
+        bottomBar: _buildBottomNavigationBar(context),
+        content: _isLoading
+            ? const Center(child: ProgressRing())
             : _currentIndex == 1
                 ? const MainMarketPage()
                 : _currentIndex == 2
                     ? const ToolsPage()
                     : SafeArea(
                         top: true,
-                        child: RefreshIndicator(
-                          onRefresh: _loadAllUserData,
-                          color: HomePageWidgetTree.primaryColor,
-                          backgroundColor: Colors.grey[900],
-                          child: CustomScrollView(
-                            physics: const BouncingScrollPhysics(),
-                            slivers: [
-                              // Unified Dynamic Header (Stranger Rows + Status)
-                              SliverPersistentHeader(
-                                pinned: true,
-                                delegate: _UnifiedHomeHeaderDelegate(
-                                  currentUserId:
-                                      supabase.auth.currentUser?.id ?? '',
-                                  currentProfileId: profileId.toString(),
-                                  activeUsersRef: ref.watch(activeUsersProvider(
-                                      profileId
-                                          .toString())), // Pass the provider reference
-                                  onTapVideo: () => _handleStrangerMatch(
-                                    context,
-                                    ref,
-                                    'Video',
-                                    profileId.toString(),
-                                  ),
-                                  onTapFriends: () {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                          content: Text(
-                                              'Strangers Friends coming soon!')),
+                        child: CustomScrollView(
+                          // Removed RefreshIndicator
+                          physics: const BouncingScrollPhysics(),
+                          slivers: [
+                            // Unified Dynamic Header (Stranger Rows + Status)
+                            SliverPersistentHeader(
+                              pinned: true,
+                              delegate: _UnifiedHomeHeaderDelegate(
+                                currentUserId:
+                                    supabase.auth.currentUser?.id ?? '',
+                                currentProfileId: profileId.toString(),
+                                activeUsersRef: ref.watch(activeUsersProvider(
+                                    profileId
+                                        .toString())), // Pass the provider reference
+                                onTapVideo: () => _handleStrangerMatch(
+                                  context,
+                                  ref,
+                                  'Video',
+                                  profileId.toString(),
+                                ),
+                                onTapFriends: () {
+                                  // ScaffoldMessenger.of(context).showSnackBar( // No ScaffoldMessenger
+                                  //   const SnackBar(
+                                  //       content: Text(
+                                  //           'Strangers Friends coming soon!')),
+                                  // );
+                                  displayInfoBar(context,
+                                      builder: (context, close) {
+                                    return InfoBar(
+                                      title: const Text('Coming Soon'),
+                                      content: const Text(
+                                          'Strangers Friends coming soon!'),
+                                      severity: InfoBarSeverity.info,
                                     );
-                                  },
-                                  onTapCall: () => _handleStrangerMatch(
-                                    context,
-                                    ref,
-                                    'Voice',
-                                    profileId.toString(),
-                                  ),
-                                  onTapText: () => _handleStrangerChat(
-                                      context, ref, profileId.toString()),
-                                  onTapSettings: _handleSettings,
-                                  onTapAdd: () => _showAddBottomSheet(context),
-                                  onRefresh: () =>
-                                      ref.refresh(conversationsProvider),
+                                  });
+                                },
+                                onTapCall: () => _handleStrangerMatch(
+                                  context,
+                                  ref,
+                                  'Voice',
+                                  profileId.toString(),
                                 ),
+                                onTapText: () => _handleStrangerChat(
+                                    context, ref, profileId.toString()),
+                                onTapSettings: _handleSettings,
+                                onTapAdd: () => _showAddBottomSheet(context),
+                                onRefresh: () =>
+                                    ref.refresh(conversationsProvider),
                               ),
+                            ),
 
-                              SliverPersistentHeader(
-                                pinned: true,
-                                delegate: _ChatTabBarDelegate(
-                                  selectedIndex: _chatTabIndex,
-                                  onTap: (index) =>
-                                      setState(() => _chatTabIndex = index),
-                                ),
+                            SliverPersistentHeader(
+                              pinned: true,
+                              delegate: _ChatTabBarDelegate(
+                                selectedIndex: _chatTabIndex,
+                                onTap: (index) =>
+                                    setState(() => _chatTabIndex = index),
                               ),
+                            ),
 
-                              if (_chatTabIndex == 0)
-                                _buildChatListSliver(conversationsAsync)
-                              else if (_chatTabIndex == 1)
-                                _buildVibesListSliver()
-                              else
-                                _buildAIListSliver(),
-                            ],
-                          ),
+                            if (_chatTabIndex == 0)
+                              _buildChatListSliver(conversationsAsync)
+                            else if (_chatTabIndex == 1)
+                              _buildVibesListSliver()
+                            else
+                              _buildAIListSliver(),
+                          ],
                         ),
                       ),
       ),
@@ -350,7 +352,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
           children: [
             const SizedBox(height: 40),
             Icon(
-              Icons.smart_toy_outlined,
+              material.Icons.smart_toy_outlined,
               size: 80,
               color: Colors.yellow.withOpacity(0.3),
             ),
@@ -369,7 +371,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
               textAlign: TextAlign.center,
               style: GoogleFonts.inter(
                 fontSize: 15,
-                color: Colors.grey[400],
+                color: material.Colors.grey[400],
               ),
             ),
             const SizedBox(height: 32),
@@ -399,7 +401,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                     '• AI-powered chat conversations\n• Image generation & editing\n• Smart recommendations\n• Voice interactions',
                     style: GoogleFonts.inter(
                       fontSize: 14,
-                      color: Colors.grey[300],
+                      color: material.Colors.grey[300],
                       height: 1.6,
                     ),
                   ),
@@ -416,7 +418,38 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       AsyncValue<List<ChatConversation>> conversationsAsync) {
     return conversationsAsync.when(
       data: (conversations) {
-        final filteredConversations = conversations.where((conversation) {
+        final allNotifications =
+            conversations.where((c) => c.isNotification).toList();
+        final chatConversations =
+            conversations.where((c) => !c.isNotification).toList();
+
+        List<ChatConversation> combined = [...chatConversations];
+        if (allNotifications.isNotEmpty && _searchQuery.isEmpty) {
+          final latestNotif = allNotifications.reduce((a, b) =>
+              (a.lastMessageTime?.isAfter(b.lastMessageTime ?? DateTime(0)) ??
+                      false)
+                  ? a
+                  : b);
+          combined.add(ChatConversation(
+            id: 'notifications_aggregator',
+            name: 'Notifications',
+            lastMessage:
+                'You have ${allNotifications.length} new notification${allNotifications.length > 1 ? 's' : ''}',
+            lastMessageTime: latestNotif.lastMessageTime,
+            unreadCount: allNotifications.length,
+            isGroup: false,
+            isNotification: true,
+          ));
+        }
+
+        // Sort by last message time
+        combined.sort((a, b) {
+          final aTime = a.lastMessageTime ?? DateTime(0);
+          final bTime = b.lastMessageTime ?? DateTime(0);
+          return bTime.compareTo(aTime);
+        });
+
+        final filteredConversations = combined.where((conversation) {
           if (_searchQuery.isEmpty) return true;
           return conversation.name
               .toLowerCase()
@@ -425,54 +458,71 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 
         return SliverMainAxisGroup(
           slivers: [
-            // Notifications are now mixed in
-            // _buildNotificationsSliver(),
-
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
-                child: Container(
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.05),
-                    borderRadius: BorderRadius.circular(15),
-                    border: Border.all(
-                      color: Colors.white.withOpacity(0.1),
-                      width: 1,
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                child: Column(
+                  children: [
+                    Container(
+                      height: 52,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1E1E1E),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.08),
+                          width: 1,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.3),
+                            blurRadius: 15,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
+                      ),
+                      child: TextBox(
+                        controller: _searchController,
+                        placeholder: 'Search for conversations...',
+                        placeholderStyle: GoogleFonts.outfit(
+                          color: material.Colors.white.withOpacity(0.35),
+                          fontSize: 14,
+                        ),
+                        prefix: Padding(
+                          padding: const EdgeInsets.only(left: 14.0),
+                          child: Icon(
+                            FluentIcons.search,
+                            color: material.Colors.yellow.withOpacity(0.6),
+                            size: 18,
+                          ),
+                        ),
+                        suffix: _searchQuery.isNotEmpty
+                            ? material.Material(
+                                color: material.Colors.transparent,
+                                child: material.IconButton(
+                                  icon: Icon(
+                                    FluentIcons.clear,
+                                    color:
+                                        material.Colors.white.withOpacity(0.3),
+                                    size: 16,
+                                  ),
+                                  onPressed: () {
+                                    _searchController.clear();
+                                  },
+                                ),
+                              )
+                            : null,
+                        decoration: ButtonState.all(BoxDecoration(
+                          border: Border.all(style: BorderStyle.none),
+                        )),
+                        style: GoogleFonts.outfit(
+                          color: material.Colors.white,
+                          fontSize: 14,
+                        ),
+                        cursorColor: material.Colors.yellow,
+                      ),
                     ),
-                  ),
-                  child: TextField(
-                    controller: _searchController,
-                    style: GoogleFonts.inter(color: Colors.white),
-                    decoration: InputDecoration(
-                      hintText: 'Search chats...',
-                      hintStyle: GoogleFonts.inter(
-                        color: Colors.white.withOpacity(0.3),
-                      ),
-                      prefixIcon: Icon(
-                        Icons.search_rounded,
-                        color: Colors.white.withOpacity(0.3),
-                        size: 20,
-                      ),
-                      suffixIcon: _searchQuery.isNotEmpty
-                          ? IconButton(
-                              icon: Icon(
-                                Icons.close_rounded,
-                                color: Colors.white.withOpacity(0.3),
-                                size: 20,
-                              ),
-                              onPressed: () {
-                                _searchController.clear();
-                              },
-                            )
-                          : null,
-                      border: InputBorder.none,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                    ),
-                  ),
+                    const SizedBox(height: 8),
+                  ],
                 ),
               ),
             ),
@@ -484,9 +534,9 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(
-                        Icons.search_off_rounded,
+                        FluentIcons.search,
                         size: 64,
-                        color: Colors.white.withOpacity(0.1),
+                        color: material.Colors.white.withOpacity(0.1),
                       ),
                       const SizedBox(height: 16),
                       Text(
@@ -494,7 +544,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                             ? 'No conversations yet'
                             : 'No chats found for "$_searchQuery"',
                         style: GoogleFonts.inter(
-                          color: Colors.white.withOpacity(0.4),
+                          color: material.Colors.white.withOpacity(0.4),
                           fontSize: 16,
                         ),
                       ),
@@ -507,6 +557,9 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
                     final conversation = filteredConversations[index];
+                    if (conversation.id == 'notifications_aggregator') {
+                      return _buildNotificationsTile(allNotifications.length);
+                    }
                     return ConversationTile(
                       key: ValueKey(conversation.id),
                       conversation: conversation,
@@ -517,7 +570,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                         } else if (conversation.isGroup) {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(
+                            material.MaterialPageRoute(
                               builder: (context) => WhatsAppGroupChat(
                                 groupId: conversation.id,
                                 groupName: conversation.name,
@@ -533,11 +586,39 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 
                           Navigator.push(
                             context,
-                            MaterialPageRoute(
+                            material.MaterialPageRoute(
                               builder: (context) => MessageScreen(
                                 receiverId: conversation.id,
                                 receiverName: conversation.name,
                                 receiverProfileImage: conversation.imageUrl,
+                              ),
+                            ),
+                          );
+                        }
+                      },
+                      onStatusTap: () {
+                        if (conversation.hasStatus &&
+                            conversation.statusData != null) {
+                          Navigator.push(
+                            context,
+                            material.MaterialPageRoute(
+                              builder: (context) => StatusViewerWrapper(
+                                allStatusGroups: [
+                                  {
+                                    'profile': {
+                                      'id': conversation.id,
+                                      'name': conversation.name,
+                                      'profile_image_url':
+                                          conversation.imageUrl,
+                                    },
+                                    'statuses': conversation.statusData,
+                                    'is_own': false,
+                                  }
+                                ],
+                                initialGroupIndex: 0,
+                                currentUserId: _currentUserId ?? '',
+                                currentProfileId: profileId ?? '',
+                                isFromGroup: true,
                               ),
                             ),
                           );
@@ -558,8 +639,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         child: Padding(
           padding: const EdgeInsets.only(top: 50),
           child: Center(
-            child: CircularProgressIndicator(
-              color: HomePageWidgetTree.primaryColor,
+            child: ProgressRing(
+              activeColor: HomePageWidgetTree.primaryColor,
             ),
           ),
         ),
@@ -666,440 +747,395 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 
   Widget _buildBottomNavigationBar(BuildContext context) {
     return Container(
-      height: 90,
-      padding: const EdgeInsets.only(bottom: 10),
+      height: 80,
+      margin: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+      padding: const EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E293B), // Slightly lighter than background
-        border: Border(
-          top: BorderSide(color: Colors.white.withOpacity(0.05), width: 1),
+        color: const Color(0xFF1A1A1A).withOpacity(0.95),
+        borderRadius: BorderRadius.circular(40),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.1),
+          width: 1,
         ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          _buildNavItem(
-            icon: Icons.grid_view_rounded,
-            label: 'Home',
-            isSelected: _currentIndex == 0,
-            onTap: () => setState(() => _currentIndex = 0),
-          ),
-          _buildNavItem(
-            icon: Icons.store_mall_directory_rounded,
-            label: 'Market',
-            isSelected: _currentIndex == 1,
-            onTap: () => setState(() => _currentIndex = 1),
-          ),
-          _buildNavItem(
-            icon: Icons.handyman_rounded,
-            label: 'Tools',
-            isSelected: _currentIndex == 2,
-            onTap: () => setState(() => _currentIndex = 2),
-          ),
-          InkWell(
-            splashColor: Colors.transparent,
-            focusColor: Colors.transparent,
-            hoverColor: Colors.transparent,
-            highlightColor: Colors.transparent,
-            onTap: () async {
-              final isAuthenticated = await AuthAlertBox.checkAuthAndShowAlert(
-                context: context,
-                customMessage: "Please login to view your profile",
-              );
-              if (isAuthenticated) {
-                Navigator.push(
-                  context,
-                  PageRouteBuilder(
-                    pageBuilder: (context, animation, secondaryAnimation) =>
-                        ProfileSwitchPage(
-                      width: double.infinity,
-                      height: double.infinity,
-                      preloadedProfile: _preloadedProfile,
-                      followersCount: _followersCount,
-                      followingCount: _followingCount,
-                      userThreads: _userThreads,
-                    ),
-                    transitionsBuilder:
-                        (context, animation, secondaryAnimation, child) {
-                      const begin = Offset(1.0, 0.0); // Start from right
-                      const end = Offset.zero;
-                      const curve = Curves.easeInOut;
-
-                      final tween = Tween(begin: begin, end: end)
-                          .chain(CurveTween(curve: curve));
-                      final offsetAnimation = animation.drive(tween);
-
-                      return SlideTransition(
-                        position: offsetAnimation,
-                        child: child,
-                      );
-                    },
-                  ),
-                );
-              }
-            },
-            onLongPress: () async {
-              final isAuthenticated = await AuthAlertBox.checkAuthAndShowAlert(
-                context: context,
-                customMessage: "Please login to view your profile",
-              );
-              if (isAuthenticated) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => VerfiedSwitchPage(
-                        userId: _currentUserId.toString()), // your target page
-                  ),
-                );
-              }
-            },
-            child: CircularProfileImage(
-              profileImageUrl: _profileImageUrl,
-              isVerified: _isVerified,
-              radius: 23.0,
-              borderColor: Colors.yellow,
-            ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.4),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
           ),
         ],
+      ),
+      child: material.Material(
+        color: Colors.transparent,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            _buildNavItem(
+              icon: FluentIcons.view_dashboard,
+              isSelected: _currentIndex == 0,
+              onTap: () => setState(() => _currentIndex = 0),
+            ),
+            _buildNavItem(
+              icon: FluentIcons.market,
+              isSelected: _currentIndex == 1,
+              onTap: () => setState(() => _currentIndex = 1),
+            ),
+            _buildNavItem(
+              icon: FluentIcons.toolbox,
+              isSelected: _currentIndex == 2,
+              onTap: () => setState(() => _currentIndex = 2),
+            ),
+            _buildProfileNavItem(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfileNavItem() {
+    return GestureDetector(
+      onTap: () async {
+        final isAuthenticated = await AuthAlertBox.checkAuthAndShowAlert(
+          context: context,
+          customMessage: "Please login to view your profile",
+        );
+        if (isAuthenticated) {
+          Navigator.push(
+            context,
+            PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) =>
+                  ProfileSwitchPage(
+                width: double.infinity,
+                height: double.infinity,
+                preloadedProfile: _preloadedProfile,
+                followersCount: _followersCount,
+                followingCount: _followingCount,
+                userThreads: _userThreads,
+              ),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) {
+                const begin = Offset(1.0, 0.0);
+                const end = Offset.zero;
+                const curve = Curves.easeInOut;
+                final tween = Tween(begin: begin, end: end)
+                    .chain(CurveTween(curve: curve));
+                return SlideTransition(
+                  position: animation.drive(tween),
+                  child: child,
+                );
+              },
+            ),
+          );
+        }
+      },
+      onLongPress: () async {
+        final isAuthenticated = await AuthAlertBox.checkAuthAndShowAlert(
+          context: context,
+          customMessage: "Please login to view your profile",
+        );
+        if (isAuthenticated) {
+          Navigator.push(
+            context,
+            material.MaterialPageRoute(
+              builder: (context) =>
+                  VerfiedSwitchPage(userId: _currentUserId.toString()),
+            ),
+          );
+        }
+      },
+      child: CircularProfileImage(
+        profileImageUrl: _profileImageUrl,
+        isVerified: _isVerified,
+        radius: 20.0,
+        borderColor: Colors.yellow,
       ),
     );
   }
 
   Widget _buildNavItem({
     required IconData icon,
-    required String label,
     required bool isSelected,
     required VoidCallback onTap,
-    bool isCenter = false,
   }) {
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: EdgeInsets.all(isCenter ? 14 : 8),
-            decoration: BoxDecoration(
-              color: isCenter
-                  ? HomePageWidgetTree.accentColor
-                  : (isSelected
-                      ? HomePageWidgetTree.primaryColor.withOpacity(0.15)
-                      : Colors.transparent),
-              shape: BoxShape.circle,
-              boxShadow: isCenter
-                  ? [
-                      BoxShadow(
-                        color: HomePageWidgetTree.accentColor.withOpacity(0.3),
-                        blurRadius: 15,
-                        offset: const Offset(0, 6),
-                      )
-                    ]
-                  : null,
-            ),
-            child: Icon(
-              icon,
-              color: isCenter
-                  ? Colors.black
-                  : (isSelected
-                      ? HomePageWidgetTree.primaryColor
-                      : HomePageWidgetTree.textSecondary),
-              size: isCenter ? 32 : 26,
-            ),
-          ),
-          if (!isCenter) ...[
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: GoogleFonts.inter(
+      child: Container(
+        height: 60,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
                 color: isSelected
-                    ? HomePageWidgetTree.primaryColor
+                    ? material.Colors.yellow.withOpacity(0.12)
+                    : material.Colors.transparent,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Icon(
+                icon,
+                color: isSelected
+                    ? material.Colors.yellow
                     : HomePageWidgetTree.textSecondary,
-                fontSize: 11,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                size: 24,
               ),
             ),
           ],
-        ],
+        ),
       ),
     );
   }
   // Methods being added here
 
   void _showAddBottomSheet(BuildContext context) {
-    showModalBottomSheet(
+    showDialog(
       context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (context) {
-        // Use a StatefulBuilder if dynamic rebuilding is needed inside the sheet
-        return StatefulBuilder(builder: (context, setState) {
-          bool isExpanded = true;
-          return Container(
-            height: 400, // Adjust as needed
-            decoration: const BoxDecoration(
-              color: Color(0xFF111111), // Match theme
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(20),
-                topRight: Radius.circular(20),
-              ),
-            ),
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(
-                  maxWidth: 700, // Set your desired max width
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // TOP ROW: ADD GALLERY (Full Width)
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 4.0),
-                            child: InkWell(
-                              onTap: () async {
-                                Navigator.pop(context); // Close sheet
-                                final isAuthenticated =
-                                    await AuthAlertBox.checkAuthAndShowAlert(
-                                  context: context,
-                                  customMessage:
-                                      "Please login to add to Gallery",
-                                );
-                                if (isAuthenticated) {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (_) =>
-                                            const CreateGalleryWidget(
-                                                width: double.infinity,
-                                                height: double.infinity)),
-                                  );
-                                }
-                              },
-                              child: Container(
-                                  height: 100,
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: [
-                                        FlutterFlowTheme.of(context)
-                                            .primary
-                                            .withOpacity(0.8),
-                                        FlutterFlowTheme.of(context)
-                                            .secondary
-                                            .withOpacity(0.8),
-                                      ],
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                    ),
-                                    borderRadius: BorderRadius.circular(14.0),
-                                  ),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      const Icon(Icons.shopping_basket_sharp,
-                                          color: Colors.white, size: 30),
-                                      const SizedBox(height: 8),
-                                      Text('Add\nGallery',
-                                          textAlign: TextAlign.center,
-                                          style: GoogleFonts.poppins(
-                                              color: Colors.white,
-                                              fontSize: 12)),
-                                    ],
-                                  )),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-
-                    // BOTTOM ROW: SERVICE, THOUGHT, EVENT
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // ADD SERVICE
-                        Expanded(
-                          child: Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 4.0),
-                            child: InkWell(
-                              onTap: () async {
-                                Navigator.pop(context); // Close sheet
-                                final isAuthenticated =
-                                    await AuthAlertBox.checkAuthAndShowAlert(
-                                  context: context,
-                                  customMessage: "Please login to add Service",
-                                );
-                                if (isAuthenticated) {
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (_) =>
-                                              const CreateServiceWidget(
-                                                  width: double.infinity,
-                                                  height: double.infinity)));
-                                }
-                              },
-                              child: Container(
-                                  height: 100,
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: [
-                                        FlutterFlowTheme.of(context)
-                                            .primary
-                                            .withOpacity(0.8),
-                                        FlutterFlowTheme.of(context)
-                                            .secondary
-                                            .withOpacity(0.8),
-                                      ],
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                    ),
-                                    borderRadius: BorderRadius.circular(14.0),
-                                  ),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      const Icon(
-                                          Icons.miscellaneous_services_sharp,
-                                          color: Colors.white,
-                                          size: 30),
-                                      const SizedBox(height: 8),
-                                      Text('Add\nService',
-                                          textAlign: TextAlign.center,
-                                          style: GoogleFonts.poppins(
-                                              color: Colors.white,
-                                              fontSize: 12)),
-                                    ],
-                                  )),
-                            ),
-                          ),
-                        ),
-
-                        // ADD THOUGHT
-                        Expanded(
-                          child: Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 4.0),
-                            child: InkWell(
-                              onTap: () async {
-                                Navigator.pop(context);
-                                final isAuthenticated =
-                                    await AuthAlertBox.checkAuthAndShowAlert(
-                                  context: context,
-                                  customMessage: "Please login to add Thought",
-                                );
-                                if (isAuthenticated) {
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (_) => CreateThreadPage(
-                                              userId: _currentUserId ?? '')));
-                                }
-                              },
-                              child: Container(
-                                  height: 100,
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: [
-                                        FlutterFlowTheme.of(context)
-                                            .primary
-                                            .withOpacity(0.8),
-                                        FlutterFlowTheme.of(context)
-                                            .secondary
-                                            .withOpacity(0.8),
-                                      ],
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                    ),
-                                    borderRadius: BorderRadius.circular(14.0),
-                                  ),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      const Icon(Icons.psychology_alt_outlined,
-                                          color: Colors.white, size: 30),
-                                      const SizedBox(height: 8),
-                                      Text('Add\nThought',
-                                          textAlign: TextAlign.center,
-                                          style: GoogleFonts.poppins(
-                                              color: Colors.white,
-                                              fontSize: 12)),
-                                    ],
-                                  )),
-                            ),
-                          ),
-                        ),
-
-                        // ADD EVENT (Verified Only)
-                        if (_isVerified)
-                          Expanded(
-                            child: Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 4.0),
-                              child: InkWell(
-                                onTap: () async {
-                                  Navigator.pop(context);
-                                  final isAuthenticated =
-                                      await AuthAlertBox.checkAuthAndShowAlert(
-                                    context: context,
-                                    customMessage: "Please login to add Event",
-                                  );
-                                  if (isAuthenticated) {
-                                    Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (_) =>
-                                                const EventCreatePage()));
-                                  }
-                                },
-                                child: Container(
-                                    height: 100,
-                                    decoration: BoxDecoration(
-                                      gradient: LinearGradient(
-                                        colors: [
-                                          FlutterFlowTheme.of(context)
-                                              .primary
-                                              .withOpacity(0.8),
-                                          FlutterFlowTheme.of(context)
-                                              .secondary
-                                              .withOpacity(0.8),
-                                        ],
-                                        begin: Alignment.topLeft,
-                                        end: Alignment.bottomRight,
-                                      ),
-                                      borderRadius: BorderRadius.circular(14.0),
-                                    ),
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        const Icon(Icons.event,
-                                            color: Colors.white, size: 30),
-                                        const SizedBox(height: 8),
-                                        Text('Add\nEvent',
-                                            textAlign: TextAlign.center,
-                                            style: GoogleFonts.poppins(
-                                                color: Colors.white,
-                                                fontSize: 12)),
-                                      ],
-                                    )),
+      builder: (context) => ContentDialog(
+        title: const Text('Add New Content'),
+        content: material.Material(
+          color: Colors.transparent,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // TOP ROW: ADD GALLERY (Full Width)
+              Row(
+                children: [
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                      child: material.InkWell(
+                        onTap: () async {
+                          Navigator.pop(context);
+                          final isAuthenticated =
+                              await AuthAlertBox.checkAuthAndShowAlert(
+                            context: context,
+                            customMessage: "Please login to add to Gallery",
+                          );
+                          if (isAuthenticated) {
+                            Navigator.push(
+                              context,
+                              material.MaterialPageRoute(
+                                  builder: (_) => const CreateGalleryWidget(
+                                      width: double.infinity,
+                                      height: double.infinity)),
+                            );
+                          }
+                        },
+                        child: Container(
+                            height: 100,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  FlutterFlowTheme.of(context)
+                                      .primary
+                                      .withOpacity(0.8),
+                                  FlutterFlowTheme.of(context)
+                                      .secondary
+                                      .withOpacity(0.8),
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
                               ),
+                              borderRadius: BorderRadius.circular(14.0),
                             ),
-                          ),
-                      ],
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(FluentIcons.shopping_cart,
+                                    color: Colors.white, size: 30),
+                                const SizedBox(height: 8),
+                                Text('Add\nGallery',
+                                    textAlign: TextAlign.center,
+                                    style: GoogleFonts.poppins(
+                                        color: Colors.white, fontSize: 12)),
+                              ],
+                            )),
+                      ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ),
-          );
-        });
-      },
+              const SizedBox(height: 12),
+
+              // BOTTOM ROW: SERVICE, THOUGHT, EVENT
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // ADD SERVICE
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                      child: material.InkWell(
+                        onTap: () async {
+                          Navigator.pop(context);
+                          final isAuthenticated =
+                              await AuthAlertBox.checkAuthAndShowAlert(
+                            context: context,
+                            customMessage: "Please login to add Service",
+                          );
+                          if (isAuthenticated) {
+                            Navigator.push(
+                                context,
+                                material.MaterialPageRoute(
+                                    builder: (_) => const CreateServiceWidget(
+                                        width: double.infinity,
+                                        height: double.infinity)));
+                          }
+                        },
+                        child: Container(
+                            height: 100,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  FlutterFlowTheme.of(context)
+                                      .primary
+                                      .withOpacity(0.8),
+                                  FlutterFlowTheme.of(context)
+                                      .secondary
+                                      .withOpacity(0.8),
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(14.0),
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(FluentIcons.repair,
+                                    color: Colors.white, size: 30),
+                                const SizedBox(height: 8),
+                                Text('Add\nService',
+                                    textAlign: TextAlign.center,
+                                    style: GoogleFonts.poppins(
+                                        color: Colors.white, fontSize: 12)),
+                              ],
+                            )),
+                      ),
+                    ),
+                  ),
+
+                  // ADD THOUGHT
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                      child: material.InkWell(
+                        onTap: () async {
+                          Navigator.pop(context);
+                          final isAuthenticated =
+                              await AuthAlertBox.checkAuthAndShowAlert(
+                            context: context,
+                            customMessage: "Please login to add Thought",
+                          );
+                          if (isAuthenticated) {
+                            Navigator.push(
+                                context,
+                                material.MaterialPageRoute(
+                                    builder: (_) => CreateThreadPage(
+                                        userId: _currentUserId ?? '')));
+                          }
+                        },
+                        child: Container(
+                            height: 100,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  FlutterFlowTheme.of(context)
+                                      .primary
+                                      .withOpacity(0.8),
+                                  FlutterFlowTheme.of(context)
+                                      .secondary
+                                      .withOpacity(0.8),
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(14.0),
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(FluentIcons.lightbulb,
+                                    color: Colors.white, size: 30),
+                                const SizedBox(height: 8),
+                                Text('Add\nThought',
+                                    textAlign: TextAlign.center,
+                                    style: GoogleFonts.poppins(
+                                        color: Colors.white, fontSize: 12)),
+                              ],
+                            )),
+                      ),
+                    ),
+                  ),
+
+                  // ADD EVENT (Verified Only)
+                  if (_isVerified)
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                        child: material.InkWell(
+                          onTap: () async {
+                            Navigator.pop(context);
+                            final isAuthenticated =
+                                await AuthAlertBox.checkAuthAndShowAlert(
+                              context: context,
+                              customMessage: "Please login to add Event",
+                            );
+                            if (isAuthenticated) {
+                              Navigator.push(
+                                  context,
+                                  material.MaterialPageRoute(
+                                      builder: (_) => const EventCreatePage()));
+                            }
+                          },
+                          child: Container(
+                              height: 100,
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    FlutterFlowTheme.of(context)
+                                        .primary
+                                        .withOpacity(0.8),
+                                    FlutterFlowTheme.of(context)
+                                        .secondary
+                                        .withOpacity(0.8),
+                                  ],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                                borderRadius: BorderRadius.circular(14.0),
+                              ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(FluentIcons.calendar_reply,
+                                      color: Colors.white, size: 30),
+                                  const SizedBox(height: 8),
+                                  Text('Add\nEvent',
+                                      textAlign: TextAlign.center,
+                                      style: GoogleFonts.poppins(
+                                          color: Colors.white, fontSize: 12)),
+                                ],
+                              )),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          Button(
+            child: const Text('Cancel'),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ],
+      ),
     );
   }
 
@@ -1113,8 +1149,9 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     final activeUsersState = ref.read(activeUsersProvider(currentProfileId));
 
     if (!activeUsersState.hasValue) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Connecting to active network...')),
+      material.ScaffoldMessenger.of(context).showSnackBar(
+        const material.SnackBar(
+            content: Text('Connecting to active network...')),
       );
       return;
     }
@@ -1124,8 +1161,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     // 2. Filter out self (already done in provider, but double check)
     // and potentially filter by interests if we had that data.
     if (activeFriends.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+      material.ScaffoldMessenger.of(context).showSnackBar(
+        const material.SnackBar(
             content: Text('No active users nearby to match with right now.')),
       );
       return;
@@ -1149,13 +1186,14 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       return;
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Matching with ${randomUser['name']}...')),
+    material.ScaffoldMessenger.of(context).showSnackBar(
+      material.SnackBar(
+          content: Text('Matching with ${randomUser['name']}...')),
     );
 
     Navigator.push(
       context,
-      MaterialPageRoute(
+      material.MaterialPageRoute(
         builder: (context) => WebRTCCallScreen(
           mode: mode,
           targetUserId: randomUser['user_id'], // Pass matched user
@@ -1170,8 +1208,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     final activeFriends = activeUsersState.value?.activeFriends ?? [];
 
     if (activeFriends.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No active users to chat with.')),
+      material.ScaffoldMessenger.of(context).showSnackBar(
+        const material.SnackBar(content: Text('No active users to chat with.')),
       );
       return;
     }
@@ -1180,7 +1218,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 
     Navigator.push(
       context,
-      MaterialPageRoute(
+      material.MaterialPageRoute(
         builder: (context) => WebRTCCallScreen(
           mode: 'Text',
           targetUserId: randomUser['user_id'], // Pass matched user
@@ -1189,113 +1227,202 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     );
   }
 
-  void _showNotificationDetails(
-      BuildContext context, ChatConversation notification) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: const Color(0xFF1F2C34),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.notifications_active,
-                    color: Colors.yellow, size: 28),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    'Notification',
-                    style: GoogleFonts.outfit(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+  Widget _buildNotificationsTile(int count) {
+    return material.Material(
+      color: material.Colors.transparent,
+      child: material.InkWell(
+        onTap: () => Navigator.push(
+          context,
+          material.MaterialPageRoute(
+            builder: (context) => const NotificationsListPage(),
+          ),
+        ),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: material.Colors.yellow.withOpacity(0.05),
+            border: Border(
+              bottom: BorderSide(
+                color: material.Colors.yellow.withOpacity(0.15),
+                width: 1,
+              ),
+            ),
+          ),
+          child: Row(
+            children: [
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          material.Colors.yellow,
+                          Color(0xFFFFA000),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      FluentIcons.ringer,
+                      color: material.Colors.black,
+                      size: 20,
                     ),
                   ),
+                  Positioned(
+                    right: -4,
+                    top: -4,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: material.Colors.red,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: material.Colors.black,
+                          width: 2,
+                        ),
+                      ),
+                      constraints: const BoxConstraints(
+                        minWidth: 20,
+                        minHeight: 20,
+                      ),
+                      child: Text(
+                        count.toString(),
+                        style: const TextStyle(
+                          color: material.Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: material.CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Notifications',
+                      style: GoogleFonts.outfit(
+                        color: material.Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'You have $count new notification${count > 1 ? 's' : ''}',
+                      style: GoogleFonts.inter(
+                        color: material.Colors.white.withOpacity(0.5),
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
+              Icon(
+                FluentIcons.chevron_right,
+                color: material.Colors.white.withOpacity(0.2),
+                size: 16,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showNotificationDetails(
+      BuildContext context, ChatConversation notification) {
+    showDialog(
+      context: context,
+      builder: (context) => ContentDialog(
+        title: Row(
+          children: [
+            Icon(material.Icons.notifications_active,
+                color: material.Colors.yellow, size: 28),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Notification',
+                style: GoogleFonts.outfit(
+                  color: material.Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
-            const SizedBox(height: 16),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: material.MainAxisSize.min,
+          crossAxisAlignment: material.CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 8),
             Text(
               notification.lastMessage ?? 'No details',
               style: GoogleFonts.inter(
-                color: Colors.white.withOpacity(0.9),
+                color: material.Colors.white.withOpacity(0.9),
                 fontSize: 16,
               ),
             ),
             const SizedBox(height: 24),
-            Row(
-              children: [
-                if (notification.notificationType == 'project_invite' &&
-                    notification.sourceId != null) ...[
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () async {
-                        Navigator.pop(context);
-                        await TeamsService()
-                            .declineInvite(notification.sourceId!);
-                        await ref
-                            .read(conversationsProvider.notifier)
-                            .dismissNotification(notification.id);
-                      },
-                      style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: Colors.red.withOpacity(0.5)),
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                      ),
-                      child:
-                          Text('Decline', style: TextStyle(color: Colors.red)),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        Navigator.pop(context);
-                        await TeamsService()
-                            .acceptInvite(notification.sourceId!);
-                        await ref
-                            .read(conversationsProvider.notifier)
-                            .dismissNotification(notification.id);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Invitation accepted!')),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.yellow,
-                        foregroundColor: Colors.black,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                      ),
-                      child: const Text('Accept'),
-                    ),
-                  ),
-                ] else ...[
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        Navigator.pop(context);
-                        await ref
-                            .read(conversationsProvider.notifier)
-                            .dismissNotification(notification.id);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.yellow,
-                        foregroundColor: Colors.black,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                      ),
-                      child: const Text('Dismiss'), // Or "Mark Read"
-                    ),
-                  ),
-                ]
-              ],
-            ),
-            const SizedBox(height: 20),
           ],
         ),
+        actions: [
+          if (notification.notificationType == 'project_invite' &&
+              notification.sourceId != null) ...[
+            Button(
+              onPressed: () async {
+                Navigator.pop(context);
+                await TeamsService().declineInvite(notification.sourceId!);
+                await ref
+                    .read(conversationsProvider.notifier)
+                    .dismissNotification(notification.id);
+              },
+              child: Text('Decline',
+                  style: material.TextStyle(color: material.Colors.red)),
+            ),
+            FilledButton(
+              onPressed: () async {
+                Navigator.pop(context);
+                await TeamsService().acceptInvite(notification.sourceId!);
+                await ref
+                    .read(conversationsProvider.notifier)
+                    .dismissNotification(notification.id);
+                material.ScaffoldMessenger.of(context).showSnackBar(
+                  material.SnackBar(content: Text('Invitation accepted!')),
+                );
+              },
+              child: Text('Accept',
+                  style: material.TextStyle(color: material.Colors.black)),
+              style: ButtonStyle(
+                backgroundColor: ButtonState.all(material.Colors.yellow),
+              ),
+            ),
+          ] else ...[
+            FilledButton(
+              onPressed: () async {
+                Navigator.pop(context);
+                await ref
+                    .read(conversationsProvider.notifier)
+                    .dismissNotification(notification.id);
+              },
+              child: Text('Dismiss',
+                  style: material.TextStyle(color: material.Colors.black)),
+              style: ButtonStyle(
+                backgroundColor: ButtonState.all(material.Colors.yellow),
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }
@@ -1304,13 +1431,13 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 class _UnifiedHomeHeaderDelegate extends SliverPersistentHeaderDelegate {
   final String currentUserId;
   final String currentProfileId;
-  final AsyncValue<ActiveUsersData> activeUsersRef; // Added param
+  final AsyncValue<ActiveUsersData> activeUsersRef;
   final VoidCallback onTapVideo;
   final VoidCallback onTapFriends;
   final VoidCallback onTapCall;
   final VoidCallback onTapText;
   final VoidCallback onTapSettings;
-  final VoidCallback onTapAdd; // Added for Add Button
+  final VoidCallback onTapAdd;
   final VoidCallback onRefresh;
 
   _UnifiedHomeHeaderDelegate({
@@ -1322,114 +1449,89 @@ class _UnifiedHomeHeaderDelegate extends SliverPersistentHeaderDelegate {
     required this.onTapCall,
     required this.onTapText,
     required this.onTapSettings,
-    required this.onTapAdd, // Added param
+    required this.onTapAdd,
     required this.onRefresh,
   });
 
   @override
   Widget build(
       BuildContext context, double shrinkOffset, bool overlapsContent) {
-    // Calculate progress (0.0 = fully open, 1.0 = fully closed)
     final double maxShrink = maxExtent - minExtent;
     final double progress = (shrinkOffset / maxShrink).clamp(0.0, 1.0);
-
-    // Handle overscroll (pull down to expand)
     final double overscroll = shrinkOffset < 0 ? -shrinkOffset : 0;
     final double overscrollScale = 1.0 + (overscroll / 300);
     final double topPadding = MediaQuery.of(context).padding.top;
 
-    return Container(
-      color: HomePageWidgetTree.backgroundColor,
+    return material.Material(
+      color: material.Colors.transparent,
       child: Stack(
         children: [
-          // 1. Collapsible Container (Stranger Rows)
-          // Using ClipRect + Transform for a structural "open/close" effect
+          // 1. Background
+          Positioned.fill(
+              child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [const Color(0xFF0F0F0F), material.Colors.black],
+              ),
+            ),
+          )),
+
+          // 2. Stranger Match Section
           Positioned(
             top: 0,
             left: 0,
             right: 0,
-            bottom: 150, // Constant height for the fixed status widget
+            bottom: 140,
             child: ClipRect(
               child: Transform.scale(
                 scale: overscrollScale,
                 alignment: Alignment.topCenter,
                 child: Transform.translate(
-                  // Parallax slide effect for "open/close" feel
-                  offset: Offset(0, -shrinkOffset * 0.4),
+                  offset: Offset(0, -shrinkOffset * 0.6),
                   child: SingleChildScrollView(
                     physics: const NeverScrollableScrollPhysics(),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 16),
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF111111),
-                          borderRadius: BorderRadius.circular(24),
-                          border: Border.all(
-                            color: Colors.white.withOpacity(0.05),
-                            width: 1,
+                      padding: EdgeInsets.fromLTRB(20, topPadding + 20, 20, 20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Stranger Match',
+                            style: GoogleFonts.outfit(
+                              color: material.Colors.white,
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.3),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: _buildQuickActionButton(
-                                    context,
-                                    icon: FontAwesomeIcons.video,
-                                    label: 'Strangers Video Call',
-                                    color: Colors.yellow,
-                                    onTap: onTapVideo,
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: _buildQuickActionButton(
-                                    context,
-                                    icon: FontAwesomeIcons.userGroup,
-                                    label: 'Strangers Friends',
-                                    color: Colors.yellow,
-                                    onTap: onTapFriends,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: _buildQuickActionButton(
-                                    context,
-                                    icon: FontAwesomeIcons.phone,
-                                    label: 'Call Stranger',
-                                    color: Colors.yellow,
-                                    onTap: onTapCall,
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: _buildQuickActionButton(
-                                    context,
-                                    icon: FontAwesomeIcons.solidCommentDots,
-                                    label: 'Text Stranger',
-                                    color: Colors.yellow,
-                                    onTap: onTapText,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
+                          const SizedBox(height: 24),
+                          Row(
+                            children: [
+                              _buildMatchCard(
+                                label: 'Video Call',
+                                icon: FluentIcons.video,
+                                color: material.Colors.blue,
+                                onTap: onTapVideo,
+                              ),
+                              const SizedBox(width: 16),
+                              _buildMatchCard(
+                                label: 'Voice Call',
+                                icon: FluentIcons.phone,
+                                color: material.Colors.green,
+                                onTap: onTapCall,
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          _buildMatchCard(
+                            label: 'Quick Anonymous Chat',
+                            icon: FluentIcons.chat,
+                            color: material.Colors.yellow,
+                            isFullWidth: true,
+                            onTap: onTapText,
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -1438,167 +1540,113 @@ class _UnifiedHomeHeaderDelegate extends SliverPersistentHeaderDelegate {
             ),
           ),
 
-          // 3. Status Widget - STAYS AT TOP (PINNED logic via minExtent)
+          // 3. Status Bar
           Positioned(
             bottom: 0,
             left: 0,
             right: 0,
             child: Container(
-              height: 150,
+              height: 210,
               decoration: BoxDecoration(
-                color: HomePageWidgetTree.backgroundColor,
+                color: const Color(0xFF141414).withOpacity(0.95),
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(32),
+                  topRight: Radius.circular(32),
+                ),
                 border: Border(
                   top: BorderSide(
-                    color: Colors.white.withOpacity(0.05 * progress),
-                    width: 1,
-                  ),
+                      color: material.Colors.white.withOpacity(0.08), width: 1),
                 ),
               ),
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(
-                        left: 16.0, top: 12.0, bottom: 4.0),
-                    child: Consumer(
-                      builder: (context, ref, _) {
-                        final asyncData =
-                            ref.watch(activeUsersProvider(currentProfileId));
-                        return asyncData.when(
-                          data: (data) => Row(
-                            children: [
-                              InkWell(
-                                onTap: onTapAdd,
-                                child: Container(
-                                  padding: const EdgeInsets.all(5),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.2),
-                                    shape: BoxShape.circle,
+              child: material.Material(
+                color: material.Colors.transparent,
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                      child: Row(
+                        children: [
+                          material.InkWell(
+                            onTap: onTapAdd,
+                            borderRadius: BorderRadius.circular(20),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 14, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: material.Colors.yellow.withOpacity(0.12),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                    color:
+                                        material.Colors.yellow.withOpacity(0.3),
+                                    width: 1),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(FluentIcons.add,
+                                      size: 14, color: material.Colors.yellow),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    'Add',
+                                    style: GoogleFonts.outfit(
+                                      color: material.Colors.yellow,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
-                                  child: const Icon(
-                                    Icons.add,
-                                    size: 13,
-                                    color: Colors.white,
-                                  ),
-                                ),
+                                ],
                               ),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Add',
-                                style: GoogleFonts.inter(
-                                  color: Colors.white,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              const Spacer(),
-                              Container(
-                                width: 8,
-                                height: 8,
-                                decoration: BoxDecoration(
-                                  color: Colors.yellow.withOpacity(0.5),
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                '${data.activeFriends.length} Online',
-                                style: GoogleFonts.inter(
-                                  color: Colors.white,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                            ],
+                            ),
                           ),
-                          loading: () => const SizedBox(height: 16),
-                          error: (_, __) => const SizedBox(),
-                        );
-                      },
+                          const Spacer(),
+                          activeUsersRef.when(
+                            data: (data) =>
+                                _buildActiveCounter(data.activeFriends.length),
+                            loading: () => const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: ProgressRing(),
+                            ),
+                            error: (_, __) => const SizedBox(),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  Expanded(
-                    child: StatusDisplayWidget(
+                    StatusDisplayWidget(
                       currentUserId: currentUserId,
                       currentProfileId: currentProfileId,
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
 
-          // Subtle Bottom Shadow when pinned
-          if (progress > 0.9)
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: Container(
-                height: 4,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.black.withOpacity(0.1),
-                      Colors.transparent,
-                    ],
-                  ),
-                ),
-              ),
-            ),
-
-          // Settings Button (Fades out when scrolled)
+          // 4. Utility Buttons
           Positioned(
-            top: topPadding + 8,
+            top: topPadding + 10,
             right: 16,
             child: Opacity(
-              opacity: (1.0 - progress * 3).clamp(0.0, 1.0),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.3),
-                  shape: BoxShape.circle,
-                ),
-                child: IconButton(
-                  icon:
-                      const Icon(Icons.settings, color: Colors.white, size: 20),
-                  onPressed: onTapSettings,
-                ),
-              ),
-            ),
-          ),
-
-          // Create Group Button (Top Left or Left of Settings)
-          Positioned(
-            top: topPadding + 8,
-            right: 64, // Spaced from settings
-            child: Opacity(
-              opacity: (1.0 - progress * 3).clamp(0.0, 1.0),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.3),
-                  shape: BoxShape.circle,
-                ),
-                child: IconButton(
-                  icon: const Icon(Icons.group_add,
-                      color: Colors.yellow, size: 20),
-                  onPressed: () async {
-                    final isAuthenticated =
-                        await AuthAlertBox.checkAuthAndShowAlert(
-                      context: context,
-                      customMessage: "Please login to create a group",
-                    );
-                    if (isAuthenticated) {
-                      showDialog(
-                        context: context,
-                        builder: (context) => CreateGroupDialog(
-                          onGroupCreated: onRefresh,
-                        ),
-                      );
-                    }
-                  },
-                ),
+              opacity: (1 - progress * 2).clamp(0.0, 1.0),
+              child: Row(
+                children: [
+                  _buildHeaderIconButton(
+                      icon: FluentIcons.settings, onTap: onTapSettings),
+                  const SizedBox(width: 10),
+                  _buildHeaderIconButton(
+                    icon: FluentIcons.add_friend,
+                    onTap: () async {
+                      final auth = await AuthAlertBox.checkAuthAndShowAlert(
+                          context: context);
+                      if (auth) {
+                        showDialog(
+                            context: context,
+                            builder: (context) =>
+                                CreateGroupDialog(onGroupCreated: onRefresh));
+                      }
+                    },
+                  ),
+                ],
               ),
             ),
           ),
@@ -1607,68 +1655,143 @@ class _UnifiedHomeHeaderDelegate extends SliverPersistentHeaderDelegate {
     );
   }
 
-  Widget _buildQuickActionButton(
-    BuildContext context, {
-    required IconData icon,
+  Widget _buildMatchCard({
     required String label,
+    required IconData icon,
     required Color color,
     required VoidCallback onTap,
+    bool isFullWidth = false,
   }) {
-    return Container(
-      height: 52,
+    final card = Container(
+      width: isFullWidth ? double.infinity : null,
+      height: isFullWidth ? 80 : 120,
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.grey[900],
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.05), width: 1),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.2),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        color: Colors.white.withOpacity(0.04),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white.withOpacity(0.08), width: 1),
       ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () {
-            HapticFeedback.mediumImpact();
-            onTap();
-          },
-          borderRadius: BorderRadius.circular(16),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Row(
+      child: isFullWidth
+          ? Row(
+              children: [
+                _buildMatchIcon(icon, color),
+                const SizedBox(width: 16),
+                Text(label,
+                    style: GoogleFonts.outfit(
+                        color: material.Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600)),
+                const Spacer(),
+                Icon(FluentIcons.chevron_right,
+                    color: material.Colors.white.withOpacity(0.3), size: 14),
+              ],
+            )
+          : Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(icon, color: color, size: 18),
-                const SizedBox(width: 8),
-                Flexible(
-                  child: Text(
-                    label,
-                    style: GoogleFonts.interTight(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
+                _buildMatchIcon(icon, color),
+                const SizedBox(height: 12),
+                Text(label,
+                    style: GoogleFonts.outfit(
+                        color: material.Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600)),
+              ],
+            ),
+    );
+
+    return isFullWidth
+        ? material.Material(
+            color: material.Colors.transparent,
+            child: material.InkWell(
+                onTap: onTap,
+                borderRadius: BorderRadius.circular(24),
+                child: card))
+        : Expanded(
+            child: material.Material(
+                color: material.Colors.transparent,
+                child: material.InkWell(
+                    onTap: onTap,
+                    borderRadius: BorderRadius.circular(24),
+                    child: card)));
+  }
+
+  Widget _buildMatchIcon(IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.12),
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+              color: color.withOpacity(0.2), blurRadius: 20, spreadRadius: -5),
+        ],
+      ),
+      child: Icon(icon, color: color, size: 24),
+    );
+  }
+
+  Widget _buildActiveCounter(int count) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: const Color(0xFF10B981).withOpacity(0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+            color: const Color(0xFF10B981).withOpacity(0.2), width: 1),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 8,
+            height: 8,
+            decoration: const BoxDecoration(
+              color: Color(0xFF10B981),
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                    color: Color(0xFF10B981), blurRadius: 8, spreadRadius: 2),
               ],
             ),
           ),
+          const SizedBox(width: 8),
+          Text(
+            '$count Active',
+            style: GoogleFonts.outfit(
+              color: const Color(0xFF10B981),
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeaderIconButton(
+      {required IconData icon, required VoidCallback onTap}) {
+    return Container(
+      decoration: BoxDecoration(
+        color: material.Colors.white.withOpacity(0.05),
+        shape: BoxShape.circle,
+        border:
+            Border.all(color: material.Colors.white.withOpacity(0.1), width: 1),
+      ),
+      child: material.Material(
+        color: material.Colors.transparent,
+        child: material.IconButton(
+          icon: Icon(icon, color: material.Colors.white, size: 20),
+          onPressed: onTap,
         ),
       ),
     );
   }
 
   @override
-  double get maxExtent => 295;
-
+  double get maxExtent => 500.0;
   @override
-  double get minExtent => 150;
-
+  double get minExtent => 210.0;
   @override
   bool shouldRebuild(covariant _UnifiedHomeHeaderDelegate oldDelegate) => true;
 }
@@ -1680,11 +1803,11 @@ class CircularProfileImage extends StatelessWidget {
   final double borderWidth;
   final bool isVerified;
 
-  const CircularProfileImage({
+  CircularProfileImage({
     super.key,
     required this.profileImageUrl,
     this.radius = 16.0,
-    this.borderColor = Colors.yellow,
+    this.borderColor = material.Colors.yellow,
     this.borderWidth = 1.0,
     this.isVerified = false,
   });
@@ -1708,7 +1831,8 @@ class CircularProfileImage extends StatelessWidget {
                 : null,
           ),
           child: profileImageUrl == null
-              ? Icon(Icons.person, color: Colors.grey, size: radius)
+              ? Icon(FluentIcons.contact,
+                  color: material.Colors.grey, size: radius)
               : null,
         ),
         if (isVerified)
@@ -1717,12 +1841,12 @@ class CircularProfileImage extends StatelessWidget {
             bottom: -2,
             child: Container(
               padding: const EdgeInsets.all(1.5),
-              decoration: const BoxDecoration(
-                color: Colors.white,
+              decoration: BoxDecoration(
+                color: material.Colors.white,
                 shape: BoxShape.circle,
               ),
               child: const Icon(
-                Icons.verified,
+                FluentIcons.verified_brand,
                 color: Color(0xFFFFB703),
                 size: 12,
               ),
@@ -1762,28 +1886,38 @@ class _ChatTabBarDelegate extends SliverPersistentHeaderDelegate {
   Widget _buildTab(String label, int index) {
     final isSelected = selectedIndex == index;
     return Expanded(
-      child: GestureDetector(
-        onTap: () => onTap(index),
-        behavior: HitTestBehavior.opaque,
-        child: Container(
-          height: 50,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            border: isSelected
-                ? const Border(
-                    bottom: BorderSide(
-                      color: Colors.yellow,
-                      width: 2,
-                    ),
-                  )
-                : null,
-          ),
-          child: Text(
-            label,
-            style: GoogleFonts.inter(
-              color: isSelected ? Colors.yellow : Colors.grey,
-              fontWeight: FontWeight.w600,
-              fontSize: 15,
+      child: material.Material(
+        color: material.Colors.transparent,
+        child: material.InkWell(
+          onTap: () => onTap(index),
+          borderRadius: BorderRadius.circular(12),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            height: 50,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? material.Colors.yellow.withOpacity(0.05)
+                  : material.Colors.transparent,
+              border: isSelected
+                  ? Border(
+                      bottom: BorderSide(
+                        color: material.Colors.yellow,
+                        width: 2.5,
+                      ),
+                    )
+                  : null,
+            ),
+            child: Text(
+              label,
+              style: GoogleFonts.outfit(
+                color: isSelected
+                    ? material.Colors.yellow
+                    : material.Colors.white.withOpacity(0.5),
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                fontSize: 16,
+                letterSpacing: 0.5,
+              ),
             ),
           ),
         ),

@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
-import 'package:flutter/material.dart';
+import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -99,8 +99,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       _scrollToBottom();
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("Error: $e")));
+      displayInfoBar(context, builder: (context, close) {
+        return InfoBar(
+          title: const Text('Error'),
+          content: Text(e.toString()),
+          severity: InfoBarSeverity.error,
+        );
+      });
     }
   }
 
@@ -230,129 +235,151 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final messagesAsync = ref.watch(chatMessagesProvider(widget.groupId));
     final currentUser = ref.watch(currentUserIdProvider);
 
-    return Scaffold(
-      backgroundColor: const Color(0xFF0D1418), // WhatsApp Dark Background
-      appBar: AppBar(
-        title: Row(children: [
-          CircleAvatar(
-            backgroundImage: widget.groupImage != null
-                ? CachedNetworkImageProvider(widget.groupImage!)
-                : null,
-            child: widget.groupImage == null ? const Icon(Icons.group) : null,
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-              child: Text(widget.groupName, overflow: TextOverflow.ellipsis)),
-        ]),
-        backgroundColor: const Color(0xFF1F2C34),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.videocam),
-            onPressed: () {
-              // Get first member who isn't me
-              // For simplicity, navigating to call screen
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const WebRTCCallScreen(
-                    mode: 'Video',
-                  ),
+    return ScaffoldPage(
+      header: Container(
+        height: 60,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        color: const Color(0xFF1F2C34),
+        child: Row(
+          children: [
+            IconButton(
+              icon: const Icon(FluentIcons.back),
+              onPressed: () => Navigator.pop(context),
+            ),
+            const SizedBox(width: 4),
+            ClipOval(
+              child: SizedBox(
+                width: 40,
+                height: 40,
+                child: widget.groupImage != null
+                    ? CachedNetworkImage(
+                        imageUrl: widget.groupImage!,
+                        fit: BoxFit.cover,
+                      )
+                    : const Icon(FluentIcons.group, size: 24),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                widget.groupName,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
                 ),
-              );
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.call),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const WebRTCCallScreen(
-                    mode: 'Voice',
-                  ),
-                ),
-              );
-            },
-          ),
-          IconButton(icon: const Icon(Icons.more_vert), onPressed: () {}),
-        ],
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: messagesAsync.when(
-              data: (messages) {
-                if (messages.isEmpty) {
-                  return const Center(
-                    child: Text(
-                      'No messages yet. Start the conversation!',
-                      style: TextStyle(color: Colors.grey),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            IconButton(
+              icon: const Icon(FluentIcons.video),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  FluentPageRoute(
+                    builder: (context) => const WebRTCCallScreen(
+                      mode: 'Video',
                     ),
-                  );
-                }
-
-                return ListView.builder(
-                  controller: _scrollController,
-                  reverse: true,
-                  // Performance: Use itemExtent for fixed-height items if possible
-                  // itemExtent: 80, // Uncomment if all messages have similar height
-                  cacheExtent: 500, // Cache more items for smoother scrolling
-                  itemCount: messages.length + (_isLoadingMore ? 1 : 0),
-                  itemBuilder: (context, index) {
-                    // Show loading indicator at the end
-                    if (index == messages.length) {
-                      return const Padding(
-                        padding: EdgeInsets.all(16.0),
-                        child: Center(
-                          child: SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          ),
-                        ),
-                      );
-                    }
-
-                    final msg = messages[index];
-                    final isMe = msg.senderId == currentUser;
-
-                    // Use keys for better performance
-                    return _MessageBubble(
-                      key: ValueKey(msg.id),
-                      message: msg,
-                      isMe: isMe,
-                      onSwipe: () {
-                        setState(() {
-                          _replyingTo = msg;
-                        });
-                      },
-                    );
-                  },
+                  ),
                 );
               },
-              error: (err, stack) => Center(
-                  child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.error_outline, color: Colors.red, size: 48),
-                  const SizedBox(height: 16),
-                  const Text("Error loading messages",
-                      style: TextStyle(color: Colors.white)),
-                  const SizedBox(height: 8),
-                  TextButton(
-                    onPressed: () =>
-                        ref.invalidate(chatMessagesProvider(widget.groupId)),
-                    child: const Text('Retry'),
-                  ),
-                ],
-              )),
-              loading: () => const Center(child: CircularProgressIndicator()),
             ),
-          ),
-          if (_replyingTo != null) _buildReplyPreview(),
-          _buildInputArea(),
-          if (_showEmojiPicker && !_isRecording) _buildEmojiPicker(),
-        ],
+            IconButton(
+              icon: const Icon(FluentIcons.phone),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  FluentPageRoute(
+                    builder: (context) => const WebRTCCallScreen(
+                      mode: 'Voice',
+                    ),
+                  ),
+                );
+              },
+            ),
+            IconButton(
+              icon: const Icon(FluentIcons.more),
+              onPressed: () {},
+            ),
+          ],
+        ),
+      ),
+      content: ColoredBox(
+        color: const Color(0xFF0D1418),
+        child: Column(
+          children: [
+            Expanded(
+              child: messagesAsync.when(
+                data: (messages) {
+                  if (messages.isEmpty) {
+                    return const Center(
+                      child: Text(
+                        'No messages yet. Start the conversation!',
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    );
+                  }
+
+                  return ListView.builder(
+                    controller: _scrollController,
+                    reverse: true,
+                    cacheExtent: 500,
+                    itemCount: messages.length + (_isLoadingMore ? 1 : 0),
+                    itemBuilder: (context, index) {
+                      if (index == messages.length) {
+                        return const Padding(
+                          padding: EdgeInsets.all(16.0),
+                          child: Center(
+                            child: SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: ProgressRing(strokeWidth: 2),
+                            ),
+                          ),
+                        );
+                      }
+
+                      final msg = messages[index];
+                      final isMe = msg.senderId == currentUser;
+
+                      return _MessageBubble(
+                        key: ValueKey(msg.id),
+                        message: msg,
+                        isMe: isMe,
+                        onSwipe: () {
+                          setState(() {
+                            _replyingTo = msg;
+                          });
+                        },
+                      );
+                    },
+                  );
+                },
+                error: (err, stack) => Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(FluentIcons.error, color: Colors.red, size: 48),
+                      SizedBox(height: 16),
+                      Text("Error loading messages",
+                          style: TextStyle(color: Colors.white)),
+                      SizedBox(height: 8),
+                      Button(
+                        onPressed: () => ref
+                            .invalidate(chatMessagesProvider(widget.groupId)),
+                        child: Text('Retry'),
+                      ),
+                    ],
+                  ),
+                ),
+                loading: () => const Center(child: ProgressRing()),
+              ),
+            ),
+            if (_replyingTo != null) _buildReplyPreview(),
+            _buildInputArea(),
+            if (_showEmojiPicker && !_isRecording) _buildEmojiPicker(),
+          ],
+        ),
       ),
     );
   }
@@ -363,7 +390,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       color: const Color(0xFF1F2C34),
       child: Row(
         children: [
-          const Icon(Icons.reply, color: Colors.grey),
+          const Icon(FluentIcons.reply, color: Colors.grey),
           const SizedBox(width: 8),
           Expanded(
             child: Column(
@@ -371,7 +398,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               children: [
                 Text(
                     "Replying to ${_replyingTo?.senderProfile?['name'] ?? 'User'}",
-                    style: const TextStyle(
+                    style: TextStyle(
                         color: Colors.teal, fontWeight: FontWeight.bold)),
                 Text(
                     _replyingTo?.messageText ??
@@ -379,12 +406,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                         'Message',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(color: Colors.white70)),
+                    style: TextStyle(color: Colors.white.withOpacity(0.7))),
               ],
             ),
           ),
           IconButton(
-              icon: const Icon(Icons.close, color: Colors.white),
+              icon: const Icon(FluentIcons.clear, color: Colors.white),
               onPressed: () => setState(() => _replyingTo = null))
         ],
       ),
@@ -408,8 +435,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   IconButton(
                     icon: Icon(
                         _showEmojiPicker
-                            ? Icons.keyboard
-                            : Icons.emoji_emotions_outlined,
+                            ? FluentIcons.keyboard_classic
+                            : FluentIcons.emoji,
                         color: Colors.grey),
                     onPressed: () {
                       setState(() => _showEmojiPicker = !_showEmojiPicker);
@@ -417,15 +444,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     },
                   ),
                   Expanded(
-                    child: TextField(
+                    child: TextBox(
                       controller: _textController,
+                      placeholder: "Message",
+                      placeholderStyle: const TextStyle(color: Colors.grey),
                       style: const TextStyle(color: Colors.white),
-                      decoration: const InputDecoration(
-                        hintText: "Message",
-                        hintStyle: TextStyle(color: Colors.grey),
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.symmetric(horizontal: 8),
-                      ),
+                      decoration: ButtonState.all(const BoxDecoration()),
                       minLines: 1,
                       maxLines: 6,
                       onTap: () {
@@ -436,12 +460,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.attach_file, color: Colors.grey),
+                    icon: const Icon(FluentIcons.attach, color: Colors.grey),
                     onPressed: _pickImage,
                   ),
                   if (_textController.text.isEmpty && !_isRecording)
                     IconButton(
-                      icon: const Icon(Icons.camera_alt, color: Colors.grey),
+                      icon: const Icon(FluentIcons.camera, color: Colors.grey),
                       onPressed: _pickImage,
                     ),
                 ],
@@ -457,14 +481,21 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 _sendMessage();
               }
             },
-            child: CircleAvatar(
-              backgroundColor: const Color(0xFF00A884),
-              radius: 24,
-              child: Icon(
-                _textController.text.isNotEmpty
-                    ? Icons.send
-                    : (_isRecording ? Icons.mic_off : Icons.mic),
-                color: Colors.white,
+            child: ClipOval(
+              child: Container(
+                width: 48,
+                height: 48,
+                color: const Color(0xFF00A884),
+                child: Center(
+                  child: Icon(
+                    _textController.text.isNotEmpty
+                        ? FluentIcons.send
+                        : (_isRecording
+                            ? FluentIcons.mic_off
+                            : FluentIcons.microphone),
+                    color: Colors.white,
+                  ),
+                ),
               ),
             ),
           ),
@@ -516,7 +547,7 @@ class _MessageBubble extends StatelessWidget {
       background: Container(
           alignment: Alignment.centerLeft,
           padding: const EdgeInsets.only(left: 20),
-          child: const Icon(Icons.reply, color: Colors.white70)),
+          child: const Icon(FluentIcons.reply, color: Color(0xB2FFFFFF))),
       child: Align(
         alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
         child: GestureDetector(
@@ -526,12 +557,13 @@ class _MessageBubble extends StatelessWidget {
               await Clipboard.setData(
                   ClipboardData(text: message.messageText!));
               if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Message copied'),
-                    duration: Duration(seconds: 2),
-                  ),
-                );
+                displayInfoBar(context, builder: (context, close) {
+                  return const InfoBar(
+                    title: Text('Copied'),
+                    content: Text('Message copied to clipboard'),
+                    severity: InfoBarSeverity.success,
+                  );
+                });
               }
             }
           },
@@ -555,7 +587,7 @@ class _MessageBubble extends StatelessWidget {
                       padding: const EdgeInsets.only(left: 4, top: 4),
                       child: Text(message.senderProfile!['name'] ?? 'User',
                           style: TextStyle(
-                              color: Colors.teal[200],
+                              color: Colors.teal,
                               fontWeight: FontWeight.bold,
                               fontSize: 12))),
                 if (message.replyToMessageId != null)
@@ -565,7 +597,7 @@ class _MessageBubble extends StatelessWidget {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
+                        FluentPageRoute(
                           builder: (context) => ImageViewer(
                             imageUrl: message.fileUrl!,
                             title: message.senderProfile?['name'] ?? 'Image',
@@ -580,10 +612,10 @@ class _MessageBubble extends StatelessWidget {
                         placeholder: (_, __) => Container(
                             height: 150,
                             width: 150,
-                            color: Colors.black12,
-                            child: const Center(
-                                child: CircularProgressIndicator())),
-                        errorWidget: (_, __, ___) => const Icon(Icons.error),
+                            color: const Color(0x1F000000),
+                            child: const Center(child: ProgressRing())),
+                        errorWidget: (_, __, ___) =>
+                            const Icon(FluentIcons.error),
                       ),
                     ),
                   ),
@@ -613,21 +645,22 @@ class _MessageBubble extends StatelessWidget {
                     children: [
                       if (message.messageText != null &&
                           message.messageText!.isNotEmpty) ...[
-                        InkWell(
+                        GestureDetector(
                           onTap: () async {
                             await Clipboard.setData(
                                 ClipboardData(text: message.messageText!));
                             if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Copied'),
-                                  duration: Duration(seconds: 1),
-                                ),
-                              );
+                              displayInfoBar(context,
+                                  builder: (context, close) {
+                                return const InfoBar(
+                                  title: Text('Copied'),
+                                  severity: InfoBarSeverity.success,
+                                );
+                              });
                             }
                           },
                           child: Icon(
-                            Icons.copy,
+                            FluentIcons.copy,
                             size: 10,
                             color: Colors.white.withOpacity(0.6),
                           ),
@@ -636,8 +669,9 @@ class _MessageBubble extends StatelessWidget {
                       ],
                       Text(
                         timeago.format(message.createdAt),
-                        style: const TextStyle(
-                            color: Colors.white54, fontSize: 10),
+                        style: TextStyle(
+                            color: Colors.white.withOpacity(0.54),
+                            fontSize: 10),
                       ),
                     ],
                   ),
@@ -675,7 +709,7 @@ class _MessageBubble extends StatelessWidget {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(
+          FluentPageRoute(
             builder: (context) => GalleryDetailsPage(
               item: galleryItem,
               allItems: [galleryItem],
@@ -693,10 +727,10 @@ class _MessageBubble extends StatelessWidget {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                Colors.grey[900]!,
+                const Color(0xFF262626),
                 const Color(0xFF1E1E1E),
               ]),
-          border: Border.all(color: Colors.white12),
+          border: Border.all(color: Colors.white.withOpacity(0.12)),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.3),
@@ -714,7 +748,7 @@ class _MessageBubble extends StatelessWidget {
                 if (galleryData['user_id'] != null) {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
+                    FluentPageRoute(
                       builder: (context) => VerfiedSwitchPage(
                         userId: galleryData['user_id'],
                       ),
@@ -729,25 +763,31 @@ class _MessageBubble extends StatelessWidget {
                     Container(
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        border: Border.all(color: Colors.amber, width: 1),
+                        border: Border.all(color: Colors.yellow, width: 1),
                       ),
-                      child: CircleAvatar(
-                        radius: 12,
-                        backgroundColor: Colors.grey[800],
-                        backgroundImage: () {
-                          try {
-                            final profileList = galleryData['user']?['profile'];
-                            if (profileList is List && profileList.isNotEmpty) {
-                              final url = profileList[0]['profile_image_url'];
-                              if (url is String && url.isNotEmpty) {
-                                return NetworkImage(url);
+                      child: ClipOval(
+                        child: SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: () {
+                            try {
+                              final profileList =
+                                  galleryData['user']?['profile'];
+                              if (profileList is List &&
+                                  profileList.isNotEmpty) {
+                                final url = profileList[0]['profile_image_url'];
+                                if (url is String && url.isNotEmpty) {
+                                  return CachedNetworkImage(
+                                    imageUrl: url,
+                                    fit: BoxFit.cover,
+                                  );
+                                }
                               }
-                            }
-                          } catch (_) {}
-                          return null;
-                        }(),
-                        child: const Icon(Icons.person,
-                            size: 12, color: Colors.white70),
+                            } catch (_) {}
+                            return Icon(FluentIcons.contact,
+                                size: 12, color: Colors.white);
+                          }(),
+                        ),
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -771,8 +811,8 @@ class _MessageBubble extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    const Icon(Icons.arrow_forward_ios,
-                        size: 10, color: Colors.white30),
+                    const Icon(FluentIcons.chevron_right,
+                        size: 10, color: Colors.white),
                   ],
                 ),
               ),
@@ -789,14 +829,14 @@ class _MessageBubble extends StatelessWidget {
                     fit: BoxFit.cover,
                     placeholder: (_, __) => Container(
                         height: 160,
-                        color: Colors.grey[850],
-                        child: const Center(
-                            child: CircularProgressIndicator(
-                                strokeWidth: 2, color: Colors.amber))),
+                        color: const Color(0xFF262626),
+                        child:
+                            const Center(child: ProgressRing(strokeWidth: 2))),
                     errorWidget: (_, __, ___) => Container(
                         height: 160,
-                        color: Colors.grey[850],
-                        child: const Icon(Icons.error, color: Colors.white24)),
+                        color: const Color(0xFF262626),
+                        child:
+                            const Icon(FluentIcons.error, color: Colors.white)),
                   ),
 
                 // Price Tag
@@ -810,12 +850,12 @@ class _MessageBubble extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: Colors.black.withOpacity(0.7),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.amber, width: 0.5),
+                        border: Border.all(color: Colors.yellow, width: 0.5),
                       ),
                       child: Text(
                         '\$${galleryData['price']}',
-                        style: const TextStyle(
-                            color: Colors.amber,
+                        style: TextStyle(
+                            color: Colors.yellow,
                             fontWeight: FontWeight.bold,
                             fontSize: 10),
                       ),
@@ -841,8 +881,8 @@ class _MessageBubble extends StatelessWidget {
                       ),
                       child: Text(
                         galleryData['category'].toString().toUpperCase(),
-                        style: const TextStyle(
-                          color: Colors.white70,
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.7),
                           fontSize: 9,
                           fontWeight: FontWeight.w500,
                           letterSpacing: 0.5,
@@ -882,13 +922,13 @@ class _ReplyBubble extends StatelessWidget {
       padding: const EdgeInsets.all(4),
       margin: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: Colors.black26,
+        color: Colors.black.withOpacity(0.26),
         borderRadius: BorderRadius.circular(4),
-        border: const Border(left: BorderSide(color: Colors.teal, width: 4)),
+        border: Border(left: BorderSide(color: Colors.teal, width: 4)),
       ),
-      child: const Text("Replying to message...",
+      child: Text("Replying to message...",
           style: TextStyle(
-              color: Colors.white70,
+              color: Colors.white.withOpacity(0.7),
               fontStyle: FontStyle.italic,
               fontSize: 12)),
     );

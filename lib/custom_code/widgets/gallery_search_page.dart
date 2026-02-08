@@ -11,6 +11,7 @@ import 'package:pocket_mates_app/custom_code/widgets/status_display_widget.dart'
 import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
 import 'package:pocket_mates_app/flutter_flow/flutter_flow_theme.dart';
 import 'package:pocket_mates_app/flutter_flow/flutter_flow_util.dart';
+import 'package:fluent_ui/fluent_ui.dart' as fluent;
 
 class GalleryDetailsPage extends StatefulWidget {
   final Map<String, dynamic> item;
@@ -911,28 +912,18 @@ class BuildDetailContentState extends State<BuildDetailContent> {
         item: widget.item,
       ),
       menuItems: [
-        PopupMenuItem(
-          child: const Row(
-            children: [
-              Icon(Icons.description, size: 16),
-              SizedBox(width: 8),
-              Text('Share all details'),
-            ],
-          ),
-          onTap: () => WhatsAppShareHelper.shareToWhatsApp(
+        fluent.MenuFlyoutItem(
+          leading: const Icon(Icons.description, size: 16),
+          text: const Text('Share all details'),
+          onPressed: () => WhatsAppShareHelper.shareToWhatsApp(
             context: context,
             item: widget.item,
           ),
         ),
-        PopupMenuItem(
-          child: const Row(
-            children: [
-              Icon(Icons.link, size: 16),
-              SizedBox(width: 8),
-              Text('Share link only'),
-            ],
-          ),
-          onTap: () => WhatsAppShareHelper.shareOnlyLink(
+        fluent.MenuFlyoutItem(
+          leading: const Icon(Icons.link, size: 16),
+          text: const Text('Share link only'),
+          onPressed: () => WhatsAppShareHelper.shareOnlyLink(
             context: context,
             item: widget.item,
           ),
@@ -994,30 +985,22 @@ class BuildDetailContentState extends State<BuildDetailContent> {
               includeFullDetails: false, // Simple message for direct contact
             ),
             menuItems: [
-              PopupMenuItem(
-                child: const Row(
-                  children: [
-                    Icon(Icons.chat_bubble_outline, size: 16),
-                    SizedBox(width: 8),
-                    Text('Send simple message'),
-                  ],
-                ),
-                onTap: () => WhatsAppShareHelper.shareToSpecificWhatsAppNumber(
+              fluent.MenuFlyoutItem(
+                leading: const Icon(Icons.chat_bubble_outline, size: 16),
+                text: const Text('Send simple message'),
+                onPressed: () =>
+                    WhatsAppShareHelper.shareToSpecificWhatsAppNumber(
                   context: context,
                   item: widget.item,
                   phoneNumber: widget.item['phone_no'].toString(),
                   includeFullDetails: false,
                 ),
               ),
-              PopupMenuItem(
-                child: const Row(
-                  children: [
-                    Icon(Icons.info_outline, size: 16),
-                    SizedBox(width: 8),
-                    Text('Send with full details'),
-                  ],
-                ),
-                onTap: () => WhatsAppShareHelper.shareToSpecificWhatsAppNumber(
+              fluent.MenuFlyoutItem(
+                leading: const Icon(Icons.info_outline, size: 16),
+                text: const Text('Send with full details'),
+                onPressed: () =>
+                    WhatsAppShareHelper.shareToSpecificWhatsAppNumber(
                   context: context,
                   item: widget.item,
                   phoneNumber: widget.item['phone_no'].toString(),
