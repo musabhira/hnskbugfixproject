@@ -15,6 +15,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'auth_page_model.dart';
 export 'auth_page_model.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class AuthPageWidget extends StatefulWidget {
   const AuthPageWidget({super.key});
@@ -33,6 +34,7 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   final animationsMap = <String, AnimationInfo>{};
+  bool _agreedToTerms = false;
 
   @override
   void initState() {
@@ -1312,15 +1314,104 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                                                   ),
                                                 ),
                                               ),
+                                              Padding(
+                                                padding: const EdgeInsets.only(
+                                                    bottom: 16.0),
+                                                child: CheckboxListTile(
+                                                  value: _agreedToTerms,
+                                                  onChanged: (newValue) =>
+                                                      safeSetState(() =>
+                                                          _agreedToTerms =
+                                                              newValue ??
+                                                                  false),
+                                                  title: Wrap(
+                                                    crossAxisAlignment:
+                                                        WrapCrossAlignment
+                                                            .center,
+                                                    children: [
+                                                      Text('I agree to the ',
+                                                          style: FlutterFlowTheme
+                                                                  .of(context)
+                                                              .bodyMedium),
+                                                      InkWell(
+                                                        onTap: () => launchUrl(
+                                                            Uri.parse(
+                                                                'https://example.com/terms')),
+                                                        child: Text(
+                                                          'Terms of Service',
+                                                          style:
+                                                              GoogleFonts.inter(
+                                                            color: FlutterFlowTheme
+                                                                    .of(context)
+                                                                .primary,
+                                                            decoration:
+                                                                TextDecoration
+                                                                    .underline,
+                                                            fontSize: 14,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      Text(' and ',
+                                                          style: FlutterFlowTheme
+                                                                  .of(context)
+                                                              .bodyMedium),
+                                                      InkWell(
+                                                        onTap: () => launchUrl(
+                                                            Uri.parse(
+                                                                'https://example.com/privacy')),
+                                                        child: Text(
+                                                          'Privacy Policy',
+                                                          style:
+                                                              GoogleFonts.inter(
+                                                            color: FlutterFlowTheme
+                                                                    .of(context)
+                                                                .primary,
+                                                            decoration:
+                                                                TextDecoration
+                                                                    .underline,
+                                                            fontSize: 14,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  contentPadding:
+                                                      EdgeInsets.zero,
+                                                  controlAffinity:
+                                                      ListTileControlAffinity
+                                                          .leading,
+                                                  activeColor:
+                                                      FlutterFlowTheme.of(
+                                                              context)
+                                                          .primary,
+                                                  checkColor: Colors.white,
+                                                  dense: true,
+                                                ),
+                                              ),
                                               Align(
-                                                alignment: AlignmentDirectional(
-                                                    0.0, 0.0),
+                                                alignment:
+                                                    const AlignmentDirectional(
+                                                        0.0, 0.0),
                                                 child: Padding(
-                                                  padding: EdgeInsetsDirectional
-                                                      .fromSTEB(
+                                                  padding:
+                                                      const EdgeInsetsDirectional
+                                                          .fromSTEB(
                                                           0.0, 0.0, 0.0, 16.0),
                                                   child: FFButtonWidget(
                                                     onPressed: () async {
+                                                      if (!_agreedToTerms) {
+                                                        ScaffoldMessenger.of(
+                                                                context)
+                                                            .showSnackBar(
+                                                          const SnackBar(
+                                                            content: Text(
+                                                                'You must agree to the Terms of Service and Privacy Policy to continue.'),
+                                                            backgroundColor:
+                                                                Colors.red,
+                                                          ),
+                                                        );
+                                                        return;
+                                                      }
                                                       GoRouter.of(context)
                                                           .prepareAuthEvent();
                                                       if (_model

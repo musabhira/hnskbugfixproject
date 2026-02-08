@@ -12,6 +12,8 @@ import '/custom_code/widgets/index.dart';
 import '/custom_code/widgets/tools_page.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chat_list_shimmer.dart';
+import 'package:pocket_mates_app/custom_code/widgets/settings_page.dart';
 
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/material.dart' as material;
@@ -70,10 +72,13 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   final _searchController = TextEditingController();
   String _searchQuery = '';
   int _chatTabIndex = 0;
+  int _refreshKeyCount = 0;
+  late PageController _pageController;
 
   @override
   void initState() {
     super.initState();
+    _pageController = PageController(initialPage: _chatTabIndex);
     _loadCachedData();
     _loadAllUserData();
     _searchController.addListener(() {
@@ -85,8 +90,23 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 
   @override
   void dispose() {
+    _pageController.dispose();
     _searchController.dispose();
     super.dispose();
+  }
+
+  void _onPageChanged(int index) {
+    setState(() {
+      _chatTabIndex = index;
+    });
+  }
+
+  void _onTabTapped(int index) {
+    _pageController.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
   }
 
   Future<void> _loadCachedData() async {
@@ -196,46 +216,9 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   }
 
   void _handleSettings() {
-    showDialog(
-      context: context,
-      builder: (context) => ContentDialog(
-        title: const Text('Settings'),
-        content: material.Material(
-          color: material.Colors.transparent,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              material.ListTile(
-                leading: Icon(FluentIcons.sign_out, color: material.Colors.red),
-                title: const Text('Logout',
-                    style: TextStyle(color: material.Colors.red)),
-                onTap: () async {
-                  Navigator.pop(context);
-                  try {
-                    await supabase.auth.signOut();
-                    if (mounted) {
-                      Navigator.of(context).pushNamedAndRemoveUntil(
-                        'LandingPage',
-                        (route) => false,
-                      );
-                    }
-                  } catch (e) {
-                    if (mounted) {
-                      Navigator.of(context)
-                          .pushNamedAndRemoveUntil('/', (route) => false);
-                    }
-                  }
-                },
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          Button(
-            child: const Text('Cancel'),
-            onPressed: () => Navigator.pop(context),
-          ),
-        ],
+    Navigator.of(context).push(
+      material.MaterialPageRoute(
+        builder: (context) => const SettingsPage(),
       ),
     );
   }
@@ -249,97 +232,145 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         FocusScope.of(context).unfocus();
         FocusManager.instance.primaryFocus?.unfocus();
       },
-      child: ScaffoldPage(
-        // key: scaffoldKey, // No key in ScaffoldPage
-        // backgroundColor: HomePageWidgetTree.backgroundColor, // Use padding or background implies by theme
-        bottomBar: _buildBottomNavigationBar(context),
-        content: _isLoading
-            ? const Center(child: ProgressRing())
-            : _currentIndex == 1
-                ? const MainMarketPage()
-                : _currentIndex == 2
-                    ? const ToolsPage()
-                    : SafeArea(
-                        top: true,
-                        child: CustomScrollView(
-                          // Removed RefreshIndicator
-                          physics: const BouncingScrollPhysics(),
-                          slivers: [
-                            // Unified Dynamic Header (Stranger Rows + Status)
-                            SliverPersistentHeader(
-                              pinned: true,
-                              delegate: _UnifiedHomeHeaderDelegate(
-                                currentUserId:
-                                    supabase.auth.currentUser?.id ?? '',
-                                currentProfileId: profileId.toString(),
-                                activeUsersRef: ref.watch(activeUsersProvider(
-                                    profileId
-                                        .toString())), // Pass the provider reference
-                                onTapVideo: () => _handleStrangerMatch(
-                                  context,
-                                  ref,
-                                  'Video',
-                                  profileId.toString(),
+      child: Container(
+        color: material.Colors.black,
+        child: ScaffoldPage(
+          padding: EdgeInsets.zero,
+          bottomBar: _buildBottomNavigationBar(context),
+          content: material.ColoredBox(
+            color: material.Colors.black,
+            child: _isLoading
+                ? const Center(child: ProgressRing())
+                : _currentIndex == 1
+                    ? const MainMarketPage()
+                    : _currentIndex == 2
+                        ? const ToolsPage()
+                        : material.RefreshIndicator(
+                            onRefresh: _handleRefresh,
+                            color: material.Colors.yellow,
+                            backgroundColor: material.Colors.black,
+                            child: CustomScrollView(
+                              // Removed SafeArea from here as it caused a grey gap at the top.
+                              // The content now flows under the status bar (immersive) and handles
+                              // its own padding via the SliverPersistentHeader.
+                              // Removed RefreshIndicator
+                              physics: const BouncingScrollPhysics(),
+                              slivers: [
+                                // Unified Dynamic Header (Stranger Rows + Status)
+                                SliverPersistentHeader(
+                                  pinned: true,
+                                  delegate: _UnifiedHomeHeaderDelegate(
+                                    currentUserId:
+                                        supabase.auth.currentUser?.id ?? '',
+                                    currentProfileId: profileId.toString(),
+                                    statusRefreshKey: _refreshKeyCount,
+                                    activeUsersRef: ref.watch(
+                                        activeUsersProvider(profileId
+                                            .toString())), // Pass the provider reference
+                                    onTapVideo: () => _handleStrangerMatch(
+                                      context,
+                                      ref,
+                                      'Video',
+                                      profileId.toString(),
+                                    ),
+                                    onTapFriends: () {
+                                      // ScaffoldMessenger.of(context).showSnackBar( // No ScaffoldMessenger
+                                      //   const SnackBar(
+                                      //       content: Text(
+                                      //           'Strangers Friends coming soon!')),
+                                      // );
+                                      displayInfoBar(context,
+                                          builder: (context, close) {
+                                        return InfoBar(
+                                          title: const Text('Coming Soon'),
+                                          content: const Text(
+                                              'Strangers Friends coming soon!'),
+                                          severity: InfoBarSeverity.info,
+                                        );
+                                      });
+                                    },
+                                    onTapCall: () => _handleStrangerMatch(
+                                      context,
+                                      ref,
+                                      'Voice',
+                                      profileId.toString(),
+                                    ),
+                                    onTapText: () => _handleStrangerChat(
+                                        context, ref, profileId.toString()),
+                                    onTapSettings: _handleSettings,
+                                    onTapAdd: () =>
+                                        _showAddBottomSheet(context),
+                                    onRefresh: _handleRefresh,
+                                  ),
                                 ),
-                                onTapFriends: () {
-                                  // ScaffoldMessenger.of(context).showSnackBar( // No ScaffoldMessenger
-                                  //   const SnackBar(
-                                  //       content: Text(
-                                  //           'Strangers Friends coming soon!')),
-                                  // );
-                                  displayInfoBar(context,
-                                      builder: (context, close) {
-                                    return InfoBar(
-                                      title: const Text('Coming Soon'),
-                                      content: const Text(
-                                          'Strangers Friends coming soon!'),
-                                      severity: InfoBarSeverity.info,
-                                    );
-                                  });
-                                },
-                                onTapCall: () => _handleStrangerMatch(
-                                  context,
-                                  ref,
-                                  'Voice',
-                                  profileId.toString(),
+
+                                SliverPersistentHeader(
+                                  pinned: true,
+                                  delegate: _ChatTabBarDelegate(
+                                    selectedIndex: _chatTabIndex,
+                                    onTap: _onTabTapped,
+                                  ),
                                 ),
-                                onTapText: () => _handleStrangerChat(
-                                    context, ref, profileId.toString()),
-                                onTapSettings: _handleSettings,
-                                onTapAdd: () => _showAddBottomSheet(context),
-                                onRefresh: () =>
-                                    ref.refresh(conversationsProvider),
-                              ),
-                            ),
 
-                            SliverPersistentHeader(
-                              pinned: true,
-                              delegate: _ChatTabBarDelegate(
-                                selectedIndex: _chatTabIndex,
-                                onTap: (index) =>
-                                    setState(() => _chatTabIndex = index),
-                              ),
+                                SliverFillRemaining(
+                                  child: material.Material(
+                                    color: material.Colors.black,
+                                    child: PageView(
+                                      controller: _pageController,
+                                      onPageChanged: _onPageChanged,
+                                      children: [
+                                        material.CustomScrollView(
+                                          slivers: [
+                                            _buildChatListSliver(
+                                                conversationsAsync),
+                                          ],
+                                        ),
+                                        material.CustomScrollView(
+                                          slivers: [
+                                            _buildVibesListSliver(),
+                                          ],
+                                        ),
+                                        material.CustomScrollView(
+                                          slivers: [
+                                            _buildAIListSliver(),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
-
-                            if (_chatTabIndex == 0)
-                              _buildChatListSliver(conversationsAsync)
-                            else if (_chatTabIndex == 1)
-                              _buildVibesListSliver()
-                            else
-                              _buildAIListSliver(),
-                          ],
-                        ),
-                      ),
+                          ),
+          ),
+        ),
       ),
     );
+  }
+
+  Future<void> _handleRefresh() async {
+    // Refresh all main data providers
+    try {
+      setState(() {
+        _refreshKeyCount++;
+      });
+      await Future.wait([
+        ref.refresh(conversationsProvider.future),
+        ref.refresh(activeUsersProvider(profileId.toString()).future),
+      ]);
+    } catch (e) {
+      debugPrint('Error refreshing home page: $e');
+    }
   }
 
   Widget _buildVibesListSliver() {
     return SliverToBoxAdapter(
       child: StatusDisplayWidget(
+        key: ValueKey('vibes_list_$_refreshKeyCount'),
         currentUserId: supabase.auth.currentUser?.id ?? '',
         currentProfileId: profileId ?? '',
         isVertical: true,
+        onStatusUploaded: _handleRefresh,
       ),
     );
   }
@@ -635,16 +666,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
           ],
         );
       },
-      loading: () => SliverToBoxAdapter(
-        child: Padding(
-          padding: const EdgeInsets.only(top: 50),
-          child: Center(
-            child: ProgressRing(
-              activeColor: HomePageWidgetTree.primaryColor,
-            ),
-          ),
-        ),
-      ),
+      loading: () => const ChatListShimmer(),
       error: (error, stack) => SliverToBoxAdapter(
         child: Padding(
           padding: const EdgeInsets.all(20),
@@ -1160,16 +1182,28 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 
     // 2. Filter out self (already done in provider, but double check)
     // and potentially filter by interests if we had that data.
-    if (activeFriends.isEmpty) {
-      material.ScaffoldMessenger.of(context).showSnackBar(
-        const material.SnackBar(
-            content: Text('No active users nearby to match with right now.')),
-      );
-      return;
-    }
+    // 3. Match Logic
+    Map<String, dynamic> randomUser;
+    if (activeFriends.isNotEmpty) {
+      randomUser = (activeFriends..shuffle()).first;
+    } else {
+      final List<dynamic> allUsersData = await ref
+          .read(supabaseClientProvider)
+          .from('profile')
+          .select('id, user_id, name, profile_image_url')
+          .neq('id', currentProfileId)
+          .limit(10);
 
-    // 3. Simple Random Match
-    final randomUser = (activeFriends..shuffle()).first;
+      if (allUsersData.isEmpty) {
+        material.ScaffoldMessenger.of(context).showSnackBar(
+          const material.SnackBar(content: Text('No users found in system.')),
+        );
+        return;
+      }
+      final users = List.from(allUsersData);
+      users.shuffle();
+      randomUser = users.first as Map<String, dynamic>;
+    }
 
     // 4. Initiate Call
     // Here we navigate to WebRTCCallScreen but passing the target user ID
@@ -1438,6 +1472,7 @@ class _UnifiedHomeHeaderDelegate extends SliverPersistentHeaderDelegate {
   final VoidCallback onTapText;
   final VoidCallback onTapSettings;
   final VoidCallback onTapAdd;
+  final int statusRefreshKey;
   final VoidCallback onRefresh;
 
   _UnifiedHomeHeaderDelegate({
@@ -1450,6 +1485,7 @@ class _UnifiedHomeHeaderDelegate extends SliverPersistentHeaderDelegate {
     required this.onTapText,
     required this.onTapSettings,
     required this.onTapAdd,
+    required this.statusRefreshKey,
     required this.onRefresh,
   });
 
@@ -1468,85 +1504,83 @@ class _UnifiedHomeHeaderDelegate extends SliverPersistentHeaderDelegate {
         children: [
           // 1. Background
           Positioned.fill(
-              child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [const Color(0xFF0F0F0F), material.Colors.black],
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [material.Colors.black, material.Colors.black],
+                ),
               ),
             ),
-          )),
+          ),
 
           // 2. Stranger Match Section
           Positioned(
             top: 0,
             left: 0,
             right: 0,
-            bottom: 140,
+            bottom: 160, // Match Status Bar height to avoid overlap
             child: ClipRect(
               child: Transform.scale(
                 scale: overscrollScale,
                 alignment: Alignment.topCenter,
                 child: Transform.translate(
                   offset: Offset(0, -shrinkOffset * 0.6),
-                  child: SingleChildScrollView(
-                    physics: const NeverScrollableScrollPhysics(),
-                    child: Padding(
-                      padding: EdgeInsets.fromLTRB(20, topPadding + 20, 20, 20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Stranger Match',
-                            style: GoogleFonts.outfit(
-                              color: material.Colors.white,
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Stranger Match',
+                          style: GoogleFonts.outfit(
+                            color: material.Colors.white,
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        Row(
+                          children: [
+                            _buildMatchCard(
+                              label: 'Video Call',
+                              icon: FluentIcons.video,
+                              color: material.Colors.blue,
+                              onTap: onTapVideo,
                             ),
-                          ),
-                          const SizedBox(height: 24),
-                          Row(
-                            children: [
-                              _buildMatchCard(
-                                label: 'Video Call',
-                                icon: FluentIcons.video,
-                                color: material.Colors.blue,
-                                onTap: onTapVideo,
-                              ),
-                              const SizedBox(width: 16),
-                              _buildMatchCard(
-                                label: 'Voice Call',
-                                icon: FluentIcons.phone,
-                                color: material.Colors.green,
-                                onTap: onTapCall,
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-                          _buildMatchCard(
-                            label: 'Quick Anonymous Chat',
-                            icon: FluentIcons.chat,
-                            color: material.Colors.yellow,
-                            isFullWidth: true,
-                            onTap: onTapText,
-                          ),
-                        ],
-                      ),
+                            const SizedBox(width: 16),
+                            _buildMatchCard(
+                              label: 'Voice Call',
+                              icon: FluentIcons.phone,
+                              color: material.Colors.green,
+                              onTap: onTapCall,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        _buildMatchCard(
+                          label: 'Quick Anonymous Chat',
+                          icon: FluentIcons.chat,
+                          color: material.Colors.yellow,
+                          isFullWidth: true,
+                          onTap: onTapText,
+                        ),
+                      ],
                     ),
                   ),
                 ),
               ),
             ),
           ),
-
           // 3. Status Bar
           Positioned(
             bottom: 0,
             left: 0,
             right: 0,
             child: Container(
-              height: 210,
+              height: 160, // Reduced height to give more room above
               decoration: BoxDecoration(
                 color: const Color(0xFF141414).withOpacity(0.95),
                 borderRadius: const BorderRadius.only(
@@ -1613,8 +1647,10 @@ class _UnifiedHomeHeaderDelegate extends SliverPersistentHeaderDelegate {
                       ),
                     ),
                     StatusDisplayWidget(
+                      key: ValueKey('status_display_$statusRefreshKey'),
                       currentUserId: currentUserId,
                       currentProfileId: currentProfileId,
+                      onStatusUploaded: onRefresh,
                     ),
                   ],
                 ),
@@ -1789,9 +1825,9 @@ class _UnifiedHomeHeaderDelegate extends SliverPersistentHeaderDelegate {
   }
 
   @override
-  double get maxExtent => 500.0;
+  double get maxExtent => 520.0;
   @override
-  double get minExtent => 210.0;
+  double get minExtent => 180.0;
   @override
   bool shouldRebuild(covariant _UnifiedHomeHeaderDelegate oldDelegate) => true;
 }
@@ -1877,7 +1913,7 @@ class _ChatTabBarDelegate extends SliverPersistentHeaderDelegate {
         children: [
           _buildTab('Chats', 0),
           _buildTab('Vibes', 1),
-          _buildTab('AI', 2),
+          _buildTab('Tools', 2),
         ],
       ),
     );

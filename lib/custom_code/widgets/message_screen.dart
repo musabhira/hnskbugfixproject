@@ -1719,6 +1719,118 @@ class _MessageScreenState extends State<MessageScreen> {
               ),
           ],
         );
+      case 'status_mention':
+        final senderName = message['metadata']?['sender_name'] ?? 'Someone';
+        final mediaUrl = message['metadata']?['status_media_url'];
+        final mediaType = message['metadata']?['media_type'] ?? 'image';
+        final caption = message['message_text'] ?? '';
+
+        return Container(
+          width: 220,
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.yellow.withOpacity(0.05),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.yellow.withOpacity(0.2), width: 1),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: Colors.yellow.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      mediaType == 'video' ? Icons.videocam : Icons.image,
+                      color: Colors.yellow,
+                      size: 16,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Group Mention',
+                    style: TextStyle(
+                      color: Colors.yellow,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                '$senderName mentioned this group in their Vibe:',
+                style: const TextStyle(
+                  color: Colors.yellow,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 8),
+              if (mediaUrl != null && mediaType != 'text')
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: CachedNetworkImage(
+                    imageUrl: mediaUrl,
+                    height: 120,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              if (mediaType == 'text')
+                Container(
+                  height: 120,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFFCC2B5E), Color(0xFF753A88)],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: const EdgeInsets.all(10),
+                  alignment: Alignment.center,
+                  child: Text(
+                    mediaUrl ?? '',
+                    maxLines: 4,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(color: Colors.white, fontSize: 12),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              const SizedBox(height: 12),
+              Text(
+                caption,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 13,
+                ),
+              ),
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: () {
+                    // Logic to open status viewer for this group
+                  },
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: Colors.yellow, width: 1),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                  child: const Text(
+                    'View Vibe',
+                    style: TextStyle(color: Colors.yellow, fontSize: 12),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
       case 'image':
         final imageUrl = message['file_url'] ?? '';
         return GestureDetector(

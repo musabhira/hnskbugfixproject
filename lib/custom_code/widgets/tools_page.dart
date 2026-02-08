@@ -8,11 +8,8 @@ import 'index.dart'; // Imports other custom widgets
 import '/custom_code/actions/index.dart'; // Imports custom actions
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-// Begin custom widget code
-// DO NOT REMOVE OR MODIFY THE CODE ABOVE!
-
-// Set your widget name, define your parameter, and then add the
-// boilerplate code using the green button on the right!
+import 'package:pocket_mates_app/custom_code/widgets/drawing_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/home_page_widget_tree.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
@@ -516,6 +513,8 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                         _buildTabItem(4, 'Teams', Icons.groups_rounded),
                         const SizedBox(width: 12),
                         _buildTabItem(5, 'AI Tools', Icons.auto_awesome),
+                        const SizedBox(width: 12),
+                        _buildTabItem(6, 'Mini Apps', Icons.apps_rounded),
                       ],
                     ),
                   ),
@@ -1647,9 +1646,80 @@ class _TaskManagerScreenState extends State<ToolsPage> {
         return const TeamsHomeWidget();
       case 5:
         return _buildAIToolsTab();
+      case 6:
+        return _buildMiniAppsTab();
       default:
         return _buildScheduleTab();
     }
+  }
+
+  Widget _buildMiniAppsTab() {
+    return GridView.count(
+      padding: const EdgeInsets.all(24),
+      crossAxisCount: 2,
+      crossAxisSpacing: 16,
+      mainAxisSpacing: 16,
+      children: [
+        _buildToolCard(
+          title: 'Mini Sketchpad',
+          icon: Icons.brush,
+          color: Colors.orange,
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => const DrawingPage()),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildToolCard({
+    required String title,
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFF2C2C2C),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: color.withOpacity(0.3)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 10,
+              spreadRadius: 2,
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color, size: 32),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              title,
+              style: GoogleFonts.outfit(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildDiagramsTab() {

@@ -2,6 +2,10 @@ import 'dart:async';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'package:flutter/foundation.dart';
 
 part 'whats_app_groups_provider.g.dart';
 
@@ -92,6 +96,51 @@ class ChatConversation {
   final String? sourceId;
   final bool hasStatus;
   final List<Map<String, dynamic>>? statusData;
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'imageUrl': imageUrl,
+      'lastMessage': lastMessage,
+      'lastMessageTime': lastMessageTime?.toIso8601String(),
+      'unreadCount': unreadCount,
+      'isGroup': isGroup,
+      'lastSenderId': lastSenderId,
+      'isOnline': isOnline,
+      'lastSeen': lastSeen?.toIso8601String(),
+      'isNotification': isNotification,
+      'notificationType': notificationType,
+      'sourceId': sourceId,
+      'hasStatus': hasStatus,
+      'statusData': statusData,
+    };
+  }
+
+  factory ChatConversation.fromJson(Map<String, dynamic> json) {
+    return ChatConversation(
+      id: json['id'],
+      name: json['name'],
+      imageUrl: json['imageUrl'],
+      lastMessage: json['lastMessage'],
+      lastMessageTime: json['lastMessageTime'] != null
+          ? DateTime.parse(json['lastMessageTime'])
+          : null,
+      unreadCount: json['unreadCount'] ?? 0,
+      isGroup: json['isGroup'] ?? false,
+      lastSenderId: json['lastSenderId'],
+      isOnline: json['isOnline'] ?? false,
+      lastSeen:
+          json['lastSeen'] != null ? DateTime.parse(json['lastSeen']) : null,
+      isNotification: json['isNotification'] ?? false,
+      notificationType: json['notificationType'],
+      sourceId: json['sourceId'],
+      hasStatus: json['hasStatus'] ?? false,
+      statusData: json['statusData'] != null
+          ? List<Map<String, dynamic>>.from(json['statusData'])
+          : null,
+    );
+  }
 }
 
 // Provider for Supabase Client
@@ -147,7 +196,46 @@ class Conversations extends _$Conversations {
 
     // Fetch initial data
     final profileId = await ref.watch(currentProfileIdProvider.future);
+
+    // Try to load from cache first for instant display
+    final cached = await _loadFromCache(userId);
+    if (cached.isNotEmpty) {
+      // Fetch fresh data in background
+      _fetchConversations(userId, profileId).then((fresh) {
+        if (ref.mounted) {
+          state = AsyncValue.data(fresh);
+        }
+      });
+      return cached;
+    }
+
     return _fetchConversations(userId, profileId);
+  }
+
+  Future<List<ChatConversation>> _loadFromCache(String userId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final key = 'cached_conversations_$userId';
+      final jsonStr = prefs.getString(key);
+      if (jsonStr != null) {
+        final List<dynamic> decoded = jsonDecode(jsonStr);
+        return decoded.map((e) => ChatConversation.fromJson(e)).toList();
+      }
+    } catch (e) {
+      // ignore error
+    }
+    return [];
+  }
+
+  Future<void> _saveToCache(String userId, List<ChatConversation> list) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final key = 'cached_conversations_$userId';
+      final jsonStr = jsonEncode(list.map((e) => e.toJson()).toList());
+      await prefs.setString(key, jsonStr);
+    } catch (e) {
+      // ignore error
+    }
   }
 
   void _setupRealtimeSubscriptions(String userId) {
@@ -195,9 +283,19 @@ class Conversations extends _$Conversations {
 
   void _debouncedRefresh() {
     _debounceTimer?.cancel();
-    _debounceTimer = Timer(const Duration(milliseconds: 500), () {
+    _debounceTimer = Timer(const Duration(milliseconds: 500), () async {
       if (ref.mounted) {
-        ref.invalidateSelf();
+        // Manually refresh instead of invalidating to prevent loading flash
+        final userId = ref.read(currentUserIdProvider);
+        if (userId.isEmpty) return;
+
+        try {
+          final profileId = await ref.read(currentProfileIdProvider.future);
+          final fresh = await _fetchConversations(userId, profileId);
+          state = AsyncValue.data(fresh);
+        } catch (e) {
+          debugPrint('Error refreshing conversations: $e');
+        }
       }
     });
   }
@@ -234,6 +332,9 @@ class Conversations extends _$Conversations {
         if (bTime == null) return -1;
         return bTime.compareTo(aTime);
       });
+
+      // Save to cache
+      _saveToCache(userId, combined);
 
       return combined;
     } catch (e) {

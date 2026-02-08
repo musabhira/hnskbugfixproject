@@ -51,10 +51,23 @@ class ConversationTile extends StatelessWidget {
                         height: 66,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          border: Border.all(
-                            color: Colors.yellow,
-                            width: 2,
-                          ),
+                          gradient: conversation.isGroup
+                              ? const LinearGradient(
+                                  colors: [
+                                    Color(0xFF833AB4), // Purple
+                                    Color(0xFFF77737), // Orange
+                                    Color(0xFFFCAF45), // Yellow
+                                  ],
+                                  begin: Alignment.topRight,
+                                  end: Alignment.bottomLeft,
+                                )
+                              : null,
+                          border: conversation.isGroup
+                              ? null
+                              : Border.all(
+                                  color: Colors.yellow,
+                                  width: 2,
+                                ),
                         ),
                       ),
                     Container(

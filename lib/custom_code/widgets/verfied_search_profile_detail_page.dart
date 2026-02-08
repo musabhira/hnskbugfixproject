@@ -1289,12 +1289,47 @@ class _VerfiedSearchProfileDetailPageState
                                                               child: _profileData![
                                                                           'profile_image_url'] !=
                                                                       null
-                                                                  ? CachedNetworkImage(
-                                                                      imageUrl:
-                                                                          _profileData![
-                                                                              'profile_image_url'],
-                                                                      fit: BoxFit
-                                                                          .cover,
+                                                                  ? GestureDetector(
+                                                                      onTap:
+                                                                          () {
+                                                                        showDialog(
+                                                                          context:
+                                                                              context,
+                                                                          builder: (context) =>
+                                                                              material.Dialog(
+                                                                            backgroundColor:
+                                                                                material.Colors.transparent,
+                                                                            insetPadding:
+                                                                                EdgeInsets.zero,
+                                                                            child:
+                                                                                Stack(
+                                                                              children: [
+                                                                                InteractiveViewer(
+                                                                                  child: CachedNetworkImage(
+                                                                                    imageUrl: _profileData!['profile_image_url'],
+                                                                                    fit: BoxFit.contain,
+                                                                                  ),
+                                                                                ),
+                                                                                Positioned(
+                                                                                  top: 40,
+                                                                                  right: 20,
+                                                                                  child: material.IconButton(
+                                                                                    icon: const Icon(material.Icons.close, color: material.Colors.white, size: 30),
+                                                                                    onPressed: () => Navigator.of(context).pop(),
+                                                                                  ),
+                                                                                ),
+                                                                              ],
+                                                                            ),
+                                                                          ),
+                                                                        );
+                                                                      },
+                                                                      child:
+                                                                          CachedNetworkImage(
+                                                                        imageUrl:
+                                                                            _profileData!['profile_image_url'],
+                                                                        fit: BoxFit
+                                                                            .cover,
+                                                                      ),
                                                                     )
                                                                   : material
                                                                       .Icon(
@@ -1423,6 +1458,12 @@ class _VerfiedSearchProfileDetailPageState
                                                         Container(
                                                           child:
                                                               GestureDetector(
+                                                            onTap: () {
+                                                              setState(() {
+                                                                _isExpanded =
+                                                                    !_isExpanded;
+                                                              });
+                                                            },
                                                             child: _buildStatWidget(
                                                                 context,
                                                                 _followersCountFormatted

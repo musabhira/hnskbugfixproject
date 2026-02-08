@@ -415,8 +415,8 @@ class ChatMessages extends _$ChatMessages {
       final jsonStr = prefs.getString(key);
       if (jsonStr != null) {
         final List decoded = jsonDecode(jsonStr);
-        // Store more messages locally so they persist after DB cleanup
-        return decoded.take(500).map((m) => ChatMessage.fromJson(m)).toList();
+        // Store ALL messages locally so they persist after DB cleanup
+        return decoded.map((m) => ChatMessage.fromJson(m)).toList();
       }
     } catch (_) {}
     return [];
@@ -426,8 +426,8 @@ class ChatMessages extends _$ChatMessages {
     try {
       final prefs = await SharedPreferences.getInstance();
       final key = 'chat_messages_$groupId';
-      // Cache up to 500 messages locally
-      final messagesToCache = messages.take(500).toList();
+      // Cache ALL messages locally for full persistent history
+      final messagesToCache = messages.toList();
       final jsonStr =
           jsonEncode(messagesToCache.map((m) => m.toJson()).toList());
       await prefs.setString(key, jsonStr);

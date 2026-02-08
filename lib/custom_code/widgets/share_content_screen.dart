@@ -829,7 +829,7 @@ class _GroupSelectionBottomSheetState extends State<GroupSelectionBottomSheet>
         ],
       ),
       title: const Text(
-        'Your Vibes',
+        'My Vibes',
         style: TextStyle(
             color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600),
       ),
