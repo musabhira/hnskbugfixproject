@@ -1,17 +1,24 @@
 // Automatic FlutterFlow imports
 import 'package:pocket_mates_app/flutter_flow/form_field_controller.dart';
+import 'package:pocket_mates_app/flutter_flow/form_field_controller.dart';
+import 'package:pocket_mates_app/flutter_flow/flutter_flow_widgets.dart';
 import 'package:pocket_mates_app/flutter_flow/flutter_flow_widgets.dart';
 
 import '/backend/supabase/supabase.dart';
+import '/backend/supabase/supabase.dart';
+import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
+import '/flutter_flow/flutter_flow_util.dart';
+import 'index.dart'; // Imports other custom widgets
 import 'index.dart'; // Imports other custom widgets
 import '/custom_code/actions/index.dart'; // Imports custom actions
+import '/custom_code/actions/index.dart'; // Imports custom actions
+import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
-import 'index.dart'; // Imports other custom widgets
 
 class CustomChoiceChips extends StatefulWidget {
   final List<String> options;

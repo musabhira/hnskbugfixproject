@@ -1,9 +1,15 @@
 // Automatic FlutterFlow imports
 import '/backend/supabase/supabase.dart';
+import '/backend/supabase/supabase.dart';
+import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
+import '/flutter_flow/flutter_flow_util.dart';
+import 'index.dart'; // Imports other custom widgets
 import 'index.dart'; // Imports other custom widgets
 import '/custom_code/actions/index.dart'; // Imports custom actions
+import '/custom_code/actions/index.dart'; // Imports custom actions
+import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
@@ -11,11 +17,16 @@ import 'package:flutter/material.dart';
 // Set your widget name, define your parameter, and then add the
 // boilerplate code using the green button on the right!
 import 'dart:io';
+import 'dart:io';
 
 import 'package:http/http.dart' as http;
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'dart:convert';
 import 'package:image_picker/image_picker.dart';
+import 'package:image_picker/image_picker.dart';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/foundation.dart' show kIsWeb;
 
 class AiPromptGenerator extends StatelessWidget {
@@ -121,8 +132,8 @@ class AiPromptGenerator extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            Colors.yellow.withOpacity(0.8),
-            Colors.orange.withOpacity(0.6)
+            Colors.yellow.withValues(alpha: 0.8),
+            Colors.orange.withValues(alpha: 0.6)
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -134,7 +145,7 @@ class AiPromptGenerator extends StatelessWidget {
           Container(
             padding: EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(Icons.smart_toy, color: Colors.black, size: 32),
@@ -249,7 +260,7 @@ class AiPromptGenerator extends StatelessWidget {
               Container(
                 padding: EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.2),
+                  color: color.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(icon, color: color, size: 32),
@@ -691,7 +702,7 @@ class _BatchImageGeneratorState extends State<BatchImageGenerator> {
                         icon: Container(
                           padding: EdgeInsets.all(4),
                           decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.7),
+                            color: Colors.black.withValues(alpha: 0.7),
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: Icon(Icons.download,
@@ -774,7 +785,7 @@ class _VisionAIExampleState extends State<VisionAIExample> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 8,
             offset: Offset(0, 4),
           ),
@@ -915,8 +926,8 @@ class _VisionAIExampleState extends State<VisionAIExample> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
           color: isError
-              ? Colors.red.withOpacity(0.05)
-              : Colors.blue.withOpacity(0.05),
+              ? Colors.red.withValues(alpha: 0.05)
+              : Colors.blue.withValues(alpha: 0.05),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -978,9 +989,9 @@ class _VisionAIExampleState extends State<VisionAIExample> {
               Container(
                 padding: EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.blue.withOpacity(0.1),
+                  color: Colors.blue.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.blue.withOpacity(0.2)),
+                  border: Border.all(color: Colors.blue.withValues(alpha: 0.2)),
                 ),
                 child: Row(
                   children: [
@@ -1021,9 +1032,9 @@ class _VisionAIExampleState extends State<VisionAIExample> {
                 Container(
                   padding: EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.orange.withOpacity(0.1),
+                    color: Colors.orange.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                    border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
                   ),
                   child: Row(
                     children: [
@@ -2077,7 +2088,7 @@ class _EnhancedAIGeneratorState extends State<EnhancedAIGenerator>
                     ? LinearGradient(
                         colors: [
                           mode['color'] as Color,
-                          (mode['color'] as Color).withOpacity(0.7)
+                          (mode['color'] as Color).withValues(alpha: 0.7)
                         ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
@@ -2348,7 +2359,7 @@ class _EnhancedAIGeneratorState extends State<EnhancedAIGenerator>
               right: 8,
               child: Container(
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.7),
+                  color: Colors.black.withValues(alpha: 0.7),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Row(
@@ -2463,7 +2474,7 @@ class _EnhancedAIGeneratorState extends State<EnhancedAIGenerator>
 
   Widget _buildAdminPanel() {
     return Container(
-      color: Colors.black.withOpacity(0.9),
+      color: Colors.black.withValues(alpha: 0.9),
       child: Center(
         child: Container(
           margin: EdgeInsets.all(20),
@@ -2471,7 +2482,7 @@ class _EnhancedAIGeneratorState extends State<EnhancedAIGenerator>
           decoration: BoxDecoration(
             color: Colors.grey[900],
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.yellow.withOpacity(0.3)),
+            border: Border.all(color: Colors.yellow.withValues(alpha: 0.3)),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,

@@ -3,9 +3,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
-
-import 'package:image/image.dart'
-    as img; // Ensure this package is in pubspec.yaml
+import 'package:image/image.dart' as img;
 
 class CreateGroupDialog extends StatefulWidget {
   final VoidCallback onGroupCreated;
@@ -364,9 +362,10 @@ class _CreateGroupDialogState extends State<CreateGroupDialog>
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.2),
+                  color: Colors.green.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.green.withOpacity(0.5)),
+                  border:
+                      Border.all(color: Colors.green.withValues(alpha: 0.5)),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -570,7 +569,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog>
             return Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: const ui.Color(0xFFFFD700).withOpacity(0.2),
+                color: const ui.Color(0xFFFFD700).withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(color: const ui.Color(0xFFFFD700)),
               ),
@@ -696,7 +695,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog>
             border: Border.all(color: const ui.Color(0xFFFFD700), width: 2),
             boxShadow: [
               BoxShadow(
-                color: const ui.Color(0xFFFFD700).withOpacity(0.3),
+                color: const ui.Color(0xFFFFD700).withValues(alpha: 0.3),
                 blurRadius: 20,
                 spreadRadius: 2,
               ),

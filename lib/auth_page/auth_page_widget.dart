@@ -15,7 +15,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'auth_page_model.dart';
 export 'auth_page_model.dart';
-import 'package:url_launcher/url_launcher.dart';
+
+import 'package:pocket_mates_app/custom_code/widgets/legal_policy_widget.dart';
 
 class AuthPageWidget extends StatefulWidget {
   const AuthPageWidget({super.key});
@@ -1334,9 +1335,14 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                                                                   .of(context)
                                                               .bodyMedium),
                                                       InkWell(
-                                                        onTap: () => launchUrl(
-                                                            Uri.parse(
-                                                                'https://example.com/terms')),
+                                                        onTap: () =>
+                                                            Navigator.of(
+                                                                    context)
+                                                                .push(
+                                                          MaterialPageRoute(
+                                                              builder: (context) =>
+                                                                  const TermsOfServicePage()),
+                                                        ),
                                                         child: Text(
                                                           'Terms of Service',
                                                           style:
@@ -1356,9 +1362,14 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                                                                   .of(context)
                                                               .bodyMedium),
                                                       InkWell(
-                                                        onTap: () => launchUrl(
-                                                            Uri.parse(
-                                                                'https://example.com/privacy')),
+                                                        onTap: () =>
+                                                            Navigator.of(
+                                                                    context)
+                                                                .push(
+                                                          MaterialPageRoute(
+                                                              builder: (context) =>
+                                                                  const PrivacyPolicyPage()),
+                                                        ),
                                                         child: Text(
                                                           'Privacy Policy',
                                                           style:

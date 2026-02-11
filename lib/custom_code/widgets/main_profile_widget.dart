@@ -1,15 +1,28 @@
 import 'dart:convert';
+import 'dart:convert';
+import 'package:fluent_ui/fluent_ui.dart' hide Colors, IconButton, Tooltip;
 import 'package:fluent_ui/fluent_ui.dart' hide Colors, IconButton, Tooltip;
 import 'package:flutter/material.dart' as material;
+import 'package:flutter/material.dart' as material;
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:shimmer/shimmer.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
+import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/widgets/message_screen.dart';
+import 'package:pocket_mates_app/custom_code/widgets/message_screen.dart';
+import 'package:pocket_mates_app/custom_code/widgets/gallery_profile_search_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/gallery_profile_search_page.dart';
 
 class MainProfileWidget extends StatefulWidget {
@@ -432,7 +445,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   material.TabBar(
                     controller: _tabController,
                     labelColor: textColor,
-                    unselectedLabelColor: textColor.withOpacity(0.5),
+                    unselectedLabelColor: textColor.withValues(alpha: 0.5),
                     indicatorColor: btnColor,
                     indicatorWeight: 3,
                     labelStyle: GoogleFonts.outfit(fontWeight: FontWeight.bold),
@@ -477,7 +490,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                 side: BorderSide(
                                   color: isSelected
                                       ? btnColor
-                                      : textColor.withOpacity(0.2),
+                                      : textColor.withValues(alpha: 0.2),
                                 ),
                               )),
                             ),
@@ -576,7 +589,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   child: (profileUrl == null || profileUrl.isEmpty)
                       ? Icon(FluentIcons.contact,
                           size: 40,
-                          color: material.Colors.white.withOpacity(0.5))
+                          color: material.Colors.white.withValues(alpha: 0.5))
                       : null,
                 ),
               ),
@@ -613,7 +626,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 Text(
                   "Verified Account",
                   style: GoogleFonts.inter(
-                      color: textColor.withOpacity(0.7), fontSize: 12),
+                      color: textColor.withValues(alpha: 0.7), fontSize: 12),
                 ),
               ],
             )
@@ -623,7 +636,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             Text(
               bio,
               style: GoogleFonts.inter(
-                color: textColor.withOpacity(0.9),
+                color: textColor.withValues(alpha: 0.9),
                 fontSize: 14,
                 height: 1.4,
               ),
@@ -679,7 +692,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                     style: ButtonStyle(
                       shape: ButtonState.all(
                         RoundedRectangleBorder(
-                            side: BorderSide(color: textColor.withOpacity(0.3)),
+                            side: BorderSide(color: textColor.withValues(alpha: 0.3)),
                             borderRadius: BorderRadius.circular(12)),
                       ),
                     ),
@@ -699,12 +712,12 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             Row(
               children: [
                 Icon(FluentIcons.phone,
-                    color: textColor.withOpacity(0.6), size: 14),
+                    color: textColor.withValues(alpha: 0.6), size: 14),
                 const SizedBox(width: 8),
                 Text(
                   _profileData!['phone_no'],
                   style: GoogleFonts.inter(
-                    color: textColor.withOpacity(0.8),
+                    color: textColor.withValues(alpha: 0.8),
                     fontSize: 13,
                   ),
                 ),
@@ -729,7 +742,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         Text(
           label,
           style: GoogleFonts.inter(
-            color: textColor.withOpacity(0.6),
+            color: textColor.withValues(alpha: 0.6),
             fontSize: 12,
           ),
         ),
@@ -827,10 +840,10 @@ class _GalleryTab extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(FluentIcons.grid_view_medium,
-                size: 48, color: textColor.withOpacity(0.3)),
+                size: 48, color: textColor.withValues(alpha: 0.3)),
             const SizedBox(height: 8),
             Text("No posts found",
-                style: TextStyle(color: textColor.withOpacity(0.5))),
+                style: TextStyle(color: textColor.withValues(alpha: 0.5))),
           ],
         ),
       );
@@ -867,7 +880,7 @@ class _GalleryTab extends StatelessWidget {
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
-              color: textColor.withOpacity(0.05),
+              color: textColor.withValues(alpha: 0.05),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -922,7 +935,7 @@ class _ServicesTab extends StatelessWidget {
     if (items.isEmpty) {
       return Center(
         child: Text("No services listed",
-            style: TextStyle(color: textColor.withOpacity(0.5))),
+            style: TextStyle(color: textColor.withValues(alpha: 0.5))),
       );
     }
     return ListView.builder(
@@ -939,9 +952,9 @@ class _ServicesTab extends StatelessWidget {
           margin: const EdgeInsets.only(bottom: 12),
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: textColor.withOpacity(0.05),
+            color: textColor.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: textColor.withOpacity(0.1)),
+            border: Border.all(color: textColor.withValues(alpha: 0.1)),
           ),
           child: Row(
             children: [
@@ -949,7 +962,7 @@ class _ServicesTab extends StatelessWidget {
                 width: 50,
                 height: 50,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF0078D4).withOpacity(0.1),
+                  color: const Color(0xFF0078D4).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child:
@@ -973,7 +986,7 @@ class _ServicesTab extends StatelessWidget {
                         child: Text(
                           desc,
                           style: GoogleFonts.inter(
-                            color: textColor.withOpacity(0.6),
+                            color: textColor.withValues(alpha: 0.6),
                             fontSize: 12,
                           ),
                           maxLines: 1,

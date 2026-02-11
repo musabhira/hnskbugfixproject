@@ -1,31 +1,58 @@
 import 'dart:async';
+import 'dart:async';
 import 'dart:io';
+import 'dart:io';
+import 'dart:typed_data';
 import 'dart:typed_data';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/services.dart';
+import 'package:image/image.dart' as img;
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_view/photo_view.dart';
+import 'package:photo_view/photo_view.dart';
+import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
 import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:record/record.dart';
 import 'package:record/record.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:timeago/timeago.dart' as timeago;
+import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:video_player/video_player.dart';
+import 'package:video_player/video_player.dart';
+import '/backend/supabase/supabase.dart';
 import '/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/widgets/webrtc_call_screen.dart';
+import 'package:pocket_mates_app/custom_code/widgets/webrtc_call_screen.dart';
+import 'package:pocket_mates_app/custom_code/widgets/gallery_search_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/gallery_search_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/image_viewer.dart';
 import 'package:pocket_mates_app/custom_code/widgets/image_viewer.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/voice_player.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chat/voice_player.dart';
+import 'package:image_downloader/image_downloader.dart';
 import 'package:image_downloader/image_downloader.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/voice_recorder.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chat/voice_recorder.dart';
 
+import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 
 class MessageScreen extends StatefulWidget {
@@ -459,6 +486,38 @@ class _MessageScreenState extends State<MessageScreen> {
     } catch (e) {
       debugPrint('Error taking photo: $e');
       _showErrorSnackBar('Failed to take photo');
+    }
+  }
+
+  Future<void> _handleVoiceMessage(String path, int duration) async {
+    if (_isBlocked || _isBlockedByOther) return;
+
+    // speed: UI update handled by optimistic update or streamlined upload
+    try {
+      // Upload logic similar to _uploadEphemeralMedia but for persistent message
+      final file = File(path);
+      final fileName = 'voice_${DateTime.now().millisecondsSinceEpoch}.m4a';
+      final storagePath = '$_senderId/$fileName';
+
+      // Upload
+      await _supabase.storage.from('voice-messages').upload(storagePath, file);
+      final url =
+          _supabase.storage.from('voice-messages').getPublicUrl(storagePath);
+
+      // Send
+      await _supabase.from('messages').insert({
+        'sender_id': _senderId,
+        'receiver_id': widget.receiverId,
+        'content': 'Voice message',
+        'message_type': 'voice',
+        'file_url': url,
+        'voice_duration': duration,
+      });
+
+      _loadMessages();
+    } catch (e) {
+      debugPrint('Error sending voice: $e');
+      _showErrorSnackBar('Failed to send voice message');
     }
   }
 
@@ -1208,7 +1267,7 @@ class _MessageScreenState extends State<MessageScreen> {
                     color: Colors.black,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
+                        color: Colors.black.withValues(alpha: 0.05),
                         blurRadius: 10,
                         offset: const Offset(0, -5),
                       ),
@@ -1262,23 +1321,8 @@ class _MessageScreenState extends State<MessageScreen> {
                         const SizedBox(width: 8),
                         _isRecording || _messageController.text.trim().isEmpty
                             ? VoiceMessageRecorder(
-                                receiverId: widget.receiverId,
-                                currentUserId: _senderId,
-                                onSendMessage: (type, url, duration) async {
-                                  try {
-                                    await _supabase.from('messages').insert({
-                                      'sender_id': _senderId,
-                                      'receiver_id': widget.receiverId,
-                                      'content': 'Voice message',
-                                      'message_type': 'voice',
-                                      'file_url': url,
-                                      'voice_duration': duration,
-                                    });
-                                    _loadMessages();
-                                  } catch (e) {
-                                    debugPrint('Error sending voice: $e');
-                                  }
-                                },
+                                onSendMessage: (path, duration) =>
+                                    _handleVoiceMessage(path, duration),
                                 onRecordingStateChanged: (recording) {
                                   safeSetState(() => _isRecording = recording);
                                 },
@@ -1522,12 +1566,12 @@ class _MessageScreenState extends State<MessageScreen> {
                         : const Radius.circular(24),
                   ),
                   border: Border.all(
-                    color: Colors.white.withOpacity(0.3),
+                    color: Colors.white.withValues(alpha: 0.3),
                     width: 2,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
+                      color: Colors.black.withValues(alpha: 0.2),
                       blurRadius: 8,
                       offset: const Offset(0, 4),
                     ),
@@ -1558,7 +1602,7 @@ class _MessageScreenState extends State<MessageScreen> {
                             Text(
                               isViewed && !isMe ? 'Opened' : 'Tap to view',
                               style: TextStyle(
-                                color: Colors.white.withOpacity(0.8),
+                                color: Colors.white.withValues(alpha: 0.8),
                                 fontSize: 12,
                               ),
                             ),
@@ -1573,7 +1617,7 @@ class _MessageScreenState extends State<MessageScreen> {
                         Icon(
                           Icons.timer_outlined,
                           size: 14,
-                          color: Colors.white.withOpacity(0.8),
+                          color: Colors.white.withValues(alpha: 0.8),
                         ),
                         const SizedBox(width: 4),
                         Text(
@@ -1581,7 +1625,7 @@ class _MessageScreenState extends State<MessageScreen> {
                               ? '${hoursLeft}h left'
                               : '${timeLeft.inMinutes}m left',
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.8),
+                            color: Colors.white.withValues(alpha: 0.8),
                             fontSize: 11,
                           ),
                         ),
@@ -1589,7 +1633,7 @@ class _MessageScreenState extends State<MessageScreen> {
                         Text(
                           time,
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.8),
+                            color: Colors.white.withValues(alpha: 0.8),
                             fontSize: 11,
                           ),
                         ),
@@ -1665,9 +1709,9 @@ class _MessageScreenState extends State<MessageScreen> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
+                  color: Colors.white.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.white.withOpacity(0.2)),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
                 ),
                 child: Column(
                   children: [
@@ -1729,9 +1773,9 @@ class _MessageScreenState extends State<MessageScreen> {
           width: 220,
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Colors.yellow.withOpacity(0.05),
+            color: Colors.yellow.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.yellow.withOpacity(0.2), width: 1),
+            border: Border.all(color: Colors.yellow.withValues(alpha: 0.2), width: 1),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1741,7 +1785,7 @@ class _MessageScreenState extends State<MessageScreen> {
                   Container(
                     padding: const EdgeInsets.all(6),
                     decoration: BoxDecoration(
-                      color: Colors.yellow.withOpacity(0.1),
+                      color: Colors.yellow.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
@@ -1936,10 +1980,10 @@ class _MessageScreenState extends State<MessageScreen> {
                 ],
               ),
               border:
-                  Border.all(color: Colors.white.withOpacity(0.1), width: 1),
+                  Border.all(color: Colors.white.withValues(alpha: 0.1), width: 1),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.3),
+                  color: Colors.black.withValues(alpha: 0.3),
                   blurRadius: 8,
                   offset: const Offset(0, 4),
                 ),
@@ -2048,7 +2092,7 @@ class _MessageScreenState extends State<MessageScreen> {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.7),
+                            color: Colors.black.withValues(alpha: 0.7),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(color: Colors.amber, width: 0.5),
                           ),
@@ -2076,7 +2120,7 @@ class _MessageScreenState extends State<MessageScreen> {
                               horizontal: 6, vertical: 2),
                           margin: const EdgeInsets.only(bottom: 4),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.1),
+                            color: Colors.white.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
@@ -2105,7 +2149,7 @@ class _MessageScreenState extends State<MessageScreen> {
                         Text(
                           desc,
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.6),
+                            color: Colors.white.withValues(alpha: 0.6),
                             fontSize: 12,
                             height: 1.3,
                           ),
@@ -2155,10 +2199,10 @@ class _MessageScreenState extends State<MessageScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFF1E1E1E),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.12), width: 1),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.12), width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.4),
+            color: Colors.black.withValues(alpha: 0.4),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -2226,7 +2270,7 @@ class _MessageScreenState extends State<MessageScreen> {
                   Text(
                     desc.trim(),
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.65),
+                      color: Colors.white.withValues(alpha: 0.65),
                       fontSize: 12,
                       height: 1.3,
                     ),
@@ -2319,7 +2363,7 @@ class _MessageScreenState extends State<MessageScreen> {
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
+                      color: Colors.black.withValues(alpha: 0.2),
                       offset: const Offset(0, 2),
                       blurRadius: 4,
                     )
@@ -2341,7 +2385,7 @@ class _MessageScreenState extends State<MessageScreen> {
                           time,
                           style: TextStyle(
                             color: (isMe ? Colors.black : Colors.white)
-                                .withOpacity(0.6),
+                                .withValues(alpha: 0.6),
                             fontSize: 10,
                           ),
                         ),
@@ -2367,7 +2411,7 @@ class _MessageScreenState extends State<MessageScreen> {
                               Icons.copy,
                               size: 11,
                               color: (isMe ? Colors.black : Colors.white)
-                                  .withOpacity(0.6),
+                                  .withValues(alpha: 0.6),
                             ),
                           ),
                         ],
@@ -2545,7 +2589,7 @@ class _EphemeralMediaViewerState extends State<EphemeralMediaViewer> {
             margin: const EdgeInsets.only(right: 16),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: Colors.red.withOpacity(0.8),
+              color: Colors.red.withValues(alpha: 0.8),
               borderRadius: BorderRadius.circular(20),
             ),
             child: const Row(

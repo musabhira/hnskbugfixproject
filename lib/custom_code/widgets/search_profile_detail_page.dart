@@ -1,45 +1,56 @@
 // Automatic FlutterFlow imports
 import 'dart:io';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart';
+import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
 import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
 import 'package:pocket_mates_app/custom_code/widgets/search_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/search_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/message_screen.dart';
 import 'package:pocket_mates_app/custom_code/widgets/message_screen.dart';
 
 import '/backend/supabase/supabase.dart';
+import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_util.dart';
+import '/flutter_flow/flutter_flow_util.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:timeago/timeago.dart' as timeago;
+import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/services.dart' as flutter;
+import 'package:flutter/services.dart' as flutter;
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pocket_mates_app/src/features/profile/data/profile_repository.dart';
 import 'package:pocket_mates_app/src/features/profile/data/profile_repository.dart';
 
 // Automatic FlutterFlow imports
-import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
+import '/flutter_flow/flutter_flow_theme.dart';
+import 'index.dart'; // Imports other custom widgets
 import 'index.dart'; // Imports other custom widgets
 import '/custom_code/actions/index.dart'; // Imports custom actions
-import 'package:flutter/material.dart';
+import '/custom_code/actions/index.dart'; // Imports custom actions
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
-import 'index.dart'; // Imports other custom widgets
 
-import 'package:cached_network_image/cached_network_image.dart';
 
-import 'package:share_plus/share_plus.dart';
 import 'dart:math' as math;
-import 'package:timeago/timeago.dart' as timeago;
-import 'package:url_launcher/url_launcher.dart';
-import 'package:flutter/services.dart' as flutter;
+import 'dart:math' as math;
 
 class SearchProfileDetailPage extends StatefulWidget {
   final double? width;
@@ -817,7 +828,7 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                     const BorderRadius.vertical(top: Radius.circular(24)),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
+                    color: Colors.black.withValues(alpha: 0.2),
                     blurRadius: 20,
                     spreadRadius: 5,
                   ),
@@ -878,7 +889,7 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                   //       vertical: 6,
                                   //     ),
                                   //     decoration: BoxDecoration(
-                                  //       color: _getBgColor().withOpacity(0.7),
+                                  //       color: _getBgColor().withValues(alpha: 0.7),
                                   //       borderRadius: BorderRadius.circular(20),
                                   //     ),
                                   //     child: Row(
@@ -1152,7 +1163,7 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                               horizontal: 8, vertical: 2),
                                           decoration: BoxDecoration(
                                             color: _getButtonColor()
-                                                .withOpacity(0.8),
+                                                .withValues(alpha: 0.8),
                                             borderRadius:
                                                 BorderRadius.circular(12),
                                           ),
@@ -1186,7 +1197,7 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                               'No comments yet',
                                               style: TextStyle(
                                                 color: _getBgTextColor()
-                                                    .withOpacity(0.7),
+                                                    .withValues(alpha: 0.7),
                                                 fontSize: 16,
                                               ),
                                             ),
@@ -1195,7 +1206,7 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                               'Be the first to comment!',
                                               style: TextStyle(
                                                 color: _getBgTextColor()
-                                                    .withOpacity(0.7),
+                                                    .withValues(alpha: 0.7),
                                                 fontSize: 14,
                                               ),
                                             ),
@@ -1281,7 +1292,7 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                                 BorderRadius.circular(16),
                                             border: Border.all(
                                                 color: _getBgColor()
-                                                    .withOpacity(0.6)),
+                                                    .withValues(alpha: 0.6)),
                                           ),
                                           child: Column(
                                             crossAxisAlignment:
@@ -1368,7 +1379,7 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                                         Icons.delete_outline,
                                                         size: 18,
                                                         color: _getBgTextColor()
-                                                            .withOpacity(0.7),
+                                                            .withValues(alpha: 0.7),
                                                       ),
                                                       onPressed: deleteComment,
                                                     ),
@@ -1420,7 +1431,7 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                             offset: const Offset(0, -2),
                             blurRadius: 6,
                             // ignore: deprecated_member_use
-                            color: Colors.black.withOpacity(0.05),
+                            color: Colors.black.withValues(alpha: 0.05),
                           ),
                         ],
                       ),
@@ -1440,7 +1451,7 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                     borderSide: BorderSide.none,
                                   ),
                                   filled: true,
-                                  fillColor: _getBgColor().withOpacity(0.6),
+                                  fillColor: _getBgColor().withValues(alpha: 0.6),
                                   contentPadding: const EdgeInsets.symmetric(
                                     horizontal: 16,
                                     vertical: 10,
@@ -2250,7 +2261,7 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                 //         end: Alignment.bottomCenter,
                                 //         colors: [
                                 //           Colors.transparent,
-                                //           bgColor.withOpacity(0.8),
+                                //           bgColor.withValues(alpha: 0.8),
                                 //           bgColor,
                                 //         ],
                                 //         stops: const [0.1, 0.7, 0.9],
@@ -2287,7 +2298,7 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                               end: Alignment.bottomCenter,
                                               colors: [
                                                 Colors.transparent,
-                                                bgColor.withOpacity(0.8),
+                                                bgColor.withValues(alpha: 0.8),
                                                 bgColor,
                                               ],
                                               stops: const [0.1, 0.7, 0.9],
@@ -2322,20 +2333,20 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                             margin: const EdgeInsets.symmetric(
                                                 horizontal: 12),
                                             decoration: BoxDecoration(
-                                              color: bgColor.withOpacity(0.95),
+                                              color: bgColor.withValues(alpha: 0.95),
                                               borderRadius:
                                                   BorderRadius.circular(20),
                                               boxShadow: [
                                                 BoxShadow(
                                                   color: Colors.black
-                                                      .withOpacity(0.1),
+                                                      .withValues(alpha: 0.1),
                                                   blurRadius: 15,
                                                   spreadRadius: 2,
                                                 ),
                                               ],
                                               border: Border.all(
                                                 color: buttonColor
-                                                    .withOpacity(0.2),
+                                                    .withValues(alpha: 0.2),
                                                 width: 1,
                                               ),
                                             ),
@@ -2511,7 +2522,7 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                                                         size:
                                                                             14,
                                                                         color: bgTextColor
-                                                                            .withOpacity(0.6),
+                                                                            .withValues(alpha: 0.6),
                                                                       ),
                                                                       const SizedBox(
                                                                           width:
@@ -2528,7 +2539,7 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                                                           style:
                                                                               TextStyle(
                                                                             color:
-                                                                                bgTextColor.withOpacity(0.6),
+                                                                                bgTextColor.withValues(alpha: 0.6),
                                                                             fontWeight:
                                                                                 FontWeight.w500,
                                                                             fontSize:
@@ -2558,7 +2569,7 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                                       .symmetric(vertical: 12),
                                                   decoration: BoxDecoration(
                                                     color: buttonColor
-                                                        .withOpacity(0.08),
+                                                        .withValues(alpha: 0.08),
                                                     borderRadius:
                                                         BorderRadius.circular(
                                                             12),
@@ -2625,20 +2636,20 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                               padding: const EdgeInsets.all(14),
                                               decoration: BoxDecoration(
                                                 color:
-                                                    bgColor.withOpacity(0.95),
+                                                    bgColor.withValues(alpha: 0.95),
                                                 borderRadius:
                                                     BorderRadius.circular(20),
                                                 boxShadow: [
                                                   BoxShadow(
                                                     color: Colors.black
-                                                        .withOpacity(0.08),
+                                                        .withValues(alpha: 0.08),
                                                     blurRadius: 12,
                                                     spreadRadius: 1,
                                                   ),
                                                 ],
                                                 border: Border.all(
                                                   color: buttonColor
-                                                      .withOpacity(0.2),
+                                                      .withValues(alpha: 0.2),
                                                   width: 1,
                                                 ),
                                               ),
@@ -2670,7 +2681,7 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                                     _profileData!['bio'],
                                                     style: TextStyle(
                                                       color: bgTextColor
-                                                          .withOpacity(0.9),
+                                                          .withValues(alpha: 0.9),
                                                       fontSize: 13,
                                                       height: 1.5,
                                                     ),
@@ -2694,20 +2705,20 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                             margin: const EdgeInsets.all(11),
                                             padding: const EdgeInsets.all(11),
                                             decoration: BoxDecoration(
-                                              color: bgColor.withOpacity(0.95),
+                                              color: bgColor.withValues(alpha: 0.95),
                                               borderRadius:
                                                   BorderRadius.circular(20),
                                               boxShadow: [
                                                 BoxShadow(
                                                   color: Colors.black
-                                                      .withOpacity(0.08),
+                                                      .withValues(alpha: 0.08),
                                                   blurRadius: 12,
                                                   spreadRadius: 1,
                                                 ),
                                               ],
                                               border: Border.all(
                                                 color: buttonColor
-                                                    .withOpacity(0.2),
+                                                    .withValues(alpha: 0.2),
                                                 width: 1,
                                               ),
                                             ),
@@ -2766,7 +2777,7 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                           controller: _tabController,
                                           labelColor: buttonColor,
                                           unselectedLabelColor:
-                                              bgTextColor.withOpacity(0.7),
+                                              bgTextColor.withValues(alpha: 0.7),
                                           indicatorColor: buttonColor,
                                           indicatorWeight: 3,
                                           indicatorSize:
@@ -2880,7 +2891,7 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                                                       BoxShadow(
                                                                         color: Colors
                                                                             .black
-                                                                            .withOpacity(0.2),
+                                                                            .withValues(alpha: 0.2),
                                                                         blurRadius:
                                                                             10,
                                                                         spreadRadius:
@@ -2903,7 +2914,7 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                                                               .transparent,
                                                                           Colors
                                                                               .black
-                                                                              .withOpacity(0.7),
+                                                                              .withValues(alpha: 0.7),
                                                                         ],
                                                                         stops: const [
                                                                           0.7,
@@ -3304,13 +3315,13 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                             ),
                                             decoration: BoxDecoration(
                                               color:
-                                                  buttonColor.withOpacity(0.9),
+                                                  buttonColor.withValues(alpha: 0.9),
                                               borderRadius:
                                                   BorderRadius.circular(25),
                                               boxShadow: [
                                                 BoxShadow(
                                                   color: Colors.black
-                                                      .withOpacity(0.2),
+                                                      .withValues(alpha: 0.2),
                                                   blurRadius: 8,
                                                   spreadRadius: 1,
                                                   offset: const Offset(0, 2),
@@ -3318,7 +3329,7 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                               ],
                                               border: Border.all(
                                                 color: buttonColor
-                                                    .withOpacity(0.3),
+                                                    .withValues(alpha: 0.3),
                                                 width: 1,
                                               ),
                                             ),
@@ -4159,7 +4170,7 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
                   const BorderRadius.vertical(top: Radius.circular(24)),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 20,
                   spreadRadius: 5,
                 ),
@@ -4187,7 +4198,7 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
                           height: 4,
                           margin: const EdgeInsets.only(bottom: 16),
                           decoration: BoxDecoration(
-                            color: _getButtonTextColor().withOpacity(0.3),
+                            color: _getButtonTextColor().withValues(alpha: 0.3),
                             borderRadius: BorderRadius.circular(2),
                           ),
                         ),
@@ -4197,7 +4208,7 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
                             Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: _getButtonTextColor().withOpacity(0.2),
+                                color: _getButtonTextColor().withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Icon(
@@ -4223,7 +4234,7 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
                                     'Your intelligent profile assistant',
                                     style: TextStyle(
                                       color: _getButtonTextColor()
-                                          .withOpacity(0.8),
+                                          .withValues(alpha: 0.8),
                                       fontSize: 13,
                                     ),
                                   ),
@@ -4245,10 +4256,10 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: _getButtonColor().withOpacity(0.05),
+                      color: _getButtonColor().withValues(alpha: 0.05),
                       border: Border(
                         top: BorderSide(
-                          color: _getButtonColor().withOpacity(0.1),
+                          color: _getButtonColor().withValues(alpha: 0.1),
                         ),
                       ),
                     ),
@@ -4261,7 +4272,7 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
                                 color: _getBgColor(),
                                 borderRadius: BorderRadius.circular(24),
                                 border: Border.all(
-                                  color: _getButtonColor().withOpacity(0.2),
+                                  color: _getButtonColor().withValues(alpha: 0.2),
                                 ),
                               ),
                               child: TextField(
@@ -4269,7 +4280,7 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
                                 decoration: InputDecoration(
                                   hintText: 'Ask me anything...',
                                   hintStyle: TextStyle(
-                                    color: _getTextColor().withOpacity(0.5),
+                                    color: _getTextColor().withValues(alpha: 0.5),
                                   ),
                                   border: InputBorder.none,
                                   contentPadding: const EdgeInsets.symmetric(
@@ -4295,7 +4306,7 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
                                 borderRadius: BorderRadius.circular(24),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: _getButtonColor().withOpacity(0.3),
+                                    color: _getButtonColor().withValues(alpha: 0.3),
                                     blurRadius: 8,
                                     offset: const Offset(0, 2),
                                   ),
@@ -4351,7 +4362,7 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
           Text(
             'Suggested Questions:',
             style: TextStyle(
-              color: _getTextColor().withOpacity(0.7),
+              color: _getTextColor().withValues(alpha: 0.7),
               fontSize: 12,
               fontWeight: FontWeight.w500,
             ),
@@ -4369,10 +4380,10 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: _getButtonColor().withOpacity(0.1),
+                    color: _getButtonColor().withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: _getButtonColor().withOpacity(0.2),
+                      color: _getButtonColor().withValues(alpha: 0.2),
                     ),
                   ),
                   child: Text(
@@ -4407,7 +4418,7 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: _getButtonColor().withOpacity(0.1),
+                    color: _getButtonColor().withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Icon(
@@ -4425,7 +4436,7 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
                   decoration: BoxDecoration(
                     color: isUser
                         ? _getButtonColor()
-                        : _getButtonColor().withOpacity(0.1),
+                        : _getButtonColor().withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(18).copyWith(
                       bottomLeft: Radius.circular(isUser ? 18 : 4),
                       bottomRight: Radius.circular(isUser ? 4 : 18),
@@ -4449,7 +4460,7 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
                         style: TextStyle(
                           color:
                               (isUser ? _getButtonTextColor() : _getTextColor())
-                                  .withOpacity(0.6),
+                                  .withValues(alpha: 0.6),
                           fontSize: 12,
                         ),
                       ),
@@ -4461,7 +4472,7 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
                 const SizedBox(width: 8),
                 CircleAvatar(
                   radius: 16,
-                  backgroundColor: _getButtonColor().withOpacity(0.1),
+                  backgroundColor: _getButtonColor().withValues(alpha: 0.1),
                   child: Icon(
                     Icons.person_rounded,
                     color: _getButtonColor(),
@@ -4500,7 +4511,7 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: _getButtonColor().withOpacity(0.2),
+                  color: _getButtonColor().withValues(alpha: 0.2),
                 ),
               ),
               child: Column(
@@ -4538,7 +4549,7 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
                             )
                           : Container(
                               decoration: BoxDecoration(
-                                color: _getButtonColor().withOpacity(0.1),
+                                color: _getButtonColor().withValues(alpha: 0.1),
                                 borderRadius: const BorderRadius.vertical(
                                   top: Radius.circular(12),
                                 ),
@@ -4582,7 +4593,7 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
                             Text(
                               item['gallery_category'],
                               style: TextStyle(
-                                color: _getTextColor().withOpacity(0.6),
+                                color: _getTextColor().withValues(alpha: 0.6),
                                 fontSize: 10,
                               ),
                               maxLines: 1,
@@ -4660,7 +4671,7 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: _getButtonColor().withOpacity(0.2),
+                            color: _getButtonColor().withValues(alpha: 0.2),
                           ),
                         ),
                         child: ClipRRect(
@@ -4707,14 +4718,14 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
                         children: [
                           Icon(
                             Icons.category,
-                            color: _getTextColor().withOpacity(0.7),
+                            color: _getTextColor().withValues(alpha: 0.7),
                             size: 18,
                           ),
                           const SizedBox(width: 8),
                           Text(
                             item['gallery_category'],
                             style: TextStyle(
-                              color: _getTextColor().withOpacity(0.7),
+                              color: _getTextColor().withValues(alpha: 0.7),
                               fontSize: 16,
                             ),
                           ),
@@ -4759,7 +4770,7 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: _getButtonColor().withOpacity(0.1),
+              color: _getButtonColor().withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Icon(
@@ -4772,7 +4783,7 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: _getButtonColor().withOpacity(0.1),
+              color: _getButtonColor().withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(18).copyWith(
                 bottomLeft: const Radius.circular(4),
               ),
@@ -4783,7 +4794,7 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
                 Text(
                   '${_getAIName().split(' ').first} is typing',
                   style: TextStyle(
-                    color: _getTextColor().withOpacity(0.7),
+                    color: _getTextColor().withValues(alpha: 0.7),
                     fontSize: 16,
                   ),
                 ),
@@ -4879,8 +4890,8 @@ class CircularShimmer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: CustomShimmer(
-        baseColor: bgColor.withOpacity(0.3),
-        highlightColor: buttonColor.withOpacity(0.7),
+        baseColor: bgColor.withValues(alpha: 0.3),
+        highlightColor: buttonColor.withValues(alpha: 0.7),
         child: Container(
           width: size,
           height: size,
@@ -5022,12 +5033,12 @@ class _ThreadsTabContentState extends ConsumerState<ThreadsTabContent>
             itemBuilder: (context, index) {
               final thread = threads[index];
               return Card(
-                color: widget.buttonColor.withOpacity(0.05),
+                color: widget.buttonColor.withValues(alpha: 0.05),
                 margin: const EdgeInsets.only(bottom: 12),
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
-                  side: BorderSide(color: widget.buttonColor.withOpacity(0.1)),
+                  side: BorderSide(color: widget.buttonColor.withValues(alpha: 0.1)),
                 ),
                 child: InkWell(
                   borderRadius: BorderRadius.circular(16),
@@ -5057,7 +5068,7 @@ class _ThreadsTabContentState extends ConsumerState<ThreadsTabContent>
                               timeago
                                   .format(DateTime.parse(thread['created_at'])),
                               style: TextStyle(
-                                color: widget.bgTextColor.withOpacity(0.6),
+                                color: widget.bgTextColor.withValues(alpha: 0.6),
                                 fontSize: 13,
                               ),
                             ),
@@ -5138,7 +5149,7 @@ class _ServicesTabContentState extends ConsumerState<ServicesTabContent>
           return Center(
             child: Text(
               'No services offered',
-              style: TextStyle(color: widget.bgTextColor.withOpacity(0.5)),
+              style: TextStyle(color: widget.bgTextColor.withValues(alpha: 0.5)),
             ),
           );
         }
@@ -5154,10 +5165,10 @@ class _ServicesTabContentState extends ConsumerState<ServicesTabContent>
               return Container(
                 margin: const EdgeInsets.only(bottom: 16),
                 decoration: BoxDecoration(
-                  color: widget.bgTextColor.withOpacity(0.04),
+                  color: widget.bgTextColor.withValues(alpha: 0.04),
                   borderRadius: BorderRadius.circular(20),
                   border:
-                      Border.all(color: widget.bgTextColor.withOpacity(0.08)),
+                      Border.all(color: widget.bgTextColor.withValues(alpha: 0.08)),
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(20),
@@ -5208,7 +5219,7 @@ class _ServicesTabContentState extends ConsumerState<ServicesTabContent>
                                         horizontal: 10, vertical: 4),
                                     decoration: BoxDecoration(
                                       color:
-                                          widget.buttonColor.withOpacity(0.1),
+                                          widget.buttonColor.withValues(alpha: 0.1),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Text(
@@ -5223,7 +5234,7 @@ class _ServicesTabContentState extends ConsumerState<ServicesTabContent>
                                 Text(
                                   service['description'] ?? '',
                                   style: TextStyle(
-                                    color: widget.bgTextColor.withOpacity(0.7),
+                                    color: widget.bgTextColor.withValues(alpha: 0.7),
                                     fontSize: 14,
                                     height: 1.4,
                                   ),
@@ -5279,7 +5290,7 @@ class _GalleryTabContentState extends ConsumerState<GalleryTabContent>
           return Center(
             child: Text(
               'No gallery items',
-              style: TextStyle(color: widget.bgTextColor.withOpacity(0.5)),
+              style: TextStyle(color: widget.bgTextColor.withValues(alpha: 0.5)),
             ),
           );
         }
@@ -5300,7 +5311,7 @@ class _GalleryTabContentState extends ConsumerState<GalleryTabContent>
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withValues(alpha: 0.1),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -5314,7 +5325,7 @@ class _GalleryTabContentState extends ConsumerState<GalleryTabContent>
                     memCacheWidth: 400,
                     placeholder: (context, url) => Container(
                       height: 200,
-                      color: widget.bgTextColor.withOpacity(0.05),
+                      color: widget.bgTextColor.withValues(alpha: 0.05),
                       child: Center(
                         child: CircularProgressIndicator(
                           valueColor:
@@ -5324,7 +5335,7 @@ class _GalleryTabContentState extends ConsumerState<GalleryTabContent>
                     ),
                     errorWidget: (context, url, error) => Container(
                       height: 200,
-                      color: widget.bgTextColor.withOpacity(0.1),
+                      color: widget.bgTextColor.withValues(alpha: 0.1),
                       child: const Icon(Icons.broken_image, color: Colors.grey),
                     ),
                   ),
@@ -5569,7 +5580,7 @@ class _ThreadCommentsPageState extends ConsumerState<ThreadCommentsPage>
       duration: const Duration(milliseconds: 300),
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.grey[900]?.withOpacity(0.7),
+        color: Colors.grey[900]?.withValues(alpha: 0.7),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.grey[800]!, width: 0.5),
       ),
@@ -5660,7 +5671,7 @@ class _ThreadCommentsPageState extends ConsumerState<ThreadCommentsPage>
                     child: Container(
                       padding: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
-                        color: Colors.red[700]?.withOpacity(0.8),
+                        color: Colors.red[700]?.withValues(alpha: 0.8),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: const Icon(
@@ -5703,7 +5714,7 @@ class _ThreadCommentsPageState extends ConsumerState<ThreadCommentsPage>
               gradient: LinearGradient(
                 colors: [
                   Colors.transparent,
-                  Colors.yellow.withOpacity(0.3),
+                  Colors.yellow.withValues(alpha: 0.3),
                   Colors.transparent,
                 ],
               ),
@@ -5722,10 +5733,10 @@ class _ThreadCommentsPageState extends ConsumerState<ThreadCommentsPage>
               color: Colors.grey[900],
               borderRadius: BorderRadius.circular(16),
               border:
-                  Border.all(color: Colors.yellow.withOpacity(0.3), width: 1),
+                  Border.all(color: Colors.yellow.withValues(alpha: 0.3), width: 1),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.yellow.withOpacity(0.1),
+                  color: Colors.yellow.withValues(alpha: 0.1),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
@@ -5840,13 +5851,13 @@ class _ThreadCommentsPageState extends ConsumerState<ThreadCommentsPage>
               color: Colors.grey[900],
               border: Border(
                 top: BorderSide(
-                  color: Colors.yellow.withOpacity(0.2),
+                  color: Colors.yellow.withValues(alpha: 0.2),
                   width: 1,
                 ),
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.4),
+                  color: Colors.black.withValues(alpha: 0.4),
                   blurRadius: 8,
                   offset: const Offset(0, -2),
                 ),
@@ -5859,7 +5870,7 @@ class _ThreadCommentsPageState extends ConsumerState<ThreadCommentsPage>
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.6),
+                        color: Colors.black.withValues(alpha: 0.6),
                         borderRadius: BorderRadius.circular(24),
                         border: Border.all(
                           color: Colors.grey[700]!,

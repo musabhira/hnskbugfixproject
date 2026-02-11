@@ -1,18 +1,26 @@
 // Automatic FlutterFlow imports
 import 'package:pocket_mates_app/custom_code/widgets/choice_chip_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/choice_chip_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/custom_text_field.dart';
+import 'package:pocket_mates_app/custom_code/widgets/custom_text_field.dart';
+import 'package:pocket_mates_app/flutter_flow/flutter_flow_widgets.dart';
 import 'package:pocket_mates_app/flutter_flow/flutter_flow_widgets.dart';
 
 import '/backend/supabase/supabase.dart';
+import '/backend/supabase/supabase.dart';
+import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
+import '/flutter_flow/flutter_flow_util.dart';
+import 'index.dart'; // Imports other custom widgets
 import 'index.dart'; // Imports other custom widgets
 import '/custom_code/actions/index.dart'; // Imports custom actions
+import '/custom_code/actions/index.dart'; // Imports custom actions
+import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
-import 'index.dart'; // Imports other custom widgets
 
 class CreateServiceWidget extends StatefulWidget {
   final double width;
@@ -228,7 +236,7 @@ class _CreateServiceWidgetState extends State<CreateServiceWidget> {
                     end: Alignment.bottomRight,
                     colors: [
                       FlutterFlowTheme.of(context).primary,
-                      FlutterFlowTheme.of(context).primary.withOpacity(0.8),
+                      FlutterFlowTheme.of(context).primary.withValues(alpha: 0.8),
                     ],
                   ),
                 ),
@@ -251,10 +259,10 @@ class _CreateServiceWidgetState extends State<CreateServiceWidget> {
                   padding: const EdgeInsets.all(8.0),
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(12.0),
                       border: Border.all(
-                        color: Colors.white.withOpacity(0.3),
+                        color: Colors.white.withValues(alpha: 0.3),
                         width: 1.0,
                       ),
                     ),
@@ -304,7 +312,7 @@ class _CreateServiceWidgetState extends State<CreateServiceWidget> {
                           borderRadius: BorderRadius.circular(20.0),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
+                              color: Colors.black.withValues(alpha: 0.05),
                               blurRadius: 20.0,
                               offset: const Offset(0, 5),
                             ),
@@ -312,7 +320,7 @@ class _CreateServiceWidgetState extends State<CreateServiceWidget> {
                           border: Border.all(
                             color: FlutterFlowTheme.of(context)
                                 .alternate
-                                .withOpacity(0.5),
+                                .withValues(alpha: 0.5),
                             width: 1.0,
                           ),
                         ),
@@ -326,7 +334,7 @@ class _CreateServiceWidgetState extends State<CreateServiceWidget> {
                                   decoration: BoxDecoration(
                                     color: FlutterFlowTheme.of(context)
                                         .primary
-                                        .withOpacity(0.1),
+                                        .withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(12.0),
                                   ),
                                   child: Icon(
@@ -357,7 +365,7 @@ class _CreateServiceWidgetState extends State<CreateServiceWidget> {
                                 decoration: BoxDecoration(
                                   // ignore: deprecated_member_use
                                   color: Colors.yellow
-                                      .withOpacity(0.2), // less opacity
+                                      .withValues(alpha: 0.2), // less opacity
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 padding: const EdgeInsets.all(12),
@@ -427,7 +435,7 @@ class _CreateServiceWidgetState extends State<CreateServiceWidget> {
                           borderRadius: BorderRadius.circular(20.0),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
+                              color: Colors.black.withValues(alpha: 0.05),
                               blurRadius: 20.0,
                               offset: const Offset(0, 5),
                             ),
@@ -435,7 +443,7 @@ class _CreateServiceWidgetState extends State<CreateServiceWidget> {
                           border: Border.all(
                             color: FlutterFlowTheme.of(context)
                                 .alternate
-                                .withOpacity(0.5),
+                                .withValues(alpha: 0.5),
                             width: 1.0,
                           ),
                         ),
@@ -449,7 +457,7 @@ class _CreateServiceWidgetState extends State<CreateServiceWidget> {
                                   decoration: BoxDecoration(
                                     color: FlutterFlowTheme.of(context)
                                         .primary
-                                        .withOpacity(0.1),
+                                        .withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(12.0),
                                   ),
                                   child: Icon(
@@ -554,7 +562,7 @@ class _CreateServiceWidgetState extends State<CreateServiceWidget> {
                                     FlutterFlowTheme.of(context)
                                         .primary
                                         // ignore: deprecated_member_use
-                                        .withOpacity(0.8),
+                                        .withValues(alpha: 0.8),
                                   ],
                                 ),
                                 borderRadius: BorderRadius.circular(16.0),
@@ -563,7 +571,7 @@ class _CreateServiceWidgetState extends State<CreateServiceWidget> {
                                     color: FlutterFlowTheme.of(context)
                                         .primary
                                         // ignore: deprecated_member_use
-                                        .withOpacity(0.3),
+                                        .withValues(alpha: 0.3),
                                     blurRadius: 15.0,
                                     offset: const Offset(0, 5),
                                   ),

@@ -1,7 +1,12 @@
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter/material.dart' as material;
 import 'package:flutter/material.dart' as material;
 import 'package:google_fonts/google_fonts.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:timeago/timeago.dart' as timeago;
+import 'package:pocket_mates_app/custom_code/widgets/chat/whats_app_groups_provider.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/whats_app_groups_provider.dart';
 
 class ConversationTile extends StatelessWidget {
@@ -33,7 +38,7 @@ class ConversationTile extends StatelessWidget {
             color: const Color(0xFF000000), // Pure black for flat look
             border: Border(
               bottom: BorderSide(
-                color: Colors.white.withOpacity(0.05),
+                color: Colors.white.withValues(alpha: 0.05),
                 width: 1,
               ),
             ),
@@ -77,7 +82,7 @@ class ConversationTile extends StatelessWidget {
                         color: const Color(0xFF262626),
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: Colors.white.withOpacity(0.1),
+                          color: Colors.white.withValues(alpha: 0.1),
                           width: 1.5,
                         ),
                         image: conversation.imageUrl != null
@@ -97,7 +102,7 @@ class ConversationTile extends StatelessWidget {
                                         : FluentIcons.contact),
                                 color: conversation.isNotification
                                     ? Colors.yellow
-                                    : Colors.white.withOpacity(0.5),
+                                    : Colors.white.withValues(alpha: 0.5),
                                 size: 26,
                               ),
                             )
@@ -149,7 +154,7 @@ class ConversationTile extends StatelessWidget {
                             child: Icon(
                               FluentIcons.check_mark,
                               size: 14,
-                              color: material.Colors.blue.withOpacity(0.7),
+                              color: material.Colors.blue.withValues(alpha: 0.7),
                             ),
                           ),
                         Expanded(
@@ -160,8 +165,8 @@ class ConversationTile extends StatelessWidget {
                                     : 'Start chatting'),
                             style: GoogleFonts.outfit(
                               color: conversation.unreadCount > 0
-                                  ? Colors.white.withOpacity(0.9)
-                                  : Colors.white.withOpacity(0.4),
+                                  ? Colors.white.withValues(alpha: 0.9)
+                                  : Colors.white.withValues(alpha: 0.4),
                               fontSize: 14,
                               fontWeight: conversation.unreadCount > 0
                                   ? FontWeight.w500
@@ -188,7 +193,7 @@ class ConversationTile extends StatelessWidget {
                       style: GoogleFonts.outfit(
                         color: conversation.unreadCount > 0
                             ? Colors.yellow
-                            : Colors.white.withOpacity(0.35),
+                            : Colors.white.withValues(alpha: 0.35),
                         fontSize: 12,
                         fontWeight: conversation.unreadCount > 0
                             ? FontWeight.bold
@@ -205,7 +210,7 @@ class ConversationTile extends StatelessWidget {
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.yellow.withOpacity(0.5),
+                            color: Colors.yellow.withValues(alpha: 0.5),
                             blurRadius: 4,
                             spreadRadius: -1,
                           ),

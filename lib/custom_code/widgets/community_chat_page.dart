@@ -1,11 +1,18 @@
 // Automatic FlutterFlow imports
 import 'package:pocket_mates_app/auth_page/auth_page_widget.dart';
+import 'package:pocket_mates_app/auth_page/auth_page_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.dart';
+import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
 import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
 
 import '/backend/supabase/supabase.dart';
+import '/backend/supabase/supabase.dart';
+import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'index.dart'; // Imports other custom widgets
+import 'index.dart'; // Imports other custom widgets
+import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
@@ -14,13 +21,21 @@ import 'package:flutter/material.dart';
 // boilerplate code using the green button on the right!
 
 import 'package:image_picker/image_picker.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:async';
 import 'dart:async';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:timeago/timeago.dart' as timeago;
+import 'dart:ui' as ui;
 import 'dart:ui' as ui;
 import 'package:shimmer/shimmer.dart';
+import 'package:shimmer/shimmer.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/services.dart';
 
 import 'package:image/image.dart' as img;
+import 'package:image/image.dart' as img;
+import 'package:flutter/material.dart' as flutter;
 import 'package:flutter/material.dart' as flutter;
 
 class CommunityChatPage extends StatefulWidget {
@@ -437,10 +452,10 @@ class _CommunityChatPageState extends State<CommunityChatPage>
         decoration: BoxDecoration(
           color: Colors.black,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.yellow.withOpacity(0.3), width: 1),
+          border: Border.all(color: Colors.yellow.withValues(alpha: 0.3), width: 1),
           boxShadow: [
             BoxShadow(
-              color: Colors.yellow.withOpacity(0.1),
+              color: Colors.yellow.withValues(alpha: 0.1),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -486,7 +501,7 @@ class _CommunityChatPageState extends State<CommunityChatPage>
                 Text(
                   _group!['description'],
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.8),
+                    color: Colors.white.withValues(alpha: 0.8),
                     fontSize: 14,
                   ),
                   maxLines: 2,
@@ -572,7 +587,7 @@ class _CommunityChatPageState extends State<CommunityChatPage>
         color: Colors.grey.shade900,
         borderRadius: BorderRadius.circular(12),
         border: isUnread
-            ? Border.all(color: Colors.yellow.withOpacity(0.3), width: 1)
+            ? Border.all(color: Colors.yellow.withValues(alpha: 0.3), width: 1)
             : null,
       ),
       child: ListTile(
@@ -627,7 +642,7 @@ class _CommunityChatPageState extends State<CommunityChatPage>
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: Colors.yellow.withOpacity(0.2),
+                  color: Colors.yellow.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: Colors.yellow, width: 0.5),
                 ),
@@ -785,7 +800,7 @@ class _CommunityChatPageState extends State<CommunityChatPage>
               color: Colors.grey.shade900,
               borderRadius: BorderRadius.circular(12),
               border: isUnread
-                  ? Border.all(color: Colors.yellow.withOpacity(0.3), width: 1)
+                  ? Border.all(color: Colors.yellow.withValues(alpha: 0.3), width: 1)
                   : null,
             ),
             child: ListTile(
@@ -849,7 +864,7 @@ class _CommunityChatPageState extends State<CommunityChatPage>
                     padding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: Colors.yellow.withOpacity(0.2),
+                      color: Colors.yellow.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(color: Colors.yellow, width: 0.5),
                     ),
@@ -1005,7 +1020,7 @@ class _CommunityChatPageState extends State<CommunityChatPage>
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.yellow.withOpacity(0.3),
+                          color: Colors.yellow.withValues(alpha: 0.3),
                           blurRadius: 15,
                           offset: const Offset(0, 5),
                         ),
@@ -1487,9 +1502,9 @@ class _CreateGroupDialogState extends State<CreateGroupDialog>
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.2),
+                  color: Colors.green.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.green.withOpacity(0.5)),
+                  border: Border.all(color: Colors.green.withValues(alpha: 0.5)),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -1589,7 +1604,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog>
                                     vertical: 2,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: Colors.black.withOpacity(0.7),
+                                    color: Colors.black.withValues(alpha: 0.7),
                                     borderRadius: BorderRadius.circular(4),
                                   ),
                                   child: const Row(
@@ -1652,7 +1667,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog>
                     color: const ui.Color(0xFF2A2A2A),
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
-                      color: Colors.green.withOpacity(0.3),
+                      color: Colors.green.withValues(alpha: 0.3),
                       width: 1,
                     ),
                   ),
@@ -1849,7 +1864,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog>
             return Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: const ui.Color(0xFFFFD700).withOpacity(0.2),
+                color: const ui.Color(0xFFFFD700).withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(color: const ui.Color(0xFFFFD700)),
               ),
@@ -1994,7 +2009,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog>
             ),
             boxShadow: [
               BoxShadow(
-                color: const ui.Color(0xFFFFD700).withOpacity(0.3),
+                color: const ui.Color(0xFFFFD700).withValues(alpha: 0.3),
                 blurRadius: 20,
                 spreadRadius: 2,
               ),

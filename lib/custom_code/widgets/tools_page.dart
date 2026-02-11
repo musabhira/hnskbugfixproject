@@ -1,19 +1,34 @@
 // Automatic FlutterFlow imports
 import 'package:pocket_mates_app/custom_code/widgets/ai_prompt_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/ai_prompt_service.dart';
 
 import '/backend/supabase/supabase.dart';
+import '/backend/supabase/supabase.dart';
+import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
+import '/flutter_flow/flutter_flow_util.dart';
+import 'index.dart'; // Imports other custom widgets
 import 'index.dart'; // Imports other custom widgets
 import '/custom_code/actions/index.dart'; // Imports custom actions
+import '/custom_code/actions/index.dart'; // Imports custom actions
+import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:pocket_mates_app/custom_code/widgets/drawing_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/drawing_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/home_page_widget_tree.dart';
+import 'package:pocket_mates_app/custom_code/widgets/home_page_widget_tree.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 import 'dart:convert';
 import 'dart:math';
+import 'dart:math';
+import 'package:pocket_mates_app/custom_code/widgets/teams/teams_home_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/teams/teams_home_widget.dart';
 
 class ToolsPage extends StatefulWidget {
@@ -46,6 +61,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
   bool _showAddTask = false;
   bool _showAddChallenge = false;
   bool _showAddSchedule = false;
+  bool _showToolsList = true;
   int _selectedTab = 0;
   List<ScheduleItem> dailySchedule = [];
   DateTime selectedScheduleDate = DateTime.now();
@@ -425,187 +441,282 @@ class _TaskManagerScreenState extends State<ToolsPage> {
     }
   }
 
+  String _getToolTitle(int index) {
+    switch (index) {
+      case 0:
+        return 'Schedule';
+      case 1:
+        return 'Tasks';
+      case 2:
+        return 'Challenges';
+      case 3:
+        return 'Diagrams';
+      case 4:
+        return 'Teams';
+      case 5:
+        return 'AI Tools';
+      case 6:
+        return 'Mini Apps';
+      default:
+        return 'Tools';
+    }
+  }
+
+  Widget _buildToolsList() {
+    return Scaffold(
+      backgroundColor: const Color(0xFF121212),
+      body: SafeArea(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Row(
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Pocket',
+                          style: GoogleFonts.outfit(
+                              fontSize: 32,
+                              fontWeight: FontWeight.w300,
+                              color: Colors.white,
+                              letterSpacing: 1.2)),
+                      Text('Tools',
+                          style: GoogleFonts.outfit(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.yellow)),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: GridView.count(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                crossAxisCount: 2,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+                children: [
+                  _buildToolCard(
+                    title: 'Drawing Tool',
+                    icon: Icons.brush,
+                    color: Colors.purpleAccent,
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const DrawingPage()));
+                    },
+                  ),
+                  _buildToolCard(
+                    title: 'Schedule',
+                    icon: Icons.calendar_today_rounded,
+                    color: Colors.blueAccent,
+                    onTap: () => setState(() {
+                      _selectedTab = 0;
+                      _showToolsList = false;
+                    }),
+                  ),
+                  _buildToolCard(
+                    title: 'Tasks',
+                    icon: Icons.check_circle_outline_rounded,
+                    color: Colors.greenAccent,
+                    onTap: () => setState(() {
+                      _selectedTab = 1;
+                      _showToolsList = false;
+                    }),
+                  ),
+                  _buildToolCard(
+                    title: 'Challenges',
+                    icon: Icons.emoji_events_outlined,
+                    color: Colors.orangeAccent,
+                    onTap: () => setState(() {
+                      _selectedTab = 2;
+                      _showToolsList = false;
+                    }),
+                  ),
+                  _buildToolCard(
+                    title: 'Diagrams',
+                    icon: Icons.schema_rounded,
+                    color: Colors.tealAccent,
+                    onTap: () => setState(() {
+                      _selectedTab = 3;
+                      _showToolsList = false;
+                    }),
+                  ),
+                  _buildToolCard(
+                    title: 'Teams',
+                    icon: Icons.groups_rounded,
+                    color: Colors.pinkAccent,
+                    onTap: () => setState(() {
+                      _selectedTab = 4;
+                      _showToolsList = false;
+                    }),
+                  ),
+                  _buildToolCard(
+                    title: 'AI Tools',
+                    icon: Icons.auto_awesome,
+                    color: Colors.cyanAccent,
+                    onTap: () => setState(() {
+                      _selectedTab = 5;
+                      _showToolsList = false;
+                    }),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (_showToolsList) return _buildToolsList();
+    return _buildToolDetailView();
+  }
+
+  Widget _buildToolDetailView() {
     return Scaffold(
       backgroundColor: Color(0xFF121212),
       body: SafeArea(
         child: Column(
           children: [
             // Header
+            // Header with Back Button
             Container(
-              padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              padding: const EdgeInsets.fromLTRB(16, 24, 24, 16),
+              child: Row(
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Pocket',
-                            style: GoogleFonts.outfit(
-                              fontSize: 32,
-                              fontWeight: FontWeight.w300,
-                              color: Colors.white,
-                              letterSpacing: 1.2,
-                            ),
-                          ),
-                          Text(
-                            'Tools & Productivity',
-                            style: GoogleFonts.outfit(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.yellow,
-                            ),
-                          ),
-                        ],
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back, color: Colors.white),
+                    onPressed: () => setState(() => _showToolsList = true),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    _getToolTitle(_selectedTab),
+                    style: GoogleFonts.outfit(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const Spacer(),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Colors.yellow, Colors.yellowAccent],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Colors.yellow, Colors.yellowAccent],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.yellow.withOpacity(0.4),
-                              blurRadius: 12,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.yellow.withValues(alpha: 0.4),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
                         ),
-                        child: Text(
-                          '$completedToday',
-                          style: GoogleFonts.outfit(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
-                          ),
+                      ],
+                    ),
+                    child: Text(
+                      '$completedToday',
+                      style: GoogleFonts.outfit(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Add Button (FAB-like but inline for safety)
+            if (_selectedTab < 3) // Only show add button for first 3 tabs
+              GestureDetector(
+                onTap: () {
+                  setState(() {
+                    if (_selectedTab == 0) {
+                      _showAddSchedule = !_showAddSchedule;
+                      _showAddTask = false;
+                      _showAddChallenge = false;
+                      _useAISchedule = false;
+                      _editingScheduleId = null;
+                    } else if (_selectedTab == 1) {
+                      _showAddTask = !_showAddTask;
+                      _showAddSchedule = false;
+                      _showAddChallenge = false;
+                    } else {
+                      _showAddChallenge = !_showAddChallenge;
+                      _showAddTask = false;
+                      _showAddSchedule = false;
+                    }
+                  });
+                },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  decoration: BoxDecoration(
+                    color: (_selectedTab == 0 && _showAddSchedule) ||
+                            (_selectedTab == 1 && _showAddTask) ||
+                            (_selectedTab == 2 && _showAddChallenge)
+                        ? const Color(0xFF2C2C2C)
+                        : Colors.yellow.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: (_selectedTab == 0 && _showAddSchedule) ||
+                              (_selectedTab == 1 && _showAddTask) ||
+                              (_selectedTab == 2 && _showAddChallenge)
+                          ? const Color(0xFF424242)
+                          : Colors.yellow.withValues(alpha: 0.5),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        (_selectedTab == 0 && _showAddSchedule) ||
+                                (_selectedTab == 1 && _showAddTask) ||
+                                (_selectedTab == 2 && _showAddChallenge)
+                            ? Icons.close
+                            : Icons.add,
+                        color: (_selectedTab == 0 && _showAddSchedule) ||
+                                (_selectedTab == 1 && _showAddTask) ||
+                                (_selectedTab == 2 && _showAddChallenge)
+                            ? Colors.white70
+                            : Colors.yellow,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        (_selectedTab == 0 && _showAddSchedule) ||
+                                (_selectedTab == 1 && _showAddTask) ||
+                                (_selectedTab == 2 && _showAddChallenge)
+                            ? 'Cancel'
+                            : _selectedTab == 0
+                                ? 'Add Schedule Item'
+                                : _selectedTab == 1
+                                    ? 'Add New Task'
+                                    : 'Start New Challenge',
+                        style: GoogleFonts.outfit(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: (_selectedTab == 0 && _showAddSchedule) ||
+                                  (_selectedTab == 1 && _showAddTask) ||
+                                  (_selectedTab == 2 && _showAddChallenge)
+                              ? Colors.white70
+                              : Colors.yellow,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 24),
-
-                  // Scrollable Tab Selector
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    physics: const BouncingScrollPhysics(),
-                    child: Row(
-                      children: [
-                        _buildTabItem(
-                            0, 'Schedule', Icons.calendar_today_rounded),
-                        const SizedBox(width: 12),
-                        _buildTabItem(
-                            1, 'Tasks', Icons.check_circle_outline_rounded),
-                        const SizedBox(width: 12),
-                        _buildTabItem(
-                            2, 'Challenges', Icons.emoji_events_outlined),
-                        const SizedBox(width: 12),
-                        _buildTabItem(3, 'Diagrams', Icons.schema_rounded),
-                        const SizedBox(width: 12),
-                        _buildTabItem(4, 'Teams', Icons.groups_rounded),
-                        const SizedBox(width: 12),
-                        _buildTabItem(5, 'AI Tools', Icons.auto_awesome),
-                        const SizedBox(width: 12),
-                        _buildTabItem(6, 'Mini Apps', Icons.apps_rounded),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Add Button (FAB-like but inline for safety)
-                  if (_selectedTab < 3) // Only show add button for first 3 tabs
-                    GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          if (_selectedTab == 0) {
-                            _showAddSchedule = !_showAddSchedule;
-                            _showAddTask = false;
-                            _showAddChallenge = false;
-                            _useAISchedule = false;
-                            _editingScheduleId = null;
-                          } else if (_selectedTab == 1) {
-                            _showAddTask = !_showAddTask;
-                            _showAddSchedule = false;
-                            _showAddChallenge = false;
-                          } else {
-                            _showAddChallenge = !_showAddChallenge;
-                            _showAddTask = false;
-                            _showAddSchedule = false;
-                          }
-                        });
-                      },
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 300),
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        decoration: BoxDecoration(
-                          color: (_selectedTab == 0 && _showAddSchedule) ||
-                                  (_selectedTab == 1 && _showAddTask) ||
-                                  (_selectedTab == 2 && _showAddChallenge)
-                              ? const Color(0xFF2C2C2C)
-                              : Colors.yellow.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: (_selectedTab == 0 && _showAddSchedule) ||
-                                    (_selectedTab == 1 && _showAddTask) ||
-                                    (_selectedTab == 2 && _showAddChallenge)
-                                ? const Color(0xFF424242)
-                                : Colors.yellow.withOpacity(0.5),
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              (_selectedTab == 0 && _showAddSchedule) ||
-                                      (_selectedTab == 1 && _showAddTask) ||
-                                      (_selectedTab == 2 && _showAddChallenge)
-                                  ? Icons.close
-                                  : Icons.add,
-                              color: (_selectedTab == 0 && _showAddSchedule) ||
-                                      (_selectedTab == 1 && _showAddTask) ||
-                                      (_selectedTab == 2 && _showAddChallenge)
-                                  ? Colors.white70
-                                  : Colors.yellow,
-                              size: 20,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              (_selectedTab == 0 && _showAddSchedule) ||
-                                      (_selectedTab == 1 && _showAddTask) ||
-                                      (_selectedTab == 2 && _showAddChallenge)
-                                  ? 'Cancel'
-                                  : _selectedTab == 0
-                                      ? 'Add Schedule Item'
-                                      : _selectedTab == 1
-                                          ? 'Add New Task'
-                                          : 'Start New Challenge',
-                              style: GoogleFonts.outfit(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                                color: (_selectedTab == 0 &&
-                                            _showAddSchedule) ||
-                                        (_selectedTab == 1 && _showAddTask) ||
-                                        (_selectedTab == 2 && _showAddChallenge)
-                                    ? Colors.white70
-                                    : Colors.yellow,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                ],
+                ),
               ),
-            ),
 
             const SizedBox(height: 16),
 
@@ -1598,7 +1709,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: const Color(0xFFFF6B9D).withOpacity(0.4),
+                    color: const Color(0xFFFF6B9D).withValues(alpha: 0.4),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   )
@@ -1661,7 +1772,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
       mainAxisSpacing: 16,
       children: [
         _buildToolCard(
-          title: 'Mini Sketchpad',
+          title: 'Drawing Tool',
           icon: Icons.brush,
           color: Colors.orange,
           onTap: () {
@@ -1686,10 +1797,10 @@ class _TaskManagerScreenState extends State<ToolsPage> {
         decoration: BoxDecoration(
           color: const Color(0xFF2C2C2C),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: color.withOpacity(0.3)),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.2),
+              color: Colors.black.withValues(alpha: 0.2),
               blurRadius: 10,
               spreadRadius: 2,
             ),
@@ -1701,7 +1812,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
+                color: color.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(icon, color: color, size: 32),
@@ -1742,7 +1853,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
+                  color: Colors.black.withValues(alpha: 0.2),
                   blurRadius: 20,
                   offset: const Offset(0, 10),
                 )
@@ -2561,7 +2672,7 @@ class _DiagramListScreenState extends State<DiagramListScreen> {
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
+                          color: Colors.black.withValues(alpha: 0.2),
                           blurRadius: 8,
                           offset: const Offset(0, 4),
                         ),
@@ -2573,7 +2684,7 @@ class _DiagramListScreenState extends State<DiagramListScreen> {
                         Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFFF6B9D).withOpacity(0.1),
+                            color: const Color(0xFFFF6B9D).withValues(alpha: 0.1),
                             shape: BoxShape.circle,
                           ),
                           child: Icon(Icons.architecture,
@@ -2925,7 +3036,7 @@ class _FlowCanvasScreenState extends State<FlowCanvasScreen> {
                     child: Row(
                       children: [
                         CircleAvatar(
-                          backgroundColor: Colors.white.withOpacity(0.2),
+                          backgroundColor: Colors.white.withValues(alpha: 0.2),
                           child: Text('${index + 1}',
                               style: const TextStyle(
                                   color: Colors.white,
@@ -3108,7 +3219,7 @@ class _FlowCanvasScreenState extends State<FlowCanvasScreen> {
                                       borderRadius: BorderRadius.circular(12),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: node.color.withOpacity(0.4),
+                                          color: node.color.withValues(alpha: 0.4),
                                           blurRadius: 12,
                                           spreadRadius: 2,
                                         ),
@@ -3223,7 +3334,7 @@ class ArrowPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     const arrowSize = 15.0;
     final paint = Paint()
-      ..color = const Color(0xFF10B981).withOpacity(0.4)
+      ..color = const Color(0xFF10B981).withValues(alpha: 0.4)
       ..strokeWidth = 2
       ..strokeCap = StrokeCap.round;
 
@@ -3238,7 +3349,7 @@ class ArrowPainter extends CustomPainter {
     final angle = atan2(dy, dx);
 
     final arrowPaint = Paint()
-      ..color = const Color(0xFF10B981).withOpacity(0.6)
+      ..color = const Color(0xFF10B981).withValues(alpha: 0.6)
       ..strokeWidth = 2
       ..strokeCap = StrokeCap.round;
 
@@ -3950,7 +4061,7 @@ FINAL REMINDER: Every value in this JSON must be written in $shortFilmLanguage l
                 child: Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF9C27B0).withOpacity(0.2),
+                    color: const Color(0xFF9C27B0).withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Icon(Icons.copy,
@@ -3965,7 +4076,7 @@ FINAL REMINDER: Every value in this JSON must be written in $shortFilmLanguage l
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: const Color(0xFF9C27B0).withOpacity(0.1),
+              color: const Color(0xFF9C27B0).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Column(
@@ -4019,7 +4130,7 @@ FINAL REMINDER: Every value in this JSON must be written in $shortFilmLanguage l
                         width: 40,
                         height: 40,
                         decoration: BoxDecoration(
-                          color: const Color(0xFF9C27B0).withOpacity(0.3),
+                          color: const Color(0xFF9C27B0).withValues(alpha: 0.3),
                           shape: BoxShape.circle,
                         ),
                         child: Center(
@@ -4088,7 +4199,7 @@ FINAL REMINDER: Every value in this JSON must be written in $shortFilmLanguage l
                     color: const Color(0xFF2a2a2a),
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
-                        color: const Color(0xFF9C27B0).withOpacity(0.3)),
+                        color: const Color(0xFF9C27B0).withValues(alpha: 0.3)),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -4098,7 +4209,7 @@ FINAL REMINDER: Every value in this JSON must be written in $shortFilmLanguage l
                         padding: const EdgeInsets.symmetric(
                             horizontal: 10, vertical: 6),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF9C27B0).withOpacity(0.2),
+                          color: const Color(0xFF9C27B0).withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Row(
@@ -4193,7 +4304,7 @@ FINAL REMINDER: Every value in this JSON must be written in $shortFilmLanguage l
                                                       vertical: 4),
                                               decoration: BoxDecoration(
                                                 color: const Color(0xFF9C27B0)
-                                                    .withOpacity(0.3),
+                                                    .withValues(alpha: 0.3),
                                                 borderRadius:
                                                     BorderRadius.circular(4),
                                               ),
@@ -4292,8 +4403,8 @@ FINAL REMINDER: Every value in this JSON must be written in $shortFilmLanguage l
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    const Color(0xFF9C27B0).withOpacity(0.2),
-                    const Color(0xFF9C27B0).withOpacity(0.05),
+                    const Color(0xFF9C27B0).withValues(alpha: 0.2),
+                    const Color(0xFF9C27B0).withValues(alpha: 0.05),
                   ],
                 ),
                 borderRadius: BorderRadius.circular(8),
@@ -4565,14 +4676,14 @@ FINAL REMINDER: Every value in this JSON must be written in $shortFilmLanguage l
                   Text(
                     'Instagram Growth Journey',
                     style: TextStyle(
-                        fontSize: 12, color: Colors.white.withOpacity(0.8)),
+                        fontSize: 12, color: Colors.white.withValues(alpha: 0.8)),
                   ),
                 ],
               ),
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child:
@@ -4607,7 +4718,7 @@ FINAL REMINDER: Every value in this JSON must be written in $shortFilmLanguage l
         const SizedBox(height: 4),
         Text(
           label,
-          style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.7)),
+          style: TextStyle(fontSize: 12, color: Colors.white.withValues(alpha: 0.7)),
         ),
       ],
     );
@@ -4638,8 +4749,8 @@ FINAL REMINDER: Every value in this JSON must be written in $shortFilmLanguage l
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        border: Border.all(color: color.withOpacity(0.4)),
+        color: color.withValues(alpha: 0.1),
+        border: Border.all(color: color.withValues(alpha: 0.4)),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -4649,7 +4760,7 @@ FINAL REMINDER: Every value in this JSON must be written in $shortFilmLanguage l
             title,
             style: TextStyle(
                 fontSize: 11,
-                color: Colors.white.withOpacity(0.6),
+                color: Colors.white.withValues(alpha: 0.6),
                 fontWeight: FontWeight.w500),
           ),
           const SizedBox(height: 8),
@@ -4719,7 +4830,7 @@ FINAL REMINDER: Every value in this JSON must be written in $shortFilmLanguage l
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 12, vertical: 6),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFE1306C).withOpacity(0.2),
+                              color: const Color(0xFFE1306C).withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: const Text(
@@ -4764,8 +4875,8 @@ FINAL REMINDER: Every value in this JSON must be written in $shortFilmLanguage l
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
-          border: Border.all(color: color.withOpacity(0.4)),
+          color: color.withValues(alpha: 0.1),
+          border: Border.all(color: color.withValues(alpha: 0.4)),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
@@ -5225,7 +5336,7 @@ FINAL REMINDER: Every value in this JSON must be written in $shortFilmLanguage l
                             width: 40,
                             height: 40,
                             decoration: BoxDecoration(
-                              color: const Color(0xFFE1306C).withOpacity(0.2),
+                              color: const Color(0xFFE1306C).withValues(alpha: 0.2),
                               shape: BoxShape.circle,
                             ),
                             child: const Center(

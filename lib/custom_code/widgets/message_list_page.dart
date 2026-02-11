@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'dart:async';
 import 'dart:async';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:timeago/timeago.dart' as timeago;
+import '/backend/supabase/supabase.dart';
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_util.dart';
+import '/flutter_flow/flutter_flow_util.dart';
+import 'package:pocket_mates_app/custom_code/widgets/message_screen.dart';
 import 'package:pocket_mates_app/custom_code/widgets/message_screen.dart';
 
 class MessageListPage extends StatefulWidget {
@@ -277,7 +283,7 @@ class _MessageListPageState extends State<MessageListPage> {
                           color: Colors.black,
                           border: Border(
                             bottom: BorderSide(
-                              color: Colors.white.withOpacity(0.05),
+                              color: Colors.white.withValues(alpha: 0.05),
                               width: 1,
                             ),
                           ),

@@ -1,10 +1,17 @@
 import 'dart:async';
+import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:pocket_mates_app/backend/supabase/database/database.dart';
+import 'package:pocket_mates_app/backend/supabase/database/database.dart';
+import 'package:pocket_mates_app/custom_code/widgets/gallery_search_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/gallery_search_page.dart';
 import 'package:pocket_mates_app/flutter_flow/flutter_flow_util.dart';
+import 'package:pocket_mates_app/flutter_flow/flutter_flow_util.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class GalleryTabViewPage extends StatefulWidget {
@@ -229,7 +236,7 @@ class _GalleryTabViewPageState extends State<GalleryTabViewPage> {
               ),
               borderRadius: BorderRadius.circular(20),
               border:
-                  Border.all(color: Colors.amber.withOpacity(0.3), width: 1),
+                  Border.all(color: Colors.amber.withValues(alpha: 0.3), width: 1),
             ),
             child: Column(
               children: [
@@ -239,7 +246,7 @@ class _GalleryTabViewPageState extends State<GalleryTabViewPage> {
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        Colors.amber.withOpacity(0.2),
+                        Colors.amber.withValues(alpha: 0.2),
                         Colors.transparent
                       ],
                     ),
@@ -277,10 +284,10 @@ class _GalleryTabViewPageState extends State<GalleryTabViewPage> {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
-                            color: Colors.amber.withOpacity(0.2),
+                            color: Colors.amber.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
-                                color: Colors.amber.withOpacity(0.3)),
+                                color: Colors.amber.withValues(alpha: 0.3)),
                           ),
                           child: Text(
                             '${selectedInterests.length} selected',
@@ -309,12 +316,12 @@ class _GalleryTabViewPageState extends State<GalleryTabViewPage> {
                           margin: const EdgeInsets.symmetric(vertical: 4),
                           decoration: BoxDecoration(
                             color: isSelected
-                                ? Colors.amber.withOpacity(0.1)
+                                ? Colors.amber.withValues(alpha: 0.1)
                                 : Colors.transparent,
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
                               color: isSelected
-                                  ? Colors.amber.withOpacity(0.3)
+                                  ? Colors.amber.withValues(alpha: 0.3)
                                   : Colors.transparent,
                             ),
                           ),
@@ -327,7 +334,7 @@ class _GalleryTabViewPageState extends State<GalleryTabViewPage> {
                                   padding: const EdgeInsets.all(8),
                                   decoration: BoxDecoration(
                                     color: isSelected
-                                        ? Colors.amber.withOpacity(0.2)
+                                        ? Colors.amber.withValues(alpha: 0.2)
                                         : Colors.grey[800],
                                     borderRadius: BorderRadius.circular(8),
                                   ),
@@ -1227,8 +1234,8 @@ class MasonryGalleryItemCard extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Colors.amber.withOpacity(0.3),
-            Colors.orange.withOpacity(0.2),
+            Colors.amber.withValues(alpha: 0.3),
+            Colors.orange.withValues(alpha: 0.2),
           ],
         ),
       ),
@@ -1295,7 +1302,7 @@ class MasonryGalleryItemCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.2),
+              color: Colors.black.withValues(alpha: 0.2),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
@@ -1333,8 +1340,8 @@ class MasonryGalleryItemCard extends StatelessWidget {
                     stops: const [0.0, 0.6, 1.0],
                     colors: [
                       Colors.transparent,
-                      Colors.black.withOpacity(0.1),
-                      Colors.black.withOpacity(0.8),
+                      Colors.black.withValues(alpha: 0.1),
+                      Colors.black.withValues(alpha: 0.8),
                     ],
                   ),
                 ),
@@ -1375,11 +1382,11 @@ class MasonryGalleryItemCard extends StatelessWidget {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.orangeAccent.withOpacity(0.9),
+                            color: Colors.orangeAccent.withValues(alpha: 0.9),
                             borderRadius: BorderRadius.circular(16),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.3),
+                                color: Colors.black.withValues(alpha: 0.3),
                                 blurRadius: 4,
                                 offset: const Offset(0, 2),
                               ),

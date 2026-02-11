@@ -1,17 +1,28 @@
 // Automatic FlutterFlow imports
 import '/backend/supabase/supabase.dart';
+import '/backend/supabase/supabase.dart';
+import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
+import '/flutter_flow/flutter_flow_util.dart';
+import 'index.dart'; // Imports other custom widgets
 import 'index.dart'; // Imports other custom widgets
 import '/custom_code/actions/index.dart'; // Imports custom actions
+import '/custom_code/actions/index.dart'; // Imports custom actions
+import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
 import 'dart:io' as io;
+import 'dart:io' as io;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:image/image.dart' as img;
+import 'package:image/image.dart' as img;
+import 'package:flutter/services.dart';
 import 'package:flutter/services.dart';
 
 class EventCreatePage extends StatefulWidget {
@@ -367,7 +378,7 @@ class _EventCreatePageState extends State<EventCreatePage> {
       decoration: BoxDecoration(
         color: const Color(0xFF2a2a2a),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.yellow.withOpacity(0.3)),
+        border: Border.all(color: Colors.yellow.withValues(alpha: 0.3)),
       ),
       child: TextFormField(
         controller: controller,
@@ -427,7 +438,7 @@ class _EventCreatePageState extends State<EventCreatePage> {
                 color: const Color(0xFF1a1a1a),
                 borderRadius: BorderRadius.circular(20),
                 border:
-                    Border.all(color: Colors.yellow.withOpacity(0.5), width: 2),
+                    Border.all(color: Colors.yellow.withValues(alpha: 0.5), width: 2),
               ),
               child: Stack(
                 children: [
@@ -463,8 +474,8 @@ class _EventCreatePageState extends State<EventCreatePage> {
                                     begin: Alignment.topLeft,
                                     end: Alignment.bottomRight,
                                     colors: [
-                                      Colors.yellow.withOpacity(0.1),
-                                      Colors.orange.withOpacity(0.1),
+                                      Colors.yellow.withValues(alpha: 0.1),
+                                      Colors.orange.withValues(alpha: 0.1),
                                     ],
                                   ),
                                 ),
@@ -512,7 +523,7 @@ class _EventCreatePageState extends State<EventCreatePage> {
                                     end: Alignment.bottomCenter,
                                     colors: [
                                       Colors.transparent,
-                                      Colors.black.withOpacity(0.6),
+                                      Colors.black.withValues(alpha: 0.6),
                                     ],
                                   ),
                                 ),
@@ -597,7 +608,7 @@ class _EventCreatePageState extends State<EventCreatePage> {
               decoration: BoxDecoration(
                 color: const Color(0xFF2a2a2a),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.yellow.withOpacity(0.3)),
+                border: Border.all(color: Colors.yellow.withValues(alpha: 0.3)),
               ),
               child: ListTile(
                 leading: const Icon(Icons.event, color: Colors.yellow),
@@ -638,7 +649,7 @@ class _EventCreatePageState extends State<EventCreatePage> {
                 boxShadow: _isFormValid() && !_isLoading
                     ? [
                         BoxShadow(
-                          color: Colors.yellow.withOpacity(0.3),
+                          color: Colors.yellow.withValues(alpha: 0.3),
                           blurRadius: 20,
                           offset: const Offset(0, 8),
                         ),

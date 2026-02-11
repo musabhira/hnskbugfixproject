@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:pocket_mates_app/custom_code/widgets/legal_policy_widget.dart';
+
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({Key? key}) : super(key: key);
@@ -11,13 +12,6 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage> {
   final String _appVersion = '1.0.0+12'; // Matched with pubspec.yaml
-
-  Future<void> _launchUrl(String urlString) async {
-    final Uri url = Uri.parse(urlString);
-    if (!await launchUrl(url)) {
-      debugPrint('Could not launch $url');
-    }
-  }
 
   Future<void> _handleLogout() async {
     try {
@@ -67,13 +61,8 @@ class _SettingsPageState extends State<SettingsPage> {
         if (userId != null) {
           // Attempt to delete user data from public tables if RLS allows
           // This is a "best effort" client-side cleanup.
-          try {
-            // Example: Delete from users table (if exists and allowed)
-            await SupaFlow.client.from('users').delete().eq('id', userId);
-          } catch (e) {
-            debugPrint('Error clearing user data: $e');
-            // Continue to sign out even if data clear fails (might be handled by backend or RLS)
-          }
+          // Call RPC to delete user
+          await SupaFlow.client.rpc('delete_user');
 
           // Sign out
           await SupaFlow.client.auth.signOut();
@@ -115,14 +104,18 @@ class _SettingsPageState extends State<SettingsPage> {
           _SettingsTile(
             icon: Icons.privacy_tip_outlined,
             title: 'Privacy Policy',
-            onTap: () => _launchUrl(
-                'https://www.example.com/privacy-policy'), // Replace with actual URL
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                  builder: (context) => const PrivacyPolicyPage()),
+            ),
           ),
           _SettingsTile(
             icon: Icons.description_outlined,
             title: 'Terms of Service',
-            onTap: () => _launchUrl(
-                'https://www.example.com/terms-of-service'), // Replace with actual URL
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                  builder: (context) => const TermsOfServicePage()),
+            ),
           ),
           const SizedBox(height: 24),
           const _SectionHeader(title: 'Account'),

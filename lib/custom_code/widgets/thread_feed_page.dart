@@ -1,19 +1,31 @@
 // Automatic FlutterFlow imports
 import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
+import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
+import 'package:pocket_mates_app/custom_code/widgets/search_profile_detail_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/search_profile_detail_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/share_content_screen.dart';
+import 'package:pocket_mates_app/custom_code/widgets/share_content_screen.dart';
+import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
 
 import '/backend/supabase/supabase.dart';
+import '/backend/supabase/supabase.dart';
+import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
+import '/flutter_flow/flutter_flow_util.dart';
+import 'index.dart'; // Imports other custom widgets
 import 'index.dart'; // Imports other custom widgets
 import '/custom_code/actions/index.dart'; // Imports custom actions
+import '/custom_code/actions/index.dart'; // Imports custom actions
+import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
 import 'package:share_plus/share_plus.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:timeago/timeago.dart' as timeago;
 import 'package:timeago/timeago.dart' as timeago;
 
 class ThreadFeedPage extends StatefulWidget {
@@ -774,12 +786,12 @@ View full post: $shareableLink
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     offset: const Offset(0, 3),
                     blurRadius: 4,
                   ),
                   BoxShadow(
-                    color: primaryColor.withOpacity(0.1),
+                    color: primaryColor.withValues(alpha: 0.1),
                     offset: const Offset(0, 3),
                     blurRadius: 4,
                   ),
@@ -822,8 +834,8 @@ View full post: $shareableLink
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          primaryColor.withOpacity(0.05),
-                          accentColor.withOpacity(0.05)
+                          primaryColor.withValues(alpha: 0.05),
+                          accentColor.withValues(alpha: 0.05)
                         ],
                         begin: Alignment.centerLeft,
                         end: Alignment.centerRight,
@@ -863,14 +875,14 @@ View full post: $shareableLink
                                         : Icons.favorite_border,
                                     color: isLiked
                                         ? accentColor
-                                        : textColor.withOpacity(0.6),
+                                        : textColor.withValues(alpha: 0.6),
                                     size: 20,
                                   ),
                                   const SizedBox(width: 8),
                                   Text(
                                     formattedLikes,
                                     style: TextStyle(
-                                      color: textColor.withOpacity(0.8),
+                                      color: textColor.withValues(alpha: 0.8),
                                       fontWeight: FontWeight.w500,
                                     ),
                                   ),
@@ -906,14 +918,14 @@ View full post: $shareableLink
                                 children: [
                                   Icon(
                                     Icons.chat_bubble_outline,
-                                    color: textColor.withOpacity(0.6),
+                                    color: textColor.withValues(alpha: 0.6),
                                     size: 20,
                                   ),
                                   const SizedBox(width: 8),
                                   Text(
                                     '${cardData['comment_count'] ?? 0}',
                                     style: TextStyle(
-                                      color: textColor.withOpacity(0.8),
+                                      color: textColor.withValues(alpha: 0.8),
                                       fontWeight: FontWeight.w500,
                                     ),
                                   ),
@@ -930,7 +942,7 @@ View full post: $shareableLink
                               child: Icon(
                                 Icons.share_outlined,
                                 // ignore: deprecated_member_use
-                                color: textColor.withOpacity(0.6),
+                                color: textColor.withValues(alpha: 0.6),
                                 size: 20,
                               ),
                             ),
@@ -984,7 +996,7 @@ View full post: $shareableLink
                   borderRadius: BorderRadius.circular(50),
                   boxShadow: [
                     BoxShadow(
-                      color: primaryColor.withOpacity(0.3),
+                      color: primaryColor.withValues(alpha: 0.3),
                       blurRadius: 1,
                       offset: const Offset(0, 1),
                     ),
@@ -1375,7 +1387,7 @@ class _CreateThreadPageState extends State<CreateThreadPage>
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.amber.withOpacity(0.3),
+                color: Colors.amber.withValues(alpha: 0.3),
                 blurRadius: 20,
                 offset: const Offset(0, 4),
               ),
@@ -1388,10 +1400,10 @@ class _CreateThreadPageState extends State<CreateThreadPage>
               leading: Container(
                 margin: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.7),
+                  color: Colors.black.withValues(alpha: 0.7),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: Colors.amber.withOpacity(0.3),
+                    color: Colors.amber.withValues(alpha: 0.3),
                     width: 1,
                   ),
                 ),
@@ -1474,15 +1486,15 @@ class _CreateThreadPageState extends State<CreateThreadPage>
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               colors: [
-                                Colors.amber.withOpacity(0.1),
-                                Colors.yellow.withOpacity(0.05),
+                                Colors.amber.withValues(alpha: 0.1),
+                                Colors.yellow.withValues(alpha: 0.05),
                               ],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
-                              color: Colors.amber.withOpacity(0.2),
+                              color: Colors.amber.withValues(alpha: 0.2),
                               width: 1,
                             ),
                           ),
@@ -1493,7 +1505,7 @@ class _CreateThreadPageState extends State<CreateThreadPage>
                                   Container(
                                     padding: const EdgeInsets.all(12),
                                     decoration: BoxDecoration(
-                                      color: Colors.amber.withOpacity(0.2),
+                                      color: Colors.amber.withValues(alpha: 0.2),
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: Icon(
@@ -1536,7 +1548,7 @@ class _CreateThreadPageState extends State<CreateThreadPage>
                                   decoration: BoxDecoration(
                                     // ignore: deprecated_member_use
                                     color: Colors.yellow
-                                        .withOpacity(0.2), // less opacity
+                                        .withValues(alpha: 0.2), // less opacity
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                   padding: const EdgeInsets.all(12),
@@ -1576,12 +1588,12 @@ class _CreateThreadPageState extends State<CreateThreadPage>
                             ),
                             borderRadius: BorderRadius.circular(24),
                             border: Border.all(
-                              color: Colors.amber.withOpacity(0.3),
+                              color: Colors.amber.withValues(alpha: 0.3),
                               width: 1,
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.amber.withOpacity(0.1),
+                                color: Colors.amber.withValues(alpha: 0.1),
                                 blurRadius: 20,
                                 offset: const Offset(0, 8),
                               ),
@@ -1647,7 +1659,7 @@ class _CreateThreadPageState extends State<CreateThreadPage>
                                       ),
                                     ),
                                     filled: true,
-                                    fillColor: Colors.black.withOpacity(0.3),
+                                    fillColor: Colors.black.withValues(alpha: 0.3),
                                     contentPadding: const EdgeInsets.all(20),
                                     counterStyle: TextStyle(
                                       color: Colors.amber.shade400,
@@ -1674,7 +1686,7 @@ class _CreateThreadPageState extends State<CreateThreadPage>
                         Container(
                           padding: const EdgeInsets.all(20),
                           decoration: BoxDecoration(
-                            color: Colors.grey.shade900.withOpacity(0.5),
+                            color: Colors.grey.shade900.withValues(alpha: 0.5),
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
                               color: Colors.grey.shade800,
@@ -1701,7 +1713,7 @@ class _CreateThreadPageState extends State<CreateThreadPage>
                             borderRadius: BorderRadius.circular(30),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.amber.withOpacity(0.4),
+                                color: Colors.amber.withValues(alpha: 0.4),
                                 blurRadius: 20,
                                 offset: const Offset(0, 8),
                               ),
@@ -1723,7 +1735,7 @@ class _CreateThreadPageState extends State<CreateThreadPage>
                                     child: CircularProgressIndicator(
                                       strokeWidth: 3,
                                       valueColor: AlwaysStoppedAnimation<Color>(
-                                        Colors.black.withOpacity(0.8),
+                                        Colors.black.withValues(alpha: 0.8),
                                       ),
                                     ),
                                   )
@@ -1732,7 +1744,7 @@ class _CreateThreadPageState extends State<CreateThreadPage>
                                     children: [
                                       Icon(
                                         Icons.send_rounded,
-                                        color: Colors.black.withOpacity(0.8),
+                                        color: Colors.black.withValues(alpha: 0.8),
                                         size: 24,
                                       ),
                                       const SizedBox(width: 12),
@@ -1741,7 +1753,7 @@ class _CreateThreadPageState extends State<CreateThreadPage>
                                         style: TextStyle(
                                           fontWeight: FontWeight.bold,
                                           fontSize: 18,
-                                          color: Colors.black.withOpacity(0.8),
+                                          color: Colors.black.withValues(alpha: 0.8),
                                           letterSpacing: 0.5,
                                         ),
                                       ),
@@ -1778,15 +1790,15 @@ class _CreateThreadPageState extends State<CreateThreadPage>
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              color.withOpacity(0.1),
-              color.withOpacity(0.05),
+              color.withValues(alpha: 0.1),
+              color.withValues(alpha: 0.05),
             ],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: color.withOpacity(0.3),
+            color: color.withValues(alpha: 0.3),
             width: 1,
           ),
         ),
@@ -1796,7 +1808,7 @@ class _CreateThreadPageState extends State<CreateThreadPage>
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.2),
+                color: color.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
@@ -2020,7 +2032,7 @@ class _ThreadCommentsPageState extends State<ThreadCommentsPage>
       duration: const Duration(milliseconds: 300),
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.grey[900]?.withOpacity(0.7),
+        color: Colors.grey[900]?.withValues(alpha: 0.7),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.grey[800]!, width: 0.5),
       ),
@@ -2111,7 +2123,7 @@ class _ThreadCommentsPageState extends State<ThreadCommentsPage>
                     child: Container(
                       padding: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
-                        color: Colors.red[700]?.withOpacity(0.8),
+                        color: Colors.red[700]?.withValues(alpha: 0.8),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: const Icon(
@@ -2154,7 +2166,7 @@ class _ThreadCommentsPageState extends State<ThreadCommentsPage>
               gradient: LinearGradient(
                 colors: [
                   Colors.transparent,
-                  Colors.yellow.withOpacity(0.3),
+                  Colors.yellow.withValues(alpha: 0.3),
                   Colors.transparent,
                 ],
               ),
@@ -2173,10 +2185,10 @@ class _ThreadCommentsPageState extends State<ThreadCommentsPage>
               color: Colors.grey[900],
               borderRadius: BorderRadius.circular(16),
               border:
-                  Border.all(color: Colors.yellow.withOpacity(0.3), width: 1),
+                  Border.all(color: Colors.yellow.withValues(alpha: 0.3), width: 1),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.yellow.withOpacity(0.1),
+                  color: Colors.yellow.withValues(alpha: 0.1),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
@@ -2291,13 +2303,13 @@ class _ThreadCommentsPageState extends State<ThreadCommentsPage>
               color: Colors.grey[900],
               border: Border(
                 top: BorderSide(
-                  color: Colors.yellow.withOpacity(0.2),
+                  color: Colors.yellow.withValues(alpha: 0.2),
                   width: 1,
                 ),
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.4),
+                  color: Colors.black.withValues(alpha: 0.4),
                   blurRadius: 8,
                   offset: const Offset(0, -2),
                 ),
@@ -2310,7 +2322,7 @@ class _ThreadCommentsPageState extends State<ThreadCommentsPage>
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.6),
+                        color: Colors.black.withValues(alpha: 0.6),
                         borderRadius: BorderRadius.circular(24),
                         border: Border.all(
                           color: Colors.grey[700]!,

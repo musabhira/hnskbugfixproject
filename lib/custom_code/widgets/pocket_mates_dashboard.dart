@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'webrtc_call_screen.dart';
 import 'webrtc_call_screen.dart';
 
 class PocketMatesDashboard extends StatefulWidget {
@@ -45,7 +50,7 @@ class _PocketMatesDashboardState extends State<PocketMatesDashboard> {
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.yellow.withOpacity(0.2),
+                          color: Colors.yellow.withValues(alpha: 0.2),
                           blurRadius: 30,
                           spreadRadius: 5,
                         ),
@@ -160,7 +165,7 @@ class _PocketMatesDashboardState extends State<PocketMatesDashboard> {
                       borderRadius: BorderRadius.circular(20),
                     ),
                     elevation: 12,
-                    shadowColor: Colors.yellow.withOpacity(0.4),
+                    shadowColor: Colors.yellow.withValues(alpha: 0.4),
                   ),
                   child: Text(
                     _selectedMode == null
@@ -217,7 +222,7 @@ class _PocketMatesDashboardState extends State<PocketMatesDashboard> {
         decoration: BoxDecoration(
           color: isSelected
               ? Colors.grey[900]
-              : Colors.grey[900]?.withOpacity(0.5),
+              : Colors.grey[900]?.withValues(alpha: 0.5),
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
             color: isSelected ? Colors.yellow : Colors.grey[800]!,
@@ -226,7 +231,7 @@ class _PocketMatesDashboardState extends State<PocketMatesDashboard> {
           boxShadow: [
             if (isSelected)
               BoxShadow(
-                color: Colors.yellow.withOpacity(0.15),
+                color: Colors.yellow.withValues(alpha: 0.15),
                 blurRadius: 20,
                 offset: const Offset(0, 0),
               ),

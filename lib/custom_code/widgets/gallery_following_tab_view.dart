@@ -1,21 +1,29 @@
 // Automatic FlutterFlow imports
 import 'package:pocket_mates_app/custom_code/widgets/gallery_search_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/gallery_search_page.dart';
 
 import '/backend/supabase/supabase.dart';
+import '/backend/supabase/supabase.dart';
+import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
+import '/flutter_flow/flutter_flow_util.dart';
+import 'index.dart'; // Imports other custom widgets
 import 'index.dart'; // Imports other custom widgets
 import '/custom_code/actions/index.dart'; // Imports custom actions
+import '/custom_code/actions/index.dart'; // Imports custom actions
+import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
 // Set your widget name, define your parameter, and then add the
 // boilerplate code using the green button on the right!
-import 'index.dart'; // Imports other custom widgets
 
 import 'dart:async';
+import 'dart:async';
 
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
 class GalleryFollowingTabViewPage extends StatefulWidget {
@@ -553,7 +561,7 @@ class MasonryGalleryItemCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.2),
+              color: Colors.black.withValues(alpha: 0.2),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
@@ -591,8 +599,8 @@ class MasonryGalleryItemCard extends StatelessWidget {
                     stops: const [0.0, 0.6, 1.0],
                     colors: [
                       Colors.transparent,
-                      Colors.black.withOpacity(0.1),
-                      Colors.black.withOpacity(0.8),
+                      Colors.black.withValues(alpha: 0.1),
+                      Colors.black.withValues(alpha: 0.8),
                     ],
                   ),
                 ),
@@ -669,12 +677,12 @@ class MasonryGalleryItemCard extends StatelessWidget {
                           ),
                           decoration: BoxDecoration(
                             // ignore: deprecated_member_use
-                            color: Colors.orangeAccent.withOpacity(0.9),
+                            color: Colors.orangeAccent.withValues(alpha: 0.9),
                             borderRadius: BorderRadius.circular(16),
                             boxShadow: [
                               BoxShadow(
                                 // ignore: deprecated_member_use
-                                color: Colors.black.withOpacity(0.3),
+                                color: Colors.black.withValues(alpha: 0.3),
                                 blurRadius: 4,
                                 offset: const Offset(0, 2),
                               ),

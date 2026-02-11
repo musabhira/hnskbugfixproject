@@ -1,16 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/widgets/gallery_profile_search_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/gallery_profile_search_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/message_screen.dart';
 import 'package:pocket_mates_app/custom_code/widgets/message_screen.dart';
 import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
+import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
+import 'package:pocket_mates_app/custom_code/widgets/search_profile_detail_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/search_profile_detail_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/share_content_screen.dart';
+import 'package:pocket_mates_app/custom_code/widgets/share_content_screen.dart';
+import 'package:pocket_mates_app/custom_code/widgets/status_display_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/status_display_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
+import 'package:pocket_mates_app/flutter_flow/flutter_flow_theme.dart';
 import 'package:pocket_mates_app/flutter_flow/flutter_flow_theme.dart';
 import 'package:pocket_mates_app/flutter_flow/flutter_flow_util.dart';
+import 'package:pocket_mates_app/flutter_flow/flutter_flow_util.dart';
+import 'package:fluent_ui/fluent_ui.dart' as fluent;
 import 'package:fluent_ui/fluent_ui.dart' as fluent;
 
 class GalleryDetailsPage extends StatefulWidget {
@@ -512,7 +526,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                         height: 4,
                         decoration: BoxDecoration(
                           // ignore: deprecated_member_use
-                          color: Colors.grey.withOpacity(0.3),
+                          color: Colors.grey.withValues(alpha: 0.3),
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
@@ -588,7 +602,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                                           Icons.chat_bubble_outline,
                                           size: 80,
                                           // ignore: deprecated_member_use
-                                          color: Colors.grey.withOpacity(0.5),
+                                          color: Colors.grey.withValues(alpha: 0.5),
                                         ),
                                         const SizedBox(height: 16),
                                         Text(
@@ -628,7 +642,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                           boxShadow: [
                             BoxShadow(
                               // ignore: deprecated_member_use
-                              color: Colors.black.withOpacity(0.05),
+                              color: Colors.black.withValues(alpha: 0.05),
                               blurRadius: 10,
                               offset: const Offset(0, -3),
                             ),
@@ -663,7 +677,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                                     ),
                                     filled: true,
                                     // ignore: deprecated_member_use
-                                    fillColor: Colors.grey.withOpacity(0.1),
+                                    fillColor: Colors.grey.withValues(alpha: 0.1),
                                     contentPadding: const EdgeInsets.symmetric(
                                       horizontal: 16,
                                       vertical: 10,
@@ -1606,7 +1620,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                                       Icons.chat_bubble_outline,
                                       size: 48,
                                       // ignore: deprecated_member_use
-                                      color: Colors.grey.withOpacity(0.5),
+                                      color: Colors.grey.withValues(alpha: 0.5),
                                     ),
                                     const SizedBox(height: 8),
                                     Text(

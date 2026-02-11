@@ -1,17 +1,30 @@
 // Automatic FlutterFlow imports
 import 'package:pocket_mates_app/custom_code/widgets/custom_text_field.dart';
+import 'package:pocket_mates_app/custom_code/widgets/custom_text_field.dart';
 import 'package:pocket_mates_app/custom_code/widgets/choice_chip_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/choice_chip_widget.dart';
+import 'package:pocket_mates_app/flutter_flow/flutter_flow_widgets.dart';
 import 'package:pocket_mates_app/flutter_flow/flutter_flow_widgets.dart';
 
 import '/backend/supabase/supabase.dart';
+import '/backend/supabase/supabase.dart';
+import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
+import '/flutter_flow/flutter_flow_util.dart';
+import 'index.dart'; // Imports other custom widgets
 import 'index.dart'; // Imports other custom widgets
 import '/custom_code/actions/index.dart'; // Imports custom actions
+import '/custom_code/actions/index.dart'; // Imports custom actions
+import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image/image.dart' as img;
+import 'package:image/image.dart' as img;
+import 'dart:io' as io;
 import 'dart:io' as io;
 
 class CreateGalleryWidget extends StatefulWidget {
@@ -425,7 +438,7 @@ class _CreateGalleryWidgetState extends State<CreateGalleryWidget> {
                     end: Alignment.bottomRight,
                     colors: [
                       FlutterFlowTheme.of(context).primary,
-                      FlutterFlowTheme.of(context).primary.withOpacity(0.8),
+                      FlutterFlowTheme.of(context).primary.withValues(alpha: 0.8),
                     ],
                   ),
                 ),
@@ -449,10 +462,10 @@ class _CreateGalleryWidgetState extends State<CreateGalleryWidget> {
                   padding: const EdgeInsets.all(8.0),
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(12.0),
                       border: Border.all(
-                        color: Colors.white.withOpacity(0.3),
+                        color: Colors.white.withValues(alpha: 0.3),
                         width: 1.0,
                       ),
                     ),
@@ -496,7 +509,7 @@ class _CreateGalleryWidgetState extends State<CreateGalleryWidget> {
                           borderRadius: BorderRadius.circular(24.0),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.08),
+                              color: Colors.black.withValues(alpha: 0.08),
                               blurRadius: 20.0,
                               offset: const Offset(0, 8),
                             ),
@@ -504,8 +517,8 @@ class _CreateGalleryWidgetState extends State<CreateGalleryWidget> {
                           border: Border.all(
                             color: FlutterFlowTheme.of(context)
                                     .alternate
-                                    .withOpacity(0.3) ??
-                                Colors.grey.withOpacity(0.3),
+                                    .withValues(alpha: 0.3) ??
+                                Colors.grey.withValues(alpha: 0.3),
                             width: 1.0,
                           ),
                         ),
@@ -520,7 +533,7 @@ class _CreateGalleryWidgetState extends State<CreateGalleryWidget> {
                                     decoration: BoxDecoration(
                                       color: FlutterFlowTheme.of(context)
                                           .primary
-                                          .withOpacity(0.1),
+                                          .withValues(alpha: 0.1),
                                       borderRadius: BorderRadius.circular(12.0),
                                     ),
                                     child: Icon(
@@ -576,8 +589,8 @@ class _CreateGalleryWidgetState extends State<CreateGalleryWidget> {
                                 border: Border.all(
                                   color: FlutterFlowTheme.of(context)
                                           .alternate
-                                          .withOpacity(0.5) ??
-                                      Colors.grey.withOpacity(0.5),
+                                          .withValues(alpha: 0.5) ??
+                                      Colors.grey.withValues(alpha: 0.5),
                                   width: 2,
                                 ),
                               ),
@@ -602,7 +615,7 @@ class _CreateGalleryWidgetState extends State<CreateGalleryWidget> {
                                                 color:
                                                     FlutterFlowTheme.of(context)
                                                         .alternate
-                                                        .withOpacity(0.1),
+                                                        .withValues(alpha: 0.1),
                                                 borderRadius:
                                                     BorderRadius.circular(18.0),
                                               ),
@@ -629,7 +642,7 @@ class _CreateGalleryWidgetState extends State<CreateGalleryWidget> {
                                                               .withOpacity(
                                                                   0.7) ??
                                                           Colors.grey
-                                                              .withOpacity(0.7),
+                                                              .withValues(alpha: 0.7),
                                                       fontWeight:
                                                           FontWeight.w500,
                                                     ),
@@ -648,7 +661,7 @@ class _CreateGalleryWidgetState extends State<CreateGalleryWidget> {
                                                               .withOpacity(
                                                                   0.5) ??
                                                           Colors.grey
-                                                              .withOpacity(0.5),
+                                                              .withValues(alpha: 0.5),
                                                     ),
                                                   ),
                                                 ],
@@ -791,7 +804,7 @@ class _CreateGalleryWidgetState extends State<CreateGalleryWidget> {
                                                       colors: [
                                                         Colors.transparent,
                                                         Colors.black
-                                                            .withOpacity(0.4),
+                                                            .withValues(alpha: 0.4),
                                                       ],
                                                     ),
                                                   ),
@@ -811,7 +824,7 @@ class _CreateGalleryWidgetState extends State<CreateGalleryWidget> {
                                                         decoration:
                                                             BoxDecoration(
                                                           color: Colors.white
-                                                              .withOpacity(0.9),
+                                                              .withValues(alpha: 0.9),
                                                           borderRadius:
                                                               BorderRadius
                                                                   .circular(25),
@@ -882,7 +895,7 @@ class _CreateGalleryWidgetState extends State<CreateGalleryWidget> {
                           decoration: BoxDecoration(
                             // ignore: deprecated_member_use
                             color:
-                                Colors.yellow.withOpacity(0.2), // less opacity
+                                Colors.yellow.withValues(alpha: 0.2), // less opacity
                             borderRadius: BorderRadius.circular(10),
                           ),
                           padding: const EdgeInsets.all(12),
@@ -916,7 +929,7 @@ class _CreateGalleryWidgetState extends State<CreateGalleryWidget> {
                           borderRadius: BorderRadius.circular(20.0),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
+                              color: Colors.black.withValues(alpha: 0.05),
                               blurRadius: 20.0,
                               offset: const Offset(0, 5),
                             ),
@@ -924,7 +937,7 @@ class _CreateGalleryWidgetState extends State<CreateGalleryWidget> {
                           border: Border.all(
                             color: FlutterFlowTheme.of(context)
                                 .alternate
-                                .withOpacity(0.5),
+                                .withValues(alpha: 0.5),
                             width: 1.0,
                           ),
                         ),
@@ -938,7 +951,7 @@ class _CreateGalleryWidgetState extends State<CreateGalleryWidget> {
                                   decoration: BoxDecoration(
                                     color: FlutterFlowTheme.of(context)
                                         .primary
-                                        .withOpacity(0.1),
+                                        .withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(12.0),
                                   ),
                                   child: Icon(
@@ -1008,8 +1021,8 @@ class _CreateGalleryWidgetState extends State<CreateGalleryWidget> {
                                         color: FlutterFlowTheme.of(context)
                                                 .secondaryText
                                                 // ignore: deprecated_member_use
-                                                .withOpacity(0.1) ??
-                                            Colors.grey.withOpacity(0.1),
+                                                .withValues(alpha: 0.1) ??
+                                            Colors.grey.withValues(alpha: 0.1),
                                         borderRadius:
                                             BorderRadius.circular(12.0),
                                       ),
@@ -1055,7 +1068,7 @@ class _CreateGalleryWidgetState extends State<CreateGalleryWidget> {
                           borderRadius: BorderRadius.circular(20.0),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
+                              color: Colors.black.withValues(alpha: 0.05),
                               blurRadius: 20.0,
                               offset: const Offset(0, 5),
                             ),
@@ -1063,8 +1076,8 @@ class _CreateGalleryWidgetState extends State<CreateGalleryWidget> {
                           border: Border.all(
                             color: FlutterFlowTheme.of(context)
                                     .alternate
-                                    .withOpacity(0.5) ??
-                                Colors.grey.withOpacity(0.5),
+                                    .withValues(alpha: 0.5) ??
+                                Colors.grey.withValues(alpha: 0.5),
                             width: 1.0,
                           ),
                         ),
@@ -1078,7 +1091,7 @@ class _CreateGalleryWidgetState extends State<CreateGalleryWidget> {
                                   decoration: BoxDecoration(
                                     color: FlutterFlowTheme.of(context)
                                         .primary
-                                        .withOpacity(0.1),
+                                        .withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(12.0),
                                   ),
                                   child: Icon(
@@ -1188,7 +1201,7 @@ class _CreateGalleryWidgetState extends State<CreateGalleryWidget> {
                                     FlutterFlowTheme.of(context)
                                         .primary
                                         // ignore: deprecated_member_use
-                                        .withOpacity(0.8),
+                                        .withValues(alpha: 0.8),
                                   ],
                                 ),
                                 borderRadius: BorderRadius.circular(16.0),
@@ -1197,7 +1210,7 @@ class _CreateGalleryWidgetState extends State<CreateGalleryWidget> {
                                     color: FlutterFlowTheme.of(context)
                                         .primary
                                         // ignore: deprecated_member_use
-                                        .withOpacity(0.3),
+                                        .withValues(alpha: 0.3),
                                     blurRadius: 15.0,
                                     offset: const Offset(0, 5),
                                   ),

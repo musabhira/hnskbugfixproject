@@ -1,26 +1,45 @@
 // Automatic FlutterFlow imports
 
 import '/backend/supabase/supabase.dart';
+import '/backend/supabase/supabase.dart';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'chat_provider.dart';
+import 'chat_provider.dart';
+import 'chat_models.dart';
 import 'chat_models.dart';
 import 'voice_player.dart';
+import 'voice_player.dart';
+import 'voice_recorder.dart';
 import 'voice_recorder.dart';
 
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/foundation.dart' hide Category;
+import 'package:flutter/foundation.dart' hide Category;
 import 'package:flutter/services.dart';
+import 'package:flutter/services.dart';
+import 'dart:io';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:shimmer/shimmer.dart';
+import '../webrtc_call_screen.dart';
 import '../webrtc_call_screen.dart';
 import '../image_viewer.dart';
+import '../image_viewer.dart';
 import 'package:pocket_mates_app/custom_code/widgets/gallery_search_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/gallery_search_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
 
 class WhatsAppGroupChat extends ConsumerStatefulWidget {
@@ -374,8 +393,38 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
           Column(
             children: [
               Expanded(
-                child: chatMessagesAsync.when(
-                  data: (messages) {
+                child: Builder(
+                  builder: (context) {
+                    final messages = chatMessagesAsync.value ?? [];
+                    final isLoadingInitial = chatMessagesAsync.isLoading &&
+                        !chatMessagesAsync.hasValue;
+                    final isErrorInitial = chatMessagesAsync.hasError &&
+                        !chatMessagesAsync.hasValue;
+
+                    if (isLoadingInitial) return _buildShimmerLoading();
+
+                    if (isErrorInitial) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.error_outline,
+                                color: Colors.red, size: 48),
+                            const SizedBox(height: 16),
+                            Text('Error: ${chatMessagesAsync.error}',
+                                style: const TextStyle(color: Colors.white)),
+                            TextButton(
+                              onPressed: () {
+                                ref.invalidate(
+                                    chatMessagesProvider(widget.groupId));
+                              },
+                              child: const Text('Retry'),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+
                     // Filter out truly empty/null messages
                     final filteredMessages = messages.where((m) {
                       final hasText =
@@ -402,6 +451,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                       );
                     }
 
+                    // Show list (even if refreshing)
                     return RefreshIndicator(
                       onRefresh: _handleRefresh,
                       color: accentColor,
@@ -434,26 +484,6 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                       ),
                     );
                   },
-                  loading: () => _buildShimmerLoading(),
-                  error: (e, st) => Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.error_outline,
-                            color: Colors.red, size: 48),
-                        const SizedBox(height: 16),
-                        Text('Error: $e',
-                            style: const TextStyle(color: Colors.white)),
-                        TextButton(
-                          onPressed: () {
-                            ref.invalidate(
-                                chatMessagesProvider(widget.groupId));
-                          },
-                          child: const Text('Retry'),
-                        ),
-                      ],
-                    ),
-                  ),
                 ),
               ),
               if (_replyMessage != null) _buildReplyPreview(_replyMessage!),
@@ -488,7 +518,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
         margin: const EdgeInsets.symmetric(vertical: 12),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
         decoration: BoxDecoration(
-          color: const Color(0xFF1F2C34).withOpacity(0.6),
+          color: const Color(0xFF1F2C34).withValues(alpha: 0.6),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: Colors.white10),
         ),
@@ -519,7 +549,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
           margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 32),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
           decoration: BoxDecoration(
-            color: const Color(0xFF1F2C34).withOpacity(0.8),
+            color: const Color(0xFF1F2C34).withValues(alpha: 0.8),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Text(
@@ -570,7 +600,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                         padding: const EdgeInsets.symmetric(
                             horizontal: 4, vertical: 1),
                         decoration: BoxDecoration(
-                          color: Colors.yellow.withOpacity(0.2),
+                          color: Colors.yellow.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(4),
                           border: Border.all(color: Colors.yellow, width: 0.5),
                         ),
@@ -614,7 +644,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                   borderRadius: borderRadius,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
+                      color: Colors.black.withValues(alpha: 0.2),
                       offset: const Offset(0, 2),
                       blurRadius: 4,
                     )
@@ -675,7 +705,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                                 Icons.copy,
                                 size: 12,
                                 color: (isMe ? Colors.black : Colors.white)
-                                    .withOpacity(0.6),
+                                    .withValues(alpha: 0.6),
                               ),
                             ),
                             const SizedBox(width: 4),
@@ -684,7 +714,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                             _formatTime(message.createdAt),
                             style: TextStyle(
                               color: (isMe ? Colors.black : Colors.white)
-                                  .withOpacity(0.6),
+                                  .withValues(alpha: 0.6),
                               fontSize: 10,
                             ),
                           ),
@@ -766,10 +796,10 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
               const Color(0xFF1E1E1E),
             ],
           ),
-          border: Border.all(color: Colors.white.withOpacity(0.1), width: 1),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.1), width: 1),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.3),
+              color: Colors.black.withValues(alpha: 0.3),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
@@ -904,7 +934,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.7),
+                        color: Colors.black.withValues(alpha: 0.7),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: Colors.amber, width: 0.5),
                       ),
@@ -933,7 +963,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                           horizontal: 6, vertical: 2),
                       margin: const EdgeInsets.only(bottom: 4),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.1),
+                        color: Colors.white.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
@@ -965,7 +995,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.6),
+                        color: Colors.white.withValues(alpha: 0.6),
                         fontSize: 12,
                         height: 1.3,
                       ),
@@ -1030,7 +1060,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
         color: Colors.black,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.5),
+            color: Colors.black.withValues(alpha: 0.5),
             offset: const Offset(0, -2),
             blurRadius: 10,
           ),
@@ -1106,13 +1136,8 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                   ),
                 )
               : VoiceMessageRecorder(
-                  groupId: widget.groupId,
-                  currentUserId: _currentUserId,
-                  onSendMessage: (type, url, duration) => sendMessage(
-                    messageType: type,
-                    fileUrl: url,
-                    voiceDuration: duration,
-                  ),
+                  onSendMessage: (path, duration) =>
+                      _handleVoiceMessage(path, duration),
                   onRecordingStateChanged: (isRecording) {
                     safeSetState(() => _isRecording = isRecording);
                   },
@@ -1705,6 +1730,31 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
       if (mounted) Navigator.pop(context);
     } catch (e) {
       debugPrint('Error leaving group: $e');
+    }
+  }
+
+  Future<void> _handleVoiceMessage(String path, int duration) async {
+    try {
+      final file = File(path);
+      final fileName = 'voice_${DateTime.now().millisecondsSinceEpoch}.m4a';
+      final storagePath = '${widget.groupId}/$fileName';
+
+      await _supabase.storage.from('voice-messages').upload(storagePath, file);
+      final url =
+          _supabase.storage.from('voice-messages').getPublicUrl(storagePath);
+
+      await sendMessage(
+        messageType: 'voice',
+        fileUrl: url,
+        voiceDuration: duration,
+      );
+    } catch (e) {
+      debugPrint('Error sending voice: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to send voice message: $e')),
+        );
+      }
     }
   }
 

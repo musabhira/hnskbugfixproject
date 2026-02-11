@@ -1,24 +1,39 @@
 // Automatic FlutterFlow imports
 import 'package:pocket_mates_app/custom_code/widgets/color_picker_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/color_picker_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/custom_phone_text_field.dart';
 import 'package:pocket_mates_app/custom_code/widgets/custom_phone_text_field.dart';
 import 'package:pocket_mates_app/custom_code/widgets/custom_text_field.dart';
+import 'package:pocket_mates_app/custom_code/widgets/custom_text_field.dart';
+import 'package:pocket_mates_app/pages/home_page/home_page_widget.dart';
 import 'package:pocket_mates_app/pages/home_page/home_page_widget.dart';
 
 import '/backend/supabase/supabase.dart';
+import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
+import '/flutter_flow/flutter_flow_theme.dart';
+import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 // Imports other custom widgets
 // Imports custom actions
+import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io' as io;
+import 'dart:io' as io;
+import 'package:country_state_city_picker/country_state_city_picker.dart';
 import 'package:country_state_city_picker/country_state_city_picker.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
+import '/flutter_flow/flutter_flow_widgets.dart';
 import 'package:image/image.dart' as img;
+import 'package:image/image.dart' as img;
+import 'package:flutter/services.dart';
 import 'package:flutter/services.dart';
 
 // Begin custom action code
@@ -674,7 +689,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   spreadRadius: 1,
                   blurRadius: 3,
                   offset: const Offset(0, 2),
@@ -781,15 +796,15 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: color.withOpacity(0.3), width: 1),
+        border: Border.all(color: color.withValues(alpha: 0.3), width: 1),
       ),
       child: ListTile(
         leading: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.2),
+            color: color.withValues(alpha: 0.2),
             shape: BoxShape.circle,
           ),
           child: Icon(icon, color: color),
@@ -797,7 +812,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
         title: Text(
           title,
           style: TextStyle(
-            color: FlutterFlowTheme.of(context).primaryText.withOpacity(0.7),
+            color: FlutterFlowTheme.of(context).primaryText.withValues(alpha: 0.7),
             fontSize: 14,
           ),
         ),
@@ -1015,7 +1030,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                                     height: 30.0,
                                     decoration: BoxDecoration(
                                       color: _isCompressingBanner
-                                          ? Colors.yellow.withOpacity(0.7)
+                                          ? Colors.yellow.withValues(alpha: 0.7)
                                           : Colors.grey[900],
                                       borderRadius: const BorderRadius.only(
                                         bottomLeft: Radius.circular(20.0),
@@ -1086,7 +1101,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                     child: Container(
                       decoration: BoxDecoration(
                         // ignore: deprecated_member_use
-                        color: Colors.yellow.withOpacity(0.2), // less opacity
+                        color: Colors.yellow.withValues(alpha: 0.2), // less opacity
                         borderRadius: BorderRadius.circular(10),
                       ),
                       padding: const EdgeInsets.all(12),
@@ -1157,7 +1172,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                     child: Container(
                       decoration: BoxDecoration(
                         // ignore: deprecated_member_use
-                        color: Colors.yellow.withOpacity(0.2), // less opacity
+                        color: Colors.yellow.withValues(alpha: 0.2), // less opacity
                         borderRadius: BorderRadius.circular(10),
                       ),
                       padding: const EdgeInsets.all(12),
@@ -1311,7 +1326,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                     child: Container(
                       decoration: BoxDecoration(
                         // ignore: deprecated_member_use
-                        color: Colors.yellow.withOpacity(0.2), // less opacity
+                        color: Colors.yellow.withValues(alpha: 0.2), // less opacity
                         borderRadius: BorderRadius.circular(10),
                       ),
                       padding: const EdgeInsets.all(12),
@@ -1364,13 +1379,13 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.yellow.withOpacity(0.3),
+                          color: Colors.yellow.withValues(alpha: 0.3),
                           blurRadius: 15.0,
                           spreadRadius: 2.0,
                           offset: const Offset(0, 5),
                         ),
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.5),
+                          color: Colors.black.withValues(alpha: 0.5),
                           blurRadius: 10.0,
                           spreadRadius: 1.0,
                           offset: const Offset(0, 3),
@@ -1403,7 +1418,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                             borderRadius: BorderRadius.circular(16.0),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
+                                color: Colors.black.withValues(alpha: 0.1),
                                 blurRadius: 8.0,
                                 offset: const Offset(0, 4),
                               ),
@@ -1418,7 +1433,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                                 backgroundColor: (_selectedColor1 ??
                                         _convertStringToColor(
                                             _colorCode1 ?? '#E0E0E0'))
-                                    .withOpacity(0.2),
+                                    .withValues(alpha: 0.2),
                                 child: Icon(
                                   Icons.person,
                                   size: 35,
@@ -1449,7 +1464,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                                   color: (_selectedColor1 ??
                                           _convertStringToColor(
                                               _colorCode1 ?? '#212121'))
-                                      .withOpacity(0.7),
+                                      .withValues(alpha: 0.7),
                                   fontSize: 14.0,
                                 ),
                               ),
@@ -1468,7 +1483,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                                       color: (_selectedColor2 ??
                                               _convertStringToColor(
                                                   _colorCode2 ?? '#2196F3'))
-                                          .withOpacity(0.3),
+                                          .withValues(alpha: 0.3),
                                       blurRadius: 6.0,
                                       offset: const Offset(0, 3),
                                     ),
@@ -1637,7 +1652,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
           decoration: BoxDecoration(
             color: _convertStringToColor(colorCode),
             shape: BoxShape.circle,
-            border: Border.all(color: Colors.white.withOpacity(0.3), width: 1),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.3), width: 1),
           ),
         ),
         const SizedBox(height: 4),

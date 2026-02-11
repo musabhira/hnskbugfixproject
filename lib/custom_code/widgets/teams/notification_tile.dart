@@ -1,5 +1,8 @@
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:fluent_ui/fluent_ui.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:pocket_mates_app/custom_code/widgets/teams/notification_detail_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/teams/notification_detail_page.dart';
 
 class NotificationTile extends StatelessWidget {
@@ -41,7 +44,7 @@ class NotificationTile extends StatelessWidget {
             backgroundColor: const Color(0xFF2C2C2C),
             borderRadius: BorderRadius.circular(12),
             borderColor:
-                isUnread ? Colors.yellow.withOpacity(0.3) : Colors.transparent,
+                isUnread ? Colors.yellow.withValues(alpha: 0.3) : Colors.transparent,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

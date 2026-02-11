@@ -1,25 +1,44 @@
 // Automatic FlutterFlow imports
 import '/backend/supabase/supabase.dart';
+import '/backend/supabase/supabase.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
 import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:pocket_mates_app/custom_code/widgets/gallery_profile_search_page.dart'; // Import for Gallery Detail Page
 import 'package:pocket_mates_app/custom_code/widgets/gallery_profile_search_page.dart'; // Import for Gallery Detail Page
 import 'package:video_compress/video_compress.dart';
+import 'package:video_compress/video_compress.dart';
+import 'package:image/image.dart' as img;
 import 'package:image/image.dart' as img;
 import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/services.dart';
 import 'dart:io' as io;
+import 'dart:io' as io;
+import 'package:video_player/video_player.dart';
 import 'package:video_player/video_player.dart';
 import 'dart:convert';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:timeago/timeago.dart' as timeago;
 import 'package:google_fonts/google_fonts.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
 class StatusDisplayWidget extends StatefulWidget {
@@ -164,7 +183,8 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
           .select('*, profile:profile_id(id, name, profile_image_url, user_id)')
           .eq('is_active', true)
           .gt('expires_at', DateTime.now().toIso8601String())
-          .order('created_at', ascending: false);
+          .order('created_at',
+              ascending: true); // Show oldest first for story timeline
 
       final List<Map<String, dynamic>> data =
           List<Map<String, dynamic>>.from(response);
@@ -243,8 +263,9 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
       final sortingFunc = (Map<String, dynamic> a, Map<String, dynamic> b) {
         if (a['is_own'] == true && b['is_own'] != true) return -1;
         if (a['is_own'] != true && b['is_own'] == true) return 1;
-        final aTime = (a['statuses'] as List).first['created_at'];
-        final bTime = (b['statuses'] as List).first['created_at'];
+        // Since we fetch ascending: true, statuses.last is the NEWEST
+        final aTime = (a['statuses'] as List).last['created_at'];
+        final bTime = (b['statuses'] as List).last['created_at'];
         return DateTime.parse(bTime).compareTo(DateTime.parse(aTime));
       };
 
@@ -380,9 +401,9 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Row(
         children: [
@@ -423,8 +444,9 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
   Widget _buildStatusList(List<Map<String, dynamic>> statusData,
       {required bool isGrid}) {
     if (_isLoading) return _buildVerticalShimmer();
-    if (statusData.isEmpty && !widget.isVertical)
+    if (statusData.isEmpty && !widget.isVertical) {
       return const SizedBox.shrink();
+    }
 
     if (isGrid && widget.isVertical) {
       return Column(
@@ -439,7 +461,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
                     decoration: BoxDecoration(
                       color: const Color(0xFF2A2A2A),
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.white.withOpacity(0.08)),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -466,7 +488,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
                     decoration: BoxDecoration(
                       color: const Color(0xFF2A2A2A),
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.white.withOpacity(0.08)),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -528,7 +550,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
       List<Map<String, dynamic>> list) {
     final profile = statusGroup['profile'];
     final statuses = statusGroup['statuses'] as List;
-    final lastStatus = statuses.first;
+    final lastStatus = statuses.last; // Show newest update in preview
     final mediaUrl = lastStatus['media_url'];
     final mediaType = lastStatus['media_type'];
     final thumbnailUrl = lastStatus['thumbnail_url'];
@@ -538,7 +560,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withOpacity(0.08)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
         ),
         clipBehavior: Clip.antiAlias,
         child: Stack(
@@ -571,8 +593,8 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Colors.black.withOpacity(0.2),
-                    Colors.black.withOpacity(0.7),
+                    Colors.black.withValues(alpha: 0.2),
+                    Colors.black.withValues(alpha: 0.7),
                   ],
                 ),
               ),
@@ -624,8 +646,8 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
       itemBuilder: (context, index) => Padding(
         padding: const EdgeInsets.only(bottom: 20),
         child: Shimmer.fromColors(
-          baseColor: Colors.white.withOpacity(0.05),
-          highlightColor: Colors.white.withOpacity(0.1),
+          baseColor: Colors.white.withValues(alpha: 0.05),
+          highlightColor: Colors.white.withValues(alpha: 0.1),
           child: Row(
             children: [
               Container(
@@ -671,8 +693,8 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
         width: 80,
         margin: const EdgeInsets.only(right: 16),
         child: Shimmer.fromColors(
-          baseColor: Colors.white.withOpacity(0.05),
-          highlightColor: Colors.white.withOpacity(0.1),
+          baseColor: Colors.white.withValues(alpha: 0.05),
+          highlightColor: Colors.white.withValues(alpha: 0.1),
           child: Column(
             children: [
               Container(
@@ -714,12 +736,12 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
                       shape: BoxShape.circle,
                       gradient: LinearGradient(
                         colors: [
-                          Colors.yellow.withOpacity(0.2),
-                          Colors.yellow.withOpacity(0.05),
+                          Colors.yellow.withValues(alpha: 0.2),
+                          Colors.yellow.withValues(alpha: 0.05),
                         ],
                       ),
                       border: Border.all(
-                          color: Colors.yellow.withOpacity(0.3), width: 1),
+                          color: Colors.yellow.withValues(alpha: 0.3), width: 1),
                     ),
                     child: const Icon(Icons.add_rounded,
                         size: 26, color: Colors.yellow),
@@ -749,7 +771,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
                   const SizedBox(height: 4),
                   Text('Share your moment',
                       style: GoogleFonts.outfit(
-                          color: Colors.white.withOpacity(0.5), fontSize: 13)),
+                          color: Colors.white.withValues(alpha: 0.5), fontSize: 13)),
                 ],
               ),
             ],
@@ -772,15 +794,15 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
                   height: 72,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Colors.white.withOpacity(0.03),
+                    color: Colors.white.withValues(alpha: 0.03),
                     border: Border.all(
-                        color: Colors.white.withOpacity(0.1), width: 1),
+                        color: Colors.white.withValues(alpha: 0.1), width: 1),
                   ),
                   child: Center(
                     child: Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: Colors.yellow.withOpacity(0.1),
+                        color: Colors.yellow.withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(Icons.add_rounded,
@@ -803,7 +825,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
             const SizedBox(height: 2),
             Text('My Vibes',
                 style: GoogleFonts.outfit(
-                  color: Colors.white.withOpacity(0.6),
+                  color: Colors.white.withValues(alpha: 0.6),
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                 ),
@@ -856,7 +878,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
                                 ? 'Share a Vibe • $timeString'
                                 : timeString),
                         style: GoogleFonts.outfit(
-                            color: Colors.white.withOpacity(0.5),
+                            color: Colors.white.withValues(alpha: 0.5),
                             fontSize: 13)),
                   ],
                 ),
@@ -1602,7 +1624,7 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.yellow.withOpacity(0.5),
+                      color: Colors.yellow.withValues(alpha: 0.5),
                       blurRadius: 20,
                       spreadRadius: 5,
                     ),
@@ -1829,13 +1851,13 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
             if (_dragPosition.abs() > 0.1)
               Positioned.fill(
                 child: Container(
-                  color: Colors.black.withOpacity(0.3 * _dragPosition.abs()),
+                  color: Colors.black.withValues(alpha: 0.3 * _dragPosition.abs()),
                   child: Center(
                     child: Icon(
                       _dragPosition > 0
                           ? Icons.arrow_back_ios_rounded
                           : Icons.arrow_forward_ios_rounded,
-                      color: Colors.white.withOpacity(0.7),
+                      color: Colors.white.withValues(alpha: 0.7),
                       size: 60,
                     ),
                   ),
@@ -1853,7 +1875,7 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      Colors.black.withOpacity(0.8),
+                      Colors.black.withValues(alpha: 0.8),
                       Colors.transparent,
                     ],
                   ),
@@ -1874,7 +1896,7 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                             height: 3,
                             margin: const EdgeInsets.symmetric(horizontal: 2),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.3),
+                              color: Colors.white.withValues(alpha: 0.3),
                               borderRadius: BorderRadius.circular(2),
                             ),
                             child: AnimatedBuilder(
@@ -1952,7 +1974,7 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                               Text(
                                 _getTimeAgo(currentStatus['created_at']),
                                 style: TextStyle(
-                                  color: Colors.white.withOpacity(0.6),
+                                  color: Colors.white.withValues(alpha: 0.6),
                                   fontSize: 14,
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -1977,10 +1999,10 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 8, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: Colors.yellow.withOpacity(0.2),
+                                  color: Colors.yellow.withValues(alpha: 0.2),
                                   borderRadius: BorderRadius.circular(12),
                                   border: Border.all(
-                                      color: Colors.yellow.withOpacity(0.4),
+                                      color: Colors.yellow.withValues(alpha: 0.4),
                                       width: 0.5),
                                 ),
                                 child: Row(
@@ -2012,7 +2034,7 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                                 vertical: 6,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.black.withOpacity(0.5),
+                                color: Colors.black.withValues(alpha: 0.5),
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: Row(
@@ -2060,7 +2082,7 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                 child: Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.6),
+                    color: Colors.black.withValues(alpha: 0.6),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -2084,7 +2106,7 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.5),
+                    color: Colors.black.withValues(alpha: 0.5),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Row(
@@ -2132,7 +2154,7 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                 child: Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.5),
+                    color: Colors.black.withValues(alpha: 0.5),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
@@ -2244,7 +2266,7 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                   padding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.6),
+                    color: Colors.black.withValues(alpha: 0.6),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(color: Colors.white24),
                   ),
@@ -2434,7 +2456,7 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
       builder: (context) => Container(
         height: MediaQuery.of(context).size.height * 0.9,
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.9),
+          color: Colors.black.withValues(alpha: 0.9),
           borderRadius: const BorderRadius.vertical(top: Radius.circular(25)),
         ),
         padding: EdgeInsets.only(
@@ -2544,11 +2566,11 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
             child: Container(
               padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.05),
+                color: Colors.white.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color: _selectedGroupId != null
-                      ? Colors.yellow.withOpacity(0.5)
+                      ? Colors.yellow.withValues(alpha: 0.5)
                       : Colors.white10,
                 ),
               ),
@@ -2599,7 +2621,7 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
                 Expanded(
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.08),
+                      color: Colors.white.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(30),
                       border: Border.all(color: Colors.white12),
                     ),
@@ -2846,7 +2868,8 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
 
       final MediaInfo? mediaInfo = await VideoCompress.compressVideo(
         filePath,
-        quality: VideoQuality.MediumQuality,
+        quality: VideoQuality
+            .HighestQuality, // Increased quality for clearer status videos
         deleteOrigin: false,
         includeAudio: true,
       );
@@ -3217,9 +3240,9 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 24),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: color.withOpacity(0.3), width: 1),
+          border: Border.all(color: color.withValues(alpha: 0.3), width: 1),
         ),
         child: Column(
           children: [

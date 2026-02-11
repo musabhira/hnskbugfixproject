@@ -1,11 +1,17 @@
 // Automatic FlutterFlow imports
 import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
+import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
+import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
 
 import '/backend/supabase/supabase.dart';
+import '/backend/supabase/supabase.dart';
+import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'index.dart'; // Imports other custom widgets
+import 'index.dart'; // Imports other custom widgets
 // Imports custom actions
+import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
@@ -13,7 +19,9 @@ import 'package:flutter/material.dart';
 // Set your widget name, define your parameter, and then add the
 // boilerplate code using the green button on the right!
 import 'dart:math';
+import 'dart:math';
 
+import 'package:intl/intl.dart';
 import 'package:intl/intl.dart';
 
 class EventsDisplayHomePage extends StatefulWidget {
@@ -617,7 +625,7 @@ class MinimalEventCard extends StatelessWidget {
         color: const Color(0xFF1a1a1a),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Colors.yellow.withOpacity(0.2),
+          color: Colors.yellow.withValues(alpha: 0.2),
           width: 1,
         ),
       ),
@@ -696,7 +704,7 @@ class MinimalEventCard extends StatelessWidget {
                         child: Container(
                           padding: const EdgeInsets.all(4),
                           decoration: BoxDecoration(
-                            color: Colors.red.withOpacity(0.2),
+                            color: Colors.red.withValues(alpha: 0.2),
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
@@ -805,9 +813,9 @@ class MinimalEventCard extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: Colors.yellow.withOpacity(0.2),
+                    color: Colors.yellow.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.yellow.withOpacity(0.3)),
+                    border: Border.all(color: Colors.yellow.withValues(alpha: 0.3)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -870,9 +878,9 @@ class MinimalEventCard extends StatelessWidget {
                     width: double.infinity,
                     height: 32,
                     decoration: BoxDecoration(
-                      color: Colors.blue.withOpacity(0.2),
+                      color: Colors.blue.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                      border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
                     ),
                     child: const Center(
                       child: Text(
@@ -1242,12 +1250,12 @@ class EventDetailsModal extends StatelessWidget {
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
                               color: isCurrentUser
-                                  ? Colors.yellow.withOpacity(0.1)
-                                  : Colors.grey.withOpacity(0.1),
+                                  ? Colors.yellow.withValues(alpha: 0.1)
+                                  : Colors.grey.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(12),
                               border: isCurrentUser
                                   ? Border.all(
-                                      color: Colors.yellow.withOpacity(0.3))
+                                      color: Colors.yellow.withValues(alpha: 0.3))
                                   : null,
                             ),
                             child: Row(
@@ -1382,9 +1390,9 @@ class EventDetailsModal extends StatelessWidget {
                       width: double.infinity,
                       height: 50,
                       decoration: BoxDecoration(
-                        color: Colors.blue.withOpacity(0.2),
+                        color: Colors.blue.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                        border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
                       ),
                       child: const Center(
                         child: Row(
@@ -1519,7 +1527,7 @@ class TexturePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = color.withOpacity(0.05)
+      ..color = color.withValues(alpha: 0.05)
       ..strokeWidth = 1;
 
     // Create texture with random dots and lines

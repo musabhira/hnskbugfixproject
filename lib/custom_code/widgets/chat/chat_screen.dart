@@ -1,24 +1,43 @@
 import 'dart:async';
+import 'dart:async';
+import 'dart:io';
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:record/record.dart';
 import 'package:record/record.dart';
 
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:timeago/timeago.dart' as timeago;
 
 import 'package:pocket_mates_app/custom_code/widgets/chat/chat_models.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chat/chat_models.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chat/chat_provider.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/chat_provider.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/voice_player.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chat/voice_player.dart';
+import 'package:pocket_mates_app/custom_code/widgets/webrtc_call_screen.dart';
 import 'package:pocket_mates_app/custom_code/widgets/webrtc_call_screen.dart';
 import 'package:pocket_mates_app/custom_code/widgets/image_viewer.dart';
+import 'package:pocket_mates_app/custom_code/widgets/image_viewer.dart';
 import 'package:pocket_mates_app/custom_code/widgets/gallery_search_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/gallery_search_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
@@ -406,7 +425,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                         'Message',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(color: Colors.white.withOpacity(0.7))),
+                    style: TextStyle(color: Colors.white.withValues(alpha: 0.7))),
               ],
             ),
           ),
@@ -662,7 +681,7 @@ class _MessageBubble extends StatelessWidget {
                           child: Icon(
                             FluentIcons.copy,
                             size: 10,
-                            color: Colors.white.withOpacity(0.6),
+                            color: Colors.white.withValues(alpha: 0.6),
                           ),
                         ),
                         const SizedBox(width: 4),
@@ -670,7 +689,7 @@ class _MessageBubble extends StatelessWidget {
                       Text(
                         timeago.format(message.createdAt),
                         style: TextStyle(
-                            color: Colors.white.withOpacity(0.54),
+                            color: Colors.white.withValues(alpha: 0.54),
                             fontSize: 10),
                       ),
                     ],
@@ -730,10 +749,10 @@ class _MessageBubble extends StatelessWidget {
                 const Color(0xFF262626),
                 const Color(0xFF1E1E1E),
               ]),
-          border: Border.all(color: Colors.white.withOpacity(0.12)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.3),
+              color: Colors.black.withValues(alpha: 0.3),
               blurRadius: 8,
               offset: const Offset(0, 4),
             )
@@ -848,7 +867,7 @@ class _MessageBubble extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.7),
+                        color: Colors.black.withValues(alpha: 0.7),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: Colors.yellow, width: 0.5),
                       ),
@@ -876,13 +895,13 @@ class _MessageBubble extends StatelessWidget {
                           horizontal: 6, vertical: 2),
                       margin: const EdgeInsets.only(bottom: 4),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.1),
+                        color: Colors.white.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
                         galleryData['category'].toString().toUpperCase(),
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.7),
+                          color: Colors.white.withValues(alpha: 0.7),
                           fontSize: 9,
                           fontWeight: FontWeight.w500,
                           letterSpacing: 0.5,
@@ -922,13 +941,13 @@ class _ReplyBubble extends StatelessWidget {
       padding: const EdgeInsets.all(4),
       margin: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.26),
+        color: Colors.black.withValues(alpha: 0.26),
         borderRadius: BorderRadius.circular(4),
         border: Border(left: BorderSide(color: Colors.teal, width: 4)),
       ),
       child: Text("Replying to message...",
           style: TextStyle(
-              color: Colors.white.withOpacity(0.7),
+              color: Colors.white.withValues(alpha: 0.7),
               fontStyle: FontStyle.italic,
               fontSize: 12)),
     );

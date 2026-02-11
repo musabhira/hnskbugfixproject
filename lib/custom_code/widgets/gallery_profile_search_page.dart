@@ -1,24 +1,39 @@
 // Automatic FlutterFlow imports
 import 'dart:async';
+import 'dart:async';
+import 'dart:math';
 import 'dart:math';
 
 import 'package:pocket_mates_app/custom_code/widgets/search_profile_detail_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/search_profile_detail_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/message_screen.dart';
+import 'package:pocket_mates_app/custom_code/widgets/message_screen.dart';
+import 'package:flutter/material.dart' as material;
 import 'package:flutter/material.dart' as material;
 
 import '/backend/supabase/supabase.dart';
+import '/backend/supabase/supabase.dart';
+import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
+import '/flutter_flow/flutter_flow_util.dart';
+import 'package:fluent_ui/fluent_ui.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
 import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
+import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
+import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
 
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:share_plus/share_plus.dart';
 
 class GalleryProfileSearchPage extends StatefulWidget {
@@ -2491,7 +2506,7 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
           if (_showReplies) ...[
             Container(
               height: 0.5,
-              color: material.Colors.grey.withOpacity(0.5),
+              color: material.Colors.grey.withValues(alpha: 0.5),
               margin: const EdgeInsets.symmetric(vertical: 12),
             ),
             if (_isLoadingReplies)

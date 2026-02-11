@@ -1,7 +1,10 @@
 // Automatic FlutterFlow imports
 import '/flutter_flow/flutter_flow_theme.dart';
+import '/flutter_flow/flutter_flow_theme.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
 
+import 'dart:ui';
 import 'dart:ui';
 
 class ModernBottomNavBar extends StatelessWidget {
@@ -29,10 +32,10 @@ class ModernBottomNavBar extends StatelessWidget {
           child: Container(
             height: 65,
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.7),
+              color: Colors.black.withValues(alpha: 0.7),
               borderRadius: BorderRadius.circular(24),
               border: Border.all(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 width: 1.5,
               ),
             ),
@@ -89,8 +92,8 @@ class ModernNavItem extends StatelessWidget {
           gradient: isSelected
               ? LinearGradient(
                   colors: [
-                    Colors.yellow.shade700.withOpacity(0.3),
-                    Colors.orange.shade800.withOpacity(0.3),
+                    Colors.yellow.shade700.withValues(alpha: 0.3),
+                    Colors.orange.shade800.withValues(alpha: 0.3),
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -99,7 +102,7 @@ class ModernNavItem extends StatelessWidget {
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: Colors.yellow.shade700.withOpacity(0.3),
+                    color: Colors.yellow.shade700.withValues(alpha: 0.3),
                     blurRadius: 8,
                     spreadRadius: -2,
                   )

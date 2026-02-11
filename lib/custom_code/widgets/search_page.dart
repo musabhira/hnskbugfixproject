@@ -1,11 +1,17 @@
 // Automatic FlutterFlow imports
 import 'package:pocket_mates_app/custom_code/widgets/search_profile_detail_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/search_profile_detail_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
 
 import '/backend/supabase/supabase.dart';
+import '/backend/supabase/supabase.dart';
+import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'index.dart'; // Imports other custom widgets
+import 'index.dart'; // Imports other custom widgets
 // Imports custom actions
+import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
@@ -13,8 +19,10 @@ import 'package:flutter/material.dart';
 // Imports other custom widgets
 
 import 'dart:async';
+import 'dart:async';
 
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 
@@ -825,11 +833,11 @@ class _FollowButtonState extends State<FollowButton> {
       label: Text(_isFollowing ? 'Following' : 'Follow'),
       style: OutlinedButton.styleFrom(
         foregroundColor: _isFollowing
-            ? _getButtonColor().withOpacity(0.5)
+            ? _getButtonColor().withValues(alpha: 0.5)
             : _getButtonColor(),
         side: BorderSide(
           color: _isFollowing
-              ? _getButtonColor().withOpacity(0.5)
+              ? _getButtonColor().withValues(alpha: 0.5)
               : _getButtonColor(),
           width: 2,
         ),
@@ -838,8 +846,8 @@ class _FollowButtonState extends State<FollowButton> {
           borderRadius: BorderRadius.circular(12),
         ),
         backgroundColor: _isFollowing
-            ? _getButtonColor().withOpacity(0.1)
-            : _getButtonColor().withOpacity(0.1),
+            ? _getButtonColor().withValues(alpha: 0.1)
+            : _getButtonColor().withValues(alpha: 0.1),
       ),
     );
   }
@@ -1217,7 +1225,7 @@ class _ProfileDetailPageState extends State<ProfileDetailPage>
                                     _profileData!['shop_name'],
                                     style: TextStyle(
                                       fontSize: 16,
-                                      color: bgTextColor.withOpacity(0.8),
+                                      color: bgTextColor.withValues(alpha: 0.8),
                                     ),
                                   ),
                                 ),
@@ -1232,7 +1240,7 @@ class _ProfileDetailPageState extends State<ProfileDetailPage>
                                     children: [
                                       Icon(Icons.location_on,
                                           size: 16,
-                                          color: bgTextColor.withOpacity(0.7)),
+                                          color: bgTextColor.withValues(alpha: 0.7)),
                                       const SizedBox(width: 4),
                                       Text(
                                         [
@@ -1243,7 +1251,7 @@ class _ProfileDetailPageState extends State<ProfileDetailPage>
                                             .where((item) => item != null)
                                             .join(', '),
                                         style: TextStyle(
-                                          color: bgTextColor.withOpacity(0.7),
+                                          color: bgTextColor.withValues(alpha: 0.7),
                                         ),
                                       ),
                                     ],
@@ -1307,7 +1315,7 @@ class _ProfileDetailPageState extends State<ProfileDetailPage>
                               Text(
                                 'Followers',
                                 style: TextStyle(
-                                  color: bgTextColor.withOpacity(0.7),
+                                  color: bgTextColor.withValues(alpha: 0.7),
                                   fontSize: 14,
                                 ),
                               ),

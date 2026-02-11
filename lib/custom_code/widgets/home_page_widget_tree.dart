@@ -1,34 +1,64 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.dart';
+import 'package:pocket_mates_app/custom_code/widgets/conversation_tile.dart';
 import 'package:pocket_mates_app/custom_code/widgets/conversation_tile.dart';
 import 'package:pocket_mates_app/custom_code/widgets/profile_switch_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/profile_switch_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
 import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
 import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
 import 'package:pocket_mates_app/flutter_flow/flutter_flow_util.dart';
+import 'package:pocket_mates_app/flutter_flow/flutter_flow_util.dart';
+import 'package:pocket_mates_app/flutter_flow/flutter_flow_theme.dart';
 import 'package:pocket_mates_app/flutter_flow/flutter_flow_theme.dart';
 
 import '/custom_code/widgets/index.dart';
+import '/custom_code/widgets/index.dart';
+import '/custom_code/widgets/tools_page.dart';
 import '/custom_code/widgets/tools_page.dart';
 import 'dart:convert';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat_list_shimmer.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chat_list_shimmer.dart';
+import 'package:pocket_mates_app/custom_code/widgets/settings_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/settings_page.dart';
 
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter/material.dart' as material;
 import 'package:flutter/material.dart' as material;
 import 'package:google_fonts/google_fonts.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chat/whats_app_groups_provider.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/whats_app_groups_provider.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/create_group_dialog.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chat/create_group_dialog.dart';
+import 'package:pocket_mates_app/custom_code/widgets/active_users_provider.dart';
 import 'package:pocket_mates_app/custom_code/widgets/active_users_provider.dart';
 import 'package:pocket_mates_app/custom_code/widgets/create_gallery_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/create_gallery_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/create_service_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/create_service_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/event_create_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/event_create_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/thread_feed_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/thread_feed_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/teams/teams_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/teams/teams_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/notifications_list_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/notifications_list_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/status_display_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/status_display_widget.dart';
 
 class HomePageWidgetTree extends ConsumerStatefulWidget {
@@ -385,7 +415,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
             Icon(
               material.Icons.smart_toy_outlined,
               size: 80,
-              color: Colors.yellow.withOpacity(0.3),
+              color: Colors.yellow.withValues(alpha: 0.3),
             ),
             const SizedBox(height: 24),
             Text(
@@ -409,10 +439,10 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.05),
+                color: Colors.white.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: Colors.yellow.withOpacity(0.2),
+                  color: Colors.yellow.withValues(alpha: 0.2),
                   width: 1,
                 ),
               ),
@@ -500,12 +530,12 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                         color: const Color(0xFF1E1E1E),
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: Colors.white.withOpacity(0.08),
+                          color: Colors.white.withValues(alpha: 0.08),
                           width: 1,
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.3),
+                            color: Colors.black.withValues(alpha: 0.3),
                             blurRadius: 15,
                             offset: const Offset(0, 6),
                           ),
@@ -515,14 +545,14 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                         controller: _searchController,
                         placeholder: 'Search for conversations...',
                         placeholderStyle: GoogleFonts.outfit(
-                          color: material.Colors.white.withOpacity(0.35),
+                          color: material.Colors.white.withValues(alpha: 0.35),
                           fontSize: 14,
                         ),
                         prefix: Padding(
                           padding: const EdgeInsets.only(left: 14.0),
                           child: Icon(
                             FluentIcons.search,
-                            color: material.Colors.yellow.withOpacity(0.6),
+                            color: material.Colors.yellow.withValues(alpha: 0.6),
                             size: 18,
                           ),
                         ),
@@ -533,7 +563,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                   icon: Icon(
                                     FluentIcons.clear,
                                     color:
-                                        material.Colors.white.withOpacity(0.3),
+                                        material.Colors.white.withValues(alpha: 0.3),
                                     size: 16,
                                   ),
                                   onPressed: () {
@@ -567,7 +597,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                       Icon(
                         FluentIcons.search,
                         size: 64,
-                        color: material.Colors.white.withOpacity(0.1),
+                        color: material.Colors.white.withValues(alpha: 0.1),
                       ),
                       const SizedBox(height: 16),
                       Text(
@@ -575,7 +605,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                             ? 'No conversations yet'
                             : 'No chats found for "$_searchQuery"',
                         style: GoogleFonts.inter(
-                          color: material.Colors.white.withOpacity(0.4),
+                          color: material.Colors.white.withValues(alpha: 0.4),
                           fontSize: 16,
                         ),
                       ),
@@ -705,7 +735,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
             borderRadius: BorderRadius.circular(28),
             boxShadow: [
               BoxShadow(
-                color: colors[0].withOpacity(0.3),
+                color: colors[0].withValues(alpha: 0.3),
                 blurRadius: 20,
                 offset: const Offset(0, 10),
               ),
@@ -719,7 +749,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                 child: Icon(
                   icon,
                   size: 140,
-                  color: Colors.white.withOpacity(0.12),
+                  color: Colors.white.withValues(alpha: 0.12),
                 ),
               ),
               Padding(
@@ -731,7 +761,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
+                        color: Colors.white.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(14),
                       ),
                       child: Icon(icon, color: Colors.white, size: 24),
@@ -750,7 +780,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                       subtitle,
                       style: GoogleFonts.outfit(
                         fontSize: 14,
-                        color: Colors.white.withOpacity(0.85),
+                        color: Colors.white.withValues(alpha: 0.85),
                       ),
                     ),
                   ],
@@ -773,15 +803,15 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       margin: const EdgeInsets.fromLTRB(20, 0, 20, 20),
       padding: const EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
-        color: const Color(0xFF1A1A1A).withOpacity(0.95),
+        color: const Color(0xFF1A1A1A).withValues(alpha: 0.95),
         borderRadius: BorderRadius.circular(40),
         border: Border.all(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withValues(alpha: 0.1),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.4),
+            color: Colors.black.withValues(alpha: 0.4),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -893,7 +923,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? material.Colors.yellow.withOpacity(0.12)
+                    ? material.Colors.yellow.withValues(alpha: 0.12)
                     : material.Colors.transparent,
                 borderRadius: BorderRadius.circular(16),
               ),
@@ -953,10 +983,10 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                 colors: [
                                   FlutterFlowTheme.of(context)
                                       .primary
-                                      .withOpacity(0.8),
+                                      .withValues(alpha: 0.8),
                                   FlutterFlowTheme.of(context)
                                       .secondary
-                                      .withOpacity(0.8),
+                                      .withValues(alpha: 0.8),
                                 ],
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
@@ -1015,10 +1045,10 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                 colors: [
                                   FlutterFlowTheme.of(context)
                                       .primary
-                                      .withOpacity(0.8),
+                                      .withValues(alpha: 0.8),
                                   FlutterFlowTheme.of(context)
                                       .secondary
-                                      .withOpacity(0.8),
+                                      .withValues(alpha: 0.8),
                                 ],
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
@@ -1068,10 +1098,10 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                 colors: [
                                   FlutterFlowTheme.of(context)
                                       .primary
-                                      .withOpacity(0.8),
+                                      .withValues(alpha: 0.8),
                                   FlutterFlowTheme.of(context)
                                       .secondary
-                                      .withOpacity(0.8),
+                                      .withValues(alpha: 0.8),
                                 ],
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
@@ -1121,10 +1151,10 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                   colors: [
                                     FlutterFlowTheme.of(context)
                                         .primary
-                                        .withOpacity(0.8),
+                                        .withValues(alpha: 0.8),
                                     FlutterFlowTheme.of(context)
                                         .secondary
-                                        .withOpacity(0.8),
+                                        .withValues(alpha: 0.8),
                                   ],
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
@@ -1274,10 +1304,10 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: material.Colors.yellow.withOpacity(0.05),
+            color: material.Colors.yellow.withValues(alpha: 0.05),
             border: Border(
               bottom: BorderSide(
-                color: material.Colors.yellow.withOpacity(0.15),
+                color: material.Colors.yellow.withValues(alpha: 0.15),
                 width: 1,
               ),
             ),
@@ -1354,7 +1384,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                     Text(
                       'You have $count new notification${count > 1 ? 's' : ''}',
                       style: GoogleFonts.inter(
-                        color: material.Colors.white.withOpacity(0.5),
+                        color: material.Colors.white.withValues(alpha: 0.5),
                         fontSize: 13,
                       ),
                     ),
@@ -1363,7 +1393,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
               ),
               Icon(
                 FluentIcons.chevron_right,
-                color: material.Colors.white.withOpacity(0.2),
+                color: material.Colors.white.withValues(alpha: 0.2),
                 size: 16,
               ),
             ],
@@ -1403,7 +1433,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
             Text(
               notification.lastMessage ?? 'No details',
               style: GoogleFonts.inter(
-                color: material.Colors.white.withOpacity(0.9),
+                color: material.Colors.white.withValues(alpha: 0.9),
                 fontSize: 16,
               ),
             ),
@@ -1582,14 +1612,14 @@ class _UnifiedHomeHeaderDelegate extends SliverPersistentHeaderDelegate {
             child: Container(
               height: 160, // Reduced height to give more room above
               decoration: BoxDecoration(
-                color: const Color(0xFF141414).withOpacity(0.95),
+                color: const Color(0xFF141414).withValues(alpha: 0.95),
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(32),
                   topRight: Radius.circular(32),
                 ),
                 border: Border(
                   top: BorderSide(
-                      color: material.Colors.white.withOpacity(0.08), width: 1),
+                      color: material.Colors.white.withValues(alpha: 0.08), width: 1),
                 ),
               ),
               child: material.Material(
@@ -1607,11 +1637,11 @@ class _UnifiedHomeHeaderDelegate extends SliverPersistentHeaderDelegate {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 14, vertical: 8),
                               decoration: BoxDecoration(
-                                color: material.Colors.yellow.withOpacity(0.12),
+                                color: material.Colors.yellow.withValues(alpha: 0.12),
                                 borderRadius: BorderRadius.circular(20),
                                 border: Border.all(
                                     color:
-                                        material.Colors.yellow.withOpacity(0.3),
+                                        material.Colors.yellow.withValues(alpha: 0.3),
                                     width: 1),
                               ),
                               child: Row(
@@ -1703,9 +1733,9 @@ class _UnifiedHomeHeaderDelegate extends SliverPersistentHeaderDelegate {
       height: isFullWidth ? 80 : 120,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.04),
+        color: Colors.white.withValues(alpha: 0.04),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withOpacity(0.08), width: 1),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08), width: 1),
       ),
       child: isFullWidth
           ? Row(
@@ -1719,7 +1749,7 @@ class _UnifiedHomeHeaderDelegate extends SliverPersistentHeaderDelegate {
                         fontWeight: FontWeight.w600)),
                 const Spacer(),
                 Icon(FluentIcons.chevron_right,
-                    color: material.Colors.white.withOpacity(0.3), size: 14),
+                    color: material.Colors.white.withValues(alpha: 0.3), size: 14),
               ],
             )
           : Column(
@@ -1756,11 +1786,11 @@ class _UnifiedHomeHeaderDelegate extends SliverPersistentHeaderDelegate {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
+        color: color.withValues(alpha: 0.12),
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-              color: color.withOpacity(0.2), blurRadius: 20, spreadRadius: -5),
+              color: color.withValues(alpha: 0.2), blurRadius: 20, spreadRadius: -5),
         ],
       ),
       child: Icon(icon, color: color, size: 24),
@@ -1771,10 +1801,10 @@ class _UnifiedHomeHeaderDelegate extends SliverPersistentHeaderDelegate {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: const Color(0xFF10B981).withOpacity(0.1),
+        color: const Color(0xFF10B981).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-            color: const Color(0xFF10B981).withOpacity(0.2), width: 1),
+            color: const Color(0xFF10B981).withValues(alpha: 0.2), width: 1),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1809,10 +1839,10 @@ class _UnifiedHomeHeaderDelegate extends SliverPersistentHeaderDelegate {
       {required IconData icon, required VoidCallback onTap}) {
     return Container(
       decoration: BoxDecoration(
-        color: material.Colors.white.withOpacity(0.05),
+        color: material.Colors.white.withValues(alpha: 0.05),
         shape: BoxShape.circle,
         border:
-            Border.all(color: material.Colors.white.withOpacity(0.1), width: 1),
+            Border.all(color: material.Colors.white.withValues(alpha: 0.1), width: 1),
       ),
       child: material.Material(
         color: material.Colors.transparent,
@@ -1933,7 +1963,7 @@ class _ChatTabBarDelegate extends SliverPersistentHeaderDelegate {
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: isSelected
-                  ? material.Colors.yellow.withOpacity(0.05)
+                  ? material.Colors.yellow.withValues(alpha: 0.05)
                   : material.Colors.transparent,
               border: isSelected
                   ? Border(
@@ -1949,7 +1979,7 @@ class _ChatTabBarDelegate extends SliverPersistentHeaderDelegate {
               style: GoogleFonts.outfit(
                 color: isSelected
                     ? material.Colors.yellow
-                    : material.Colors.white.withOpacity(0.5),
+                    : material.Colors.white.withValues(alpha: 0.5),
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
                 fontSize: 16,
                 letterSpacing: 0.5,

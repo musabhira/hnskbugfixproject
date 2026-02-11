@@ -1,9 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:pocket_mates_app/custom_code/widgets/main_market_logic.dart';
+import 'package:pocket_mates_app/custom_code/widgets/main_market_logic.dart';
+import 'package:pocket_mates_app/custom_code/widgets/gallery_search_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/gallery_search_page.dart';
 
 class MainMarketPage extends ConsumerStatefulWidget {
@@ -126,10 +133,10 @@ class _MainMarketPageState extends ConsumerState<MainMarketPage>
                   colors: [const Color(0xFF1E1E1E), Colors.black],
                 ),
                 borderRadius: BorderRadius.circular(28),
-                border: Border.all(color: Colors.amber.withOpacity(0.15)),
+                border: Border.all(color: Colors.amber.withValues(alpha: 0.15)),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.5),
+                    color: Colors.black.withValues(alpha: 0.5),
                     blurRadius: 20,
                     offset: const Offset(0, 10),
                   ),
@@ -144,7 +151,7 @@ class _MainMarketPageState extends ConsumerState<MainMarketPage>
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Colors.amber.withOpacity(0.1),
+                            color: Colors.amber.withValues(alpha: 0.1),
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(Icons.tune,
@@ -164,10 +171,10 @@ class _MainMarketPageState extends ConsumerState<MainMarketPage>
                         Container(
                           height: 45,
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.05),
+                            color: Colors.white.withValues(alpha: 0.05),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                                color: Colors.white.withOpacity(0.05)),
+                                color: Colors.white.withValues(alpha: 0.05)),
                           ),
                           child: TextField(
                             onChanged: (val) =>
@@ -177,10 +184,10 @@ class _MainMarketPageState extends ConsumerState<MainMarketPage>
                             decoration: InputDecoration(
                               hintText: 'Search categories...',
                               hintStyle: TextStyle(
-                                  color: Colors.white.withOpacity(0.3),
+                                  color: Colors.white.withValues(alpha: 0.3),
                                   fontSize: 14),
                               prefixIcon: Icon(Icons.search,
-                                  color: Colors.white.withOpacity(0.3),
+                                  color: Colors.white.withValues(alpha: 0.3),
                                   size: 18),
                               border: InputBorder.none,
                               contentPadding:
@@ -208,7 +215,7 @@ class _MainMarketPageState extends ConsumerState<MainMarketPage>
                                 style: TextStyle(
                                     color: isSelected
                                         ? Colors.amber
-                                        : Colors.white.withOpacity(0.8),
+                                        : Colors.white.withValues(alpha: 0.8),
                                     fontSize: 15,
                                     fontWeight: isSelected
                                         ? FontWeight.w600
@@ -217,8 +224,8 @@ class _MainMarketPageState extends ConsumerState<MainMarketPage>
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
                                 color: isSelected
-                                    ? Colors.amber.withOpacity(0.1)
-                                    : Colors.white.withOpacity(0.03),
+                                    ? Colors.amber.withValues(alpha: 0.1)
+                                    : Colors.white.withValues(alpha: 0.03),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Icon(_getCategoryIcon(category),
@@ -266,7 +273,7 @@ class _MainMarketPageState extends ConsumerState<MainMarketPage>
                               boxShadow: [
                                 if (selectedInterests.isNotEmpty)
                                   BoxShadow(
-                                    color: Colors.amber.withOpacity(0.2),
+                                    color: Colors.amber.withValues(alpha: 0.2),
                                     blurRadius: 10,
                                     offset: const Offset(0, 4),
                                   ),
@@ -346,7 +353,7 @@ class MarketExploreTabView extends ConsumerWidget {
             decoration: BoxDecoration(
               color: Colors.black,
               border: Border(
-                  bottom: BorderSide(color: Colors.white.withOpacity(0.05))),
+                  bottom: BorderSide(color: Colors.white.withValues(alpha: 0.05))),
             ),
             child: TabBar(
               isScrollable: true,
@@ -486,7 +493,7 @@ class _MarketFollowingTabViewState
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(Icons.people_outline,
-                size: 80, color: Colors.white.withOpacity(0.05)),
+                size: 80, color: Colors.white.withValues(alpha: 0.05)),
             const SizedBox(height: 24),
             const Text(
               "No artworks from people you follow",
@@ -587,14 +594,14 @@ class _MarketItemCardState extends State<MarketItemCard> {
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
               color: _isHovered
-                  ? Colors.amber.withOpacity(0.3)
-                  : Colors.white.withOpacity(0.05),
+                  ? Colors.amber.withValues(alpha: 0.3)
+                  : Colors.white.withValues(alpha: 0.05),
               width: 1,
             ),
             boxShadow: [
               if (_isHovered)
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.4),
+                  color: Colors.black.withValues(alpha: 0.4),
                   blurRadius: 15,
                   offset: const Offset(0, 8),
                 ),
@@ -636,7 +643,7 @@ class _MarketItemCardState extends State<MarketItemCard> {
                             end: Alignment.bottomCenter,
                             colors: [
                               Colors.transparent,
-                              Colors.black.withOpacity(0.4),
+                              Colors.black.withValues(alpha: 0.4),
                             ],
                             stops: const [0.6, 1.0],
                           ),
@@ -651,10 +658,10 @@ class _MarketItemCardState extends State<MarketItemCard> {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 10, vertical: 5),
                           decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.85),
+                            color: Colors.black.withValues(alpha: 0.85),
                             borderRadius: BorderRadius.circular(10),
                             border: Border.all(
-                              color: Colors.white.withOpacity(0.12),
+                              color: Colors.white.withValues(alpha: 0.12),
                               width: 0.5,
                             ),
                           ),
@@ -694,7 +701,7 @@ class _MarketItemCardState extends State<MarketItemCard> {
                         Container(
                           padding: const EdgeInsets.all(1.5),
                           decoration: BoxDecoration(
-                            color: Colors.amber.withOpacity(0.4),
+                            color: Colors.amber.withValues(alpha: 0.4),
                             shape: BoxShape.circle,
                           ),
                           child: CircleAvatar(
@@ -716,7 +723,7 @@ class _MarketItemCardState extends State<MarketItemCard> {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              color: Colors.white.withOpacity(0.5),
+                              color: Colors.white.withValues(alpha: 0.5),
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
                             ),

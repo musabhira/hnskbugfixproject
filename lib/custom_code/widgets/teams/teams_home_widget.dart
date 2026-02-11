@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pocket_mates_app/custom_code/widgets/teams/teams_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/teams/teams_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/teams/team_detail_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/teams/team_detail_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/teams/user_search_dialog.dart';
 import 'package:pocket_mates_app/custom_code/widgets/teams/user_search_dialog.dart';
 
 class TeamsHomeWidget extends StatefulWidget {
@@ -230,7 +235,7 @@ class _TeamsHomeWidgetState extends State<TeamsHomeWidget> {
                 child: ListTile(
                   contentPadding: const EdgeInsets.all(16),
                   leading: CircleAvatar(
-                    backgroundColor: Colors.yellow.withOpacity(0.2),
+                    backgroundColor: Colors.yellow.withValues(alpha: 0.2),
                     child: Text(
                       team.name.substring(0, 1).toUpperCase(),
                       style: const TextStyle(
