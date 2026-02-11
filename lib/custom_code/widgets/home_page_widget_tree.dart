@@ -1,65 +1,34 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.dart';
-import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.dart';
-import 'package:pocket_mates_app/custom_code/widgets/conversation_tile.dart';
 import 'package:pocket_mates_app/custom_code/widgets/conversation_tile.dart';
 import 'package:pocket_mates_app/custom_code/widgets/profile_switch_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/profile_switch_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
 import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
 import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
-import 'package:pocket_mates_app/flutter_flow/flutter_flow_util.dart';
 import 'package:pocket_mates_app/flutter_flow/flutter_flow_util.dart';
 import 'package:pocket_mates_app/flutter_flow/flutter_flow_theme.dart';
-import 'package:pocket_mates_app/flutter_flow/flutter_flow_theme.dart';
-
-import '/custom_code/widgets/index.dart';
 import '/custom_code/widgets/index.dart';
 import '/custom_code/widgets/tools_page.dart';
-import '/custom_code/widgets/tools_page.dart';
-import 'dart:convert';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:pocket_mates_app/custom_code/widgets/chat_list_shimmer.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat_list_shimmer.dart';
 import 'package:pocket_mates_app/custom_code/widgets/settings_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/settings_page.dart';
-
-import 'package:fluent_ui/fluent_ui.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/material.dart' as material;
-import 'package:flutter/material.dart' as material;
-import 'package:google_fonts/google_fonts.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:flutter_animate/flutter_animate.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/whats_app_groups_provider.dart';
-import 'package:pocket_mates_app/custom_code/widgets/chat/whats_app_groups_provider.dart';
-import 'package:pocket_mates_app/custom_code/widgets/chat/create_group_dialog.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/create_group_dialog.dart';
 import 'package:pocket_mates_app/custom_code/widgets/active_users_provider.dart';
-import 'package:pocket_mates_app/custom_code/widgets/active_users_provider.dart';
-import 'package:pocket_mates_app/custom_code/widgets/create_gallery_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/create_gallery_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/create_service_widget.dart';
-import 'package:pocket_mates_app/custom_code/widgets/create_service_widget.dart';
-import 'package:pocket_mates_app/custom_code/widgets/event_create_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/event_create_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/thread_feed_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/thread_feed_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/teams/teams_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/teams/teams_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/notifications_list_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/notifications_list_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/status_display_widget.dart';
-import 'package:pocket_mates_app/custom_code/widgets/status_display_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/drawing_page.dart';
 
 class HomePageWidgetTree extends ConsumerStatefulWidget {
   const HomePageWidgetTree({
@@ -279,97 +248,90 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                             onRefresh: _handleRefresh,
                             color: material.Colors.yellow,
                             backgroundColor: material.Colors.black,
-                            child: CustomScrollView(
-                              // Removed SafeArea from here as it caused a grey gap at the top.
-                              // The content now flows under the status bar (immersive) and handles
-                              // its own padding via the SliverPersistentHeader.
-                              // Removed RefreshIndicator
+                            child: material.NestedScrollView(
                               physics: const BouncingScrollPhysics(),
-                              slivers: [
-                                // Unified Dynamic Header (Stranger Rows + Status)
-                                SliverPersistentHeader(
-                                  pinned: true,
-                                  delegate: _UnifiedHomeHeaderDelegate(
-                                    currentUserId:
-                                        supabase.auth.currentUser?.id ?? '',
-                                    currentProfileId: profileId.toString(),
-                                    statusRefreshKey: _refreshKeyCount,
-                                    activeUsersRef: ref.watch(
-                                        activeUsersProvider(profileId
-                                            .toString())), // Pass the provider reference
-                                    onTapVideo: () => _handleStrangerMatch(
-                                      context,
-                                      ref,
-                                      'Video',
-                                      profileId.toString(),
+                              headerSliverBuilder:
+                                  (context, innerBoxIsScrolled) {
+                                return [
+                                  // Unified Dynamic Header (Stranger Rows + Status)
+                                  SliverPersistentHeader(
+                                    pinned: true,
+                                    delegate: _UnifiedHomeHeaderDelegate(
+                                      currentUserId:
+                                          supabase.auth.currentUser?.id ?? '',
+                                      currentProfileId: profileId.toString(),
+                                      statusRefreshKey: _refreshKeyCount,
+                                      activeUsersRef: ref.watch(
+                                          activeUsersProvider(profileId
+                                              .toString())), // Pass the provider reference
+                                      onTapVideo: () => _handleStrangerMatch(
+                                        context,
+                                        ref,
+                                        'Video',
+                                        profileId.toString(),
+                                      ),
+                                      onTapFriends: () {
+                                        displayInfoBar(context,
+                                            builder: (context, close) {
+                                          return InfoBar(
+                                            title: const Text('Coming Soon'),
+                                            content: const Text(
+                                                'Strangers Friends coming soon!'),
+                                            severity: InfoBarSeverity.info,
+                                          );
+                                        });
+                                      },
+                                      onTapCall: () => _handleStrangerMatch(
+                                        context,
+                                        ref,
+                                        'Voice',
+                                        profileId.toString(),
+                                      ),
+                                      onTapText: () => _handleStrangerChat(
+                                          context, ref, profileId.toString()),
+                                      onTapSettings: _handleSettings,
+                                      onTapAdd: () =>
+                                          _showAddBottomSheet(context),
+                                      onRefresh: _handleRefresh,
                                     ),
-                                    onTapFriends: () {
-                                      // ScaffoldMessenger.of(context).showSnackBar( // No ScaffoldMessenger
-                                      //   const SnackBar(
-                                      //       content: Text(
-                                      //           'Strangers Friends coming soon!')),
-                                      // );
-                                      displayInfoBar(context,
-                                          builder: (context, close) {
-                                        return InfoBar(
-                                          title: const Text('Coming Soon'),
-                                          content: const Text(
-                                              'Strangers Friends coming soon!'),
-                                          severity: InfoBarSeverity.info,
-                                        );
-                                      });
-                                    },
-                                    onTapCall: () => _handleStrangerMatch(
-                                      context,
-                                      ref,
-                                      'Voice',
-                                      profileId.toString(),
+                                  ),
+                                  SliverPersistentHeader(
+                                    pinned: true,
+                                    delegate: _ChatTabBarDelegate(
+                                      selectedIndex: _chatTabIndex,
+                                      onTap: _onTabTapped,
                                     ),
-                                    onTapText: () => _handleStrangerChat(
-                                        context, ref, profileId.toString()),
-                                    onTapSettings: _handleSettings,
-                                    onTapAdd: () =>
-                                        _showAddBottomSheet(context),
-                                    onRefresh: _handleRefresh,
                                   ),
-                                ),
-
-                                SliverPersistentHeader(
-                                  pinned: true,
-                                  delegate: _ChatTabBarDelegate(
-                                    selectedIndex: _chatTabIndex,
-                                    onTap: _onTabTapped,
-                                  ),
-                                ),
-
-                                SliverFillRemaining(
-                                  child: material.Material(
-                                    color: material.Colors.black,
-                                    child: PageView(
-                                      controller: _pageController,
-                                      onPageChanged: _onPageChanged,
-                                      children: [
-                                        material.CustomScrollView(
-                                          slivers: [
-                                            _buildChatListSliver(
-                                                conversationsAsync),
-                                          ],
-                                        ),
-                                        material.CustomScrollView(
-                                          slivers: [
-                                            _buildVibesListSliver(),
-                                          ],
-                                        ),
-                                        material.CustomScrollView(
-                                          slivers: [
-                                            _buildAIListSliver(),
-                                          ],
-                                        ),
+                                ];
+                              },
+                              body: material.Material(
+                                color: material.Colors.black,
+                                child: PageView(
+                                  controller: _pageController,
+                                  onPageChanged: _onPageChanged,
+                                  children: [
+                                    material.CustomScrollView(
+                                      physics: const BouncingScrollPhysics(),
+                                      slivers: [
+                                        _buildChatListSliver(
+                                            conversationsAsync),
                                       ],
                                     ),
-                                  ),
+                                    material.CustomScrollView(
+                                      physics: const BouncingScrollPhysics(),
+                                      slivers: [
+                                        _buildVibesListSliver(),
+                                      ],
+                                    ),
+                                    material.CustomScrollView(
+                                      physics: const BouncingScrollPhysics(),
+                                      slivers: [
+                                        _buildAIListSliver(),
+                                      ],
+                                    ),
+                                  ],
                                 ),
-                              ],
+                              ),
                             ),
                           ),
           ),
@@ -411,11 +373,84 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         padding: const EdgeInsets.all(24),
         child: Column(
           children: [
+            // Drawing Tool Tile (Added as per user request)
+            material.Material(
+              color: material.Colors.transparent,
+              child: material.InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    material.MaterialPageRoute(
+                      builder: (context) => const DrawingPage(),
+                    ),
+                  );
+                },
+                borderRadius: BorderRadius.circular(16),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: material.Colors.white.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: material.Colors.yellow.withValues(alpha: 0.2),
+                      width: 1,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 50,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          color: material.Colors.yellow.withValues(alpha: 0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          FluentIcons.edit,
+                          color: material.Colors.yellow,
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Drawing Tool',
+                              style: GoogleFonts.inter(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: material.Colors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Sketch and share your ideas',
+                              style: GoogleFonts.inter(
+                                fontSize: 13,
+                                color: material.Colors.grey[400],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Icon(
+                        FluentIcons.chevron_right,
+                        color: material.Colors.grey[600],
+                        size: 16,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 32),
             const SizedBox(height: 40),
             Icon(
               material.Icons.smart_toy_outlined,
               size: 80,
-              color: Colors.yellow.withValues(alpha: 0.3),
+              color: material.Colors.yellow.withValues(alpha: 0.3),
             ),
             const SizedBox(height: 24),
             Text(
@@ -423,7 +458,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
               style: GoogleFonts.inter(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: material.Colors.white,
               ),
             ),
             const SizedBox(height: 12),
@@ -439,10 +474,10 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.05),
+                color: material.Colors.white.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: Colors.yellow.withValues(alpha: 0.2),
+                  color: material.Colors.yellow.withValues(alpha: 0.2),
                   width: 1,
                 ),
               ),
@@ -454,7 +489,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                     style: GoogleFonts.inter(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
-                      color: Colors.yellow,
+                      color: material.Colors.yellow,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -552,7 +587,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                           padding: const EdgeInsets.only(left: 14.0),
                           child: Icon(
                             FluentIcons.search,
-                            color: material.Colors.yellow.withValues(alpha: 0.6),
+                            color:
+                                material.Colors.yellow.withValues(alpha: 0.6),
                             size: 18,
                           ),
                         ),
@@ -562,8 +598,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                 child: material.IconButton(
                                   icon: Icon(
                                     FluentIcons.clear,
-                                    color:
-                                        material.Colors.white.withValues(alpha: 0.3),
+                                    color: material.Colors.white
+                                        .withValues(alpha: 0.3),
                                     size: 16,
                                   ),
                                   onPressed: () {
@@ -1547,7 +1583,7 @@ class _UnifiedHomeHeaderDelegate extends SliverPersistentHeaderDelegate {
 
           // 2. Stranger Match Section
           Positioned(
-            top: 0,
+            top: topPadding, // Account for system status bar
             left: 0,
             right: 0,
             bottom: 160, // Match Status Bar height to avoid overlap
@@ -1558,7 +1594,8 @@ class _UnifiedHomeHeaderDelegate extends SliverPersistentHeaderDelegate {
                 child: Transform.translate(
                   offset: Offset(0, -shrinkOffset * 0.6),
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+                    padding: EdgeInsets.fromLTRB(20, 10, 20,
+                        20), // Reduced top padding since we use topPadding
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1619,7 +1656,8 @@ class _UnifiedHomeHeaderDelegate extends SliverPersistentHeaderDelegate {
                 ),
                 border: Border(
                   top: BorderSide(
-                      color: material.Colors.white.withValues(alpha: 0.08), width: 1),
+                      color: material.Colors.white.withValues(alpha: 0.08),
+                      width: 1),
                 ),
               ),
               child: material.Material(
@@ -1637,11 +1675,12 @@ class _UnifiedHomeHeaderDelegate extends SliverPersistentHeaderDelegate {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 14, vertical: 8),
                               decoration: BoxDecoration(
-                                color: material.Colors.yellow.withValues(alpha: 0.12),
+                                color: material.Colors.yellow
+                                    .withValues(alpha: 0.12),
                                 borderRadius: BorderRadius.circular(20),
                                 border: Border.all(
-                                    color:
-                                        material.Colors.yellow.withValues(alpha: 0.3),
+                                    color: material.Colors.yellow
+                                        .withValues(alpha: 0.3),
                                     width: 1),
                               ),
                               child: Row(
@@ -1735,7 +1774,8 @@ class _UnifiedHomeHeaderDelegate extends SliverPersistentHeaderDelegate {
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.04),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.08), width: 1),
+        border:
+            Border.all(color: Colors.white.withValues(alpha: 0.08), width: 1),
       ),
       child: isFullWidth
           ? Row(
@@ -1749,7 +1789,8 @@ class _UnifiedHomeHeaderDelegate extends SliverPersistentHeaderDelegate {
                         fontWeight: FontWeight.w600)),
                 const Spacer(),
                 Icon(FluentIcons.chevron_right,
-                    color: material.Colors.white.withValues(alpha: 0.3), size: 14),
+                    color: material.Colors.white.withValues(alpha: 0.3),
+                    size: 14),
               ],
             )
           : Column(
@@ -1790,7 +1831,9 @@ class _UnifiedHomeHeaderDelegate extends SliverPersistentHeaderDelegate {
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-              color: color.withValues(alpha: 0.2), blurRadius: 20, spreadRadius: -5),
+              color: color.withValues(alpha: 0.2),
+              blurRadius: 20,
+              spreadRadius: -5),
         ],
       ),
       child: Icon(icon, color: color, size: 24),
@@ -1841,8 +1884,8 @@ class _UnifiedHomeHeaderDelegate extends SliverPersistentHeaderDelegate {
       decoration: BoxDecoration(
         color: material.Colors.white.withValues(alpha: 0.05),
         shape: BoxShape.circle,
-        border:
-            Border.all(color: material.Colors.white.withValues(alpha: 0.1), width: 1),
+        border: Border.all(
+            color: material.Colors.white.withValues(alpha: 0.1), width: 1),
       ),
       child: material.Material(
         color: material.Colors.transparent,
