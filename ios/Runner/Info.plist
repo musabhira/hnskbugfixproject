@@ -74,6 +74,8 @@
 	<string>This app needs access to your gallery to let you share photos with your friends.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>This app needs permission to save photos to your gallery.</string>
+	<key>NSContactsUsageDescription</key>
+	<string>This app requires contacts access to import phone numbers for bulk messaging.</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 

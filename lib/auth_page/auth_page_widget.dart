@@ -133,11 +133,10 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
-        FocusManager.instance.primaryFocus?.unfocus();
       },
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+        backgroundColor: Colors.black,
         body: SafeArea(
           top: true,
           child: Row(
@@ -149,7 +148,7 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                   width: 100.0,
                   height: double.infinity,
                   decoration: BoxDecoration(
-                    color: FlutterFlowTheme.of(context).secondaryBackground,
+                    color: Colors.black,
                   ),
                   alignment: AlignmentDirectional(0.0, -1.0),
                   child: SingleChildScrollView(
@@ -166,8 +165,7 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                               maxWidth: 602.0,
                             ),
                             decoration: BoxDecoration(
-                              color: FlutterFlowTheme.of(context)
-                                  .secondaryBackground,
+                              color: Colors.black,
                               borderRadius: BorderRadius.only(
                                 bottomLeft: Radius.circular(16.0),
                                 bottomRight: Radius.circular(16.0),
@@ -185,8 +183,7 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                             maxWidth: 602.0,
                           ),
                           decoration: BoxDecoration(
-                            color: FlutterFlowTheme.of(context)
-                                .secondaryBackground,
+                            color: Colors.black,
                           ),
                           child: Padding(
                             padding: EdgeInsetsDirectional.fromSTEB(
@@ -197,8 +194,7 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                                   alignment: Alignment(-1.0, 0),
                                   child: TabBar(
                                     isScrollable: true,
-                                    labelColor: FlutterFlowTheme.of(context)
-                                        .primaryText,
+                                    labelColor: Colors.yellow,
                                     unselectedLabelColor:
                                         FlutterFlowTheme.of(context)
                                             .secondaryText,
@@ -244,8 +240,7 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                                                       .displaySmall
                                                       .fontStyle,
                                             ),
-                                    indicatorColor:
-                                        FlutterFlowTheme.of(context).primary,
+                                    indicatorColor: Colors.yellow,
                                     indicatorWeight: 4.0,
                                     padding: EdgeInsetsDirectional.fromSTEB(
                                         0.0, 12.0, 16.0, 12.0),
@@ -376,9 +371,7 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                                                       focusedBorder:
                                                           OutlineInputBorder(
                                                         borderSide: BorderSide(
-                                                          color: FlutterFlowTheme
-                                                                  .of(context)
-                                                              .primary,
+                                                          color: Colors.yellow,
                                                           width: 2.0,
                                                         ),
                                                         borderRadius:
@@ -410,9 +403,7 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                                                                 .circular(40.0),
                                                       ),
                                                       filled: true,
-                                                      fillColor: FlutterFlowTheme
-                                                              .of(context)
-                                                          .secondaryBackground,
+                                                      fillColor: Colors.black,
                                                       contentPadding:
                                                           EdgeInsets.all(24.0),
                                                     ),
@@ -447,10 +438,7 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                                                         ),
                                                     keyboardType: TextInputType
                                                         .emailAddress,
-                                                    cursorColor:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .primary,
+                                                    cursorColor: Colors.yellow,
                                                     validator: _model
                                                         .emailAddressTextControllerValidator
                                                         .asValidator(context),
@@ -519,9 +507,7 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                                                       focusedBorder:
                                                           OutlineInputBorder(
                                                         borderSide: BorderSide(
-                                                          color: FlutterFlowTheme
-                                                                  .of(context)
-                                                              .primary,
+                                                          color: Colors.yellow,
                                                           width: 2.0,
                                                         ),
                                                         borderRadius:
@@ -553,9 +539,7 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                                                                 .circular(40.0),
                                                       ),
                                                       filled: true,
-                                                      fillColor: FlutterFlowTheme
-                                                              .of(context)
-                                                          .secondaryBackground,
+                                                      fillColor: Colors.black,
                                                       contentPadding:
                                                           EdgeInsets.all(24.0),
                                                       suffixIcon: InkWell(
@@ -611,10 +595,7 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                                                                   .bodyMedium
                                                                   .fontStyle,
                                                         ),
-                                                    cursorColor:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .primary,
+                                                    cursorColor: Colors.yellow,
                                                     validator: _model
                                                         .passwordTextControllerValidator
                                                         .asValidator(context),
@@ -671,10 +652,7 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                                                                   0.0,
                                                                   0.0,
                                                                   0.0),
-                                                      color:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .primary,
+                                                      color: Colors.yellow,
                                                       textStyle:
                                                           FlutterFlowTheme.of(
                                                                   context)
@@ -692,7 +670,7 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                                                                       .fontStyle,
                                                                 ),
                                                                 color: Colors
-                                                                    .white,
+                                                                    .black,
                                                                 letterSpacing:
                                                                     0.0,
                                                                 fontWeight: FlutterFlowTheme.of(
@@ -747,9 +725,7 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                                                                   0.0,
                                                                   0.0,
                                                                   0.0),
-                                                      color: FlutterFlowTheme
-                                                              .of(context)
-                                                          .secondaryBackground,
+                                                      color: Colors.black,
                                                       textStyle:
                                                           FlutterFlowTheme.of(
                                                                   context)
@@ -767,6 +743,8 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                                                                       .bodyMedium
                                                                       .fontStyle,
                                                                 ),
+                                                                color: Colors
+                                                                    .white,
                                                                 letterSpacing:
                                                                     0.0,
                                                                 fontWeight: FlutterFlowTheme.of(
@@ -780,9 +758,7 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                                                               ),
                                                       elevation: 0.0,
                                                       borderSide: BorderSide(
-                                                        color: FlutterFlowTheme
-                                                                .of(context)
-                                                            .secondaryBackground,
+                                                        color: Colors.yellow,
                                                         width: 2.0,
                                                       ),
                                                       borderRadius:
@@ -906,9 +882,7 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                                                       focusedBorder:
                                                           OutlineInputBorder(
                                                         borderSide: BorderSide(
-                                                          color: FlutterFlowTheme
-                                                                  .of(context)
-                                                              .primary,
+                                                          color: Colors.yellow,
                                                           width: 2.0,
                                                         ),
                                                         borderRadius:
@@ -940,9 +914,7 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                                                                 .circular(40.0),
                                                       ),
                                                       filled: true,
-                                                      fillColor: FlutterFlowTheme
-                                                              .of(context)
-                                                          .secondaryBackground,
+                                                      fillColor: Colors.black,
                                                       contentPadding:
                                                           EdgeInsets.all(24.0),
                                                     ),
@@ -977,10 +949,7 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                                                         ),
                                                     keyboardType: TextInputType
                                                         .emailAddress,
-                                                    cursorColor:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .primary,
+                                                    cursorColor: Colors.yellow,
                                                     validator: _model
                                                         .emailAddressCreateTextControllerValidator
                                                         .asValidator(context),
@@ -1049,9 +1018,7 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                                                       focusedBorder:
                                                           OutlineInputBorder(
                                                         borderSide: BorderSide(
-                                                          color: FlutterFlowTheme
-                                                                  .of(context)
-                                                              .primary,
+                                                          color: Colors.yellow,
                                                           width: 2.0,
                                                         ),
                                                         borderRadius:
@@ -1083,9 +1050,7 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                                                                 .circular(40.0),
                                                       ),
                                                       filled: true,
-                                                      fillColor: FlutterFlowTheme
-                                                              .of(context)
-                                                          .secondaryBackground,
+                                                      fillColor: Colors.black,
                                                       contentPadding:
                                                           EdgeInsets.all(24.0),
                                                       suffixIcon: InkWell(
@@ -1141,10 +1106,7 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                                                                   .bodyMedium
                                                                   .fontStyle,
                                                         ),
-                                                    cursorColor:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .primary,
+                                                    cursorColor: Colors.yellow,
                                                     validator: _model
                                                         .passwordCreateTextControllerValidator
                                                         .asValidator(context),
@@ -1213,9 +1175,7 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                                                       focusedBorder:
                                                           OutlineInputBorder(
                                                         borderSide: BorderSide(
-                                                          color: FlutterFlowTheme
-                                                                  .of(context)
-                                                              .primary,
+                                                          color: Colors.yellow,
                                                           width: 2.0,
                                                         ),
                                                         borderRadius:
@@ -1247,9 +1207,7 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                                                                 .circular(40.0),
                                                       ),
                                                       filled: true,
-                                                      fillColor: FlutterFlowTheme
-                                                              .of(context)
-                                                          .secondaryBackground,
+                                                      fillColor: Colors.black,
                                                       contentPadding:
                                                           EdgeInsets.all(24.0),
                                                       suffixIcon: InkWell(
@@ -1305,10 +1263,7 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                                                                   .bodyMedium
                                                                   .fontStyle,
                                                         ),
-                                                    cursorColor:
-                                                        FlutterFlowTheme.of(
-                                                                context)
-                                                            .primary,
+                                                    cursorColor: Colors.yellow,
                                                     validator: _model
                                                         .passwordCreateConformTextControllerValidator
                                                         .asValidator(context),
@@ -1347,9 +1302,8 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                                                           'Terms of Service',
                                                           style:
                                                               GoogleFonts.inter(
-                                                            color: FlutterFlowTheme
-                                                                    .of(context)
-                                                                .primary,
+                                                            color:
+                                                                Colors.yellow,
                                                             decoration:
                                                                 TextDecoration
                                                                     .underline,
@@ -1374,9 +1328,8 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                                                           'Privacy Policy',
                                                           style:
                                                               GoogleFonts.inter(
-                                                            color: FlutterFlowTheme
-                                                                    .of(context)
-                                                                .primary,
+                                                            color:
+                                                                Colors.yellow,
                                                             decoration:
                                                                 TextDecoration
                                                                     .underline,
@@ -1391,10 +1344,7 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                                                   controlAffinity:
                                                       ListTileControlAffinity
                                                           .leading,
-                                                  activeColor:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .primary,
+                                                  activeColor: Colors.yellow,
                                                   checkColor: Colors.white,
                                                   dense: true,
                                                 ),
@@ -1490,10 +1440,7 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                                                                   0.0,
                                                                   0.0,
                                                                   0.0),
-                                                      color:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .primary,
+                                                      color: Colors.yellow,
                                                       textStyle:
                                                           FlutterFlowTheme.of(
                                                                   context)
@@ -1511,7 +1458,7 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                                                                       .fontStyle,
                                                                 ),
                                                                 color: Colors
-                                                                    .white,
+                                                                    .black,
                                                                 letterSpacing:
                                                                     0.0,
                                                                 fontWeight: FlutterFlowTheme.of(
@@ -1564,7 +1511,7 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                     width: 100.0,
                     height: double.infinity,
                     decoration: BoxDecoration(
-                      color: FlutterFlowTheme.of(context).secondaryBackground,
+                      color: Colors.black,
                       image: DecorationImage(
                         fit: BoxFit.cover,
                         image: CachedNetworkImageProvider(

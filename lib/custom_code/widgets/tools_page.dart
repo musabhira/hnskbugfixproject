@@ -17,19 +17,14 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pocket_mates_app/custom_code/widgets/drawing_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/drawing_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/home_page_widget_tree.dart';
-import 'package:pocket_mates_app/custom_code/widgets/home_page_widget_tree.dart';
-import 'package:flutter/services.dart';
+import 'package:pocket_mates_app/custom_code/widgets/teams/teams_home_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/poster_designer/template_gallery_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/bulk_sender/bulk_sender_page.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert';
 import 'dart:convert';
 import 'dart:math';
-import 'dart:math';
-import 'package:pocket_mates_app/custom_code/widgets/teams/teams_home_widget.dart';
-import 'package:pocket_mates_app/custom_code/widgets/teams/teams_home_widget.dart';
 
 class ToolsPage extends StatefulWidget {
   final double? width;
@@ -562,6 +557,32 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                       _selectedTab = 5;
                       _showToolsList = false;
                     }),
+                  ),
+                  _buildToolCard(
+                    title: 'Poster Maker',
+                    icon: Icons.photo_library_rounded,
+                    color: Colors.orangeAccent,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const TemplateGalleryPage(),
+                        ),
+                      );
+                    },
+                  ),
+                  _buildToolCard(
+                    title: 'Bulk Sender',
+                    icon: Icons.send_rounded,
+                    color: Colors.greenAccent,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const BulkSenderPage(),
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),
@@ -2684,7 +2705,8 @@ class _DiagramListScreenState extends State<DiagramListScreen> {
                         Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFFF6B9D).withValues(alpha: 0.1),
+                            color:
+                                const Color(0xFFFF6B9D).withValues(alpha: 0.1),
                             shape: BoxShape.circle,
                           ),
                           child: Icon(Icons.architecture,
@@ -3219,7 +3241,8 @@ class _FlowCanvasScreenState extends State<FlowCanvasScreen> {
                                       borderRadius: BorderRadius.circular(12),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: node.color.withValues(alpha: 0.4),
+                                          color:
+                                              node.color.withValues(alpha: 0.4),
                                           blurRadius: 12,
                                           spreadRadius: 2,
                                         ),
@@ -4676,7 +4699,8 @@ FINAL REMINDER: Every value in this JSON must be written in $shortFilmLanguage l
                   Text(
                     'Instagram Growth Journey',
                     style: TextStyle(
-                        fontSize: 12, color: Colors.white.withValues(alpha: 0.8)),
+                        fontSize: 12,
+                        color: Colors.white.withValues(alpha: 0.8)),
                   ),
                 ],
               ),
@@ -4718,7 +4742,8 @@ FINAL REMINDER: Every value in this JSON must be written in $shortFilmLanguage l
         const SizedBox(height: 4),
         Text(
           label,
-          style: TextStyle(fontSize: 12, color: Colors.white.withValues(alpha: 0.7)),
+          style: TextStyle(
+              fontSize: 12, color: Colors.white.withValues(alpha: 0.7)),
         ),
       ],
     );
@@ -4830,7 +4855,8 @@ FINAL REMINDER: Every value in this JSON must be written in $shortFilmLanguage l
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 12, vertical: 6),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFE1306C).withValues(alpha: 0.2),
+                              color: const Color(0xFFE1306C)
+                                  .withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: const Text(
@@ -5336,7 +5362,8 @@ FINAL REMINDER: Every value in this JSON must be written in $shortFilmLanguage l
                             width: 40,
                             height: 40,
                             decoration: BoxDecoration(
-                              color: const Color(0xFFE1306C).withValues(alpha: 0.2),
+                              color: const Color(0xFFE1306C)
+                                  .withValues(alpha: 0.2),
                               shape: BoxShape.circle,
                             ),
                             child: const Center(

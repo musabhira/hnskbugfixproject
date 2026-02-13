@@ -12,6 +12,7 @@ import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import 'flutter_flow/flutter_flow_util.dart';
 import 'flutter_flow/nav/nav.dart';
+import 'custom_code/services/local_sync_server.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,6 +20,8 @@ void main() async {
   usePathUrlStrategy();
 
   await SupaFlow.initialize();
+
+  await LocalSyncServer().initialize();
 
   await FlutterFlowTheme.initialize();
 

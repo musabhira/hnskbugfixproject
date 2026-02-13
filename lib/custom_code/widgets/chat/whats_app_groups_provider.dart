@@ -2,10 +2,11 @@ import 'dart:async';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
-import 'dart:convert';
+
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:flutter/foundation.dart';
+import 'package:pocket_mates_app/custom_code/services/local_sync_server.dart';
 
 part 'whats_app_groups_provider.g.dart';
 
@@ -117,7 +118,8 @@ class ChatConversation {
     };
   }
 
-  factory ChatConversation.fromJson(Map<String, dynamic> json) {
+  factory ChatConversation.fromJson(Map<dynamic, dynamic> jsonMap) {
+    final json = Map<String, dynamic>.from(jsonMap);
     return ChatConversation(
       id: json['id'],
       name: json['name'],
@@ -137,7 +139,9 @@ class ChatConversation {
       sourceId: json['sourceId'],
       hasStatus: json['hasStatus'] ?? false,
       statusData: json['statusData'] != null
-          ? List<Map<String, dynamic>>.from(json['statusData'])
+          ? (json['statusData'] as List)
+              .map((e) => Map<String, dynamic>.from(e))
+              .toList()
           : null,
     );
   }
@@ -194,48 +198,44 @@ class Conversations extends _$Conversations {
       _debounceTimer?.cancel();
     });
 
-    // Fetch initial data
-    final profileId = await ref.watch(currentProfileIdProvider.future);
+    try {
+      // Fetch initial data
+      final profileId = await ref.watch(currentProfileIdProvider.future);
 
-    // Try to load from cache first for instant display
-    final cached = await _loadFromCache(userId);
-    if (cached.isNotEmpty) {
-      // Fetch fresh data in background
-      _fetchConversations(userId, profileId).then((fresh) {
-        if (ref.mounted) {
-          state = AsyncValue.data(fresh);
-        }
-      });
-      return cached;
+      // Try to load from cache first for instant display
+      List<ChatConversation> cached = [];
+      try {
+        cached = await _loadFromCache(userId);
+      } catch (e) {
+        debugPrint('Cache load failed: $e');
+      }
+
+      if (cached.isNotEmpty) {
+        // Fetch fresh data in background
+        _fetchConversations(userId, profileId).then((fresh) {
+          if (ref.mounted) {
+            state = AsyncValue.data(fresh);
+          }
+        }).catchError((e) {
+          debugPrint('Error fetching background conversations: $e');
+        });
+        return cached;
+      }
+
+      return await _fetchConversations(userId, profileId);
+    } catch (e) {
+      debugPrint('Unhandled error in Conversations build: $e');
+      // If everything fails, return empty list instead of breaking UI
+      return [];
     }
-
-    return _fetchConversations(userId, profileId);
   }
 
   Future<List<ChatConversation>> _loadFromCache(String userId) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final key = 'cached_conversations_$userId';
-      final jsonStr = prefs.getString(key);
-      if (jsonStr != null) {
-        final List<dynamic> decoded = jsonDecode(jsonStr);
-        return decoded.map((e) => ChatConversation.fromJson(e)).toList();
-      }
-    } catch (e) {
-      // ignore error
-    }
-    return [];
+    return LocalSyncServer().getCachedConversations();
   }
 
   Future<void> _saveToCache(String userId, List<ChatConversation> list) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final key = 'cached_conversations_$userId';
-      final jsonStr = jsonEncode(list.map((e) => e.toJson()).toList());
-      await prefs.setString(key, jsonStr);
-    } catch (e) {
-      // ignore error
-    }
+    await LocalSyncServer().saveConversations(list);
   }
 
   void _setupRealtimeSubscriptions(String userId) {
@@ -263,7 +263,7 @@ class Conversations extends _$Conversations {
         .onPostgresChanges(
           event: PostgresChangeEvent.all,
           schema: 'public',
-          table: 'messages',
+          table: 'statuses',
           callback: (payload) => _debouncedRefresh(),
         )
         .onPostgresChanges(
@@ -303,6 +303,7 @@ class Conversations extends _$Conversations {
   Future<List<ChatConversation>> _fetchConversations(
       String userId, String? profileId) async {
     try {
+      debugPrint('Fetching conversations for user: $userId');
       // Fetch groups and personal chats in parallel
       final groupsFuture = _fetchGroups(userId, profileId);
       final personalFuture = _fetchPersonalChats(userId);
@@ -316,12 +317,11 @@ class Conversations extends _$Conversations {
       final personal = results[1];
       final notifications = results[2];
 
+      debugPrint(
+          'Fetched ${groups.length} groups, ${personal.length} personal chats, ${notifications.length} notifications');
+
       // Combine and sort by last message time
-      final combined = [
-        ...notifications,
-        ...groups,
-        ...personal
-      ]; // Prioritize notifications? Or just sort by time.
+      final combined = [...notifications, ...groups, ...personal];
       combined.sort((a, b) {
         // Notifications might want to be always on top? Or mixed in by time.
         // Let's mix by time for now as requested "normal chat list like".
@@ -370,7 +370,9 @@ class Conversations extends _$Conversations {
           referencedTable: 'groups',
           ascending: false);
 
-      final groupList = List<Map<String, dynamic>>.from(response);
+      final groupList = (response as List)
+          .map((item) => Map<String, dynamic>.from(item))
+          .toList();
 
       // Fetch all unread counts in parallel for all groups
       final List<Future<ChatConversation?>> conversationFutures =
@@ -420,7 +422,9 @@ class Conversations extends _$Conversations {
           .eq('is_active', true)
           .gt('expires_at', now)
           .order('created_at', ascending: true);
-      return List<Map<String, dynamic>>.from(response);
+      return (response as List)
+          .map((item) => Map<String, dynamic>.from(item))
+          .toList();
     } catch (e) {
       return [];
     }
@@ -451,7 +455,7 @@ class Conversations extends _$Conversations {
 
       final profileMap = <String, Map<String, dynamic>>{};
       for (final profile in profilesResponse) {
-        profileMap[profile['user_id']] = profile;
+        profileMap[profile['user_id']] = Map<String, dynamic>.from(profile);
       }
 
       final chats = <ChatConversation>[];
@@ -461,7 +465,7 @@ class Conversations extends _$Conversations {
         final otherProfile = profileMap[otherUserId];
 
         chats.add(ChatConversation.fromPersonalJson(
-          item,
+          Map<String, dynamic>.from(item),
           currentUserId: userId,
           otherProfile: otherProfile,
         ));
@@ -483,7 +487,8 @@ class Conversations extends _$Conversations {
 
       final data = response as List<dynamic>;
       return data
-          .map((json) => ChatConversation.fromNotification(json))
+          .map((json) => ChatConversation.fromNotification(
+              Map<String, dynamic>.from(json)))
           .toList();
     } catch (e) {
       return [];
@@ -492,12 +497,15 @@ class Conversations extends _$Conversations {
 
   Future<int> _getGroupUnreadCount(String groupId, String userId) async {
     try {
-      final lastRead = await _supabase
+      final response = await _supabase
           .from('group_members')
           .select('last_read_at')
           .eq('group_id', groupId)
           .eq('user_id', userId)
           .maybeSingle();
+
+      final lastRead =
+          response != null ? Map<String, dynamic>.from(response) : null;
 
       if (lastRead == null) return 0;
 

@@ -1,15 +1,9 @@
 // Automatic FlutterFlow imports
 import '/backend/supabase/supabase.dart';
-import '/backend/supabase/supabase.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import 'index.dart'; // Imports other custom widgets
 import 'index.dart'; // Imports other custom widgets
 import '/custom_code/actions/index.dart'; // Imports custom actions
-import '/custom_code/actions/index.dart'; // Imports custom actions
-import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
@@ -17,16 +11,11 @@ import 'package:flutter/material.dart';
 // Set your widget name, define your parameter, and then add the
 // boilerplate code using the green button on the right!
 import 'dart:io';
-import 'dart:io';
 
 import 'package:http/http.dart' as http;
-import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'dart:convert';
-import 'package:image_picker/image_picker.dart';
 import 'package:image_picker/image_picker.dart';
 
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/foundation.dart' show kIsWeb;
 
 class AiPromptGenerator extends StatelessWidget {
@@ -1034,7 +1023,8 @@ class _VisionAIExampleState extends State<VisionAIExample> {
                   decoration: BoxDecoration(
                     color: Colors.orange.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
+                    border:
+                        Border.all(color: Colors.orange.withValues(alpha: 0.3)),
                   ),
                   child: Row(
                     children: [

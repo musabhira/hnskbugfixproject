@@ -1,58 +1,32 @@
 import 'dart:async';
-import 'dart:async';
 import 'dart:io';
-import 'dart:io';
-import 'dart:typed_data';
 import 'dart:typed_data';
 
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/services.dart';
-import 'package:image/image.dart' as img;
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:just_audio/just_audio.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_view/photo_view.dart';
-import 'package:photo_view/photo_view.dart';
-import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
 import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:record/record.dart';
 import 'package:record/record.dart';
 import 'package:timeago/timeago.dart' as timeago;
-import 'package:timeago/timeago.dart' as timeago;
-import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:video_player/video_player.dart';
-import 'package:video_player/video_player.dart';
-import '/backend/supabase/supabase.dart';
 import '/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/widgets/webrtc_call_screen.dart';
-import 'package:pocket_mates_app/custom_code/widgets/webrtc_call_screen.dart';
-import 'package:pocket_mates_app/custom_code/widgets/gallery_search_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/gallery_search_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/image_viewer.dart';
 import 'package:pocket_mates_app/custom_code/widgets/image_viewer.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/voice_player.dart';
-import 'package:pocket_mates_app/custom_code/widgets/chat/voice_player.dart';
-import 'package:image_downloader/image_downloader.dart';
 import 'package:image_downloader/image_downloader.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/voice_recorder.dart';
-import 'package:pocket_mates_app/custom_code/widgets/chat/voice_recorder.dart';
+import 'package:pocket_mates_app/custom_code/services/local_sync_server.dart';
 
-import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 
 class MessageScreen extends StatefulWidget {
@@ -381,6 +355,17 @@ class _MessageScreenState extends State<MessageScreen> {
 
   Future<void> _loadMessages() async {
     try {
+      // 1. Try loading from LocalSyncServer FIRST for high speed
+      final cached =
+          await LocalSyncServer().getMessagesForChat(widget.receiverId);
+      if (cached.isNotEmpty && mounted) {
+        safeSetState(() {
+          _messages = List<Map<String, dynamic>>.from(cached);
+          _isLoading = false;
+        });
+      }
+
+      // 2. Then fetch from remote
       final response = await _supabase
           .from('messages')
           .select(
@@ -390,6 +375,9 @@ class _MessageScreenState extends State<MessageScreen> {
           .limit(50);
 
       final messagesList = List<Map<String, dynamic>>.from(response);
+
+      // 3. Save to LocalSyncServer for next time
+      await LocalSyncServer().saveMessages(widget.receiverId, messagesList);
 
       _messagesStreamController.add(messagesList);
 
@@ -1711,7 +1699,8 @@ class _MessageScreenState extends State<MessageScreen> {
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+                  border:
+                      Border.all(color: Colors.white.withValues(alpha: 0.2)),
                 ),
                 child: Column(
                   children: [
@@ -1775,7 +1764,8 @@ class _MessageScreenState extends State<MessageScreen> {
           decoration: BoxDecoration(
             color: Colors.yellow.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.yellow.withValues(alpha: 0.2), width: 1),
+            border: Border.all(
+                color: Colors.yellow.withValues(alpha: 0.2), width: 1),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1979,8 +1969,8 @@ class _MessageScreenState extends State<MessageScreen> {
                   const Color(0xFF1E1E1E),
                 ],
               ),
-              border:
-                  Border.all(color: Colors.white.withValues(alpha: 0.1), width: 1),
+              border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.1), width: 1),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.3),
@@ -2199,7 +2189,8 @@ class _MessageScreenState extends State<MessageScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFF1E1E1E),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.12), width: 1),
+        border:
+            Border.all(color: Colors.white.withValues(alpha: 0.12), width: 1),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.4),

@@ -6,6 +6,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
+import 'package:pocket_mates_app/custom_code/services/local_sync_server.dart';
 
 import 'chat_models.dart';
 
@@ -409,29 +410,14 @@ class ChatMessages extends _$ChatMessages {
 
   // Cache Logic: Persist messages locally for 34h+ history
   Future<List<ChatMessage>> _loadFromCache(String groupId) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final key = 'chat_messages_$groupId';
-      final jsonStr = prefs.getString(key);
-      if (jsonStr != null) {
-        final List decoded = jsonDecode(jsonStr);
-        // Store ALL messages locally so they persist after DB cleanup
-        return decoded.map((m) => ChatMessage.fromJson(m)).toList();
-      }
-    } catch (_) {}
-    return [];
+    final cachedData = LocalSyncServer().getCachedMessages(groupId);
+    return cachedData
+        .map((m) => ChatMessage.fromJson(Map<String, dynamic>.from(m)))
+        .toList();
   }
 
   Future<void> _saveToCache(String groupId, List<ChatMessage> messages) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final key = 'chat_messages_$groupId';
-      // Cache ALL messages locally for full persistent history
-      final messagesToCache = messages.toList();
-      final jsonStr =
-          jsonEncode(messagesToCache.map((m) => m.toJson()).toList());
-      await prefs.setString(key, jsonStr);
-    } catch (_) {}
+    await LocalSyncServer().saveMessages(groupId, messages);
   }
 
   Future<ChatMessage?> _fetchMessageById(String id) async {

@@ -10,7 +10,9 @@ import 'package:pocket_mates_app/flutter_flow/flutter_flow_theme.dart';
 import '/custom_code/widgets/index.dart';
 import '/custom_code/widgets/tools_page.dart';
 import 'dart:convert';
+import 'dart:async' as async;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:pocket_mates_app/custom_code/widgets/verfied_search_profile_detail_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat_list_shimmer.dart';
 import 'package:pocket_mates_app/custom_code/widgets/settings_page.dart';
 import 'package:fluent_ui/fluent_ui.dart';
@@ -18,7 +20,8 @@ import 'package:flutter/material.dart' as material;
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pocket_mates_app/custom_code/widgets/chat/whats_app_groups_provider.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chat/whats_app_groups_provider.dart'
+    as groups_provider;
 import 'package:pocket_mates_app/custom_code/widgets/chat/create_group_dialog.dart';
 import 'package:pocket_mates_app/custom_code/widgets/active_users_provider.dart';
 import 'package:pocket_mates_app/custom_code/widgets/create_gallery_widget.dart';
@@ -29,6 +32,12 @@ import 'package:pocket_mates_app/custom_code/widgets/teams/teams_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/notifications_list_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/status_display_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/drawing_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/poster_designer/template_gallery_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/bulk_sender/bulk_sender_page.dart';
+
+// Aliases for WhatsApp Groups Provider to avoid naming conflicts
+typedef ChatConversation = groups_provider.ChatConversation;
+final conversationsProvider = groups_provider.conversationsProvider;
 
 class HomePageWidgetTree extends ConsumerStatefulWidget {
   const HomePageWidgetTree({
@@ -73,6 +82,12 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   int _chatTabIndex = 0;
   int _refreshKeyCount = 0;
   late PageController _pageController;
+  int _searchTabIndex = 0; // 0 for People, 1 for Products
+  List<Map<String, dynamic>> _personSearchResults = [];
+  List<Map<String, dynamic>> _productSearchResults = [];
+  bool _isSearchingPeople = false;
+  bool _isSearchingProducts = false;
+  async.Timer? _searchDebounce;
 
   @override
   void initState() {
@@ -80,18 +95,97 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     _pageController = PageController(initialPage: _chatTabIndex);
     _loadCachedData();
     _loadAllUserData();
-    _searchController.addListener(() {
-      setState(() {
-        _searchQuery = _searchController.text;
-      });
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  void _onSearchChanged() {
+    final query = _searchController.text;
+    setState(() {
+      _searchQuery = query;
     });
+
+    if (_searchDebounce?.isActive ?? false) _searchDebounce!.cancel();
+    _searchDebounce = async.Timer(const Duration(milliseconds: 500), () {
+      if (mounted) {
+        _performSearch(query);
+      }
+    });
+  }
+
+  Future<void> _performSearch(String query) async {
+    if (query.trim().isEmpty) {
+      safeSetState(() {
+        _personSearchResults = [];
+        _productSearchResults = [];
+        _isSearchingPeople = false;
+        _isSearchingProducts = false;
+      });
+      return;
+    }
+
+    safeSetState(() {
+      _isSearchingPeople = true;
+      _isSearchingProducts = true;
+    });
+
+    try {
+      // 1. Search People
+      final peopleResponse = await supabase
+          .from('profile')
+          .select()
+          .or('name.ilike.%$query%,slug.ilike.%$query%')
+          .limit(15);
+
+      // 2. Search Products (Gallery & Services)
+      final galleryResults = await supabase
+          .from('gallery')
+          .select('*, profile(name, verified, profile_image_url)')
+          .ilike('title', '%$query%')
+          .limit(10);
+
+      final serviceResults = await supabase
+          .from('service')
+          .select('*, profile(name, verified, profile_image_url)')
+          .ilike('title', '%$query%')
+          .limit(10);
+
+      safeSetState(() {
+        _personSearchResults = List<Map<String, dynamic>>.from(peopleResponse);
+
+        // Merge gallery and services for products
+        List<Map<String, dynamic>> products = [];
+        for (var item in galleryResults) {
+          products.add({...item, 'type': 'gallery'});
+        }
+        for (var item in serviceResults) {
+          products.add({...item, 'type': 'service'});
+        }
+        _productSearchResults = products;
+
+        _isSearchingPeople = false;
+        _isSearchingProducts = false;
+      });
+    } catch (e) {
+      debugPrint('Error performing search: $e');
+      safeSetState(() {
+        _isSearchingPeople = false;
+        _isSearchingProducts = false;
+      });
+    }
   }
 
   @override
   void dispose() {
     _pageController.dispose();
     _searchController.dispose();
+    if (_searchDebounce?.isActive ?? false) _searchDebounce!.cancel();
     super.dispose();
+  }
+
+  void safeSetState(VoidCallback fn) {
+    if (mounted) {
+      setState(fn);
+    }
   }
 
   void _onPageChanged(int index) {
@@ -253,22 +347,21 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                               headerSliverBuilder:
                                   (context, innerBoxIsScrolled) {
                                 return [
-                                  // Unified Dynamic Header (Stranger Rows + Status)
+                                  // Unified Coordinated Header
                                   SliverPersistentHeader(
-                                    pinned: true,
-                                    delegate: _UnifiedHomeHeaderDelegate(
+                                    pinned: false,
+                                    delegate: _HomeMainHeaderDelegate(
                                       currentUserId:
                                           supabase.auth.currentUser?.id ?? '',
-                                      currentProfileId: profileId.toString(),
+                                      currentProfileId: profileId ?? '',
                                       statusRefreshKey: _refreshKeyCount,
                                       activeUsersRef: ref.watch(
-                                          activeUsersProvider(profileId
-                                              .toString())), // Pass the provider reference
+                                          activeUsersProvider(profileId ?? '')),
                                       onTapVideo: () => _handleStrangerMatch(
                                         context,
                                         ref,
                                         'Video',
-                                        profileId.toString(),
+                                        profileId ?? '',
                                       ),
                                       onTapFriends: () {
                                         displayInfoBar(context,
@@ -285,51 +378,59 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                         context,
                                         ref,
                                         'Voice',
-                                        profileId.toString(),
+                                        profileId ?? '',
                                       ),
                                       onTapText: () => _handleStrangerChat(
-                                          context, ref, profileId.toString()),
+                                          context, ref, profileId ?? ''),
                                       onTapSettings: _handleSettings,
                                       onTapAdd: () =>
                                           _showAddBottomSheet(context),
                                       onRefresh: _handleRefresh,
-                                    ),
-                                  ),
-                                  SliverPersistentHeader(
-                                    pinned: true,
-                                    delegate: _ChatTabBarDelegate(
+                                      // Tab Bar params
                                       selectedIndex: _chatTabIndex,
-                                      onTap: _onTabTapped,
+                                      onTabTap: _onTabTapped,
+                                      // Search params
+                                      searchController: _searchController,
+                                      searchQuery: _searchQuery,
+                                      isSearching: _isSearchingPeople,
                                     ),
                                   ),
                                 ];
                               },
-                              body: material.Material(
-                                color: material.Colors.black,
-                                child: PageView(
-                                  controller: _pageController,
-                                  onPageChanged: _onPageChanged,
-                                  children: [
-                                    material.CustomScrollView(
-                                      physics: const BouncingScrollPhysics(),
-                                      slivers: [
-                                        _buildChatListSliver(
-                                            conversationsAsync),
-                                      ],
-                                    ),
-                                    material.CustomScrollView(
-                                      physics: const BouncingScrollPhysics(),
-                                      slivers: [
-                                        _buildVibesListSliver(),
-                                      ],
-                                    ),
-                                    material.CustomScrollView(
-                                      physics: const BouncingScrollPhysics(),
-                                      slivers: [
-                                        _buildAIListSliver(),
-                                      ],
-                                    ),
-                                  ],
+                              body: material.Builder(
+                                builder: (context) => material.Material(
+                                  color: material.Colors.black,
+                                  child: PageView(
+                                    controller: _pageController,
+                                    onPageChanged: _onPageChanged,
+                                    children: [
+                                      material.CustomScrollView(
+                                        physics: const BouncingScrollPhysics(
+                                            parent:
+                                                AlwaysScrollableScrollPhysics()),
+                                        slivers: [
+                                          _buildChatListSliver(
+                                              conversationsAsync),
+                                        ],
+                                      ),
+                                      material.CustomScrollView(
+                                        physics: const BouncingScrollPhysics(
+                                            parent:
+                                                AlwaysScrollableScrollPhysics()),
+                                        slivers: [
+                                          _buildVibesListSliver(),
+                                        ],
+                                      ),
+                                      material.CustomScrollView(
+                                        physics: const BouncingScrollPhysics(
+                                            parent:
+                                                AlwaysScrollableScrollPhysics()),
+                                        slivers: [
+                                          _buildAIListSliver(),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
@@ -372,139 +473,147 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Drawing Tool Tile (Added as per user request)
-            material.Material(
-              color: material.Colors.transparent,
-              child: material.InkWell(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    material.MaterialPageRoute(
-                      builder: (context) => const DrawingPage(),
-                    ),
-                  );
-                },
-                borderRadius: BorderRadius.circular(16),
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: material.Colors.white.withValues(alpha: 0.05),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: material.Colors.yellow.withValues(alpha: 0.2),
-                      width: 1,
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 50,
-                        height: 50,
-                        decoration: BoxDecoration(
-                          color: material.Colors.yellow.withValues(alpha: 0.1),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          FluentIcons.edit,
-                          color: material.Colors.yellow,
-                          size: 24,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Drawing Tool',
-                              style: GoogleFonts.inter(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: material.Colors.white,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Sketch and share your ideas',
-                              style: GoogleFonts.inter(
-                                fontSize: 13,
-                                color: material.Colors.grey[400],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Icon(
-                        FluentIcons.chevron_right,
-                        color: material.Colors.grey[600],
-                        size: 16,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 32),
-            const SizedBox(height: 40),
-            Icon(
-              material.Icons.smart_toy_outlined,
-              size: 80,
-              color: material.Colors.yellow.withValues(alpha: 0.3),
-            ),
-            const SizedBox(height: 24),
             Text(
-              'AI Assistant',
-              style: GoogleFonts.inter(
+              'Pocket Tools',
+              style: GoogleFonts.outfit(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
                 color: material.Colors.white,
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
             Text(
-              'Your intelligent companion for creative tasks, image generation, and more.',
-              textAlign: TextAlign.center,
+              'Creative and utility tools for your daily tasks',
               style: GoogleFonts.inter(
-                fontSize: 15,
+                fontSize: 14,
                 color: material.Colors.grey[400],
               ),
             ),
-            const SizedBox(height: 32),
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: material.Colors.white.withValues(alpha: 0.05),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: material.Colors.yellow.withValues(alpha: 0.2),
-                  width: 1,
+            const SizedBox(height: 24),
+            GridView.count(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              crossAxisCount: 2,
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 16,
+              childAspectRatio: 1.1,
+              children: [
+                _buildToolGridCard(
+                  title: 'Drawing Tool',
+                  subtitle: 'Sketch & Share',
+                  icon: FluentIcons.edit,
+                  color: material.Colors.yellow,
+                  onTap: () => Navigator.push(
+                    context,
+                    material.MaterialPageRoute(
+                      builder: (context) => const DrawingPage(),
+                    ),
+                  ),
+                ),
+                _buildToolGridCard(
+                  title: 'Poster Maker',
+                  subtitle: 'Design Graphics',
+                  icon: FluentIcons.photo2,
+                  color: material.Colors.orange,
+                  onTap: () => Navigator.push(
+                    context,
+                    material.MaterialPageRoute(
+                      builder: (context) => const TemplateGalleryPage(),
+                    ),
+                  ),
+                ),
+                _buildToolGridCard(
+                  title: 'Bulk Sender',
+                  subtitle: 'WhatsApp Loop',
+                  icon: FluentIcons.send,
+                  color: material.Colors.green,
+                  onTap: () => Navigator.push(
+                    context,
+                    material.MaterialPageRoute(
+                      builder: (context) => const BulkSenderPage(),
+                    ),
+                  ),
+                ),
+                _buildToolGridCard(
+                  title: 'AI Assistant',
+                  subtitle: 'Coming Soon',
+                  icon: material.Icons.smart_toy_outlined,
+                  color: material.Colors.blue,
+                  isPlaceholder: true,
+                  onTap: () {},
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildToolGridCard({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required material.Color color,
+    required VoidCallback onTap,
+    bool isPlaceholder = false,
+  }) {
+    return material.Material(
+      color: material.Colors.transparent,
+      child: material.InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(24),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: material.Colors.white.withValues(alpha: 0.05),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: color.withValues(alpha: 0.2),
+              width: 1,
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  icon,
+                  color: color,
+                  size: 20,
                 ),
               ),
-              child: Column(
+              Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Coming Soon',
+                    title,
                     style: GoogleFonts.inter(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: material.Colors.yellow,
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: material.Colors.white,
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 2),
                   Text(
-                    '• AI-powered chat conversations\n• Image generation & editing\n• Smart recommendations\n• Voice interactions',
+                    subtitle,
                     style: GoogleFonts.inter(
-                      fontSize: 14,
-                      color: material.Colors.grey[300],
-                      height: 1.6,
+                      fontSize: 11,
+                      color: material.Colors.grey[500],
                     ),
                   ),
                 ],
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -554,102 +663,92 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 
         return SliverMainAxisGroup(
           slivers: [
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-                child: Column(
-                  children: [
-                    Container(
-                      height: 52,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF1E1E1E),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.08),
-                          width: 1,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.3),
-                            blurRadius: 15,
-                            offset: const Offset(0, 6),
-                          ),
-                        ],
-                      ),
-                      child: TextBox(
-                        controller: _searchController,
-                        placeholder: 'Search for conversations...',
-                        placeholderStyle: GoogleFonts.outfit(
-                          color: material.Colors.white.withValues(alpha: 0.35),
-                          fontSize: 14,
-                        ),
-                        prefix: Padding(
-                          padding: const EdgeInsets.only(left: 14.0),
-                          child: Icon(
-                            FluentIcons.search,
-                            color:
-                                material.Colors.yellow.withValues(alpha: 0.6),
-                            size: 18,
-                          ),
-                        ),
-                        suffix: _searchQuery.isNotEmpty
-                            ? material.Material(
-                                color: material.Colors.transparent,
-                                child: material.IconButton(
-                                  icon: Icon(
-                                    FluentIcons.clear,
-                                    color: material.Colors.white
-                                        .withValues(alpha: 0.3),
-                                    size: 16,
-                                  ),
-                                  onPressed: () {
-                                    _searchController.clear();
-                                  },
-                                ),
-                              )
-                            : null,
-                        decoration: ButtonState.all(BoxDecoration(
-                          border: Border.all(style: BorderStyle.none),
-                        )),
-                        style: GoogleFonts.outfit(
-                          color: material.Colors.white,
-                          fontSize: 14,
-                        ),
-                        cursorColor: material.Colors.yellow,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                  ],
-                ),
-              ),
-            ),
-            if (filteredConversations.isEmpty)
+            const SliverToBoxAdapter(child: SizedBox(height: 12)),
+            if (_searchQuery.isNotEmpty) ...[
+              // Search Tabs (People / Products)
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.only(top: 60),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  child: Row(
                     children: [
-                      Icon(
-                        FluentIcons.search,
-                        size: 64,
-                        color: material.Colors.white.withValues(alpha: 0.1),
-                      ),
-                      const SizedBox(height: 16),
+                      _buildSearchTabItem('People', 0),
+                      const SizedBox(width: 12),
+                      _buildSearchTabItem('Products', 1),
+                    ],
+                  ),
+                ),
+              ),
+
+              if (_searchTabIndex == 0) ...[
+                // People Search Results
+                if (_personSearchResults.isEmpty && !_isSearchingPeople)
+                  const SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.all(40),
+                      child: Center(
+                          child: Text('No people found',
+                              style:
+                                  TextStyle(color: material.Colors.white70))),
+                    ),
+                  )
+                else
+                  SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        final person = _personSearchResults[index];
+                        return _buildPersonResultTile(person);
+                      },
+                      childCount: _personSearchResults.length,
+                    ),
+                  ),
+              ] else ...[
+                // Products Search Results
+                if (_productSearchResults.isEmpty && !_isSearchingProducts)
+                  const SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.all(40),
+                      child: Center(
+                          child: Text('No products found',
+                              style:
+                                  TextStyle(color: material.Colors.white70))),
+                    ),
+                  )
+                else
+                  SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        final product = _productSearchResults[index];
+                        return _buildProductResultTile(product);
+                      },
+                      childCount: _productSearchResults.length,
+                    ),
+                  ),
+              ],
+            ],
+            if (_searchQuery.isNotEmpty && filteredConversations.isNotEmpty)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 24, 20, 12),
+                  child: Row(
+                    children: [
+                      Icon(FluentIcons.chat,
+                          size: 18, color: material.Colors.yellow),
+                      const SizedBox(width: 8),
                       Text(
-                        _searchQuery.isEmpty
-                            ? 'No conversations yet'
-                            : 'No chats found for "$_searchQuery"',
-                        style: GoogleFonts.inter(
-                          color: material.Colors.white.withValues(alpha: 0.4),
+                        'Conversations',
+                        style: GoogleFonts.outfit(
                           fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: material.Colors.yellow,
+                          letterSpacing: 0.5,
                         ),
                       ),
                     ],
                   ),
                 ),
-              )
-            else
+              ),
+            if (filteredConversations.isNotEmpty)
               SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
@@ -729,6 +828,37 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                   childCount: filteredConversations.length,
                 ),
               ),
+            if (combined.isEmpty ||
+                (_searchQuery.isNotEmpty &&
+                    filteredConversations.isEmpty &&
+                    _personSearchResults.isEmpty))
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 80),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        _searchQuery.isEmpty
+                            ? FluentIcons.chat
+                            : FluentIcons.search,
+                        size: 64,
+                        color: material.Colors.white.withValues(alpha: 0.1),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        _searchQuery.isEmpty
+                            ? 'No conversations yet'
+                            : 'No results for "$_searchQuery"',
+                        style: GoogleFonts.outfit(
+                          fontSize: 16,
+                          color: material.Colors.white.withValues(alpha: 0.3),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
           ],
         );
       },
@@ -738,8 +868,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
           padding: const EdgeInsets.all(20),
           child: Center(
             child: Text(
-              'Error loading chats',
-              style: TextStyle(color: Colors.red),
+              'Error loading chats: $error',
+              style: material.TextStyle(color: material.Colors.red),
             ),
           ),
         ),
@@ -1254,7 +1384,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       randomUser = (activeFriends..shuffle()).first;
     } else {
       final List<dynamic> allUsersData = await ref
-          .read(supabaseClientProvider)
+          .read(groups_provider.supabaseClientProvider)
           .from('profile')
           .select('id, user_id, name, profile_image_url')
           .neq('id', currentProfileId)
@@ -1439,6 +1569,177 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     );
   }
 
+  Widget _buildSearchTabItem(String label, int index) {
+    final bool isSelected = _searchTabIndex == index;
+    return material.InkWell(
+      onTap: () => setState(() => _searchTabIndex = index),
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? material.Colors.yellow
+              : material.Colors.white.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          label,
+          style: GoogleFonts.outfit(
+            color: isSelected ? material.Colors.black : material.Colors.white,
+            fontSize: 13,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPersonResultTile(Map<String, dynamic> person) {
+    return material.Material(
+      color: material.Colors.transparent,
+      child: material.InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            material.MaterialPageRoute(
+              builder: (context) => VerfiedSearchProfileDetailPage(
+                userId: person['user_id'] ?? '',
+              ),
+            ),
+          );
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          child: Row(
+            children: [
+              CircularProfileImage(
+                profileImageUrl: person['profile_image_url'],
+                radius: 24,
+                isVerified: person['verified'] ?? false,
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      person['name'] ?? person['shop_name'] ?? 'Unknown',
+                      style: GoogleFonts.outfit(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: material.Colors.white,
+                      ),
+                    ),
+                    if (person['bio'] != null &&
+                        person['bio'].toString().isNotEmpty)
+                      Text(
+                        person['bio'],
+                        style: GoogleFonts.outfit(
+                          fontSize: 13,
+                          color: material.Colors.white70,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                  ],
+                ),
+              ),
+              Icon(
+                FluentIcons.chevron_right,
+                size: 12,
+                color: material.Colors.white.withValues(alpha: 0.3),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProductResultTile(Map<String, dynamic> product) {
+    final profile = product['profile'] as Map<String, dynamic>?;
+    return material.Material(
+      color: material.Colors.transparent,
+      child: material.InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            material.MaterialPageRoute(
+              builder: (context) => VerfiedSearchProfileDetailPage(
+                userId: product['user_id'] ?? '',
+              ),
+            ),
+          );
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          child: Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  image: DecorationImage(
+                    image: product['image_url'] != null
+                        ? CachedNetworkImageProvider(product['image_url'])
+                        : const material.AssetImage(
+                                'assets/images/placeholder.png')
+                            as material.ImageProvider,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      product['title'] ?? 'Product',
+                      style: GoogleFonts.outfit(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: material.Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Row(
+                      children: [
+                        Text(
+                          'by ${profile?['name'] ?? 'Unknown'}',
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            color:
+                                material.Colors.yellow.withValues(alpha: 0.7),
+                          ),
+                        ),
+                        if (profile?['verified'] == true) ...[
+                          const SizedBox(width: 4),
+                          const Icon(material.Icons.verified,
+                              size: 12, color: material.Colors.blue),
+                        ],
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              if (product['price'] != null)
+                Text(
+                  '₹${product['price']}',
+                  style: GoogleFonts.outfit(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: material.Colors.white,
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   void _showNotificationDetails(
       BuildContext context, ChatConversation notification) {
     showDialog(
@@ -1528,7 +1829,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   }
 }
 
-class _UnifiedHomeHeaderDelegate extends SliverPersistentHeaderDelegate {
+class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
   final String currentUserId;
   final String currentProfileId;
   final AsyncValue<ActiveUsersData> activeUsersRef;
@@ -1541,7 +1842,16 @@ class _UnifiedHomeHeaderDelegate extends SliverPersistentHeaderDelegate {
   final int statusRefreshKey;
   final VoidCallback onRefresh;
 
-  _UnifiedHomeHeaderDelegate({
+  // Tab Bar fields
+  final int selectedIndex;
+  final ValueChanged<int> onTabTap;
+
+  // Search fields
+  final TextEditingController searchController;
+  final String searchQuery;
+  final bool isSearching;
+
+  _HomeMainHeaderDelegate({
     required this.currentUserId,
     required this.currentProfileId,
     required this.activeUsersRef,
@@ -1553,209 +1863,353 @@ class _UnifiedHomeHeaderDelegate extends SliverPersistentHeaderDelegate {
     required this.onTapAdd,
     required this.statusRefreshKey,
     required this.onRefresh,
+    required this.selectedIndex,
+    required this.onTabTap,
+    required this.searchController,
+    required this.searchQuery,
+    required this.isSearching,
   });
+
+  @override
+  double get maxExtent =>
+      442.0; // 160 (Stranger Match) + 160 (Status) + 50 (Tabs) + 72 (Search)
+
+  @override
+  double get minExtent => 282.0;
 
   @override
   Widget build(
       BuildContext context, double shrinkOffset, bool overlapsContent) {
-    final double maxShrink = maxExtent - minExtent;
-    final double progress = (shrinkOffset / maxShrink).clamp(0.0, 1.0);
-    final double overscroll = shrinkOffset < 0 ? -shrinkOffset : 0;
-    final double overscrollScale = 1.0 + (overscroll / 300);
+    final double strangerMatchHeight = 160.0;
+    final double statusSectionHeight = 160.0;
+
+    final double progress =
+        (shrinkOffset / strangerMatchHeight).clamp(0.0, 1.0);
     final double topPadding = MediaQuery.of(context).padding.top;
 
     return material.Material(
-      color: material.Colors.transparent,
+      color: material.Colors.black,
       child: Stack(
+        clipBehavior: Clip.none,
         children: [
-          // 1. Background
-          Positioned.fill(
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [material.Colors.black, material.Colors.black],
-                ),
-              ),
-            ),
-          ),
-
-          // 2. Stranger Match Section
+          // 1. Sliding Stranger Match Cards
           Positioned(
-            top: topPadding, // Account for system status bar
+            top: -shrinkOffset * 0.8,
             left: 0,
             right: 0,
-            bottom: 160, // Match Status Bar height to avoid overlap
-            child: ClipRect(
-              child: Transform.scale(
-                scale: overscrollScale,
-                alignment: Alignment.topCenter,
-                child: Transform.translate(
-                  offset: Offset(0, -shrinkOffset * 0.6),
-                  child: Padding(
-                    padding: EdgeInsets.fromLTRB(20, 10, 20,
-                        20), // Reduced top padding since we use topPadding
+            height: strangerMatchHeight,
+            child: Opacity(
+              opacity: (1 - progress * 1.2).clamp(0.0, 1.0),
+              child: Stack(
+                children: [
+                  // Gradient Background
+                  Positioned.fill(
+                    child: Container(
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            material.Colors.black,
+                            material.Colors.black
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Match Cards
+                  Positioned(
+                    top: topPadding + 10,
+                    left: 20,
+                    right: 20,
                     child: Column(
-                      mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           'Stranger Match',
                           style: GoogleFonts.outfit(
                             color: material.Colors.white,
-                            fontSize: 24,
+                            fontSize: 20,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 12),
                         Row(
                           children: [
                             _buildMatchCard(
-                              label: 'Video Call',
+                              label: 'Video',
                               icon: FluentIcons.video,
                               color: material.Colors.blue,
                               onTap: onTapVideo,
                             ),
-                            const SizedBox(width: 16),
+                            const SizedBox(width: 8),
                             _buildMatchCard(
-                              label: 'Voice Call',
+                              label: 'Voice',
                               icon: FluentIcons.phone,
                               color: material.Colors.green,
                               onTap: onTapCall,
                             ),
+                            const SizedBox(width: 8),
+                            _buildMatchCard(
+                              label: 'Chat',
+                              icon: FluentIcons.chat,
+                              color: material.Colors.yellow,
+                              onTap: onTapText,
+                            ),
                           ],
-                        ),
-                        const SizedBox(height: 16),
-                        _buildMatchCard(
-                          label: 'Quick Anonymous Chat',
-                          icon: FluentIcons.chat,
-                          color: material.Colors.yellow,
-                          isFullWidth: true,
-                          onTap: onTapText,
                         ),
                       ],
                     ),
                   ),
-                ),
-              ),
-            ),
-          ),
-          // 3. Status Bar
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              height: 160, // Reduced height to give more room above
-              decoration: BoxDecoration(
-                color: const Color(0xFF141414).withValues(alpha: 0.95),
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(32),
-                  topRight: Radius.circular(32),
-                ),
-                border: Border(
-                  top: BorderSide(
-                      color: material.Colors.white.withValues(alpha: 0.08),
-                      width: 1),
-                ),
-              ),
-              child: material.Material(
-                color: material.Colors.transparent,
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                      child: Row(
-                        children: [
-                          material.InkWell(
-                            onTap: onTapAdd,
-                            borderRadius: BorderRadius.circular(20),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 14, vertical: 8),
-                              decoration: BoxDecoration(
-                                color: material.Colors.yellow
-                                    .withValues(alpha: 0.12),
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                    color: material.Colors.yellow
-                                        .withValues(alpha: 0.3),
-                                    width: 1),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(FluentIcons.add,
-                                      size: 14, color: material.Colors.yellow),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    'Add',
-                                    style: GoogleFonts.outfit(
-                                      color: material.Colors.yellow,
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          const Spacer(),
-                          activeUsersRef.when(
-                            data: (data) =>
-                                _buildActiveCounter(data.activeFriends.length),
-                            loading: () => const SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: ProgressRing(),
-                            ),
-                            error: (_, __) => const SizedBox(),
-                          ),
-                        ],
-                      ),
+                  // Top Header with Search, Settings
+                  Positioned(
+                    top: topPadding + 10,
+                    right: 16,
+                    child: Row(
+                      children: [
+                        _buildHeaderIconButton(
+                          icon: FluentIcons.search,
+                          onTap: () {
+                            // Focus search field
+                            onTabTap(selectedIndex); // Keep current tab
+                            // In real use, we might scroll to show search bar or focus controller
+                            searchController.selection =
+                                TextSelection.fromPosition(TextPosition(
+                                    offset: searchController.text.length));
+                          },
+                        ),
+                        const SizedBox(width: 10),
+                        _buildHeaderIconButton(
+                          icon: FluentIcons.settings,
+                          onTap: onTapSettings,
+                        ),
+                        const SizedBox(width: 10),
+                        _buildHeaderIconButton(
+                          icon: FluentIcons.add_friend,
+                          onTap: () async {
+                            final auth =
+                                await AuthAlertBox.checkAuthAndShowAlert(
+                                    context: context);
+                            if (auth) {
+                              showDialog(
+                                  context: context,
+                                  builder: (context) => CreateGroupDialog(
+                                      onGroupCreated: onRefresh));
+                            }
+                          },
+                        ),
+                      ],
                     ),
-                    StatusDisplayWidget(
-                      key: ValueKey('status_display_$statusRefreshKey'),
-                      currentUserId: currentUserId,
-                      currentProfileId: currentProfileId,
-                      onStatusUploaded: onRefresh,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-
-          // 4. Utility Buttons
-          Positioned(
-            top: topPadding + 10,
-            right: 16,
-            child: Opacity(
-              opacity: (1 - progress * 2).clamp(0.0, 1.0),
-              child: Row(
-                children: [
-                  _buildHeaderIconButton(
-                      icon: FluentIcons.settings, onTap: onTapSettings),
-                  const SizedBox(width: 10),
-                  _buildHeaderIconButton(
-                    icon: FluentIcons.add_friend,
-                    onTap: () async {
-                      final auth = await AuthAlertBox.checkAuthAndShowAlert(
-                          context: context);
-                      if (auth) {
-                        showDialog(
-                            context: context,
-                            builder: (context) =>
-                                CreateGroupDialog(onGroupCreated: onRefresh));
-                      }
-                    },
                   ),
                 ],
               ),
             ),
           ),
+
+          // 2. Sticky Section (Status + Tabs + Search)
+          Positioned(
+            top: (strangerMatchHeight - shrinkOffset).clamp(0.0, 400.0),
+            left: 0,
+            right: 0,
+            child: Column(
+              children: [
+                // Horizontal Status Row (Always Sticky)
+                Container(
+                  height: statusSectionHeight,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0F0F0F),
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(32),
+                      topRight: Radius.circular(32),
+                    ),
+                    border: Border(
+                      top: BorderSide(
+                          color: material.Colors.white.withValues(alpha: 0.1),
+                          width: 1),
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+                        child: Row(
+                          children: [
+                            material.InkWell(
+                              onTap: onTapAdd,
+                              borderRadius: BorderRadius.circular(20),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 14, vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: material.Colors.yellow
+                                      .withValues(alpha: 0.12),
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(
+                                      color: material.Colors.yellow
+                                          .withValues(alpha: 0.3),
+                                      width: 1),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(FluentIcons.add,
+                                        size: 14,
+                                        color: material.Colors.yellow),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      'Add',
+                                      style: GoogleFonts.outfit(
+                                        color: material.Colors.yellow,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const Spacer(),
+                            activeUsersRef.when(
+                              data: (data) => _buildActiveCounter(
+                                  data.activeFriends.length),
+                              loading: () => const SizedBox(
+                                width: 14,
+                                height: 14,
+                                child: ProgressRing(),
+                              ),
+                              error: (_, __) => const SizedBox(),
+                            ),
+                          ],
+                        ),
+                      ),
+                      StatusDisplayWidget(
+                        key: ValueKey('status_display_$statusRefreshKey'),
+                        currentUserId: currentUserId,
+                        currentProfileId: currentProfileId,
+                        onStatusUploaded: onRefresh,
+                      ),
+                    ],
+                  ),
+                ),
+                // Tab Bar
+                Container(
+                  height: 50,
+                  color: material.Colors.black,
+                  child: Row(
+                    children: [
+                      _buildTabItem('Chats', 0),
+                      _buildTabItem('Vibes', 1),
+                      _buildTabItem('Tools', 2),
+                    ],
+                  ),
+                ),
+                // Search Bar
+                Container(
+                  height: 72,
+                  color: material.Colors.black,
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1E1E1E),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: material.Colors.white.withValues(alpha: 0.08),
+                        width: 1,
+                      ),
+                    ),
+                    child: TextBox(
+                      controller: searchController,
+                      placeholder: 'Search for people or conversations...',
+                      placeholderStyle: GoogleFonts.outfit(
+                        color: material.Colors.white.withValues(alpha: 0.35),
+                        fontSize: 14,
+                      ),
+                      prefix: Padding(
+                        padding: const EdgeInsets.only(left: 14.0),
+                        child: Icon(
+                          FluentIcons.search,
+                          color: material.Colors.yellow.withValues(alpha: 0.6),
+                          size: 18,
+                        ),
+                      ),
+                      suffix: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (isSearching)
+                            const Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 12.0),
+                              child: SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: ProgressRing(),
+                              ),
+                            ),
+                          if (searchQuery.isNotEmpty)
+                            material.Material(
+                              color: material.Colors.transparent,
+                              child: material.IconButton(
+                                icon: Icon(
+                                  FluentIcons.clear,
+                                  color: material.Colors.white
+                                      .withValues(alpha: 0.3),
+                                  size: 16,
+                                ),
+                                onPressed: () => searchController.clear(),
+                              ),
+                            ),
+                        ],
+                      ),
+                      decoration: ButtonState.all(BoxDecoration(
+                        border: Border.all(style: BorderStyle.none),
+                      )),
+                      style: GoogleFonts.outfit(
+                        color: material.Colors.white,
+                        fontSize: 14,
+                      ),
+                      cursorColor: material.Colors.yellow,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildTabItem(String label, int index) {
+    final isSelected = selectedIndex == index;
+    return Expanded(
+      child: material.Material(
+        color: material.Colors.transparent,
+        child: material.InkWell(
+          onTap: () => onTabTap(index),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            decoration: BoxDecoration(
+              border: isSelected
+                  ? Border(
+                      bottom: BorderSide(
+                        color: material.Colors.yellow,
+                        width: 2.5,
+                      ),
+                    )
+                  : null,
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              label,
+              style: GoogleFonts.outfit(
+                color: isSelected
+                    ? material.Colors.yellow
+                    : material.Colors.white.withValues(alpha: 0.5),
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                fontSize: 16,
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -1767,37 +2221,26 @@ class _UnifiedHomeHeaderDelegate extends SliverPersistentHeaderDelegate {
     required VoidCallback onTap,
     bool isFullWidth = false,
   }) {
-    final card = Container(
-      width: isFullWidth ? double.infinity : null,
-      height: isFullWidth ? 80 : 120,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.04),
-        borderRadius: BorderRadius.circular(24),
-        border:
-            Border.all(color: Colors.white.withValues(alpha: 0.08), width: 1),
-      ),
-      child: isFullWidth
-          ? Row(
-              children: [
-                _buildMatchIcon(icon, color),
-                const SizedBox(width: 16),
-                Text(label,
-                    style: GoogleFonts.outfit(
-                        color: material.Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600)),
-                const Spacer(),
-                Icon(FluentIcons.chevron_right,
-                    color: material.Colors.white.withValues(alpha: 0.3),
-                    size: 14),
-              ],
-            )
-          : Column(
+    return Expanded(
+      child: material.Material(
+        color: material.Colors.transparent,
+        child: material.InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(30),
+          child: Container(
+            height: 56,
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            decoration: BoxDecoration(
+              color: material.Colors.white.withValues(alpha: 0.05),
+              borderRadius: BorderRadius.circular(30),
+              border: Border.all(
+                  color: material.Colors.white.withValues(alpha: 0.08)),
+            ),
+            child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 _buildMatchIcon(icon, color),
-                const SizedBox(height: 12),
+                const SizedBox(width: 8),
                 Text(label,
                     style: GoogleFonts.outfit(
                         color: material.Colors.white,
@@ -1805,38 +2248,20 @@ class _UnifiedHomeHeaderDelegate extends SliverPersistentHeaderDelegate {
                         fontWeight: FontWeight.w600)),
               ],
             ),
+          ),
+        ),
+      ),
     );
-
-    return isFullWidth
-        ? material.Material(
-            color: material.Colors.transparent,
-            child: material.InkWell(
-                onTap: onTap,
-                borderRadius: BorderRadius.circular(24),
-                child: card))
-        : Expanded(
-            child: material.Material(
-                color: material.Colors.transparent,
-                child: material.InkWell(
-                    onTap: onTap,
-                    borderRadius: BorderRadius.circular(24),
-                    child: card)));
   }
 
   Widget _buildMatchIcon(IconData icon, Color color) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.12),
         shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-              color: color.withValues(alpha: 0.2),
-              blurRadius: 20,
-              spreadRadius: -5),
-        ],
       ),
-      child: Icon(icon, color: color, size: 24),
+      child: Icon(icon, color: color, size: 20),
     );
   }
 
@@ -1846,8 +2271,6 @@ class _UnifiedHomeHeaderDelegate extends SliverPersistentHeaderDelegate {
       decoration: BoxDecoration(
         color: const Color(0xFF10B981).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-            color: const Color(0xFF10B981).withValues(alpha: 0.2), width: 1),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1856,23 +2279,14 @@ class _UnifiedHomeHeaderDelegate extends SliverPersistentHeaderDelegate {
             width: 8,
             height: 8,
             decoration: const BoxDecoration(
-              color: Color(0xFF10B981),
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                    color: Color(0xFF10B981), blurRadius: 8, spreadRadius: 2),
-              ],
-            ),
+                color: Color(0xFF10B981), shape: BoxShape.circle),
           ),
           const SizedBox(width: 8),
-          Text(
-            '$count Active',
-            style: GoogleFonts.outfit(
-              color: const Color(0xFF10B981),
-              fontSize: 13,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+          Text('$count Active',
+              style: GoogleFonts.outfit(
+                  color: const Color(0xFF10B981),
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold)),
         ],
       ),
     );
@@ -1880,29 +2294,27 @@ class _UnifiedHomeHeaderDelegate extends SliverPersistentHeaderDelegate {
 
   Widget _buildHeaderIconButton(
       {required IconData icon, required VoidCallback onTap}) {
-    return Container(
-      decoration: BoxDecoration(
-        color: material.Colors.white.withValues(alpha: 0.05),
-        shape: BoxShape.circle,
-        border: Border.all(
-            color: material.Colors.white.withValues(alpha: 0.1), width: 1),
-      ),
-      child: material.Material(
-        color: material.Colors.transparent,
-        child: material.IconButton(
-          icon: Icon(icon, color: material.Colors.white, size: 20),
-          onPressed: onTap,
+    return material.IconButton(
+      icon: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: material.Colors.white.withValues(alpha: 0.05),
+          shape: BoxShape.circle,
         ),
+        child: Icon(icon, color: material.Colors.white, size: 20),
       ),
+      onPressed: onTap,
     );
   }
 
   @override
-  double get maxExtent => 520.0;
-  @override
-  double get minExtent => 180.0;
-  @override
-  bool shouldRebuild(covariant _UnifiedHomeHeaderDelegate oldDelegate) => true;
+  bool shouldRebuild(covariant _HomeMainHeaderDelegate oldDelegate) {
+    return oldDelegate.selectedIndex != selectedIndex ||
+        oldDelegate.searchQuery != searchQuery ||
+        oldDelegate.isSearching != isSearching ||
+        oldDelegate.statusRefreshKey != statusRefreshKey ||
+        oldDelegate.activeUsersRef != activeUsersRef;
+  }
 }
 
 class CircularProfileImage extends StatelessWidget {
@@ -1966,76 +2378,4 @@ class CircularProfileImage extends StatelessWidget {
   }
 }
 
-class _ChatTabBarDelegate extends SliverPersistentHeaderDelegate {
-  final int selectedIndex;
-  final ValueChanged<int> onTap;
-
-  _ChatTabBarDelegate({required this.selectedIndex, required this.onTap});
-
-  @override
-  double get minExtent => 50.0;
-  @override
-  double get maxExtent => 50.0;
-
-  @override
-  Widget build(
-      BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return Container(
-      color: HomePageWidgetTree.backgroundColor,
-      child: Row(
-        children: [
-          _buildTab('Chats', 0),
-          _buildTab('Vibes', 1),
-          _buildTab('Tools', 2),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTab(String label, int index) {
-    final isSelected = selectedIndex == index;
-    return Expanded(
-      child: material.Material(
-        color: material.Colors.transparent,
-        child: material.InkWell(
-          onTap: () => onTap(index),
-          borderRadius: BorderRadius.circular(12),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            height: 50,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: isSelected
-                  ? material.Colors.yellow.withValues(alpha: 0.05)
-                  : material.Colors.transparent,
-              border: isSelected
-                  ? Border(
-                      bottom: BorderSide(
-                        color: material.Colors.yellow,
-                        width: 2.5,
-                      ),
-                    )
-                  : null,
-            ),
-            child: Text(
-              label,
-              style: GoogleFonts.outfit(
-                color: isSelected
-                    ? material.Colors.yellow
-                    : material.Colors.white.withValues(alpha: 0.5),
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                fontSize: 16,
-                letterSpacing: 0.5,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  @override
-  bool shouldRebuild(_ChatTabBarDelegate oldDelegate) {
-    return oldDelegate.selectedIndex != selectedIndex;
-  }
-}
+// --- Original delegates removed, merged into _HomeMainHeaderDelegate ---

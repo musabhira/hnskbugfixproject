@@ -1,29 +1,18 @@
 import 'dart:convert';
-import 'dart:convert';
-import 'package:fluent_ui/fluent_ui.dart' hide Colors, IconButton, Tooltip;
 import 'package:fluent_ui/fluent_ui.dart' hide Colors, IconButton, Tooltip;
 import 'package:flutter/material.dart' as material;
-import 'package:flutter/material.dart' as material;
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:shimmer/shimmer.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
-import 'package:pocket_mates_app/backend/supabase/supabase.dart';
-import 'package:pocket_mates_app/custom_code/widgets/message_screen.dart';
 import 'package:pocket_mates_app/custom_code/widgets/message_screen.dart';
 import 'package:pocket_mates_app/custom_code/widgets/gallery_profile_search_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/gallery_profile_search_page.dart';
+import 'package:timeago/timeago.dart' as timeago;
+import 'package:url_launcher/url_launcher.dart';
 
 class MainProfileWidget extends StatefulWidget {
   final String? userId;
@@ -61,6 +50,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   Map<String, dynamic>? _profileData;
   List<Map<String, dynamic>> _galleryItems = [];
   List<Map<String, dynamic>> _serviceItems = [];
+  List<Map<String, dynamic>> _threadItems = [];
 
   // Theme Colors
   Color? _bgColor;
@@ -92,8 +82,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   @override
   void initState() {
     super.initState();
-    _tabController = material.TabController(length: 2, vsync: this);
+    _tabController = material.TabController(length: 3, vsync: this);
     _loadInitialData(); // Instant load strategy
+    _fetchThreads();
   }
 
   @override
@@ -211,6 +202,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
       // Lazy load full lists in background
       _fetchFullLists();
+      _fetchThreads();
     } catch (e) {
       debugPrint('Error fetching fresh data: $e');
       if (mounted) setState(() => _isLoading = false);
@@ -233,6 +225,24 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       }
     } catch (e) {
       debugPrint('Error fetching full lists: $e');
+    }
+  }
+
+  Future<void> _fetchThreads() async {
+    try {
+      final res = await _supabase
+          .from('threads_view')
+          .select()
+          .eq('user_id', userId)
+          .order('created_at', ascending: false);
+
+      if (mounted) {
+        setState(() {
+          _threadItems = List<Map<String, dynamic>>.from(res);
+        });
+      }
+    } catch (e) {
+      debugPrint('Error fetching threads: $e');
     }
   }
 
@@ -362,7 +372,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     final btnTextColor = _btnTextColor ?? const Color(0xFF000000);
 
     return ScaffoldPage(
-      content: Container(
+      content: material.Material(
         color: bgColor,
         child: material.NestedScrollView(
           controller: _scrollController,
@@ -437,7 +447,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 ),
               ),
               material.SliverToBoxAdapter(
-                child: _buildProfileHeader(textColor, btnColor, btnTextColor),
+                child: _buildProfileHeader(
+                    textColor, btnColor, btnTextColor, isMe),
               ),
               material.SliverPersistentHeader(
                 pinned: true,
@@ -452,6 +463,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                     tabs: const [
                       material.Tab(text: "Gallery"),
                       material.Tab(text: "Services"),
+                      material.Tab(text: "Thoughts"),
                     ],
                   ),
                   bgColor,
@@ -521,7 +533,19 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                         btnColor: btnColor,
                         btnTextColor: btnTextColor,
                       ),
-                      _ServicesTab(items: _serviceItems, textColor: textColor),
+                      _ServicesTab(
+                        items: _serviceItems,
+                        textColor: textColor,
+                        btnColor: btnColor,
+                        btnTextColor: btnTextColor,
+                        userId: userId,
+                      ),
+                      _ThreadsTab(
+                        items: _threadItems,
+                        textColor: textColor,
+                        btnColor: btnColor,
+                        btnTextColor: btnTextColor,
+                      ),
                     ],
                   ),
                 ),
@@ -556,7 +580,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   }
 
   Widget _buildProfileHeader(
-      Color textColor, Color btnColor, Color btnTextColor) {
+      Color textColor, Color btnColor, Color btnTextColor, bool isMe) {
     if (_isLoading && _profileData == null) {
       return _buildShimmerHeader();
     }
@@ -566,6 +590,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     final bio = _profileData?['bio'] ?? '';
     final profileUrl = _profileData?['profile_image_url'];
     final isVerified = _profileData?['verified'] == true;
+    final slug = _profileData?['slug'];
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -644,6 +669,41 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               overflow: TextOverflow.ellipsis,
             ),
           ],
+          if (slug != null && slug.toString().isNotEmpty) ...[
+            const SizedBox(height: 10),
+            GestureDetector(
+              onTap: () async {
+                final url = Uri.parse('https://handskillapp.web.app/$slug');
+                if (await canLaunchUrl(url)) {
+                  await launchUrl(url, mode: LaunchMode.externalApplication);
+                }
+              },
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: btnColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: btnColor.withValues(alpha: 0.2)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(FluentIcons.globe, color: btnColor, size: 14),
+                    const SizedBox(width: 8),
+                    Text(
+                      "handskillapp.web.app/$slug",
+                      style: GoogleFonts.inter(
+                        color: btnColor,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
           const SizedBox(height: 20),
           // Action Buttons
           if (!isMe)
@@ -692,7 +752,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                     style: ButtonStyle(
                       shape: ButtonState.all(
                         RoundedRectangleBorder(
-                            side: BorderSide(color: textColor.withValues(alpha: 0.3)),
+                            side: BorderSide(
+                                color: textColor.withValues(alpha: 0.3)),
                             borderRadius: BorderRadius.circular(12)),
                       ),
                     ),
@@ -704,6 +765,50 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   ),
                 ),
               ],
+            ),
+          if (isMe)
+            material.Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: material.SizedBox(
+                width: double.infinity,
+                child: Button(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      material.MaterialPageRoute(
+                        builder: (context) => VerfiedSwitchPage(
+                          userId: userId,
+                        ),
+                      ),
+                    );
+                  },
+                  style: ButtonStyle(
+                    backgroundColor:
+                        ButtonState.all(btnColor.withValues(alpha: 0.1)),
+                    foregroundColor: ButtonState.all(btnColor),
+                    padding: ButtonState.all(
+                      const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    shape: ButtonState.all(
+                      RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: BorderSide(color: btnColor, width: 1),
+                      ),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(FluentIcons.edit, color: btnColor, size: 16),
+                      const SizedBox(width: 8),
+                      const Text(
+                        "Edit Profile",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ),
           const SizedBox(height: 12),
           if (_profileData != null &&
@@ -927,15 +1032,33 @@ class _GalleryTab extends StatelessWidget {
 class _ServicesTab extends StatelessWidget {
   final List<Map<String, dynamic>> items;
   final Color textColor;
-  const _ServicesTab({Key? key, required this.items, required this.textColor})
-      : super(key: key);
+  final Color btnColor;
+  final Color btnTextColor;
+  final String userId;
+
+  const _ServicesTab({
+    Key? key,
+    required this.items,
+    required this.textColor,
+    required this.btnColor,
+    required this.btnTextColor,
+    required this.userId,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     if (items.isEmpty) {
       return Center(
-        child: Text("No services listed",
-            style: TextStyle(color: textColor.withValues(alpha: 0.5))),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(FluentIcons.toolbox,
+                size: 48, color: textColor.withValues(alpha: 0.3)),
+            const SizedBox(height: 16),
+            Text("No services listed",
+                style: TextStyle(color: textColor.withValues(alpha: 0.5))),
+          ],
+        ),
       );
     }
     return ListView.builder(
@@ -950,65 +1073,218 @@ class _ServicesTab extends StatelessWidget {
 
         return Container(
           margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: textColor.withValues(alpha: 0.05),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: textColor.withValues(alpha: 0.1)),
+            color: textColor.withValues(alpha: 0.03),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: textColor.withValues(alpha: 0.08)),
           ),
-          child: Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: 50,
-                height: 50,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF0078D4).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child:
-                    const Icon(FluentIcons.toolbox, color: Color(0xFF0078D4)),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: GoogleFonts.outfit(
-                          color: textColor,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: btnColor.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    if (desc != null && desc.toString().isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 2),
-                        child: Text(
-                          desc,
-                          style: GoogleFonts.inter(
-                            color: textColor.withValues(alpha: 0.6),
-                            fontSize: 12,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-              if (price != null)
-                Text(
-                  '₹${price}',
-                  style: GoogleFonts.outfit(
-                    color: const Color(0xFF00CC6A),
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
+                    child: Icon(FluentIcons.toolbox, color: btnColor, size: 20),
                   ),
-                ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: GoogleFonts.outfit(
+                            color: textColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 17,
+                          ),
+                        ),
+                        if (desc != null && desc.toString().isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 4),
+                            child: Text(
+                              desc,
+                              style: GoogleFonts.inter(
+                                color: textColor.withValues(alpha: 0.6),
+                                fontSize: 13,
+                                height: 1.4,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  if (price != null)
+                    Text(
+                      '₹$price',
+                      style: GoogleFonts.outfit(
+                        color: const Color(0xFF00CC6A),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                      ),
+                    ),
+                  material.ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        material.MaterialPageRoute(
+                          builder: (context) => MessageScreen(
+                            receiverId: userId,
+                            receiverName: title,
+                            phonenumber: '', // Can add if needed
+                          ),
+                        ),
+                      );
+                    },
+                    style: material.ElevatedButton.styleFrom(
+                      backgroundColor: btnColor,
+                      foregroundColor: btnTextColor,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 12),
+                    ),
+                    child: const Text(
+                      "Enquire",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         );
       },
+    );
+  }
+}
+
+class _ThreadsTab extends StatelessWidget {
+  final List<Map<String, dynamic>> items;
+  final Color textColor;
+  final Color btnColor;
+  final Color btnTextColor;
+
+  const _ThreadsTab({
+    Key? key,
+    required this.items,
+    required this.textColor,
+    required this.btnColor,
+    required this.btnTextColor,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    if (items.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(FluentIcons.chat,
+                size: 48, color: textColor.withValues(alpha: 0.3)),
+            const SizedBox(height: 16),
+            Text("No thoughts shared yet",
+                style: TextStyle(color: textColor.withValues(alpha: 0.5))),
+          ],
+        ),
+      );
+    }
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: items.length,
+      itemBuilder: (ctx, idx) {
+        final thread = items[idx];
+        final content = thread['content'] ?? '';
+        final createdAt = thread['created_at'];
+        final timeStr =
+            createdAt != null ? timeago.format(DateTime.parse(createdAt)) : '';
+
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: textColor.withValues(alpha: 0.03),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: textColor.withValues(alpha: 0.08)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Text(
+                    timeStr,
+                    style: GoogleFonts.inter(
+                      color: textColor.withValues(alpha: 0.4),
+                      fontSize: 12,
+                    ),
+                  ),
+                  const Spacer(),
+                  Icon(FluentIcons.more,
+                      size: 14, color: textColor.withValues(alpha: 0.3)),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                content,
+                style: GoogleFonts.inter(
+                  color: textColor,
+                  fontSize: 15,
+                  height: 1.5,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  _buildThreadStat(
+                    FluentIcons.heart,
+                    ((thread['like_count'] ?? 0) + (thread['fake_likes'] ?? 0))
+                        .toString(),
+                  ),
+                  const SizedBox(width: 20),
+                  _buildThreadStat(
+                    FluentIcons.comment,
+                    (thread['comment_count'] ?? 0).toString(),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildThreadStat(IconData icon, String label) {
+    return Row(
+      children: [
+        Icon(icon, size: 16, color: textColor.withValues(alpha: 0.5)),
+        const SizedBox(width: 6),
+        Text(
+          label,
+          style: GoogleFonts.inter(
+            color: textColor.withValues(alpha: 0.5),
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
     );
   }
 }

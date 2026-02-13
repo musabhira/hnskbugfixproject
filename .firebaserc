@@ -1,5 +1,7 @@
 {
   "projects": {
-    "default": "pocketmates"
-  }
+    "default": "handskillapp"
+  },
+  "targets": {},
+  "etags": {}
 }

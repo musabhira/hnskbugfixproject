@@ -1,0 +1,25 @@
+﻿Analyzing voice_recorder.dart...                                
+
+warning - Unused import: 'package:permission_handler/permission_handler.dart' - lib\custom_code\widgets\chat\voice_recorder.dart:7:8 - unused_import
+   info - Statements in an if should be enclosed in a block - lib\custom_code\widgets\chat\voice_recorder.dart:270:25 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\custom_code\widgets\chat\voice_recorder.dart:272:25 - curly_braces_in_flow_control_structures
+  error - The argument type 'num' can't be assigned to the parameter type 'double'.  - lib\custom_code\widgets\chat\voice_recorder.dart:294:27 - argument_type_not_assignable
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\custom_code\widgets\chat\voice_recorder.dart:309:53 - deprecated_member_use
+
+flutter : 5 issues found. 
+(ran in 3.9s)
+At line:1 char:1
++ flutter analyze lib/custom_
+code/widgets/chat/voice_recor
+der.dart --no ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~
+    + CategoryInfo           
+   : NotSpecified: (5 issue  
+  s found. (ran in 3.9s):S   
+ tring) [], RemoteExcepti    
+on
+    + FullyQualifiedErrorId  
+   : NativeCommandError
+ 

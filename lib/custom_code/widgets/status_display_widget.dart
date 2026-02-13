@@ -1,44 +1,25 @@
 // Automatic FlutterFlow imports
 import '/backend/supabase/supabase.dart';
-import '/backend/supabase/supabase.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
 import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
-import 'package:shimmer/shimmer.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:pocket_mates_app/custom_code/widgets/gallery_profile_search_page.dart'; // Import for Gallery Detail Page
 import 'package:pocket_mates_app/custom_code/widgets/gallery_profile_search_page.dart'; // Import for Gallery Detail Page
 import 'package:video_compress/video_compress.dart';
-import 'package:video_compress/video_compress.dart';
-import 'package:image/image.dart' as img;
 import 'package:image/image.dart' as img;
 import 'package:flutter/foundation.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter/services.dart';
 import 'dart:io' as io;
-import 'dart:io' as io;
-import 'package:video_player/video_player.dart';
 import 'package:video_player/video_player.dart';
 import 'dart:convert';
-import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timeago/timeago.dart' as timeago;
-import 'package:timeago/timeago.dart' as timeago;
 import 'package:google_fonts/google_fonts.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
 class StatusDisplayWidget extends StatefulWidget {
@@ -461,7 +442,8 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
                     decoration: BoxDecoration(
                       color: const Color(0xFF2A2A2A),
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+                      border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.08)),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -488,7 +470,8 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
                     decoration: BoxDecoration(
                       color: const Color(0xFF2A2A2A),
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+                      border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.08)),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -741,7 +724,8 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
                         ],
                       ),
                       border: Border.all(
-                          color: Colors.yellow.withValues(alpha: 0.3), width: 1),
+                          color: Colors.yellow.withValues(alpha: 0.3),
+                          width: 1),
                     ),
                     child: const Icon(Icons.add_rounded,
                         size: 26, color: Colors.yellow),
@@ -771,7 +755,8 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
                   const SizedBox(height: 4),
                   Text('Share your moment',
                       style: GoogleFonts.outfit(
-                          color: Colors.white.withValues(alpha: 0.5), fontSize: 13)),
+                          color: Colors.white.withValues(alpha: 0.5),
+                          fontSize: 13)),
                 ],
               ),
             ],
@@ -1183,7 +1168,7 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
 
       setState(() {
         _isLiked = response != null;
-        _likeCount = likesCount.count ?? 0;
+        _likeCount = likesCount.count;
       });
     } catch (e) {
       debugPrint('Error loading like status: $e');
@@ -1851,7 +1836,8 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
             if (_dragPosition.abs() > 0.1)
               Positioned.fill(
                 child: Container(
-                  color: Colors.black.withValues(alpha: 0.3 * _dragPosition.abs()),
+                  color:
+                      Colors.black.withValues(alpha: 0.3 * _dragPosition.abs()),
                   child: Center(
                     child: Icon(
                       _dragPosition > 0
@@ -2002,7 +1988,8 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                                   color: Colors.yellow.withValues(alpha: 0.2),
                                   borderRadius: BorderRadius.circular(12),
                                   border: Border.all(
-                                      color: Colors.yellow.withValues(alpha: 0.4),
+                                      color:
+                                          Colors.yellow.withValues(alpha: 0.4),
                                       width: 0.5),
                                 ),
                                 child: Row(

@@ -1,17 +1,10 @@
 import 'dart:async';
-import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:pocket_mates_app/backend/supabase/database/database.dart';
-import 'package:pocket_mates_app/backend/supabase/database/database.dart';
-import 'package:pocket_mates_app/custom_code/widgets/gallery_search_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/gallery_search_page.dart';
 import 'package:pocket_mates_app/flutter_flow/flutter_flow_util.dart';
-import 'package:pocket_mates_app/flutter_flow/flutter_flow_util.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class GalleryTabViewPage extends StatefulWidget {
@@ -235,8 +228,8 @@ class _GalleryTabViewPageState extends State<GalleryTabViewPage> {
                 ],
               ),
               borderRadius: BorderRadius.circular(20),
-              border:
-                  Border.all(color: Colors.amber.withValues(alpha: 0.3), width: 1),
+              border: Border.all(
+                  color: Colors.amber.withValues(alpha: 0.3), width: 1),
             ),
             child: Column(
               children: [
