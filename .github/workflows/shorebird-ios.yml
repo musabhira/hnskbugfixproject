@@ -15,7 +15,7 @@ on:
 jobs:
   ios-shorebird:
     name: Shorebird iOS ${{ inputs.action }}
-    runs-on: macos-latest
+    runs-on: macos-15
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -24,16 +24,16 @@ jobs:
         run: |
           echo "Listing available Xcode versions:"
           ls -d /Applications/Xcode*
-          echo "Selecting newest Xcode..."
-          sudo xcode-select -s /Applications/Xcode_16.4.app || sudo xcode-select -s /Applications/Xcode_16.3.app || echo "Using default Xcode"
+          NEWEST_XCODE=$(ls -d /Applications/Xcode* | tail -n 1)
+          echo "Selecting newest Xcode: $NEWEST_XCODE"
+          sudo xcode-select -s "$NEWEST_XCODE"
           xcodebuild -version
 
       - name: Setup Shorebird
         uses: shorebirdtech/setup-shorebird@v1
         with:
           shorebird-version: 'stable'
-          # Force installing the specific Flutter version used by your project
-          flutter-version: '3.38.7' 
+          # Remove hardcoded flutter-version to use the latest supported by Shorebird
 
       - name: Install Apple Certificates
         env:
