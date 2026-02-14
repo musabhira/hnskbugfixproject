@@ -23,7 +23,22 @@
   - Line 371: `Colors.white.withValues(alpha: 0.3)`
   - Line 426: `Colors.black.withValues(alpha: 0.7)`
 
-### 3. **Verification Results**
+### 3. **Fixed iOS Startup Crashes (Build 19)**
+
+#### `main.dart`
+- ✅ **Platform Safety**: Wrapped `usePathUrlStrategy()` in `kIsWeb` check to prevent crashes on native iOS/Android.
+- ✅ **Resilient Initialization**: Wrapped `SupaFlow`, `LocalSyncServer`, and `FlutterFlowTheme` initializations in a `try-catch` block to prevent fatal app crashes if one service fails to load.
+
+#### `nav.nav.dart`
+- ✅ **Auth Redirect Fix**: Corrected the redirect path for unauthenticated users from `/homePage` (restricted) to `/authPage` (public), preventing infinite redirect loops.
+
+#### `PrivacyInfo.xcprivacy`
+- ✅ **Apple Privacy Compliance**: Populated the required Privacy Manifest with reasons for accessing `UserDefaults`, `FileTimestamp`, and `DiskSpace` APIs, meeting Apple's 2024 transparency requirements.
+
+#### General
+- ✅ **Import Cleanup**: Removed duplicate imports in `main_market_page.dart` and other files.
+
+### 4. **Verification Results**
 ```bash
 flutter analyze lib/custom_code/widgets/webrtc_matching_service.dart lib/custom_code/widgets/webrtc_session_screen.dart
 
@@ -69,5 +84,5 @@ flutter analyze lib/custom_code/widgets/webrtc_matching_service.dart lib/custom_
 
 ---
 
-**Last Updated**: 2026-01-03 10:17 PST
+Last Updated: 2026-02-14 10:17 PST
 **Status**: ✅ All bugs fixed, ready for testing

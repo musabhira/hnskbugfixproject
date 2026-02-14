@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_web_plugins/url_strategy.dart';
 
 import 'auth/supabase_auth/supabase_user_provider.dart';
@@ -17,13 +18,18 @@ import 'custom_code/services/local_sync_server.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   GoRouter.optionURLReflectsImperativeAPIs = true;
-  usePathUrlStrategy();
 
-  await SupaFlow.initialize();
+  if (kIsWeb) {
+    usePathUrlStrategy();
+  }
 
-  await LocalSyncServer().initialize();
-
-  await FlutterFlowTheme.initialize();
+  try {
+    await SupaFlow.initialize();
+    await LocalSyncServer().initialize();
+    await FlutterFlowTheme.initialize();
+  } catch (e) {
+    debugPrint('Initialization error: $e');
+  }
 
   runApp(ProviderScope(child: MyApp()));
 }

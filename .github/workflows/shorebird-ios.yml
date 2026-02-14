@@ -78,4 +78,4 @@ jobs:
         run: |
           mkdir -p ~/.private_keys
           echo "$APP_STORE_CONNECT_KEY_CONTENT" > ~/.private_keys/AuthKey_$APP_STORE_CONNECT_KEY_ID.p8
-          xcrun altool --upload-app --type ios --file build/ios/ipa/*.ipa --apiKey "$APP_STORE_CONNECT_KEY_ID" --apiIssuer "$APP_STORE_CONNECT_ISSUER_ID"
+          xcrun altool --upload-package --type ios --file build/ios/ipa/*.ipa --apiKey "$APP_STORE_CONNECT_KEY_ID" --apiIssuer "$APP_STORE_CONNECT_ISSUER_ID"

@@ -1,16 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:shimmer/shimmer.dart';
 import 'package:pocket_mates_app/custom_code/widgets/main_market_logic.dart';
-import 'package:pocket_mates_app/custom_code/widgets/main_market_logic.dart';
-import 'package:pocket_mates_app/custom_code/widgets/gallery_search_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/gallery_search_page.dart';
 
 class MainMarketPage extends ConsumerStatefulWidget {
@@ -353,7 +346,8 @@ class MarketExploreTabView extends ConsumerWidget {
             decoration: BoxDecoration(
               color: Colors.black,
               border: Border(
-                  bottom: BorderSide(color: Colors.white.withValues(alpha: 0.05))),
+                  bottom:
+                      BorderSide(color: Colors.white.withValues(alpha: 0.05))),
             ),
             child: TabBar(
               isScrollable: true,

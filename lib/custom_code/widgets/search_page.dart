@@ -3,7 +3,6 @@ import 'package:pocket_mates_app/custom_code/widgets/search_profile_detail_page.
 import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
 
 import '/backend/supabase/supabase.dart';
-import '/flutter_flow/flutter_flow_util.dart';
 import 'index.dart'; // Imports other custom widgets
 // Imports custom actions
 import 'package:flutter/material.dart';
@@ -12,7 +11,6 @@ import 'package:flutter/material.dart';
 
 import 'dart:async';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:intl/intl.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({
@@ -637,15 +635,12 @@ class FollowButton extends StatefulWidget {
 class _FollowButtonState extends State<FollowButton> {
   late bool _isFollowing;
   bool _isLoading = false;
-  DateTime? _firstFollowTimestamp;
   final _supabase = SupaFlow.client;
-  int _followersCount = 0;
 
   @override
   void initState() {
     super.initState();
     _isFollowing = widget.initialIsFollowing;
-    _firstFollowTimestamp = widget.firstFollowTimestamp;
     _checkFollowingStatus(); // Check the following status on init
     _fetchFollowCounts();
     _fetchProfileData();
@@ -669,11 +664,6 @@ class _FollowButtonState extends State<FollowButton> {
         // If the relationship exists, set _isFollowing to true
         safeSetState(() {
           _isFollowing = true;
-          // Set _firstFollowTimestamp if available
-          if (existingFollow['first_followed_at'] != null) {
-            _firstFollowTimestamp =
-                DateTime.parse(existingFollow['first_followed_at']);
-          }
         });
       }
     } catch (e) {
@@ -704,9 +694,9 @@ class _FollowButtonState extends State<FollowButton> {
             .eq('followed_id', widget.userId);
 
         // Reset first follow timestamp when unfollowing
-        safeSetState(() {
-          _firstFollowTimestamp = null;
-        });
+        // safeSetState(() {
+        //   _firstFollowTimestamp = null;
+        // });
       } else {
         // Check if the follow relationship already exists
         final existingFollow = await _supabase
@@ -725,9 +715,9 @@ class _FollowButtonState extends State<FollowButton> {
           });
 
           // Update first follow timestamp
-          safeSetState(() {
-            _firstFollowTimestamp = DateTime.now();
-          });
+          // safeSetState(() {
+          //   _firstFollowTimestamp = DateTime.now();
+          // });
         }
       }
 
@@ -747,14 +737,9 @@ class _FollowButtonState extends State<FollowButton> {
     }
   }
 
-  String _formatFirstFollowDate() {
-    if (_firstFollowTimestamp == null) return '';
-    return DateFormat('MMM d, yyyy').format(_firstFollowTimestamp!);
-  }
-
   void _fetchFollowCounts() async {
     try {
-      final followResponse = await _supabase
+      await _supabase
           .from('profile_follow_counts')
           .select(
               'followers_count, following_count, gallery_count, service_count')
@@ -762,7 +747,7 @@ class _FollowButtonState extends State<FollowButton> {
           .single();
 
       safeSetState(() {
-        _followersCount = followResponse['followers_count'] ?? 0;
+        // _followersCount = followResponse['followers_count'] ?? 0;
         // _followingCount = followResponse['following_count'] ?? 0;
         // _galleryCount = followResponse['gallery_count'] ?? 0;
         // _serviceCount = followResponse['service_count'] ?? 0;
@@ -882,11 +867,7 @@ class _ProfileDetailPageState extends State<ProfileDetailPage>
 
   late TabController _tabController;
   int _followersCount = 0;
-  int _followingCount = 0;
-  int _galleryCount = 0;
-  int _serviceCount = 0;
   bool _isFollowing = false;
-  bool _isCurrentUser = false;
 
   @override
   void initState() {
@@ -895,14 +876,6 @@ class _ProfileDetailPageState extends State<ProfileDetailPage>
     _fetchProfileData();
     _checkFollowStatus();
     _fetchFollowCounts();
-    _checkIfCurrentUser();
-  }
-
-  void _checkIfCurrentUser() {
-    final currentUserId = _supabase.auth.currentUser?.id;
-    safeSetState(() {
-      _isCurrentUser = currentUserId == widget.userId;
-    });
   }
 
   void _fetchFollowCounts() async {
@@ -916,9 +889,6 @@ class _ProfileDetailPageState extends State<ProfileDetailPage>
 
       safeSetState(() {
         _followersCount = followResponse['followers_count'] ?? 0;
-        _followingCount = followResponse['following_count'] ?? 0;
-        _galleryCount = followResponse['gallery_count'] ?? 0;
-        _serviceCount = followResponse['service_count'] ?? 0;
       });
     } catch (e) {
       // Handle error quietly
@@ -1021,44 +991,6 @@ class _ProfileDetailPageState extends State<ProfileDetailPage>
     }
   }
 
-  Future<void> _toggleFollow() async {
-    final currentUserId = _supabase.auth.currentUser?.id;
-    if (currentUserId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please log in to follow users')),
-      );
-      return;
-    }
-
-    try {
-      if (_isFollowing) {
-        // Unfollow
-        await _supabase
-            .from('follows')
-            .delete()
-            .eq('follower_id', currentUserId)
-            .eq('followed_id', widget.userId);
-      } else {
-        // Follow
-        await _supabase.from('follows').insert({
-          'follower_id': currentUserId,
-          'followed_id': widget.userId,
-        });
-      }
-
-      // Update state
-      safeSetState(() {
-        _isFollowing = !_isFollowing;
-        _followersCount =
-            _isFollowing ? _followersCount + 1 : _followersCount - 1;
-      });
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error updating follow status: $e')),
-      );
-    }
-  }
-
   void _navigateToMessages() {
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -1077,18 +1009,6 @@ class _ProfileDetailPageState extends State<ProfileDetailPage>
         builder: (context) => FollowersScreen(
           userId: widget.userId,
           isFollowers: true,
-          userName: _profileData?['name'] ?? 'User',
-        ),
-      ),
-    );
-  }
-
-  void _navigateToFollowing() {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => FollowersScreen(
-          userId: widget.userId,
-          isFollowers: false,
           userName: _profileData?['name'] ?? 'User',
         ),
       ),
@@ -1532,157 +1452,6 @@ class _ProfileDetailPageState extends State<ProfileDetailPage>
                     ),
                   ],
                 ),
-    );
-  }
-
-  void _showGalleryItemDetailss(Map<String, dynamic> item) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.85,
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Gallery Image
-            AspectRatio(
-              aspectRatio: 1,
-              child: Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: CachedNetworkImageProvider(
-                      item['gallery_image_url'] ??
-                          'https://via.placeholder.com/400',
-                    ),
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-            ),
-
-            // Gallery Info
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          item['gallery_title'] ?? 'No Title',
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      if (item['gallery_price'] != null)
-                        Chip(
-                          label: Text(
-                            '\$${item['gallery_price']}',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          backgroundColor: _profileData != null &&
-                                  _profileData!['button_color_code'] != null
-                              ? Color(int.parse(
-                                  'FF${_profileData!['button_color_code'].substring(1)}',
-                                  radix: 16))
-                              : Theme.of(context).primaryColor,
-                        ),
-                    ],
-                  ),
-
-                  if (item['gallery_category'] != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8.0),
-                      child: Text(
-                        item['gallery_category'],
-                        style: TextStyle(
-                          color: Colors.grey[600],
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-
-                  if (item['gallery_description'] != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 16.0),
-                      child: Text(
-                        item['gallery_description'],
-                        style: const TextStyle(fontSize: 16),
-                      ),
-                    ),
-
-                  const SizedBox(height: 24),
-
-                  // Action buttons
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: () {
-                            // Handle like functionality
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content: Text(
-                                      'Like functionality to be implemented')),
-                            );
-                          },
-                          icon: Icon(
-                            item['like_id'] != null
-                                ? Icons.favorite
-                                : Icons.favorite_border,
-                            color: item['like_id'] != null ? Colors.red : null,
-                          ),
-                          label: const Text('Like'),
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: () {
-                            // Handle share functionality
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content: Text(
-                                      'Share functionality to be implemented')),
-                            );
-                          },
-                          icon: const Icon(Icons.share),
-                          label: const Text('Share'),
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            backgroundColor: _profileData != null &&
-                                    _profileData!['button_color_code'] != null
-                                ? Color(int.parse(
-                                    'FF${_profileData!['button_color_code'].substring(1)}',
-                                    radix: 16))
-                                : Theme.of(context).primaryColor,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 
