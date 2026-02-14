@@ -62,7 +62,7 @@ class _PocketMatesDashboardState extends State<PocketMatesDashboard> {
                       curve: Curves.elasticOut),
                   const SizedBox(height: 20),
                   Text(
-                    'PocketMates',
+                    'Handskill Friends',
                     style: GoogleFonts.outfit(
                       fontSize: 32,
                       fontWeight: FontWeight.bold,

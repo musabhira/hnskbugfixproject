@@ -476,7 +476,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Pocket Tools',
+              'Handskill Tools',
               style: GoogleFonts.outfit(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,

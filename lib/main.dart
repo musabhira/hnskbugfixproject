@@ -97,7 +97,7 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return FluentApp.router(
       debugShowCheckedModeBanner: false,
-      title: 'PocketMates App',
+      title: 'Handskill Friends',
       scrollBehavior: MyAppScrollBehavior(),
       localizationsDelegates: [
         FluentLocalizations.delegate,

@@ -470,7 +470,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Pocket',
+                      Text('Handskill',
                           style: GoogleFonts.outfit(
                               fontSize: 32,
                               fontWeight: FontWeight.w300,

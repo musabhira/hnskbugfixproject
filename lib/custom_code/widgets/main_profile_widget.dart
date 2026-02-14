@@ -427,7 +427,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   material.IconButton(
                     icon: Icon(FluentIcons.share, color: textColor, size: 22),
                     onPressed: () => Share.share(
-                        'Check out ${_profileData?['name']}\'s profile on PocketMates!'),
+                        'Check out ${_profileData?['name']}\'s profile on Handskill Friends!'),
                   ),
                   material.Padding(
                     padding: const EdgeInsets.only(right: 8.0),
