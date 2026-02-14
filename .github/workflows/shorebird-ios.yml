@@ -15,7 +15,7 @@ on:
 jobs:
   ios-shorebird:
     name: Shorebird iOS ${{ inputs.action }}
-    runs-on: macos-latest  # Use the absolute latest runner
+    runs-on: macos-15
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -23,7 +23,7 @@ jobs:
       - name: Setup Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: 'latest' # Should grab the newest installed version on the runner
+          xcode-version: '16.4.0' # Explicitly set a newer stable version
 
       - name: Setup Shorebird
         uses: shorebirdtech/setup-shorebird@v1
