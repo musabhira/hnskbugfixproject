@@ -89,6 +89,12 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
   final TextEditingController instaIdController = TextEditingController();
   final TextEditingController instaLinkController = TextEditingController();
 
+  // Verification State
+  bool _isShopNameVerified = false;
+  String? _shopNameMessage;
+  bool _checkingShopName = false;
+  Color _shopNameMessageColor = Colors.grey;
+
   // Getters to access the values
   int? get day =>
       _dayController.text.isNotEmpty ? int.tryParse(_dayController.text) : null;
@@ -451,6 +457,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
             'name': sanitizedName,
             'profile_image_url': _imageUrl,
             'shop_name': sanitizedShopName,
+            'slug': _sanitizeSlug(sanitizedShopName),
             'phone_no': _PhoneNumberController.text,
             'bio': sanitizedBio,
             'country': selectedCountry,
@@ -481,6 +488,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
             'name': sanitizedName,
             'profile_image_url': _imageUrl,
             'shop_name': sanitizedShopName,
+            'slug': _sanitizeSlug(sanitizedShopName),
             'phone_no': _PhoneNumberController.text,
             'bio': sanitizedBio,
             'country': selectedCountry,
@@ -533,6 +541,57 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
       }
     } finally {
       safeSetState(() => _isLoading = false);
+    }
+  }
+
+  String _sanitizeSlug(String text) {
+    return text
+        .toLowerCase()
+        .trim()
+        .replaceAll(RegExp(r'\s+'), '-')
+        .replaceAll(RegExp(r'[^a-z0-9\-]'), '');
+  }
+
+  Future<void> _checkShopName() async {
+    final shopName = _shopNameController.text.trim();
+    if (shopName.isEmpty) {
+      safeSetState(() {
+        _shopNameMessage = 'Please enter a shop name';
+        _shopNameMessageColor = Colors.red;
+        _isShopNameVerified = false;
+      });
+      return;
+    }
+
+    safeSetState(() => _checkingShopName = true);
+
+    try {
+      final slug = _sanitizeSlug(shopName);
+
+      final response = await _supabase
+          .from('profile')
+          .select('user_id')
+          .eq('slug', slug)
+          .maybeSingle();
+
+      if (response != null && response['user_id'] != _currentUserId) {
+        safeSetState(() {
+          _shopNameMessage = 'Shop name is already taken';
+          _shopNameMessageColor = Colors.red;
+          _isShopNameVerified = false;
+        });
+      } else {
+        safeSetState(() {
+          _shopNameMessage =
+              'Shop name available! Website: handskillapp.web.app/$slug';
+          _shopNameMessageColor = Colors.green;
+          _isShopNameVerified = true;
+        });
+      }
+    } catch (e) {
+      print('Error checking shop name: $e');
+    } finally {
+      safeSetState(() => _checkingShopName = false);
     }
   }
 
@@ -812,7 +871,8 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
         title: Text(
           title,
           style: TextStyle(
-            color: FlutterFlowTheme.of(context).primaryText.withValues(alpha: 0.7),
+            color:
+                FlutterFlowTheme.of(context).primaryText.withValues(alpha: 0.7),
             fontSize: 14,
           ),
         ),
@@ -1101,7 +1161,8 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                     child: Container(
                       decoration: BoxDecoration(
                         // ignore: deprecated_member_use
-                        color: Colors.yellow.withValues(alpha: 0.2), // less opacity
+                        color: Colors.yellow
+                            .withValues(alpha: 0.2), // less opacity
                         borderRadius: BorderRadius.circular(10),
                       ),
                       padding: const EdgeInsets.all(12),
@@ -1131,13 +1192,48 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                     labelText: 'Your Name',
                   ),
 
-                  CustomTextField(
-                    width: double.infinity,
-                    height: double.infinity,
-                    controller: _shopNameController,
-                    hintText: 'Shop Name',
-                    labelText: 'Shop Name',
+                  Row(
+                    children: [
+                      Expanded(
+                        child: CustomTextField(
+                          width: double.infinity,
+                          height: double.infinity,
+                          controller: _shopNameController,
+                          hintText: 'Shop Name',
+                          labelText: 'Shop Name',
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Column(mainAxisSize: MainAxisSize.min, children: [
+                        IconButton(
+                          onPressed: _checkingShopName ? null : _checkShopName,
+                          icon: _checkingShopName
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                      strokeWidth: 2, color: Colors.yellow))
+                              : Icon(Icons.check_circle,
+                                  color: _isShopNameVerified
+                                      ? Colors.green
+                                      : Colors.grey),
+                          tooltip: 'Verify Availability',
+                        ),
+                        const Text('Verify',
+                            style:
+                                TextStyle(color: Colors.white, fontSize: 10)),
+                      ])
+                    ],
                   ),
+                  if (_shopNameMessage != null)
+                    Padding(
+                      padding: const EdgeInsets.only(left: 20, bottom: 8),
+                      child: Text(
+                        _shopNameMessage!,
+                        style: TextStyle(
+                            color: _shopNameMessageColor, fontSize: 12),
+                      ),
+                    ),
 
                   Padding(
                     padding: const EdgeInsetsDirectional.fromSTEB(
@@ -1172,7 +1268,8 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                     child: Container(
                       decoration: BoxDecoration(
                         // ignore: deprecated_member_use
-                        color: Colors.yellow.withValues(alpha: 0.2), // less opacity
+                        color: Colors.yellow
+                            .withValues(alpha: 0.2), // less opacity
                         borderRadius: BorderRadius.circular(10),
                       ),
                       padding: const EdgeInsets.all(12),
@@ -1246,11 +1343,13 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                               filled: true,
                               fillColor: Colors.black,
                               enabledBorder: OutlineInputBorder(
-                                borderSide: const BorderSide(color: Colors.white),
+                                borderSide:
+                                    const BorderSide(color: Colors.white),
                                 borderRadius: BorderRadius.circular(4.0),
                               ),
                               focusedBorder: OutlineInputBorder(
-                                borderSide: const BorderSide(color: Colors.white),
+                                borderSide:
+                                    const BorderSide(color: Colors.white),
                                 borderRadius: BorderRadius.circular(4.0),
                               ),
                             ),
@@ -1275,11 +1374,13 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                               filled: true,
                               fillColor: Colors.black,
                               enabledBorder: OutlineInputBorder(
-                                borderSide: const BorderSide(color: Colors.white),
+                                borderSide:
+                                    const BorderSide(color: Colors.white),
                                 borderRadius: BorderRadius.circular(4.0),
                               ),
                               focusedBorder: OutlineInputBorder(
-                                borderSide: const BorderSide(color: Colors.white),
+                                borderSide:
+                                    const BorderSide(color: Colors.white),
                                 borderRadius: BorderRadius.circular(4.0),
                               ),
                             ),
@@ -1304,11 +1405,13 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                               filled: true,
                               fillColor: Colors.black,
                               enabledBorder: OutlineInputBorder(
-                                borderSide: const BorderSide(color: Colors.white),
+                                borderSide:
+                                    const BorderSide(color: Colors.white),
                                 borderRadius: BorderRadius.circular(4.0),
                               ),
                               focusedBorder: OutlineInputBorder(
-                                borderSide: const BorderSide(color: Colors.white),
+                                borderSide:
+                                    const BorderSide(color: Colors.white),
                                 borderRadius: BorderRadius.circular(4.0),
                               ),
                             ),
@@ -1326,7 +1429,8 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                     child: Container(
                       decoration: BoxDecoration(
                         // ignore: deprecated_member_use
-                        color: Colors.yellow.withValues(alpha: 0.2), // less opacity
+                        color: Colors.yellow
+                            .withValues(alpha: 0.2), // less opacity
                         borderRadius: BorderRadius.circular(10),
                       ),
                       padding: const EdgeInsets.all(12),
@@ -1652,7 +1756,8 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
           decoration: BoxDecoration(
             color: _convertStringToColor(colorCode),
             shape: BoxShape.circle,
-            border: Border.all(color: Colors.white.withValues(alpha: 0.3), width: 1),
+            border: Border.all(
+                color: Colors.white.withValues(alpha: 0.3), width: 1),
           ),
         ),
         const SizedBox(height: 4),

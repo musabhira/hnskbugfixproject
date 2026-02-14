@@ -658,7 +658,6 @@ class _PaginatedGalleryTabViewState extends State<PaginatedGalleryTabView>
   bool isLoading = true;
   String? error;
   final Map<String, Set<int?>> _nativeAdsMap = {};
-  final Map<String, Set<int>> _loadedAdsMap = {};
 
   // Pagination variables
   final Map<String, int> _currentPageMap = {};
@@ -791,16 +790,6 @@ class _PaginatedGalleryTabViewState extends State<PaginatedGalleryTabView>
     _hasMoreItemsMap[category] = allItems.length > widget.itemsPerPage;
   }
 
-  int _getTotalItemCount(String category) {
-    final itemCount = _paginatedItemsMap[category]?.length ?? 0;
-
-    // Add ad slots: after every 4 items
-    final adCount = itemCount ~/ 4;
-    return itemCount + adCount;
-  }
-
-  // Add this helper to check if position should show ad
-
   // Load more items when user scrolls to the bottom
   Future<void> _loadMoreItems(String category) async {
     if (_isLoadingMoreMap[category] == true ||
@@ -912,9 +901,6 @@ class _PaginatedGalleryTabViewState extends State<PaginatedGalleryTabView>
                   childCount: _paginatedItemsMap[category]!.length,
                   itemBuilder: (context, index) {
                     if (index > 0 && index % 5 == 0) {
-                      final adIndex = index ~/ 5;
-                      final ad = _nativeAdsMap[category];
-
                       return MasonryGalleryItemCard.ad(
                         nativeAd: '',
                         height: _getRandomHeight(index),

@@ -1,9 +1,5 @@
 // Automatic FlutterFlow imports
-import '/backend/supabase/supabase.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import 'index.dart'; // Imports other custom widgets
-import '/custom_code/actions/index.dart'; // Imports custom actions
 import 'package:flutter/material.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
@@ -231,7 +227,7 @@ class AiPromptGenerator extends StatelessWidget {
               ? () => Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => route!, // here route is a Widget
+                      builder: (context) => route, // here route is a Widget
                     ),
                   )
               : null),
@@ -1949,8 +1945,6 @@ class _EnhancedAIGeneratorState extends State<EnhancedAIGenerator>
   // Animation controllers
   late AnimationController _fadeController;
   late AnimationController _scaleController;
-  late Animation<double> _fadeAnimation;
-  late Animation<double> _scaleAnimation;
 
   @override
   void initState() {
@@ -1959,10 +1953,6 @@ class _EnhancedAIGeneratorState extends State<EnhancedAIGenerator>
         AnimationController(duration: Duration(milliseconds: 500), vsync: this);
     _scaleController =
         AnimationController(duration: Duration(milliseconds: 300), vsync: this);
-    _fadeAnimation =
-        Tween<double>(begin: 0.0, end: 1.0).animate(_fadeController);
-    _scaleAnimation =
-        Tween<double>(begin: 0.0, end: 1.0).animate(_scaleController);
   }
 
   @override
@@ -2815,77 +2805,6 @@ class _EnhancedAIGeneratorState extends State<EnhancedAIGenerator>
 
     final result = await _aiService.imageToImage(
       imageFile: _selectedImage!, // Changed from imagePath to imageFile
-      prompt: _promptController.text.trim(),
-      onProgress: (progress) {
-        setState(() {
-          _progress = progress;
-        });
-      },
-    );
-
-    setState(() {
-      _isLoadingImages = false;
-      _progress = 0.0;
-      if (result.isSuccess) {
-        _generatedImages = [result.data!];
-      }
-    });
-
-    if (result.isSuccess) {
-      _showSnackBar('Style transfer complete!');
-      _scaleController.forward();
-    } else {
-      _showSnackBar('Style transfer failed: ${result.error}');
-    }
-  }
-
-// If you need to handle both XFile and File paths, here's a helper method:
-  Future<void> _generateVisionAnalysisFromPath(String imagePath) async {
-    setState(() {
-      _isLoadingText = true;
-      _generatedText = '';
-      _progress = 0.0;
-    });
-
-    // Convert path to XFile
-    final XFile imageFile = XFile(imagePath);
-
-    final result = await _aiService.imageToText(
-      imageFile: imageFile,
-      additionalPrompt: _promptController.text.trim(),
-      onProgress: (progress) {
-        setState(() {
-          _progress = progress;
-        });
-      },
-    );
-
-    setState(() {
-      _isLoadingText = false;
-      _progress = 0.0;
-      _generatedText = result.isSuccess ? result.data! : result.error!;
-    });
-
-    if (result.isSuccess) {
-      _showSnackBar('Vision analysis complete!');
-      _fadeController.forward();
-    } else {
-      _showSnackBar('Vision analysis failed');
-    }
-  }
-
-  Future<void> _generateStyleTransferFromPath(String imagePath) async {
-    setState(() {
-      _isLoadingImages = true;
-      _generatedImages.clear();
-      _progress = 0.0;
-    });
-
-    // Convert path to XFile
-    final XFile imageFile = XFile(imagePath);
-
-    final result = await _aiService.imageToImage(
-      imageFile: imageFile,
       prompt: _promptController.text.trim(),
       onProgress: (progress) {
         setState(() {

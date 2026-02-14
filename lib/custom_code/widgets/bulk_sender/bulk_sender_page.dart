@@ -418,7 +418,6 @@ class MultiContactPickerDialog extends StatefulWidget {
 
 class _MultiContactPickerDialogState extends State<MultiContactPickerDialog> {
   final List<Contact> _selected = [];
-  String _searchQuery = '';
   late List<Contact> _filteredContacts;
 
   @override

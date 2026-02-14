@@ -352,7 +352,7 @@ class _VerfiedSearchProfileDetailPageState
           .select('''
         profile_id, profile_created_at, user_id, name, phone_no, country, bio, 
         shop_name, profile_image_url, banner_image_url, button_color_code,
-        bg_color_code, bg_text_color, state, city, button_text_color, verified,insta_id,insta_link
+        bg_color_code, bg_text_color, state, city, button_text_color, verified,insta_id,insta_link, slug
         ''')
           .eq('user_id', widget.userId)
           .limit(1);
@@ -1267,8 +1267,8 @@ class _VerfiedSearchProfileDetailPageState
                                                   const EdgeInsets.symmetric(
                                                       horizontal: 12),
                                               decoration: BoxDecoration(
-                                                color:
-                                                    bgColor.withValues(alpha: 0.95),
+                                                color: bgColor.withValues(
+                                                    alpha: 0.95),
                                                 borderRadius:
                                                     BorderRadius.circular(20),
                                                 boxShadow: [
@@ -1280,8 +1280,8 @@ class _VerfiedSearchProfileDetailPageState
                                                   ),
                                                 ],
                                                 border: Border.all(
-                                                  color: buttonColor
-                                                      .withValues(alpha: 0.2),
+                                                  color: buttonColor.withValues(
+                                                      alpha: 0.2),
                                                   width: 1,
                                                 ),
                                               ),
@@ -1400,8 +1400,9 @@ class _VerfiedSearchProfileDetailPageState
                                                                             13,
                                                                         fontWeight:
                                                                             FontWeight.w500,
-                                                                        color: bgTextColor
-                                                                            .withValues(alpha: 0.7),
+                                                                        color: bgTextColor.withValues(
+                                                                            alpha:
+                                                                                0.7),
                                                                       ),
                                                                     ),
                                                                   ),
@@ -1545,40 +1546,54 @@ class _VerfiedSearchProfileDetailPageState
                                                                 const SizedBox(
                                                                     height: 10),
                                                                 if (_profileData![
-                                                                        'website'] !=
-                                                                    null)
-                                                                  Row(
-                                                                    children: [
-                                                                      Icon(
-                                                                        Icons
-                                                                            .link,
-                                                                        size:
-                                                                            16,
-                                                                        color:
-                                                                            buttonColor,
-                                                                      ),
-                                                                      const SizedBox(
-                                                                          width:
-                                                                              5),
-                                                                      Expanded(
-                                                                        child:
-                                                                            Text(
-                                                                          _profileData![
-                                                                              'website'],
-                                                                          style:
-                                                                              TextStyle(
-                                                                            fontSize:
-                                                                                13,
-                                                                            color:
-                                                                                buttonColor,
-                                                                            decoration:
-                                                                                TextDecoration.underline,
+                                                                            'slug'] !=
+                                                                        null &&
+                                                                    _profileData![
+                                                                            'slug']
+                                                                        .toString()
+                                                                        .isNotEmpty)
+                                                                  Padding(
+                                                                    padding: const EdgeInsets
+                                                                        .only(
+                                                                        top:
+                                                                            10),
+                                                                    child:
+                                                                        GestureDetector(
+                                                                      onTap:
+                                                                          () async {
+                                                                        final url =
+                                                                            'https://handskillapp.web.app/${_profileData!['slug']}';
+                                                                        if (await canLaunchUrl(
+                                                                            Uri.parse(url))) {
+                                                                          await launchUrl(
+                                                                              Uri.parse(url),
+                                                                              mode: LaunchMode.externalApplication);
+                                                                        }
+                                                                      },
+                                                                      child:
+                                                                          Row(
+                                                                        children: [
+                                                                          Icon(
+                                                                              Icons.language,
+                                                                              size: 16,
+                                                                              color: buttonColor),
+                                                                          const SizedBox(
+                                                                              width: 5),
+                                                                          Expanded(
+                                                                            child:
+                                                                                Text(
+                                                                              'handskillapp.web.app/${_profileData!['slug']}',
+                                                                              style: TextStyle(
+                                                                                fontSize: 13,
+                                                                                color: buttonColor,
+                                                                                decoration: TextDecoration.underline,
+                                                                              ),
+                                                                              overflow: TextOverflow.ellipsis,
+                                                                            ),
                                                                           ),
-                                                                          overflow:
-                                                                              TextOverflow.ellipsis,
-                                                                        ),
+                                                                        ],
                                                                       ),
-                                                                    ],
+                                                                    ),
                                                                   ),
                                                                 Container(
                                                                   padding: const EdgeInsets
@@ -1760,8 +1775,8 @@ class _VerfiedSearchProfileDetailPageState
                                         TabBar(
                                           controller: _tabController,
                                           labelColor: buttonColor,
-                                          unselectedLabelColor:
-                                              bgTextColor.withValues(alpha: 0.7),
+                                          unselectedLabelColor: bgTextColor
+                                              .withValues(alpha: 0.7),
                                           indicatorColor: buttonColor,
                                           indicatorWeight: 3,
                                           indicatorSize:
@@ -2411,9 +2426,11 @@ class _VerfiedSearchProfileDetailPageState
                                                 gradient: LinearGradient(
                                                   colors: [
                                                     _getButtonColor()
-                                                        .withValues(alpha: 0.80),
+                                                        .withValues(
+                                                            alpha: 0.80),
                                                     _getButtonColor()
-                                                        .withValues(alpha: 0.60),
+                                                        .withValues(
+                                                            alpha: 0.60),
                                                   ],
                                                   begin: Alignment.topLeft,
                                                   end: Alignment.bottomRight,
@@ -2434,7 +2451,8 @@ class _VerfiedSearchProfileDetailPageState
                                                   ),
                                                   BoxShadow(
                                                     color: Colors.black
-                                                        .withValues(alpha: 0.05),
+                                                        .withValues(
+                                                            alpha: 0.05),
                                                     blurRadius: 6,
                                                     spreadRadius: 0,
                                                     offset: Offset(0, 2),
@@ -2655,9 +2673,11 @@ class _VerfiedSearchProfileDetailPageState
                                                       gradient: LinearGradient(
                                                         colors: [
                                                           _getButtonTextColor()
-                                                              .withValues(alpha: 0.8),
+                                                              .withValues(
+                                                                  alpha: 0.8),
                                                           _getButtonTextColor()
-                                                              .withValues(alpha: 0.3),
+                                                              .withValues(
+                                                                  alpha: 0.3),
                                                         ],
                                                         begin:
                                                             Alignment.topLeft,
@@ -2727,7 +2747,8 @@ class _VerfiedSearchProfileDetailPageState
                                                       color:
                                                           // ignore: deprecated_member_use
                                                           buttonColor
-                                                              .withValues(alpha: 0.9),
+                                                              .withValues(
+                                                                  alpha: 0.9),
                                                       borderRadius:
                                                           BorderRadius.circular(
                                                               8),
@@ -2735,7 +2756,8 @@ class _VerfiedSearchProfileDetailPageState
                                                         BoxShadow(
                                                           color: Colors.black
                                                               // ignore: deprecated_member_use
-                                                              .withValues(alpha: 0.2),
+                                                              .withValues(
+                                                                  alpha: 0.2),
                                                           blurRadius: 8,
                                                           spreadRadius: 1,
                                                           offset: const Offset(
@@ -2744,7 +2766,8 @@ class _VerfiedSearchProfileDetailPageState
                                                       ],
                                                       border: Border.all(
                                                         color: buttonColor
-                                                            .withValues(alpha: 0.3),
+                                                            .withValues(
+                                                                alpha: 0.3),
                                                         width: 1,
                                                       ),
                                                     ),
@@ -3660,7 +3683,8 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
                             Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: _getButtonTextColor().withValues(alpha: 0.2),
+                                color: _getButtonTextColor()
+                                    .withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Icon(
@@ -3724,7 +3748,8 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
                                 color: _getBgColor(),
                                 borderRadius: BorderRadius.circular(24),
                                 border: Border.all(
-                                  color: _getButtonColor().withValues(alpha: 0.2),
+                                  color:
+                                      _getButtonColor().withValues(alpha: 0.2),
                                 ),
                               ),
                               child: TextField(
@@ -3732,7 +3757,8 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
                                 decoration: InputDecoration(
                                   hintText: 'Ask me anything...',
                                   hintStyle: TextStyle(
-                                    color: _getTextColor().withValues(alpha: 0.5),
+                                    color:
+                                        _getTextColor().withValues(alpha: 0.5),
                                   ),
                                   border: InputBorder.none,
                                   contentPadding: const EdgeInsets.symmetric(
@@ -3758,7 +3784,8 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
                                 borderRadius: BorderRadius.circular(24),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: _getButtonColor().withValues(alpha: 0.3),
+                                    color: _getButtonColor()
+                                        .withValues(alpha: 0.3),
                                     blurRadius: 8,
                                     offset: const Offset(0, 2),
                                   ),
@@ -4571,13 +4598,15 @@ class _PopularGalleryBannerState extends State<PopularGalleryBanner> {
                                 Icon(
                                   Icons.image_outlined,
                                   size: 48,
-                                  color: widget.buttonColor.withValues(alpha: 0.6),
+                                  color:
+                                      widget.buttonColor.withValues(alpha: 0.6),
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
                                   'No Image',
                                   style: TextStyle(
-                                    color: widget.buttonColor.withValues(alpha: 0.6),
+                                    color: widget.buttonColor
+                                        .withValues(alpha: 0.6),
                                     fontSize: 12,
                                     fontWeight: FontWeight.w500,
                                   ),
@@ -4698,8 +4727,8 @@ class _PopularGalleryBannerState extends State<PopularGalleryBanner> {
                                   borderRadius: BorderRadius.circular(20),
                                   boxShadow: [
                                     BoxShadow(
-                                      color:
-                                          widget.buttonColor.withValues(alpha: 0.3),
+                                      color: widget.buttonColor
+                                          .withValues(alpha: 0.3),
                                       blurRadius: 8,
                                       offset: const Offset(0, 2),
                                     ),
@@ -4717,7 +4746,8 @@ class _PopularGalleryBannerState extends State<PopularGalleryBanner> {
                             Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: widget.bgtextcolor.withValues(alpha: 0.2),
+                                color:
+                                    widget.bgtextcolor.withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: Icon(
@@ -5035,7 +5065,8 @@ class _PopularPageViewBannerState extends State<PopularPageViewBanner>
                           decoration: BoxDecoration(
                             boxShadow: [
                               BoxShadow(
-                                color: widget.buttonColor.withValues(alpha: 0.2),
+                                color:
+                                    widget.buttonColor.withValues(alpha: 0.2),
                                 blurRadius: 15,
                                 offset: const Offset(0, 8),
                               ),
@@ -5195,7 +5226,10 @@ class _PopularPageViewBannerState extends State<PopularPageViewBanner>
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [widget.buttonColor, widget.buttonColor.withValues(alpha: 0.8)],
+          colors: [
+            widget.buttonColor,
+            widget.buttonColor.withValues(alpha: 0.8)
+          ],
         ),
         borderRadius: BorderRadius.circular(25),
         boxShadow: [
@@ -5247,7 +5281,8 @@ class _PopularPageViewBannerState extends State<PopularPageViewBanner>
               offset: Offset(0, isActive ? 12 : 6),
             ),
             BoxShadow(
-              color: widget.buttonColor.withValues(alpha: isActive ? 0.15 : 0.08),
+              color:
+                  widget.buttonColor.withValues(alpha: isActive ? 0.15 : 0.08),
               blurRadius: isActive ? 40 : 25,
               spreadRadius: 0,
               offset: Offset(0, isActive ? 20 : 10),
@@ -5317,13 +5352,15 @@ class _PopularPageViewBannerState extends State<PopularPageViewBanner>
                                 Icon(
                                   Icons.auto_awesome,
                                   size: 72,
-                                  color: widget.buttonColor.withValues(alpha: 0.7),
+                                  color:
+                                      widget.buttonColor.withValues(alpha: 0.7),
                                 ),
                                 const SizedBox(height: 16),
                                 Text(
                                   'Premium Banner',
                                   style: TextStyle(
-                                    color: widget.buttonColor.withValues(alpha: 0.7),
+                                    color: widget.buttonColor
+                                        .withValues(alpha: 0.7),
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -5535,7 +5572,8 @@ class _PopularPageViewBannerState extends State<PopularPageViewBanner>
                         boxShadow: isActive
                             ? [
                                 BoxShadow(
-                                  color: widget.buttonColor.withValues(alpha: 0.3),
+                                  color:
+                                      widget.buttonColor.withValues(alpha: 0.3),
                                   blurRadius: 8,
                                   offset: const Offset(0, 2),
                                 ),
