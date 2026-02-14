@@ -20,6 +20,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Select Newest Xcode
+        run: |
+          echo "Listing available Xcode versions:"
+          ls -d /Applications/Xcode*
+          echo "Selecting newest Xcode..."
+          sudo xcode-select -s /Applications/Xcode_16.4.app || sudo xcode-select -s /Applications/Xcode_16.3.app || echo "Using default Xcode"
+          xcodebuild -version
+
       - name: Setup Shorebird
         uses: shorebirdtech/setup-shorebird@v1
         with:
