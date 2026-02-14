@@ -15,15 +15,10 @@ on:
 jobs:
   ios-shorebird:
     name: Shorebird iOS ${{ inputs.action }}
-    runs-on: macos-15
+    runs-on: macos-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Setup Xcode
-        uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: '16.4.0' # Explicitly set a newer stable version
 
       - name: Setup Shorebird
         uses: shorebirdtech/setup-shorebird@v1
