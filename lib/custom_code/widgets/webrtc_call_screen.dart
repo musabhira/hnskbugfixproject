@@ -1,25 +1,14 @@
 import 'dart:async';
-import 'dart:async';
-import 'dart:math';
 import 'dart:math';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:flutter_animate/flutter_animate.dart';
-import '../../flutter_flow/flutter_flow_theme.dart';
 import '../../flutter_flow/flutter_flow_theme.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'dart:ui' as ui;
 import 'dart:ui' as ui;
 
 class WebRTCCallScreen extends StatefulWidget {
@@ -494,10 +483,12 @@ class _WebRTCCallScreenState extends State<WebRTCCallScreen> {
                     borderRadius:
                         const BorderRadius.vertical(top: Radius.circular(24)),
                     border: Border(
-                        top: BorderSide(color: Colors.white.withValues(alpha: 0.1))),
+                        top: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.1))),
                     boxShadow: [
                       BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.5), blurRadius: 20)
+                          color: Colors.black.withValues(alpha: 0.5),
+                          blurRadius: 20)
                     ],
                   ),
                   child: ClipRRect(

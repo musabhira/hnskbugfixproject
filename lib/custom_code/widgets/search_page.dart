@@ -1,30 +1,18 @@
 // Automatic FlutterFlow imports
 import 'package:pocket_mates_app/custom_code/widgets/search_profile_detail_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/search_profile_detail_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
 
 import '/backend/supabase/supabase.dart';
-import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import 'index.dart'; // Imports other custom widgets
 import 'index.dart'; // Imports other custom widgets
 // Imports custom actions
-import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
-// Imports other custom widgets
-
 import 'dart:async';
-import 'dart:async';
-
-
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-
+import 'package:intl/intl.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({
@@ -289,6 +277,12 @@ class _SearchPageState extends State<SearchPage> {
       },
     );
   }
+
+  void safeSetState(VoidCallback fn) {
+    if (mounted) {
+      setState(fn);
+    }
+  }
 }
 
 class CustomSearchWidget extends StatefulWidget {
@@ -450,7 +444,7 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
       final response = await _supabase
           .from('profile')
           .select('profile_image_url, shop_name, verified, user_id, name')
-          .ilike('name', '%$query%')
+          .or('name.ilike.%$query%,shop_name.ilike.%$query%,slug.ilike.%$query%')
           .order('name', ascending: true)
           .range(_currentPage * _pageSize, (_currentPage + 1) * _pageSize - 1);
 
@@ -494,7 +488,8 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
         response = await _supabase
             .from('profile')
             .select('profile_image_url, shop_name, verified, user_id, name')
-            .ilike('name', '%$_currentQuery%')
+            .or(
+                'name.ilike.%$_currentQuery%,shop_name.ilike.%$_currentQuery%,slug.ilike.%$_currentQuery%')
             .order('name', ascending: true)
             .range(
                 _currentPage * _pageSize, (_currentPage + 1) * _pageSize - 1);
@@ -614,6 +609,12 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
   void dispose() {
     _scrollController.dispose();
     super.dispose();
+  }
+
+  void safeSetState(VoidCallback fn) {
+    if (mounted) {
+      setState(fn);
+    }
   }
 }
 
@@ -850,6 +851,12 @@ class _FollowButtonState extends State<FollowButton> {
             : _getButtonColor().withValues(alpha: 0.1),
       ),
     );
+  }
+
+  void safeSetState(VoidCallback fn) {
+    if (mounted) {
+      setState(fn);
+    }
   }
 }
 
@@ -1240,7 +1247,8 @@ class _ProfileDetailPageState extends State<ProfileDetailPage>
                                     children: [
                                       Icon(Icons.location_on,
                                           size: 16,
-                                          color: bgTextColor.withValues(alpha: 0.7)),
+                                          color: bgTextColor.withValues(
+                                              alpha: 0.7)),
                                       const SizedBox(width: 4),
                                       Text(
                                         [
@@ -1251,7 +1259,8 @@ class _ProfileDetailPageState extends State<ProfileDetailPage>
                                             .where((item) => item != null)
                                             .join(', '),
                                         style: TextStyle(
-                                          color: bgTextColor.withValues(alpha: 0.7),
+                                          color: bgTextColor.withValues(
+                                              alpha: 0.7),
                                         ),
                                       ),
                                     ],
@@ -1681,5 +1690,11 @@ class _ProfileDetailPageState extends State<ProfileDetailPage>
   void dispose() {
     _tabController.dispose();
     super.dispose();
+  }
+
+  void safeSetState(VoidCallback fn) {
+    if (mounted) {
+      setState(fn);
+    }
   }
 }

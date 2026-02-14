@@ -1,43 +1,21 @@
 // Automatic FlutterFlow imports
 import 'package:pocket_mates_app/custom_code/widgets/event_display_home_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/event_display_home_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/gallery_profile_search_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/gallery_profile_search_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/profile_switch_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/profile_switch_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
 import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
 import 'package:pocket_mates_app/custom_code/widgets/search_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/search_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/search_profile_detail_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/search_profile_detail_page.dart';
-
-import '/backend/supabase/supabase.dart';
+import 'package:pocket_mates_app/custom_code/widgets/posters_tab.dart';
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import 'index.dart'; // Imports other custom widgets
-import 'index.dart'; // Imports other custom widgets
+import 'index.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/material.dart';
-
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-
 import 'package:share_plus/share_plus.dart';
-import 'package:share_plus/share_plus.dart';
-
-import 'package:timeago/timeago.dart' as timeago;
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:url_launcher/url_launcher.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/services.dart' as flutter;
-import 'package:flutter/services.dart' as flutter;
-
 import 'dart:async';
-import 'dart:async';
-
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
 class VerfiedSearchProfileDetailPage extends StatefulWidget {
@@ -96,7 +74,7 @@ class _VerfiedSearchProfileDetailPageState
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
     _fetchProfileData();
     _checkFollowStatus();
     fetchFollowCounts();
@@ -776,9 +754,15 @@ class _VerfiedSearchProfileDetailPageState
 
   @override
   void dispose() {
-    _tabController?.dispose();
+    _tabController.dispose();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  void safeSetState(VoidCallback fn) {
+    if (mounted) {
+      setState(fn);
+    }
   }
 
   Color _getButtonColor() {
@@ -1795,6 +1779,9 @@ class _VerfiedSearchProfileDetailPageState
                                             Tab(
                                                 icon: Icon(
                                                     Icons.chat_bubble_outline)),
+                                            Tab(
+                                                icon:
+                                                    Icon(Icons.style_outlined)),
                                           ],
                                         ),
                                         color: bgColor,
@@ -2360,6 +2347,12 @@ class _VerfiedSearchProfileDetailPageState
                                                                           formattedLikes,
                                                                           style:
                                                                               TextStyle(color: buttonTextColor)),
+                                                                      PostersTab(
+                                                                        profileData:
+                                                                            _profileData,
+                                                                        galleryItems:
+                                                                            _galleryItems,
+                                                                      ),
                                                                     ],
                                                                   ),
                                                                 ),

@@ -11,6 +11,7 @@ import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/widgets/message_screen.dart';
 import 'package:pocket_mates_app/custom_code/widgets/gallery_profile_search_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/posters_tab.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:url_launcher/url_launcher.dart';
 
@@ -198,6 +199,15 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         _followersCount = responses[2] as int; // Follower count
         _isFollowing = responses[3] as bool;
         _isBlocked = responses[4] as bool;
+
+        // Update TabController if verified
+        final isVerified = _profileData?['verified'] == true;
+        final newLength = isVerified ? 4 : 3;
+        if (_tabController.length != newLength) {
+          _tabController.dispose();
+          _tabController =
+              material.TabController(length: newLength, vsync: this);
+        }
       });
 
       // Lazy load full lists in background
@@ -460,10 +470,12 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                     indicatorColor: btnColor,
                     indicatorWeight: 3,
                     labelStyle: GoogleFonts.outfit(fontWeight: FontWeight.bold),
-                    tabs: const [
-                      material.Tab(text: "Gallery"),
-                      material.Tab(text: "Services"),
-                      material.Tab(text: "Thoughts"),
+                    tabs: [
+                      const material.Tab(text: "Gallery"),
+                      const material.Tab(text: "Services"),
+                      const material.Tab(text: "Thoughts"),
+                      if (_profileData?['verified'] == true)
+                        const material.Tab(text: "Posters"),
                     ],
                   ),
                   bgColor,
@@ -546,6 +558,11 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                         btnColor: btnColor,
                         btnTextColor: btnTextColor,
                       ),
+                      if (_profileData?['verified'] == true)
+                        PostersTab(
+                          profileData: _profileData,
+                          galleryItems: _galleryItems,
+                        ),
                     ],
                   ),
                 ),
@@ -669,7 +686,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               overflow: TextOverflow.ellipsis,
             ),
           ],
-          if (slug != null && slug.toString().isNotEmpty) ...[
+          if (isVerified && slug != null && slug.toString().isNotEmpty) ...[
             const SizedBox(height: 10),
             GestureDetector(
               onTap: () async {

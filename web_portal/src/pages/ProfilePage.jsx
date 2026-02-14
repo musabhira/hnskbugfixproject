@@ -63,6 +63,36 @@ const ProfilePage = () => {
         onPrimary: profile.button_text_color || '#000000',
     };
 
+    // Restricted Access: Only Verified Profiles can have their own Boutique Home
+    if (!profile.verified) {
+        return (
+            <div className="h-screen flex flex-col items-center justify-center bg-[#0A0A0A] text-center p-6" style={{ backgroundColor: theme.bg }}>
+                <div className="glass p-12 md:p-20 rounded-[40px] border-[#D4AF37]/20 max-w-2xl relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-[#D4AF37]/30 to-transparent" />
+                    <Star className="w-20 h-20 text-[#D4AF37] opacity-20 mx-auto mb-10 animate-pulse" />
+                    <h1 className="font-luxury text-5xl md:text-7xl mb-6 italic leading-tight">Access <br />Reserved</h1>
+                    <p className="opacity-40 font-light leading-relaxed text-lg mb-12 max-w-md mx-auto">
+                        This digital boutique experience is currently reserved for **Verified Handskill Partners**.
+                        Authentication ensures the integrity of the House.
+                    </p>
+                    <div className="space-y-6">
+                        <a
+                            href={`https://wa.me/${profile.mobile || profile.phone_no}?text=I%20want%20to%20verify%20my%20boutique%20profile`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-block px-12 py-5 rounded-full font-bold text-[10px] uppercase tracking-[0.4em] shadow-2xl transition-all hover:scale-105"
+                            style={{ backgroundColor: theme.primary, color: theme.onPrimary }}
+                        >
+                            Request Verification
+                        </a>
+                        <p className="text-[9px] uppercase tracking-[0.3em] font-bold opacity-20 block pt-4">House Status: Unauthenticated</p>
+                    </div>
+                    <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-[#D4AF37]/30 to-transparent" />
+                </div>
+            </div>
+        );
+    }
+
     const categories = ['All', ...new Set(gallery.map(i => i.category || 'Collection'))];
     const filteredGallery = activeCategory === 'All' ? gallery : gallery.filter(i => (i.category || 'Collection') === activeCategory);
 

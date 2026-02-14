@@ -1970,12 +1970,12 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                         _buildHeaderIconButton(
                           icon: FluentIcons.search,
                           onTap: () {
-                            // Focus search field
-                            onTabTap(selectedIndex); // Keep current tab
-                            // In real use, we might scroll to show search bar or focus controller
-                            searchController.selection =
-                                TextSelection.fromPosition(TextPosition(
-                                    offset: searchController.text.length));
+                            Navigator.push(
+                              context,
+                              material.MaterialPageRoute(
+                                builder: (context) => SearchPage(),
+                              ),
+                            );
                           },
                         ),
                         const SizedBox(width: 10),
