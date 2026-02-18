@@ -83,4 +83,7 @@ class ProfileRow extends SupabaseDataRow {
 
   String? get instaLink => getField<String>('insta_link');
   set instaLink(String? value) => setField<String>('insta_link', value);
+
+  bool? get isPremium => getField<bool>('is_premium');
+  set isPremium(bool? value) => setField<bool>('is_premium', value);
 }

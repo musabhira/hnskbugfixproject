@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Sparkles } from 'lucide-react';
+import { Search, Briefcase, Globe, ShieldCheck } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const LandingPage = () => {
@@ -15,65 +15,67 @@ const LandingPage = () => {
     };
 
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen p-6 overflow-hidden relative">
-            {/* Background Orbs */}
-            <div className="absolute top-1/4 -left-20 w-80 h-80 bg-gold-gradient opacity-10 blur-[100px] rounded-full" />
-            <div className="absolute bottom-1/4 -right-20 w-80 h-80 bg-blue-500 opacity-5 blur-[100px] rounded-full" />
+        <div className="flex flex-col items-center justify-center min-h-screen p-6 bg-[#f8fafc] overflow-hidden relative font-sans">
+            {/* Professional Grid Background */}
+            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.03]" />
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-slate-200 via-slate-800 to-slate-200" />
 
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="z-10 text-center max-w-2xl"
+                className="z-10 text-center max-w-3xl"
             >
-                <div className="flex items-center justify-center mb-6">
-                    <div className="w-16 h-16 bg-gold-gradient rounded-2xl flex items-center justify-center shadow-2xl">
-                        <Sparkles className="text-black w-8 h-8" />
-                    </div>
+                <div className="flex items-center justify-center mb-10">
+                    <motion.div
+                        whileHover={{ scale: 1.05 }}
+                        className="w-20 h-20 bg-white rounded-[24px] flex items-center justify-center shadow-xl shadow-slate-200 border border-slate-100"
+                    >
+                        <Briefcase className="text-slate-900 w-10 h-10" />
+                    </motion.div>
                 </div>
 
-                <h1 className="text-5xl md:text-7xl font-bold mb-6 font-outfit tracking-tight">
-                    Your Premium <span className="text-gold">Digital Space</span>
+                <h1 className="text-5xl md:text-8xl font-black mb-8 text-slate-900 tracking-tighter leading-none uppercase">
+                    Partner <br /> <span className="text-slate-400">Portal</span>
                 </h1>
 
-                <p className="text-gray-400 text-lg md:text-xl mb-10 max-w-lg mx-auto leading-relaxed">
-                    Access every user's premium profile, gallery, and services in a beautiful, high-speed experience.
+                <p className="text-slate-500 text-lg md:text-xl mb-12 max-w-lg mx-auto leading-relaxed font-medium">
+                    The exclusive digital infrastructure for **Handskill Premium Members**. Access verified corporate identities and boutique services.
                 </p>
 
-                <form onSubmit={handleSearch} className="relative max-w-md mx-auto group">
+                <form onSubmit={handleSearch} className="relative max-w-xl mx-auto group">
+                    <div className="absolute inset-0 bg-slate-900/5 blur-2xl rounded-3xl -z-10 group-focus-within:bg-slate-900/10 transition-all" />
                     <input
                         type="text"
-                        placeholder="Search by username (e.g. musabhira)"
+                        placeholder="Enter partner username..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        className="w-full bg-premium-gray/50 border border-white/10 rounded-2xl py-5 px-6 pl-14 text-white focus:outline-none focus:border-premium-gold/50 transition-all duration-300 glass group-hover:border-white/20"
+                        className="w-full bg-white border border-slate-200 rounded-3xl py-6 px-8 pl-16 text-slate-900 focus:outline-none focus:ring-4 focus:ring-slate-100 transition-all duration-500 shadow-sm text-lg placeholder:text-slate-300"
                     />
-                    <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-500 w-5 h-5 group-focus-within:text-premium-gold transition-colors" />
+                    <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 w-6 h-6 group-focus-within:text-slate-900 transition-colors" />
                     <button
                         type="submit"
-                        className="absolute right-3 top-1/2 -translate-y-1/2 bg-gold-gradient text-black font-semibold px-6 py-2.5 rounded-xl hover:scale-105 active:scale-95 transition-all shadow-lg"
+                        className="absolute right-4 top-1/2 -translate-y-1/2 bg-slate-900 text-white font-bold px-8 py-3 rounded-2xl hover:bg-slate-800 active:scale-95 transition-all shadow-xl shadow-slate-200 uppercase text-xs tracking-widest"
                     >
-                        Visit
+                        Access
                     </button>
                 </form>
 
-                <div className="mt-16 flex flex-wrap justify-center gap-8 opacity-40">
-                    <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-gold-gradient" />
-                        <span className="text-sm font-medium uppercase tracking-widest">Gallery</span>
+                <div className="mt-20 flex flex-wrap justify-center gap-10">
+                    <div className="flex items-center gap-3 grayscale opacity-30 hover:grayscale-0 hover:opacity-100 transition-all cursor-default">
+                        <Globe className="w-5 h-5" />
+                        <span className="text-[10px] font-bold uppercase tracking-[0.3em]">Global Presence</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-gold-gradient" />
-                        <span className="text-sm font-medium uppercase tracking-widest">Services</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-gold-gradient" />
-                        <span className="text-sm font-medium uppercase tracking-widest">Thoughts</span>
+                    <div className="flex items-center gap-3 grayscale opacity-30 hover:grayscale-0 hover:opacity-100 transition-all cursor-default">
+                        <ShieldCheck className="w-5 h-5" />
+                        <span className="text-[10px] font-bold uppercase tracking-[0.3em]">Verified Status</span>
                     </div>
                 </div>
             </motion.div>
 
-            <footer className="absolute bottom-8 text-gray-600 text-sm">
-                Powered by <span className="text-gray-400 font-semibold tracking-wide">HANDSKILL</span>
+            <footer className="absolute bottom-10 flex flex-col items-center gap-2">
+                <span className="text-[9px] font-bold text-slate-300 uppercase tracking-[0.5em]">Network Infrastructure</span>
+                <div className="h-4 w-px bg-slate-200" />
+                <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Powered by <span className="text-slate-900">Handskill Friends</span></p>
             </footer>
         </div>
     );

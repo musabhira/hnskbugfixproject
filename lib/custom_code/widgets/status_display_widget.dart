@@ -2950,6 +2950,7 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
         'expires_at':
             DateTime.now().add(const Duration(hours: 24)).toIso8601String(),
         'mentioned_group_id': _selectedGroupId,
+        'is_active': true, // Ensure it's active so it shows up
       };
 
       await supabase.from('statuses').insert(statusData);
@@ -3042,6 +3043,7 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
         'expires_at':
             DateTime.now().add(const Duration(hours: 24)).toIso8601String(),
         'mentioned_group_id': _selectedGroupId,
+        'is_active': true, // Crucial for visibility
       });
 
       setState(() => _uploadProgress = 1.0);

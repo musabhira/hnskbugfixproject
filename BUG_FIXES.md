@@ -9,7 +9,7 @@
 
 ### 3. **iOS Stability & Branding (Build 20)**
 - ✅ **Startup Crash Fix**: Added permission macros to `Podfile` for `permission_handler`. This is the most common cause of iOS crashes when using camera/contacts.
-- ✅ **Branding**: Updated `CFBundleDisplayName` and `CFBundleName` to **Handskill Friends**.
+- ✅ **Branding (UI)**: Updated `Info.plist`, `main.dart`, `pocket_mates_dashboard.dart`, `main_profile_widget.dart`, and `tools_page.dart` to consistently use **Handskill Friends** and **Handskill Tools**.
 - ✅ **Background Stability**: Added `UIBackgroundModes` (audio, fetch, remote-notification) to ensure the app doesn't get killed during background tasks or calls.
 - ✅ **Privacy Compliance**: Added `NSUserTrackingUsageDescription` required by modern iOS versions.
 - ✅ **Version Bump**: Updated to `1.0.0+20`.

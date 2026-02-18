@@ -137,59 +137,75 @@ class _SearchPageState extends State<SearchPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        title: const Text('Search'),
-        elevation: 0,
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
-        actions: [
-          // Show search history button
-          if (_searchHistory.isNotEmpty)
-            IconButton(
-              icon: const Icon(Icons.history),
-              onPressed: () {
-                _showSearchHistoryDialog();
-              },
-            ),
-          // Clear history button
-          if (_searchHistory.isNotEmpty)
-            IconButton(
-              icon: const Icon(Icons.clear_all),
-              onPressed: () {
-                _showClearHistoryDialog();
-              },
-            ),
-        ],
-      ),
-      body: Column(
-        children: [
-          CustomSearchWidget(
-            onSearchChanged: _handleSearchChanged,
-          ),
-          // Search status bar
-          if (_hasSearched)
-            Container(
-              width: double.infinity,
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              color: Colors.grey[900],
-              child: Text(
-                _searchStatus,
-                style: const TextStyle(
-                  color: Colors.grey,
-                  fontSize: 12,
-                  fontStyle: FontStyle.italic,
-                ),
+      backgroundColor: const Color(0xFF0A0A0A), // Richer black
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Modern Header
+            Padding(
+              padding: const EdgeInsets.only(
+                  left: 20, right: 12, top: 16, bottom: 8),
+              child: Row(
+                children: [
+                  const Text(
+                    'Search',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 28,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                  const Spacer(),
+                  if (_searchHistory.isNotEmpty)
+                    IconButton(
+                      icon: Icon(Icons.history_rounded,
+                          color: Colors.grey[400], size: 22),
+                      onPressed: _showSearchHistoryDialog,
+                    ),
+                  if (_searchHistory.isNotEmpty)
+                    IconButton(
+                      icon: Icon(Icons.cleaning_services_rounded,
+                          color: Colors.grey[400], size: 22),
+                      onPressed: _showClearHistoryDialog,
+                    ),
+                ],
               ),
             ),
-          Expanded(
-            child: SearchResultsWidget(
-              searchQuery: _currentSearchQuery,
-              onResultsChanged: _handleResultsChanged,
+
+            // Sleek Search Bar
+            CustomSearchWidget(
+              onSearchChanged: _handleSearchChanged,
             ),
-          ),
-        ],
+
+            // Results Counter / Status
+            if (_hasSearched)
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20.0, vertical: 4.0),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    _searchStatus,
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.2,
+                    ),
+                  ),
+                ),
+              ),
+
+            // Content
+            Expanded(
+              child: SearchResultsWidget(
+                searchQuery: _currentSearchQuery,
+                onResultsChanged: _handleResultsChanged,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -301,27 +317,48 @@ class _CustomSearchWidgetState extends State<CustomSearchWidget> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: TextField(
-        controller: _searchController,
-        style: const TextStyle(color: Colors.white),
-        decoration: InputDecoration(
-          hintText: 'Search',
-          hintStyle: const TextStyle(color: Colors.white),
-          prefixIcon: const Icon(
-            Icons.search,
-            color: Colors.yellow,
-          ),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide.none,
-          ),
-          filled: true,
-          fillColor: const Color.fromARGB(255, 28, 25, 25),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      child: Container(
+        height: 50,
+        decoration: BoxDecoration(
+          color: const Color(0xFF1A1A1A), // Matte dark grey
+          borderRadius: BorderRadius.circular(15),
+          border: Border.all(color: Colors.white.withOpacity(0.05)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
-        onChanged: (query) {
-          widget.onSearchChanged(query);
-        },
+        child: TextField(
+          controller: _searchController,
+          style: const TextStyle(color: Colors.white, fontSize: 16),
+          cursorColor: Colors.yellow,
+          decoration: InputDecoration(
+            hintText: 'Search people or business...',
+            hintStyle: TextStyle(color: Colors.grey[600], fontSize: 15),
+            prefixIcon: const Icon(
+              Icons.search_rounded,
+              color: Colors.yellow,
+              size: 22,
+            ),
+            suffixIcon: _searchController.text.isNotEmpty
+                ? IconButton(
+                    icon: const Icon(Icons.close_rounded,
+                        color: Colors.grey, size: 20),
+                    onPressed: () {
+                      _searchController.clear();
+                      widget.onSearchChanged('');
+                    },
+                  )
+                : null,
+            border: InputBorder.none,
+            contentPadding: const EdgeInsets.symmetric(vertical: 14),
+          ),
+          onChanged: widget.onSearchChanged,
+        ),
       ),
     );
   }
@@ -527,77 +564,123 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
       );
     }
 
-    return ListView.builder(
+    return ListView.separated(
       controller: _scrollController,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       itemCount: _searchResults.length + (_hasMoreData ? 1 : 0),
+      separatorBuilder: (context, index) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
         if (index == _searchResults.length) {
-          // Loading indicator at the bottom
           return _isLoadingMore
-              ? const Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: Center(
-                    child: CircularProgressIndicator(),
+              ? const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(20),
+                    child: CircularProgressIndicator(
+                        color: Colors.yellow, strokeWidth: 2),
                   ),
                 )
               : const SizedBox.shrink();
         }
 
         final profile = _searchResults[index];
-        return ListTile(
-          leading: CircleAvatar(
-            backgroundImage: profile['profile_image_url'] != null
-                ? CachedNetworkImageProvider(profile['profile_image_url'])
-                : null,
-            child: profile['profile_image_url'] == null
-                ? const Icon(
-                    Icons.person,
-                    color: Colors.white,
-                  )
-                : null,
-          ),
-          title: Text(
-            profile['name'] ?? 'No Name',
-            style: const TextStyle(color: Colors.white),
-          ),
-          subtitle: profile['shop_name'] != null
-              ? Text(
-                  profile['shop_name'],
-                  style: const TextStyle(color: Colors.grey),
-                )
-              : null,
-          trailing: profile['verified'] == true
-              ? const Icon(
-                  Icons.verified,
-                  color: Colors.yellow,
-                  size: 20,
-                )
-              : null,
+        final name = profile['name'] ?? 'Partner';
+        final shopName = profile['shop_name'];
+        final isVerified = profile['verified'] == true;
+
+        return GestureDetector(
           onTap: () {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => profile['verified'] == true
+                builder: (context) => isVerified
                     ? VerfiedSwitchPage(userId: profile['user_id'])
                     : SearchProfileDetailPage(userId: profile['user_id']),
               ),
             );
-            // if (profile['verified'] == true) {
-            //   context.goNamed(
-            //     VerfiedSwitchPage.routeName,
-            //     pathParameters: {
-            //       'userid': profile['user_id'],
-            //     },
-            //   );
-            // } else {
-            //   context.goNamed(
-            //     SearchprofileuserWidget.routeName,
-            //     pathParameters: {
-            //       'userid': profile['user_id'],
-            //     },
-            //   );
-            // }
           },
+          child: Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFF161616),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.white.withOpacity(0.04)),
+            ),
+            child: Row(
+              children: [
+                // Avatar with premium border
+                Container(
+                  padding: const EdgeInsets.all(2),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: isVerified
+                        ? const LinearGradient(
+                            colors: [Colors.yellow, Colors.orange])
+                        : null,
+                    border: !isVerified
+                        ? Border.all(color: Colors.grey[800]!)
+                        : null,
+                  ),
+                  child: CircleAvatar(
+                    radius: 30,
+                    backgroundColor: const Color(0xFF222222),
+                    backgroundImage: profile['profile_image_url'] != null
+                        ? CachedNetworkImageProvider(
+                            profile['profile_image_url'])
+                        : null,
+                    child: profile['profile_image_url'] == null
+                        ? const Icon(Icons.person_outline_rounded,
+                            color: Colors.grey, size: 30)
+                        : null,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                // Info Section
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              name,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 17,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (isVerified) ...[
+                            const SizedBox(width: 6),
+                            const Icon(Icons.verified_rounded,
+                                color: Colors.blueAccent, size: 16),
+                          ],
+                        ],
+                      ),
+                      if (shopName != null && shopName.toString().isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 2),
+                          child: Text(
+                            shopName,
+                            style: TextStyle(
+                              color: Colors.grey[500],
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                // Action Arrow
+                Icon(Icons.chevron_right_rounded, color: Colors.grey[700]),
+              ],
+            ),
+          ),
         );
       },
     );

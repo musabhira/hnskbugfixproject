@@ -74,7 +74,7 @@ class SupabaseAuthManager extends AuthManager with EmailSignInManager {
       return;
     }
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Password updated successfully')),
+      const SnackBar(content: Text('Password updated successfully')),
     );
   }
 

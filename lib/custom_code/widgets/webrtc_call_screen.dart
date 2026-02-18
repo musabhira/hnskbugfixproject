@@ -84,13 +84,18 @@ class _WebRTCCallScreenState extends State<WebRTCCallScreen> {
 
         async function init(myId, mode) {
             try {
-                const constraints = {
-                    audio: true,
-                    video: mode === 'Video' ? { facingMode: 'user' } : false
-                };
-                localStream = await navigator.mediaDevices.getUserMedia(constraints);
-                localVideo.srcObject = localStream;
-                if (mode !== 'Video') localVideo.classList.add('hidden');
+                if (mode !== 'Text') {
+                    const constraints = {
+                        audio: true,
+                        video: mode === 'Video' ? { facingMode: 'user' } : false
+                    };
+                    localStream = await navigator.mediaDevices.getUserMedia(constraints);
+                    localVideo.srcObject = localStream;
+                    if (mode !== 'Video') localVideo.classList.add('hidden');
+                } else {
+                    localVideo.classList.add('hidden');
+                    remoteVideo.classList.add('hidden');
+                }
 
                 peer = new Peer(myId, {
                     debug: 2,
@@ -106,8 +111,17 @@ class _WebRTCCallScreenState extends State<WebRTCCallScreen> {
                 });
 
                 peer.on('call', (call) => {
-                    call.answer(localStream);
+                    if (localStream) {
+                        call.answer(localStream);
+                    } else {
+                        call.answer(); // Text mode empty answer
+                    }
                     handleCall(call);
+                });
+
+                // Data connection for Text chat
+                peer.on('connection', (conn) => {
+                    handleConnection(conn);
                 });
 
                 peer.on('error', (err) => {
@@ -117,6 +131,20 @@ class _WebRTCCallScreenState extends State<WebRTCCallScreen> {
             } catch (e) {
                 window.flutter_inappwebview.callHandler('onError', "Permission/Media Error: " + e.message);
             }
+        }
+
+        let activeConn;
+        function handleConnection(conn) {
+            activeConn = conn;
+            conn.on('open', () => {
+                window.flutter_inappwebview.callHandler('onConnected');
+            });
+            conn.on('data', (data) => {
+                window.flutter_inappwebview.callHandler('onMessageReceived', data);
+            });
+            conn.on('close', () => {
+                window.flutter_inappwebview.callHandler('onDisconnected');
+            });
         }
 
         function handleCall(call) {
@@ -130,14 +158,26 @@ class _WebRTCCallScreenState extends State<WebRTCCallScreen> {
             });
         }
 
-        function callPeer(peerId) {
-            if (!peer || !localStream) return;
-            const call = peer.call(peerId, localStream);
-            handleCall(call);
+        function callPeer(peerId, mode) {
+            if (!peer) return;
+            if (mode === 'Text') {
+                const conn = peer.connect(peerId);
+                handleConnection(conn);
+            } else if (localStream) {
+                const call = peer.call(peerId, localStream);
+                handleCall(call);
+            }
+        }
+
+        function sendData(data) {
+            if (activeConn && activeConn.open) {
+                activeConn.send(data);
+            }
         }
 
         function endCall() {
             if (activeCall) activeCall.close();
+            if (activeConn) activeConn.close();
         }
     </script>
 </body>
@@ -164,7 +204,7 @@ class _WebRTCCallScreenState extends State<WebRTCCallScreen> {
       debugPrint('Direct Call: Attempting to call: ${widget.targetUserId}');
       _triedUserIds.add(widget.targetUserId!);
       webViewController?.evaluateJavascript(
-          source: 'callPeer("${widget.targetUserId}")');
+          source: 'callPeer("${widget.targetUserId}", "${widget.mode}")');
       _startConnectionTimeout();
       return;
     }
@@ -253,10 +293,14 @@ class _WebRTCCallScreenState extends State<WebRTCCallScreen> {
 
   void sendMessage() {
     if (messageController.text.trim().isEmpty) return;
+    final text = messageController.text.trim();
+
+    webViewController?.evaluateJavascript(source: 'sendData("$text")');
+
     setState(() {
       messages.add({
         'sender': 'You',
-        'message': messageController.text.trim(),
+        'message': text,
         'timestamp': DateTime.now(),
       });
     });
@@ -338,6 +382,18 @@ class _WebRTCCallScreenState extends State<WebRTCCallScreen> {
                     _connectionTimeoutTimer?.cancel();
                   });
               controller.addJavaScriptHandler(
+                  handlerName: 'onMessageReceived',
+                  callback: (args) {
+                    setState(() {
+                      messages.add({
+                        'sender': 'Stranger',
+                        'message': args[0].toString(),
+                        'timestamp': DateTime.now(),
+                      });
+                    });
+                    _scrollToBottom();
+                  });
+              controller.addJavaScriptHandler(
                   handlerName: 'onDisconnected',
                   callback: (args) => nextStranger());
               controller.addJavaScriptHandler(
@@ -345,7 +401,9 @@ class _WebRTCCallScreenState extends State<WebRTCCallScreen> {
                   callback: (args) => debugPrint('PeerJS Error: ${args[0]}'));
             },
             onLoadStop: (controller, url) async {
-              await _requestPermissions();
+              if (widget.mode != 'Text') {
+                await _requestPermissions();
+              }
               controller.evaluateJavascript(
                   source: 'init("$myUserId", "${widget.mode}")');
             },
