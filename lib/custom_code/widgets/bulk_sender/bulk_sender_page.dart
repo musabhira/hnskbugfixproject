@@ -5,7 +5,6 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
 
 class BulkSenderPage extends StatefulWidget {
   const BulkSenderPage({Key? key}) : super(key: key);
@@ -16,16 +15,18 @@ class BulkSenderPage extends StatefulWidget {
 
 class _BulkSenderPageState extends State<BulkSenderPage>
     with WidgetsBindingObserver {
-  final TextEditingController _numbersController = TextEditingController();
   final TextEditingController _messageController = TextEditingController();
+  final TextEditingController _numbersController = TextEditingController();
 
-  List<String> _numbersList = [];
-  int _currentIndex = -1;
-  bool _isAutoSending = false;
-  bool _showProgress = false;
-  bool _useApiMode = false;
+  // API Mode Controllers
   final TextEditingController _apiUrlController = TextEditingController();
   final TextEditingController _apiTokenController = TextEditingController();
+  bool _useApiMode = false;
+
+  List<String> _numbersList = [];
+  bool _isAutoSending = false;
+  int _currentIndex = -1;
+  bool _showProgress = false;
 
   @override
   void initState() {
@@ -34,19 +35,29 @@ class _BulkSenderPageState extends State<BulkSenderPage>
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+  }
+
+  @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _numbersController.dispose();
     _messageController.dispose();
+    _numbersController.dispose();
+    _apiUrlController.dispose();
+    _apiTokenController.dispose();
     super.dispose();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed && _isAutoSending) {
-      // Add a small delay to ensure UI is ready before triggering next URL
-      Future.delayed(const Duration(milliseconds: 500), () {
-        if (mounted && _isAutoSending) {
+    if (state == AppLifecycleState.resumed &&
+        _isAutoSending &&
+        !_useApiMode &&
+        _currentIndex >= 0) {
+      // Small delay to ensure app is ready
+      Future.delayed(const Duration(milliseconds: 1000), () {
+        if (mounted) {
           _processNext();
         }
       });
@@ -54,118 +65,82 @@ class _BulkSenderPageState extends State<BulkSenderPage>
   }
 
   Future<void> _pickContacts() async {
-    // Check and request permission using permission_handler for reliability
-    var status = await Permission.contacts.status;
-    if (status.isDenied) {
-      status = await Permission.contacts.request();
-    }
-
-    if (status.isGranted) {
+    if (await FlutterContacts.requestPermission()) {
       final contacts = await FlutterContacts.getContacts(withProperties: true);
-      if (!mounted) return;
+      if (mounted) {
+        material
+            .showDialog<List<Contact>>(
+          context: context,
+          builder: (context) => MultiContactPickerDialog(contacts: contacts),
+        )
+            .then((selected) {
+          if (selected != null && selected.isNotEmpty) {
+            setState(() {
+              final newNumbers = selected
+                  .map((c) => c.phones.isNotEmpty ? c.phones.first.number : '')
+                  .where((n) => n.isNotEmpty)
+                  .join('\n');
 
-      if (contacts.isEmpty) {
-        material.ScaffoldMessenger.of(context).showSnackBar(
-          const material.SnackBar(content: Text('No contacts found')),
-        );
-        return;
-      }
-
-      // Filter contacts that have phone numbers
-      final contactsWithPhone =
-          contacts.where((c) => c.phones.isNotEmpty).toList();
-
-      final List<Contact>? selected = await material.showDialog<List<Contact>>(
-        context: context,
-        builder: (context) => MultiContactPickerDialog(
-          contacts: contactsWithPhone,
-        ),
-      );
-
-      if (selected != null && selected.isNotEmpty) {
-        final List<String> extractedNumbers = [];
-        for (var contact in selected) {
-          if (contact.phones.isNotEmpty) {
-            // Take the first phone number or let user choose?
-            // For bulk, usually we take the primary/first one.
-            extractedNumbers.add(contact.phones.first.number);
+              if (_numbersController.text.isEmpty) {
+                _numbersController.text = newNumbers;
+              } else {
+                _numbersController.text += '\n$newNumbers';
+              }
+            });
           }
-        }
-
-        final String newNumbersText = extractedNumbers.join(', ');
-        setState(() {
-          if (_numbersController.text.trim().isEmpty) {
-            _numbersController.text = newNumbersText;
-          } else {
-            _numbersController.text += ', ' + newNumbersText;
-          }
-        });
-
-        displayInfoBar(context, builder: (context, close) {
-          return InfoBar(
-            title: const Text('Import Successful'),
-            content:
-                Text('${extractedNumbers.length} contacts added to queue.'),
-            severity: InfoBarSeverity.success,
-          );
         });
       }
     } else {
-      material.ScaffoldMessenger.of(context).showSnackBar(
-        const material.SnackBar(
-          content: Text('Contact permission is required to import numbers.'),
-          backgroundColor: material.Colors.redAccent,
-        ),
-      );
+      _showError('Permission denied');
     }
   }
 
-  void _parseNumbers() {
-    final text = _numbersController.text;
-    if (text.isEmpty) return;
-
-    final split = text.split(RegExp(r'[,\s\n]+'));
-    setState(() {
-      _numbersList = split
-          .map((s) => s.trim().replaceAll(RegExp(r'[^\d+]'), ''))
-          .where((s) => s.length >= 10)
-          .toList();
-      _showProgress = _numbersList.isNotEmpty;
-      _currentIndex = -1;
-      _isAutoSending = false;
-    });
+  void _showError(String msg) {
+    displayInfoBar(
+      context,
+      builder: (context, close) => InfoBar(
+        title: const Text('Error'),
+        content: Text(msg),
+        severity: InfoBarSeverity.error,
+        onClose: close,
+      ),
+    );
   }
 
-  Future<void> _sendToNumber(String number) async {
-    final message = _messageController.text;
-    var processedNumber = number;
-    if (!processedNumber.startsWith('+')) {
-      if (processedNumber.length == 10) {
-        processedNumber = '+91$processedNumber';
-      }
-    }
-
-    final url =
-        "https://wa.me/${processedNumber.replaceAll('+', '')}?text=${Uri.encodeComponent(message)}";
-    final uri = Uri.parse(url);
-
-    try {
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      } else {
-        material.debugPrint("Could not launch $url");
-      }
-    } catch (e) {
-      material.debugPrint("Error launching WhatsApp: $e");
-    }
+  void _showSuccessInfo() {
+    material.ScaffoldMessenger.of(context).showSnackBar(
+      material.SnackBar(
+        content: const Text('All messages sent successfully!'),
+        backgroundColor: material.Colors.green,
+        behavior: material.SnackBarBehavior.floating,
+      ),
+    );
   }
 
   void _startAutoSend() {
-    if (_numbersList.isEmpty) return;
+    final text = _numbersController.text.trim();
+    if (text.isEmpty) {
+      _showError('Please enter numbers');
+      return;
+    }
+
+    _numbersList = text
+        .split('\n')
+        .map((e) => e.replaceAll(RegExp(r'[^\d+]'), ''))
+        .where((e) => e.length > 5)
+        .toList();
+
+    if (_numbersList.isEmpty) {
+      _showError('No valid numbers found');
+      return;
+    }
+
     setState(() {
-      _isAutoSending = true;
       _currentIndex = 0;
+      _isAutoSending = true;
+      _showProgress = true;
     });
+
     if (_useApiMode) {
       _sendViaApi(_numbersList[_currentIndex]);
     } else {
@@ -175,14 +150,11 @@ class _BulkSenderPageState extends State<BulkSenderPage>
 
   Future<void> _sendViaApi(String number) async {
     if (_apiUrlController.text.isEmpty || _apiTokenController.text.isEmpty) {
-      displayInfoBar(context, builder: (context, close) {
-        return const InfoBar(
-          title: Text('API Error'),
-          content: Text('Please enter your API Link and Token in settings.'),
-          severity: InfoBarSeverity.error,
-        );
+      _showError('API URL and Token are required for API Mode');
+      setState(() {
+        _isAutoSending = false;
+        _showProgress = false;
       });
-      setState(() => _isAutoSending = false);
       return;
     }
 
@@ -190,7 +162,6 @@ class _BulkSenderPageState extends State<BulkSenderPage>
     final url = Uri.parse(_apiUrlController.text);
 
     try {
-      // Assuming UltraMsg format, can be adjusted for other providers
       final response = await http.post(url, body: {
         'token': _apiTokenController.text,
         'to': number,
@@ -198,8 +169,8 @@ class _BulkSenderPageState extends State<BulkSenderPage>
       });
 
       if (response.statusCode == 200) {
-        // Automatically move to next after 1 second delay
-        Future.delayed(const Duration(seconds: 1), () {
+        // Automatically move to next after 1.5 second delay
+        Future.delayed(const Duration(milliseconds: 1500), () {
           if (mounted && _isAutoSending) {
             _processNext();
           }
@@ -208,14 +179,23 @@ class _BulkSenderPageState extends State<BulkSenderPage>
         throw Exception('Failed to send: ${response.body}');
       }
     } catch (e) {
-      displayInfoBar(context, builder: (context, close) {
-        return InfoBar(
-          title: const Text('API Failure'),
-          content: Text(e.toString()),
-          severity: InfoBarSeverity.error,
-        );
+      _showError('API Error: $e');
+      setState(() {
+        _isAutoSending = false;
+        _showProgress = false;
       });
-      setState(() => _isAutoSending = false);
+    }
+  }
+
+  void _sendToNumber(String number) async {
+    final message = Uri.encodeComponent(_messageController.text);
+    final whatsappUrl = "whatsapp://send?phone=$number&text=$message";
+
+    if (await canLaunchUrl(Uri.parse(whatsappUrl))) {
+      await launchUrl(Uri.parse(whatsappUrl),
+          mode: LaunchMode.externalApplication);
+    } else {
+      _showError('Could not launch WhatsApp');
     }
   }
 
@@ -224,8 +204,13 @@ class _BulkSenderPageState extends State<BulkSenderPage>
       setState(() {
         _currentIndex++;
       });
-      // Automatically trigger the next one
-      _sendToNumber(_numbersList[_currentIndex]);
+
+      if (_useApiMode) {
+        _sendViaApi(_numbersList[_currentIndex]);
+      } else {
+        // For manual mode, wait for user to return (lifecycle handles this)
+        _sendToNumber(_numbersList[_currentIndex]);
+      }
     } else {
       setState(() {
         _isAutoSending = false;
@@ -235,27 +220,22 @@ class _BulkSenderPageState extends State<BulkSenderPage>
     }
   }
 
-  void _showSuccessInfo() {
-    displayInfoBar(context, builder: (context, close) {
-      return const InfoBar(
-        title: Text('Success'),
-        content: Text('All messages have been processed!'),
-        severity: InfoBarSeverity.success,
-      );
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
+    if (_showProgress) {
+      return _buildProgressView();
+    }
+
     return material.Scaffold(
-      backgroundColor: const Color(0xFF0F0F0F),
+      backgroundColor: const Color(0xFF111111),
       appBar: material.AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text('Bulk WhatsApp Sender',
-            style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+        title: Text('Bulk Sender Pro',
+            style: GoogleFonts.outfit(
+                fontWeight: FontWeight.bold, color: material.Colors.white)),
         leading: material.IconButton(
-          icon: const Icon(FluentIcons.back),
+          icon: const Icon(FluentIcons.back, size: 16),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -266,42 +246,75 @@ class _BulkSenderPageState extends State<BulkSenderPage>
           children: [
             _buildInfoCard(),
             const SizedBox(height: 24),
+            _buildModeToggle(),
+            if (_useApiMode) _buildApiSettings(),
+            const SizedBox(height: 24),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Step 1: Paste Numbers',
+                Text('Recipient Numbers',
                     style: GoogleFonts.inter(
                         fontWeight: FontWeight.w600,
-                        color: material.Colors.yellow)),
-                material.TextButton.icon(
-                  onPressed: _pickContacts,
+                        color: material.Colors.grey[400])),
+                material.IconButton(
                   icon: const Icon(FluentIcons.contact_list,
-                      size: 16, color: material.Colors.yellow),
-                  label: Text('Import Contacts',
-                      style: GoogleFonts.inter(
-                          color: material.Colors.yellow, fontSize: 13)),
-                  style: material.TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    backgroundColor:
-                        material.Colors.yellow.withValues(alpha: 0.1),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8)),
-                  ),
+                      color: material.Colors.yellow, size: 20),
+                  onPressed: _pickContacts,
                 ),
               ],
             ),
             const SizedBox(height: 8),
-            _buildNumbersInput(),
+            material.TextField(
+              controller: _numbersController,
+              maxLines: 5,
+              style: const material.TextStyle(color: material.Colors.white),
+              decoration: material.InputDecoration(
+                hintText: 'Enter numbers (one per line)...',
+                hintStyle: material.TextStyle(color: material.Colors.grey[600]),
+                filled: true,
+                fillColor: material.Colors.white.withValues(alpha: 0.05),
+                border: material.OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: material.BorderSide.none),
+                contentPadding: const EdgeInsets.all(16),
+              ),
+            ),
             const SizedBox(height: 24),
-            Text('Step 2: Compose Message',
+            Text('Message Content',
                 style: GoogleFonts.inter(
                     fontWeight: FontWeight.w600,
-                    color: material.Colors.yellow)),
+                    color: material.Colors.grey[400])),
             const SizedBox(height: 8),
-            _buildMessageInput(),
+            material.TextField(
+              controller: _messageController,
+              maxLines: 8,
+              style: const material.TextStyle(color: material.Colors.white),
+              decoration: material.InputDecoration(
+                hintText: 'Type your message here...',
+                hintStyle: material.TextStyle(color: material.Colors.grey[600]),
+                filled: true,
+                fillColor: material.Colors.white.withValues(alpha: 0.05),
+                border: material.OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: material.BorderSide.none),
+                contentPadding: const EdgeInsets.all(16),
+              ),
+            ),
             const SizedBox(height: 32),
-            if (!_showProgress) _buildActionButtons(),
-            if (_showProgress) _buildProgressSection(),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: _startAutoSend,
+                style: ButtonStyle(
+                  backgroundColor: ButtonState.all(material.Colors.yellow),
+                  padding: ButtonState.all(const EdgeInsets.all(16)),
+                ),
+                child: Text('Start Bulk Sending',
+                    style: GoogleFonts.inter(
+                        fontWeight: FontWeight.bold,
+                        color: material.Colors.black)),
+              ),
+            ),
           ],
         ),
       ),
@@ -312,20 +325,20 @@ class _BulkSenderPageState extends State<BulkSenderPage>
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: material.Colors.yellow.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
-        border:
-            Border.all(color: material.Colors.yellow.withValues(alpha: 0.2)),
+        color: material.Colors.blue.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(16),
+        border: material.Border.all(
+            color: material.Colors.blue.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
-          const Icon(FluentIcons.info, color: material.Colors.yellow),
-          const SizedBox(width: 12),
+          const Icon(FluentIcons.info, color: material.Colors.blue),
+          const SizedBox(width: 16),
           Expanded(
             child: Text(
-              'Paste a list of numbers separated by commas or new lines. This tool will help you send messages via WhatsApp loop.',
+              'Automate your outreach. Add numbers, set your message, and let the tool do the rest.',
               style: GoogleFonts.inter(
-                  fontSize: 13, color: material.Colors.grey[300]),
+                  fontSize: 13, color: material.Colors.blue[100]),
             ),
           ),
         ],
@@ -333,67 +346,77 @@ class _BulkSenderPageState extends State<BulkSenderPage>
     );
   }
 
-  Widget _buildNumbersInput() {
-    return material.TextField(
-      controller: _numbersController,
-      maxLines: 6,
-      style: material.TextStyle(color: material.Colors.white),
-      decoration: material.InputDecoration(
-        hintText: '+919876543210, +918887776665...',
-        hintStyle: material.TextStyle(color: material.Colors.grey[600]),
-        filled: true,
-        fillColor: material.Colors.white.withValues(alpha: 0.05),
-        border: material.OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: material.BorderSide.none),
+  Widget _buildModeToggle() {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: material.Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(12),
       ),
-    );
-  }
-
-  Widget _buildMessageInput() {
-    return material.TextField(
-      controller: _messageController,
-      maxLines: 4,
-      style: material.TextStyle(color: material.Colors.white),
-      decoration: material.InputDecoration(
-        hintText: 'Hello! This is a bulk message from Pocket Mates.',
-        hintStyle: material.TextStyle(color: material.Colors.grey[600]),
-        filled: true,
-        fillColor: material.Colors.white.withValues(alpha: 0.05),
-        border: material.OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: material.BorderSide.none),
-      ),
-    );
-  }
-
-  Widget _buildActionButtons() {
-    return SizedBox(
-      width: double.infinity,
-      child: FilledButton(
-        onPressed: _parseNumbers,
-        style: ButtonStyle(
-          backgroundColor: ButtonState.all(material.Colors.yellow),
-          padding: ButtonState.all(const EdgeInsets.symmetric(vertical: 16)),
+      child: ToggleSwitch(
+        checked: _useApiMode,
+        onChanged: (v) => setState(() => _useApiMode = v),
+        content: Text(
+          _useApiMode
+              ? 'API Mode (Automated Background)'
+              : 'Manual Mode (via WhatsApp App)',
+          style: GoogleFonts.inter(
+              fontWeight: FontWeight.w600, color: material.Colors.white),
         ),
-        child: Text('Generate Sending Queue',
-            style: GoogleFonts.inter(
-                fontWeight: FontWeight.bold, color: material.Colors.black)),
       ),
     );
   }
 
-  Widget _buildProgressSection() {
-    final double progress =
-        _numbersList.isEmpty ? 0 : (_currentIndex + 1) / _numbersList.length;
-    final int remaining = _numbersList.length - (_currentIndex + 1);
+  Widget _buildApiSettings() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 16),
+        Text('API Configuration (WhatsApp Gateway)',
+            style: GoogleFonts.inter(
+                fontWeight: FontWeight.w600,
+                color: material.Colors.yellow,
+                fontSize: 13)),
+        const SizedBox(height: 8),
+        material.TextField(
+          controller: _apiUrlController,
+          style: material.TextStyle(color: material.Colors.white, fontSize: 13),
+          decoration: material.InputDecoration(
+            hintText: 'Instance URL (e.g., https://api.ultramsg.com/...)',
+            filled: true,
+            fillColor: material.Colors.white.withValues(alpha: 0.05),
+            border: material.OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8)),
+          ),
+        ),
+        const SizedBox(height: 8),
+        material.TextField(
+          controller: _apiTokenController,
+          style: material.TextStyle(color: material.Colors.white, fontSize: 13),
+          decoration: material.InputDecoration(
+            hintText: 'API Token',
+            filled: true,
+            fillColor: material.Colors.white.withValues(alpha: 0.05),
+            border: material.OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8)),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildProgressView() {
+    final progress = (_currentIndex + 1) / _numbersList.length;
+    final remaining = _numbersList.length - (_currentIndex + 1);
 
     return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Container(
-          padding: const EdgeInsets.all(20),
+          margin: const EdgeInsets.symmetric(horizontal: 24),
+          padding: const EdgeInsets.all(32),
           decoration: BoxDecoration(
-            color: material.Colors.white.withValues(alpha: 0.05),
+            color: const Color(0xFF1A1A1A),
             borderRadius: BorderRadius.circular(16),
             border:
                 Border.all(color: material.Colors.white.withValues(alpha: 0.1)),
@@ -615,7 +638,10 @@ class _MultiContactPickerDialogState extends State<MultiContactPickerDialog> {
                         style: GoogleFonts.inter(
                             color: material.Colors.white,
                             fontWeight: FontWeight.w500)),
-                    subtitle: material.Text(contact.phones.first.number,
+                    subtitle: material.Text(
+                        contact.phones.isNotEmpty
+                            ? contact.phones.first.number
+                            : 'No number',
                         style: GoogleFonts.inter(
                             color: material.Colors.grey[500], fontSize: 12)),
                     trailing: Checkbox(
