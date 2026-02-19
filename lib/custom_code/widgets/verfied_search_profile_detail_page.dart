@@ -88,8 +88,77 @@ class _VerfiedSearchProfileDetailPageState
     _checkEventsTable();
   }
 
-  Future<void> _initializeData() async {
+  void _initializeData() async {
     await _fetchUserBanners();
+  }
+
+  void _showWebsiteTemplatePicker() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1A1A1A),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Select Business Website Template',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 20),
+            _buildTemplateOption('Template 1 - Minimalist', 'template_1'),
+            _buildTemplateOption('Template 2 - Business Dark', 'template_2'),
+            _buildTemplateOption('Template 3 - Portfolio', 'template_3'),
+            const SizedBox(height: 10),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTemplateOption(String title, String templateId) {
+    bool isSelected = _profileData?['selected_website_template'] == templateId;
+    return ListTile(
+      onTap: () async {
+        await _supabase.from('profile').update({
+          'selected_website_template': templateId,
+        }).eq('user_id', _currentUserId!);
+
+        Navigator.pop(context);
+        _fetchProfileData();
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('$title selected successfully!')),
+        );
+      },
+      leading: Icon(
+        isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
+        color: isSelected ? Colors.yellow : Colors.white54,
+      ),
+      title: Text(
+        title,
+        style: const TextStyle(color: Colors.white),
+      ),
+      trailing:
+          isSelected ? const Icon(Icons.check, color: Colors.green) : null,
+    );
+  }
+
+  void _openBusinessWebsite() async {
+    final template = _profileData?['selected_website_template'] ?? 'template_1';
+    final url = Uri.parse(
+        'https://handskill-business.web.app/${_profileData?['id']}?template=$template');
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url);
+    }
   }
 
   Future<void> _checkEventsTable() async {
@@ -169,6 +238,72 @@ class _VerfiedSearchProfileDetailPageState
     safeSetState(() {
       _isCurrentUser = currentUserId == widget.userId;
     });
+  }
+
+  // Business Website Helper Methods
+  Widget _buildBusinessSiteButton() {
+    return Padding(
+      padding: const EdgeInsets.only(top: 10, bottom: 10),
+      child: Row(
+        children: [
+          Expanded(
+            child: ElevatedButton.icon(
+              onPressed: _isCurrentUser
+                  ? _showWebsiteTemplatePicker
+                  : _openBusinessWebsite,
+              icon: Icon(
+                _isCurrentUser ? Icons.settings_applications : Icons.language,
+                size: 18,
+                color: _isCurrentUser ? Colors.yellow : Colors.black87,
+              ),
+              label: Text(
+                _isCurrentUser ? 'Setup Business Site' : 'Visit Business Site',
+                style: TextStyle(
+                  color: _isCurrentUser ? Colors.yellow : Colors.black87,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor:
+                    _isCurrentUser ? Colors.black87 : Colors.yellow,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(
+                    color: Colors.yellow.withOpacity(0.5),
+                    width: 1,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          if (_isCurrentUser &&
+              _profileData?['selected_website_template'] != null)
+            Padding(
+              padding: const EdgeInsets.only(left: 8.0),
+              child: IconButton(
+                style: IconButton.styleFrom(
+                  backgroundColor: Colors.yellow.withOpacity(0.1),
+                ),
+                onPressed: () {
+                  final template = _profileData?['selected_website_template'];
+                  final url =
+                      'https://handskill-business.web.app/${_profileData?['id']}?template=$template';
+                  flutter.Clipboard.setData(flutter.ClipboardData(text: url));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Website link copied!'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.copy, color: Colors.yellow, size: 20),
+              ),
+            ),
+        ],
+      ),
+    );
   }
 
   String formatCount(int count) {
@@ -1159,8 +1294,6 @@ class _VerfiedSearchProfileDetailPageState
             ],
           ),
         ],
-
-        // Helper methods
       ),
       body: _isLoading
           ? ListViewShimmer(
