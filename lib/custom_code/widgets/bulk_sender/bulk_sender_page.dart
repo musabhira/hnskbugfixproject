@@ -39,7 +39,12 @@ class _BulkSenderPageState extends State<BulkSenderPage>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed && _isAutoSending) {
-      _processNext();
+      // Add a small delay to ensure UI is ready before triggering next URL
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted && _isAutoSending) {
+          _processNext();
+        }
+      });
     }
   }
 
@@ -164,6 +169,8 @@ class _BulkSenderPageState extends State<BulkSenderPage>
       setState(() {
         _currentIndex++;
       });
+      // Automatically trigger the next one
+      _sendToNumber(_numbersList[_currentIndex]);
     } else {
       setState(() {
         _isAutoSending = false;
