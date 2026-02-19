@@ -18,20 +18,30 @@ import 'package:firebase_core/firebase_core.dart';
 import 'services/push_notification_service.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  if (kIsWeb) {
+    usePathUrlStrategy();
+  }
+
+  // Attempt optional services like Firebase but don't let them block startup
   try {
-    WidgetsFlutterBinding.ensureInitialized();
-    try {
+    if (!kIsWeb) {
+      // On iOS, native initialization is handled safely in AppDelegate.swift
       await Firebase.initializeApp();
       await PushNotificationService.initialize();
-    } catch (firebaseErr) {
-      debugPrint('Firebase initialization failed: $firebaseErr');
     }
+  } catch (firebaseErr) {
+    debugPrint('Optional service initialization skipped: $firebaseErr');
+  }
 
+  // Initialize core application services
+  try {
     await SupaFlow.initialize();
     await LocalSyncServer().initialize();
     await FlutterFlowTheme.initialize();
   } catch (e) {
-    debugPrint('Critical initialization error: $e');
+    debugPrint('Core service initialization error: $e');
   }
 
   runApp(ProviderScope(child: MyApp()));
