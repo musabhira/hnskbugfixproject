@@ -14,6 +14,8 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import 'flutter_flow/flutter_flow_util.dart';
 import 'flutter_flow/nav/nav.dart';
 import 'custom_code/services/local_sync_server.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'services/push_notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,7 +26,9 @@ void main() async {
   }
 
   try {
+    await Firebase.initializeApp();
     await SupaFlow.initialize();
+    await PushNotificationService.initialize();
     await LocalSyncServer().initialize();
     await FlutterFlowTheme.initialize();
   } catch (e) {
@@ -80,6 +84,9 @@ class _MyAppState extends State<MyApp> {
     userStream = pocketMatesAppSupabaseUserStream()
       ..listen((user) {
         _appStateNotifier.update(user);
+        if (user.loggedIn) {
+          PushNotificationService.initialize();
+        }
       });
     jwtTokenStream.listen((_) {});
     Future.delayed(

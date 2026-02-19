@@ -1,0 +1,110 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:pocket_mates_app/backend/supabase/supabase.dart';
+
+class PushNotificationService {
+  static final FirebaseMessaging _fcm = FirebaseMessaging.instance;
+  static final FlutterLocalNotificationsPlugin _localNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+
+  static Future<void> initialize() async {
+    // 1. Android Notification Channel setup
+    const AndroidNotificationChannel channel = AndroidNotificationChannel(
+      'high_importance_channel',
+      'High Importance Notifications',
+      description: 'This channel is used for important notifications.',
+      importance: Importance.max,
+    );
+
+    await _localNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>()
+        ?.createNotificationChannel(channel);
+
+    // 2. Initialize Local Notifications
+    const AndroidInitializationSettings initializationSettingsAndroid =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
+    const DarwinInitializationSettings initializationSettingsIOS =
+        DarwinInitializationSettings();
+    const InitializationSettings initializationSettings =
+        InitializationSettings(
+      android: initializationSettingsAndroid,
+      iOS: initializationSettingsIOS,
+    );
+
+    await _localNotificationsPlugin.initialize(initializationSettings);
+
+    // 3. Request permissions
+    NotificationSettings settings = await _fcm.requestPermission(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+
+    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+      debugPrint('User granted permission');
+    }
+
+    // 4. Token management
+    String? token = await _fcm.getToken();
+    if (token != null) {
+      debugPrint('FCM Token: $token');
+      await _saveTokenToSupabase(token);
+    }
+
+    _fcm.onTokenRefresh.listen(_saveTokenToSupabase);
+
+    // 5. Handling messages
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      RemoteNotification? notification = message.notification;
+      AndroidNotification? android = message.notification?.android;
+
+      if (notification != null && !kIsWeb) {
+        _localNotificationsPlugin.show(
+          notification.hashCode,
+          notification.title,
+          notification.body,
+          NotificationDetails(
+            android: AndroidNotificationDetails(
+              channel.id,
+              channel.name,
+              channelDescription: channel.description,
+              icon: android?.smallIcon ?? '@mipmap/ic_launcher',
+              importance: Importance.max,
+              priority: Priority.high,
+              ticker: 'ticker',
+            ),
+            iOS: const DarwinNotificationDetails(
+              presentAlert: true,
+              presentBadge: true,
+              presentSound: true,
+            ),
+          ),
+        );
+      }
+    });
+  }
+
+  static Future<void> _saveTokenToSupabase(String token) async {
+    final user = SupaFlow.client.auth.currentUser;
+    if (user != null) {
+      try {
+        await SupaFlow.client
+            .from('profile')
+            .update({'fcm_token': token}).eq('user_id', user.id);
+        debugPrint('FCM Token successfully synced with Supabase');
+      } catch (e) {
+        debugPrint('Failed to sync token with Supabase: $e');
+      }
+    }
+  }
+}
+
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp();
+  debugPrint("Handling a background message: ${message.messageId}");
+}
