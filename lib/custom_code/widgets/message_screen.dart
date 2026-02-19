@@ -50,7 +50,7 @@ class MessageScreen extends StatefulWidget {
 class _MessageScreenState extends State<MessageScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  final _supabase = Supabase.instance.client;
+  final _supabase = SupaFlow.client;
   late String _senderId;
   List<Map<String, dynamic>> _messages = [];
   List<Map<String, dynamic>> _ephemeralMessages = [];
@@ -368,8 +368,15 @@ class _MessageScreenState extends State<MessageScreen> {
       // 2. Then fetch from remote
       final response = await _supabase
           .from('messages')
-          .select(
-              '*, gallery:gallery_id(*, user:user_id(profile:profile(name, profile_image_url)))')
+          .select('''
+            *,
+            gallery:gallery_id(
+              *,
+              user:users!user_id(
+                profile:profile!user_id(name, profile_image_url)
+              )
+            )
+          ''')
           .or('and(sender_id.eq.$_senderId,receiver_id.eq.${widget.receiverId}),and(sender_id.eq.${widget.receiverId},receiver_id.eq.$_senderId)')
           .order('created_at', ascending: false)
           .limit(50);
@@ -401,36 +408,37 @@ class _MessageScreenState extends State<MessageScreen> {
         safeSetState(() {
           _isLoading = false;
         });
+        _showErrorSnackBar('Error loading messages: $e');
       }
     }
   }
 
   void _sendMessage() async {
     if (_messageController.text.trim().isEmpty) return;
-    if (_isBlocked || _isBlockedByOther) return;
+    if (_isBlocked || _isBlockedByOther) {
+      _showErrorSnackBar('Cannot send message: User is blocked');
+      return;
+    }
 
     final messageText = _messageController.text.trim();
     _messageController.clear();
 
     try {
+      // 1. Insert message
       await _supabase.from('messages').insert({
         'sender_id': _senderId,
         'receiver_id': widget.receiverId,
         'content': messageText,
+        'message_type': 'text',
       });
 
-      _loadMessages();
+      // 2. Update or create conversation record
+      await _updateConversation(messageText);
 
-      if (_scrollController.hasClients) {
-        _scrollController.animateTo(
-          0,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
-      }
+      _loadMessages();
     } catch (e) {
       debugPrint('Error sending message: $e');
-      _showErrorSnackBar('Failed to send message');
+      _showErrorSnackBar('Failed to send message: $e');
     }
   }
 
@@ -445,10 +453,8 @@ class _MessageScreenState extends State<MessageScreen> {
       );
 
       if (image != null) {
-        _showLoadingDialog('Sending image...');
-        await _uploadEphemeralMedia(image.path, 'image');
-        if (!mounted) return;
-        Navigator.of(context).pop();
+        // Optimistic UI for Ephemeral Image
+        _uploadEphemeralMedia(image.path, 'image');
       }
     } catch (e) {
       debugPrint('Error picking image: $e');
@@ -466,10 +472,8 @@ class _MessageScreenState extends State<MessageScreen> {
       );
 
       if (photo != null) {
-        _showLoadingDialog('Sending photo...');
-        await _uploadEphemeralMedia(photo.path, 'image');
-        if (!mounted) return;
-        Navigator.of(context).pop();
+        // Optimistic UI for Ephemeral Photo
+        _uploadEphemeralMedia(photo.path, 'image');
       }
     } catch (e) {
       debugPrint('Error taking photo: $e');
@@ -480,19 +484,34 @@ class _MessageScreenState extends State<MessageScreen> {
   Future<void> _handleVoiceMessage(String path, int duration) async {
     if (_isBlocked || _isBlockedByOther) return;
 
-    // speed: UI update handled by optimistic update or streamlined upload
+    final tempId = 'temp_voice_${DateTime.now().millisecondsSinceEpoch}';
+    final tempMessage = {
+      'id': tempId,
+      'sender_id': _senderId,
+      'receiver_id': widget.receiverId,
+      'content': 'Voice message',
+      'message_type': 'voice',
+      'voice_duration': duration,
+      'created_at': DateTime.now().toIso8601String(),
+      'is_sending': true, // Local flag for UI feedback
+    };
+
+    // Optimistically add to list
+    safeSetState(() {
+      _messages.insert(0, tempMessage);
+    });
+
     try {
-      // Upload logic similar to _uploadEphemeralMedia but for persistent message
       final file = File(path);
       final fileName = 'voice_${DateTime.now().millisecondsSinceEpoch}.m4a';
       final storagePath = '$_senderId/$fileName';
 
-      // Upload
+      // Upload in background
       await _supabase.storage.from('voice-messages').upload(storagePath, file);
       final url =
           _supabase.storage.from('voice-messages').getPublicUrl(storagePath);
 
-      // Send
+      // Send to DB
       await _supabase.from('messages').insert({
         'sender_id': _senderId,
         'receiver_id': widget.receiverId,
@@ -502,9 +521,17 @@ class _MessageScreenState extends State<MessageScreen> {
         'voice_duration': duration,
       });
 
+      // Update conversation list metadata
+      await _updateConversation('Voice message 🎤');
+
+      // Refresh to get actual DB record
       _loadMessages();
     } catch (e) {
       debugPrint('Error sending voice: $e');
+      // If failed, remove from list and show error
+      safeSetState(() {
+        _messages.removeWhere((m) => m['id'] == tempId);
+      });
       _showErrorSnackBar('Failed to send voice message');
     }
   }
@@ -518,10 +545,8 @@ class _MessageScreenState extends State<MessageScreen> {
       );
 
       if (video != null) {
-        _showLoadingDialog('Sending video...');
-        await _uploadEphemeralMedia(video.path, 'video');
-        if (!mounted) return;
-        Navigator.of(context).pop();
+        // Optimistic UI for Ephemeral Video
+        _uploadEphemeralMedia(video.path, 'video');
       }
     } catch (e) {
       debugPrint('Error picking video: $e');
@@ -540,10 +565,8 @@ class _MessageScreenState extends State<MessageScreen> {
           _isRecording = false;
         });
 
-        _showLoadingDialog('Sending audio...');
-        await _uploadEphemeralMedia(path, 'audio');
-        if (!mounted) return;
-        Navigator.of(context).pop();
+        // Optimistic UI for Ephemeral Audio
+        _uploadEphemeralMedia(path, 'audio');
       }
     } else {
       // Start recording
@@ -658,6 +681,24 @@ class _MessageScreenState extends State<MessageScreen> {
 
       debugPrint('Media URL generated: $mediaUrl');
 
+      // Optimistically update UI by adding to local ephemeral messages list
+      final tempEphemeralId =
+          'temp_ephemeral_${DateTime.now().millisecondsSinceEpoch}';
+      final tempEphemeral = {
+        'id': tempEphemeralId,
+        'sender_id': _senderId,
+        'receiver_id': widget.receiverId,
+        'message_type': type,
+        'media_url':
+            mediaUrl, // In a real optimistic UI, this might be a local path, but here we use the generated URL
+        'created_at': DateTime.now().toIso8601String(),
+        'is_sending': true,
+      };
+
+      safeSetState(() {
+        _ephemeralMessages.insert(0, tempEphemeral);
+      });
+
       // Insert into database
       try {
         final response = await _supabase
@@ -681,9 +722,24 @@ class _MessageScreenState extends State<MessageScreen> {
         _scheduleEphemeralMessageDeletion(messageId, storagePath, type);
 
         _loadEphemeralMessages();
+
+        // Update conversation summary
+        String lastMsg = 'Ephemeral message';
+        if (type == 'image')
+          lastMsg = 'Photo 📷';
+        else if (type == 'video')
+          lastMsg = 'Video 🎥';
+        else if (type == 'audio') lastMsg = 'Audio 🎙️';
+        await _updateConversation(lastMsg);
+
         _showSuccessSnackBar('$type sent successfully');
       } catch (dbError) {
         debugPrint('Database insert error: $dbError');
+
+        // Remove from optimistic list on failure
+        safeSetState(() {
+          _ephemeralMessages.removeWhere((m) => m['id'] == tempEphemeralId);
+        });
 
         // Rollback: Delete uploaded file
         try {
@@ -1061,6 +1117,37 @@ class _MessageScreenState extends State<MessageScreen> {
         duration: const Duration(seconds: 3),
       ),
     );
+  }
+
+  Future<void> _updateConversation(String lastMessage) async {
+    try {
+      final existingConv = await _supabase
+          .from('conversations')
+          .select('id, unread_count')
+          .or('and(user1_id.eq.$_senderId,user2_id.eq.${widget.receiverId}),and(user1_id.eq.${widget.receiverId},user2_id.eq.$_senderId)')
+          .maybeSingle();
+
+      if (existingConv != null) {
+        await _supabase.from('conversations').update({
+          'last_message': lastMessage,
+          'last_message_time': DateTime.now().toIso8601String(),
+          'last_sender_id': _senderId,
+          'unread_count': (existingConv['unread_count'] ?? 0) + 1,
+          'updated_at': DateTime.now().toIso8601String(),
+        }).eq('id', existingConv['id']);
+      } else {
+        await _supabase.from('conversations').insert({
+          'user1_id': _senderId,
+          'user2_id': widget.receiverId,
+          'last_message': lastMessage,
+          'last_message_time': DateTime.now().toIso8601String(),
+          'last_sender_id': _senderId,
+          'unread_count': 1,
+        });
+      }
+    } catch (e) {
+      debugPrint('Error updating conversation: $e');
+    }
   }
 
   void _showSuccessSnackBar(String message) {
