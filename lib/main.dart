@@ -18,21 +18,20 @@ import 'package:firebase_core/firebase_core.dart';
 import 'services/push_notification_service.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  GoRouter.optionURLReflectsImperativeAPIs = true;
-
-  if (kIsWeb) {
-    usePathUrlStrategy();
-  }
-
   try {
-    await Firebase.initializeApp();
+    WidgetsFlutterBinding.ensureInitialized();
+    try {
+      await Firebase.initializeApp();
+      await PushNotificationService.initialize();
+    } catch (firebaseErr) {
+      debugPrint('Firebase initialization failed: $firebaseErr');
+    }
+
     await SupaFlow.initialize();
-    await PushNotificationService.initialize();
     await LocalSyncServer().initialize();
     await FlutterFlowTheme.initialize();
   } catch (e) {
-    debugPrint('Initialization error: $e');
+    debugPrint('Critical initialization error: $e');
   }
 
   runApp(ProviderScope(child: MyApp()));
