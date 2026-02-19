@@ -8,7 +8,13 @@ import FirebaseCore
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
-    FirebaseApp.configure()
+    // Safe check: Only configure Firebase if the plist exists to prevent crash
+    if Bundle.main.path(forResource: "GoogleService-Info", ofType: "plist") != nil {
+        FirebaseApp.configure()
+    } else {
+        print("Firebase configuration file not found. Skipping native initialization.")
+    }
+    
     GeneratedPluginRegistrant.register(with: self)
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
