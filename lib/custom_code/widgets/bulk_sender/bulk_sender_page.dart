@@ -4,6 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class BulkSenderPage extends StatefulWidget {
   const BulkSenderPage({Key? key}) : super(key: key);
@@ -21,6 +23,9 @@ class _BulkSenderPageState extends State<BulkSenderPage>
   int _currentIndex = -1;
   bool _isAutoSending = false;
   bool _showProgress = false;
+  bool _useApiMode = false;
+  final TextEditingController _apiUrlController = TextEditingController();
+  final TextEditingController _apiTokenController = TextEditingController();
 
   @override
   void initState() {
@@ -161,7 +166,57 @@ class _BulkSenderPageState extends State<BulkSenderPage>
       _isAutoSending = true;
       _currentIndex = 0;
     });
-    _sendToNumber(_numbersList[_currentIndex]);
+    if (_useApiMode) {
+      _sendViaApi(_numbersList[_currentIndex]);
+    } else {
+      _sendToNumber(_numbersList[_currentIndex]);
+    }
+  }
+
+  Future<void> _sendViaApi(String number) async {
+    if (_apiUrlController.text.isEmpty || _apiTokenController.text.isEmpty) {
+      displayInfoBar(context, builder: (context, close) {
+        return const InfoBar(
+          title: Text('API Error'),
+          content: Text('Please enter your API Link and Token in settings.'),
+          severity: InfoBarSeverity.error,
+        );
+      });
+      setState(() => _isAutoSending = false);
+      return;
+    }
+
+    final message = _messageController.text;
+    final url = Uri.parse(_apiUrlController.text);
+
+    try {
+      // Assuming UltraMsg format, can be adjusted for other providers
+      final response = await http.post(url, body: {
+        'token': _apiTokenController.text,
+        'to': number,
+        'body': message,
+      });
+
+      if (response.statusCode == 200) {
+        // Automatically move to next after 1 second delay
+        Future.delayed(const Duration(seconds: 1), () {
+          if (mounted && _isAutoSending) {
+            _processNext();
+          }
+        });
+      } else {
+        throw Exception('Failed to send: ${response.body}');
+      }
+    } catch (e) {
+      displayInfoBar(context, builder: (context, close) {
+        return InfoBar(
+          title: const Text('API Failure'),
+          content: Text(e.toString()),
+          severity: InfoBarSeverity.error,
+        );
+      });
+      setState(() => _isAutoSending = false);
+    }
   }
 
   void _processNext() {
