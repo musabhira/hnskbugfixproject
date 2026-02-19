@@ -1808,9 +1808,10 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
         },
         onTapUp: (details) {
           final tapX = details.globalPosition.dx;
-          if (tapX < size.width * 0.3) {
+          // Side tapping navigation (Instagram style)
+          if (tapX < size.width * 0.33) {
             _goToPrevious();
-          } else if (tapX > size.width * 0.7) {
+          } else if (tapX > size.width * 0.66) {
             _goToNext();
           } else {
             _togglePause();
@@ -2238,17 +2239,17 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
 
     // Wrap with Gallery Link logic if applicable
     if (status['gallery_id'] != null) {
-      return GestureDetector(
-        onTap: () => _navigateToGalleryDetail(status['gallery_id']),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            content,
-            Positioned(
-              bottom: 100, // Above caption/reply area
-              left: 0,
-              right: 0,
-              child: Center(
+      return Stack(
+        fit: StackFit.expand,
+        children: [
+          content,
+          Positioned(
+            bottom: 100, // Above caption/reply area
+            left: 0,
+            right: 0,
+            child: Center(
+              child: GestureDetector(
+                onTap: () => _navigateToGalleryDetail(status['gallery_id']),
                 child: Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -2272,8 +2273,8 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       );
     }
 
@@ -3007,6 +3008,8 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
   }
 
   Future<void> _postSharedStatus() async {
+    if (_isUploading) return;
+
     setState(() {
       _isUploading = true;
       _uploadProgress = 0.5;

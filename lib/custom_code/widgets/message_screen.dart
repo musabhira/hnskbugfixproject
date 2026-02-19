@@ -377,7 +377,7 @@ class _MessageScreenState extends State<MessageScreen> {
               )
             )
           ''')
-          .or('and(sender_id.eq.$_senderId,receiver_id.eq.${widget.receiverId}),and(sender_id.eq.${widget.receiverId},receiver_id.eq.$_senderId)')
+          .or('and(sender_id.eq."${_senderId}",receiver_id.eq."${widget.receiverId}"),and(sender_id.eq."${widget.receiverId}",receiver_id.eq."${_senderId}")')
           .order('created_at', ascending: false)
           .limit(50);
 
@@ -424,21 +424,39 @@ class _MessageScreenState extends State<MessageScreen> {
     _messageController.clear();
 
     try {
-      // 1. Insert message
-      await _supabase.from('messages').insert({
-        'sender_id': _senderId,
-        'receiver_id': widget.receiverId,
-        'content': messageText,
-        'message_type': 'text',
-      });
+      debugPrint('Sending message to: ${widget.receiverId}');
 
-      // 2. Update or create conversation record
-      await _updateConversation(messageText);
+      // 1. Insert message
+      try {
+        await _supabase.from('messages').insert({
+          'sender_id': _senderId,
+          'receiver_id': widget.receiverId,
+          'content': messageText,
+          'message_text': messageText,
+          'message_type': 'text',
+        });
+      } catch (e) {
+        await _supabase.from('messages').insert({
+          'sender_id': _senderId,
+          'receiver_id': widget.receiverId,
+          'content': messageText,
+          'message_type': 'text',
+        });
+      }
+
+      debugPrint('Message sent successfully');
+
+      // 2. Update conversation list in background
+      _updateConversation(messageText).catchError((e) {
+        debugPrint('Post-send conversation update error: $e');
+      });
 
       _loadMessages();
     } catch (e) {
       debugPrint('Error sending message: $e');
       _showErrorSnackBar('Failed to send message: $e');
+      // Put text back if failed
+      _messageController.text = messageText;
     }
   }
 
@@ -1121,13 +1139,16 @@ class _MessageScreenState extends State<MessageScreen> {
 
   Future<void> _updateConversation(String lastMessage) async {
     try {
+      debugPrint('Updating conversation metadata...');
       final existingConv = await _supabase
           .from('conversations')
           .select('id, unread_count')
           .or('and(user1_id.eq.$_senderId,user2_id.eq.${widget.receiverId}),and(user1_id.eq.${widget.receiverId},user2_id.eq.$_senderId)')
+          .limit(1)
           .maybeSingle();
 
       if (existingConv != null) {
+        debugPrint('Updating existing conversation: ${existingConv['id']}');
         await _supabase.from('conversations').update({
           'last_message': lastMessage,
           'last_message_time': DateTime.now().toIso8601String(),
@@ -1136,6 +1157,7 @@ class _MessageScreenState extends State<MessageScreen> {
           'updated_at': DateTime.now().toIso8601String(),
         }).eq('id', existingConv['id']);
       } else {
+        debugPrint('Creating new conversation record');
         await _supabase.from('conversations').insert({
           'user1_id': _senderId,
           'user2_id': widget.receiverId,
@@ -1146,7 +1168,7 @@ class _MessageScreenState extends State<MessageScreen> {
         });
       }
     } catch (e) {
-      debugPrint('Error updating conversation: $e');
+      debugPrint('Detailed error in _updateConversation: $e');
     }
   }
 

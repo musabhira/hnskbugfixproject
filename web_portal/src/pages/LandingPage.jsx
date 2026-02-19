@@ -15,67 +15,80 @@ const LandingPage = () => {
     };
 
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen p-6 bg-[#f8fafc] overflow-hidden relative font-sans">
-            {/* Professional Grid Background */}
-            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.03]" />
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-slate-200 via-slate-800 to-slate-200" />
+        <div className="flex flex-col items-center justify-center min-h-screen p-6 bg-[#030303] overflow-hidden relative font-sans text-white">
+            {/* Background Effects */}
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-[#0a0a0a] to-black z-0" />
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-purple-900/20 blur-[120px] rounded-full pointer-events-none" />
+            <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-blue-900/10 blur-[100px] rounded-full pointer-events-none" />
 
             <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="z-10 text-center max-w-3xl"
+                transition={{ duration: 0.8, ease: "easeOut" }}
+                className="z-10 text-center max-w-4xl relative w-full"
             >
-                <div className="flex items-center justify-center mb-10">
-                    <motion.div
-                        whileHover={{ scale: 1.05 }}
-                        className="w-20 h-20 bg-white rounded-[24px] flex items-center justify-center shadow-xl shadow-slate-200 border border-slate-100"
-                    >
-                        <Briefcase className="text-slate-900 w-10 h-10" />
-                    </motion.div>
-                </div>
+                {/* Icon */}
+                <motion.div
+                    whileHover={{ scale: 1.05, rotate: 5 }}
+                    className="w-24 h-24 mx-auto mb-12 bg-gradient-to-tr from-slate-800 to-slate-900 rounded-[32px] flex items-center justify-center shadow-2xl shadow-black/50 border border-white/10 relative overflow-hidden group"
+                >
+                    <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                    <Briefcase className="text-white/90 w-10 h-10 drop-shadow-lg" strokeWidth={1.5} />
+                </motion.div>
 
-                <h1 className="text-5xl md:text-8xl font-black mb-8 text-slate-900 tracking-tighter leading-none uppercase">
-                    Partner <br /> <span className="text-slate-400">Portal</span>
+                {/* Heading */}
+                <h1 className="text-6xl md:text-8xl font-serif font-medium mb-8 text-white tracking-tight leading-[1.1]">
+                    Create Your <br />
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-200 to-slate-400 italic font-light">Digital Legacy</span>
                 </h1>
 
-                <p className="text-slate-500 text-lg md:text-xl mb-12 max-w-lg mx-auto leading-relaxed font-medium">
-                    The exclusive digital infrastructure for **Handskill Premium Members**. Access verified corporate identities and boutique services.
+                <p className="text-slate-400 text-lg md:text-xl mb-16 max-w-xl mx-auto leading-relaxed font-light tracking-wide">
+                    The exclusive portal for **Handskill Premium Partners**.
+                    Showcase your verified corporate identity with elegance.
                 </p>
 
+                {/* Search Form */}
                 <form onSubmit={handleSearch} className="relative max-w-xl mx-auto group">
-                    <div className="absolute inset-0 bg-slate-900/5 blur-2xl rounded-3xl -z-10 group-focus-within:bg-slate-900/10 transition-all" />
-                    <input
-                        type="text"
-                        placeholder="Enter partner username..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        className="w-full bg-white border border-slate-200 rounded-3xl py-6 px-8 pl-16 text-slate-900 focus:outline-none focus:ring-4 focus:ring-slate-100 transition-all duration-500 shadow-sm text-lg placeholder:text-slate-300"
-                    />
-                    <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 w-6 h-6 group-focus-within:text-slate-900 transition-colors" />
-                    <button
-                        type="submit"
-                        className="absolute right-4 top-1/2 -translate-y-1/2 bg-slate-900 text-white font-bold px-8 py-3 rounded-2xl hover:bg-slate-800 active:scale-95 transition-all shadow-xl shadow-slate-200 uppercase text-xs tracking-widest"
-                    >
-                        Access
-                    </button>
+                    <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-[35px] opacity-20 group-focus-within:opacity-50 blur-xl transition-all duration-700" />
+                    <div className="relative flex items-center bg-white/5 backdrop-blur-xl border border-white/10 rounded-full p-2 transition-all duration-500 group-focus-within:bg-black/40 group-focus-within:border-white/20 shadow-2xl">
+                        <div className="pl-6 pr-4 pointer-events-none">
+                            <Search className="text-slate-500 w-5 h-5 group-focus-within:text-white transition-colors duration-300" />
+                        </div>
+                        <input
+                            type="text"
+                            placeholder="Find a partner..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            className="flex-1 bg-transparent border-none text-white placeholder-slate-500 focus:outline-none focus:ring-0 text-lg py-4 font-light tracking-wide"
+                        />
+                        <button
+                            type="submit"
+                            className="bg-white text-black hover:bg-slate-200 transition-all px-8 py-3.5 rounded-full font-medium text-sm tracking-widest uppercase shadow-lg shadow-white/5"
+                        >
+                            Visit
+                        </button>
+                    </div>
                 </form>
 
-                <div className="mt-20 flex flex-wrap justify-center gap-10">
-                    <div className="flex items-center gap-3 grayscale opacity-30 hover:grayscale-0 hover:opacity-100 transition-all cursor-default">
-                        <Globe className="w-5 h-5" />
-                        <span className="text-[10px] font-bold uppercase tracking-[0.3em]">Global Presence</span>
+                {/* Verified Badge */}
+                <div className="mt-24 flex flex-wrap justify-center gap-12 opacity-60">
+                    <div className="flex items-center gap-3">
+                        <Globe className="w-4 h-4 text-slate-400" />
+                        <span className="text-[10px] uppercase tracking-[0.2em] font-medium text-slate-400">Global Reach</span>
                     </div>
-                    <div className="flex items-center gap-3 grayscale opacity-30 hover:grayscale-0 hover:opacity-100 transition-all cursor-default">
-                        <ShieldCheck className="w-5 h-5" />
-                        <span className="text-[10px] font-bold uppercase tracking-[0.3em]">Verified Status</span>
+                    <div className="w-px h-4 bg-white/10" />
+                    <div className="flex items-center gap-3">
+                        <ShieldCheck className="w-4 h-4 text-slate-400" />
+                        <span className="text-[10px] uppercase tracking-[0.2em] font-medium text-slate-400">Verified & Secure</span>
                     </div>
                 </div>
             </motion.div>
 
-            <footer className="absolute bottom-10 flex flex-col items-center gap-2">
-                <span className="text-[9px] font-bold text-slate-300 uppercase tracking-[0.5em]">Network Infrastructure</span>
-                <div className="h-4 w-px bg-slate-200" />
-                <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Powered by <span className="text-slate-900">Handskill Friends</span></p>
+            {/* Footer */}
+            <footer className="absolute bottom-8 left-0 w-full text-center">
+                <p className="text-[10px] uppercase tracking-[0.4em] text-white/20 font-medium hover:text-white/40 transition-colors cursor-default">
+                    Powered by Handskill Inc.
+                </p>
             </footer>
         </div>
     );

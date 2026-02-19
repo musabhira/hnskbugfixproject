@@ -22,6 +22,7 @@ import 'package:pocket_mates_app/custom_code/widgets/teams/teams_home_widget.dar
 import 'package:pocket_mates_app/custom_code/widgets/poster_designer/template_gallery_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/bulk_sender/bulk_sender_page.dart';
 import 'package:flutter/services.dart';
+import 'package:pocket_mates_app/custom_code/widgets/poki_games_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'dart:math';
@@ -580,6 +581,19 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                         context,
                         MaterialPageRoute(
                           builder: (context) => const BulkSenderPage(),
+                        ),
+                      );
+                    },
+                  ),
+                  _buildToolCard(
+                    title: 'Poki Games',
+                    icon: Icons.videogame_asset_rounded,
+                    color: Colors.redAccent,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const PokiGamesPage(),
                         ),
                       );
                     },

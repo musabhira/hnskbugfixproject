@@ -900,27 +900,20 @@ class _PaginatedGalleryTabViewState extends State<PaginatedGalleryTabView>
                   mainAxisSpacing: widget.mainAxisSpacing,
                   childCount: _paginatedItemsMap[category]!.length,
                   itemBuilder: (context, index) {
-                    if (index > 0 && index % 5 == 0) {
-                      return MasonryGalleryItemCard.ad(
-                        nativeAd: '',
-                        height: _getRandomHeight(index),
-                      );
-                    }
-                    final actualIndex = _getActualItemIndex(index);
                     final items = _paginatedItemsMap[category]!;
 
-                    if (actualIndex >= items.length) {
+                    if (index >= items.length) {
                       return const SizedBox.shrink();
                     }
 
-                    final item = items[actualIndex];
+                    final item = items[index];
                     final height = _getRandomHeight(index);
 
                     // Use advanced card with all parameters
                     return MasonryGalleryItemCard(
                       item: item,
                       allItems: items,
-                      initialIndex: actualIndex,
+                      initialIndex: index,
                       height: height,
                     );
                   },
@@ -955,12 +948,6 @@ class _PaginatedGalleryTabViewState extends State<PaginatedGalleryTabView>
         );
       },
     );
-  }
-
-  int _getActualItemIndex(int displayIndex) {
-    // Calculate actual index accounting for ads
-    final adsBeforeIndex = displayIndex ~/ 5;
-    return displayIndex - adsBeforeIndex;
   }
 
   @override

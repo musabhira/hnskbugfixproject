@@ -146,11 +146,36 @@ class LocalSyncServer {
     final newData = payload.newRecord;
     if (newData == null) return;
 
+    final currentUserId = _supabase.auth.currentUser?.id;
+    if (currentUserId == null) return;
+
     final senderId = newData['sender_id'];
     final receiverId = newData['receiver_id'];
 
-    // Personal chat ID logic (smaller ID first or shared convo ID)
-    // We update both sides for consistency if storing per user
+    // Identify who the "other" person is (the chat ID)
+    String? chatId;
+    if (senderId == currentUserId) {
+      chatId = receiverId;
+    } else if (receiverId == currentUserId) {
+      chatId = senderId;
+    }
+
+    if (chatId != null) {
+      final List<dynamic> current = getCachedMessages(chatId);
+      final String msgId = newData['id'].toString();
+      final bool exists = current.any((m) => m['id'].toString() == msgId);
+
+      if (!exists) {
+        // Insert at top as we sort DESC usually, but depends on usage.
+        // MessageScreen sorts DESC (newest first). ChatProvider sorts ASC (oldest first)?
+        // Let's check usage. MessageScreen sorts DESC. ChatProvider usually ASC for chat bubbles but reverse list view.
+        // We will prepend to keep it consistent with "get latest".
+        final List<dynamic> updated = [newData, ...current];
+        if (updated.length > 200)
+          updated.removeLast(); // Keep cache size manageable
+        saveMessages(chatId, updated);
+      }
+    }
   }
 
   void _handleGroupMessageUpdate(PostgresChangePayload payload) {

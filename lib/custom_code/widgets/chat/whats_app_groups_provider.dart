@@ -71,7 +71,9 @@ class ChatConversation {
           : json['updated_at'] != null
               ? DateTime.parse(json['updated_at'])
               : null,
-      unreadCount: json['unread_count'] ?? 0,
+      unreadCount: (json['last_sender_id'] == currentUserId)
+          ? 0
+          : (json['unread_count'] ?? 0),
       isGroup: false,
       lastSenderId: json['last_sender_id'] as String?,
     );

@@ -17,7 +17,6 @@ import 'package:flutter/material.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
-
 class ShareContentScreen extends StatefulWidget {
   const ShareContentScreen({
     super.key,
@@ -210,6 +209,36 @@ class _ShareContentScreenState extends State<ShareContentScreen> {
       }
 
       await supabase.from('messages').insert(messageData);
+
+      // 2. Update or create conversation record for both users
+      try {
+        final existingConv = await supabase
+            .from('conversations')
+            .select('id, unread_count')
+            .or('and(user1_id.eq.${widget.currentUserId},user2_id.eq.$userId),and(user1_id.eq.$userId,user2_id.eq.${widget.currentUserId})')
+            .maybeSingle();
+
+        if (existingConv != null) {
+          await supabase.from('conversations').update({
+            'last_message': widget.contentToShare,
+            'last_message_time': DateTime.now().toIso8601String(),
+            'last_sender_id': widget.currentUserId,
+            'unread_count': (existingConv['unread_count'] ?? 0) + 1,
+            'updated_at': DateTime.now().toIso8601String(),
+          }).eq('id', existingConv['id']);
+        } else {
+          await supabase.from('conversations').insert({
+            'user1_id': widget.currentUserId,
+            'user2_id': userId,
+            'last_message': widget.contentToShare,
+            'last_message_time': DateTime.now().toIso8601String(),
+            'last_sender_id': widget.currentUserId,
+            'unread_count': 1,
+          });
+        }
+      } catch (convError) {
+        debugPrint('Error updating conversation during share: $convError');
+      }
 
       Navigator.pop(context); // Close loading
 

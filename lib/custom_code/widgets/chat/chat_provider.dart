@@ -51,8 +51,27 @@ class ChatMessages extends _$ChatMessages {
     // Start polling for 1-second updates as requested
     _startPolling(groupId);
 
-    // Initial fetch - load first page only
-    return _fetchMessages(isInitial: true);
+    // Cache-First Strategy
+    // 1. Load from cache immediately
+    final cached = await _loadFromCache(groupId);
+
+    // 2. Fetch fresh data
+    final freshFuture = _fetchMessages(isInitial: true);
+
+    if (cached.isNotEmpty) {
+      // If we have cache, return it immediately and update with fresh data later
+      freshFuture.then((fresh) {
+        if (state.hasValue) {
+          state = AsyncValue.data(fresh);
+        }
+      }).catchError((e) {
+        debugPrint('Background fetch failed: $e');
+      });
+      return cached;
+    }
+
+    // 3. no cache, wait for network
+    return freshFuture;
   }
 
   void _setupSubscription(String groupId) {
@@ -380,6 +399,17 @@ class ChatMessages extends _$ChatMessages {
         state = AsyncData(updatedList);
         _saveToCache(groupId, updatedList);
       });
+
+      // Update groups table metadata for the chat list
+      try {
+        await _supabase.from('groups').update({
+          'last_message': text,
+          'last_message_time': DateTime.now().toIso8601String(),
+          'updated_at': DateTime.now().toIso8601String(),
+        }).eq('id', groupId);
+      } catch (groupError) {
+        debugPrint('Error updating group metadata: $groupError');
+      }
     } catch (e) {
       // Remove optimistic message on error
       _optimisticMessages.remove(optimisticMessage);

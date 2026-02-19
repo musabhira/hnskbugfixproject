@@ -1662,6 +1662,9 @@ class _VerfiedSearchProfileDetailPageState
                                                                   ),
                                                                 const SizedBox(
                                                                     height: 10),
+                                                                _buildBusinessSiteButton(),
+                                                                const SizedBox(
+                                                                    height: 10),
                                                                 if (_profileData![
                                                                             'slug'] !=
                                                                         null &&
