@@ -838,7 +838,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                     profileId: profileId,
                     sharedContent: widget.item['gallery_image_url'],
                     sharedContentType: 'gallery',
-                    sharedContentId: widget.item['gallery_id'],
+                    sharedContentId: widget.item['gallery_id']?.toString(),
                   ),
                 ),
               ).then((result) {

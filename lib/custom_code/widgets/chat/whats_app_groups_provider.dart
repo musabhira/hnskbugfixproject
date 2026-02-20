@@ -347,9 +347,7 @@ class Conversations extends _$Conversations {
           id: 'tool_${t['title']}',
           name: t['title'] ?? 'Tool',
           lastMessage: 'Tap to open your favorited tool',
-          lastMessageTime: t['timeAdded'] != null
-              ? DateTime.parse(t['timeAdded'])
-              : DateTime.now(),
+          lastMessageTime: DateTime(2000), // Always keep at bottom of list
           unreadCount: 0,
           isGroup: false,
           isTool: true,

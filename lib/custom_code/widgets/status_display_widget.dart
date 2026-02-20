@@ -2389,7 +2389,7 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
         children: [
           content,
           Positioned(
-            bottom: 100, // Above caption/reply area
+            bottom: 120, // Above caption/reply area
             left: 0,
             right: 0,
             child: Center(
@@ -2397,22 +2397,31 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                 onTap: () => _navigateToGalleryDetail(status['gallery_id']),
                 child: Container(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                   decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.6),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.white24),
+                    color: Colors.yellow.withOpacity(0.9),
+                    borderRadius: BorderRadius.circular(30),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.3),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        'Tap to view post',
-                        style: TextStyle(color: Colors.white, fontSize: 12),
+                        'View Details',
+                        style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold),
                       ),
-                      SizedBox(width: 4),
-                      Icon(Icons.arrow_forward_ios,
-                          color: Colors.white, size: 10),
+                      SizedBox(width: 8),
+                      Icon(Icons.arrow_forward_ios_rounded,
+                          color: Colors.black, size: 14),
                     ],
                   ),
                 ),
@@ -3280,6 +3289,9 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
             DateTime.now().add(const Duration(hours: 24)).toIso8601String(),
         'mentioned_group_id': _selectedGroupId,
         'is_active': true,
+        if (widget.sharedContentId != null &&
+            widget.sharedContentId!.isNotEmpty)
+          'gallery_id': widget.sharedContentId,
       });
 
       setState(() => _uploadProgress = 1.0);

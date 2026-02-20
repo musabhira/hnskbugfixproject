@@ -25,6 +25,73 @@ class ConversationTile extends StatelessWidget {
     this.onLongPress,
   }) : super(key: key);
 
+  material.IconData _getIconData() {
+    if (conversation.isTool) {
+      switch (conversation.toolTitle) {
+        case 'Drawing Tool':
+          return material.Icons.brush;
+        case 'Schedule':
+          return material.Icons.calendar_today_rounded;
+        case 'Tasks':
+          return material.Icons.check_circle_outline_rounded;
+        case 'Challenges':
+          return material.Icons.emoji_events_outlined;
+        case 'Diagrams':
+          return material.Icons.schema_rounded;
+        case 'Teams':
+          return material.Icons.groups_rounded;
+        case 'AI Tools':
+          return material.Icons.auto_awesome;
+        case 'Poster Maker':
+          return material.Icons.photo_library_rounded;
+        case 'Bulk Sender':
+          return material.Icons.send_rounded;
+        case 'Poki Games':
+          return material.Icons.videogame_asset_rounded;
+        case 'Travel Radar':
+          return material.Icons.radar;
+        default:
+          return material.Icons.build_circle;
+      }
+    }
+    if (conversation.isNotification) return FluentIcons.info;
+    if (conversation.isGroup) return FluentIcons.group;
+    return FluentIcons.contact;
+  }
+
+  Color _getIconColor() {
+    if (conversation.isTool) {
+      switch (conversation.toolTitle) {
+        case 'Drawing Tool':
+          return material.Colors.purpleAccent;
+        case 'Schedule':
+          return material.Colors.blueAccent;
+        case 'Tasks':
+          return material.Colors.greenAccent;
+        case 'Challenges':
+          return material.Colors.orangeAccent;
+        case 'Diagrams':
+          return material.Colors.tealAccent;
+        case 'Teams':
+          return material.Colors.pinkAccent;
+        case 'AI Tools':
+          return material.Colors.cyanAccent;
+        case 'Poster Maker':
+          return material.Colors.orangeAccent;
+        case 'Bulk Sender':
+          return material.Colors.greenAccent;
+        case 'Poki Games':
+          return material.Colors.redAccent;
+        case 'Travel Radar':
+          return material.Colors.cyanAccent;
+        default:
+          return material.Colors.yellow;
+      }
+    }
+    if (conversation.isNotification) return Colors.yellow;
+    return Colors.white.withValues(alpha: 0.5);
+  }
+
   @override
   Widget build(BuildContext context) {
     return material.Material(
@@ -87,14 +154,8 @@ class ConversationTile extends StatelessWidget {
                       child: conversation.imageUrl == null
                           ? Center(
                               child: Icon(
-                                conversation.isNotification
-                                    ? FluentIcons.info
-                                    : (conversation.isGroup
-                                        ? FluentIcons.group
-                                        : FluentIcons.contact),
-                                color: conversation.isNotification
-                                    ? Colors.yellow
-                                    : Colors.white.withValues(alpha: 0.5),
+                                _getIconData(),
+                                color: _getIconColor(),
                                 size: 26,
                               ),
                             )

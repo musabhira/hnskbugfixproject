@@ -47,8 +47,6 @@ import '/custom_code/actions/index.dart'; // Imports custom actions
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
-
-
 import 'dart:math' as math;
 import 'dart:math' as math;
 
@@ -956,7 +954,9 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                         ),
                                       ReportButton(
                                         contentType: 'gallery',
-                                        contentId: item['gallery_id'],
+                                        contentId:
+                                            item['gallery_id']?.toString() ??
+                                                '',
                                         contentTitle: item['gallery_title'] ??
                                             'Gallery Item',
                                         onReportSubmitted: () {
@@ -1379,7 +1379,8 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                                         Icons.delete_outline,
                                                         size: 18,
                                                         color: _getBgTextColor()
-                                                            .withValues(alpha: 0.7),
+                                                            .withValues(
+                                                                alpha: 0.7),
                                                       ),
                                                       onPressed: deleteComment,
                                                     ),
@@ -1451,7 +1452,8 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                     borderSide: BorderSide.none,
                                   ),
                                   filled: true,
-                                  fillColor: _getBgColor().withValues(alpha: 0.6),
+                                  fillColor:
+                                      _getBgColor().withValues(alpha: 0.6),
                                   contentPadding: const EdgeInsets.symmetric(
                                     horizontal: 16,
                                     vertical: 10,
@@ -2333,7 +2335,8 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                             margin: const EdgeInsets.symmetric(
                                                 horizontal: 12),
                                             decoration: BoxDecoration(
-                                              color: bgColor.withValues(alpha: 0.95),
+                                              color: bgColor.withValues(
+                                                  alpha: 0.95),
                                               borderRadius:
                                                   BorderRadius.circular(20),
                                               boxShadow: [
@@ -2345,8 +2348,8 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                                 ),
                                               ],
                                               border: Border.all(
-                                                color: buttonColor
-                                                    .withValues(alpha: 0.2),
+                                                color: buttonColor.withValues(
+                                                    alpha: 0.2),
                                                 width: 1,
                                               ),
                                             ),
@@ -2521,8 +2524,9 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                                                             .location_on,
                                                                         size:
                                                                             14,
-                                                                        color: bgTextColor
-                                                                            .withValues(alpha: 0.6),
+                                                                        color: bgTextColor.withValues(
+                                                                            alpha:
+                                                                                0.6),
                                                                       ),
                                                                       const SizedBox(
                                                                           width:
@@ -2568,8 +2572,9 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                                   padding: const EdgeInsets
                                                       .symmetric(vertical: 12),
                                                   decoration: BoxDecoration(
-                                                    color: buttonColor
-                                                        .withValues(alpha: 0.08),
+                                                    color:
+                                                        buttonColor.withValues(
+                                                            alpha: 0.08),
                                                     borderRadius:
                                                         BorderRadius.circular(
                                                             12),
@@ -2635,21 +2640,22 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                                   11, 12, 11, 0),
                                               padding: const EdgeInsets.all(14),
                                               decoration: BoxDecoration(
-                                                color:
-                                                    bgColor.withValues(alpha: 0.95),
+                                                color: bgColor.withValues(
+                                                    alpha: 0.95),
                                                 borderRadius:
                                                     BorderRadius.circular(20),
                                                 boxShadow: [
                                                   BoxShadow(
                                                     color: Colors.black
-                                                        .withValues(alpha: 0.08),
+                                                        .withValues(
+                                                            alpha: 0.08),
                                                     blurRadius: 12,
                                                     spreadRadius: 1,
                                                   ),
                                                 ],
                                                 border: Border.all(
-                                                  color: buttonColor
-                                                      .withValues(alpha: 0.2),
+                                                  color: buttonColor.withValues(
+                                                      alpha: 0.2),
                                                   width: 1,
                                                 ),
                                               ),
@@ -2681,7 +2687,8 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                                     _profileData!['bio'],
                                                     style: TextStyle(
                                                       color: bgTextColor
-                                                          .withValues(alpha: 0.9),
+                                                          .withValues(
+                                                              alpha: 0.9),
                                                       fontSize: 13,
                                                       height: 1.5,
                                                     ),
@@ -2705,7 +2712,8 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                             margin: const EdgeInsets.all(11),
                                             padding: const EdgeInsets.all(11),
                                             decoration: BoxDecoration(
-                                              color: bgColor.withValues(alpha: 0.95),
+                                              color: bgColor.withValues(
+                                                  alpha: 0.95),
                                               borderRadius:
                                                   BorderRadius.circular(20),
                                               boxShadow: [
@@ -2717,8 +2725,8 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                                 ),
                                               ],
                                               border: Border.all(
-                                                color: buttonColor
-                                                    .withValues(alpha: 0.2),
+                                                color: buttonColor.withValues(
+                                                    alpha: 0.2),
                                                 width: 1,
                                               ),
                                             ),
@@ -2776,8 +2784,8 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                         TabBar(
                                           controller: _tabController,
                                           labelColor: buttonColor,
-                                          unselectedLabelColor:
-                                              bgTextColor.withValues(alpha: 0.7),
+                                          unselectedLabelColor: bgTextColor
+                                              .withValues(alpha: 0.7),
                                           indicatorColor: buttonColor,
                                           indicatorWeight: 3,
                                           indicatorSize:
@@ -3314,8 +3322,8 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                               vertical: 8,
                                             ),
                                             decoration: BoxDecoration(
-                                              color:
-                                                  buttonColor.withValues(alpha: 0.9),
+                                              color: buttonColor.withValues(
+                                                  alpha: 0.9),
                                               borderRadius:
                                                   BorderRadius.circular(25),
                                               boxShadow: [
@@ -3328,8 +3336,8 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                                 ),
                                               ],
                                               border: Border.all(
-                                                color: buttonColor
-                                                    .withValues(alpha: 0.3),
+                                                color: buttonColor.withValues(
+                                                    alpha: 0.3),
                                                 width: 1,
                                               ),
                                             ),
@@ -4208,7 +4216,8 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
                             Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: _getButtonTextColor().withValues(alpha: 0.2),
+                                color: _getButtonTextColor()
+                                    .withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Icon(
@@ -4272,7 +4281,8 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
                                 color: _getBgColor(),
                                 borderRadius: BorderRadius.circular(24),
                                 border: Border.all(
-                                  color: _getButtonColor().withValues(alpha: 0.2),
+                                  color:
+                                      _getButtonColor().withValues(alpha: 0.2),
                                 ),
                               ),
                               child: TextField(
@@ -4280,7 +4290,8 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
                                 decoration: InputDecoration(
                                   hintText: 'Ask me anything...',
                                   hintStyle: TextStyle(
-                                    color: _getTextColor().withValues(alpha: 0.5),
+                                    color:
+                                        _getTextColor().withValues(alpha: 0.5),
                                   ),
                                   border: InputBorder.none,
                                   contentPadding: const EdgeInsets.symmetric(
@@ -4306,7 +4317,8 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
                                 borderRadius: BorderRadius.circular(24),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: _getButtonColor().withValues(alpha: 0.3),
+                                    color: _getButtonColor()
+                                        .withValues(alpha: 0.3),
                                     blurRadius: 8,
                                     offset: const Offset(0, 2),
                                   ),
@@ -5038,7 +5050,8 @@ class _ThreadsTabContentState extends ConsumerState<ThreadsTabContent>
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
-                  side: BorderSide(color: widget.buttonColor.withValues(alpha: 0.1)),
+                  side: BorderSide(
+                      color: widget.buttonColor.withValues(alpha: 0.1)),
                 ),
                 child: InkWell(
                   borderRadius: BorderRadius.circular(16),
@@ -5068,7 +5081,8 @@ class _ThreadsTabContentState extends ConsumerState<ThreadsTabContent>
                               timeago
                                   .format(DateTime.parse(thread['created_at'])),
                               style: TextStyle(
-                                color: widget.bgTextColor.withValues(alpha: 0.6),
+                                color:
+                                    widget.bgTextColor.withValues(alpha: 0.6),
                                 fontSize: 13,
                               ),
                             ),
@@ -5149,7 +5163,8 @@ class _ServicesTabContentState extends ConsumerState<ServicesTabContent>
           return Center(
             child: Text(
               'No services offered',
-              style: TextStyle(color: widget.bgTextColor.withValues(alpha: 0.5)),
+              style:
+                  TextStyle(color: widget.bgTextColor.withValues(alpha: 0.5)),
             ),
           );
         }
@@ -5167,8 +5182,8 @@ class _ServicesTabContentState extends ConsumerState<ServicesTabContent>
                 decoration: BoxDecoration(
                   color: widget.bgTextColor.withValues(alpha: 0.04),
                   borderRadius: BorderRadius.circular(20),
-                  border:
-                      Border.all(color: widget.bgTextColor.withValues(alpha: 0.08)),
+                  border: Border.all(
+                      color: widget.bgTextColor.withValues(alpha: 0.08)),
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(20),
@@ -5218,8 +5233,8 @@ class _ServicesTabContentState extends ConsumerState<ServicesTabContent>
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 10, vertical: 4),
                                     decoration: BoxDecoration(
-                                      color:
-                                          widget.buttonColor.withValues(alpha: 0.1),
+                                      color: widget.buttonColor
+                                          .withValues(alpha: 0.1),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Text(
@@ -5234,7 +5249,8 @@ class _ServicesTabContentState extends ConsumerState<ServicesTabContent>
                                 Text(
                                   service['description'] ?? '',
                                   style: TextStyle(
-                                    color: widget.bgTextColor.withValues(alpha: 0.7),
+                                    color: widget.bgTextColor
+                                        .withValues(alpha: 0.7),
                                     fontSize: 14,
                                     height: 1.4,
                                   ),
@@ -5290,7 +5306,8 @@ class _GalleryTabContentState extends ConsumerState<GalleryTabContent>
           return Center(
             child: Text(
               'No gallery items',
-              style: TextStyle(color: widget.bgTextColor.withValues(alpha: 0.5)),
+              style:
+                  TextStyle(color: widget.bgTextColor.withValues(alpha: 0.5)),
             ),
           );
         }
@@ -5732,8 +5749,8 @@ class _ThreadCommentsPageState extends ConsumerState<ThreadCommentsPage>
             decoration: BoxDecoration(
               color: Colors.grey[900],
               borderRadius: BorderRadius.circular(16),
-              border:
-                  Border.all(color: Colors.yellow.withValues(alpha: 0.3), width: 1),
+              border: Border.all(
+                  color: Colors.yellow.withValues(alpha: 0.3), width: 1),
               boxShadow: [
                 BoxShadow(
                   color: Colors.yellow.withValues(alpha: 0.1),

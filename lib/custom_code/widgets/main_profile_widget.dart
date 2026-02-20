@@ -375,8 +375,21 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       );
     }
 
+    if (_isLoading && _profileData == null) {
+      return material.Scaffold(
+        backgroundColor: const Color(0xFF161618),
+        body: Center(
+          child: material.CircularProgressIndicator(
+            valueColor:
+                material.AlwaysStoppedAnimation<Color>(const Color(0xFFFFD700)),
+            strokeWidth: 3,
+          ),
+        ),
+      );
+    }
+
     // Defaults
-    final bgColor = _bgColor ?? const Color(0xFF000000);
+    final bgColor = _bgColor ?? const Color(0xFF131314);
     final textColor = _textColor ?? const Color(0xFFFFFFFF);
     final btnColor = _btnColor ?? const Color(0xFFFFD700);
     final btnTextColor = _btnTextColor ?? const Color(0xFF000000);
@@ -390,10 +403,13 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             return [
               material.SliverAppBar(
                 elevation: 0,
-                expandedHeight: 200,
+                expandedHeight: 220,
                 pinned: true,
+                backgroundColor:
+                    innerBoxIsScrolled ? bgColor : material.Colors.transparent,
                 leading: material.IconButton(
-                  icon: Icon(FluentIcons.back, color: textColor, size: 20),
+                  icon: Icon(FluentIcons.back,
+                      color: material.Colors.white, size: 22),
                   onPressed: () => Navigator.of(context).pop(),
                 ),
                 title: innerBoxIsScrolled
@@ -404,7 +420,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                         style: GoogleFonts.outfit(
                           color: textColor,
                           fontWeight: FontWeight.bold,
-                          fontSize: 18,
+                          fontSize: 20,
                         ),
                       )
                     : null,
@@ -412,7 +428,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 actions: [
                   if (isMe)
                     material.IconButton(
-                      icon: Icon(FluentIcons.view_dashboard, color: textColor),
+                      icon: const Icon(FluentIcons.view_dashboard,
+                          color: material.Colors.white),
                       onPressed: () {
                         Navigator.push(
                           context,
@@ -425,14 +442,16 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       },
                     ),
                   material.IconButton(
-                    icon: Icon(FluentIcons.share, color: textColor, size: 22),
+                    icon: const Icon(FluentIcons.share,
+                        color: material.Colors.white, size: 22),
                     onPressed: () => Share.share(
                         'Check out ${_profileData?['name']}\'s profile on Handskill Friends!'),
                   ),
                   material.Padding(
                     padding: const EdgeInsets.only(right: 8.0),
                     child: DropDownButton(
-                      leading: Icon(FluentIcons.more, color: textColor),
+                      leading: const Icon(FluentIcons.more,
+                          color: material.Colors.white),
                       items: [
                         MenuFlyoutItem(
                           text: const Text('Report'),
@@ -580,7 +599,10 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       return Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [const Color(0xFF1A1A1A), const Color(0xFF000000)],
+            colors: [
+              _btnColor?.withValues(alpha: 0.15) ?? const Color(0xFF2B2B2B),
+              _bgColor ?? const Color(0xFF131314)
+            ],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -616,15 +638,23 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         children: [
           // Row with Image + Stats
           Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Container(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(color: btnColor, width: 2),
+                  border: Border.all(color: btnColor, width: 2.5),
+                  boxShadow: [
+                    BoxShadow(
+                        color: btnColor.withValues(alpha: 0.3),
+                        blurRadius: 12,
+                        spreadRadius: 2,
+                        offset: const Offset(0, 4))
+                  ],
                 ),
                 child: CircleAvatar(
                   radius: _profileImageSize / 2,
-                  backgroundColor: const Color(0xFF202020),
+                  backgroundColor: const Color(0xFF2C2C2E),
                   backgroundImage: (profileUrl != null && profileUrl.isNotEmpty)
                       ? CachedNetworkImageProvider(profileUrl)
                       : null,
@@ -635,10 +665,10 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       : null,
                 ),
               ),
-              const SizedBox(width: 20),
+              const SizedBox(width: 24),
               Expanded(
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     _buildStatItem("Followers", _followersCount, textColor),
                     _buildStatItem("Following", _followingCount, textColor),
@@ -648,7 +678,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 24),
           // Name & Bio
           Text(
             shopName != null && shopName.isNotEmpty ? shopName : name,
@@ -727,26 +757,43 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             Row(
               children: [
                 Expanded(
-                  child: Button(
-                    onPressed: _toggleFollow,
-                    style: ButtonStyle(
-                      backgroundColor: ButtonState.all(
-                        _isFollowing ? const Color(0xFF333333) : btnColor,
-                      ),
-                      foregroundColor: ButtonState.all(
-                        _isFollowing ? material.Colors.white : btnTextColor,
-                      ),
-                      padding: ButtonState.all(
-                        const EdgeInsets.symmetric(vertical: 12),
-                      ),
-                      shape: ButtonState.all(
-                        RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12)),
-                      ),
+                  child: material.Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: _isFollowing
+                          ? null
+                          : [
+                              BoxShadow(
+                                color: btnColor.withValues(alpha: 0.2),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              )
+                            ],
                     ),
-                    child: Text(
-                      _isFollowing ? "Unfollow" : "Follow",
-                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    child: Button(
+                      onPressed: _toggleFollow,
+                      style: ButtonStyle(
+                        backgroundColor: ButtonState.all(
+                          _isFollowing ? const Color(0xFF2C2C2E) : btnColor,
+                        ),
+                        foregroundColor: ButtonState.all(
+                          _isFollowing ? material.Colors.white : btnTextColor,
+                        ),
+                        padding: ButtonState.all(
+                          const EdgeInsets.symmetric(vertical: 14),
+                        ),
+                        shape: ButtonState.all(
+                          RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                        ),
+                      ),
+                      child: Text(
+                        _isFollowing ? "Unfollow" : "Follow",
+                        style: GoogleFonts.outfit(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -767,17 +814,26 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       );
                     },
                     style: ButtonStyle(
+                      backgroundColor:
+                          ButtonState.all(material.Colors.transparent),
+                      padding: ButtonState.all(
+                        const EdgeInsets.symmetric(vertical: 14),
+                      ),
                       shape: ButtonState.all(
                         RoundedRectangleBorder(
                             side: BorderSide(
-                                color: textColor.withValues(alpha: 0.3)),
+                                color: textColor.withValues(alpha: 0.2),
+                                width: 1.5),
                             borderRadius: BorderRadius.circular(12)),
                       ),
                     ),
                     child: Text(
                       "Message",
-                      style: TextStyle(
-                          color: textColor, fontWeight: FontWeight.bold),
+                      style: GoogleFonts.outfit(
+                        color: textColor,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
                     ),
                   ),
                 ),
@@ -804,12 +860,12 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                         ButtonState.all(btnColor.withValues(alpha: 0.1)),
                     foregroundColor: ButtonState.all(btnColor),
                     padding: ButtonState.all(
-                      const EdgeInsets.symmetric(vertical: 12),
+                      const EdgeInsets.symmetric(vertical: 14),
                     ),
                     shape: ButtonState.all(
                       RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
-                        side: BorderSide(color: btnColor, width: 1),
+                        side: BorderSide(color: btnColor, width: 1.5),
                       ),
                     ),
                   ),
@@ -818,9 +874,12 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                     children: [
                       Icon(FluentIcons.edit, color: btnColor, size: 16),
                       const SizedBox(width: 8),
-                      const Text(
+                      Text(
                         "Edit Profile",
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                        style: GoogleFonts.outfit(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
                       ),
                     ],
                   ),
@@ -852,20 +911,24 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
   Widget _buildStatItem(String label, int count, Color textColor) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Text(
           _formatCount(count),
           style: GoogleFonts.outfit(
             color: textColor,
-            fontSize: 18,
+            fontSize: 20,
             fontWeight: FontWeight.bold,
+            letterSpacing: 0.5,
           ),
         ),
+        const SizedBox(height: 4),
         Text(
           label,
           style: GoogleFonts.inter(
             color: textColor.withValues(alpha: 0.6),
-            fontSize: 12,
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
           ),
         ),
       ],
@@ -971,15 +1034,16 @@ class _GalleryTab extends StatelessWidget {
       );
     }
     return MasonryGridView.count(
-      padding: const EdgeInsets.all(8),
+      padding: const EdgeInsets.all(12),
       crossAxisCount: 2,
-      mainAxisSpacing: 8,
-      crossAxisSpacing: 8,
+      mainAxisSpacing: 12,
+      crossAxisSpacing: 12,
       itemCount: items.length,
       itemBuilder: (context, index) {
         final item = items[index];
         final imageUrl = item['gallery_image_url'] ?? item['image_url'];
         final title = item['gallery_title'] ?? item['title'];
+        final price = item['gallery_price'] ?? item['price'];
 
         return GestureDetector(
           onTap: () {
@@ -1001,37 +1065,84 @@ class _GalleryTab extends StatelessWidget {
           },
           child: Container(
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(16),
               color: textColor.withValues(alpha: 0.05),
+              border: Border.all(color: textColor.withValues(alpha: 0.08)),
+              boxShadow: [
+                BoxShadow(
+                  color: material.Colors.black.withValues(alpha: 0.2),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                )
+              ],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                ClipRRect(
-                  borderRadius:
-                      const BorderRadius.vertical(top: Radius.circular(12)),
-                  child: imageUrl != null && imageUrl.toString().isNotEmpty
-                      ? CachedNetworkImage(
-                          imageUrl: imageUrl,
-                          memCacheWidth: 400,
-                          placeholder: (context, url) => Container(
-                            height: 150,
-                            color: const Color(0xFF1A1A1A),
+                Stack(
+                  children: [
+                    ClipRRect(
+                      borderRadius:
+                          const BorderRadius.vertical(top: Radius.circular(16)),
+                      child: imageUrl != null && imageUrl.toString().isNotEmpty
+                          ? CachedNetworkImage(
+                              imageUrl: imageUrl,
+                              memCacheWidth: 400,
+                              fit: BoxFit.cover,
+                              placeholder: (context, url) => Container(
+                                height: 150,
+                                color: const Color(0xFF1A1A1A),
+                                child: Center(
+                                  child: material.SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: material.CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: material
+                                          .AlwaysStoppedAnimation<Color>(
+                                              btnColor.withValues(alpha: 0.3)),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              errorWidget: (context, url, error) =>
+                                  const Icon(FluentIcons.error),
+                            )
+                          : Container(
+                              height: 150, color: const Color(0xFF1A1A1A)),
+                    ),
+                    if (price != null)
+                      Positioned(
+                        top: 8,
+                        right: 8,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: material.Colors.black.withValues(alpha: 0.6),
+                            borderRadius: BorderRadius.circular(8),
                           ),
-                          errorWidget: (context, url, error) =>
-                              const Icon(FluentIcons.error),
-                        )
-                      : Container(height: 150, color: const Color(0xFF1A1A1A)),
+                          child: Text(
+                            '₹$price',
+                            style: GoogleFonts.outfit(
+                              color: material.Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
                 if (title != null && title.toString().isNotEmpty)
                   Padding(
-                    padding: const EdgeInsets.all(8.0),
+                    padding: const EdgeInsets.all(10.0),
                     child: Text(
                       title,
                       style: GoogleFonts.outfit(
                         color: textColor,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -1089,12 +1200,20 @@ class _ServicesTab extends StatelessWidget {
         final desc = service['service_description'] ?? service['description'];
 
         return Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.all(16),
+          margin: const EdgeInsets.only(bottom: 16),
+          padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: textColor.withValues(alpha: 0.03),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: textColor.withValues(alpha: 0.08)),
+            color: textColor.withValues(alpha: 0.04),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+                color: textColor.withValues(alpha: 0.08), width: 1.5),
+            boxShadow: [
+              BoxShadow(
+                color: material.Colors.black.withValues(alpha: 0.1),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              )
+            ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1103,13 +1222,15 @@ class _ServicesTab extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    width: 48,
-                    height: 48,
+                    width: 52,
+                    height: 52,
                     decoration: BoxDecoration(
                       color: btnColor.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(14),
+                      border:
+                          Border.all(color: btnColor.withValues(alpha: 0.2)),
                     ),
-                    child: Icon(FluentIcons.toolbox, color: btnColor, size: 20),
+                    child: Icon(FluentIcons.toolbox, color: btnColor, size: 22),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -1121,19 +1242,21 @@ class _ServicesTab extends StatelessWidget {
                           style: GoogleFonts.outfit(
                             color: textColor,
                             fontWeight: FontWeight.bold,
-                            fontSize: 17,
+                            fontSize: 18,
                           ),
                         ),
                         if (desc != null && desc.toString().isNotEmpty)
                           Padding(
-                            padding: const EdgeInsets.only(top: 4),
+                            padding: const EdgeInsets.only(top: 6),
                             child: Text(
                               desc,
                               style: GoogleFonts.inter(
-                                color: textColor.withValues(alpha: 0.6),
+                                color: textColor.withValues(alpha: 0.7),
                                 fontSize: 13,
-                                height: 1.4,
+                                height: 1.5,
                               ),
+                              maxLines: 3,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                       ],
@@ -1141,19 +1264,34 @@ class _ServicesTab extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   if (price != null)
-                    Text(
-                      '₹$price',
-                      style: GoogleFonts.outfit(
-                        color: const Color(0xFF00CC6A),
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20,
-                      ),
-                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Starting from',
+                          style: GoogleFonts.inter(
+                            color: textColor.withValues(alpha: 0.4),
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        Text(
+                          '₹$price',
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFF00CC6A),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 22,
+                          ),
+                        ),
+                      ],
+                    )
+                  else
+                    const SizedBox.shrink(),
                   material.ElevatedButton(
                     onPressed: () {
                       Navigator.push(
@@ -1170,16 +1308,20 @@ class _ServicesTab extends StatelessWidget {
                     style: material.ElevatedButton.styleFrom(
                       backgroundColor: btnColor,
                       foregroundColor: btnTextColor,
-                      elevation: 0,
+                      elevation: 4,
+                      shadowColor: btnColor.withValues(alpha: 0.4),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 12),
+                          horizontal: 24, vertical: 14),
                     ),
-                    child: const Text(
+                    child: Text(
                       "Enquire",
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                      style: GoogleFonts.outfit(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
                     ),
                   ),
                 ],
@@ -1233,11 +1375,11 @@ class _ThreadsTab extends StatelessWidget {
             createdAt != null ? timeago.format(DateTime.parse(createdAt)) : '';
 
         return Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.all(16),
+          margin: const EdgeInsets.only(bottom: 16),
+          padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: textColor.withValues(alpha: 0.03),
-            borderRadius: BorderRadius.circular(16),
+            color: textColor.withValues(alpha: 0.04),
+            borderRadius: BorderRadius.circular(20),
             border: Border.all(color: textColor.withValues(alpha: 0.08)),
           ),
           child: Column(
@@ -1245,40 +1387,62 @@ class _ThreadsTab extends StatelessWidget {
             children: [
               Row(
                 children: [
+                  Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: btnColor.withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(FluentIcons.contact, color: btnColor, size: 14),
+                  ),
+                  const SizedBox(width: 10),
                   Text(
                     timeStr,
                     style: GoogleFonts.inter(
                       color: textColor.withValues(alpha: 0.4),
                       fontSize: 12,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                   const Spacer(),
-                  Icon(FluentIcons.more,
-                      size: 14, color: textColor.withValues(alpha: 0.3)),
+                  material.IconButton(
+                    icon: Icon(FluentIcons.more,
+                        size: 16, color: textColor.withValues(alpha: 0.3)),
+                    onPressed: () {},
+                    padding: material.EdgeInsets.zero,
+                    constraints: const material.BoxConstraints(),
+                  ),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 14),
               Text(
                 content,
                 style: GoogleFonts.inter(
                   color: textColor,
-                  fontSize: 15,
-                  height: 1.5,
+                  fontSize: 16,
+                  height: 1.6,
+                  letterSpacing: -0.2,
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
               Row(
                 children: [
                   _buildThreadStat(
                     FluentIcons.heart,
                     ((thread['like_count'] ?? 0) + (thread['fake_likes'] ?? 0))
                         .toString(),
+                    btnColor,
                   ),
-                  const SizedBox(width: 20),
+                  const SizedBox(width: 24),
                   _buildThreadStat(
                     FluentIcons.comment,
                     (thread['comment_count'] ?? 0).toString(),
+                    textColor.withValues(alpha: 0.5),
                   ),
+                  const Spacer(),
+                  Icon(FluentIcons.share,
+                      size: 16, color: textColor.withValues(alpha: 0.4)),
                 ],
               ),
             ],
@@ -1288,17 +1452,17 @@ class _ThreadsTab extends StatelessWidget {
     );
   }
 
-  Widget _buildThreadStat(IconData icon, String label) {
+  Widget _buildThreadStat(IconData icon, String label, Color color) {
     return Row(
       children: [
-        Icon(icon, size: 16, color: textColor.withValues(alpha: 0.5)),
+        Icon(icon, size: 16, color: color),
         const SizedBox(width: 6),
         Text(
           label,
           style: GoogleFonts.inter(
-            color: textColor.withValues(alpha: 0.5),
+            color: color,
             fontSize: 13,
-            fontWeight: FontWeight.w500,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ],
