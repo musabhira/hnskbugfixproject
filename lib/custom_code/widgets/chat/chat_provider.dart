@@ -196,13 +196,19 @@ class ChatMessages extends _$ChatMessages {
         sender:users!sender_id(
           profile:profile!user_id(name, profile_image_url)
         ),
-        gallery:gallery_id(
-          *,
-          user:users!user_id(
-            profile:profile!user_id(name, profile_image_url)
+          gallery:gallery_id(
+            *,
+            user:users!user_id(
+              profile:profile!user_id(name, profile_image_url)
+            )
+          ),
+          thought:thought_id(
+            *,
+            user:users!user_id(
+              profile:profile!user_id(name, profile_image_url)
+            )
           )
-        )
-      ''')
+        ''')
           .eq('group_id', groupId)
           .order('created_at', ascending: false)
           .range(offset, offset + _pageSize - 1);
@@ -218,6 +224,7 @@ class ChatMessages extends _$ChatMessages {
           'sender_profile': senderProfile,
           'reply_to': replyTo,
           'gallery': _safeGet(data['gallery']),
+          'thought': _safeGet(data['thought']),
         });
       }).toList();
 
@@ -368,6 +375,12 @@ class ChatMessages extends _$ChatMessages {
               user:users!user_id(
                 profile:profile!user_id(name, profile_image_url)
               )
+            ),
+            thought:thought_id(
+              *,
+              user:users!user_id(
+                profile:profile!user_id(name, profile_image_url)
+              )
             )
           ''').single();
 
@@ -380,6 +393,7 @@ class ChatMessages extends _$ChatMessages {
         'sender_profile': senderProfile,
         'reply_to': replyTo,
         'gallery': _safeGet(response['gallery']),
+        'thought': _safeGet(response['thought']),
       });
 
       // Remove from optimistic list and update state
@@ -471,6 +485,12 @@ class ChatMessages extends _$ChatMessages {
           user:users!user_id(
             profile:profile!user_id(name, profile_image_url)
           )
+        ),
+        thought:thought_id(
+          *,
+          user:users!user_id(
+            profile:profile!user_id(name, profile_image_url)
+          )
         )
       ''').eq('id', id).single();
 
@@ -483,6 +503,7 @@ class ChatMessages extends _$ChatMessages {
         'sender_profile': senderProfile,
         'reply_to': replyTo,
         'gallery': _safeGet(response['gallery']),
+        'thought': _safeGet(response['thought']),
       });
     } catch (e) {
       debugPrint('Error fetching message by id: $e');

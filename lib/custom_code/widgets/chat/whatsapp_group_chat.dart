@@ -1,46 +1,28 @@
 // Automatic FlutterFlow imports
 
 import '/backend/supabase/supabase.dart';
-import '/backend/supabase/supabase.dart';
-
-import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'chat_provider.dart';
 import 'chat_provider.dart';
 import 'chat_models.dart';
-import 'chat_models.dart';
 import 'voice_player.dart';
-import 'voice_player.dart';
-import 'voice_recorder.dart';
 import 'voice_recorder.dart';
 
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/foundation.dart' hide Category;
-import 'package:flutter/foundation.dart' hide Category;
-import 'package:flutter/services.dart';
 import 'package:flutter/services.dart';
 import 'dart:io';
-import 'dart:io';
-import 'package:image_picker/image_picker.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:shimmer/shimmer.dart';
-import '../webrtc_call_screen.dart';
 import '../webrtc_call_screen.dart';
 import '../image_viewer.dart';
-import '../image_viewer.dart';
-import 'package:pocket_mates_app/custom_code/widgets/gallery_search_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/gallery_search_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/thread_feed_page.dart';
 
 class WhatsAppGroupChat extends ConsumerStatefulWidget {
   final double? width;
@@ -665,6 +647,9 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                           if (message.messageType == 'voice' &&
                               message.fileUrl != null)
                             _buildVoiceMessage(message),
+                          if (message.messageType == 'thought' &&
+                              message.thought != null)
+                            _buildThoughtMessage(message.thought!, isMe),
                           if (message.messageType == 'gallery' &&
                               message.gallery != null)
                             _buildGalleryMessage(message.gallery!, isMe),
@@ -751,6 +736,106 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     return '${hour.toString().padLeft(2, '0')}:${local.minute.toString().padLeft(2, '0')} $period';
   }
 
+  Widget _buildThoughtMessage(Map<String, dynamic> thoughtData, bool isMe) {
+    final String content = thoughtData['content'] ?? '';
+    final profile = thoughtData['user']?['profile'] is List &&
+            (thoughtData['user']['profile'] as List).isNotEmpty
+        ? thoughtData['user']['profile'][0]
+        : thoughtData['profile'] ?? {};
+
+    final String name = profile['name'] ?? 'User';
+    final String? avatar = profile['profile_image_url'];
+
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ThreadCommentsPage(
+              threadId: thoughtData['id'].toString(),
+              threadContent: content,
+            ),
+          ),
+        );
+      },
+      child: Container(
+        width: 260,
+        margin: const EdgeInsets.only(top: 4, bottom: 4),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          color: isMe
+              ? Colors.black.withOpacity(0.2)
+              : Colors.black.withOpacity(0.4),
+          border: Border.all(color: Colors.white.withOpacity(0.1), width: 1),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 14,
+                    backgroundImage:
+                        avatar != null ? NetworkImage(avatar) : null,
+                    backgroundColor: Colors.grey[800],
+                    child: avatar == null
+                        ? const Icon(Icons.person, size: 14)
+                        : null,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      name,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const Icon(Icons.forum_outlined,
+                      color: Colors.yellow, size: 16),
+                ],
+              ),
+            ),
+            // Content Preview
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    content.length > 150
+                        ? '${content.substring(0, 150)}...'
+                        : content,
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.9),
+                      fontSize: 13,
+                      height: 1.4,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Read more...',
+                    style: TextStyle(
+                      color: Colors.yellow.withOpacity(0.8),
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildGalleryMessage(Map<String, dynamic> galleryData, bool isMe) {
     // Prepare item for GalleryDetailsPage
     final galleryItem = {
@@ -796,7 +881,8 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
               const Color(0xFF1E1E1E),
             ],
           ),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.1), width: 1),
+          border:
+              Border.all(color: Colors.white.withValues(alpha: 0.1), width: 1),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.3),

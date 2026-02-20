@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
@@ -39,6 +40,8 @@ class ChatConversation {
     this.sourceId,
     this.hasStatus = false,
     this.statusData,
+    this.isTool = false,
+    this.toolTitle,
   });
 
   factory ChatConversation.fromGroupJson(Map<String, dynamic> json) {
@@ -57,9 +60,13 @@ class ChatConversation {
     );
   }
 
-  factory ChatConversation.fromPersonalJson(Map<String, dynamic> json,
-      {required String currentUserId,
-      required Map<String, dynamic>? otherProfile}) {
+  factory ChatConversation.fromPersonalJson(
+    Map<String, dynamic> json, {
+    required String currentUserId,
+    required Map<String, dynamic>? otherProfile,
+    bool hasStatus = false,
+    List<Map<String, dynamic>>? statusData,
+  }) {
     // This expects a row from the 'conversations' table
     return ChatConversation(
       id: otherProfile?['user_id'] ?? '',
@@ -76,6 +83,8 @@ class ChatConversation {
           : (json['unread_count'] ?? 0),
       isGroup: false,
       lastSenderId: json['last_sender_id'] as String?,
+      hasStatus: hasStatus,
+      statusData: statusData,
     );
   }
   factory ChatConversation.fromNotification(Map<String, dynamic> json) {
@@ -99,6 +108,8 @@ class ChatConversation {
   final String? sourceId;
   final bool hasStatus;
   final List<Map<String, dynamic>>? statusData;
+  final bool isTool;
+  final String? toolTitle;
 
   Map<String, dynamic> toJson() {
     return {
@@ -117,6 +128,8 @@ class ChatConversation {
       'sourceId': sourceId,
       'hasStatus': hasStatus,
       'statusData': statusData,
+      'isTool': isTool,
+      'toolTitle': toolTitle,
     };
   }
 
@@ -145,6 +158,8 @@ class ChatConversation {
               .map((e) => Map<String, dynamic>.from(e))
               .toList()
           : null,
+      isTool: json['isTool'] ?? false,
+      toolTitle: json['toolTitle'],
     );
   }
 }
@@ -322,8 +337,28 @@ class Conversations extends _$Conversations {
       debugPrint(
           'Fetched ${groups.length} groups, ${personal.length} personal chats, ${notifications.length} notifications');
 
+      // Load Favorited Tools
+      final prefs = await SharedPreferences.getInstance();
+      final favoritedToolsJson =
+          prefs.getString('favorited_tools_$userId') ?? '[]';
+      final favoritedTools = jsonDecode(favoritedToolsJson) as List;
+      final toolChats = favoritedTools.map((t) {
+        return ChatConversation(
+          id: 'tool_${t['title']}',
+          name: t['title'] ?? 'Tool',
+          lastMessage: 'Tap to open your favorited tool',
+          lastMessageTime: t['timeAdded'] != null
+              ? DateTime.parse(t['timeAdded'])
+              : DateTime.now(),
+          unreadCount: 0,
+          isGroup: false,
+          isTool: true,
+          toolTitle: t['title'],
+        );
+      }).toList();
+
       // Combine and sort by last message time
-      final combined = [...notifications, ...groups, ...personal];
+      final combined = [...notifications, ...groups, ...personal, ...toolChats];
       combined.sort((a, b) {
         // Notifications might want to be always on top? Or mixed in by time.
         // Let's mix by time for now as requested "normal chat list like".
@@ -452,7 +487,7 @@ class Conversations extends _$Conversations {
       // Fetch user profiles for all participants
       final profilesResponse = await _supabase
           .from('profile')
-          .select('user_id, name, profile_image_url')
+          .select('id, user_id, name, profile_image_url')
           .inFilter('user_id', userIds.toList());
 
       final profileMap = <String, Map<String, dynamic>>{};
@@ -460,16 +495,47 @@ class Conversations extends _$Conversations {
         profileMap[profile['user_id']] = Map<String, dynamic>.from(profile);
       }
 
+      // Fetch statuses for these profiles
+      final profileIds = profileMap.values
+          .map((p) => p['id']?.toString())
+          .whereType<String>()
+          .toList();
+
+      final statusMap = <String, List<Map<String, dynamic>>>{};
+      if (profileIds.isNotEmpty) {
+        final now = DateTime.now().toIso8601String();
+        final statusesResponse = await _supabase
+            .from('statuses')
+            .select('*, profile:profile_id(*)')
+            .inFilter('profile_id', profileIds)
+            .eq('is_active', true)
+            .gt('expires_at', now)
+            .order('created_at', ascending: true);
+
+        for (final status in statusesResponse) {
+          final pid = status['profile_id'].toString();
+          statusMap
+              .putIfAbsent(pid, () => [])
+              .add(Map<String, dynamic>.from(status));
+        }
+      }
+
       final chats = <ChatConversation>[];
       for (var item in response) {
         final otherUserId =
             item['user1_id'] == userId ? item['user2_id'] : item['user1_id'];
         final otherProfile = profileMap[otherUserId];
+        final otherProfileId = otherProfile?['id']?.toString();
+
+        final userStatusData =
+            otherProfileId != null ? statusMap[otherProfileId] : null;
 
         chats.add(ChatConversation.fromPersonalJson(
           Map<String, dynamic>.from(item),
           currentUserId: userId,
           otherProfile: otherProfile,
+          hasStatus: userStatusData?.isNotEmpty ?? false,
+          statusData: userStatusData,
         ));
       }
 

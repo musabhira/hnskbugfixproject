@@ -2483,12 +2483,6 @@ class _VerfiedSearchProfileDetailPageState
                                                                           formattedLikes,
                                                                           style:
                                                                               TextStyle(color: buttonTextColor)),
-                                                                      PostersTab(
-                                                                        profileData:
-                                                                            _profileData,
-                                                                        galleryItems:
-                                                                            _galleryItems,
-                                                                      ),
                                                                     ],
                                                                   ),
                                                                 ),
@@ -2529,6 +2523,11 @@ class _VerfiedSearchProfileDetailPageState
                                                     );
                                                   },
                                                 ),
+                                          // Posters Tab
+                                          PostersTab(
+                                            profileData: _profileData,
+                                            galleryItems: _galleryItems,
+                                          ),
                                         ],
                                       ),
                                     ),

@@ -1,31 +1,14 @@
 // Automatic FlutterFlow imports
 import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
-import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
-import 'package:pocket_mates_app/custom_code/widgets/search_profile_detail_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/search_profile_detail_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/share_content_screen.dart';
-import 'package:pocket_mates_app/custom_code/widgets/share_content_screen.dart';
-import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
 
 import '/backend/supabase/supabase.dart';
-import '/backend/supabase/supabase.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import 'index.dart'; // Imports other custom widgets
-import 'index.dart'; // Imports other custom widgets
-import '/custom_code/actions/index.dart'; // Imports custom actions
-import '/custom_code/actions/index.dart'; // Imports custom actions
-import 'package:flutter/material.dart';
+import 'package:pocket_mates_app/custom_code/widgets/share_content_screen.dart';
 import 'package:flutter/material.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
-import 'package:share_plus/share_plus.dart';
-import 'package:share_plus/share_plus.dart';
-import 'package:timeago/timeago.dart' as timeago;
 import 'package:timeago/timeago.dart' as timeago;
 
 class ThreadFeedPage extends StatefulWidget {
@@ -690,30 +673,26 @@ class ModernCard extends StatelessWidget {
     required this.onComment,
     this.isLiked = false,
   });
-  Future<void> _shareContent(Map<String, dynamic> cardData) async {
+  Future<void> _shareContent(
+      BuildContext context, Map<String, dynamic> cardData) async {
     final String content = cardData['content'] ?? 'No content available';
-    final String userName = cardData['name'] ?? 'Anonymous';
-    final String postId = cardData['id'] ?? '';
-
-    // Generate shareable link (replace with your actual app link structure)
-    final String shareableLink =
-        '${WhatsAppShareHelper.baseAppUrl}/demohome/$postId';
-
-    final String shareText = '''
-Check out this post by $userName:
-
-"$content"
-
-View full post: $shareableLink
-''';
+    final String postId = cardData['id']?.toString() ?? '';
 
     try {
-      await Share.share(
-        shareText,
-        subject: '$shareText  Shared from HandSkill App',
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ShareContentScreen(
+            contentToShare: content,
+            currentUserId: SupaFlow.client.auth.currentUser?.id ?? '',
+            contentId: postId,
+            contentType: 'thought',
+            metadata: cardData,
+          ),
+        ),
       );
     } catch (e) {
-      print('Error sharing: $e');
+      print('Error navigating to share screen: $e');
     }
   }
 
@@ -745,7 +724,11 @@ View full post: $shareableLink
     final String formattedDate = DateFormat('MMM d, y').format(createdDate);
 
     // Get initials if no image
-    final String initials = (cardData['name'] ?? 'User')[0].toUpperCase();
+    String initials = 'U';
+    if (cardData['name'] != null &&
+        cardData['name'].toString().trim().isNotEmpty) {
+      initials = cardData['name'].toString().trim()[0].toUpperCase();
+    }
     final int likeCount = cardData['like_count'] ?? 0;
     final int fakeLikes = cardData['fake_likes'] ?? 0;
     final int totalLikes = likeCount + fakeLikes;
@@ -934,7 +917,7 @@ View full post: $shareableLink
                             ),
                           ),
                           InkWell(
-                            onTap: () => _shareContent(cardData),
+                            onTap: () => _shareContent(context, cardData),
                             borderRadius: BorderRadius.circular(50),
                             child: Padding(
                               padding: const EdgeInsets.symmetric(
@@ -1105,6 +1088,7 @@ class _CreateThreadPageState extends State<CreateThreadPage>
   Map<String, dynamic>? profileData;
   List<Map<String, dynamic>> userThreads = [];
   bool isLoading = true;
+  final supabase = SupaFlow.client;
   late AnimationController _slideController;
   late AnimationController _fadeController;
   late Animation<Offset> _slideAnimation;
@@ -1158,7 +1142,12 @@ class _CreateThreadPageState extends State<CreateThreadPage>
       return;
     }
 
-    final userId = supabase.auth.currentUser?.id ?? 'sample-user-id';
+    final currentUser = supabase.auth.currentUser;
+    if (currentUser == null) {
+      _showSnackBar('Please login to create a thread', Colors.red.shade600);
+      return;
+    }
+    final userId = currentUser.id;
 
     if (_containsObjectionableContent(_contentController.text.trim())) {
       _showContentFilterSnackbar('content');
@@ -1505,7 +1494,8 @@ class _CreateThreadPageState extends State<CreateThreadPage>
                                   Container(
                                     padding: const EdgeInsets.all(12),
                                     decoration: BoxDecoration(
-                                      color: Colors.amber.withValues(alpha: 0.2),
+                                      color:
+                                          Colors.amber.withValues(alpha: 0.2),
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: Icon(
@@ -1659,7 +1649,8 @@ class _CreateThreadPageState extends State<CreateThreadPage>
                                       ),
                                     ),
                                     filled: true,
-                                    fillColor: Colors.black.withValues(alpha: 0.3),
+                                    fillColor:
+                                        Colors.black.withValues(alpha: 0.3),
                                     contentPadding: const EdgeInsets.all(20),
                                     counterStyle: TextStyle(
                                       color: Colors.amber.shade400,
@@ -1744,7 +1735,8 @@ class _CreateThreadPageState extends State<CreateThreadPage>
                                     children: [
                                       Icon(
                                         Icons.send_rounded,
-                                        color: Colors.black.withValues(alpha: 0.8),
+                                        color:
+                                            Colors.black.withValues(alpha: 0.8),
                                         size: 24,
                                       ),
                                       const SizedBox(width: 12),
@@ -1753,7 +1745,8 @@ class _CreateThreadPageState extends State<CreateThreadPage>
                                         style: TextStyle(
                                           fontWeight: FontWeight.bold,
                                           fontSize: 18,
-                                          color: Colors.black.withValues(alpha: 0.8),
+                                          color: Colors.black
+                                              .withValues(alpha: 0.8),
                                           letterSpacing: 0.5,
                                         ),
                                       ),
@@ -1855,6 +1848,7 @@ class _ThreadCommentsPageState extends State<ThreadCommentsPage>
       ScrollController(); // New scroll controller for thread content
   List<Map<String, dynamic>> comments = [];
   bool isLoading = true;
+  final supabase = SupaFlow.client;
   bool isPosting = false;
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
@@ -1917,7 +1911,12 @@ class _ThreadCommentsPageState extends State<ThreadCommentsPage>
       isPosting = true;
     });
 
-    final userId = supabase.auth.currentUser?.id ?? 'sample-user-id';
+    final currentUser = supabase.auth.currentUser;
+    if (currentUser == null) {
+      _showErrorSnackBar('Please login to comment');
+      return;
+    }
+    final userId = currentUser.id;
 
     try {
       await supabase.from('thread_comments').insert({
@@ -2184,8 +2183,8 @@ class _ThreadCommentsPageState extends State<ThreadCommentsPage>
             decoration: BoxDecoration(
               color: Colors.grey[900],
               borderRadius: BorderRadius.circular(16),
-              border:
-                  Border.all(color: Colors.yellow.withValues(alpha: 0.3), width: 1),
+              border: Border.all(
+                  color: Colors.yellow.withValues(alpha: 0.3), width: 1),
               boxShadow: [
                 BoxShadow(
                   color: Colors.yellow.withValues(alpha: 0.1),

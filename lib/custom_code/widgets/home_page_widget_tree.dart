@@ -9,6 +9,11 @@ import 'package:pocket_mates_app/flutter_flow/flutter_flow_util.dart';
 import 'package:pocket_mates_app/flutter_flow/flutter_flow_theme.dart';
 import '/custom_code/widgets/index.dart';
 import '/custom_code/widgets/tools_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/drawing_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/poster_designer/template_gallery_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/bulk_sender/bulk_sender_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/poki_games_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/nearby_users_page.dart';
 import 'dart:convert';
 import 'dart:async' as async;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -31,9 +36,7 @@ import 'package:pocket_mates_app/custom_code/widgets/thread_feed_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/teams/teams_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/notifications_list_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/status_display_widget.dart';
-import 'package:pocket_mates_app/custom_code/widgets/drawing_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/poster_designer/template_gallery_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/bulk_sender/bulk_sender_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/thoughts_feed_section.dart';
 
 // Aliases for WhatsApp Groups Provider to avoid naming conflicts
 typedef ChatConversation = groups_provider.ChatConversation;
@@ -316,6 +319,39 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     );
   }
 
+  void _navigateToTool(String title) {
+    material.Widget? page;
+    switch (title) {
+      case 'Drawing Tool':
+        page = const DrawingPage();
+        break;
+      case 'Schedule':
+      case 'Tasks':
+      case 'Challenges':
+      case 'Diagrams':
+      case 'Teams':
+      case 'AI Tools':
+        page = const ToolsPage();
+        break;
+      case 'Poster Maker':
+        page = const TemplateGalleryPage();
+        break;
+      case 'Bulk Sender':
+        page = const BulkSenderPage();
+        break;
+      case 'Poki Games':
+        page = const PokiGamesPage();
+        break;
+      case 'Travel Radar':
+        page = const NearbyUsersPage();
+        break;
+    }
+    if (page != null) {
+      Navigator.push(
+          context, material.MaterialPageRoute(builder: (_) => page!));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final conversationsAsync = ref.watch(conversationsProvider);
@@ -380,8 +416,12 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                         'Voice',
                                         profileId ?? '',
                                       ),
-                                      onTapText: () => _handleStrangerChat(
-                                          context, ref, profileId ?? ''),
+                                      onTapText: () => _handleStrangerMatch(
+                                        context,
+                                        ref,
+                                        'Text',
+                                        profileId ?? '',
+                                      ),
                                       onTapSettings: _handleSettings,
                                       onTapAdd: () =>
                                           _showAddBottomSheet(context),
@@ -421,13 +461,13 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                           _buildVibesListSliver(),
                                         ],
                                       ),
-                                      material.CustomScrollView(
-                                        physics: const BouncingScrollPhysics(
-                                            parent:
-                                                AlwaysScrollableScrollPhysics()),
-                                        slivers: [
-                                          _buildAIListSliver(),
-                                        ],
+                                      ThoughtsFeedSection(
+                                        currentUserId: _currentUserId ?? '',
+                                        currentProfileId: profileId ?? '',
+                                        onStatusShared: _handleRefresh,
+                                        searchQuery: _chatTabIndex == 2
+                                            ? _searchQuery
+                                            : '',
                                       ),
                                     ],
                                   ),
@@ -464,157 +504,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         currentProfileId: profileId ?? '',
         isVertical: true,
         onStatusUploaded: _handleRefresh,
-      ),
-    );
-  }
-
-  Widget _buildAIListSliver() {
-    return SliverToBoxAdapter(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Handskill Tools',
-              style: GoogleFonts.outfit(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: material.Colors.white,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Creative and utility tools for your daily tasks',
-              style: GoogleFonts.inter(
-                fontSize: 14,
-                color: material.Colors.grey[400],
-              ),
-            ),
-            const SizedBox(height: 24),
-            GridView.count(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: 2,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-              childAspectRatio: 1.1,
-              children: [
-                _buildToolGridCard(
-                  title: 'Drawing Tool',
-                  subtitle: 'Sketch & Share',
-                  icon: FluentIcons.edit,
-                  color: material.Colors.yellow,
-                  onTap: () => Navigator.push(
-                    context,
-                    material.MaterialPageRoute(
-                      builder: (context) => const DrawingPage(),
-                    ),
-                  ),
-                ),
-                _buildToolGridCard(
-                  title: 'Poster Maker',
-                  subtitle: 'Design Graphics',
-                  icon: FluentIcons.photo2,
-                  color: material.Colors.orange,
-                  onTap: () => Navigator.push(
-                    context,
-                    material.MaterialPageRoute(
-                      builder: (context) => const TemplateGalleryPage(),
-                    ),
-                  ),
-                ),
-                _buildToolGridCard(
-                  title: 'Bulk Sender',
-                  subtitle: 'WhatsApp Loop',
-                  icon: FluentIcons.send,
-                  color: material.Colors.green,
-                  onTap: () => Navigator.push(
-                    context,
-                    material.MaterialPageRoute(
-                      builder: (context) => const BulkSenderPage(),
-                    ),
-                  ),
-                ),
-                _buildToolGridCard(
-                  title: 'AI Assistant',
-                  subtitle: 'Coming Soon',
-                  icon: material.Icons.smart_toy_outlined,
-                  color: material.Colors.blue,
-                  isPlaceholder: true,
-                  onTap: () {},
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildToolGridCard({
-    required String title,
-    required String subtitle,
-    required IconData icon,
-    required material.Color color,
-    required VoidCallback onTap,
-    bool isPlaceholder = false,
-  }) {
-    return material.Material(
-      color: material.Colors.transparent,
-      child: material.InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(24),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: material.Colors.white.withValues(alpha: 0.05),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: color.withValues(alpha: 0.2),
-              width: 1,
-            ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  icon,
-                  color: color,
-                  size: 20,
-                ),
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: GoogleFonts.inter(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: material.Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    style: GoogleFonts.inter(
-                      fontSize: 11,
-                      color: material.Colors.grey[500],
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
+        searchQuery: _chatTabIndex == 1 ? _searchQuery : '',
       ),
     );
   }
@@ -761,6 +651,11 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                       conversation: conversation,
                       currentUserId: _currentUserId ?? '',
                       onTap: () {
+                        if (conversation.isTool) {
+                          _navigateToTool(conversation.toolTitle ?? '');
+                          return;
+                        }
+
                         if (conversation.isNotification) {
                           _showNotificationDetails(context, conversation);
                         } else if (conversation.isGroup) {
@@ -1401,24 +1296,24 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       randomUser = users.first as Map<String, dynamic>;
     }
 
-    // 4. Initiate Call
-    // Here we navigate to WebRTCCallScreen but passing the target user ID
-    // Note: WebRTCCallScreen might need updates to accept targetUserId if it was "Room" based before.
-    // Assuming WebRTCCallScreen can handle a direct call setup or we pass the target info.
-    // For now, I'll pass it as arguments or modify WebRTCCallScreen if needed.
-    // But since the user said "not go to room connect delete",
-    // it implies we call them directly.
-    // Let's assume WebRTCCallScreen has a 'targetUserId' parameter or similar.
-    // If not, we might need to use the MessageScreen for "Text" and a CallScreen for "Voice/Video".
-
+    // 4. Initiate Call Directly
     if (mode == 'Text') {
-      _handleStrangerChat(context, ref, currentProfileId);
+      Navigator.push(
+        context,
+        material.MaterialPageRoute(
+          builder: (context) => WebRTCCallScreen(
+            mode: 'Text',
+            targetUserId: randomUser['user_id'],
+          ),
+        ),
+      );
       return;
     }
 
     material.ScaffoldMessenger.of(context).showSnackBar(
       material.SnackBar(
-          content: Text('Matching with ${randomUser['name']}...')),
+          duration: const Duration(seconds: 1),
+          content: Text('Connecting to ${randomUser['name']}...')),
     );
 
     Navigator.push(
@@ -1426,31 +1321,6 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       material.MaterialPageRoute(
         builder: (context) => WebRTCCallScreen(
           mode: mode,
-          targetUserId: randomUser['user_id'], // Pass matched user
-        ),
-      ),
-    );
-  }
-
-  void _handleStrangerChat(
-      BuildContext context, WidgetRef ref, String currentProfileId) {
-    final activeUsersState = ref.read(activeUsersProvider(currentProfileId));
-    final activeFriends = activeUsersState.value?.activeFriends ?? [];
-
-    if (activeFriends.isEmpty) {
-      material.ScaffoldMessenger.of(context).showSnackBar(
-        const material.SnackBar(content: Text('No active users to chat with.')),
-      );
-      return;
-    }
-
-    final randomUser = (activeFriends..shuffle()).first;
-
-    Navigator.push(
-      context,
-      material.MaterialPageRoute(
-        builder: (context) => WebRTCCallScreen(
-          mode: 'Text',
           targetUserId: randomUser['user_id'], // Pass matched user
         ),
       ),
@@ -2099,7 +1969,7 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                     children: [
                       _buildTabItem('Chats', 0),
                       _buildTabItem('Vibes', 1),
-                      _buildTabItem('Tools', 2),
+                      _buildTabItem('Thoughts', 2),
                     ],
                   ),
                 ),

@@ -26,6 +26,7 @@ import 'package:pocket_mates_app/custom_code/widgets/chat/voice_player.dart';
 import 'package:image_downloader/image_downloader.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/voice_recorder.dart';
 import 'package:pocket_mates_app/custom_code/services/local_sync_server.dart';
+import 'package:pocket_mates_app/custom_code/widgets/thread_feed_page.dart';
 
 import '/flutter_flow/flutter_flow_util.dart';
 
@@ -375,6 +376,12 @@ class _MessageScreenState extends State<MessageScreen> {
               user:users!user_id(
                 profile:profile!user_id(name, profile_image_url)
               )
+            ),
+            thought:thought_id(
+              *,
+              user:users!user_id(
+                profile:profile!user_id(name, profile_image_url)
+              )
             )
           ''')
           .or('and(sender_id.eq."${_senderId}",receiver_id.eq."${widget.receiverId}"),and(sender_id.eq."${widget.receiverId}",receiver_id.eq."${_senderId}")')
@@ -423,6 +430,23 @@ class _MessageScreenState extends State<MessageScreen> {
     final messageText = _messageController.text.trim();
     _messageController.clear();
 
+    // Optimistic UI update
+    final tempMessageId = 'temp_${DateTime.now().millisecondsSinceEpoch}';
+    final optimisticMessage = {
+      'id': tempMessageId,
+      'sender_id': _senderId,
+      'receiver_id': widget.receiverId,
+      'content': messageText,
+      'message_text': messageText,
+      'message_type': 'text',
+      'created_at': DateTime.now().toIso8601String(),
+      'is_optimistic': true,
+    };
+
+    safeSetState(() {
+      _messages.insert(0, optimisticMessage);
+    });
+
     try {
       debugPrint('Sending message to: ${widget.receiverId}');
 
@@ -451,10 +475,17 @@ class _MessageScreenState extends State<MessageScreen> {
         debugPrint('Post-send conversation update error: $e');
       });
 
+      // Instead of _loadMessages, we can just replace the temp message or wait for real-time
+      // For now, _loadMessages is safer to ensure sync
       _loadMessages();
     } catch (e) {
       debugPrint('Error sending message: $e');
       _showErrorSnackBar('Failed to send message: $e');
+
+      // Remove optimistic message if failed
+      safeSetState(() {
+        _messages.removeWhere((m) => m['id'] == tempMessageId);
+      });
       // Put text back if failed
       _messageController.text = messageText;
     }
@@ -2018,6 +2049,10 @@ class _MessageScreenState extends State<MessageScreen> {
           duration: message['voice_duration'] ?? 0,
           isFromCurrentUser: isMe,
         );
+      case 'thought':
+        final thoughtData = message['thought'] as Map<String, dynamic>?;
+        if (thoughtData == null) return const SizedBox.shrink();
+        return _buildThoughtMessage(thoughtData, isMe);
       case 'gallery':
         final galleryData = message['gallery'] as Map<String, dynamic>?;
         if (galleryData == null) return const SizedBox.shrink();
@@ -2274,6 +2309,107 @@ class _MessageScreenState extends State<MessageScreen> {
           ),
         );
     }
+  }
+
+  Widget _buildThoughtMessage(Map<String, dynamic> thoughtData, bool isMe) {
+    final String content = thoughtData['content'] ?? '';
+    final profile = thoughtData['user']?['profile'] is List &&
+            (thoughtData['user']['profile'] as List).isNotEmpty
+        ? thoughtData['user']['profile'][0]
+        : thoughtData['profile'] ?? {};
+
+    final String name = profile['name'] ?? 'User';
+    final String? avatar = profile['profile_image_url'];
+
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ThreadCommentsPage(
+              threadId: thoughtData['id'].toString(),
+              threadContent: content,
+            ),
+          ),
+        );
+      },
+      child: Container(
+        width: 260,
+        margin: const EdgeInsets.symmetric(vertical: 4),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          color: isMe
+              ? Colors.white.withValues(alpha: 0.1)
+              : Colors.black.withValues(alpha: 0.3),
+          border:
+              Border.all(color: Colors.white.withValues(alpha: 0.1), width: 1),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 14,
+                    backgroundImage:
+                        avatar != null ? NetworkImage(avatar) : null,
+                    backgroundColor: Colors.grey[800],
+                    child: avatar == null
+                        ? const Icon(Icons.person, size: 14)
+                        : null,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      name,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const Icon(Icons.forum_outlined,
+                      color: Colors.yellow, size: 16),
+                ],
+              ),
+            ),
+            // Content Preview
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    content.length > 150
+                        ? '${content.substring(0, 150)}...'
+                        : content,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.9),
+                      fontSize: 13,
+                      height: 1.4,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Read more...',
+                    style: TextStyle(
+                      color: Colors.yellow.withValues(alpha: 0.8),
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildLinkPreview(String content, bool isMe) {

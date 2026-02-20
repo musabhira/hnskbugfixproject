@@ -1,30 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/widgets/gallery_profile_search_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/gallery_profile_search_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/message_screen.dart';
 import 'package:pocket_mates_app/custom_code/widgets/message_screen.dart';
 import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
-import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
-import 'package:pocket_mates_app/custom_code/widgets/search_profile_detail_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/search_profile_detail_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/share_content_screen.dart';
-import 'package:pocket_mates_app/custom_code/widgets/share_content_screen.dart';
-import 'package:pocket_mates_app/custom_code/widgets/status_display_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/status_display_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
-import 'package:pocket_mates_app/flutter_flow/flutter_flow_theme.dart';
 import 'package:pocket_mates_app/flutter_flow/flutter_flow_theme.dart';
 import 'package:pocket_mates_app/flutter_flow/flutter_flow_util.dart';
-import 'package:pocket_mates_app/flutter_flow/flutter_flow_util.dart';
-import 'package:fluent_ui/fluent_ui.dart' as fluent;
 import 'package:fluent_ui/fluent_ui.dart' as fluent;
 
 class GalleryDetailsPage extends StatefulWidget {
@@ -602,7 +588,8 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                                           Icons.chat_bubble_outline,
                                           size: 80,
                                           // ignore: deprecated_member_use
-                                          color: Colors.grey.withValues(alpha: 0.5),
+                                          color: Colors.grey
+                                              .withValues(alpha: 0.5),
                                         ),
                                         const SizedBox(height: 16),
                                         Text(
@@ -677,7 +664,8 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                                     ),
                                     filled: true,
                                     // ignore: deprecated_member_use
-                                    fillColor: Colors.grey.withValues(alpha: 0.1),
+                                    fillColor:
+                                        Colors.grey.withValues(alpha: 0.1),
                                     contentPadding: const EdgeInsets.symmetric(
                                       horizontal: 16,
                                       vertical: 10,
@@ -763,7 +751,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
       );
 
       // Insert message to group
-      await supabase.from('group_messages').insert({
+      await _supabase.from('group_messages').insert({
         'group_id': groupId,
         'sender_id': _supabase.auth.currentUser?.id.toString() ?? '',
         'gallery_id': widget.item['gallery_id'],
@@ -773,7 +761,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
       });
 
       // Update group's last message
-      await supabase.from('groups').update({
+      await _supabase.from('groups').update({
         'last_message':
             '${widget.item['gallery_title']}\n${widget.item['gallery_description']}\n${widget.item['gallery_image_url']}',
         'last_message_time': DateTime.now().toIso8601String(),
@@ -853,7 +841,13 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                     sharedContentId: widget.item['gallery_id'],
                   ),
                 ),
-              );
+              ).then((result) {
+                if (result == true) {
+                  // After successful status upload, we might want to pop the details
+                  // or just let it be. Usually, for a share screen, we close it.
+                  Navigator.pop(context);
+                }
+              });
             }
           } catch (e) {
             print('Error preparing status share: $e');

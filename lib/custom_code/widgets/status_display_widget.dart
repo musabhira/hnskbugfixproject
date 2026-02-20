@@ -38,7 +38,10 @@ class StatusDisplayWidget extends StatefulWidget {
     this.height,
     this.isVertical = false,
     this.onStatusUploaded,
+    this.searchQuery = '',
   });
+
+  final String searchQuery;
 
   @override
   State<StatusDisplayWidget> createState() => _StatusDisplayWidgetState();
@@ -424,8 +427,14 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
 
   Widget _buildStatusList(List<Map<String, dynamic>> statusData,
       {required bool isGrid}) {
+    final filteredData = statusData.where((group) {
+      if (widget.searchQuery.isEmpty) return true;
+      final name = group['profile']?['name']?.toString().toLowerCase() ?? '';
+      return name.contains(widget.searchQuery.toLowerCase());
+    }).toList();
+
     if (_isLoading) return _buildVerticalShimmer();
-    if (statusData.isEmpty && !widget.isVertical) {
+    if (filteredData.isEmpty && !widget.isVertical) {
       return const SizedBox.shrink();
     }
 
@@ -497,7 +506,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
           Expanded(
             child: GridView.builder(
               padding: const EdgeInsets.all(16),
-              itemCount: statusData.length,
+              itemCount: filteredData.length,
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
                 mainAxisSpacing: 16,
@@ -505,8 +514,8 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
                 childAspectRatio: 0.8,
               ),
               itemBuilder: (context, index) {
-                final statusGroup = statusData[index];
-                return _buildGridStatusItem(statusGroup, index, statusData);
+                final statusGroup = filteredData[index];
+                return _buildGridStatusItem(statusGroup, index, filteredData);
               },
             ),
           ),
@@ -516,15 +525,15 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
 
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      itemCount: statusData.length + (widget.isVertical ? 1 : 0),
+      itemCount: filteredData.length + (widget.isVertical ? 1 : 0),
       itemBuilder: (context, index) {
         if (widget.isVertical && index == 0) return _buildAddStatusButton();
         final actualIndex = widget.isVertical ? index - 1 : index;
         if (actualIndex < 0) return const SizedBox.shrink();
 
-        final statusGroup = statusData[actualIndex];
+        final statusGroup = filteredData[actualIndex];
         return _buildStatusItem(statusGroup, actualIndex, false,
-            listOverride: statusData);
+            listOverride: filteredData);
       },
     );
   }
@@ -559,6 +568,36 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
               CachedNetworkImage(
                 imageUrl: thumbnailUrl,
                 fit: BoxFit.cover,
+              )
+            else if (mediaType == 'thought')
+              Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Color(0xFF262626), Color(0xFF1A1A1A)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.format_quote_rounded,
+                        color: Colors.yellow, size: 24),
+                    const SizedBox(height: 8),
+                    Text(
+                      lastStatus['caption'] ?? '',
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
               )
             else
               Container(
@@ -2161,7 +2200,113 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
   Widget _buildMediaContent(Map<String, dynamic> status) {
     Widget content;
 
-    if (status['media_type'] == 'text') {
+    if (status['media_type'] == 'thought') {
+      final metadata = status['metadata'] as Map<String, dynamic>? ?? {};
+      final authorName = metadata['name'] ?? 'User';
+      final authorAvatar = metadata['profile_image_url'];
+      final thoughtContent = status['caption'] ?? status['content'] ?? '';
+
+      content = Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF1A1A1A), Color(0xFF000000)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: Center(
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 32),
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: const Color(0xFF262626),
+              borderRadius: BorderRadius.circular(24),
+              border:
+                  Border.all(color: Colors.yellow.withOpacity(0.2), width: 1),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.5),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                            color: Colors.yellow.withOpacity(0.5), width: 1.5),
+                      ),
+                      child: CircleAvatar(
+                        backgroundColor: Colors.black,
+                        backgroundImage: authorAvatar != null
+                            ? CachedNetworkImageProvider(authorAvatar)
+                            : null,
+                        child: authorAvatar == null
+                            ? Text(authorName[0].toUpperCase(),
+                                style: const TextStyle(
+                                    color: Colors.yellow,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16))
+                            : null,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            authorName,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                          const Text(
+                            'Shared a thought',
+                            style: TextStyle(
+                              color: Colors.white38,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Opacity(
+                      opacity: 0.3,
+                      child: Icon(Icons.format_quote_rounded,
+                          color: Colors.yellow, size: 24),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  thoughtContent,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    height: 1.5,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    } else if (status['media_type'] == 'text') {
       content = Container(
         width: double.infinity,
         height: double.infinity,
@@ -2339,6 +2484,7 @@ class StatusUploadWidget extends StatefulWidget {
   final String? sharedContent;
   final String? sharedContentType; // 'text' or 'gallery' (image url)
   final String? sharedContentId; // gallery_id
+  final Map<String, dynamic>? sharedMetadata;
 
   const StatusUploadWidget({
     super.key,
@@ -2347,6 +2493,7 @@ class StatusUploadWidget extends StatefulWidget {
     this.sharedContent,
     this.sharedContentType,
     this.sharedContentId,
+    this.sharedMetadata,
   });
 
   @override
@@ -2371,7 +2518,8 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
     if (widget.sharedContent != null) {
       _isSharingMode = true;
       // Pre-fill caption if text mode, specifically if it's strictly text content
-      if (widget.sharedContentType == 'text') {
+      if (widget.sharedContentType == 'text' ||
+          widget.sharedContentType == 'thought') {
         _captionController.text = widget.sharedContent!;
       }
     }
@@ -2487,7 +2635,92 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
         },
       );
     } else if (widget.sharedContent != null) {
-      if (widget.sharedContentType == 'text') {
+      if (widget.sharedContentType == 'thought' &&
+          widget.sharedMetadata != null) {
+        final name = widget.sharedMetadata!['name'] ?? 'User';
+        final avatar = widget.sharedMetadata!['profile_image_url'];
+        final time = widget.sharedMetadata!['created_at'];
+        final createdAt = time != null ? DateTime.parse(time) : DateTime.now();
+
+        contentWidget = Container(
+          width: double.infinity,
+          height: double.infinity,
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF2C3E50), Color(0xFF000000)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          alignment: Alignment.center,
+          padding: const EdgeInsets.all(24),
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.08),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: Colors.white.withOpacity(0.1)),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 16,
+                      backgroundImage: avatar != null
+                          ? CachedNetworkImageProvider(avatar)
+                          : null,
+                      child:
+                          avatar == null ? Text(name[0].toUpperCase()) : null,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            name,
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13),
+                          ),
+                          Text(
+                            timeago.format(createdAt, locale: 'en_short'),
+                            style: const TextStyle(
+                                color: Colors.white38, fontSize: 11),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  widget.sharedContent!,
+                  style: const TextStyle(
+                      color: Colors.white, fontSize: 15, height: 1.4),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Icon(Icons.favorite_border,
+                        size: 16, color: Colors.white.withOpacity(0.4)),
+                    const SizedBox(width: 12),
+                    Icon(Icons.chat_bubble_outline_rounded,
+                        size: 16, color: Colors.white.withOpacity(0.4)),
+                    const SizedBox(width: 12),
+                    Icon(Icons.send_rounded,
+                        size: 16, color: Colors.white.withOpacity(0.4)),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      } else if (widget.sharedContentType == 'text') {
         contentWidget = Container(
           width: double.infinity,
           height: double.infinity,
@@ -3016,14 +3249,15 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
     });
 
     try {
-      final mediaType =
-          widget.sharedContentType == 'gallery' ? 'image' : 'text';
-      // If text, the shared content IS the caption.
+      final mediaType = widget.sharedContentType == 'thought'
+          ? 'thought'
+          : (widget.sharedContentType == 'gallery' ? 'image' : 'text');
+      // If text or thought, the shared content IS the caption.
       // If image, caption is from controller.
       String? caption;
       String? mediaUrl;
 
-      if (mediaType == 'text') {
+      if (mediaType == 'text' || mediaType == 'thought') {
         caption = widget.sharedContent;
         mediaUrl = '';
       } else {
@@ -3041,12 +3275,11 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
         'media_url': mediaUrl,
         'thumbnail_url': null,
         'caption': caption,
-        'gallery_id': widget.sharedContentId,
         'duration': 5,
         'expires_at':
             DateTime.now().add(const Duration(hours: 24)).toIso8601String(),
         'mentioned_group_id': _selectedGroupId,
-        'is_active': true, // Crucial for visibility
+        'is_active': true,
       });
 
       setState(() => _uploadProgress = 1.0);

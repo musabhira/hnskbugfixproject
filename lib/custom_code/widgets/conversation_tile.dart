@@ -56,23 +56,15 @@ class ConversationTile extends StatelessWidget {
                         height: 66,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          gradient: conversation.isGroup
-                              ? const LinearGradient(
-                                  colors: [
-                                    Color(0xFF833AB4), // Purple
-                                    Color(0xFFF77737), // Orange
-                                    Color(0xFFFCAF45), // Yellow
-                                  ],
-                                  begin: Alignment.topRight,
-                                  end: Alignment.bottomLeft,
-                                )
-                              : null,
-                          border: conversation.isGroup
-                              ? null
-                              : Border.all(
-                                  color: Colors.yellow,
-                                  width: 2,
-                                ),
+                          gradient: const LinearGradient(
+                            colors: [
+                              Color(0xFF833AB4), // Purple
+                              Color(0xFFF77737), // Orange
+                              Color(0xFFFCAF45), // Yellow
+                            ],
+                            begin: Alignment.topRight,
+                            end: Alignment.bottomLeft,
+                          ),
                         ),
                       ),
                     Container(
@@ -154,7 +146,8 @@ class ConversationTile extends StatelessWidget {
                             child: Icon(
                               FluentIcons.check_mark,
                               size: 14,
-                              color: material.Colors.blue.withValues(alpha: 0.7),
+                              color:
+                                  material.Colors.blue.withValues(alpha: 0.7),
                             ),
                           ),
                         Expanded(

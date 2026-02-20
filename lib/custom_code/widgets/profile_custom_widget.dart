@@ -78,6 +78,8 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
   bool isLoading = true;
   bool _isCompressingProfile = false;
   bool _isCompressingBanner = false;
+  String? _selectedTemplateId = 'default';
+  bool _isVerified = false;
 
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _shopNameController = TextEditingController();
@@ -161,6 +163,8 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
           _yearController.text = profileResponse['year']?.toString() ?? '';
           instaIdController.text = profileResponse['insta_id'] ?? '';
           instaLinkController.text = profileResponse['insta_link'] ?? '';
+          _selectedTemplateId = profileResponse['web_template_id'] ?? 'default';
+          _isVerified = profileResponse['verified'] ?? false;
         });
       }
     } catch (error) {
@@ -479,6 +483,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                 : int.tryParse(_yearController.text),
             'insta_id': instaIdController.text,
             'insta_link': instaLinkController.text,
+            'web_template_id': _selectedTemplateId,
           },
         ).eq('user_id', _currentUserId!);
       } else {
@@ -510,6 +515,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                 : int.tryParse(_yearController.text),
             'insta_id': instaIdController.text,
             'insta_link': instaLinkController.text,
+            'web_template_id': _selectedTemplateId,
           },
         );
       }
@@ -1465,6 +1471,51 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                     labelText: 'Your Instagram profile Link (Optional)',
                   ),
 
+                  if (_isVerified) ...[
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20.0, vertical: 12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Premium Web Templates',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          const Text(
+                            'Select a premium design for your public website.',
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 12,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          SizedBox(
+                            height: 140,
+                            child: ListView(
+                              scrollDirection: Axis.horizontal,
+                              children: [
+                                _buildTemplateItem('default', 'Modern Gold',
+                                    Icons.dashboard_rounded),
+                                _buildTemplateItem(
+                                    'neon', 'Cyber Neon', Icons.bolt_rounded),
+                                _buildTemplateItem('elite', 'Luxury Elite',
+                                    Icons.auto_awesome_rounded),
+                                _buildTemplateItem('glass', 'Bubble Glass',
+                                    Icons.blur_on_rounded),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+
                   Container(
                     margin: const EdgeInsets.all(16.0),
                     decoration: BoxDecoration(
@@ -1777,6 +1828,54 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildTemplateItem(String id, String name, IconData icon) {
+    final isSelected = _selectedTemplateId == id;
+    return GestureDetector(
+      onTap: () => setState(() => _selectedTemplateId = id),
+      child: Container(
+        width: 110,
+        margin: const EdgeInsets.only(right: 12),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.yellow : Colors.grey[900],
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected ? Colors.yellow : Colors.white10,
+            width: 2,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: Colors.yellow.withValues(alpha: 0.3),
+                    blurRadius: 10,
+                    spreadRadius: 1,
+                  )
+                ]
+              : null,
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              color: isSelected ? Colors.black : Colors.white60,
+              size: 32,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              name,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: isSelected ? Colors.black : Colors.white,
+                fontSize: 11,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

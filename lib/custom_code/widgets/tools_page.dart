@@ -23,6 +23,7 @@ import 'package:pocket_mates_app/custom_code/widgets/poster_designer/template_ga
 import 'package:pocket_mates_app/custom_code/widgets/bulk_sender/bulk_sender_page.dart';
 import 'package:flutter/services.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poki_games_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/nearby_users_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'dart:math';
@@ -72,10 +73,49 @@ class _TaskManagerScreenState extends State<ToolsPage> {
   List<String> _completedTasks = [];
   List<String> _completedChallenges = [];
 
-  @override
+  String _toolsSearchQuery = '';
+  List<String> _favoritedTools = [];
+
   void initState() {
     super.initState();
     _loadData();
+    _loadFavoritedTools();
+  }
+
+  Future<void> _loadFavoritedTools() async {
+    final prefs = await SharedPreferences.getInstance();
+    final userId = SupaFlow.client.auth.currentUser?.id ?? '';
+    final favoritedToolsJson =
+        prefs.getString('favorited_tools_$userId') ?? '[]';
+    final favoritedToolsList = jsonDecode(favoritedToolsJson) as List;
+    setState(() {
+      _favoritedTools =
+          favoritedToolsList.map((e) => e['title'] as String).toList();
+    });
+  }
+
+  Future<void> _toggleFavoriteTool(String title) async {
+    final prefs = await SharedPreferences.getInstance();
+    final userId = SupaFlow.client.auth.currentUser?.id ?? '';
+
+    final favoritedToolsJson =
+        prefs.getString('favorited_tools_$userId') ?? '[]';
+    final List<dynamic> favoritedToolsList = jsonDecode(favoritedToolsJson);
+
+    if (_favoritedTools.contains(title)) {
+      _favoritedTools.remove(title);
+      favoritedToolsList.removeWhere((e) => e['title'] == title);
+    } else {
+      _favoritedTools.add(title);
+      favoritedToolsList.add({
+        'title': title,
+        'timeAdded': DateTime.now().toIso8601String(),
+      });
+    }
+
+    await prefs.setString(
+        'favorited_tools_$userId', jsonEncode(favoritedToolsList));
+    setState(() {});
   }
 
   Future<void> _loadData() async {
@@ -459,6 +499,106 @@ class _TaskManagerScreenState extends State<ToolsPage> {
   }
 
   Widget _buildToolsList() {
+    final List<Map<String, dynamic>> allTools = [
+      {
+        'title': 'Drawing Tool',
+        'icon': Icons.brush,
+        'color': Colors.purpleAccent,
+        'onTap': () => Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const DrawingPage())),
+      },
+      {
+        'title': 'Schedule',
+        'icon': Icons.calendar_today_rounded,
+        'color': Colors.blueAccent,
+        'onTap': () => setState(() {
+              _selectedTab = 0;
+              _showToolsList = false;
+            }),
+      },
+      {
+        'title': 'Tasks',
+        'icon': Icons.check_circle_outline_rounded,
+        'color': Colors.greenAccent,
+        'onTap': () => setState(() {
+              _selectedTab = 1;
+              _showToolsList = false;
+            }),
+      },
+      {
+        'title': 'Challenges',
+        'icon': Icons.emoji_events_outlined,
+        'color': Colors.orangeAccent,
+        'onTap': () => setState(() {
+              _selectedTab = 2;
+              _showToolsList = false;
+            }),
+      },
+      {
+        'title': 'Diagrams',
+        'icon': Icons.schema_rounded,
+        'color': Colors.tealAccent,
+        'onTap': () => setState(() {
+              _selectedTab = 3;
+              _showToolsList = false;
+            }),
+      },
+      {
+        'title': 'Teams',
+        'icon': Icons.groups_rounded,
+        'color': Colors.pinkAccent,
+        'onTap': () => setState(() {
+              _selectedTab = 4;
+              _showToolsList = false;
+            }),
+      },
+      {
+        'title': 'AI Tools',
+        'icon': Icons.auto_awesome,
+        'color': Colors.cyanAccent,
+        'onTap': () => setState(() {
+              _selectedTab = 5;
+              _showToolsList = false;
+            }),
+      },
+      {
+        'title': 'Poster Maker',
+        'icon': Icons.photo_library_rounded,
+        'color': Colors.orangeAccent,
+        'onTap': () => Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => const TemplateGalleryPage())),
+      },
+      {
+        'title': 'Bulk Sender',
+        'icon': Icons.send_rounded,
+        'color': Colors.greenAccent,
+        'onTap': () => Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const BulkSenderPage())),
+      },
+      {
+        'title': 'Poki Games',
+        'icon': Icons.videogame_asset_rounded,
+        'color': Colors.redAccent,
+        'onTap': () => Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const PokiGamesPage())),
+      },
+      {
+        'title': 'Travel Radar',
+        'icon': Icons.radar,
+        'color': Colors.cyanAccent,
+        'onTap': () => Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const NearbyUsersPage())),
+      },
+    ];
+
+    final filteredTools = allTools
+        .where((tool) => (tool['title'] as String)
+            .toLowerCase()
+            .contains(_toolsSearchQuery.toLowerCase()))
+        .toList();
+
     return Scaffold(
       backgroundColor: const Color(0xFF121212),
       body: SafeArea(
@@ -487,118 +627,49 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                 ],
               ),
             ),
+            Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2C2C2C),
+                  borderRadius: BorderRadius.circular(16),
+                  border:
+                      Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                ),
+                child: TextField(
+                  onChanged: (value) =>
+                      setState(() => _toolsSearchQuery = value),
+                  style: GoogleFonts.outfit(color: Colors.white),
+                  decoration: InputDecoration(
+                    hintText: 'Search tools...',
+                    hintStyle: GoogleFonts.outfit(color: Colors.white54),
+                    prefixIcon: const Icon(Icons.search, color: Colors.white54),
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 14),
+                  ),
+                ),
+              ),
+            ),
             Expanded(
               child: GridView.count(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                 crossAxisCount: 2,
                 crossAxisSpacing: 16,
                 mainAxisSpacing: 16,
-                children: [
-                  _buildToolCard(
-                    title: 'Drawing Tool',
-                    icon: Icons.brush,
-                    color: Colors.purpleAccent,
-                    onTap: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const DrawingPage()));
-                    },
-                  ),
-                  _buildToolCard(
-                    title: 'Schedule',
-                    icon: Icons.calendar_today_rounded,
-                    color: Colors.blueAccent,
-                    onTap: () => setState(() {
-                      _selectedTab = 0;
-                      _showToolsList = false;
-                    }),
-                  ),
-                  _buildToolCard(
-                    title: 'Tasks',
-                    icon: Icons.check_circle_outline_rounded,
-                    color: Colors.greenAccent,
-                    onTap: () => setState(() {
-                      _selectedTab = 1;
-                      _showToolsList = false;
-                    }),
-                  ),
-                  _buildToolCard(
-                    title: 'Challenges',
-                    icon: Icons.emoji_events_outlined,
-                    color: Colors.orangeAccent,
-                    onTap: () => setState(() {
-                      _selectedTab = 2;
-                      _showToolsList = false;
-                    }),
-                  ),
-                  _buildToolCard(
-                    title: 'Diagrams',
-                    icon: Icons.schema_rounded,
-                    color: Colors.tealAccent,
-                    onTap: () => setState(() {
-                      _selectedTab = 3;
-                      _showToolsList = false;
-                    }),
-                  ),
-                  _buildToolCard(
-                    title: 'Teams',
-                    icon: Icons.groups_rounded,
-                    color: Colors.pinkAccent,
-                    onTap: () => setState(() {
-                      _selectedTab = 4;
-                      _showToolsList = false;
-                    }),
-                  ),
-                  _buildToolCard(
-                    title: 'AI Tools',
-                    icon: Icons.auto_awesome,
-                    color: Colors.cyanAccent,
-                    onTap: () => setState(() {
-                      _selectedTab = 5;
-                      _showToolsList = false;
-                    }),
-                  ),
-                  _buildToolCard(
-                    title: 'Poster Maker',
-                    icon: Icons.photo_library_rounded,
-                    color: Colors.orangeAccent,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const TemplateGalleryPage(),
-                        ),
-                      );
-                    },
-                  ),
-                  _buildToolCard(
-                    title: 'Bulk Sender',
-                    icon: Icons.send_rounded,
-                    color: Colors.greenAccent,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const BulkSenderPage(),
-                        ),
-                      );
-                    },
-                  ),
-                  _buildToolCard(
-                    title: 'Poki Games',
-                    icon: Icons.videogame_asset_rounded,
-                    color: Colors.redAccent,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const PokiGamesPage(),
-                        ),
-                      );
-                    },
-                  ),
-                ],
+                children: filteredTools.map((tool) {
+                  return _buildToolCard(
+                    title: tool['title'] as String,
+                    icon: tool['icon'] as IconData,
+                    color: tool['color'] as Color,
+                    onTap: tool['onTap'] as VoidCallback,
+                    isFavorited: _favoritedTools.contains(tool['title']),
+                    onToggleFavorite: () =>
+                        _toggleFavoriteTool(tool['title'] as String),
+                  );
+                }).toList(),
               ),
             ),
           ],
@@ -1825,6 +1896,8 @@ class _TaskManagerScreenState extends State<ToolsPage> {
     required IconData icon,
     required Color color,
     required VoidCallback onTap,
+    bool isFavorited = false,
+    VoidCallback? onToggleFavorite,
   }) {
     return GestureDetector(
       onTap: onTap,
@@ -1841,27 +1914,56 @@ class _TaskManagerScreenState extends State<ToolsPage> {
             ),
           ],
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: Stack(
           children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
+            Align(
+              alignment: Alignment.center,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(icon, color: color, size: 32),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    title,
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
               ),
-              child: Icon(icon, color: color, size: 32),
             ),
-            const SizedBox(height: 12),
-            Text(
-              title,
-              style: GoogleFonts.outfit(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
+            if (onToggleFavorite != null)
+              Positioned(
+                top: 8,
+                right: 8,
+                child: GestureDetector(
+                  onTap: onToggleFavorite,
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: isFavorited
+                          ? Colors.red.withValues(alpha: 0.1)
+                          : Colors.transparent,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      isFavorited ? Icons.favorite : Icons.favorite_border,
+                      color: isFavorited ? Colors.redAccent : Colors.white54,
+                      size: 20,
+                    ),
+                  ),
+                ),
               ),
-              textAlign: TextAlign.center,
-            ),
           ],
         ),
       ),
