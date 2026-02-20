@@ -31,11 +31,13 @@ import 'dart:math';
 class ToolsPage extends StatefulWidget {
   final double? width;
   final double? height;
+  final VoidCallback? onFavoriteToggled;
 
   const ToolsPage({
     super.key,
     this.width,
     this.height,
+    this.onFavoriteToggled,
   });
 
   @override
@@ -116,6 +118,9 @@ class _TaskManagerScreenState extends State<ToolsPage> {
     await prefs.setString(
         'favorited_tools_$userId', jsonEncode(favoritedToolsList));
     setState(() {});
+
+    // Trigger callback to refresh home page if needed
+    widget.onFavoriteToggled?.call();
   }
 
   Future<void> _loadData() async {

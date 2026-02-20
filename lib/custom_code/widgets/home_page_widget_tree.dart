@@ -331,7 +331,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       case 'Diagrams':
       case 'Teams':
       case 'AI Tools':
-        page = const ToolsPage();
+        page = ToolsPage(onFavoriteToggled: _handleRefresh);
         break;
       case 'Poster Maker':
         page = const TemplateGalleryPage();
@@ -373,13 +373,14 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                 : _currentIndex == 1
                     ? const MainMarketPage()
                     : _currentIndex == 2
-                        ? const ToolsPage()
+                        ? ToolsPage(onFavoriteToggled: _handleRefresh)
                         : material.RefreshIndicator(
                             onRefresh: _handleRefresh,
                             color: material.Colors.yellow,
                             backgroundColor: material.Colors.black,
                             child: material.NestedScrollView(
-                              physics: const BouncingScrollPhysics(),
+                              physics: const BouncingScrollPhysics(
+                                  parent: AlwaysScrollableScrollPhysics()),
                               headerSliverBuilder:
                                   (context, innerBoxIsScrolled) {
                                 return [
