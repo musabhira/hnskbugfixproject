@@ -1,16 +1,9 @@
 import 'package:flutter/material.dart' as material;
-import 'package:flutter/material.dart' as material;
-import 'package:fluent_ui/fluent_ui.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:timeago/timeago.dart' as timeago;
-import 'package:timeago/timeago.dart' as timeago;
 import 'chat/whats_app_groups_provider.dart';
-import 'chat/whats_app_groups_provider.dart';
-import 'teams/teams_service.dart';
 import 'teams/teams_service.dart';
 
 class NotificationsListPage extends ConsumerWidget {
@@ -160,7 +153,8 @@ class NotificationsListPage extends ConsumerWidget {
                             timeago.format(
                                 notification.lastMessageTime ?? DateTime.now()),
                             style: GoogleFonts.inter(
-                              color: material.Colors.white.withValues(alpha: 0.3),
+                              color:
+                                  material.Colors.white.withValues(alpha: 0.3),
                               fontSize: 12,
                             ),
                           ),

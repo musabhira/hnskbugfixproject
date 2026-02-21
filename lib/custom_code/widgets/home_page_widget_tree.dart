@@ -321,17 +321,29 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 
   void _navigateToTool(String title) {
     material.Widget? page;
+    int? initialTab;
+
     switch (title) {
       case 'Drawing Tool':
         page = const DrawingPage();
         break;
       case 'Schedule':
+        initialTab = 0;
+        break;
       case 'Tasks':
+        initialTab = 1;
+        break;
       case 'Challenges':
+        initialTab = 2;
+        break;
       case 'Diagrams':
+        initialTab = 3;
+        break;
       case 'Teams':
+        initialTab = 4;
+        break;
       case 'AI Tools':
-        page = ToolsPage(onFavoriteToggled: _handleRefresh);
+        initialTab = 5;
         break;
       case 'Poster Maker':
         page = const TemplateGalleryPage();
@@ -346,6 +358,14 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         page = const NearbyUsersPage();
         break;
     }
+
+    if (initialTab != null) {
+      page = ToolsPage(
+        onFavoriteToggled: _handleRefresh,
+        initialTab: initialTab,
+      );
+    }
+
     if (page != null) {
       Navigator.push(
           context, material.MaterialPageRoute(builder: (_) => page!));

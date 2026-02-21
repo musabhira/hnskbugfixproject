@@ -288,12 +288,15 @@ class FFRoute {
                 )
               : builder(context, ffParams);
           final child = appStateNotifier.loading
-              ? Center(
-                  child: SizedBox(
-                    width: 50.0,
-                    height: 50.0,
-                    child: ProgressRing(
-                      activeColor: FlutterFlowTheme.of(context).primary,
+              ? Container(
+                  color: const Color(0xFF000000),
+                  child: Center(
+                    child: SizedBox(
+                      width: 50.0,
+                      height: 50.0,
+                      child: ProgressRing(
+                        activeColor: FlutterFlowTheme.of(context).primary,
+                      ),
                     ),
                   ),
                 )

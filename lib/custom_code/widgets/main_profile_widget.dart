@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:pocket_mates_app/custom_code/widgets/profile_custom_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/widgets/message_screen.dart';
@@ -157,7 +158,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             .not('gallery_id', 'is', null)
             .order('gallery_created_at', ascending: false)
             .limit(20), // Recent Gallery (Limit for perf)
-        _fetchFollowCountsInt(), // Counts
+        _fetchFollowCountsMap(), // Counts Map
         _checkFollowStatusBool(),
         _checkBlockStatusBool(),
       ]);
@@ -166,6 +167,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
       final profileRes = responses[0] as List;
       final galleryRes = responses[1] as List;
+      final counts = responses[2] as Map<String, int>;
 
       if (profileRes.isNotEmpty) {
         final data = profileRes.first as Map<String, dynamic>;
@@ -196,7 +198,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         _galleryItems = uniqueGallery.values.toList();
         _categories = categorySet.toList();
         _filteredGalleryItems = _galleryItems;
-        _followersCount = responses[2] as int; // Follower count
+        _followersCount = counts['followers'] ?? 0;
+        _followingCount = counts['following'] ?? 0;
         _isFollowing = responses[3] as bool;
         _isBlocked = responses[4] as bool;
 
@@ -256,27 +259,39 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     }
   }
 
-  Future<int> _fetchFollowCountsInt() async {
+  Future<Map<String, int>> _fetchFollowCountsMap() async {
     try {
-      final res = await _supabase
+      // Get followers count - people who follow this user
+      final followersRes = await _supabase
           .from('follows')
           .select('id')
           .eq('followed_id', userId);
-      // Get base followers
-      final userRow = await _supabase
-          .from('profile')
+
+      // Get following count - people this user follows
+      final followingRes = await _supabase
+          .from('follows')
+          .select('id')
+          .eq('follower_id', userId);
+
+      // Get base followers count from users table
+      final userResponse = await _supabase
+          .from('users')
           .select('followers')
-          .eq('user_id', userId)
+          .eq('id', userId)
           .maybeSingle();
 
-      int base = 0;
-      if (userRow != null && userRow['followers'] != null) {
-        base = (userRow['followers'] as num).toInt();
+      int baseFollowers = 0;
+      if (userResponse != null && userResponse['followers'] != null) {
+        baseFollowers = (userResponse['followers'] as num).toInt();
       }
 
-      return res.length + base;
-    } catch (_) {
-      return 0;
+      return {
+        'followers': followersRes.length + baseFollowers,
+        'following': followingRes.length,
+      };
+    } catch (e) {
+      debugPrint('Error fetching follow counts: $e');
+      return {'followers': 0, 'following': 0};
     }
   }
 
@@ -678,42 +693,45 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               ),
             ],
           ),
-          const SizedBox(height: 24),
-          // Name & Bio
-          Text(
-            shopName != null && shopName.isNotEmpty ? shopName : name,
-            style: GoogleFonts.outfit(
-              color: textColor,
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          if (isVerified) ...[
-            const SizedBox(height: 4),
-            Row(
-              children: [
-                const Icon(FluentIcons.verified_brand,
-                    color: Color(0xFF0078D4), size: 16),
-                const SizedBox(width: 4),
-                Text(
-                  "Verified Account",
-                  style: GoogleFonts.inter(
-                      color: textColor.withValues(alpha: 0.7), fontSize: 12),
+          // Name Section
+          Row(
+            children: [
+              Text(
+                shopName != null && shopName.isNotEmpty ? shopName : name,
+                style: GoogleFonts.outfit(
+                  color: textColor,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: -0.5,
                 ),
-              ],
-            )
-          ],
-          if (bio.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Text(
-              bio,
-              style: GoogleFonts.inter(
-                color: textColor.withValues(alpha: 0.9),
-                fontSize: 14,
-                height: 1.4,
               ),
-              maxLines: 4,
-              overflow: TextOverflow.ellipsis,
+              if (isVerified) ...[
+                const SizedBox(width: 8),
+                const Icon(FluentIcons.verified_brand,
+                    color: Color(0xFF0078D4), size: 18),
+              ],
+            ],
+          ),
+          if (bio.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            material.Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: textColor.withValues(alpha: 0.05),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: textColor.withValues(alpha: 0.08)),
+              ),
+              child: Text(
+                bio,
+                style: GoogleFonts.inter(
+                  color: textColor.withValues(alpha: 0.8),
+                  fontSize: 14,
+                  height: 1.5,
+                ),
+                maxLines: 4,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
           ],
           if (isVerified && slug != null && slug.toString().isNotEmpty) ...[
@@ -757,84 +775,97 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             Row(
               children: [
                 Expanded(
-                  child: material.Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: _isFollowing
-                          ? null
-                          : [
-                              BoxShadow(
-                                color: btnColor.withValues(alpha: 0.2),
-                                blurRadius: 8,
-                                offset: const Offset(0, 4),
-                              )
-                            ],
-                    ),
-                    child: Button(
-                      onPressed: _toggleFollow,
-                      style: ButtonStyle(
-                        backgroundColor: ButtonState.all(
-                          _isFollowing ? const Color(0xFF2C2C2E) : btnColor,
-                        ),
-                        foregroundColor: ButtonState.all(
-                          _isFollowing ? material.Colors.white : btnTextColor,
-                        ),
-                        padding: ButtonState.all(
-                          const EdgeInsets.symmetric(vertical: 14),
-                        ),
-                        shape: ButtonState.all(
-                          RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
-                        ),
-                      ),
-                      child: Text(
-                        _isFollowing ? "Unfollow" : "Follow",
-                        style: GoogleFonts.outfit(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 15,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Button(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        material.MaterialPageRoute(
-                          builder: (context) => MessageScreen(
-                            receiverId: userId,
-                            receiverName: name,
-                            receiverProfileImage: profileUrl,
-                            phonenumber: _profileData?['phone_no'],
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: material.Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(16),
+                            gradient: !_isFollowing
+                                ? LinearGradient(
+                                    colors: [
+                                      btnColor,
+                                      btnColor.withValues(alpha: 0.8)
+                                    ],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  )
+                                : null,
+                            border: _isFollowing
+                                ? Border.all(
+                                    color: textColor.withValues(alpha: 0.2),
+                                    width: 1.5)
+                                : null,
+                            boxShadow: _isFollowing
+                                ? null
+                                : [
+                                    BoxShadow(
+                                      color: btnColor.withValues(alpha: 0.3),
+                                      blurRadius: 15,
+                                      offset: const Offset(0, 6),
+                                    )
+                                  ],
+                          ),
+                          child: material.InkWell(
+                            onTap: _toggleFollow,
+                            borderRadius: BorderRadius.circular(16),
+                            child: material.Container(
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              alignment: Alignment.center,
+                              child: Text(
+                                _isFollowing ? "Following" : "Follow",
+                                style: GoogleFonts.outfit(
+                                  color:
+                                      _isFollowing ? textColor : btnTextColor,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15,
+                                ),
+                              ),
+                            ),
                           ),
                         ),
-                      );
-                    },
-                    style: ButtonStyle(
-                      backgroundColor:
-                          ButtonState.all(material.Colors.transparent),
-                      padding: ButtonState.all(
-                        const EdgeInsets.symmetric(vertical: 14),
                       ),
-                      shape: ButtonState.all(
-                        RoundedRectangleBorder(
-                            side: BorderSide(
-                                color: textColor.withValues(alpha: 0.2),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: material.Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(16),
+                            color: textColor.withValues(alpha: 0.05),
+                            border: Border.all(
+                                color: textColor.withValues(alpha: 0.1),
                                 width: 1.5),
-                            borderRadius: BorderRadius.circular(12)),
+                          ),
+                          child: material.InkWell(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                material.MaterialPageRoute(
+                                  builder: (context) => MessageScreen(
+                                    receiverId: userId,
+                                    receiverName: name,
+                                    receiverProfileImage: profileUrl,
+                                    phonenumber: _profileData?['phone_no'],
+                                  ),
+                                ),
+                              );
+                            },
+                            borderRadius: BorderRadius.circular(16),
+                            child: material.Container(
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              alignment: Alignment.center,
+                              child: Text(
+                                "Message",
+                                style: GoogleFonts.outfit(
+                                  color: textColor,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                    child: Text(
-                      "Message",
-                      style: GoogleFonts.outfit(
-                        color: textColor,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15,
-                      ),
-                    ),
+                    ],
                   ),
                 ),
               ],
@@ -842,67 +873,91 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
           if (isMe)
             material.Padding(
               padding: const EdgeInsets.only(top: 12),
-              child: material.SizedBox(
+              child: material.Container(
                 width: double.infinity,
-                child: Button(
-                  onPressed: () {
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  gradient: LinearGradient(
+                    colors: [btnColor, btnColor.withValues(alpha: 0.8)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: btnColor.withValues(alpha: 0.3),
+                      blurRadius: 15,
+                      offset: const Offset(0, 6),
+                    )
+                  ],
+                ),
+                child: material.InkWell(
+                  onTap: () {
                     Navigator.push(
                       context,
                       material.MaterialPageRoute(
-                        builder: (context) => VerfiedSwitchPage(
-                          userId: userId,
+                        builder: (context) => ProfileCustomWidget(
+                          width: MediaQuery.of(context).size.width,
+                          height: MediaQuery.of(context).size.height,
                         ),
                       ),
-                    );
+                    ).then((_) => _loadInitialData());
                   },
-                  style: ButtonStyle(
-                    backgroundColor:
-                        ButtonState.all(btnColor.withValues(alpha: 0.1)),
-                    foregroundColor: ButtonState.all(btnColor),
-                    padding: ButtonState.all(
-                      const EdgeInsets.symmetric(vertical: 14),
-                    ),
-                    shape: ButtonState.all(
-                      RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        side: BorderSide(color: btnColor, width: 1.5),
-                      ),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(FluentIcons.edit, color: btnColor, size: 16),
-                      const SizedBox(width: 8),
-                      Text(
-                        "Edit Profile",
-                        style: GoogleFonts.outfit(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 15,
+                  borderRadius: BorderRadius.circular(16),
+                  child: material.Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        material.Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: material.Colors.white.withValues(alpha: 0.2),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(FluentIcons.edit,
+                              color: material.Colors.white, size: 14),
                         ),
-                      ),
-                    ],
+                        const SizedBox(width: 12),
+                        Text(
+                          "Edit Profile",
+                          style: GoogleFonts.outfit(
+                            color: material.Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           if (_profileData != null &&
               _profileData!['phone_no'] != null &&
               _profileData!['phone_no'].toString().isNotEmpty)
-            Row(
-              children: [
-                Icon(FluentIcons.phone,
-                    color: textColor.withValues(alpha: 0.6), size: 14),
-                const SizedBox(width: 8),
-                Text(
-                  _profileData!['phone_no'],
-                  style: GoogleFonts.inter(
-                    color: textColor.withValues(alpha: 0.8),
-                    fontSize: 13,
+            material.Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: textColor.withValues(alpha: 0.05),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(FluentIcons.phone,
+                      color: textColor.withValues(alpha: 0.5), size: 14),
+                  const SizedBox(width: 8),
+                  Text(
+                    _profileData!['phone_no'],
+                    style: GoogleFonts.inter(
+                      color: textColor.withValues(alpha: 0.7),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
         ],
       ),
@@ -910,25 +965,26 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   }
 
   Widget _buildStatItem(String label, int count, Color textColor) {
-    return Column(
+    return material.Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
           _formatCount(count),
           style: GoogleFonts.outfit(
             color: textColor,
-            fontSize: 20,
+            fontSize: 22,
             fontWeight: FontWeight.bold,
-            letterSpacing: 0.5,
+            letterSpacing: -0.5,
           ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 2),
         Text(
-          label,
+          label.toUpperCase(),
           style: GoogleFonts.inter(
-            color: textColor.withValues(alpha: 0.6),
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
+            color: textColor.withValues(alpha: 0.4),
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.0,
           ),
         ),
       ],
@@ -936,9 +992,13 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   }
 
   String _formatCount(int count) {
-    if (count >= 1000000) return '${(count / 1000000).toStringAsFixed(1)}M';
-    if (count >= 1000) return '${(count / 1000).toStringAsFixed(1)}K';
-    return count.toString();
+    if (count >= 1000000) {
+      return '${(count / 1000000).toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '')}M';
+    } else if (count >= 1000) {
+      return '${(count / 1000).toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '')}k';
+    } else {
+      return count.toString();
+    }
   }
 
   Widget _buildShimmerHeader() {

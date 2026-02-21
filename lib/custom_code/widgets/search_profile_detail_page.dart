@@ -1,48 +1,28 @@
 // Automatic FlutterFlow imports
 import 'dart:io';
-import 'dart:io';
-
-import 'package:flutter/foundation.dart';
 import 'package:flutter/foundation.dart';
 import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
-import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
 import 'package:pocket_mates_app/custom_code/widgets/search_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/search_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/message_screen.dart';
 import 'package:pocket_mates_app/custom_code/widgets/message_screen.dart';
 
 import '/backend/supabase/supabase.dart';
-import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:timeago/timeago.dart' as timeago;
-import 'package:timeago/timeago.dart' as timeago;
-import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/services.dart' as flutter;
-import 'package:flutter/services.dart' as flutter;
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pocket_mates_app/src/features/profile/data/profile_repository.dart';
 import 'package:pocket_mates_app/src/features/profile/data/profile_repository.dart';
 
 // Automatic FlutterFlow imports
 import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
 import 'index.dart'; // Imports other custom widgets
-import 'index.dart'; // Imports other custom widgets
-import '/custom_code/actions/index.dart'; // Imports custom actions
 import '/custom_code/actions/index.dart'; // Imports custom actions
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
@@ -103,7 +83,7 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
     _tabController = TabController(length: 3, vsync: this);
     _fetchProfileData();
     _checkFollowStatus();
-    fetchFollowCounts();
+    _fetchFollowCounts();
     _checkIfCurrentUser();
     _getCurrentUser();
     _loadProfilethreadsData();
@@ -150,7 +130,7 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
     });
   }
 
-  String formatCount(int count) {
+  String _formatCount(int count) {
     if (count >= 1000000) {
       return '${(count / 1000000).toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '')}M';
     } else if (count >= 1000) {
@@ -214,44 +194,40 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
     }
   }
 
-  void fetchFollowCounts() async {
+  Future<void> _fetchFollowCounts() async {
     try {
-      // Get followers count - people who follow this user
       final followersResponse = await _supabase
           .from('follows')
           .select('id')
           .eq('followed_id', widget.userId);
 
-      // Get following count - people this user follows
       final followingResponse = await _supabase
           .from('follows')
           .select('id')
           .eq('follower_id', widget.userId);
 
-      // Get followers count from users table
       final userResponse = await _supabase
           .from('users')
           .select('followers')
           .eq('id', widget.userId)
-          .single();
+          .maybeSingle();
 
-      final double userTableFollowers =
-          userResponse['followers']?.toDouble() ?? 0.0;
+      int baseFollowers = 0;
+      if (userResponse != null && userResponse['followers'] != null) {
+        baseFollowers = (userResponse['followers'] as num).toInt();
+      }
 
-      final int followersCountRaw =
-          followersResponse.length + userTableFollowers.toInt();
+      final int followersCountRaw = followersResponse.length + baseFollowers;
       final int followingCountRaw = followingResponse.length;
 
       safeSetState(() {
         _followersCount = followersCountRaw;
         _followingCount = followingCountRaw;
-        _followersCountFormatted = formatCount(followersCountRaw);
-        _followingCountFormatted = formatCount(followingCountRaw);
-        print('Followers count: $_followersCountFormatted');
-        print('Following count: $_followingCountFormatted');
+        _followersCountFormatted = _formatCount(followersCountRaw);
+        _followingCountFormatted = _formatCount(followingCountRaw);
       });
     } catch (e) {
-      print('Error fetching follow counts: $e');
+      debugPrint('Error fetching follow counts: $e');
     }
   }
 
@@ -283,18 +259,6 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
           SnackBar(content: Text('Error loading profile: ${e.toString()}')),
         );
       }
-    }
-  }
-
-  String _formatCount(int count) {
-    if (count >= 1000000) {
-      double millions = count / 1000000;
-      return '${millions == millions.truncateToDouble() ? millions.toInt() : millions.toStringAsFixed(1)}M';
-    } else if (count >= 1000) {
-      double thousands = count / 1000;
-      return '${thousands == thousands.truncateToDouble() ? thousands.toInt() : thousands.toStringAsFixed(1)}k';
-    } else {
-      return count.toString();
     }
   }
 
@@ -443,6 +407,7 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
         _isFollowing = !_isFollowing;
         _followersCount =
             _isFollowing ? _followersCount + 1 : _followersCount - 1;
+        _followersCountFormatted = _formatCount(_followersCount);
       });
     } catch (e) {
       print('Error fetching profile data: $e');
@@ -3779,7 +3744,7 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
     }
   }
 
-  String formatCount(int count) {
+  String _formatCount(int count) {
     if (count >= 1000000) {
       return '${(count / 1000000).toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '')}M';
     } else if (count >= 1000) {
@@ -3791,42 +3756,36 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
 
   Future<void> _fetchFollowCounts() async {
     try {
-      // Get followers count - people who follow this user
       final followersResponse = await _supabase
           .from('follows')
           .select('id')
           .eq('followed_id', widget.userId);
 
-      // Get following count - people this user follows
       final followingResponse = await _supabase
           .from('follows')
           .select('id')
           .eq('follower_id', widget.userId);
 
-      // Get followers count from users table
       final userResponse = await _supabase
           .from('users')
           .select('followers')
           .eq('id', widget.userId)
-          .single();
+          .maybeSingle();
 
-      final double userTableFollowers =
-          userResponse['followers']?.toDouble() ?? 0.0;
+      int baseFollowers = 0;
+      if (userResponse != null && userResponse['followers'] != null) {
+        baseFollowers = (userResponse['followers'] as num).toInt();
+      }
 
-      final int followersCountRaw =
-          followersResponse.length + userTableFollowers.toInt();
+      final int followersCountRaw = followersResponse.length + baseFollowers;
       final int followingCountRaw = followingResponse.length;
 
       safeSetState(() {
-        // _followersCount = followersCountRaw;
-        // _followingCount = followingCountRaw;
-        _followersCount = formatCount(followersCountRaw);
-        _followingCount = formatCount(followingCountRaw);
-        print('Followers count: $_followersCount');
-        print('Following count: $_followingCount');
+        _followersCount = _formatCount(followersCountRaw);
+        _followingCount = _formatCount(followingCountRaw);
       });
     } catch (e) {
-      print('Error fetching follow counts: $e');
+      debugPrint('Error fetching follow counts: $e');
     }
   }
 

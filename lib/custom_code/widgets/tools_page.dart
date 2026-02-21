@@ -33,11 +33,14 @@ class ToolsPage extends StatefulWidget {
   final double? height;
   final VoidCallback? onFavoriteToggled;
 
+  final int? initialTab;
+
   const ToolsPage({
     super.key,
     this.width,
     this.height,
     this.onFavoriteToggled,
+    this.initialTab,
   });
 
   @override
@@ -80,6 +83,10 @@ class _TaskManagerScreenState extends State<ToolsPage> {
 
   void initState() {
     super.initState();
+    if (widget.initialTab != null) {
+      _selectedTab = widget.initialTab!;
+      _showToolsList = false;
+    }
     _loadData();
     _loadFavoritedTools();
   }

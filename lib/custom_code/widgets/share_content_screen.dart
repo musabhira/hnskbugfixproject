@@ -290,6 +290,7 @@ class _ShareContentScreenState extends State<ShareContentScreen> {
         'sender_id': widget.currentUserId,
         'receiver_id': userId,
         'content': widget.contentToShare,
+        'message_text': widget.contentToShare,
         'updated_at': DateTime.now().toIso8601String(),
         'is_read': false,
         'message_type': widget.contentType == 'gallery'

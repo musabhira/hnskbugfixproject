@@ -2020,34 +2020,23 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                               if (!snapshot.hasData || snapshot.data == null)
                                 return const SizedBox.shrink();
                               final gName = snapshot.data!['name'] ?? '';
-                              return Container(
-                                margin: const EdgeInsets.only(left: 8),
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: Colors.yellow.withValues(alpha: 0.2),
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                      color:
-                                          Colors.yellow.withValues(alpha: 0.4),
-                                      width: 0.5),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(Icons.groups_rounded,
-                                        color: Colors.yellow, size: 14),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      gName,
-                                      style: const TextStyle(
-                                          color: Colors.yellow,
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                  ],
-                                ),
-                              );
+                              return _buildMentionTag(
+                                  gName, Icons.groups_rounded);
+                            },
+                          ),
+                        // User Mention Tag
+                        if (currentStatus['mentioned_profile_id'] != null)
+                          FutureBuilder(
+                            future: supabase
+                                .from('profile')
+                                .select('name')
+                                .eq('id', currentStatus['mentioned_profile_id'])
+                                .maybeSingle(),
+                            builder: (context, snapshot) {
+                              if (!snapshot.hasData || snapshot.data == null)
+                                return const SizedBox.shrink();
+                              final pName = snapshot.data!['name'] ?? '';
+                              return _buildMentionTag(pName, Icons.person);
                             },
                           ),
                         const Spacer(),
@@ -2487,6 +2476,31 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
   }
 }
 
+Widget _buildMentionTag(String name, IconData icon) {
+  return Container(
+    margin: const EdgeInsets.only(left: 8),
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+    decoration: BoxDecoration(
+      color: Colors.yellow.withValues(alpha: 0.2),
+      borderRadius: BorderRadius.circular(12),
+      border:
+          Border.all(color: Colors.yellow.withValues(alpha: 0.4), width: 0.5),
+    ),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, color: Colors.yellow, size: 14),
+        const SizedBox(width: 4),
+        Text(
+          name,
+          style: const TextStyle(
+              color: Colors.yellow, fontSize: 11, fontWeight: FontWeight.bold),
+        ),
+      ],
+    ),
+  );
+}
+
 class StatusUploadWidget extends StatefulWidget {
   final String userId;
   final String profileId;
@@ -2517,6 +2531,8 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
   double _uploadProgress = 0.0;
   String? _selectedGroupId;
   String? _selectedGroupName;
+  String? _selectedProfileId;
+  String? _selectedProfileName;
   VideoPlayerController? _videoPreviewController;
   final supabase = Supabase.instance.client;
   bool _isSharingMode = false;
@@ -2792,50 +2808,61 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20.0),
           child: InkWell(
-            onTap: _showGroupSelection,
+            onTap: _showMentionSelection,
             child: Container(
               padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: _selectedGroupId != null
-                      ? Colors.yellow.withValues(alpha: 0.5)
-                      : Colors.white10,
+                  color:
+                      (_selectedGroupId != null || _selectedProfileId != null)
+                          ? Colors.yellow.withValues(alpha: 0.5)
+                          : Colors.white10,
                 ),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
-                    Icons.group_add_rounded,
+                    _selectedGroupId != null
+                        ? Icons.groups_rounded
+                        : (_selectedProfileId != null
+                            ? Icons.person
+                            : Icons.alternate_email_rounded),
                     size: 16,
-                    color: _selectedGroupId != null
-                        ? Colors.yellow
-                        : Colors.white60,
+                    color:
+                        (_selectedGroupId != null || _selectedProfileId != null)
+                            ? Colors.yellow
+                            : Colors.white60,
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    _selectedGroupName ?? 'Mention a Group',
+                    _selectedGroupName ??
+                        (_selectedProfileName ?? 'Mention Mates or Groups'),
                     style: TextStyle(
-                      color: _selectedGroupId != null
+                      color: (_selectedGroupId != null ||
+                              _selectedProfileId != null)
                           ? Colors.yellow
                           : Colors.white60,
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  if (_selectedGroupId != null) ...[
+                  if (_selectedGroupId != null ||
+                      _selectedProfileId != null) ...[
                     const SizedBox(width: 8),
                     GestureDetector(
                       onTap: () {
                         setState(() {
                           _selectedGroupId = null;
                           _selectedGroupName = null;
+                          _selectedProfileId = null;
+                          _selectedProfileName = null;
                         });
                       },
-                      child:
-                          const Icon(Icons.close, size: 14, color: Colors.red),
+                      child: const Icon(Icons.close,
+                          size: 14, color: Colors.yellow),
                     ),
                   ],
                 ],
@@ -2968,85 +2995,80 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
     }
   }
 
-  Future<void> _showGroupSelection() async {
-    showModalBottomSheet(
+  Future<void> _showMentionSelection() async {
+    String innerSearch = '';
+
+    await showModalBottomSheet(
       context: context,
       backgroundColor: Colors.grey[900],
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
         return StatefulBuilder(builder: (context, setModalState) {
-          return Container(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Select Group to Mention',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+          return DefaultTabController(
+            length: 2,
+            child: Container(
+              height: MediaQuery.of(context).size.height * 0.75,
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Mention Mates or Groups',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close, color: Colors.white),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  // Search Bar
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: TextField(
+                      style: const TextStyle(color: Colors.white),
+                      onChanged: (val) =>
+                          setModalState(() => innerSearch = val),
+                      decoration: const InputDecoration(
+                        hintText: 'Search...',
+                        hintStyle: TextStyle(color: Colors.white38),
+                        prefixIcon: Icon(Icons.search, color: Colors.white38),
+                        border: InputBorder.none,
                       ),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.close, color: Colors.white),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Expanded(
-                  child: FutureBuilder(
-                    future: supabase.rpc('get_my_groups_v2', params: {
-                      'p_user_id': widget.userId,
-                    }),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
-                      if (snapshot.hasError) {
-                        // Fallback to manual query if RPC fails
-                        return FutureBuilder(
-                          future: supabase.from('group_members').select('''
-                            group_id,
-                            groups!inner (
-                              id,
-                              name,
-                              group_image_url
-                            )
-                          ''').eq('user_id', widget.userId),
-                          builder: (context, innerSnapshot) {
-                            if (innerSnapshot.connectionState ==
-                                ConnectionState.waiting) {
-                              return const Center(
-                                  child: CircularProgressIndicator());
-                            }
-                            final data = innerSnapshot.data as List?;
-                            if (data == null || data.isEmpty) {
-                              return const Center(
-                                  child: Text('No groups found',
-                                      style: TextStyle(color: Colors.white70)));
-                            }
-                            return _buildGroupList(data, setModalState);
-                          },
-                        );
-                      }
-                      final data = snapshot.data as List?;
-                      if (data == null || data.isEmpty) {
-                        return const Center(
-                            child: Text('No groups found',
-                                style: TextStyle(color: Colors.white70)));
-                      }
-                      return _buildGroupList(data, setModalState);
-                    },
                   ),
-                ),
-              ],
+                  const TabBar(
+                    indicatorColor: Colors.yellow,
+                    labelColor: Colors.yellow,
+                    unselectedLabelColor: Colors.white60,
+                    tabs: [
+                      Tab(text: 'Groups'),
+                      Tab(text: 'Mates'),
+                    ],
+                  ),
+                  Expanded(
+                    child: TabBarView(
+                      children: [
+                        _buildGroupMentionList(innerSearch),
+                        _buildPersonMentionList(innerSearch),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           );
         });
@@ -3054,11 +3076,56 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
     );
   }
 
-  Widget _buildGroupList(List data, StateSetter setModalState) {
+  Widget _buildGroupMentionList(String query) {
+    return FutureBuilder(
+      future: supabase.rpc('get_my_groups_v2', params: {
+        'p_user_id': widget.userId,
+      }),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        List data = [];
+        if (snapshot.hasData && snapshot.data != null) {
+          data = snapshot.data as List;
+        } else {
+          // Fallback to manual query
+          return FutureBuilder(
+            future: supabase.from('group_members').select('''
+              group_id,
+              groups!inner (id, name, group_image_url)
+            ''').eq('user_id', widget.userId),
+            builder: (context, innerSnapshot) {
+              if (innerSnapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              final innerData = (innerSnapshot.data as List?) ?? [];
+              return _buildFilteredGroupList(innerData, query);
+            },
+          );
+        }
+        return _buildFilteredGroupList(data, query);
+      },
+    );
+  }
+
+  Widget _buildFilteredGroupList(List data, String query) {
+    final filtered = data.where((item) {
+      final group = item['groups'] ?? item;
+      final name = (group['name'] ?? '').toString().toLowerCase();
+      return name.contains(query.toLowerCase());
+    }).toList();
+
+    if (filtered.isEmpty) {
+      return const Center(
+          child: Text('No matching groups',
+              style: TextStyle(color: Colors.white70)));
+    }
+
     return ListView.builder(
-      itemCount: data.length,
+      itemCount: filtered.length,
       itemBuilder: (context, index) {
-        final item = data[index];
+        final item = filtered[index];
         final group = item['groups'] ?? item;
         final groupId = group['id'];
         final groupName = group['name'] ?? 'Unnamed Group';
@@ -3077,8 +3144,61 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
             setState(() {
               _selectedGroupId = groupId;
               _selectedGroupName = groupName;
+              _selectedProfileId = null;
+              _selectedProfileName = null;
             });
             Navigator.pop(context);
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildPersonMentionList(String query) {
+    return FutureBuilder(
+      future: supabase
+          .from('profile')
+          .select('id, name, profile_image_url')
+          .neq('id', widget.profileId) // Don't mention yourself
+          .ilike('name', '%$query%')
+          .limit(20),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        final data = (snapshot.data as List?) ?? [];
+        if (data.isEmpty) {
+          return const Center(
+              child: Text('No mates found',
+                  style: TextStyle(color: Colors.white70)));
+        }
+        return ListView.builder(
+          itemCount: data.length,
+          itemBuilder: (context, index) {
+            final profile = data[index];
+            final profileId = profile['id'];
+            final name = profile['name'] ?? 'Mate';
+            final imgUrl = profile['profile_image_url'];
+
+            return ListTile(
+              leading: CircleAvatar(
+                backgroundImage: imgUrl != null ? NetworkImage(imgUrl) : null,
+                child: imgUrl == null ? const Icon(Icons.person) : null,
+              ),
+              title: Text(name, style: const TextStyle(color: Colors.white)),
+              trailing: _selectedProfileId == profileId
+                  ? const Icon(Icons.check_circle, color: Colors.yellow)
+                  : null,
+              onTap: () {
+                setState(() {
+                  _selectedProfileId = profileId;
+                  _selectedProfileName = name;
+                  _selectedGroupId = null;
+                  _selectedGroupName = null;
+                });
+                Navigator.pop(context);
+              },
+            );
           },
         );
       },
@@ -3193,6 +3313,7 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
         'expires_at':
             DateTime.now().add(const Duration(hours: 24)).toIso8601String(),
         'mentioned_group_id': _selectedGroupId,
+        'mentioned_profile_id': _selectedProfileId,
         'is_active': true, // Ensure it's active so it shows up
       };
 
@@ -3268,7 +3389,7 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
 
       if (mediaType == 'text' || mediaType == 'thought') {
         caption = widget.sharedContent;
-        mediaUrl = '';
+        mediaUrl = null;
       } else {
         // Image
         mediaUrl = widget.sharedContent;
@@ -3288,6 +3409,7 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
         'expires_at':
             DateTime.now().add(const Duration(hours: 24)).toIso8601String(),
         'mentioned_group_id': _selectedGroupId,
+        'mentioned_profile_id': _selectedProfileId,
         'is_active': true,
         if (widget.sharedContentId != null &&
             widget.sharedContentId!.isNotEmpty)

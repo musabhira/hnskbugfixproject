@@ -23,6 +23,14 @@ class ChatConversation {
   final String? lastSenderId;
   final bool isOnline;
   final DateTime? lastSeen;
+  final bool isNotification;
+  final String? notificationType;
+  final String? sourceId;
+  final bool hasStatus;
+  final List<Map<String, dynamic>>? statusData;
+  final bool isTool;
+  final String? toolTitle;
+  final bool isPinned;
 
   ChatConversation({
     required this.id,
@@ -42,9 +50,11 @@ class ChatConversation {
     this.statusData,
     this.isTool = false,
     this.toolTitle,
+    this.isPinned = false,
   });
 
-  factory ChatConversation.fromGroupJson(Map<String, dynamic> json) {
+  factory ChatConversation.fromGroupJson(Map<String, dynamic> json,
+      {bool isPinned = false}) {
     // This expects the 'groups' join result from group_members select
     final groupData = json['groups'] ?? json;
     return ChatConversation(
@@ -57,6 +67,7 @@ class ChatConversation {
           : null,
       unreadCount: 0, // Fetched dynamically
       isGroup: true,
+      isPinned: isPinned,
     );
   }
 
@@ -66,6 +77,7 @@ class ChatConversation {
     required Map<String, dynamic>? otherProfile,
     bool hasStatus = false,
     List<Map<String, dynamic>>? statusData,
+    bool isPinned = false,
   }) {
     // This expects a row from the 'conversations' table
     return ChatConversation(
@@ -85,11 +97,13 @@ class ChatConversation {
       lastSenderId: json['last_sender_id'] as String?,
       hasStatus: hasStatus,
       statusData: statusData,
+      isPinned: isPinned,
     );
   }
+
   factory ChatConversation.fromNotification(Map<String, dynamic> json) {
     return ChatConversation(
-      id: json['id'],
+      id: json['id'] ?? '',
       name: 'Notification',
       lastMessage: json['message'],
       lastMessageTime: json['created_at'] != null
@@ -102,14 +116,6 @@ class ChatConversation {
       sourceId: json['source_id'],
     );
   }
-
-  final bool isNotification;
-  final String? notificationType;
-  final String? sourceId;
-  final bool hasStatus;
-  final List<Map<String, dynamic>>? statusData;
-  final bool isTool;
-  final String? toolTitle;
 
   Map<String, dynamic> toJson() {
     return {
@@ -130,6 +136,7 @@ class ChatConversation {
       'statusData': statusData,
       'isTool': isTool,
       'toolTitle': toolTitle,
+      'isPinned': isPinned,
     };
   }
 
@@ -160,6 +167,7 @@ class ChatConversation {
           : null,
       isTool: json['isTool'] ?? false,
       toolTitle: json['toolTitle'],
+      isPinned: json['isPinned'] ?? false,
     );
   }
 }
@@ -337,29 +345,95 @@ class Conversations extends _$Conversations {
       debugPrint(
           'Fetched ${groups.length} groups, ${personal.length} personal chats, ${notifications.length} notifications');
 
-      // Load Favorited Tools
       final prefs = await SharedPreferences.getInstance();
+
+      // Load Pinned Status
+      final pinnedIds =
+          prefs.getStringList('pinned_conversations_$userId') ?? [];
+
+      // Load Favorited Tools
       final favoritedToolsJson =
           prefs.getString('favorited_tools_$userId') ?? '[]';
       final favoritedTools = jsonDecode(favoritedToolsJson) as List;
       final toolChats = favoritedTools.map((t) {
+        final timeAddedStr = t['timeAdded'];
+        final timeAdded = timeAddedStr != null
+            ? DateTime.parse(timeAddedStr)
+            : DateTime(2000);
+
         return ChatConversation(
           id: 'tool_${t['title']}',
           name: t['title'] ?? 'Tool',
           lastMessage: 'Tap to open your favorited tool',
-          lastMessageTime: DateTime(2000), // Always keep at bottom of list
+          lastMessageTime: timeAdded,
           unreadCount: 0,
           isGroup: false,
           isTool: true,
           toolTitle: t['title'],
+          isPinned: pinnedIds.contains('tool_${t['title']}'),
         );
       }).toList();
 
-      // Combine and sort by last message time
-      final combined = [...notifications, ...groups, ...personal, ...toolChats];
+      // Update isPinned for groups and personal chats
+      final List<ChatConversation> updatedGroups = groups.map((c) {
+        return ChatConversation(
+          id: c.id,
+          name: c.name,
+          imageUrl: c.imageUrl,
+          lastMessage: c.lastMessage,
+          lastMessageTime: c.lastMessageTime,
+          unreadCount: c.unreadCount,
+          isGroup: c.isGroup,
+          lastSenderId: c.lastSenderId,
+          isOnline: c.isOnline,
+          lastSeen: c.lastSeen,
+          isNotification: c.isNotification,
+          notificationType: c.notificationType,
+          sourceId: c.sourceId,
+          hasStatus: c.hasStatus,
+          statusData: c.statusData,
+          isTool: c.isTool,
+          toolTitle: c.toolTitle,
+          isPinned: pinnedIds.contains(c.id),
+        );
+      }).toList();
+
+      final List<ChatConversation> updatedPersonal = personal.map((c) {
+        return ChatConversation(
+          id: c.id,
+          name: c.name,
+          imageUrl: c.imageUrl,
+          lastMessage: c.lastMessage,
+          lastMessageTime: c.lastMessageTime,
+          unreadCount: c.unreadCount,
+          isGroup: c.isGroup,
+          lastSenderId: c.lastSenderId,
+          isOnline: c.isOnline,
+          lastSeen: c.lastSeen,
+          isNotification: c.isNotification,
+          notificationType: c.notificationType,
+          sourceId: c.sourceId,
+          hasStatus: c.hasStatus,
+          statusData: c.statusData,
+          isTool: c.isTool,
+          toolTitle: c.toolTitle,
+          isPinned: pinnedIds.contains(c.id),
+        );
+      }).toList();
+
+      // Combine and sort
+      final combined = [
+        ...notifications,
+        ...updatedGroups,
+        ...updatedPersonal,
+        ...toolChats
+      ];
       combined.sort((a, b) {
-        // Notifications might want to be always on top? Or mixed in by time.
-        // Let's mix by time for now as requested "normal chat list like".
+        // Pinned status always on top
+        if (a.isPinned && !b.isPinned) return -1;
+        if (!a.isPinned && b.isPinned) return 1;
+
+        // Otherwise by time
         final aTime = a.lastMessageTime;
         final bTime = b.lastMessageTime;
         if (aTime == null && bTime == null) return 0;
@@ -607,39 +681,46 @@ class Conversations extends _$Conversations {
             .eq('group_id', conversationId)
             .eq('user_id', userId);
       } else {
-        // Update messages read status
-        await _supabase
-            .from('messages')
-            .update({'is_read': true})
-            .eq('sender_id', conversationId)
-            .eq('receiver_id', userId)
-            .eq('is_read', false);
-
-        // Reset unread count in conversations table
-        // We try both combinations since we don't know who is user1 and who is user2
         await _supabase
             .from('conversations')
             .update({'unread_count': 0})
-            .eq('user1_id', userId)
-            .eq('user2_id', conversationId);
+            .or('user1_id.eq.$userId,user2_id.eq.$userId')
+            .eq(conversationId.contains('-') ? 'id' : 'id', conversationId);
+      }
+      _debouncedRefresh();
+    } catch (e) {
+      debugPrint('Error marking as read: $e');
+    }
+  }
 
-        await _supabase
-            .from('conversations')
-            .update({'unread_count': 0})
-            .eq('user1_id', conversationId)
-            .eq('user2_id', userId);
+  Future<void> togglePin(String conversationId) async {
+    try {
+      final userId = ref.read(currentUserIdProvider);
+      if (userId.isEmpty) return;
+
+      final prefs = await SharedPreferences.getInstance();
+      final pinnedIds =
+          prefs.getStringList('pinned_conversations_$userId') ?? [];
+
+      if (pinnedIds.contains(conversationId)) {
+        pinnedIds.remove(conversationId);
+      } else {
+        pinnedIds.add(conversationId);
       }
 
-      ref.invalidateSelf();
+      await prefs.setStringList('pinned_conversations_$userId', pinnedIds);
+
+      // Refresh to update UI
+      _debouncedRefresh();
     } catch (e) {
-      // Handle error
+      debugPrint('Error toggling pin: $e');
     }
   }
 
   Future<void> dismissNotification(String notificationId) async {
     try {
       await _supabase.from('notifications').delete().eq('id', notificationId);
-      ref.invalidateSelf();
+      _debouncedRefresh();
     } catch (e) {
       print('Error dismissing notification: $e');
     }

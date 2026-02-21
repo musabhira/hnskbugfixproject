@@ -1,12 +1,7 @@
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:fluent_ui/fluent_ui.dart';
-import 'package:flutter/material.dart' as material;
 import 'package:flutter/material.dart' as material;
 import 'package:google_fonts/google_fonts.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:timeago/timeago.dart' as timeago;
-import 'package:timeago/timeago.dart' as timeago;
-import 'package:pocket_mates_app/custom_code/widgets/chat/whats_app_groups_provider.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/whats_app_groups_provider.dart';
 
 class ConversationTile extends StatelessWidget {
