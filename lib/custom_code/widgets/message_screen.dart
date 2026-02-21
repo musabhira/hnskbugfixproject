@@ -360,8 +360,20 @@ class _MessageScreenState extends State<MessageScreen> {
       final cached =
           await LocalSyncServer().getMessagesForChat(widget.receiverId);
       if (cached.isNotEmpty && mounted) {
+        final merged = List<Map<String, dynamic>>.from(cached);
+        final optimisticMessages =
+            _messages.where((m) => m['is_optimistic'] == true).toList();
+        for (var opt in optimisticMessages) {
+          bool alreadyExists = merged.any((m) =>
+              m['content'] == opt['content'] &&
+              m['sender_id'] == opt['sender_id'] &&
+              m['receiver_id'] == opt['receiver_id']);
+          if (!alreadyExists) {
+            merged.insert(0, opt);
+          }
+        }
         safeSetState(() {
-          _messages = List<Map<String, dynamic>>.from(cached);
+          _messages = merged;
           _isLoading = false;
         });
       }
@@ -389,6 +401,19 @@ class _MessageScreenState extends State<MessageScreen> {
           .limit(50);
 
       final messagesList = List<Map<String, dynamic>>.from(response);
+
+      // Preserve optimistic messages that haven't been synced yet
+      final optimisticMessages =
+          _messages.where((m) => m['is_optimistic'] == true).toList();
+      for (var opt in optimisticMessages) {
+        bool alreadyExists = messagesList.any((m) =>
+            m['content'] == opt['content'] &&
+            m['sender_id'] == opt['sender_id'] &&
+            m['receiver_id'] == opt['receiver_id']);
+        if (!alreadyExists) {
+          messagesList.insert(0, opt);
+        }
+      }
 
       // 3. Save to LocalSyncServer for next time
       await LocalSyncServer().saveMessages(widget.receiverId, messagesList);
@@ -542,7 +567,7 @@ class _MessageScreenState extends State<MessageScreen> {
       'message_type': 'voice',
       'voice_duration': duration,
       'created_at': DateTime.now().toIso8601String(),
-      'is_sending': true, // Local flag for UI feedback
+      'is_optimistic': true, // Local flag for UI feedback
     };
 
     // Optimistically add to list
@@ -561,20 +586,29 @@ class _MessageScreenState extends State<MessageScreen> {
           _supabase.storage.from('voice-messages').getPublicUrl(storagePath);
 
       // Send to DB
-      await _supabase.from('messages').insert({
-        'sender_id': _senderId,
-        'receiver_id': widget.receiverId,
-        'content': 'Voice message',
-        'message_type': 'voice',
-        'file_url': url,
-        'voice_duration': duration,
+      final response = await _supabase
+          .from('messages')
+          .insert({
+            'sender_id': _senderId,
+            'receiver_id': widget.receiverId,
+            'content': 'Voice message',
+            'message_type': 'voice',
+            'file_url': url,
+            'voice_duration': duration,
+          })
+          .select()
+          .single();
+
+      // Replace optimistic message with actual data
+      safeSetState(() {
+        final index = _messages.indexWhere((m) => m['id'] == tempId);
+        if (index != -1) {
+          _messages[index] = response;
+        }
       });
 
       // Update conversation list metadata
       await _updateConversation('Voice message 🎤');
-
-      // Refresh to get actual DB record
-      _loadMessages();
     } catch (e) {
       debugPrint('Error sending voice: $e');
       // If failed, remove from list and show error
@@ -738,9 +772,10 @@ class _MessageScreenState extends State<MessageScreen> {
         'sender_id': _senderId,
         'receiver_id': widget.receiverId,
         'message_type': type,
-        'media_url':
-            mediaUrl, // In a real optimistic UI, this might be a local path, but here we use the generated URL
+        'media_url': mediaUrl,
         'created_at': DateTime.now().toIso8601String(),
+        'expires_at':
+            DateTime.now().add(const Duration(hours: 24)).toIso8601String(),
         'is_sending': true,
       };
 
@@ -1299,6 +1334,14 @@ class _MessageScreenState extends State<MessageScreen> {
           ),
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh, color: Colors.yellow),
+            onPressed: () {
+              _loadMessages();
+              _loadEphemeralMessages();
+            },
+            tooltip: 'Refresh',
+          ),
           if (!_isBlocked &&
               !_isBlockedByOther &&
               !(hideData != null && hideData?['is_hidden'] == true))
@@ -2051,7 +2094,16 @@ class _MessageScreenState extends State<MessageScreen> {
         );
       case 'thought':
         final thoughtData = message['thought'] as Map<String, dynamic>?;
-        if (thoughtData == null) return const SizedBox.shrink();
+        if (thoughtData == null) {
+          return Text(
+            message['content'] ?? message['message_text'] ?? 'Thought shared',
+            style: TextStyle(
+              color: isMe ? Colors.black : Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+          );
+        }
         return _buildThoughtMessage(thoughtData, isMe);
       case 'gallery':
         final galleryData = message['gallery'] as Map<String, dynamic>?;

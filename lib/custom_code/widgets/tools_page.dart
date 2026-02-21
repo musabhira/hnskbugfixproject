@@ -692,8 +692,16 @@ class _TaskManagerScreenState extends State<ToolsPage> {
 
   @override
   Widget build(BuildContext context) {
-    if (_showToolsList) return _buildToolsList();
-    return _buildToolDetailView();
+    return PopScope(
+      canPop: _showToolsList,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        if (!_showToolsList) {
+          setState(() => _showToolsList = true);
+        }
+      },
+      child: _showToolsList ? _buildToolsList() : _buildToolDetailView(),
+    );
   }
 
   Widget _buildToolDetailView() {

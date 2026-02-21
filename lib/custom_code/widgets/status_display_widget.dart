@@ -3412,8 +3412,14 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
         'mentioned_profile_id': _selectedProfileId,
         'is_active': true,
         if (widget.sharedContentId != null &&
-            widget.sharedContentId!.isNotEmpty)
-          'gallery_id': widget.sharedContentId,
+            widget.sharedContentId!.isNotEmpty) ...{
+          if (widget.sharedContentType == 'thought')
+            'thought_id': int.tryParse(widget.sharedContentId.toString()) ??
+                widget.sharedContentId
+          else
+            'gallery_id': int.tryParse(widget.sharedContentId.toString()) ??
+                widget.sharedContentId
+        }
       });
 
       setState(() => _uploadProgress = 1.0);

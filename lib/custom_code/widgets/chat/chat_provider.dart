@@ -23,7 +23,7 @@ String currentUserId(Ref ref) {
 
 @riverpod
 class ChatMessages extends _$ChatMessages {
-  late final SupabaseClient _supabase;
+  late SupabaseClient _supabase;
   RealtimeChannel? _subscription;
 
   // Performance optimizations

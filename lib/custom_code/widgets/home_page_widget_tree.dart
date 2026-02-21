@@ -558,8 +558,11 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
           ));
         }
 
-        // Sort by last message time
+        // Sort by pinned status then last message time
         combined.sort((a, b) {
+          if (a.isPinned && !b.isPinned) return -1;
+          if (!a.isPinned && b.isPinned) return 1;
+
           final aTime = a.lastMessageTime ?? DateTime(0);
           final bTime = b.lastMessageTime ?? DateTime(0);
           return bTime.compareTo(aTime);
