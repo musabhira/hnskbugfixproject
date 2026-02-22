@@ -2175,7 +2175,7 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                                                 'video'
                                         ? 'gallery'
                                         : 'text')),
-                            currentUserId: widget.userId,
+                            currentUserId: widget.currentUserId,
                           ),
                         ),
                       ).then((_) {
