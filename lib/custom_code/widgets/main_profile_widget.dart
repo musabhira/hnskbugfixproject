@@ -69,8 +69,6 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   List<String> _categories = ['All'];
   List<Map<String, dynamic>> _filteredGalleryItems = [];
 
-  final double _profileImageSize = 90.0;
-
   String get userId {
     if (widget.userId != null) return widget.userId!;
     if (_profileData != null && _profileData!['user_id'] != null) {
@@ -643,7 +641,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     final slug = _profileData?['slug'];
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -654,76 +652,112 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               Container(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(color: btnColor, width: 2.5),
+                  border: Border.all(color: btnColor, width: 3.0),
                   boxShadow: [
                     BoxShadow(
-                        color: btnColor.withValues(alpha: 0.3),
-                        blurRadius: 12,
+                        color: btnColor.withValues(alpha: 0.4),
+                        blurRadius: 20,
                         spreadRadius: 2,
-                        offset: const Offset(0, 4))
+                        offset: const Offset(0, 8))
                   ],
                 ),
                 child: CircleAvatar(
-                  radius: _profileImageSize / 2,
+                  radius: 50,
                   backgroundColor: const Color(0xFF2C2C2E),
                   backgroundImage: (profileUrl != null && profileUrl.isNotEmpty)
                       ? CachedNetworkImageProvider(profileUrl)
                       : null,
-                  child: (profileUrl == null || profileUrl.isEmpty)
+                  child: (profileUrl == null || profileUrl.isNotEmpty == false)
                       ? Icon(FluentIcons.contact,
-                          size: 40,
+                          size: 45,
                           color: material.Colors.white.withValues(alpha: 0.5))
                       : null,
                 ),
               ),
               const SizedBox(width: 24),
               Expanded(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    _buildStatItem("Followers", _followersCount, textColor),
-                    _buildStatItem("Following", _followingCount, textColor),
-                    _buildStatItem("Posts", _galleryItems.length, textColor),
-                  ],
+                child: material.Container(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  decoration: BoxDecoration(
+                    color: textColor.withValues(alpha: 0.03),
+                    borderRadius: BorderRadius.circular(20),
+                    border:
+                        Border.all(color: textColor.withValues(alpha: 0.05)),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _buildStatItem("Followers", _followersCount, textColor),
+                      _buildStatItem("Following", _followingCount, textColor),
+                      _buildStatItem("Posts", _galleryItems.length, textColor),
+                    ],
+                  ),
                 ),
               ),
             ],
           ),
+          const SizedBox(height: 24),
           // Name Section
           Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Text(
-                shopName != null && shopName.isNotEmpty ? shopName : name,
-                style: GoogleFonts.outfit(
-                  color: textColor,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: -0.5,
+              Expanded(
+                child: Text(
+                  shopName != null && shopName.isNotEmpty ? shopName : name,
+                  style: GoogleFonts.outfit(
+                    color: textColor,
+                    fontSize: 26,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -0.5,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
               if (isVerified) ...[
-                const SizedBox(width: 8),
-                const Icon(FluentIcons.verified_brand,
-                    color: Color(0xFF0078D4), size: 18),
+                const SizedBox(width: 12),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0078D4).withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                        color: const Color(0xFF0078D4).withValues(alpha: 0.3)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(FluentIcons.verified_brand,
+                          color: Color(0xFF0078D4), size: 16),
+                      const SizedBox(width: 6),
+                      Text("Verified",
+                          style: GoogleFonts.inter(
+                              color: const Color(0xFF0078D4),
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                ),
               ],
             ],
           ),
           if (bio.isNotEmpty) ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             material.Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: textColor.withValues(alpha: 0.05),
-                borderRadius: BorderRadius.circular(16),
+                color: textColor.withValues(alpha: 0.04),
+                borderRadius: BorderRadius.circular(20),
                 border: Border.all(color: textColor.withValues(alpha: 0.08)),
               ),
               child: Text(
                 bio,
                 style: GoogleFonts.inter(
-                  color: textColor.withValues(alpha: 0.8),
-                  fontSize: 14,
-                  height: 1.5,
+                  color: textColor.withValues(alpha: 0.85),
+                  fontSize: 15,
+                  height: 1.6,
                 ),
                 maxLines: 4,
                 overflow: TextOverflow.ellipsis,
@@ -731,7 +765,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             ),
           ],
           if (isVerified && slug != null && slug.toString().isNotEmpty) ...[
-            const SizedBox(height: 10),
+            const SizedBox(height: 16),
             GestureDetector(
               onTap: () async {
                 final url = Uri.parse('https://handskillapp.web.app/$slug');
@@ -741,22 +775,22 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               },
               child: Container(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
                   color: btnColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: btnColor.withValues(alpha: 0.2)),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: btnColor.withValues(alpha: 0.25)),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(FluentIcons.globe, color: btnColor, size: 14),
-                    const SizedBox(width: 8),
+                    Icon(FluentIcons.globe, color: btnColor, size: 16),
+                    const SizedBox(width: 10),
                     Text(
                       "handskillapp.web.app/$slug",
                       style: GoogleFonts.inter(
                         color: btnColor,
-                        fontSize: 13,
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -765,124 +799,121 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               ),
             ),
           ],
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
           // Action Buttons
           if (!isMe)
             Row(
               children: [
                 Expanded(
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: material.Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(16),
-                            gradient: !_isFollowing
-                                ? LinearGradient(
-                                    colors: [
-                                      btnColor,
-                                      btnColor.withValues(alpha: 0.8)
-                                    ],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  )
-                                : null,
-                            border: _isFollowing
-                                ? Border.all(
-                                    color: textColor.withValues(alpha: 0.2),
-                                    width: 1.5)
-                                : null,
-                            boxShadow: _isFollowing
-                                ? null
-                                : [
-                                    BoxShadow(
-                                      color: btnColor.withValues(alpha: 0.3),
-                                      blurRadius: 15,
-                                      offset: const Offset(0, 6),
-                                    )
-                                  ],
-                          ),
-                          child: material.InkWell(
-                            onTap: _toggleFollow,
-                            borderRadius: BorderRadius.circular(16),
-                            child: material.Container(
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                              alignment: Alignment.center,
-                              child: Text(
-                                _isFollowing ? "Following" : "Follow",
-                                style: GoogleFonts.outfit(
-                                  color:
-                                      _isFollowing ? textColor : btnTextColor,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 15,
-                                ),
-                              ),
-                            ),
+                  child: material.Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      gradient: !_isFollowing
+                          ? LinearGradient(
+                              colors: [
+                                btnColor,
+                                btnColor.withValues(alpha: 0.8)
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            )
+                          : null,
+                      color: _isFollowing
+                          ? textColor.withValues(alpha: 0.05)
+                          : null,
+                      border: _isFollowing
+                          ? Border.all(
+                              color: textColor.withValues(alpha: 0.15),
+                              width: 1.5)
+                          : null,
+                      boxShadow: _isFollowing
+                          ? null
+                          : [
+                              BoxShadow(
+                                color: btnColor.withValues(alpha: 0.35),
+                                blurRadius: 20,
+                                offset: const Offset(0, 8),
+                              )
+                            ],
+                    ),
+                    child: material.InkWell(
+                      onTap: _toggleFollow,
+                      borderRadius: BorderRadius.circular(20),
+                      child: material.Container(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        alignment: Alignment.center,
+                        child: Text(
+                          _isFollowing ? "Following" : "Follow",
+                          style: GoogleFonts.outfit(
+                            color: _isFollowing ? textColor : btnTextColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            letterSpacing: 0.5,
                           ),
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: material.Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(16),
-                            color: textColor.withValues(alpha: 0.05),
-                            border: Border.all(
-                                color: textColor.withValues(alpha: 0.1),
-                                width: 1.5),
-                          ),
-                          child: material.InkWell(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                material.MaterialPageRoute(
-                                  builder: (context) => MessageScreen(
-                                    receiverId: userId,
-                                    receiverName: name,
-                                    receiverProfileImage: profileUrl,
-                                    phonenumber: _profileData?['phone_no'],
-                                  ),
-                                ),
-                              );
-                            },
-                            borderRadius: BorderRadius.circular(16),
-                            child: material.Container(
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                              alignment: Alignment.center,
-                              child: Text(
-                                "Message",
-                                style: GoogleFonts.outfit(
-                                  color: textColor,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 15,
-                                ),
-                              ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: material.Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      color: textColor.withValues(alpha: 0.06),
+                      border: Border.all(
+                          color: textColor.withValues(alpha: 0.1), width: 1.5),
+                    ),
+                    child: material.InkWell(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          material.MaterialPageRoute(
+                            builder: (context) => MessageScreen(
+                              receiverId: userId,
+                              receiverName: name,
+                              receiverProfileImage: profileUrl,
+                              phonenumber: _profileData?['phone_no'],
                             ),
+                          ),
+                        );
+                      },
+                      borderRadius: BorderRadius.circular(20),
+                      child: material.Container(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        alignment: Alignment.center,
+                        child: Text(
+                          "Message",
+                          style: GoogleFonts.outfit(
+                            color: textColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            letterSpacing: 0.5,
                           ),
                         ),
                       ),
-                    ],
+                    ),
                   ),
                 ),
               ],
             ),
           if (isMe)
             material.Padding(
-              padding: const EdgeInsets.only(top: 12),
+              padding: const EdgeInsets.only(top: 8),
               child: material.Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(20),
                   gradient: LinearGradient(
-                    colors: [btnColor, btnColor.withValues(alpha: 0.8)],
+                    colors: [btnColor, btnColor.withValues(alpha: 0.7)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: btnColor.withValues(alpha: 0.3),
-                      blurRadius: 15,
-                      offset: const Offset(0, 6),
+                      color: btnColor.withValues(alpha: 0.35),
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
                     )
                   ],
                 ),
@@ -898,20 +929,21 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       ),
                     ).then((_) => _loadInitialData());
                   },
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(20),
                   child: material.Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         material.Container(
-                          padding: const EdgeInsets.all(6),
+                          padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: material.Colors.white.withValues(alpha: 0.2),
+                            color:
+                                material.Colors.white.withValues(alpha: 0.25),
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(FluentIcons.edit,
-                              color: material.Colors.white, size: 14),
+                              color: material.Colors.white, size: 16),
                         ),
                         const SizedBox(width: 12),
                         Text(
@@ -919,7 +951,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                           style: GoogleFonts.outfit(
                             color: material.Colors.white,
                             fontWeight: FontWeight.bold,
-                            fontSize: 15,
+                            fontSize: 16,
+                            letterSpacing: 0.5,
                           ),
                         ),
                       ],
@@ -928,33 +961,34 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 ),
               ),
             ),
-          const SizedBox(height: 16),
           if (_profileData != null &&
               _profileData!['phone_no'] != null &&
-              _profileData!['phone_no'].toString().isNotEmpty)
+              _profileData!['phone_no'].toString().isNotEmpty) ...[
+            const SizedBox(height: 20),
             material.Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
                 color: textColor.withValues(alpha: 0.05),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(FluentIcons.phone,
-                      color: textColor.withValues(alpha: 0.5), size: 14),
-                  const SizedBox(width: 8),
+                      color: textColor.withValues(alpha: 0.6), size: 16),
+                  const SizedBox(width: 12),
                   Text(
                     _profileData!['phone_no'],
                     style: GoogleFonts.inter(
-                      color: textColor.withValues(alpha: 0.7),
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
+                      color: textColor.withValues(alpha: 0.8),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],
               ),
             ),
+          ]
         ],
       ),
     );
@@ -968,16 +1002,16 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
           _formatCount(count),
           style: GoogleFonts.outfit(
             color: textColor,
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
+            fontSize: 24,
+            fontWeight: FontWeight.w900,
             letterSpacing: -0.5,
           ),
         ),
-        const SizedBox(height: 2),
+        const SizedBox(height: 4),
         Text(
           label.toUpperCase(),
           style: GoogleFonts.inter(
-            color: textColor.withValues(alpha: 0.4),
+            color: textColor.withValues(alpha: 0.6),
             fontSize: 10,
             fontWeight: FontWeight.bold,
             letterSpacing: 1.0,
@@ -1121,14 +1155,16 @@ class _GalleryTab extends StatelessWidget {
           },
           child: Container(
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              color: textColor.withValues(alpha: 0.05),
-              border: Border.all(color: textColor.withValues(alpha: 0.08)),
+              borderRadius: BorderRadius.circular(20),
+              color: textColor.withValues(alpha: 0.04),
+              border: Border.all(
+                  color: textColor.withValues(alpha: 0.08), width: 1.5),
               boxShadow: [
                 BoxShadow(
-                  color: material.Colors.black.withValues(alpha: 0.2),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
+                  color: btnColor.withValues(alpha: 0.05),
+                  blurRadius: 15,
+                  spreadRadius: -2,
+                  offset: const Offset(0, 8),
                 )
               ],
             ),
@@ -1139,15 +1175,15 @@ class _GalleryTab extends StatelessWidget {
                   children: [
                     ClipRRect(
                       borderRadius:
-                          const BorderRadius.vertical(top: Radius.circular(16)),
+                          const BorderRadius.vertical(top: Radius.circular(20)),
                       child: imageUrl != null && imageUrl.toString().isNotEmpty
                           ? CachedNetworkImage(
                               imageUrl: imageUrl,
                               memCacheWidth: 400,
                               fit: BoxFit.cover,
                               placeholder: (context, url) => Container(
-                                height: 150,
-                                color: const Color(0xFF1A1A1A),
+                                height: 160,
+                                color: textColor.withValues(alpha: 0.03),
                                 child: Center(
                                   child: material.SizedBox(
                                     width: 20,
@@ -1156,34 +1192,44 @@ class _GalleryTab extends StatelessWidget {
                                       strokeWidth: 2,
                                       valueColor: material
                                           .AlwaysStoppedAnimation<Color>(
-                                              btnColor.withValues(alpha: 0.3)),
+                                              btnColor.withValues(alpha: 0.5)),
                                     ),
                                   ),
                                 ),
                               ),
-                              errorWidget: (context, url, error) =>
-                                  const Icon(FluentIcons.error),
+                              errorWidget: (context, url, error) => Container(
+                                height: 160,
+                                color: textColor.withValues(alpha: 0.05),
+                                child: Icon(FluentIcons.error,
+                                    color: textColor.withValues(alpha: 0.3)),
+                              ),
                             )
                           : Container(
-                              height: 150, color: const Color(0xFF1A1A1A)),
+                              height: 160,
+                              color: textColor.withValues(alpha: 0.05)),
                     ),
                     if (price != null)
                       Positioned(
-                        top: 8,
-                        right: 8,
+                        top: 10,
+                        right: 10,
                         child: Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 4),
+                              horizontal: 10, vertical: 6),
                           decoration: BoxDecoration(
-                            color: material.Colors.black.withValues(alpha: 0.6),
-                            borderRadius: BorderRadius.circular(8),
+                            color:
+                                material.Colors.black.withValues(alpha: 0.65),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                                color: material.Colors.white
+                                    .withValues(alpha: 0.15)),
                           ),
                           child: Text(
                             '₹$price',
                             style: GoogleFonts.outfit(
                               color: material.Colors.white,
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.5,
                             ),
                           ),
                         ),
@@ -1192,13 +1238,15 @@ class _GalleryTab extends StatelessWidget {
                 ),
                 if (title != null && title.toString().isNotEmpty)
                   Padding(
-                    padding: const EdgeInsets.all(10.0),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14.0, vertical: 12.0),
                     child: Text(
                       title,
                       style: GoogleFonts.outfit(
                         color: textColor,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: -0.2,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,

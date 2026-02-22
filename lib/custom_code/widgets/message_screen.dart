@@ -1217,10 +1217,10 @@ class _MessageScreenState extends State<MessageScreen> {
         debugPrint('Updating existing conversation: ${existingConv['id']}');
         await _supabase.from('conversations').update({
           'last_message': lastMessage,
-          'last_message_time': DateTime.now().toIso8601String(),
+          'last_message_time': DateTime.now().toUtc().toIso8601String(),
           'last_sender_id': _senderId,
           'unread_count': (existingConv['unread_count'] ?? 0) + 1,
-          'updated_at': DateTime.now().toIso8601String(),
+          'updated_at': DateTime.now().toUtc().toIso8601String(),
         }).eq('id', existingConv['id']);
       } else {
         debugPrint('Creating new conversation record');
@@ -1228,7 +1228,7 @@ class _MessageScreenState extends State<MessageScreen> {
           'user1_id': _senderId,
           'user2_id': widget.receiverId,
           'last_message': lastMessage,
-          'last_message_time': DateTime.now().toIso8601String(),
+          'last_message_time': DateTime.now().toUtc().toIso8601String(),
           'last_sender_id': _senderId,
           'unread_count': 1,
         });

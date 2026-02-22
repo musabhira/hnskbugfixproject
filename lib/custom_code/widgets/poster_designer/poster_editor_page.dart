@@ -1,3 +1,5 @@
+import 'dart:ui' as ui;
+import 'dart:typed_data';
 import 'package:flutter/material.dart' as material;
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -5,6 +7,7 @@ import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart' as cp;
+import 'package:share_plus/share_plus.dart';
 import 'poster_models.dart';
 import 'package:uuid/uuid.dart';
 
@@ -116,34 +119,53 @@ class _PosterEditorPageState extends State<PosterEditorPage> {
 
   Future<void> _saveDesign() async {
     setState(() => _isSaving = true);
+    // Clear selection so bounding box isn't exported
+    setState(() => _selectedElement = null);
+    await Future.delayed(const Duration(milliseconds: 100));
+
     try {
-      final user = SupaFlow.client.auth.currentUser;
-      if (user == null) throw 'User not logged in';
+      final RenderRepaintBoundary boundary = _canvasKey.currentContext!
+          .findRenderObject() as RenderRepaintBoundary;
+      // High pixelRatio ensures high quality output
+      final ui.Image image = await boundary.toImage(pixelRatio: 4.0);
+      final ByteData? byteData =
+          await image.toByteData(format: ui.ImageByteFormat.png);
 
-      // Example saving logic
-      // await SupaFlow.client.from('user_designs').insert({
-      //   'user_id': user.id,
-      //   'title': _design.title,
-      //   'data': _design.toJson(),
-      // });
+      if (byteData != null) {
+        final Uint8List pngBytes = byteData.buffer.asUint8List();
 
-      displayInfoBar(context, builder: (context, close) {
-        return const InfoBar(
-          title: Text('Success'),
-          content: Text('Design saved successfully!'),
-          severity: InfoBarSeverity.success,
+        await Share.shareXFiles(
+          [
+            XFile.fromData(pngBytes,
+                mimeType: 'image/png', name: 'poster_design.png')
+          ],
+          text: 'Check out my new poster design!',
         );
-      });
+
+        if (mounted) {
+          displayInfoBar(context, builder: (context, close) {
+            return const InfoBar(
+              title: Text('Success'),
+              content: Text('Design saved securely.'),
+              severity: InfoBarSeverity.success,
+            );
+          });
+        }
+      }
     } catch (e) {
-      displayInfoBar(context, builder: (context, close) {
-        return InfoBar(
-          title: const Text('Error'),
-          content: Text(e.toString()),
-          severity: InfoBarSeverity.error,
-        );
-      });
+      if (mounted) {
+        displayInfoBar(context, builder: (context, close) {
+          return InfoBar(
+            title: const Text('Error'),
+            content: Text(e.toString()),
+            severity: InfoBarSeverity.error,
+          );
+        });
+      }
     } finally {
-      setState(() => _isSaving = false);
+      if (mounted) {
+        setState(() => _isSaving = false);
+      }
     }
   }
 
@@ -190,11 +212,13 @@ class _PosterEditorPageState extends State<PosterEditorPage> {
                       ],
                     ),
                     clipBehavior: Clip.antiAlias,
-                    child: Stack(
+                    child: RepaintBoundary(
                       key: _canvasKey,
-                      children: _design.elements.map((element) {
-                        return _buildDraggableElement(element);
-                      }).toList(),
+                      child: Stack(
+                        children: _design.elements.map((element) {
+                          return _buildDraggableElement(element);
+                        }).toList(),
+                      ),
                     ),
                   ),
                 ),

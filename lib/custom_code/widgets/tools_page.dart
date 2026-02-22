@@ -24,6 +24,8 @@ import 'package:pocket_mates_app/custom_code/widgets/bulk_sender/bulk_sender_pag
 import 'package:flutter/services.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poki_games_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/nearby_users_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chess_game_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/dynamic_web_view_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'dart:math';
@@ -510,6 +512,51 @@ class _TaskManagerScreenState extends State<ToolsPage> {
     }
   }
 
+  void _showDynamicWebAppDialog() {
+    final TextEditingController urlController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF2C2C2C),
+        title: Text('Dynamic Web App', style: GoogleFonts.outfit(color: Colors.white)),
+        content: TextField(
+          controller: urlController,
+          style: const TextStyle(color: Colors.white),
+          decoration: const InputDecoration(
+            hintText: 'Enter URL (e.g., https://example.com)',
+            hintStyle: TextStyle(color: Colors.white54),
+            enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white24)),
+            focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.blueAccent)),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+          ),
+          TextButton(
+            onPressed: () {
+              final url = urlController.text.trim();
+              if (url.isNotEmpty) {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => DynamicWebViewPage(
+                      title: 'Web App',
+                      url: url,
+                    ),
+                  ),
+                );
+              }
+            },
+            child: const Text('Open', style: TextStyle(color: Colors.blueAccent)),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildToolsList() {
     final List<Map<String, dynamic>> allTools = [
       {
@@ -591,10 +638,36 @@ class _TaskManagerScreenState extends State<ToolsPage> {
       },
       {
         'title': 'Poki Games',
+        'subtitle': 'poki.com',
         'icon': Icons.videogame_asset_rounded,
         'color': Colors.redAccent,
         'onTap': () => Navigator.push(context,
             MaterialPageRoute(builder: (context) => const PokiGamesPage())),
+      },
+      {
+        'title': 'Crazy Games',
+        'subtitle': 'crazygames.com',
+        'icon': Icons.sports_esports_rounded,
+        'color': Colors.deepOrangeAccent,
+        'onTap': () => Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const DynamicWebViewPage(
+              title: 'Crazy Games',
+              url: 'https://crazygames.com',
+            ))),
+      },
+      {
+        'title': 'Dynamic Web App',
+        'subtitle': 'Any URL',
+        'icon': Icons.public_rounded,
+        'color': Colors.lightBlueAccent,
+        'onTap': () => _showDynamicWebAppDialog(),
+      },
+      {
+        'title': 'Chess Match',
+        'icon': Icons.casino_rounded,
+        'color': Colors.amberAccent,
+        'onTap': () => Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const ChessMatchmakingPage())),
       },
       {
         'title': 'Travel Radar',
@@ -613,11 +686,13 @@ class _TaskManagerScreenState extends State<ToolsPage> {
 
     return Scaffold(
       backgroundColor: const Color(0xFF161618),
-      resizeToAvoidBottomInset: true,
+      resizeToAvoidBottomInset: false,
       body: SafeArea(
         bottom: false,
-        child: Column(
-          children: [
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Column(
+            children: [
             Container(
               padding: const EdgeInsets.all(24.0),
               decoration: BoxDecoration(
@@ -645,7 +720,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                                   fontWeight: FontWeight.w400,
                                   color: Colors.white70,
                                   letterSpacing: 1.2)),
-                          Text('Workspace',
+                          Text('Tools',
                               style: GoogleFonts.outfit(
                                   fontSize: 32,
                                   fontWeight: FontWeight.bold,
@@ -696,11 +771,13 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                 ],
               ),
             ),
-            Expanded(
+            Padding(
+              padding: const EdgeInsets.only(bottom: 24.0),
               child: ListView.builder(
+                shrinkWrap: true,
                 padding:
                     const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                physics: const BouncingScrollPhysics(),
+                physics: const NeverScrollableScrollPhysics(),
                 itemCount: filteredTools.length,
                 itemBuilder: (context, index) {
                   final tool = filteredTools[index];
@@ -741,13 +818,30 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                               ),
                               const SizedBox(width: 20),
                               Expanded(
-                                child: Text(
-                                  tool['title'] as String,
-                                  style: GoogleFonts.outfit(
-                                    color: Colors.white,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      tool['title'] as String,
+                                      style: GoogleFonts.outfit(
+                                        color: Colors.white,
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    if (tool.containsKey('subtitle'))
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 4),
+                                        child: Text(
+                                          tool['subtitle'] as String,
+                                          style: GoogleFonts.outfit(
+                                            color: Colors.white54,
+                                            fontSize: 13,
+                                          ),
+                                        ),
+                                      ),
+                                  ],
                                 ),
                               ),
                               IconButton(

@@ -1,0 +1,18 @@
+Analyzing chess_game_page.dart...                               
+
+   info - Parameter 'key' could be a super parameter - lib\custom_code\widgets\chess_game_page.dart:8:9 - use_super_parameters
+   info - Invalid use of a private type in a public API - lib\custom_code\widgets\chess_game_page.dart:11:3 - library_private_types_in_public_api
+  error - The argument type 'Color' can't be assigned to the parameter type 'Color?'.  - lib\custom_code\widgets\chess_game_page.dart:88:26 - argument_type_not_assignable
+  error - Generative enum constructors can only be used to create an enum constant - lib\custom_code\widgets\chess_game_page.dart:88:32 - invalid_reference_to_generative_enum_constructor
+  error - Too many positional arguments: 0 expected, but 1 found - lib\custom_code\widgets\chess_game_page.dart:88:38 - extra_positional_arguments
+  error - The argument type 'Color' can't be assigned to the parameter type 'Color?'.  - lib\custom_code\widgets\chess_game_page.dart:132:24 - argument_type_not_assignable
+  error - Generative enum constructors can only be used to create an enum constant - lib\custom_code\widgets\chess_game_page.dart:132:30 - invalid_reference_to_generative_enum_constructor
+  error - Too many positional arguments: 0 expected, but 1 found - lib\custom_code\widgets\chess_game_page.dart:132:36 - extra_positional_arguments
+   info - Parameter 'key' could be a super parameter - lib\custom_code\widgets\chess_game_page.dart:235:9 - use_super_parameters
+   info - Invalid use of a private type in a public API - lib\custom_code\widgets\chess_game_page.dart:239:3 - library_private_types_in_public_api
+warning - The value of the local variable 'turn' isn't used - lib\custom_code\widgets\chess_game_page.dart:264:13 - unused_local_variable
+warning - The value of the local variable 'amIWhite' isn't used - lib\custom_code\widgets\chess_game_page.dart:265:13 - unused_local_variable
+  error - The argument type 'Color' can't be assigned to the parameter type 'Color?'.  - lib\custom_code\widgets\chess_game_page.dart:293:24 - argument_type_not_assignable
+  error - Generative enum constructors can only be used to create an enum constant - lib\custom_code\widgets\chess_game_page.dart:293:30 - invalid_reference_to_generative_enum_constructor
+  error - Too many positional arguments: 0 expected, but 1 found - lib\custom_code\widgets\chess_game_page.dart:293:36 - extra_positional_arguments
+

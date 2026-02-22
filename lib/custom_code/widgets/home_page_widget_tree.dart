@@ -1325,9 +1325,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       Navigator.push(
         context,
         material.MaterialPageRoute(
-          builder: (context) => WebRTCCallScreen(
+          builder: (context) => const WebRTCCallScreen(
             mode: 'Text',
-            targetUserId: randomUser['user_id'],
           ),
         ),
       );
@@ -1335,9 +1334,9 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     }
 
     material.ScaffoldMessenger.of(context).showSnackBar(
-      material.SnackBar(
-          duration: const Duration(seconds: 1),
-          content: Text('Connecting to ${randomUser['name']}...')),
+      const material.SnackBar(
+          duration: Duration(seconds: 1),
+          content: Text('Finding a stranger...')),
     );
 
     Navigator.push(
@@ -1345,7 +1344,6 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       material.MaterialPageRoute(
         builder: (context) => WebRTCCallScreen(
           mode: mode,
-          targetUserId: randomUser['user_id'], // Pass matched user
         ),
       ),
     );

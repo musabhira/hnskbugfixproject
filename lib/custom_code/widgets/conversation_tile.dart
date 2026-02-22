@@ -200,10 +200,13 @@ class ConversationTile extends StatelessWidget {
                           Padding(
                             padding: const EdgeInsets.only(right: 6),
                             child: Icon(
-                              FluentIcons.check_mark,
-                              size: 14,
-                              color:
-                                  material.Colors.blue.withValues(alpha: 0.7),
+                              conversation.otherUnreadCount == 0
+                                  ? material.Icons.done_all_rounded
+                                  : material.Icons.check,
+                              size: 16,
+                              color: conversation.otherUnreadCount == 0
+                                  ? material.Colors.blue.withValues(alpha: 0.8)
+                                  : material.Colors.grey.withValues(alpha: 0.7),
                             ),
                           ),
                         Expanded(

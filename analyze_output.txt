@@ -1,0 +1,21 @@
+Analyzing drawing_page.dart...                                  
+
+   info - Parameter 'key' could be a super parameter - lib\custom_code\widgets\drawing_page.dart:84:9 - use_super_parameters
+   info - Invalid use of a private type in a public API - lib\custom_code\widgets\drawing_page.dart:87:3 - library_private_types_in_public_api
+   info - The private field _layers could be 'final' - lib\custom_code\widgets\drawing_page.dart:95:22 - prefer_final_fields
+   info - The private field _textOverlays could be 'final' - lib\custom_code\widgets\drawing_page.dart:99:21 - prefer_final_fields
+   info - The private field _showColorPanel could be 'final' - lib\custom_code\widgets\drawing_page.dart:115:8 - prefer_final_fields
+   info - 'translate' is deprecated and shouldn't be used. Use translateByVector3, translateByVector4, or translateByDouble instead - lib\custom_code\widgets\drawing_page.dart:129:11 - deprecated_member_use
+warning - The declaration '_clearLayer' isn't referenced - lib\custom_code\widgets\drawing_page.dart:154:8 - unused_element
+   info - 'Share' is deprecated and shouldn't be used. Use SharePlus instead - lib\custom_code\widgets\drawing_page.dart:235:15 - deprecated_member_use
+   info - 'shareXFiles' is deprecated and shouldn't be used. Use SharePlus.instance.share() instead - lib\custom_code\widgets\drawing_page.dart:235:21 - deprecated_member_use
+   info - Use 'const' with the constructor to improve performance - lib\custom_code\widgets\drawing_page.dart:249:16 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\custom_code\widgets\drawing_page.dart:253:23 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\custom_code\widgets\drawing_page.dart:258:20 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\custom_code\widgets\drawing_page.dart:267:31 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\custom_code\widgets\drawing_page.dart:275:20 - prefer_const_constructors
+   info - Unnecessary use of 'toList' in a spread - lib\custom_code\widgets\drawing_page.dart:333:28 - unnecessary_to_list_in_spreads
+   info - Unnecessary use of 'toList' in a spread - lib\custom_code\widgets\drawing_page.dart:381:28 - unnecessary_to_list_in_spreads
+   info - 'showLabel' is deprecated and shouldn't be used. Use empty list in [labelTypes] to disable label - lib\custom_code\widgets\drawing_page.dart:778:13 - deprecated_member_use
+   info - Use 'const' with the constructor to improve performance - lib\custom_code\widgets\drawing_page.dart:785:20 - prefer_const_constructors
+

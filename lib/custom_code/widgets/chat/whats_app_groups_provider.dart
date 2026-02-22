@@ -19,6 +19,7 @@ class ChatConversation {
   final String? lastMessage;
   final DateTime? lastMessageTime;
   final int unreadCount;
+  final int otherUnreadCount;
   final bool isGroup;
   final String? lastSenderId;
   final bool isOnline;
@@ -39,6 +40,7 @@ class ChatConversation {
     this.lastMessage,
     this.lastMessageTime,
     this.unreadCount = 0,
+    this.otherUnreadCount = 0,
     required this.isGroup,
     this.lastSenderId,
     this.isOnline = false,
@@ -86,13 +88,16 @@ class ChatConversation {
       imageUrl: otherProfile?['profile_image_url'],
       lastMessage: json['last_message'],
       lastMessageTime: json['last_message_time'] != null
-          ? DateTime.parse(json['last_message_time'])
+          ? DateTime.parse(json['last_message_time']).toLocal()
           : json['updated_at'] != null
-              ? DateTime.parse(json['updated_at'])
+              ? DateTime.parse(json['updated_at']).toLocal()
               : null,
       unreadCount: (json['last_sender_id'] == currentUserId)
           ? 0
           : (json['unread_count'] ?? 0),
+      otherUnreadCount: (json['last_sender_id'] == currentUserId)
+          ? (json['unread_count'] ?? 0)
+          : 0,
       isGroup: false,
       lastSenderId: json['last_sender_id'] as String?,
       hasStatus: hasStatus,
@@ -107,7 +112,7 @@ class ChatConversation {
       name: 'Notification',
       lastMessage: json['message'],
       lastMessageTime: json['created_at'] != null
-          ? DateTime.parse(json['created_at'])
+          ? DateTime.parse(json['created_at']).toLocal()
           : DateTime.now(),
       unreadCount: 1,
       isGroup: false,
@@ -125,6 +130,7 @@ class ChatConversation {
       'lastMessage': lastMessage,
       'lastMessageTime': lastMessageTime?.toIso8601String(),
       'unreadCount': unreadCount,
+      'otherUnreadCount': otherUnreadCount,
       'isGroup': isGroup,
       'lastSenderId': lastSenderId,
       'isOnline': isOnline,
@@ -151,6 +157,7 @@ class ChatConversation {
           ? DateTime.parse(json['lastMessageTime'])
           : null,
       unreadCount: json['unreadCount'] ?? 0,
+      otherUnreadCount: json['otherUnreadCount'] ?? 0,
       isGroup: json['isGroup'] ?? false,
       lastSenderId: json['lastSenderId'],
       isOnline: json['isOnline'] ?? false,
