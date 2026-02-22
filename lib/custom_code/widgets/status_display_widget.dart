@@ -21,6 +21,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:pocket_mates_app/custom_code/widgets/share_content_screen.dart';
 
 class StatusDisplayWidget extends StatefulWidget {
   final String currentUserId;
@@ -164,7 +165,8 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
       // 3. Optimized Single Query with Join - include user_id for follow check
       final response = await supabase
           .from('statuses')
-          .select('*, profile:profile_id(id, name, profile_image_url, user_id)')
+          .select(
+              '*, profile:profile_id(id, name, profile_image_url, user_id), thought:thought_id(*, user:users!user_id(profile:profile!user_id(name, profile_image_url)))')
           .eq('is_active', true)
           .gt('expires_at', DateTime.now().toIso8601String())
           .order('created_at',
@@ -2114,37 +2116,103 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
             Positioned(
               bottom: 8, // distance from bottom
               left: 8, // distance from left
-              child: GestureDetector(
-                onTap: () => _toggleLike(currentStatus['id']),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.5),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        _isLiked ? Icons.favorite : Icons.favorite_border,
-                        color: _isLiked ? Colors.red : Colors.white,
-                        size: 16,
+              child: Row(
+                children: [
+                  GestureDetector(
+                    onTap: () => _toggleLike(currentStatus['id']),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
                       ),
-                      const SizedBox(width: 4),
-                      Text(
-                        '$_likeCount',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.5),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            _isLiked ? Icons.favorite : Icons.favorite_border,
+                            color: _isLiked ? Colors.red : Colors.white,
+                            size: 16,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            '$_likeCount',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: () {
+                      _togglePause(); // Pause while sharing
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ShareContentScreen(
+                            contentToShare:
+                                currentStatus['media_type'] == 'text' ||
+                                        currentStatus['media_type'] == 'thought'
+                                    ? (currentStatus['caption'] ?? '')
+                                    : (currentStatus['media_url'] ?? ''),
+                            contentId:
+                                currentStatus['thought_id']?.toString() ??
+                                    currentStatus['gallery_id']?.toString(),
+                            contentType: currentStatus['thought_id'] != null
+                                ? 'thought'
+                                : (currentStatus['gallery_id'] != null
+                                    ? 'gallery'
+                                    : (currentStatus['media_type'] == 'image' ||
+                                            currentStatus['media_type'] ==
+                                                'video'
+                                        ? 'gallery'
+                                        : 'text')),
+                            currentUserId: widget.userId,
+                          ),
                         ),
+                      ).then((_) {
+                        _togglePause(); // Resume when returning
+                      });
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
                       ),
-                    ],
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.5),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.send_rounded,
+                            color: Colors.white,
+                            size: 16,
+                          ),
+                          SizedBox(width: 4),
+                          Text(
+                            'Share',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
             ),
             if (isOwnStatus)
@@ -2190,10 +2258,19 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
     Widget content;
 
     if (status['media_type'] == 'thought') {
-      final metadata = status['metadata'] as Map<String, dynamic>? ?? {};
-      final authorName = metadata['name'] ?? 'User';
-      final authorAvatar = metadata['profile_image_url'];
-      final thoughtContent = status['caption'] ?? status['content'] ?? '';
+      final thoughtData = status['thought'];
+      final profile = (thoughtData != null &&
+              thoughtData['user']?['profile'] is List &&
+              (thoughtData['user']['profile'] as List).isNotEmpty)
+          ? thoughtData['user']['profile'][0]
+          : (thoughtData != null ? thoughtData['profile'] ?? {} : {});
+
+      final authorName = profile['name'] ?? 'User';
+      final String? authorAvatar = profile['profile_image_url'];
+      final thoughtContent =
+          (thoughtData != null && thoughtData['content'] != null)
+              ? thoughtData['content']
+              : (status['caption'] ?? status['content'] ?? '');
 
       content = Container(
         width: double.infinity,

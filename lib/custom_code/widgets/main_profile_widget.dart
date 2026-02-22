@@ -382,8 +382,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   @override
   Widget build(BuildContext context) {
     if (_isBlocked) {
-      return ScaffoldPage(
-        content: Container(
+      return material.Scaffold(
+        body: Container(
           color: material.Colors.white,
           child: const Center(child: Text("You have blocked this user.")),
         ),
@@ -409,199 +409,195 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     final btnColor = _btnColor ?? const Color(0xFFFFD700);
     final btnTextColor = _btnTextColor ?? const Color(0xFF000000);
 
-    return ScaffoldPage(
-      content: material.Material(
-        color: bgColor,
-        child: material.NestedScrollView(
-          controller: _scrollController,
-          headerSliverBuilder: (context, innerBoxIsScrolled) {
-            return [
-              material.SliverAppBar(
-                elevation: 0,
-                expandedHeight: 220,
-                pinned: true,
-                backgroundColor:
-                    innerBoxIsScrolled ? bgColor : material.Colors.transparent,
-                leading: material.IconButton(
-                  icon: Icon(FluentIcons.back,
-                      color: material.Colors.white, size: 22),
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-                title: innerBoxIsScrolled
-                    ? Text(
-                        _profileData?['shop_name'] ??
-                            _profileData?['name'] ??
-                            '',
-                        style: GoogleFonts.outfit(
-                          color: textColor,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 20,
-                        ),
-                      )
-                    : null,
-                centerTitle: true,
-                actions: [
-                  if (isMe)
-                    material.IconButton(
-                      icon: const Icon(FluentIcons.view_dashboard,
-                          color: material.Colors.white),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          material.MaterialPageRoute(
-                            builder: (context) => VerfiedSwitchPage(
-                              userId: userId,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
+    return material.Scaffold(
+      backgroundColor: bgColor,
+      body: material.NestedScrollView(
+        controller: _scrollController,
+        headerSliverBuilder: (context, innerBoxIsScrolled) {
+          return [
+            material.SliverAppBar(
+              elevation: 0,
+              expandedHeight: 220,
+              pinned: true,
+              backgroundColor:
+                  innerBoxIsScrolled ? bgColor : material.Colors.transparent,
+              leading: material.IconButton(
+                icon: Icon(FluentIcons.back,
+                    color: material.Colors.white, size: 22),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+              title: innerBoxIsScrolled
+                  ? Text(
+                      _profileData?['shop_name'] ?? _profileData?['name'] ?? '',
+                      style: GoogleFonts.outfit(
+                        color: textColor,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                      ),
+                    )
+                  : null,
+              centerTitle: true,
+              actions: [
+                if (isMe)
                   material.IconButton(
-                    icon: const Icon(FluentIcons.share,
-                        color: material.Colors.white, size: 22),
-                    onPressed: () => Share.share(
-                        'Check out ${_profileData?['name']}\'s profile on Handskill Friends!'),
-                  ),
-                  material.Padding(
-                    padding: const EdgeInsets.only(right: 8.0),
-                    child: DropDownButton(
-                      leading: const Icon(FluentIcons.more,
-                          color: material.Colors.white),
-                      items: [
-                        MenuFlyoutItem(
-                          text: const Text('Report'),
-                          onPressed: () {
-                            // Report logic
-                          },
-                        ),
-                        MenuFlyoutItem(
-                          text: const Text('Block',
-                              style: TextStyle(color: material.Colors.red)),
-                          onPressed: () {
-                            // Block logic
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-                flexibleSpace: material.FlexibleSpaceBar(
-                  background: _buildBanner(),
-                  collapseMode: material.CollapseMode.parallax,
-                ),
-              ),
-              material.SliverToBoxAdapter(
-                child: _buildProfileHeader(
-                    textColor, btnColor, btnTextColor, isMe),
-              ),
-              material.SliverPersistentHeader(
-                pinned: true,
-                delegate: _SliverAppBarDelegate(
-                  material.TabBar(
-                    controller: _tabController,
-                    labelColor: textColor,
-                    unselectedLabelColor: textColor.withValues(alpha: 0.5),
-                    indicatorColor: btnColor,
-                    indicatorWeight: 3,
-                    labelStyle: GoogleFonts.outfit(fontWeight: FontWeight.bold),
-                    tabs: [
-                      const material.Tab(text: "Gallery"),
-                      const material.Tab(text: "Services"),
-                      const material.Tab(text: "Thoughts"),
-                      if (_profileData?['verified'] == true)
-                        const material.Tab(text: "Posters"),
-                    ],
-                  ),
-                  bgColor,
-                ),
-              ),
-            ];
-          },
-          body: Container(
-            color: bgColor,
-            child: Column(
-              children: [
-                // Category Selector
-                if (_categories.length > 1)
-                  Container(
-                    height: 50,
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      itemCount: _categories.length,
-                      itemBuilder: (context, index) {
-                        final cat = _categories[index];
-                        final isSelected = _selectedCategory == cat;
-                        return Padding(
-                          padding: const EdgeInsets.only(right: 8),
-                          child: Button(
-                            onPressed: () => _filterGalleryByCategory(cat),
-                            style: ButtonStyle(
-                              backgroundColor: ButtonState.all(
-                                isSelected
-                                    ? btnColor
-                                    : material.Colors.transparent,
-                              ),
-                              shape: ButtonState.all(RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20),
-                                side: BorderSide(
-                                  color: isSelected
-                                      ? btnColor
-                                      : textColor.withValues(alpha: 0.2),
-                                ),
-                              )),
-                            ),
-                            child: Text(
-                              cat,
-                              style: TextStyle(
-                                color: isSelected ? btnTextColor : textColor,
-                                fontSize: 12,
-                                fontWeight: isSelected
-                                    ? FontWeight.bold
-                                    : FontWeight.normal,
-                              ),
-                            ),
+                    icon: const Icon(FluentIcons.view_dashboard,
+                        color: material.Colors.white),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        material.MaterialPageRoute(
+                          builder: (context) => VerfiedSwitchPage(
+                            userId: userId,
                           ),
-                        );
-                      },
-                    ),
-                  ),
-                Expanded(
-                  child: material.TabBarView(
-                    controller: _tabController,
-                    children: [
-                      _GalleryTab(
-                        userId: userId,
-                        items: _filteredGalleryItems,
-                        textColor: textColor,
-                        bgColor: bgColor,
-                        btnColor: btnColor,
-                        btnTextColor: btnTextColor,
-                      ),
-                      _ServicesTab(
-                        items: _serviceItems,
-                        textColor: textColor,
-                        btnColor: btnColor,
-                        btnTextColor: btnTextColor,
-                        userId: userId,
-                      ),
-                      _ThreadsTab(
-                        items: _threadItems,
-                        textColor: textColor,
-                        btnColor: btnColor,
-                        btnTextColor: btnTextColor,
-                      ),
-                      if (_profileData?['verified'] == true)
-                        PostersTab(
-                          profileData: _profileData,
-                          galleryItems: _galleryItems,
                         ),
+                      );
+                    },
+                  ),
+                material.IconButton(
+                  icon: const Icon(FluentIcons.share,
+                      color: material.Colors.white, size: 22),
+                  onPressed: () => Share.share(
+                      'Check out ${_profileData?['name']}\'s profile on Handskill Friends!'),
+                ),
+                material.Padding(
+                  padding: const EdgeInsets.only(right: 8.0),
+                  child: DropDownButton(
+                    leading: const Icon(FluentIcons.more,
+                        color: material.Colors.white),
+                    items: [
+                      MenuFlyoutItem(
+                        text: const Text('Report'),
+                        onPressed: () {
+                          // Report logic
+                        },
+                      ),
+                      MenuFlyoutItem(
+                        text: const Text('Block',
+                            style: TextStyle(color: material.Colors.red)),
+                        onPressed: () {
+                          // Block logic
+                        },
+                      ),
                     ],
                   ),
                 ),
               ],
+              flexibleSpace: material.FlexibleSpaceBar(
+                background: _buildBanner(),
+                collapseMode: material.CollapseMode.parallax,
+              ),
             ),
+            material.SliverToBoxAdapter(
+              child:
+                  _buildProfileHeader(textColor, btnColor, btnTextColor, isMe),
+            ),
+            material.SliverPersistentHeader(
+              pinned: true,
+              delegate: _SliverAppBarDelegate(
+                material.TabBar(
+                  controller: _tabController,
+                  labelColor: textColor,
+                  unselectedLabelColor: textColor.withValues(alpha: 0.5),
+                  indicatorColor: btnColor,
+                  indicatorWeight: 3,
+                  labelStyle: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+                  tabs: [
+                    const material.Tab(text: "Gallery"),
+                    const material.Tab(text: "Services"),
+                    const material.Tab(text: "Thoughts"),
+                    if (_profileData?['verified'] == true)
+                      const material.Tab(text: "Posters"),
+                  ],
+                ),
+                bgColor,
+              ),
+            ),
+          ];
+        },
+        body: Container(
+          color: bgColor,
+          child: Column(
+            children: [
+              // Category Selector
+              if (_categories.length > 1)
+                Container(
+                  height: 50,
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: _categories.length,
+                    itemBuilder: (context, index) {
+                      final cat = _categories[index];
+                      final isSelected = _selectedCategory == cat;
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: Button(
+                          onPressed: () => _filterGalleryByCategory(cat),
+                          style: ButtonStyle(
+                            backgroundColor: ButtonState.all(
+                              isSelected
+                                  ? btnColor
+                                  : material.Colors.transparent,
+                            ),
+                            shape: ButtonState.all(RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                              side: BorderSide(
+                                color: isSelected
+                                    ? btnColor
+                                    : textColor.withValues(alpha: 0.2),
+                              ),
+                            )),
+                          ),
+                          child: Text(
+                            cat,
+                            style: TextStyle(
+                              color: isSelected ? btnTextColor : textColor,
+                              fontSize: 12,
+                              fontWeight: isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              Expanded(
+                child: material.TabBarView(
+                  controller: _tabController,
+                  children: [
+                    _GalleryTab(
+                      userId: userId,
+                      items: _filteredGalleryItems,
+                      textColor: textColor,
+                      bgColor: bgColor,
+                      btnColor: btnColor,
+                      btnTextColor: btnTextColor,
+                    ),
+                    _ServicesTab(
+                      items: _serviceItems,
+                      textColor: textColor,
+                      btnColor: btnColor,
+                      btnTextColor: btnTextColor,
+                      userId: userId,
+                    ),
+                    _ThreadsTab(
+                      items: _threadItems,
+                      textColor: textColor,
+                      btnColor: btnColor,
+                      btnTextColor: btnTextColor,
+                    ),
+                    if (_profileData?['verified'] == true)
+                      PostersTab(
+                        profileData: _profileData,
+                        galleryItems: _galleryItems,
+                      ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ),

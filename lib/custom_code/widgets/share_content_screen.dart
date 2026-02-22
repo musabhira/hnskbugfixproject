@@ -286,7 +286,7 @@ class _ShareContentScreenState extends State<ShareContentScreen> {
       );
 
       // Prepare payload
-      final messageData = {
+      final Map<String, dynamic> messageData = {
         'sender_id': widget.currentUserId,
         'receiver_id': userId,
         'content': widget.contentToShare,
@@ -299,11 +299,13 @@ class _ShareContentScreenState extends State<ShareContentScreen> {
       };
 
       if (widget.contentType == 'gallery' && widget.contentId != null) {
-        messageData['gallery_id'] = widget.contentId!;
+        final parsed = int.tryParse(widget.contentId.toString());
+        if (parsed != null) messageData['gallery_id'] = parsed;
       }
 
       if (widget.contentType == 'thought' && widget.contentId != null) {
-        messageData['thought_id'] = widget.contentId!;
+        final parsed = int.tryParse(widget.contentId.toString());
+        if (parsed != null) messageData['thought_id'] = parsed;
       }
 
       await supabase.from('messages').insert(messageData);
@@ -368,7 +370,7 @@ class _ShareContentScreenState extends State<ShareContentScreen> {
         ),
       );
 
-      final messageData = {
+      final Map<String, dynamic> messageData = {
         'group_id': groupId,
         'sender_id': widget.currentUserId,
         'message_text': widget.contentToShare,
@@ -378,11 +380,13 @@ class _ShareContentScreenState extends State<ShareContentScreen> {
       };
 
       if (widget.contentType == 'gallery' && widget.contentId != null) {
-        messageData['gallery_id'] = widget.contentId!;
+        final parsed = int.tryParse(widget.contentId.toString());
+        if (parsed != null) messageData['gallery_id'] = parsed;
       }
 
       if (widget.contentType == 'thought' && widget.contentId != null) {
-        messageData['thought_id'] = widget.contentId!;
+        final parsed = int.tryParse(widget.contentId.toString());
+        if (parsed != null) messageData['thought_id'] = parsed;
       }
 
       await supabase.from('group_messages').insert(messageData);

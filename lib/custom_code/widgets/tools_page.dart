@@ -612,76 +612,162 @@ class _TaskManagerScreenState extends State<ToolsPage> {
         .toList();
 
     return Scaffold(
-      backgroundColor: const Color(0xFF121212),
+      backgroundColor: const Color(0xFF161618),
+      resizeToAvoidBottomInset: true,
       body: SafeArea(
+        bottom: false,
         child: Column(
           children: [
-            Padding(
+            Container(
               padding: const EdgeInsets.all(24.0),
-              child: Row(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.yellow.withValues(alpha: 0.05),
+                    Colors.transparent
+                  ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Handskill',
-                          style: GoogleFonts.outfit(
-                              fontSize: 32,
-                              fontWeight: FontWeight.w300,
-                              color: Colors.white,
-                              letterSpacing: 1.2)),
-                      Text('Tools',
-                          style: GoogleFonts.outfit(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.yellow)),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Handskill',
+                              style: GoogleFonts.outfit(
+                                  fontSize: 26,
+                                  fontWeight: FontWeight.w400,
+                                  color: Colors.white70,
+                                  letterSpacing: 1.2)),
+                          Text('Workspace',
+                              style: GoogleFonts.outfit(
+                                  fontSize: 32,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.yellow)),
+                        ],
+                      ),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.05),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.dashboard_rounded,
+                            color: Colors.yellow),
+                      )
                     ],
+                  ),
+                  const SizedBox(height: 24),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.1)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.2),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: TextField(
+                      onChanged: (value) =>
+                          setState(() => _toolsSearchQuery = value),
+                      style: GoogleFonts.outfit(color: Colors.white),
+                      decoration: InputDecoration(
+                        hintText: 'Search tools or features...',
+                        hintStyle: GoogleFonts.outfit(color: Colors.white38),
+                        prefixIcon:
+                            const Icon(Icons.search, color: Colors.white54),
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 16),
+                      ),
+                    ),
                   ),
                 ],
               ),
             ),
-            Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: const Color(0xFF2C2C2C),
-                  borderRadius: BorderRadius.circular(16),
-                  border:
-                      Border.all(color: Colors.white.withValues(alpha: 0.1)),
-                ),
-                child: TextField(
-                  onChanged: (value) =>
-                      setState(() => _toolsSearchQuery = value),
-                  style: GoogleFonts.outfit(color: Colors.white),
-                  decoration: InputDecoration(
-                    hintText: 'Search tools...',
-                    hintStyle: GoogleFonts.outfit(color: Colors.white54),
-                    prefixIcon: const Icon(Icons.search, color: Colors.white54),
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 14),
-                  ),
-                ),
-              ),
-            ),
             Expanded(
-              child: GridView.count(
+              child: ListView.builder(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                crossAxisCount: 2,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                children: filteredTools.map((tool) {
-                  return _buildToolCard(
-                    title: tool['title'] as String,
-                    icon: tool['icon'] as IconData,
-                    color: tool['color'] as Color,
-                    onTap: tool['onTap'] as VoidCallback,
-                    isFavorited: _favoritedTools.contains(tool['title']),
-                    onToggleFavorite: () =>
-                        _toggleFavoriteTool(tool['title'] as String),
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                physics: const BouncingScrollPhysics(),
+                itemCount: filteredTools.length,
+                itemBuilder: (context, index) {
+                  final tool = filteredTools[index];
+                  final isFav = _favoritedTools.contains(tool['title']);
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.03),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: isFav
+                            ? (tool['color'] as Color).withValues(alpha: 0.5)
+                            : Colors.white.withValues(alpha: 0.05),
+                        width: 1.5,
+                      ),
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: tool['onTap'] as VoidCallback,
+                        borderRadius: BorderRadius.circular(20),
+                        child: Padding(
+                          padding: const EdgeInsets.all(20),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: (tool['color'] as Color)
+                                      .withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: Icon(
+                                  tool['icon'] as IconData,
+                                  color: tool['color'] as Color,
+                                  size: 28,
+                                ),
+                              ),
+                              const SizedBox(width: 20),
+                              Expanded(
+                                child: Text(
+                                  tool['title'] as String,
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.white,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                              IconButton(
+                                icon: Icon(
+                                  isFav
+                                      ? Icons.favorite_rounded
+                                      : Icons.favorite_border_rounded,
+                                  color:
+                                      isFav ? Colors.redAccent : Colors.white24,
+                                ),
+                                onPressed: () => _toggleFavoriteTool(
+                                    tool['title'] as String),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
                   );
-                }).toList(),
+                },
               ),
             ),
           ],

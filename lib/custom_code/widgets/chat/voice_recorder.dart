@@ -265,72 +265,40 @@ class _VoiceMessageRecorderState extends State<VoiceMessageRecorder>
               top: 0,
               bottom: 0,
               child: GestureDetector(
-                onLongPressStart: (_) => _start(),
-                onLongPressMoveUpdate: (details) {
+                onTap: () {
                   if (_isRecording) {
-                    setState(() {
-                      // Robust drag detection
-                      _dragOffset = details.localOffsetFromOrigin.dx;
-                      _lockDragOffset = details.localOffsetFromOrigin.dy;
-
-                      if (_dragOffset < -100)
-                        _isCancelled = true;
-                      else
-                        _isCancelled = false;
-
-                      // Swipe UP to Lock (-Y)
-                      if (_lockDragOffset < -60) {
-                        _isLocked = true;
-                        HapticFeedback.heavyImpact();
-                      }
-                    });
+                    _stop(isCancel: false);
+                  } else {
+                    _start();
                   }
                 },
-                onLongPressEnd: (_) {
-                  if (!_isLocked) {
-                    _stop(isCancel: _isCancelled);
-                  }
-                },
-                onLongPressCancel: () {
-                  if (!_isLocked) _stop(isCancel: true);
-                },
-                child: Transform.translate(
-                  offset: _isRecording
-                      ? Offset(0, _lockDragOffset.clamp(-60.0, 0.0).toDouble())
-                      : Offset.zero,
-                  child: Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: _isCancelled
-                          ? Colors.grey
-                          : (_isRecording ? Colors.red : Colors.yellow),
-                      shape: BoxShape.circle,
-                      boxShadow: _isRecording
-                          ? [
-                              BoxShadow(
-                                  color: Colors.red.withValues(alpha: 0.3),
-                                  blurRadius: 15)
-                            ]
-                          : null,
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        // Lock Hint
-                        if (_isRecording && _lockDragOffset < -10)
-                          const Icon(Icons.lock_open,
-                              size: 12, color: Colors.white),
-
-                        Icon(
-                          _isCancelled ? Icons.delete_outline : Icons.mic,
-                          color: (_isRecording || _isCancelled)
-                              ? Colors.white
-                              : Colors.black,
-                          size: 24,
-                        ),
-                      ],
-                    ),
+                child: Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: _isCancelled
+                        ? Colors.grey
+                        : (_isRecording ? Colors.red : Colors.yellow),
+                    shape: BoxShape.circle,
+                    boxShadow: _isRecording
+                        ? [
+                            BoxShadow(
+                                color: Colors.red.withOpacity(0.3),
+                                blurRadius: 15)
+                          ]
+                        : null,
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        _isRecording ? Icons.stop : Icons.mic,
+                        color: (_isRecording || _isCancelled)
+                            ? Colors.white
+                            : Colors.black,
+                        size: 24,
+                      ),
+                    ],
                   ),
                 ),
               ),
