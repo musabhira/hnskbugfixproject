@@ -518,21 +518,25 @@ class _TaskManagerScreenState extends State<ToolsPage> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF2C2C2C),
-        title: Text('Dynamic Web App', style: GoogleFonts.outfit(color: Colors.white)),
+        title: Text('Dynamic Web App',
+            style: GoogleFonts.outfit(color: Colors.white)),
         content: TextField(
           controller: urlController,
           style: const TextStyle(color: Colors.white),
           decoration: const InputDecoration(
             hintText: 'Enter URL (e.g., https://example.com)',
             hintStyle: TextStyle(color: Colors.white54),
-            enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white24)),
-            focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.blueAccent)),
+            enabledBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: Colors.white24)),
+            focusedBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: Colors.blueAccent)),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+            child:
+                const Text('Cancel', style: TextStyle(color: Colors.white54)),
           ),
           TextButton(
             onPressed: () {
@@ -550,7 +554,8 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                 );
               }
             },
-            child: const Text('Open', style: TextStyle(color: Colors.blueAccent)),
+            child:
+                const Text('Open', style: TextStyle(color: Colors.blueAccent)),
           ),
         ],
       ),
@@ -649,11 +654,13 @@ class _TaskManagerScreenState extends State<ToolsPage> {
         'subtitle': 'crazygames.com',
         'icon': Icons.sports_esports_rounded,
         'color': Colors.deepOrangeAccent,
-        'onTap': () => Navigator.push(context,
-            MaterialPageRoute(builder: (context) => const DynamicWebViewPage(
-              title: 'Crazy Games',
-              url: 'https://crazygames.com',
-            ))),
+        'onTap': () => Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => const DynamicWebViewPage(
+                      title: 'Crazy Games',
+                      url: 'https://crazygames.com',
+                    ))),
       },
       {
         'title': 'Dynamic Web App',
@@ -666,8 +673,10 @@ class _TaskManagerScreenState extends State<ToolsPage> {
         'title': 'Chess Match',
         'icon': Icons.casino_rounded,
         'color': Colors.amberAccent,
-        'onTap': () => Navigator.push(context,
-            MaterialPageRoute(builder: (context) => const ChessMatchmakingPage())),
+        'onTap': () => Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => const ChessMatchmakingPage())),
       },
       {
         'title': 'Travel Radar',
@@ -693,178 +702,182 @@ class _TaskManagerScreenState extends State<ToolsPage> {
           physics: const BouncingScrollPhysics(),
           child: Column(
             children: [
-            Container(
-              padding: const EdgeInsets.all(24.0),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.yellow.withValues(alpha: 0.05),
-                    Colors.transparent
-                  ],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Handskill',
-                              style: GoogleFonts.outfit(
-                                  fontSize: 26,
-                                  fontWeight: FontWeight.w400,
-                                  color: Colors.white70,
-                                  letterSpacing: 1.2)),
-                          Text('Tools',
-                              style: GoogleFonts.outfit(
-                                  fontSize: 32,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.yellow)),
-                        ],
-                      ),
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.05),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(Icons.dashboard_rounded,
-                            color: Colors.yellow),
-                      )
+              Container(
+                padding: const EdgeInsets.all(24.0),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.yellow.withValues(alpha: 0.05),
+                      Colors.transparent
                     ],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
                   ),
-                  const SizedBox(height: 24),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.05),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.1)),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.2),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Handskill',
+                                style: GoogleFonts.outfit(
+                                    fontSize: 26,
+                                    fontWeight: FontWeight.w400,
+                                    color: Colors.white70,
+                                    letterSpacing: 1.2)),
+                            Text('Tools',
+                                style: GoogleFonts.outfit(
+                                    fontSize: 32,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.yellow)),
+                          ],
                         ),
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.05),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.dashboard_rounded,
+                              color: Colors.yellow),
+                        )
                       ],
                     ),
-                    child: TextField(
-                      onChanged: (value) =>
-                          setState(() => _toolsSearchQuery = value),
-                      style: GoogleFonts.outfit(color: Colors.white),
-                      decoration: InputDecoration(
-                        hintText: 'Search tools or features...',
-                        hintStyle: GoogleFonts.outfit(color: Colors.white38),
-                        prefixIcon:
-                            const Icon(Icons.search, color: Colors.white54),
-                        border: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 16),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(bottom: 24.0),
-              child: ListView.builder(
-                shrinkWrap: true,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: filteredTools.length,
-                itemBuilder: (context, index) {
-                  final tool = filteredTools[index];
-                  final isFav = _favoritedTools.contains(tool['title']);
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 16),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.03),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: isFav
-                            ? (tool['color'] as Color).withValues(alpha: 0.5)
-                            : Colors.white.withValues(alpha: 0.05),
-                        width: 1.5,
-                      ),
-                    ),
-                    child: Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: tool['onTap'] as VoidCallback,
+                    const SizedBox(height: 24),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.05),
                         borderRadius: BorderRadius.circular(20),
-                        child: Padding(
-                          padding: const EdgeInsets.all(20),
-                          child: Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: (tool['color'] as Color)
-                                      .withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.1)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.2),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: TextField(
+                        onChanged: (value) =>
+                            setState(() => _toolsSearchQuery = value),
+                        style: GoogleFonts.outfit(color: Colors.white),
+                        decoration: InputDecoration(
+                          hintText: 'Search tools or features...',
+                          hintStyle: GoogleFonts.outfit(color: Colors.white38),
+                          prefixIcon:
+                              const Icon(Icons.search, color: Colors.white54),
+                          border: InputBorder.none,
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 16),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 24.0),
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: filteredTools.length,
+                  itemBuilder: (context, index) {
+                    final tool = filteredTools[index];
+                    final isFav = _favoritedTools.contains(tool['title']);
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.03),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: isFav
+                              ? (tool['color'] as Color).withValues(alpha: 0.5)
+                              : Colors.white.withValues(alpha: 0.05),
+                          width: 1.5,
+                        ),
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: tool['onTap'] as VoidCallback,
+                          borderRadius: BorderRadius.circular(20),
+                          child: Padding(
+                            padding: const EdgeInsets.all(20),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: (tool['color'] as Color)
+                                        .withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  child: Icon(
+                                    tool['icon'] as IconData,
+                                    color: tool['color'] as Color,
+                                    size: 28,
+                                  ),
                                 ),
-                                child: Icon(
-                                  tool['icon'] as IconData,
-                                  color: tool['color'] as Color,
-                                  size: 28,
-                                ),
-                              ),
-                              const SizedBox(width: 20),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      tool['title'] as String,
-                                      style: GoogleFonts.outfit(
-                                        color: Colors.white,
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                    if (tool.containsKey('subtitle'))
-                                      Padding(
-                                        padding: const EdgeInsets.only(top: 4),
-                                        child: Text(
-                                          tool['subtitle'] as String,
-                                          style: GoogleFonts.outfit(
-                                            color: Colors.white54,
-                                            fontSize: 13,
-                                          ),
+                                const SizedBox(width: 20),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        tool['title'] as String,
+                                        style: GoogleFonts.outfit(
+                                          color: Colors.white,
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w600,
                                         ),
                                       ),
-                                  ],
+                                      if (tool.containsKey('subtitle'))
+                                        Padding(
+                                          padding:
+                                              const EdgeInsets.only(top: 4),
+                                          child: Text(
+                                            tool['subtitle'] as String,
+                                            style: GoogleFonts.outfit(
+                                              color: Colors.white54,
+                                              fontSize: 13,
+                                            ),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                              IconButton(
-                                icon: Icon(
-                                  isFav
-                                      ? Icons.favorite_rounded
-                                      : Icons.favorite_border_rounded,
-                                  color:
-                                      isFav ? Colors.redAccent : Colors.white24,
+                                IconButton(
+                                  icon: Icon(
+                                    isFav
+                                        ? Icons.favorite_rounded
+                                        : Icons.favorite_border_rounded,
+                                    color: isFav
+                                        ? Colors.redAccent
+                                        : Colors.white24,
+                                  ),
+                                  onPressed: () => _toggleFavoriteTool(
+                                      tool['title'] as String),
                                 ),
-                                onPressed: () => _toggleFavoriteTool(
-                                    tool['title'] as String),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
