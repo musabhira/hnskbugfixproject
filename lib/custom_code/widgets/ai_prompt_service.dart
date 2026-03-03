@@ -13,6 +13,8 @@ import 'dart:convert';
 import 'package:image_picker/image_picker.dart';
 
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:image_downloader/image_downloader.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class AiPromptGenerator extends StatelessWidget {
   const AiPromptGenerator({
@@ -1268,7 +1270,7 @@ class AIAppInitializer {
   static Future<void> initialize() async {
     // Configure admin settings
     AdminConfig.maxImageGeneration = 4;
-    AdminConfig.adminPassword = "your_secure_password";
+    // AdminConfig.adminPassword = "your_secure_password";
 
     // Enable/disable features as needed
     AdminConfig.enabledFeatures['textGeneration'] = true;
@@ -1853,23 +1855,26 @@ class AIService {
 
   Future<bool> saveImageToGallery(String imageUrl, {String? fileName}) async {
     try {
-      // Request storage permission
-      // final permission = await Permission.storage.request();
-      // if (!permission.isGranted) {
-      //   return false;
-      // }
+      if (kIsWeb) {
+        return false;
+      }
 
-      // // Download image
-      // final response = await http.get(Uri.parse(imageUrl));
-      // if (response.statusCode == 200) {
-      //   final result = await ImageGallerySaver.saveImage(
-      //     Uint8List.fromList(response.bodyBytes),
-      //     quality: 100,
-      //     name: fileName ?? "ai_generated_${DateTime.now().millisecondsSinceEpoch}",
-      //   );
-      //   return result['isSuccess'] ?? false;
-      // }
-      return false;
+      // Check permissions
+      if (Platform.isAndroid || Platform.isIOS) {
+        var status = await Permission.storage.status;
+        if (!status.isGranted) {
+          status = await Permission.storage.request();
+          if (!status.isGranted) return false;
+        }
+      }
+
+      final imageId = await ImageDownloader.downloadImage(
+        imageUrl,
+        destination: AndroidDestinationType.directoryPictures
+          ..subDirectory("${fileName ?? 'ai_gen'}.jpg"),
+      );
+
+      return imageId != null;
     } catch (e) {
       print('Failed to save image: $e');
       return false;

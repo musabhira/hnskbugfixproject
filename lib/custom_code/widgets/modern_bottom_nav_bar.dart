@@ -9,13 +9,11 @@ import 'dart:ui';
 
 class ModernBottomNavBar extends StatelessWidget {
   final Function() onBatchTap;
-  final Function() onAdminChatTap;
   final int selectedIndex;
 
   const ModernBottomNavBar({
     super.key,
     required this.onBatchTap,
-    required this.onAdminChatTap,
     required this.selectedIndex,
   });
 
@@ -48,12 +46,6 @@ class ModernBottomNavBar extends StatelessWidget {
                   isSelected: selectedIndex == 0,
                   onTap: onBatchTap,
                 ),
-                ModernNavItem(
-                  icon: Icons.admin_panel_settings,
-                  label: 'Admin',
-                  isSelected: selectedIndex == 1,
-                  onTap: onAdminChatTap,
-                ),
               ],
             ),
           ),
@@ -69,7 +61,8 @@ class ModernNavItem extends StatelessWidget {
   final bool isSelected;
   final VoidCallback onTap;
 
-  const ModernNavItem({super.key, 
+  const ModernNavItem({
+    super.key,
     required this.icon,
     required this.label,
     required this.isSelected,

@@ -55,6 +55,8 @@ class _ShareContentScreenState extends State<ShareContentScreen> {
             // Preview Section
             if (widget.contentType == 'thought' && widget.metadata != null)
               _buildThoughtPreview()
+            else if (widget.contentType == 'tool' && widget.metadata != null)
+              _buildToolPreview()
             else
               _buildDefaultPreview(),
 
@@ -217,6 +219,60 @@ class _ShareContentScreenState extends State<ShareContentScreen> {
     );
   }
 
+  Widget _buildToolPreview() {
+    final title = widget.metadata?['title'] ?? 'Tool';
+    final description = widget.metadata?['description'] ?? '';
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 24),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E1E1E),
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: Colors.yellow.withOpacity(0.3), width: 1),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.yellow,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: const Icon(Icons.apps, color: Colors.black, size: 30),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                  ),
+                ),
+                if (description.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(
+                      description,
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.6),
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildDefaultPreview() {
     return Container(
       padding: const EdgeInsets.all(24),
@@ -270,6 +326,12 @@ class _ShareContentScreenState extends State<ShareContentScreen> {
           Navigator.pop(context);
           _shareToStatus(userMessage);
         },
+        onWhatsAppShare: () {
+          Navigator.pop(context);
+          final text =
+              "Check out this ${widget.contentType}: ${widget.contentToShare}";
+          Share.share(text);
+        },
       ),
     );
   }
@@ -299,13 +361,11 @@ class _ShareContentScreenState extends State<ShareContentScreen> {
       };
 
       if (widget.contentType == 'gallery' && widget.contentId != null) {
-        final parsed = int.tryParse(widget.contentId.toString());
-        if (parsed != null) messageData['gallery_id'] = parsed;
+        messageData['gallery_id'] = widget.contentId;
       }
 
       if (widget.contentType == 'thought' && widget.contentId != null) {
-        final parsed = int.tryParse(widget.contentId.toString());
-        if (parsed != null) messageData['thought_id'] = parsed;
+        messageData['thought_id'] = widget.contentId;
       }
 
       await supabase.from('messages').insert(messageData);
@@ -376,17 +436,18 @@ class _ShareContentScreenState extends State<ShareContentScreen> {
         'message_text': widget.contentToShare,
         'message_type': widget.contentType == 'gallery'
             ? 'gallery'
-            : (widget.contentType == 'thought' ? 'thought' : 'text'),
+            : (widget.contentType == 'thought'
+                ? 'thought'
+                : (widget.contentType == 'tool' ? 'tool' : 'text')),
+        'metadata': widget.metadata,
       };
 
       if (widget.contentType == 'gallery' && widget.contentId != null) {
-        final parsed = int.tryParse(widget.contentId.toString());
-        if (parsed != null) messageData['gallery_id'] = parsed;
+        messageData['gallery_id'] = widget.contentId;
       }
 
       if (widget.contentType == 'thought' && widget.contentId != null) {
-        final parsed = int.tryParse(widget.contentId.toString());
-        if (parsed != null) messageData['thought_id'] = parsed;
+        messageData['thought_id'] = widget.contentId;
       }
 
       await supabase.from('group_messages').insert(messageData);

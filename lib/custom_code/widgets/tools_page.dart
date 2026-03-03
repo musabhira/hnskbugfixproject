@@ -1,23 +1,9 @@
-// Automatic FlutterFlow imports
 import 'package:pocket_mates_app/custom_code/widgets/ai_prompt_service.dart';
-import 'package:pocket_mates_app/custom_code/widgets/ai_prompt_service.dart';
-
 import '/backend/supabase/supabase.dart';
-import '/backend/supabase/supabase.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import 'index.dart'; // Imports other custom widgets
-import 'index.dart'; // Imports other custom widgets
-import '/custom_code/actions/index.dart'; // Imports custom actions
-import '/custom_code/actions/index.dart'; // Imports custom actions
 import 'package:flutter/material.dart';
-import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pocket_mates_app/custom_code/widgets/drawing_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/home_page_widget_tree.dart';
 import 'package:pocket_mates_app/custom_code/widgets/teams/teams_home_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poster_designer/template_gallery_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/bulk_sender/bulk_sender_page.dart';
@@ -26,9 +12,13 @@ import 'package:pocket_mates_app/custom_code/widgets/poki_games_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/nearby_users_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chess_game_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/dynamic_web_view_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/diagram_ai_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/password_generator_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/share_content_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'dart:math';
+import 'package:pocket_mates_app/custom_code/widgets/drawing_academy_home_page.dart';
 
 class ToolsPage extends StatefulWidget {
   final double? width;
@@ -507,6 +497,8 @@ class _TaskManagerScreenState extends State<ToolsPage> {
         return 'AI Tools';
       case 6:
         return 'Mini Apps';
+      case 7:
+        return 'Courses';
       default:
         return 'Tools';
     }
@@ -557,6 +549,72 @@ class _TaskManagerScreenState extends State<ToolsPage> {
             child:
                 const Text('Open', style: TextStyle(color: Colors.blueAccent)),
           ),
+        ],
+      ),
+    );
+  }
+
+  void _showQRCodeSimulation() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF2C2C2C),
+        title: Text('QR & Barcode',
+            style: GoogleFonts.outfit(color: Colors.white)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.qr_code_2_rounded, size: 80, color: Colors.white),
+            const SizedBox(height: 20),
+            Text('QR features are available in the mobile app build.',
+                style: GoogleFonts.outfit(color: Colors.white70),
+                textAlign: TextAlign.center),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showWorldClockSimulation() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF2C2C2C),
+        title:
+            Text('World Clock', style: GoogleFonts.outfit(color: Colors.white)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildClockItem('London', 'UTC +0'),
+            _buildClockItem('New York', 'UTC -5'),
+            _buildClockItem('Tokyo', 'UTC +9'),
+            _buildClockItem('Dubai', 'UTC +4'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildClockItem(String city, String offset) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(city, style: const TextStyle(color: Colors.white)),
+          Text(offset, style: const TextStyle(color: Colors.white54)),
         ],
       ),
     );
@@ -685,6 +743,86 @@ class _TaskManagerScreenState extends State<ToolsPage> {
         'onTap': () => Navigator.push(context,
             MaterialPageRoute(builder: (context) => const NearbyUsersPage())),
       },
+      {
+        'title': 'Diagram AI',
+        'subtitle': 'Architect with AI',
+        'icon': Icons.account_tree_rounded,
+        'color': Colors.blueAccent,
+        'onTap': () => Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const DiagramAiPage())),
+      },
+      {
+        'title': 'Password Pro',
+        'subtitle': 'Secure Generator',
+        'icon': Icons.password_rounded,
+        'color': Colors.greenAccent,
+        'onTap': () => Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => const PasswordGeneratorPage())),
+      },
+      {
+        'title': 'AI Studio',
+        'subtitle': 'Creative Engine',
+        'icon': Icons.auto_awesome,
+        'color': Colors.purpleAccent,
+        'onTap': () => Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const AiPromptGenerator())),
+      },
+      {
+        'title': 'QR & Barcode',
+        'subtitle': 'Scan & Generate',
+        'icon': Icons.qr_code_scanner_rounded,
+        'color': Colors.orangeAccent,
+        'onTap': () => _showQRCodeSimulation(),
+      },
+      {
+        'title': 'World Clock',
+        'subtitle': 'Global Times',
+        'icon': Icons.public_rounded,
+        'color': Colors.lightBlueAccent,
+        'onTap': () => _showWorldClockSimulation(),
+      },
+      {
+        'title': 'WhatsApp Web',
+        'subtitle': 'Chat on Desktop',
+        'icon': Icons.chat_rounded,
+        'color': Colors.greenAccent,
+        'onTap': () => Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => const DynamicWebViewPage(
+                      title: 'WhatsApp Web',
+                      url: 'https://web.whatsapp.com',
+                    ))),
+      },
+      {
+        'title': 'Gallery Sharing',
+        'subtitle': 'Share from Gallery',
+        'icon': Icons.share_rounded,
+        'color': Colors.blueAccent,
+        'onTap': () {
+          final userId = SupaFlow.client.auth.currentUser?.id ?? '';
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => ShareContentScreen(
+                        contentToShare: 'Sharing from Gallery',
+                        currentUserId: userId,
+                        contentType: 'gallery',
+                      )));
+        },
+      },
+      {
+        'title': 'Courses',
+        'subtitle': 'Learning Academy',
+        'icon': Icons.school_rounded,
+        'color': Colors.blue,
+        'onTap': () => setState(() {
+              _selectedTab = 7;
+              _showToolsList = false;
+            }),
+      },
     ];
 
     final filteredTools = allTools
@@ -723,13 +861,13 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Handskill',
+                            Text('Tools for',
                                 style: GoogleFonts.outfit(
                                     fontSize: 26,
                                     fontWeight: FontWeight.w400,
                                     color: Colors.white70,
                                     letterSpacing: 1.2)),
-                            Text('Tools',
+                            Text('Browser',
                                 style: GoogleFonts.outfit(
                                     fontSize: 32,
                                     fontWeight: FontWeight.bold,
@@ -910,19 +1048,47 @@ class _TaskManagerScreenState extends State<ToolsPage> {
               child: Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.arrow_back, color: Colors.white),
+                    icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                        color: Colors.white, size: 20),
                     onPressed: () => setState(() => _showToolsList = true),
                   ),
-                  const SizedBox(width: 8),
-                  Text(
-                    _getToolTitle(_selectedTab),
-                    style: GoogleFonts.outfit(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      _getToolTitle(_selectedTab),
+                      style: GoogleFonts.outfit(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  const Spacer(),
+                  IconButton(
+                    icon: const Icon(Icons.share_rounded,
+                        color: Colors.yellow, size: 22),
+                    onPressed: () {
+                      final userId = SupaFlow.client.auth.currentUser?.id;
+                      if (userId != null) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ShareContentScreen(
+                              contentToShare:
+                                  "Check out this ${_getToolTitle(_selectedTab)} tool on Pocket Mates!",
+                              currentUserId: userId,
+                              contentType: 'text',
+                              metadata: {
+                                'tool_title': _getToolTitle(_selectedTab),
+                                'category': 'Tools',
+                              },
+                            ),
+                          ),
+                        );
+                      }
+                    },
+                  ),
+                  const SizedBox(width: 4),
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
@@ -2078,6 +2244,8 @@ class _TaskManagerScreenState extends State<ToolsPage> {
         return _buildAIToolsTab();
       case 6:
         return _buildMiniAppsTab();
+      case 7:
+        return const DrawingAcademyHomePage();
       default:
         return _buildScheduleTab();
     }
@@ -4319,11 +4487,11 @@ FINAL REMINDER: Every value in this JSON must be written in $shortFilmLanguage l
                   fillColor: const Color(0xFF2a2a2a),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Colors.grey[700]!),
+                    borderSide: BorderSide(color: Colors.grey.shade700),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Colors.grey[700]!),
+                    borderSide: BorderSide(color: Colors.grey.shade700),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
@@ -4355,7 +4523,7 @@ FINAL REMINDER: Every value in this JSON must be written in $shortFilmLanguage l
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
-                disabledBackgroundColor: Colors.grey[700],
+                disabledBackgroundColor: Colors.grey[700]!,
               ),
             ),
           ),
@@ -5304,7 +5472,7 @@ FINAL REMINDER: Every value in this JSON must be written in $shortFilmLanguage l
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12)),
-                disabledBackgroundColor: Colors.grey[700],
+                disabledBackgroundColor: Colors.grey[700]!,
               ),
             ),
           ),
@@ -5507,7 +5675,7 @@ FINAL REMINDER: Every value in this JSON must be written in $shortFilmLanguage l
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12)),
-                disabledBackgroundColor: Colors.grey[700],
+                disabledBackgroundColor: Colors.grey[700]!,
               ),
             ),
           ),
@@ -5783,7 +5951,7 @@ FINAL REMINDER: Every value in this JSON must be written in $shortFilmLanguage l
           padding: const EdgeInsets.symmetric(horizontal: 12),
           decoration: BoxDecoration(
             color: const Color(0xFF2a2a2a),
-            border: Border.all(color: Colors.grey[700]!),
+            border: Border.all(color: Colors.grey.shade700),
             borderRadius: BorderRadius.circular(8),
           ),
           child: DropdownButtonHideUnderline(

@@ -1,17 +1,9 @@
 // Automatic FlutterFlow imports
 import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
-import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
 import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
-
-import '/backend/supabase/supabase.dart';
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_util.dart';
 import 'index.dart'; // Imports other custom widgets
-import 'index.dart'; // Imports other custom widgets
-// Imports custom actions
-import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
@@ -815,7 +807,8 @@ class MinimalEventCard extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: Colors.yellow.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.yellow.withValues(alpha: 0.3)),
+                    border:
+                        Border.all(color: Colors.yellow.withValues(alpha: 0.3)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -880,7 +873,8 @@ class MinimalEventCard extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: Colors.blue.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
+                      border:
+                          Border.all(color: Colors.blue.withValues(alpha: 0.3)),
                     ),
                     child: const Center(
                       child: Text(
@@ -1182,13 +1176,11 @@ class EventDetailsModal extends StatelessWidget {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => MessageScreen(
-                                    receiverId: creatorProfile['user_id'],
-                                    receiverName:
-                                        creatorProfile['name'] ?? 'User',
-                                    receiverProfileImage:
+                                  builder: (context) => WhatsAppGroupChat(
+                                    groupId: 'p:${creatorProfile['user_id']}',
+                                    groupName: creatorProfile['name'] ?? 'User',
+                                    groupImage:
                                         creatorProfile['profile_image_url'],
-                                    phonenumber: creatorProfile['phone_no'],
                                   ),
                                 ),
                               );
@@ -1255,7 +1247,8 @@ class EventDetailsModal extends StatelessWidget {
                               borderRadius: BorderRadius.circular(12),
                               border: isCurrentUser
                                   ? Border.all(
-                                      color: Colors.yellow.withValues(alpha: 0.3))
+                                      color:
+                                          Colors.yellow.withValues(alpha: 0.3))
                                   : null,
                             ),
                             child: Row(
@@ -1392,7 +1385,8 @@ class EventDetailsModal extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: Colors.blue.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
+                        border: Border.all(
+                            color: Colors.blue.withValues(alpha: 0.3)),
                       ),
                       child: const Center(
                         child: Row(

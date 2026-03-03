@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
@@ -465,6 +464,7 @@ class Conversations extends _$Conversations {
       // Get groups where user is a member
       var query = _supabase.from('group_members').select('''
             group_id,
+            last_read_at,
             groups!inner (
               id,
               name,
@@ -490,23 +490,36 @@ class Conversations extends _$Conversations {
           .map((item) => Map<String, dynamic>.from(item))
           .toList();
 
-      // Fetch all unread counts in parallel for all groups
+      if (groupList.isEmpty) return [];
+
+      // Fetch statuses for ALL groups in one go
+      final groupIds =
+          groupList.map((item) => item['group_id'].toString()).toList();
+      final allStatuses = await _getAllGroupsStatuses(groupIds);
+
+      final statusMap = <String, List<Map<String, dynamic>>>{};
+      for (var status in allStatuses) {
+        final gId = status['mentioned_group_id']?.toString();
+        if (gId != null) {
+          statusMap.putIfAbsent(gId, () => []).add(status);
+        }
+      }
+
+      // Fetch all unread counts in parallel (still separate, but we removed one query per group)
       final List<Future<ChatConversation?>> conversationFutures =
           groupList.map((item) async {
         final groupData = _safeGet(item['groups']);
         if (groupData == null) return null;
 
-        // Fetch unread count and statuses in parallel
-        final results = await Future.wait([
-          _getGroupUnreadCount(groupData['id'], userId),
-          _getGroupStatuses(groupData['id']),
-        ]);
+        final gId = groupData['id'];
+        final lastReadTime = item['last_read_at'];
 
-        final unreadCount = results[0] as int;
-        final statusList = results[1] as List<Map<String, dynamic>>;
+        final unreadCount =
+            await _getGroupUnreadCountOnly(gId, userId, lastReadTime);
+        final statusList = statusMap[gId] ?? [];
 
         return ChatConversation(
-          id: groupData['id'],
+          id: gId,
           name: groupData['name'] ?? 'Unnamed Group',
           imageUrl: groupData['group_image_url'],
           lastMessage: groupData['last_message'],
@@ -528,13 +541,15 @@ class Conversations extends _$Conversations {
     }
   }
 
-  Future<List<Map<String, dynamic>>> _getGroupStatuses(String groupId) async {
+  Future<List<Map<String, dynamic>>> _getAllGroupsStatuses(
+      List<String> groupIds) async {
+    if (groupIds.isEmpty) return [];
     try {
       final now = DateTime.now().toIso8601String();
       final response = await _supabase
           .from('statuses')
           .select('*, profile:profile_id(*)')
-          .eq('mentioned_group_id', groupId)
+          .inFilter('mentioned_group_id', groupIds)
           .eq('is_active', true)
           .gt('expires_at', now)
           .order('created_at', ascending: true);
@@ -543,6 +558,26 @@ class Conversations extends _$Conversations {
           .toList();
     } catch (e) {
       return [];
+    }
+  }
+
+  Future<int> _getGroupUnreadCountOnly(
+      String groupId, String userId, String? lastReadTime) async {
+    try {
+      var query = _supabase
+          .from('group_messages')
+          .select()
+          .eq('group_id', groupId)
+          .neq('sender_id', userId);
+
+      if (lastReadTime != null) {
+        query = query.gt('created_at', lastReadTime);
+      }
+
+      final res = await query.count(CountOption.exact);
+      return res.count;
+    } catch (e) {
+      return 0;
     }
   }
 
@@ -639,39 +674,6 @@ class Conversations extends _$Conversations {
           .toList();
     } catch (e) {
       return [];
-    }
-  }
-
-  Future<int> _getGroupUnreadCount(String groupId, String userId) async {
-    try {
-      final response = await _supabase
-          .from('group_members')
-          .select('last_read_at')
-          .eq('group_id', groupId)
-          .eq('user_id', userId)
-          .maybeSingle();
-
-      final lastRead =
-          response != null ? Map<String, dynamic>.from(response) : null;
-
-      if (lastRead == null) return 0;
-
-      final lastReadTime = lastRead['last_read_at'];
-
-      var query = _supabase
-          .from('group_messages')
-          .select('*')
-          .eq('group_id', groupId)
-          .neq('sender_id', userId);
-
-      if (lastReadTime != null) {
-        query = query.gt('created_at', lastReadTime);
-      }
-
-      final countResponse = await query.count(CountOption.exact);
-      return countResponse.count;
-    } catch (e) {
-      return 0;
     }
   }
 

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/widgets/legal_policy_widget.dart';
-
+import 'package:pocket_mates_app/custom_code/widgets/courses_widget.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({Key? key}) : super(key: key);
@@ -135,19 +135,33 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           const SizedBox(height: 24),
           const _SectionHeader(title: 'About'),
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: const Icon(Icons.info_outline, color: Colors.white54),
-            title: const Text(
-              'App Version',
-              style:
-                  TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
-            ),
-            trailing: Text(
-              _appVersion,
-              style: const TextStyle(color: Colors.white54),
-            ),
-          ),
+          StatefulBuilder(builder: (context, setState) {
+            int versionTapCount = 0;
+            return ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.info_outline, color: Colors.white54),
+              title: const Text(
+                'App Version',
+                style:
+                    TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+              ),
+              trailing: Text(
+                _appVersion,
+                style: const TextStyle(color: Colors.white54),
+              ),
+              onTap: () {
+                versionTapCount++;
+                if (versionTapCount == 12) {
+                  versionTapCount = 0;
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const AdminPanelPage()),
+                  );
+                }
+              },
+            );
+          }),
         ],
       ),
     );

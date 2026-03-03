@@ -628,11 +628,10 @@ class _VerfiedSearchProfileDetailPageState
   void _navigateToMessages() {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => MessageScreen(
-          receiverId: widget.userId,
-          receiverName: _profileData?['name'] ?? 'User',
-          receiverProfileImage: _profileData?['profile_image_url'],
-          phonenumber: _profileData?['phone_no'],
+        builder: (context) => WhatsAppGroupChat(
+          groupId: 'p:${widget.userId}',
+          groupName: _profileData?['name'] ?? 'User',
+          groupImage: _profileData?['profile_image_url'],
         ),
       ),
     );

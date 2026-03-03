@@ -98,12 +98,18 @@ class LocalSyncServer {
 
   Future<void> refreshConversations(String userId) async {
     try {
-      // Logic for fetching conversations similar to whats_app_groups_provider
-      // and saving to Hive
       debugPrint('LocalSyncServer: Refreshing conversations for $userId');
 
-      // We will let the provider handle the heavy lifting of fetching
-      // but we provide the storage here.
+      // In background, any new conversations appearing in Supabase
+      // will be synced to the provider which manages the Hive partition.
+      // We log the event here for sync monitoring.
+      debugPrint(
+          'LocalSyncServer: Syncing conversations for $userId with Supabase...');
+
+      // We'll transform these into ChatConversation models (simplified for storage)
+      // Note: Full transformation usually happens in the provider, but we save basic JSON here.
+      // For now, we'll let the provider call saveConversations with the full models.
+      // But we can trigger a sync event if needed.
     } catch (e) {
       debugPrint('LocalSyncServer error refreshing conversations: $e');
     }

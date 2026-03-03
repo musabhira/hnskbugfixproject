@@ -39,7 +39,7 @@ class ChatMessages extends _$ChatMessages {
     _supabase = ref.watch(supabaseClientProvider);
 
     // Subscribe to changes with debouncing
-    _setupSubscription(groupId);
+    _setupSubscription();
 
     // Cleanup on dispose
     ref.onDispose(() {
@@ -48,21 +48,18 @@ class ChatMessages extends _$ChatMessages {
       _pollingTimer?.cancel();
     });
 
-    // Start polling for 1-second updates as requested
-    _startPolling(groupId);
+    // Start polling
+    _startPolling();
 
     // Cache-First Strategy
-    // 1. Load from cache immediately
-    final cached = await _loadFromCache(groupId);
-
-    // 2. Fetch fresh data
+    final cached = await _loadFromCache();
     final freshFuture = _fetchMessages(isInitial: true);
 
     if (cached.isNotEmpty) {
-      // If we have cache, return it immediately and update with fresh data later
       freshFuture.then((fresh) {
         if (state.hasValue) {
           state = AsyncValue.data(fresh);
+          _saveToCache(fresh); // Update cache with fresh data
         }
       }).catchError((e) {
         debugPrint('Background fetch failed: $e');
@@ -70,24 +67,31 @@ class ChatMessages extends _$ChatMessages {
       return cached;
     }
 
-    // 3. no cache, wait for network
     return freshFuture;
   }
 
-  void _setupSubscription(String groupId) {
+  void _setupSubscription() {
+    final isPersonal = groupId.startsWith('p:');
+    final actualId = isPersonal ? groupId.substring(2) : groupId;
+
     _subscription = _supabase
         .channel('chat_messages_$groupId')
         .onPostgresChanges(
           event: PostgresChangeEvent.all,
           schema: 'public',
-          table: 'group_messages',
-          filter: PostgresChangeFilter(
-            type: PostgresChangeFilterType.eq,
-            column: 'group_id',
-            value: groupId,
-          ),
+          table: isPersonal ? 'messages' : 'group_messages',
+          filter: isPersonal
+              ? PostgresChangeFilter(
+                  type: PostgresChangeFilterType.eq,
+                  column: 'receiver_id',
+                  value: actualId,
+                )
+              : PostgresChangeFilter(
+                  type: PostgresChangeFilterType.eq,
+                  column: 'group_id',
+                  value: actualId,
+                ),
           callback: (payload) {
-            // Debounce updates to prevent excessive rebuilds
             _debounceTimer?.cancel();
             _debounceTimer = Timer(const Duration(milliseconds: 300), () {
               _handleRealtimeUpdate(payload);
@@ -97,7 +101,7 @@ class ChatMessages extends _$ChatMessages {
         .subscribe();
   }
 
-  void _startPolling(String groupId) {
+  void _startPolling() {
     _pollingTimer?.cancel();
     _pollingTimer = Timer.periodic(const Duration(seconds: 5), (_) async {
       try {
@@ -120,6 +124,7 @@ class ChatMessages extends _$ChatMessages {
           if (combinedList.length != currentMessages.length ||
               combinedList.first.id != latestMessages.first.id) {
             state = AsyncValue.data(combinedList);
+            _saveToCache(combinedList); // Keep cache in sync with polling
           }
         });
       } catch (e) {
@@ -147,7 +152,7 @@ class ChatMessages extends _$ChatMessages {
               ...currentMessages
             ];
             state = AsyncData(updatedMessages);
-            _saveToCache(groupId, updatedMessages);
+            _saveToCache(updatedMessages);
           });
         }
       });
@@ -159,7 +164,7 @@ class ChatMessages extends _$ChatMessages {
         final updatedMessages =
             messages.where((m) => m.id != deletedId).toList();
         state = AsyncData(updatedMessages);
-        _saveToCache(groupId, updatedMessages);
+        _saveToCache(updatedMessages);
       });
     }
   }
@@ -173,15 +178,18 @@ class ChatMessages extends _$ChatMessages {
       _hasMoreMessages = true;
     }
 
+    final isPersonal = groupId.startsWith('p:');
+    final actualId = isPersonal ? groupId.substring(2) : groupId;
+    final uid = ref.read(currentUserIdProvider);
+
     // If forcing latest (polling), we temporarily look at page 0 without resetting main pagination state
     final int pageToFetch = forceLatest ? 0 : _currentPage;
 
     try {
       final offset = pageToFetch * _pageSize;
 
-      final response = await _supabase
-          .from('group_messages')
-          .select('''
+      final query =
+          _supabase.from(isPersonal ? 'messages' : 'group_messages').select('''
         *,
         reply_to:reply_to_message_id(
           id,
@@ -208,8 +216,12 @@ class ChatMessages extends _$ChatMessages {
               profile:profile!user_id(name, profile_image_url)
             )
           )
-        ''')
-          .eq('group_id', groupId)
+        ''');
+
+      final response = await (isPersonal
+              ? query.or(
+                  'and(sender_id.eq.$uid,receiver_id.eq.$actualId),and(sender_id.eq.$actualId,receiver_id.eq.$uid)')
+              : query.eq('group_id', actualId))
           .order('created_at', ascending: false)
           .range(offset, offset + _pageSize - 1);
 
@@ -228,8 +240,7 @@ class ChatMessages extends _$ChatMessages {
         });
       }).toList();
 
-      // Merge with cache to keep messages that were deleted from server
-      final List<ChatMessage> cachedMessages = await _loadFromCache(groupId);
+      final List<ChatMessage> cachedMessages = await _loadFromCache();
 
       // Combine unique messages (favor remote/fresh data)
       final Map<String, ChatMessage> combinedMap = {
@@ -241,13 +252,13 @@ class ChatMessages extends _$ChatMessages {
       combined.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
       if (isInitial) {
-        _saveToCache(groupId, combined);
+        _saveToCache(combined);
       }
 
       return combined;
     } catch (e) {
       if (isInitial) {
-        final cached = await _loadFromCache(groupId);
+        final cached = await _loadFromCache();
         if (cached.isNotEmpty) return cached;
       }
       rethrow;
@@ -255,25 +266,28 @@ class ChatMessages extends _$ChatMessages {
   }
 
   Future<void> cleanupOldMessages() async {
+    final isPersonal = groupId.startsWith('p:');
+    final actualId = isPersonal ? groupId.substring(2) : groupId;
     try {
       // Delete from Supabase messages older than 34 hours
       final cutoffTime = DateTime.now().subtract(const Duration(hours: 34));
 
       await _supabase
-          .from('group_messages')
+          .from(isPersonal ? 'messages' : 'group_messages')
           .delete()
-          .eq('group_id', groupId)
+          .eq(isPersonal ? 'receiver_id' : 'group_id', actualId)
           .lt('created_at', cutoffTime.toIso8601String());
 
-      debugPrint('Supabase 34h cleanup completed for group: $groupId');
+      debugPrint('Supabase 34h cleanup completed for: $groupId');
     } catch (e) {
       debugPrint('Error during database cleanup: $e');
     }
   }
 
   Future<void> editMessage(String messageId, String newText) async {
+    final isPersonal = groupId.startsWith('p:');
     try {
-      await _supabase.from('group_messages').update({
+      await _supabase.from(isPersonal ? 'messages' : 'group_messages').update({
         'message_text': newText,
         'is_edited': true,
       }).eq('id', messageId);
@@ -290,7 +304,7 @@ class ChatMessages extends _$ChatMessages {
           final updatedList = List<ChatMessage>.from(messages);
           updatedList[index] = updated;
           state = AsyncData(updatedList);
-          _saveToCache(groupId, updatedList);
+          _saveToCache(updatedList);
         }
       });
     } catch (e) {
@@ -307,6 +321,7 @@ class ChatMessages extends _$ChatMessages {
     try {
       final moreMessages = await _fetchMessages();
       state = AsyncData(moreMessages);
+      _saveToCache(moreMessages); // Cache the extended history
     } catch (e) {
       _currentPage--; // Revert on error
       rethrow;
@@ -319,14 +334,21 @@ class ChatMessages extends _$ChatMessages {
     String? fileUrl,
     int? voiceDuration,
     String? replyToId,
+    String? galleryId,
+    String? thoughtId,
+    Map<String, dynamic>? metadata,
   }) async {
     final uid = ref.read(currentUserIdProvider);
     if (uid.isEmpty) return;
 
+    final isPersonal = groupId.startsWith('p:');
+    final actualId = isPersonal ? groupId.substring(2) : groupId;
+
     // Create optimistic message
     final optimisticMessage = ChatMessage(
       id: 'temp_${DateTime.now().millisecondsSinceEpoch}',
-      groupId: groupId,
+      groupId: isPersonal ? null : actualId,
+      receiverId: isPersonal ? actualId : null,
       senderId: uid,
       messageText: text,
       messageType: messageType,
@@ -335,6 +357,7 @@ class ChatMessages extends _$ChatMessages {
       replyToMessageId: replyToId,
       createdAt: DateTime.now(),
       isOptimistic: true,
+      metadata: metadata,
     );
 
     // Add optimistically to UI immediately
@@ -344,18 +367,23 @@ class ChatMessages extends _$ChatMessages {
     });
 
     final messageData = {
-      'group_id': groupId,
+      if (!isPersonal) 'group_id': actualId else 'receiver_id': actualId,
       'sender_id': uid,
       'message_text': text,
       'message_type': messageType,
       'file_url': fileUrl,
       'voice_duration': voiceDuration,
       'reply_to_message_id': replyToId,
+      'gallery_id': galleryId,
+      'thought_id': thoughtId,
+      'metadata': metadata,
     };
 
     try {
-      final response =
-          await _supabase.from('group_messages').insert(messageData).select('''
+      final response = await _supabase
+          .from(isPersonal ? 'messages' : 'group_messages')
+          .insert(messageData)
+          .select('''
             *,
             reply_to:reply_to_message_id(
               id,
@@ -411,18 +439,29 @@ class ChatMessages extends _$ChatMessages {
         }
 
         state = AsyncData(updatedList);
-        _saveToCache(groupId, updatedList);
+        _saveToCache(updatedList);
       });
 
-      // Update groups table metadata for the chat list
+      // Update relevant metadata for the chat list
       try {
-        await _supabase.from('groups').update({
-          'last_message': text,
-          'last_message_time': DateTime.now().toIso8601String(),
-          'updated_at': DateTime.now().toIso8601String(),
-        }).eq('id', groupId);
-      } catch (groupError) {
-        debugPrint('Error updating group metadata: $groupError');
+        if (isPersonal) {
+          // Update conversations table
+          await _supabase.from('conversations').update({
+            'last_message': text,
+            'last_message_time': DateTime.now().toIso8601String(),
+            'updated_at': DateTime.now().toIso8601String(),
+            'last_sender_id': uid,
+          }).or(
+              'and(user_id.eq.$uid,other_user_id.eq.$actualId),and(user_id.eq.$actualId,other_user_id.eq.$uid)');
+        } else {
+          await _supabase.from('groups').update({
+            'last_message': text,
+            'last_message_time': DateTime.now().toIso8601String(),
+            'updated_at': DateTime.now().toIso8601String(),
+          }).eq('id', actualId);
+        }
+      } catch (metaError) {
+        debugPrint('Error updating metadata: $metaError');
       }
     } catch (e) {
       // Remove optimistic message on error
@@ -436,13 +475,17 @@ class ChatMessages extends _$ChatMessages {
   }
 
   Future<void> deleteMessage(String messageId) async {
+    final isPersonal = groupId.startsWith('p:');
     // Optimistically remove from UI
     state.whenData((messages) {
       state = AsyncData(messages.where((m) => m.id != messageId).toList());
     });
 
     try {
-      await _supabase.from('group_messages').delete().eq('id', messageId);
+      await _supabase
+          .from(isPersonal ? 'messages' : 'group_messages')
+          .delete()
+          .eq('id', messageId);
       // Real-time listener confirms deletion
     } catch (e) {
       // Revert on error - refresh from server
@@ -452,20 +495,23 @@ class ChatMessages extends _$ChatMessages {
   }
 
   // Cache Logic: Persist messages locally for 34h+ history
-  Future<List<ChatMessage>> _loadFromCache(String groupId) async {
+  Future<List<ChatMessage>> _loadFromCache() async {
     final cachedData = LocalSyncServer().getCachedMessages(groupId);
     return cachedData
         .map((m) => ChatMessage.fromJson(Map<String, dynamic>.from(m)))
         .toList();
   }
 
-  Future<void> _saveToCache(String groupId, List<ChatMessage> messages) async {
+  Future<void> _saveToCache(List<ChatMessage> messages) async {
     await LocalSyncServer().saveMessages(groupId, messages);
   }
 
   Future<ChatMessage?> _fetchMessageById(String id) async {
+    final isPersonal = groupId.startsWith('p:');
     try {
-      final response = await _supabase.from('group_messages').select('''
+      final response = await _supabase
+          .from(isPersonal ? 'messages' : 'group_messages')
+          .select('''
         *,
         reply_to:reply_to_message_id(
           id,
@@ -492,7 +538,9 @@ class ChatMessages extends _$ChatMessages {
             profile:profile!user_id(name, profile_image_url)
           )
         )
-      ''').eq('id', id).single();
+      ''')
+          .eq('id', id)
+          .single();
 
       final sender = _safeGet(response['sender']);
       final senderProfile = _safeGet(sender?['profile']);

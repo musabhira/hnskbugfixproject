@@ -9,6 +9,8 @@ import 'package:pocket_mates_app/custom_code/widgets/verfied_search_profile_deta
 import 'package:pocket_mates_app/custom_code/widgets/thread_feed_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/share_content_screen.dart';
 import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:pocket_mates_app/custom_code/widgets/status_display_widget.dart';
 
 class ThoughtsFeedSection extends StatefulWidget {
   final String currentUserId;
@@ -579,22 +581,7 @@ class _TwitterThreadCardState extends State<TwitterThreadCard> {
                   activeColor: Colors.white70,
                   isActive: false,
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ShareContentScreen(
-                          contentToShare: widget.thread['content'] ?? '',
-                          currentUserId: widget.currentUserId,
-                          contentId: widget.thread['id'].toString(),
-                          contentType: 'thought',
-                          metadata: widget.thread,
-                        ),
-                      ),
-                    ).then((result) {
-                      if (result == true) {
-                        widget.onStatusShared?.call();
-                      }
-                    });
+                    _showShareBottomSheet(context);
                   },
                 ),
                 const Spacer(),
@@ -604,6 +591,172 @@ class _TwitterThreadCardState extends State<TwitterThreadCard> {
         ),
       ),
     );
+  }
+
+  void _showShareBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => GroupSelectionBottomSheet(
+        contentToShare: widget.thread['content'] ?? '',
+        currentUserId: widget.currentUserId,
+        onGroupSelected: (groupId, groupName, userMessage) {
+          Navigator.pop(context);
+          _shareToGroup(groupId, groupName, userMessage);
+        },
+        onPersonSelected: (userId, userName, userMessage) {
+          Navigator.pop(context);
+          _shareToPerson(userId, userName, userMessage);
+        },
+        onStatusSelected: (userMessage) {
+          Navigator.pop(context);
+          _shareToStatus(userMessage);
+        },
+        onWhatsAppShare: () {
+          Navigator.pop(context);
+          final text =
+              "Check out this thought: ${widget.thread['content'] ?? ''}";
+          Share.share(text);
+        },
+      ),
+    );
+  }
+
+  Future<void> _shareToPerson(
+      String userId, String userName, String? userMessage) async {
+    try {
+      final supabase = SupaFlow.client;
+      // Prepare payload
+      final Map<String, dynamic> messageData = {
+        'sender_id': widget.currentUserId,
+        'receiver_id': userId,
+        'content': widget.thread['content'] ?? '',
+        'message_text': widget.thread['content'] ?? '',
+        'updated_at': DateTime.now().toIso8601String(),
+        'is_read': false,
+        'message_type': 'thought',
+        'thought_id': widget.thread['id'],
+      };
+
+      await supabase.from('messages').insert(messageData);
+
+      // Update conversation record
+      final existingConv = await supabase
+          .from('conversations')
+          .select('id, unread_count')
+          .or('and(user1_id.eq.${widget.currentUserId},user2_id.eq.$userId),and(user1_id.eq.$userId,user2_id.eq.${widget.currentUserId})')
+          .maybeSingle();
+
+      if (existingConv != null) {
+        await supabase.from('conversations').update({
+          'last_message': widget.thread['content'] ?? '',
+          'last_message_time': DateTime.now().toIso8601String(),
+          'last_sender_id': widget.currentUserId,
+          'unread_count': (existingConv['unread_count'] ?? 0) + 1,
+          'updated_at': DateTime.now().toIso8601String(),
+        }).eq('id', existingConv['id']);
+      } else {
+        await supabase.from('conversations').insert({
+          'user1_id': widget.currentUserId,
+          'user2_id': userId,
+          'last_message': widget.thread['content'] ?? '',
+          'last_message_time': DateTime.now().toIso8601String(),
+          'last_sender_id': widget.currentUserId,
+          'unread_count': 1,
+        });
+      }
+
+      if (mounted) {
+        widget.onStatusShared?.call();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Shared to $userName successfully!')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text('Error sharing: $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
+  Future<void> _shareToGroup(
+      String groupId, String groupName, String? userMessage) async {
+    try {
+      final supabase = SupaFlow.client;
+      final Map<String, dynamic> messageData = {
+        'group_id': groupId,
+        'sender_id': widget.currentUserId,
+        'message_text': widget.thread['content'] ?? '',
+        'message_type': 'thought',
+        'thought_id': widget.thread['id'],
+      };
+
+      await supabase.from('group_messages').insert(messageData);
+
+      await supabase.from('groups').update({
+        'last_message': widget.thread['content'] ?? '',
+        'last_message_time': DateTime.now().toIso8601String(),
+        'updated_at': DateTime.now().toIso8601String(),
+      }).eq('id', groupId);
+
+      if (mounted) {
+        widget.onStatusShared?.call();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Shared to $groupName successfully!')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text('Error sharing: $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
+  Future<void> _shareToStatus([String? userMessage]) async {
+    try {
+      final supabase = SupaFlow.client;
+      final profileResponse = await supabase
+          .from('profile')
+          .select('id')
+          .eq('user_id', widget.currentUserId)
+          .single();
+      final profileId = profileResponse['id'] as String;
+
+      if (!mounted) return;
+
+      final result = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => StatusUploadWidget(
+            userId: widget.currentUserId,
+            profileId: profileId,
+            sharedContent: widget.thread['content'] ?? '',
+            sharedContentType: 'thought',
+            sharedContentId: widget.thread['id']?.toString(),
+            sharedMetadata: widget.thread,
+          ),
+        ),
+      );
+
+      if (result == true && mounted) {
+        widget.onStatusShared?.call();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text('Error sharing to status: $e'),
+              backgroundColor: Colors.red),
+        );
+      }
+    }
   }
 
   Widget _buildAction({

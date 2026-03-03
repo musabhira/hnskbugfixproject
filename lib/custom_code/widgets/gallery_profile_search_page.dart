@@ -1,23 +1,14 @@
 // Automatic FlutterFlow imports
 import 'dart:async';
-import 'dart:async';
-import 'dart:math';
 import 'dart:math';
 
 import 'package:pocket_mates_app/custom_code/widgets/search_profile_detail_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/search_profile_detail_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/message_screen.dart';
-import 'package:pocket_mates_app/custom_code/widgets/message_screen.dart';
-import 'package:flutter/material.dart' as material;
+import 'index.dart';
 import 'package:flutter/material.dart' as material;
 
 import '/backend/supabase/supabase.dart';
-import '/backend/supabase/supabase.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import 'package:fluent_ui/fluent_ui.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
@@ -1828,13 +1819,11 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                                 Navigator.push(
                                   context,
                                   FluentPageRoute(
-                                    builder: (context) => MessageScreen(
-                                      receiverId:
-                                          widget.userid ?? item['user_id'],
-                                      receiverName: item['name'],
-                                      receiverProfileImage:
-                                          item['profile_image_url'],
-                                      phonenumber: item['phone_no'],
+                                    builder: (context) => WhatsAppGroupChat(
+                                      groupId:
+                                          'p:${widget.userid ?? item['user_id']}',
+                                      groupName: item['name'] ?? 'User',
+                                      groupImage: item['profile_image_url'],
                                     ),
                                   ),
                                 );

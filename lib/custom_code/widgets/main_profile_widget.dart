@@ -10,7 +10,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/custom_code/widgets/profile_custom_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
-import 'package:pocket_mates_app/custom_code/widgets/message_screen.dart';
+import 'index.dart';
+
 import 'package:pocket_mates_app/custom_code/widgets/gallery_profile_search_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/posters_tab.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -869,11 +870,10 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                         Navigator.push(
                           context,
                           material.MaterialPageRoute(
-                            builder: (context) => MessageScreen(
-                              receiverId: userId,
-                              receiverName: name,
-                              receiverProfileImage: profileUrl,
-                              phonenumber: _profileData?['phone_no'],
+                            builder: (context) => WhatsAppGroupChat(
+                              groupId: 'p:$userId',
+                              groupName: name,
+                              groupImage: profileUrl,
                             ),
                           ),
                         );
@@ -1401,10 +1401,9 @@ class _ServicesTab extends StatelessWidget {
                       Navigator.push(
                         context,
                         material.MaterialPageRoute(
-                          builder: (context) => MessageScreen(
-                            receiverId: userId,
-                            receiverName: title,
-                            phonenumber: '', // Can add if needed
+                          builder: (context) => WhatsAppGroupChat(
+                            groupId: 'p:$userId',
+                            groupName: title,
                           ),
                         ),
                       );

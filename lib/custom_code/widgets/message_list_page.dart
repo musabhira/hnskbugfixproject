@@ -1,15 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/material.dart';
-import 'dart:async';
 import 'dart:async';
 import 'package:timeago/timeago.dart' as timeago;
-import 'package:timeago/timeago.dart' as timeago;
-import '/backend/supabase/supabase.dart';
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import 'package:pocket_mates_app/custom_code/widgets/message_screen.dart';
-import 'package:pocket_mates_app/custom_code/widgets/message_screen.dart';
+import 'index.dart';
 
 class MessageListPage extends StatefulWidget {
   const MessageListPage({super.key});
@@ -148,12 +142,10 @@ class _MessageListPageState extends State<MessageListPage> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => MessageScreen(
-          receiverId: otherUser['id'],
-          receiverName: otherUser['name'],
-          receiverProfileImage: otherUser['avatar'],
-          phonenumber:
-              otherUser['phonenumber'], // Add phone number if available
+        builder: (context) => WhatsAppGroupChat(
+          groupId: 'p:${otherUser['id']}',
+          groupName: otherUser['name'],
+          groupImage: otherUser['avatar'],
         ),
       ),
     );

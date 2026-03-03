@@ -1077,10 +1077,10 @@ class _ProfileDetailPageState extends State<ProfileDetailPage>
   void _navigateToMessages() {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => MessageScreen(
-          receiverId: widget.userId,
-          receiverName: _profileData?['name'] ?? 'User',
-          receiverProfileImage: _profileData?['profile_image_url'],
+        builder: (context) => WhatsAppGroupChat(
+          groupId: 'p:${widget.userId}',
+          groupName: _profileData?['name'] ?? 'User',
+          groupImage: _profileData?['profile_image_url'],
         ),
       ),
     );

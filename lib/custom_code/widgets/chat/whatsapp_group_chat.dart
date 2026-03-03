@@ -18,11 +18,21 @@ import 'package:flutter/services.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:video_compress/video_compress.dart';
+import 'package:video_player/video_player.dart';
 import '../webrtc_call_screen.dart';
 import '../image_viewer.dart';
 import 'package:pocket_mates_app/custom_code/widgets/gallery_search_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/thread_feed_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/drawing_academy_home_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/poster_designer/template_gallery_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/bulk_sender/bulk_sender_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/poki_games_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/nearby_users_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chess_game_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/teams/user_search_dialog.dart';
+import 'package:pocket_mates_app/custom_code/widgets/teams/teams_service.dart';
 
 class WhatsAppGroupChat extends ConsumerStatefulWidget {
   final double? width;
@@ -147,6 +157,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   }
 
   Future<void> _fetchMembers() async {
+    if (widget.groupId.startsWith('p:')) return;
     try {
       final supabase = ref.read(supabaseClientProvider);
       final response = await supabase.from('group_members').select('''
@@ -292,17 +303,32 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
             children: [
               const Icon(Icons.arrow_back, color: Colors.white),
               const SizedBox(width: 4),
-              Hero(
-                tag: 'group_avatar_${widget.groupId}',
-                child: CircleAvatar(
-                  radius: 18,
-                  backgroundColor: Colors.grey[700],
-                  backgroundImage: widget.groupImage != null
-                      ? NetworkImage(widget.groupImage!)
-                      : null,
-                  child: widget.groupImage == null
-                      ? const Icon(Icons.group, color: Colors.white, size: 20)
-                      : null,
+              GestureDetector(
+                onTap: () {
+                  if (widget.groupImage != null) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ImageViewer(
+                          imageUrl: widget.groupImage!,
+                          title: widget.groupName,
+                        ),
+                      ),
+                    );
+                  }
+                },
+                child: Hero(
+                  tag: 'group_avatar_${widget.groupId}',
+                  child: CircleAvatar(
+                    radius: 18,
+                    backgroundColor: Colors.grey[700],
+                    backgroundImage: widget.groupImage != null
+                        ? NetworkImage(widget.groupImage!)
+                        : null,
+                    child: widget.groupImage == null
+                        ? const Icon(Icons.group, color: Colors.white, size: 20)
+                        : null,
+                  ),
                 ),
               ),
             ],
@@ -323,9 +349,11 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
               ),
               const SizedBox(height: 2),
               Text(
-                _groupMembers.isEmpty
+                widget.groupId.startsWith('p:')
                     ? 'Tap for info'
-                    : '${_groupMembers.length} members',
+                    : (_groupMembers.isEmpty
+                        ? 'Tap for info'
+                        : '${_groupMembers.length} members'),
                 style: const TextStyle(
                   fontSize: 12,
                   color: Colors.white70,
@@ -548,182 +576,346 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
         ? radius.copyWith(topRight: Radius.zero)
         : radius.copyWith(topLeft: Radius.zero);
 
-    return Align(
-      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
-        margin: EdgeInsets.only(
-          top: 2,
-          bottom: 2,
-          left: isMe ? 48 : 8,
-          right: isMe ? 8 : 48,
-        ),
-        child: Column(
-          crossAxisAlignment:
-              isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-          children: [
-            // Sender Name (if group and not me)
-            if (!isMe)
-              Padding(
-                padding: const EdgeInsets.only(left: 4, bottom: 2),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      message.senderName ?? 'User',
-                      style: const TextStyle(
-                        color: Colors.yellow, // Matched to app theme
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
+    return Row(
+      mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        if (!isMe)
+          GestureDetector(
+            onTap: () {
+              final member = _groupMembers.firstWhere(
+                  (m) => m['user_id'] == message.senderId,
+                  orElse: () => {});
+              final url = member['profile']?['profile_image_url'];
+              if (url != null) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ImageViewer(
+                      imageUrl: url,
+                      title: message.senderName,
                     ),
-                    if (_isAdmin(message.senderId)) ...[
-                      const SizedBox(width: 4),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 4, vertical: 1),
-                        decoration: BoxDecoration(
-                          color: Colors.yellow.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(4),
-                          border: Border.all(color: Colors.yellow, width: 0.5),
-                        ),
-                        child: const Text(
-                          'Admin',
-                          style: TextStyle(color: Colors.yellow, fontSize: 8),
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-
-            GestureDetector(
-              onLongPress: () async {
-                if (message.messageText != null &&
-                    message.messageText!.isNotEmpty) {
-                  await Clipboard.setData(
-                      ClipboardData(text: message.messageText!));
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Message copied'),
-                        duration: Duration(seconds: 2),
-                      ),
-                    );
-                  }
-                }
-              },
-              child: Container(
-                decoration: BoxDecoration(
-                  // Gradient for Me (Golden/Yellow), Solid Dark for Others
-                  gradient: isMe
-                      ? const LinearGradient(
-                          colors: [Color(0xFFFFD600), Color(0xFFFFAB00)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        )
-                      : null,
-                  color: isMe ? null : const Color(0xFF1F2C34),
-                  borderRadius: borderRadius,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.2),
-                      offset: const Offset(0, 2),
-                      blurRadius: 4,
-                    )
-                  ],
-                ),
-                padding: const EdgeInsets.all(4),
-                child: Stack(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(
-                          left: 2, right: 2, top: 1, bottom: 16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (message.messageType == 'image' &&
-                              message.fileUrl != null)
-                            _buildImageMessage(message.fileUrl!),
-                          if (message.messageType == 'voice' &&
-                              message.fileUrl != null)
-                            _buildVoiceMessage(message),
-                          if (message.messageType == 'thought' &&
-                              message.thought != null)
-                            _buildThoughtMessage(message.thought!, isMe),
-                          if (message.messageType == 'gallery' &&
-                              message.gallery != null)
-                            _buildGalleryMessage(message.gallery!, isMe),
-                          if (message.messageType == 'text' &&
-                              message.messageText != null &&
-                              message.messageText!.isNotEmpty)
-                            SelectableText(
-                              message.messageText!,
-                              style: TextStyle(
-                                  color: isMe ? Colors.black : Colors.white,
-                                  fontSize: 16),
-                            ),
-                        ],
-                      ),
-                    ),
-                    Positioned(
-                      bottom: 2,
-                      right: 6,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (message.messageText != null &&
-                              message.messageText!.isNotEmpty) ...[
-                            InkWell(
-                              onTap: () async {
-                                await Clipboard.setData(
-                                    ClipboardData(text: message.messageText!));
-                                if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Copied'),
-                                      duration: Duration(seconds: 1),
-                                    ),
-                                  );
-                                }
-                              },
-                              child: Icon(
-                                Icons.copy,
-                                size: 12,
-                                color: (isMe ? Colors.black : Colors.white)
-                                    .withValues(alpha: 0.6),
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                          ],
-                          Text(
-                            _formatTime(message.createdAt),
-                            style: TextStyle(
-                              color: (isMe ? Colors.black : Colors.white)
-                                  .withValues(alpha: 0.6),
-                              fontSize: 10,
-                            ),
-                          ),
-                          if (isMe) ...[
-                            const SizedBox(width: 4),
-                            Icon(
-                              message.isOptimistic
-                                  ? Icons.access_time
-                                  : Icons.done_all,
-                              size: 14,
-                              color: message.isOptimistic
-                                  ? (isMe ? Colors.black54 : Colors.white54)
-                                  : Colors.blue,
-                            ),
-                          ]
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                );
+              }
+            },
+            child: Padding(
+              padding: const EdgeInsets.only(left: 8, bottom: 4),
+              child: CircleAvatar(
+                radius: 14,
+                backgroundColor: Colors.grey[800],
+                backgroundImage: () {
+                  final member = _groupMembers.firstWhere(
+                      (m) => m['user_id'] == message.senderId,
+                      orElse: () => {});
+                  final url = member['profile']?['profile_image_url'];
+                  return url != null ? NetworkImage(url) : null;
+                }(),
+                child: const Icon(Icons.person, size: 14, color: Colors.white),
               ),
             ),
-          ],
+          ),
+        Flexible(
+          child: Container(
+            margin: EdgeInsets.only(
+              top: 2,
+              bottom: 2,
+              left: isMe ? 48 : 4,
+              right: isMe ? 8 : 48,
+            ),
+            child: Column(
+              crossAxisAlignment:
+                  isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+              children: [
+                // Sender Name (if group and not me)
+                if (!isMe && !widget.groupId.startsWith('p:'))
+                  Padding(
+                    padding: const EdgeInsets.only(left: 4, bottom: 2),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          message.senderName ?? 'User',
+                          style: const TextStyle(
+                            color: Colors.yellow,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        if (_isAdmin(message.senderId)) ...[
+                          const SizedBox(width: 4),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 4, vertical: 1),
+                            decoration: BoxDecoration(
+                              color: Colors.yellow.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(4),
+                              border:
+                                  Border.all(color: Colors.yellow, width: 0.5),
+                            ),
+                            child: const Text(
+                              'Admin',
+                              style:
+                                  TextStyle(color: Colors.yellow, fontSize: 8),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+
+                GestureDetector(
+                  onLongPress: () async {
+                    if (message.messageText != null &&
+                        message.messageText!.isNotEmpty) {
+                      await Clipboard.setData(
+                          ClipboardData(text: message.messageText!));
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Message copied')),
+                        );
+                      }
+                    }
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: isMe
+                          ? const LinearGradient(
+                              colors: [Color(0xFFFFD600), Color(0xFFFFAB00)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            )
+                          : null,
+                      color: isMe ? null : const Color(0xFF1F2C34),
+                      borderRadius: borderRadius,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2),
+                          offset: const Offset(0, 2),
+                          blurRadius: 4,
+                        )
+                      ],
+                    ),
+                    padding: const EdgeInsets.all(4),
+                    child: Stack(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(
+                              left: 2, right: 2, top: 1, bottom: 16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (message.messageType == 'image' &&
+                                  message.fileUrl != null)
+                                _buildImageMessage(message.fileUrl!),
+                              if (message.messageType == 'voice' &&
+                                  message.fileUrl != null)
+                                _buildVoiceMessage(message),
+                              if (message.messageType == 'thought' &&
+                                  message.thought != null)
+                                _buildThoughtMessage(message.thought!, isMe),
+                              if (message.messageType == 'gallery' &&
+                                  message.gallery != null)
+                                _buildGalleryMessage(message.gallery!, isMe),
+                              if (message.messageType == 'status_mention')
+                                _buildStatusMentionMessage(message, isMe),
+                              if (message.messageType == 'video' &&
+                                  message.fileUrl != null)
+                                _buildVideoMessage(message.fileUrl!),
+                              if (message.messageType == 'tool' &&
+                                  message.metadata != null)
+                                _buildToolMessage(message.metadata!, isMe),
+                              if (message.messageType == 'text' &&
+                                  message.messageText != null &&
+                                  message.messageText!.isNotEmpty)
+                                SelectableText(
+                                  message.messageText!,
+                                  style: TextStyle(
+                                      color: isMe ? Colors.black : Colors.white,
+                                      fontSize: 16),
+                                ),
+                            ],
+                          ),
+                        ),
+                        Positioned(
+                          bottom: 2,
+                          right: 6,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (message.messageText != null &&
+                                  message.messageText!.isNotEmpty) ...[
+                                InkWell(
+                                  onTap: () async {
+                                    await Clipboard.setData(ClipboardData(
+                                        text: message.messageText!));
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(const SnackBar(
+                                              content: Text('Copied')));
+                                    }
+                                  },
+                                  child: Icon(
+                                    Icons.copy,
+                                    size: 12,
+                                    color: (isMe ? Colors.black : Colors.white)
+                                        .withOpacity(0.6),
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                              ],
+                              Text(
+                                _formatTime(message.createdAt),
+                                style: TextStyle(
+                                  color: (isMe ? Colors.black : Colors.white)
+                                      .withOpacity(0.6),
+                                  fontSize: 10,
+                                ),
+                              ),
+                              if (isMe) ...[
+                                const SizedBox(width: 4),
+                                Icon(
+                                  message.isOptimistic
+                                      ? Icons.access_time
+                                      : Icons.done_all,
+                                  size: 14,
+                                  color: message.isOptimistic
+                                      ? (isMe ? Colors.black54 : Colors.white54)
+                                      : Colors.blue,
+                                ),
+                              ]
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
+      ],
+    );
+  }
+
+  Widget _buildStatusMentionMessage(ChatMessage message, bool isMe) {
+    final metadata = message.metadata ?? {};
+    final senderName = metadata['sender_name'] ?? 'Someone';
+    final mediaUrl = metadata['status_media_url'];
+    final mediaType = metadata['media_type'] ?? 'image';
+    final caption = message.messageText ?? '';
+
+    return Container(
+      width: 220,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: isMe
+            ? Colors.black.withValues(alpha: 0.1)
+            : Colors.yellow.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(16),
+        border:
+            Border.all(color: Colors.yellow.withValues(alpha: 0.2), width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: Colors.yellow.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  mediaType == 'video' ? Icons.videocam : Icons.image,
+                  color: Colors.yellow,
+                  size: 16,
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Text(
+                'Group Mention',
+                style: TextStyle(
+                  color: Colors.yellow,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            '$senderName mentioned this group in their Vibe:',
+            style: const TextStyle(
+              color: Colors.yellow,
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 8),
+          if (mediaUrl != null && mediaType != 'text')
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: CachedNetworkImage(
+                imageUrl: mediaUrl,
+                height: 120,
+                width: double.infinity,
+                fit: BoxFit.cover,
+              ),
+            ),
+          if (mediaType == 'text')
+            Container(
+              height: 120,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFCC2B5E), Color(0xFF753A88)],
+                ),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              padding: const EdgeInsets.all(10),
+              alignment: Alignment.center,
+              child: Text(
+                mediaUrl ?? '',
+                maxLines: 4,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(color: Colors.white, fontSize: 12),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          const SizedBox(height: 12),
+          Text(
+            caption,
+            style: TextStyle(
+              color: isMe ? Colors.black87 : Colors.white,
+              fontSize: 13,
+            ),
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton(
+              onPressed: () {
+                // Logic to open status viewer can be added later if needed
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Opening Vibe...')),
+                );
+              },
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: Colors.yellow, width: 1),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+              child: const Text(
+                'View Vibe',
+                style: TextStyle(color: Colors.yellow, fontSize: 12),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -1131,6 +1323,238 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     );
   }
 
+  Widget _buildVideoMessage(String url) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => VideoPlayerPage(
+              videoUrl: url,
+              title: widget.groupName,
+            ),
+          ),
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 4),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxHeight: 300),
+                child: FutureBuilder<String?>(
+                  future:
+                      VideoCompress.getFileThumbnail(url).then((f) => f.path),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData && snapshot.data != null) {
+                      return Image.file(File(snapshot.data!),
+                          fit: BoxFit.cover);
+                    }
+                    return Container(
+                      height: 200,
+                      width: 200,
+                      color: Colors.black12,
+                      child: const Icon(Icons.videocam,
+                          color: Colors.white24, size: 40),
+                    );
+                  },
+                ),
+              ),
+              const CircleAvatar(
+                backgroundColor: Colors.black45,
+                radius: 24,
+                child: Icon(Icons.play_arrow, color: Colors.white, size: 30),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildToolMessage(Map<String, dynamic> metadata, bool isMe) {
+    final String title = metadata['title'] ?? 'Tool';
+    final String? description = metadata['description'];
+
+    return GestureDetector(
+      onTap: () {
+        // Logic to open tool
+        final String toolName = title;
+        // Navigation logic from HomePageWidgetTree
+        _navigateToTool(toolName);
+      },
+      child: Container(
+        width: 240,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          color: isMe
+              ? Colors.yellow.withOpacity(0.1)
+              : Colors.white.withOpacity(0.05),
+          border: Border.all(color: Colors.yellow.withOpacity(0.3), width: 1),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.yellow,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                _getToolIcon(title),
+                color: Colors.black,
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
+                  if (description != null)
+                    Text(
+                      description,
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.6),
+                        fontSize: 12,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                ],
+              ),
+            ),
+            const Icon(Icons.arrow_forward_ios, size: 12, color: Colors.yellow),
+          ],
+        ),
+      ),
+    );
+  }
+
+  IconData _getToolIcon(String title) {
+    switch (title) {
+      case 'Poster Designer':
+        return Icons.palette;
+      case 'Bulk Sender':
+        return Icons.send_to_mobile;
+      case 'Poki Games':
+        return Icons.games;
+      case 'Drawing Academy':
+        return Icons.draw;
+      case 'Travel Radar':
+        return Icons.location_on;
+      default:
+        return Icons.apps;
+    }
+  }
+
+  void _navigateToTool(String title) {
+    // Implement navigation matching home_page_widget_tree.dart
+    Widget? page;
+    switch (title) {
+      case 'Poster Designer':
+        page = const TemplateGalleryPage();
+        break;
+      case 'Bulk Sender':
+        page = const BulkSenderPage();
+        break;
+      case 'Poki Games':
+        page = const PokiGamesPage();
+        break;
+      case 'Drawing Academy':
+        page = const DrawingAcademyHomePage();
+        break;
+      case 'Travel Radar':
+        page = const NearbyUsersPage();
+        break;
+      case 'Nearby Profiles':
+        page = const NearbyUsersPage();
+        break;
+      case 'Chess':
+        page = const ChessMatchmakingPage();
+        break;
+    }
+    if (page != null) {
+      Navigator.push(context, MaterialPageRoute(builder: (_) => page!));
+    }
+  }
+
+  Future<void> _pickAndUploadVideo() async {
+    safeSetState(() => _showAttachMenu = false);
+    try {
+      final video = await _imagePicker.pickVideo(source: ImageSource.gallery);
+      if (video == null) return;
+
+      // Show loading
+      _showLoadingSnackBar('Compressing & Uploading Video...');
+
+      // Compress
+      final MediaInfo? mediaInfo = await VideoCompress.compressVideo(
+        video.path,
+        quality: VideoQuality.DefaultQuality,
+        deleteOrigin: false,
+      );
+
+      final fileToUpload = mediaInfo?.file ?? File(video.path);
+
+      final fileName = 'video_${DateTime.now().millisecondsSinceEpoch}.mp4';
+      final storagePath = 'group_${widget.groupId}/$fileName';
+
+      await _supabase.storage
+          .from('chat-media')
+          .upload(storagePath, fileToUpload);
+      final url =
+          _supabase.storage.from('chat-media').getPublicUrl(storagePath);
+
+      await sendMessage(text: 'Video 📹', messageType: 'video', fileUrl: url);
+
+      if (mounted) ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    } catch (e) {
+      _showErrorSnackBar('Error uploading video: $e');
+    }
+  }
+
+  void _showLoadingSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                    strokeWidth: 2, color: Colors.white)),
+            const SizedBox(width: 12),
+            Text(message),
+          ],
+        ),
+        duration: const Duration(seconds: 10),
+      ),
+    );
+  }
+
+  void _showErrorSnackBar(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+
   Widget _buildVoiceMessage(ChatMessage message) {
     return VoiceMessagePlayer(
       fileUrl: message.fileUrl!,
@@ -1302,8 +1726,8 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _buildAttachOption(
-                      Icons.headset, Colors.orange, 'Audio', () {}),
+                  _buildAttachOption(Icons.videocam, Colors.orange, 'Video',
+                      () => _pickAndUploadVideo()),
                   _buildAttachOption(
                       Icons.location_on, Colors.green, 'Location', () {}),
                   _buildAttachOption(
@@ -1627,39 +2051,37 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   void _showAddMemberDialog() {
     showDialog(
       context: context,
-      builder: (context) {
-        final controller = TextEditingController();
-        return AlertDialog(
-          backgroundColor: const Color(0xFF1F2C34),
-          title: const Text('Add Member (Email)',
-              style: TextStyle(color: Colors.white)),
-          content: TextField(
-            controller: controller,
-            style: const TextStyle(color: Colors.white),
-            decoration: const InputDecoration(
-              hintText: 'Enter email address',
-              hintStyle: TextStyle(color: Colors.white30),
-            ),
-          ),
-          actions: [
-            TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Cancel')),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.yellow),
-              onPressed: () async {
-                final email = controller.text.trim();
-                if (email.isNotEmpty) {
-                  await _addMemberByEmail(email);
-                  if (mounted) Navigator.pop(context);
-                }
-              },
-              child: const Text('Add', style: TextStyle(color: Colors.black)),
-            ),
-          ],
-        );
-      },
+      builder: (context) => UserSearchDialog(
+        multipleSelection: true,
+        onUsersSelected: (selectedUsers) async {
+          if (selectedUsers.isNotEmpty) {
+            await _addMembers(selectedUsers);
+          }
+        },
+      ),
     );
+  }
+
+  Future<void> _addMembers(List<UserResult> users) async {
+    try {
+      final supabase = ref.read(supabaseClientProvider);
+      for (var user in users) {
+        await supabase.from('group_members').upsert({
+          'group_id': widget.groupId,
+          'user_id': user.userId,
+          'role': 'member',
+          'is_active': true,
+        });
+
+        await sendMessage(
+          text: 'Added ${user.name} to the group',
+          messageType: 'system',
+        );
+      }
+      _fetchMembers();
+    } catch (e) {
+      debugPrint('Error adding members: $e');
+    }
   }
 
   Future<void> _deleteGroup() async {
@@ -1725,49 +2147,6 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     }
   }
 
-  Future<void> _addMemberByEmail(String email) async {
-    try {
-      final supabase = ref.read(supabaseClientProvider);
-      // Find user by email
-      final userResponse = await supabase
-          .from('profile')
-          .select('user_id, id')
-          .eq('email', email)
-          .maybeSingle();
-
-      if (userResponse == null) {
-        if (mounted) {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(const SnackBar(content: Text('User not found')));
-        }
-        return;
-      }
-
-      final userId = userResponse['user_id'];
-      final profileId = userResponse['id'];
-
-      // Add to group
-      await supabase.from('group_members').upsert({
-        'group_id': widget.groupId,
-        'user_id': userId,
-        'profile_id': profileId,
-        'role': 'member',
-        'is_active': true,
-      });
-
-      // Send system message
-      final addedName = userResponse['name'] ?? 'New member';
-      await sendMessage(
-        text: 'Added $addedName to the group',
-        messageType: 'system',
-      );
-
-      _fetchMembers();
-    } catch (e) {
-      debugPrint('Error adding member: $e');
-    }
-  }
-
   bool _isAdmin(String userId) {
     return _groupMembers.any((m) =>
         m['user_id'] == userId &&
@@ -1830,6 +2209,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
           _supabase.storage.from('voice-messages').getPublicUrl(storagePath);
 
       await sendMessage(
+        text: 'Voice Message 🎤',
         messageType: 'voice',
         fileUrl: url,
         voiceDuration: duration,
@@ -1853,5 +2233,86 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
       if (first is Map) return Map<String, dynamic>.from(first);
     }
     return null;
+  }
+}
+
+class VideoPlayerPage extends StatefulWidget {
+  final String videoUrl;
+  final String title;
+
+  const VideoPlayerPage({
+    super.key,
+    required this.videoUrl,
+    required this.title,
+  });
+
+  @override
+  State<VideoPlayerPage> createState() => _VideoPlayerPageState();
+}
+
+class _VideoPlayerPageState extends State<VideoPlayerPage> {
+  late VideoPlayerController _controller;
+  bool _initialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl))
+      ..initialize().then((_) {
+        setState(() {
+          _initialized = true;
+        });
+        _controller.play();
+      });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        title: Text(widget.title, style: const TextStyle(color: Colors.white)),
+        iconTheme: const IconThemeData(color: Colors.white),
+      ),
+      body: Center(
+        child: _initialized
+            ? AspectRatio(
+                aspectRatio: _controller.value.aspectRatio,
+                child: Stack(
+                  alignment: Alignment.bottomCenter,
+                  children: [
+                    VideoPlayer(_controller),
+                    VideoProgressIndicator(_controller, allowScrubbing: true),
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _controller.value.isPlaying
+                              ? _controller.pause()
+                              : _controller.play();
+                        });
+                      },
+                      child: Center(
+                        child: Icon(
+                          _controller.value.isPlaying
+                              ? Icons.pause
+                              : Icons.play_arrow,
+                          color: Colors.white.withOpacity(0.5),
+                          size: 80,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            : const CircularProgressIndicator(color: Colors.yellow),
+      ),
+    );
   }
 }

@@ -22,6 +22,12 @@ import 'package:timeago/timeago.dart' as timeago;
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:pocket_mates_app/custom_code/widgets/share_content_screen.dart';
+import 'package:pocket_mates_app/custom_code/widgets/drawing_academy_home_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/poster_designer/template_gallery_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/bulk_sender/bulk_sender_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/poki_games_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/nearby_users_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chess_game_page.dart';
 
 class StatusDisplayWidget extends StatefulWidget {
   final String currentUserId;
@@ -343,7 +349,10 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
       return Material(
         color: Colors.transparent,
         child: Container(
-          height: MediaQuery.of(context).size.height * 0.8,
+          constraints: BoxConstraints(
+            minHeight: 200,
+            maxHeight: MediaQuery.of(context).size.height,
+          ),
           child: Column(
             children: [
               _buildCategorySelector(),
@@ -2372,6 +2381,82 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
           ),
         ),
       );
+    } else if (status['media_type'] == 'tool') {
+      final metadata = status['metadata'] ?? {};
+      final title = metadata['title'] ?? 'Tool';
+      final description = metadata['description'] ?? '';
+
+      content = Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF1A1A1A), Color(0xFF000000)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: Center(
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 40),
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(30),
+              border:
+                  Border.all(color: Colors.yellow.withOpacity(0.3), width: 1.5),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: const BoxDecoration(
+                    color: Colors.yellow,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.apps, color: Colors.black, size: 40),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                if (description.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    description,
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.6),
+                      fontSize: 15,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+                const SizedBox(height: 32),
+                ElevatedButton(
+                  onPressed: () {
+                    // Similar logic to _navigateToTool in WhatsAppGroupChat
+                    _navigateToToolFromStatus(title);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.yellow,
+                    foregroundColor: Colors.black,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20)),
+                  ),
+                  child: const Text('Open Tool'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
     } else if (status['media_type'] == 'text') {
       content = Container(
         width: double.infinity,
@@ -2501,6 +2586,37 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
     return content;
   }
 
+  void _navigateToToolFromStatus(String title) {
+    // Implement navigation matching WhatsAppGroupChat
+    Widget? page;
+    switch (title) {
+      case 'Poster Designer':
+        page = const TemplateGalleryPage();
+        break;
+      case 'Bulk Sender':
+        page = const BulkSenderPage();
+        break;
+      case 'Poki Games':
+        page = const PokiGamesPage();
+        break;
+      case 'Drawing Academy':
+        page = const DrawingAcademyHomePage();
+        break;
+      case 'Travel Radar':
+        page = const NearbyUsersPage();
+        break;
+      case 'Nearby Profiles':
+        page = const NearbyUsersPage();
+        break;
+      case 'Chess':
+        page = const ChessMatchmakingPage();
+        break;
+    }
+    if (page != null) {
+      Navigator.push(context, MaterialPageRoute(builder: (_) => page!));
+    }
+  }
+
   Future<void> _navigateToGalleryDetail(String galleryId) async {
     try {
       // Fetch gallery item details
@@ -2610,6 +2726,7 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
   String? _selectedGroupName;
   String? _selectedProfileId;
   String? _selectedProfileName;
+  String? _selectedMentionUserId;
   VideoPlayerController? _videoPreviewController;
   final supabase = Supabase.instance.client;
   bool _isSharingMode = false;
@@ -3235,7 +3352,7 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
     return FutureBuilder(
       future: supabase
           .from('profile')
-          .select('id, name, profile_image_url')
+          .select('id, user_id, name, profile_image_url')
           .neq('id', widget.profileId) // Don't mention yourself
           .ilike('name', '%$query%')
           .limit(20),
@@ -3270,6 +3387,7 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
                 setState(() {
                   _selectedProfileId = profileId;
                   _selectedProfileName = name;
+                  _selectedMentionUserId = profile['user_id'];
                   _selectedGroupId = null;
                   _selectedGroupName = null;
                 });
@@ -3396,33 +3514,8 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
 
       await supabase.from('statuses').insert(statusData);
 
-      // Post to group chat if mentioned
-      if (_selectedGroupId != null) {
-        try {
-          // Fetch sender name for better notification
-          final profileRes = await supabase
-              .from('profile')
-              .select('name')
-              .eq('id', widget.profileId)
-              .maybeSingle();
-          final senderName = profileRes?['name'] ?? 'Someone';
-
-          await supabase.from('group_messages').insert({
-            'group_id': _selectedGroupId,
-            'user_id': widget.userId,
-            'message_type': 'status_mention',
-            'message_text':
-                '$senderName shared a new Vibe and mentioned this group!',
-            'metadata': {
-              'status_media_url': mediaUrl,
-              'media_type': mediaType,
-              'sender_name': senderName,
-            }
-          });
-        } catch (e) {
-          debugPrint('Error sending group mention message: $e');
-        }
-      }
+      // Post mention notifications
+      await _sendMentionNotifications(mediaUrl, mediaType);
 
       setState(() => _uploadProgress = 1.0);
 
@@ -3458,17 +3551,30 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
     try {
       final mediaType = widget.sharedContentType == 'thought'
           ? 'thought'
-          : (widget.sharedContentType == 'gallery' ? 'image' : 'text');
+          : (widget.sharedContentType == 'gallery'
+              ? 'image'
+              : (widget.sharedContentType == 'tool' ? 'tool' : 'text'));
       // If text or thought, the shared content IS the caption.
       // If image, caption is from controller.
       String? caption;
       String? mediaUrl;
 
-      if (mediaType == 'text' || mediaType == 'thought') {
+      if (mediaType == 'text') {
         caption = widget.sharedContent;
         mediaUrl = null;
+      } else if (mediaType == 'thought') {
+        // For thoughts, if user typed a caption, use it. Otherwise use the thought content.
+        caption = _captionController.text.trim().isNotEmpty
+            ? _captionController.text.trim()
+            : widget.sharedContent;
+        mediaUrl = null;
+      } else if (mediaType == 'tool') {
+        caption = _captionController.text.trim().isNotEmpty
+            ? _captionController.text.trim()
+            : widget.sharedContent;
+        mediaUrl = null;
       } else {
-        // Image
+        // Image (Gallery share)
         mediaUrl = widget.sharedContent;
         caption = _captionController.text.trim().isEmpty
             ? null
@@ -3479,6 +3585,7 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
         'user_id': widget.userId,
         'profile_id': widget.profileId,
         'media_type': mediaType,
+        'metadata': widget.sharedMetadata,
         'media_url': mediaUrl,
         'thumbnail_url': null,
         'caption': caption,
@@ -3499,6 +3606,9 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
         }
       });
 
+      // Post mention notifications
+      await _sendMentionNotifications(mediaUrl, mediaType);
+
       setState(() => _uploadProgress = 1.0);
 
       if (mounted) {
@@ -3517,6 +3627,86 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
         _isUploading = false;
         _uploadProgress = 0.0;
       });
+    }
+  }
+
+  Future<void> _sendMentionNotifications(
+      String? mediaUrl, String mediaType) async {
+    if (_selectedGroupId == null && _selectedProfileId == null) return;
+
+    try {
+      // Fetch sender name for better notification
+      final profileRes = await supabase
+          .from('profile')
+          .select('name')
+          .eq('id', widget.profileId)
+          .maybeSingle();
+      final senderName = profileRes?['name'] ?? 'Someone';
+
+      final metadata = {
+        'status_media_url': mediaUrl,
+        'media_type': mediaType,
+        'sender_name': senderName,
+      };
+
+      final messageText = mediaType == 'thought'
+          ? '$senderName shared a new Thought Vibe and mentioned you!'
+          : '$senderName shared a new Vibe and mentioned you!';
+
+      // 1. Group Mention
+      if (_selectedGroupId != null) {
+        await supabase.from('group_messages').insert({
+          'group_id': _selectedGroupId,
+          'sender_id': widget.userId,
+          'message_type': 'status_mention',
+          'message_text': messageText,
+          'metadata': metadata,
+        });
+      }
+
+      // 2. Profile Mention (Personal DM)
+      if (_selectedProfileId != null && _selectedMentionUserId != null) {
+        final Map<String, dynamic> messageData = {
+          'sender_id': widget.userId,
+          'receiver_id': _selectedMentionUserId,
+          'content': messageText,
+          'message_text': messageText,
+          'updated_at': DateTime.now().toIso8601String(),
+          'is_read': false,
+          'message_type': 'status_mention',
+          'metadata': metadata,
+        };
+
+        await supabase.from('messages').insert(messageData);
+
+        // Update conversation record
+        final existingConv = await supabase
+            .from('conversations')
+            .select('id, unread_count')
+            .or('and(user1_id.eq.${widget.userId},user2_id.eq.$_selectedMentionUserId),and(user1_id.eq.$_selectedMentionUserId,user2_id.eq.${widget.userId})')
+            .maybeSingle();
+
+        if (existingConv != null) {
+          await supabase.from('conversations').update({
+            'last_message': messageText,
+            'last_message_time': DateTime.now().toIso8601String(),
+            'last_sender_id': widget.userId,
+            'unread_count': (existingConv['unread_count'] ?? 0) + 1,
+            'updated_at': DateTime.now().toIso8601String(),
+          }).eq('id', existingConv['id']);
+        } else {
+          await supabase.from('conversations').insert({
+            'user1_id': widget.userId,
+            'user2_id': _selectedMentionUserId,
+            'last_message': messageText,
+            'last_message_time': DateTime.now().toIso8601String(),
+            'last_sender_id': widget.userId,
+            'unread_count': 1,
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('Error sending mention notifications: $e');
     }
   }
 

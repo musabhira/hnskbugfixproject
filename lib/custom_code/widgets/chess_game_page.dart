@@ -38,7 +38,8 @@ class _ChessMatchmakingPageState extends State<ChessMatchmakingPage> {
         event: 'accept',
         callback: (payload) {
           if (payload['targetId'] == _myUserId) {
-            _startGame(payload['matchId'], true);
+            _startGame(payload['matchId'], true,
+                targetUserId: payload['challengerId']);
           }
         });
     _gameChannel!.subscribe();
@@ -54,13 +55,20 @@ class _ChessMatchmakingPageState extends State<ChessMatchmakingPage> {
   Future<void> _fetchOnlineUsers() async {
     if (_myUserId == null) return;
     try {
+      // Use 'profile' table for better name availability
       final res = await SupaFlow.client
-          .from('users')
-          .select('id, display_name, photo_url')
-          .neq('id', _myUserId!);
+          .from('profile')
+          .select('user_id, name, profile_image_url')
+          .neq('user_id', _myUserId!);
       if (mounted) {
         setState(() {
-          _onlineUsers = List<Map<String, dynamic>>.from(res);
+          _onlineUsers = (res as List)
+              .map((e) => {
+                    'id': e['user_id'],
+                    'display_name': e['name'] ?? 'Unknown User',
+                    'photo_url': e['profile_image_url'],
+                  })
+              .toList();
         });
       }
     } catch (e) {
@@ -105,10 +113,11 @@ class _ChessMatchmakingPageState extends State<ChessMatchmakingPage> {
                 event: 'accept',
                 payload: {
                   'targetId': challengerId,
+                  'challengerId': _myUserId,
                   'matchId': matchId,
                 },
               );
-              _startGame(matchId, false);
+              _startGame(matchId, false, targetUserId: challengerId);
             },
             child: const Text('Accept',
                 style: TextStyle(color: Colors.greenAccent)),
@@ -118,12 +127,15 @@ class _ChessMatchmakingPageState extends State<ChessMatchmakingPage> {
     );
   }
 
-  void _startGame(String matchId, bool isWhite) {
+  void _startGame(String matchId, bool isWhite, {String? targetUserId}) {
     Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) =>
-              ChessPlayPage(matchId: matchId, isWhite: isWhite),
+          builder: (context) => ChessPlayPage(
+            matchId: matchId,
+            isWhite: isWhite,
+            targetUserId: targetUserId,
+          ),
         ));
   }
 
@@ -184,6 +196,50 @@ class _ChessMatchmakingPageState extends State<ChessMatchmakingPage> {
             ),
             const Divider(color: Colors.white12),
             Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const ChessPlayPage(
+                          matchId: 'ai_match',
+                          isWhite: true,
+                          isAi: true,
+                        ),
+                      ));
+                },
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.purpleAccent.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.purpleAccent),
+                  ),
+                  child: Center(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.smart_toy_rounded,
+                            color: Colors.purpleAccent),
+                        const SizedBox(width: 10),
+                        Text(
+                          'Play with AI Bot',
+                          style: GoogleFonts.outfit(
+                            color: Colors.purpleAccent,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const Divider(color: Colors.white12),
+            Padding(
               padding: const EdgeInsets.all(16),
               child: Align(
                 alignment: Alignment.centerLeft,
@@ -232,9 +288,16 @@ class _ChessMatchmakingPageState extends State<ChessMatchmakingPage> {
 class ChessPlayPage extends StatefulWidget {
   final String matchId;
   final bool isWhite;
+  final bool isAi;
+  final String? targetUserId;
 
-  const ChessPlayPage({Key? key, required this.matchId, required this.isWhite})
-      : super(key: key);
+  const ChessPlayPage({
+    Key? key,
+    required this.matchId,
+    required this.isWhite,
+    this.isAi = false,
+    this.targetUserId,
+  }) : super(key: key);
 
   @override
   _ChessPlayPageState createState() => _ChessPlayPageState();
@@ -243,26 +306,65 @@ class ChessPlayPage extends StatefulWidget {
 class _ChessPlayPageState extends State<ChessPlayPage> {
   final ChessBoardController _controller = ChessBoardController();
   RealtimeChannel? _moveChannel;
+  bool _isAiThinking = false;
 
   @override
   void initState() {
     super.initState();
-    _moveChannel =
-        SupaFlow.client.channel('public:chess_moves_${widget.matchId}');
-    _moveChannel!.onBroadcast(
-        event: 'move',
-        callback: (payload) {
-          if (payload['fen'] != null &&
-              payload['senderId'] != SupaFlow.client.auth.currentUser?.id) {
-            _controller.loadFen(payload['fen']);
-          }
-        });
-    _moveChannel!.subscribe();
+    if (!widget.isAi) {
+      _moveChannel =
+          SupaFlow.client.channel('public:chess_moves_${widget.matchId}');
+      _moveChannel!.onBroadcast(
+          event: 'move',
+          callback: (payload) {
+            if (payload['fen'] != null &&
+                payload['senderId'] != SupaFlow.client.auth.currentUser?.id) {
+              _controller.loadFen(payload['fen']);
+            }
+          });
+      _moveChannel!.subscribe();
+    }
 
     _controller.addListener(() {
-      if (_controller.isCheckMate() || _controller.isDraw()) return;
-      // Broadcast fen on local move changes only (not incoming)
+      if (_controller.isCheckMate() || _controller.isDraw()) {
+        _showGameOverDialog();
+      }
     });
+  }
+
+  void _showGameOverDialog() {
+    String status = "Game Over";
+    if (_controller.isCheckMate()) {
+      status = "Checkmate!";
+    } else if (_controller.isDraw()) {
+      status = "Draw!";
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const ui.Color(0xFF2C2C2C),
+        title: Text(status, style: const TextStyle(color: Colors.white)),
+        content: const Text("The game has ended.",
+            style: TextStyle(color: Colors.white70)),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.pop(context);
+            },
+            child: const Text('Exit'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _controller.resetBoard();
+            },
+            child: const Text('Play Again'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -273,13 +375,71 @@ class _ChessPlayPageState extends State<ChessPlayPage> {
   }
 
   void _onMove() {
-    _moveChannel!.sendBroadcastMessage(
-      event: 'move',
-      payload: {
-        'fen': _controller.getFen(),
-        'senderId': SupaFlow.client.auth.currentUser?.id,
-      },
-    );
+    final fen = _controller.getFen();
+    final parts = fen.split(' ');
+    final turn = parts[1]; // 'w' or 'b'
+
+    // In online mode, we must enforce turns
+    if (!widget.isAi && widget.targetUserId != null) {
+      final isWhiteTurn = turn == 'w';
+
+      // If it flipped to the opposite color's turn, it means WE just moved.
+      // But we should check if the move we just made was legal for our color.
+      // Actually, onMove is called AFTER the move is made on the board.
+      // If we are White, the turn should now be 'b'.
+      final expectedTurnAfterMove = widget.isWhite ? 'b' : 'w';
+
+      if (turn == expectedTurnAfterMove) {
+        _moveChannel!.sendBroadcastMessage(
+          event: 'move',
+          payload: {
+            'fen': fen,
+            'senderId': SupaFlow.client.auth.currentUser?.id,
+          },
+        );
+      } else {
+        // This shouldn't happen if enableUserMoves is working, but safety first
+        debugPrint('Not your turn!');
+      }
+    } else if (widget.isAi) {
+      // In AI mode, if it's AI's turn, trigger it
+      final isAiTurn =
+          (widget.isWhite && turn == 'b') || (!widget.isWhite && turn == 'w');
+      if (isAiTurn && !_isAiThinking) {
+        _triggerAiMove();
+      }
+    }
+
+    // In local mode (targetUserId == null && !isAi), we don't need to do anything,
+    // both sides just move on the same machine.
+
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _triggerAiMove() async {
+    if (_controller.isCheckMate() || _controller.isDraw()) return;
+
+    setState(() => _isAiThinking = true);
+
+    // Artificial delay for "thinking"
+    await Future.delayed(const Duration(milliseconds: 1000));
+
+    try {
+      final moves = _controller.game.moves();
+      if (moves.isNotEmpty) {
+        // Simple AI: Pick a random move
+        // In a real app, you might want to use a better algorithm
+        moves.shuffle();
+        final randomMove = moves.first;
+        _controller.makeMove(from: randomMove.from, to: randomMove.to);
+      }
+    } catch (e) {
+      debugPrint('AI Move Error: $e');
+    }
+
+    if (mounted) {
+      setState(() => _isAiThinking = false);
+    }
   }
 
   @override
@@ -287,22 +447,114 @@ class _ChessPlayPageState extends State<ChessPlayPage> {
     return Scaffold(
       backgroundColor: const ui.Color(0xFF161618),
       appBar: AppBar(
-        title: Text('Playing Chess',
+        title: Text(widget.isAi ? 'Chess vs AI' : 'Playing Chess',
             style: GoogleFonts.outfit(color: Colors.white)),
         backgroundColor: Colors.transparent,
         elevation: 0,
+        actions: [
+          if (_isAiThinking)
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: Center(
+                child: SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.purpleAccent,
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
-      body: Center(
-        child: ChessBoard(
-          controller: _controller,
-          boardColor: BoardColor.brown,
-          boardOrientation:
-              widget.isWhite ? PlayerColor.white : PlayerColor.black,
-          onMove: () {
-            _onMove();
-          },
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            _getStatusMessage(),
+            style: GoogleFonts.outfit(
+              color: _isAiThinking ? Colors.purpleAccent : Colors.white70,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 20),
+          Center(
+            child: ChessBoard(
+              controller: _controller,
+              boardColor: BoardColor.brown,
+              boardOrientation:
+                  widget.isWhite ? PlayerColor.white : PlayerColor.black,
+              enableUserMoves: _canMove(),
+              onMove: () {
+                _onMove();
+              },
+            ),
+          ),
+          const SizedBox(height: 40),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildGameButton(Icons.refresh, 'Reset', () {
+                  _controller.resetBoard();
+                }),
+                _buildGameButton(Icons.undo, 'Undo', () {
+                  _controller.undoMove();
+                }),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _getStatusMessage() {
+    if (_controller.isCheckMate()) return 'Checkmate!';
+    if (_controller.isDraw()) return 'Draw!';
+    if (_isAiThinking) return 'AI is thinking...';
+
+    final turn = _controller.getFen().split(' ')[1];
+    final isWhiteTurn = turn == 'w';
+
+    if (widget.isAi) {
+      return (isWhiteTurn == widget.isWhite) ? 'Your Turn' : 'AI Turn';
+    } else if (widget.targetUserId != null) {
+      return (isWhiteTurn == widget.isWhite) ? 'Your Turn' : "Opponent's Turn";
+    } else {
+      return isWhiteTurn ? "White's Turn" : "Black's Turn";
+    }
+  }
+
+  bool _canMove() {
+    if (_isAiThinking) return false;
+    if (_controller.isCheckMate() || _controller.isDraw()) return false;
+
+    final turn = _controller.getFen().split(' ')[1];
+    final isWhiteTurn = turn == 'w';
+
+    if (widget.isAi) {
+      return isWhiteTurn == widget.isWhite;
+    } else if (widget.targetUserId != null) {
+      return isWhiteTurn == widget.isWhite;
+    }
+
+    return true; // Local practice mode
+  }
+
+  Widget _buildGameButton(IconData icon, String label, VoidCallback onTap) {
+    return Column(
+      children: [
+        IconButton(
+          onPressed: onTap,
+          icon: Icon(icon, color: Colors.white, size: 28),
         ),
-      ),
+        Text(label,
+            style: GoogleFonts.outfit(color: Colors.white54, fontSize: 12)),
+      ],
     );
   }
 }

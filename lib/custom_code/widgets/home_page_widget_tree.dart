@@ -36,6 +36,7 @@ import 'package:pocket_mates_app/custom_code/widgets/thread_feed_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/teams/teams_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/notifications_list_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/status_display_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/drawing_academy_home_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/thoughts_feed_section.dart';
 
 // Aliases for WhatsApp Groups Provider to avoid naming conflicts
@@ -394,108 +395,114 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                     ? const MainMarketPage()
                     : _currentIndex == 2
                         ? ToolsPage(onFavoriteToggled: _handleRefresh)
-                        : material.RefreshIndicator(
-                            onRefresh: _handleRefresh,
-                            color: material.Colors.yellow,
-                            backgroundColor: material.Colors.black,
-                            child: material.NestedScrollView(
-                              physics: const BouncingScrollPhysics(
-                                  parent: AlwaysScrollableScrollPhysics()),
-                              headerSliverBuilder:
-                                  (context, innerBoxIsScrolled) {
-                                return [
-                                  // Unified Coordinated Header
-                                  SliverPersistentHeader(
-                                    pinned: false,
-                                    delegate: _HomeMainHeaderDelegate(
-                                      currentUserId:
-                                          supabase.auth.currentUser?.id ?? '',
-                                      currentProfileId: profileId ?? '',
-                                      statusRefreshKey: _refreshKeyCount,
-                                      activeUsersRef: ref.watch(
-                                          activeUsersProvider(profileId ?? '')),
-                                      onTapVideo: () => _handleStrangerMatch(
-                                        context,
-                                        ref,
-                                        'Video',
-                                        profileId ?? '',
+                        : _currentIndex == 3
+                            ? const DrawingAcademyHomePage()
+                            : material.RefreshIndicator(
+                                onRefresh: _handleRefresh,
+                                color: material.Colors.yellow,
+                                backgroundColor: material.Colors.black,
+                                child: material.NestedScrollView(
+                                  physics: const BouncingScrollPhysics(
+                                      parent: AlwaysScrollableScrollPhysics()),
+                                  headerSliverBuilder:
+                                      (context, innerBoxIsScrolled) {
+                                    return [
+                                      // Unified Coordinated Header
+                                      SliverPersistentHeader(
+                                        pinned: false,
+                                        delegate: _HomeMainHeaderDelegate(
+                                          currentUserId:
+                                              supabase.auth.currentUser?.id ??
+                                                  '',
+                                          currentProfileId: profileId ?? '',
+                                          statusRefreshKey: _refreshKeyCount,
+                                          activeUsersRef: ref.watch(
+                                              activeUsersProvider(
+                                                  profileId ?? '')),
+                                          onTapVideo: () =>
+                                              _handleStrangerMatch(
+                                            context,
+                                            ref,
+                                            'Video',
+                                            profileId ?? '',
+                                          ),
+                                          onTapFriends: () {
+                                            displayInfoBar(context,
+                                                builder: (context, close) {
+                                              return InfoBar(
+                                                title:
+                                                    const Text('Coming Soon'),
+                                                content: const Text(
+                                                    'Strangers Friends coming soon!'),
+                                                severity: InfoBarSeverity.info,
+                                              );
+                                            });
+                                          },
+                                          onTapCall: () => _handleStrangerMatch(
+                                            context,
+                                            ref,
+                                            'Voice',
+                                            profileId ?? '',
+                                          ),
+                                          onTapText: () => _handleStrangerMatch(
+                                            context,
+                                            ref,
+                                            'Text',
+                                            profileId ?? '',
+                                          ),
+                                          onTapSettings: _handleSettings,
+                                          onTapAdd: () =>
+                                              _showAddBottomSheet(context),
+                                          onRefresh: _handleRefresh,
+                                          // Tab Bar params
+                                          selectedIndex: _chatTabIndex,
+                                          onTabTap: _onTabTapped,
+                                          // Search params
+                                          searchController: _searchController,
+                                          searchQuery: _searchQuery,
+                                          isSearching: _isSearchingPeople,
+                                        ),
                                       ),
-                                      onTapFriends: () {
-                                        displayInfoBar(context,
-                                            builder: (context, close) {
-                                          return InfoBar(
-                                            title: const Text('Coming Soon'),
-                                            content: const Text(
-                                                'Strangers Friends coming soon!'),
-                                            severity: InfoBarSeverity.info,
-                                          );
-                                        });
-                                      },
-                                      onTapCall: () => _handleStrangerMatch(
-                                        context,
-                                        ref,
-                                        'Voice',
-                                        profileId ?? '',
+                                    ];
+                                  },
+                                  body: material.Builder(
+                                    builder: (context) => material.Material(
+                                      color: material.Colors.black,
+                                      child: PageView(
+                                        controller: _pageController,
+                                        onPageChanged: _onPageChanged,
+                                        children: [
+                                          material.CustomScrollView(
+                                            physics: const BouncingScrollPhysics(
+                                                parent:
+                                                    AlwaysScrollableScrollPhysics()),
+                                            slivers: [
+                                              _buildChatListSliver(
+                                                  conversationsAsync),
+                                            ],
+                                          ),
+                                          material.CustomScrollView(
+                                            physics: const BouncingScrollPhysics(
+                                                parent:
+                                                    AlwaysScrollableScrollPhysics()),
+                                            slivers: [
+                                              _buildVibesListSliver(),
+                                            ],
+                                          ),
+                                          ThoughtsFeedSection(
+                                            currentUserId: _currentUserId ?? '',
+                                            currentProfileId: profileId ?? '',
+                                            onStatusShared: _handleRefresh,
+                                            searchQuery: _chatTabIndex == 2
+                                                ? _searchQuery
+                                                : '',
+                                          ),
+                                        ],
                                       ),
-                                      onTapText: () => _handleStrangerMatch(
-                                        context,
-                                        ref,
-                                        'Text',
-                                        profileId ?? '',
-                                      ),
-                                      onTapSettings: _handleSettings,
-                                      onTapAdd: () =>
-                                          _showAddBottomSheet(context),
-                                      onRefresh: _handleRefresh,
-                                      // Tab Bar params
-                                      selectedIndex: _chatTabIndex,
-                                      onTabTap: _onTabTapped,
-                                      // Search params
-                                      searchController: _searchController,
-                                      searchQuery: _searchQuery,
-                                      isSearching: _isSearchingPeople,
                                     ),
-                                  ),
-                                ];
-                              },
-                              body: material.Builder(
-                                builder: (context) => material.Material(
-                                  color: material.Colors.black,
-                                  child: PageView(
-                                    controller: _pageController,
-                                    onPageChanged: _onPageChanged,
-                                    children: [
-                                      material.CustomScrollView(
-                                        physics: const BouncingScrollPhysics(
-                                            parent:
-                                                AlwaysScrollableScrollPhysics()),
-                                        slivers: [
-                                          _buildChatListSliver(
-                                              conversationsAsync),
-                                        ],
-                                      ),
-                                      material.CustomScrollView(
-                                        physics: const BouncingScrollPhysics(
-                                            parent:
-                                                AlwaysScrollableScrollPhysics()),
-                                        slivers: [
-                                          _buildVibesListSliver(),
-                                        ],
-                                      ),
-                                      ThoughtsFeedSection(
-                                        currentUserId: _currentUserId ?? '',
-                                        currentProfileId: profileId ?? '',
-                                        onStatusShared: _handleRefresh,
-                                        searchQuery: _chatTabIndex == 2
-                                            ? _searchQuery
-                                            : '',
-                                      ),
-                                    ],
                                   ),
                                 ),
                               ),
-                            ),
-                          ),
           ),
         ),
       ),
@@ -518,7 +525,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   }
 
   Widget _buildVibesListSliver() {
-    return SliverToBoxAdapter(
+    return SliverFillRemaining(
+      hasScrollBody: true,
       child: StatusDisplayWidget(
         key: ValueKey('vibes_list_$_refreshKeyCount'),
         currentUserId: supabase.auth.currentUser?.id ?? '',
@@ -694,7 +702,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                             ),
                           );
                         } else {
-                          // Mark as read for personal chat
+                          // Mark as read
                           ref
                               .read(conversationsProvider.notifier)
                               .markAsRead(conversation.id, false);
@@ -702,10 +710,10 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                           Navigator.push(
                             context,
                             material.MaterialPageRoute(
-                              builder: (context) => MessageScreen(
-                                receiverId: conversation.id,
-                                receiverName: conversation.name,
-                                receiverProfileImage: conversation.imageUrl,
+                              builder: (context) => WhatsAppGroupChat(
+                                groupId: 'p:${conversation.id}',
+                                groupName: conversation.name,
+                                groupImage: conversation.imageUrl,
                               ),
                             ),
                           );
@@ -921,6 +929,11 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
               icon: FluentIcons.toolbox,
               isSelected: _currentIndex == 2,
               onTap: () => setState(() => _currentIndex = 2),
+            ),
+            _buildNavItem(
+              icon: FluentIcons.education,
+              isSelected: _currentIndex == 3,
+              onTap: () => setState(() => _currentIndex = 3),
             ),
             _buildProfileNavItem(),
           ],
@@ -1462,24 +1475,34 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   }
 
   Widget _buildSearchTabItem(String label, int index) {
-    final bool isSelected = _searchTabIndex == index;
+    final isSelected = _searchTabIndex == index;
     return material.InkWell(
-      onTap: () => setState(() => _searchTabIndex = index),
-      borderRadius: BorderRadius.circular(20),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      onTap: () => safeSetState(() => _searchTabIndex = index),
+      borderRadius: BorderRadius.circular(25),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
         decoration: BoxDecoration(
           color: isSelected
               ? material.Colors.yellow
               : material.Colors.white.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(25),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: material.Colors.yellow.withValues(alpha: 0.3),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  )
+                ]
+              : null,
         ),
         child: Text(
           label,
           style: GoogleFonts.outfit(
             color: isSelected ? material.Colors.black : material.Colors.white,
-            fontSize: 13,
-            fontWeight: FontWeight.bold,
+            fontSize: 14,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
           ),
         ),
       ),
@@ -1501,12 +1524,20 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
           );
         },
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                color: material.Colors.white.withValues(alpha: 0.03),
+                width: 1,
+              ),
+            ),
+          ),
           child: Row(
             children: [
               CircularProfileImage(
                 profileImageUrl: person['profile_image_url'],
-                radius: 24,
+                radius: 28,
                 isVerified: person['verified'] ?? false,
               ),
               const SizedBox(width: 16),
@@ -1514,32 +1545,45 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      person['name'] ?? person['shop_name'] ?? 'Unknown',
-                      style: GoogleFonts.outfit(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: material.Colors.white,
-                      ),
-                    ),
-                    if (person['bio'] != null &&
-                        person['bio'].toString().isNotEmpty)
-                      Text(
-                        person['bio'],
-                        style: GoogleFonts.outfit(
-                          fontSize: 13,
-                          color: material.Colors.white70,
+                    Row(
+                      children: [
+                        Text(
+                          person['name'] ?? person['shop_name'] ?? 'Unknown',
+                          style: GoogleFonts.outfit(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w600,
+                            color: material.Colors.white,
+                            letterSpacing: 0.2,
+                          ),
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                        if (person['verified'] == true) ...[
+                          const SizedBox(width: 6),
+                          const Icon(material.Icons.verified,
+                              size: 16, color: material.Colors.blue),
+                        ],
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      person['bio'] != null &&
+                              person['bio'].toString().isNotEmpty
+                          ? person['bio']
+                          : 'Hey there! I am using Handskill Friends.',
+                      style: GoogleFonts.outfit(
+                        fontSize: 13,
+                        color: material.Colors.white.withValues(alpha: 0.5),
+                        height: 1.2,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ],
                 ),
               ),
               Icon(
                 FluentIcons.chevron_right,
                 size: 12,
-                color: material.Colors.white.withValues(alpha: 0.3),
+                color: material.Colors.white.withValues(alpha: 0.2),
               ),
             ],
           ),
@@ -1550,6 +1594,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 
   Widget _buildProductResultTile(Map<String, dynamic> product) {
     final profile = product['profile'] as Map<String, dynamic>?;
+    final bool isService = product['type'] == 'service';
+
     return material.Material(
       color: material.Colors.transparent,
       child: material.InkWell(
@@ -1564,21 +1610,40 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
           );
         },
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+          decoration: BoxDecoration(
+            color: material.Colors.white.withValues(alpha: 0.04),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: material.Colors.white.withValues(alpha: 0.05),
+              width: 1,
+            ),
+          ),
           child: Row(
             children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  image: DecorationImage(
-                    image: product['image_url'] != null
-                        ? CachedNetworkImageProvider(product['image_url'])
-                        : const material.AssetImage(
-                                'assets/images/placeholder.png')
-                            as material.ImageProvider,
-                    fit: BoxFit.cover,
+              Hero(
+                tag: 'search_result_${product['id']}',
+                child: Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    image: DecorationImage(
+                      image: product['image_url'] != null
+                          ? CachedNetworkImageProvider(product['image_url'])
+                          : const material.AssetImage(
+                                  'assets/images/placeholder.png')
+                              as material.ImageProvider,
+                      fit: BoxFit.cover,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: material.Colors.black.withValues(alpha: 0.2),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -1587,13 +1652,39 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: (isService
+                                ? material.Colors.blue
+                                : material.Colors.purple)
+                            .withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        isService ? 'SERVICE' : 'GALLERY',
+                        style: GoogleFonts.outfit(
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                          color: isService
+                              ? material.Colors.blue.shade300
+                              : material.Colors.purple.shade300,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
                     Text(
                       product['title'] ?? 'Product',
                       style: GoogleFonts.outfit(
-                        fontSize: 15,
+                        fontSize: 16,
                         fontWeight: FontWeight.w600,
                         color: material.Colors.white,
+                        letterSpacing: 0.2,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 2),
                     Row(
@@ -1602,14 +1693,13 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                           'by ${profile?['name'] ?? 'Unknown'}',
                           style: GoogleFonts.inter(
                             fontSize: 12,
-                            color:
-                                material.Colors.yellow.withValues(alpha: 0.7),
+                            color: material.Colors.white.withValues(alpha: 0.4),
                           ),
                         ),
                         if (profile?['verified'] == true) ...[
                           const SizedBox(width: 4),
                           const Icon(material.Icons.verified,
-                              size: 12, color: material.Colors.blue),
+                              size: 10, color: material.Colors.blue),
                         ],
                       ],
                     ),
@@ -1617,13 +1707,25 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                 ),
               ),
               if (product['price'] != null)
-                Text(
-                  '₹${product['price']}',
-                  style: GoogleFonts.outfit(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: material.Colors.white,
-                  ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      '₹${product['price']}',
+                      style: GoogleFonts.outfit(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: material.Colors.yellow,
+                      ),
+                    ),
+                    Text(
+                      'Best Price',
+                      style: GoogleFonts.outfit(
+                        fontSize: 10,
+                        color: material.Colors.white.withValues(alpha: 0.3),
+                      ),
+                    ),
+                  ],
                 ),
             ],
           ),
@@ -1877,6 +1979,11 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                         ),
                         const SizedBox(width: 10),
                         _buildHeaderIconButton(
+                          icon: FluentIcons.refresh,
+                          onTap: onRefresh,
+                        ),
+                        const SizedBox(width: 10),
+                        _buildHeaderIconButton(
                           icon: FluentIcons.add_friend,
                           onTap: () async {
                             final auth =
@@ -1928,30 +2035,38 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                           children: [
                             material.InkWell(
                               onTap: onTapAdd,
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: BorderRadius.circular(12),
                               child: Container(
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 14, vertical: 8),
+                                    horizontal: 16, vertical: 8),
                                 decoration: BoxDecoration(
-                                  color: material.Colors.yellow
-                                      .withValues(alpha: 0.12),
-                                  borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      material.Colors.yellow,
+                                      material.Colors.yellow
+                                          .withValues(alpha: 0.8),
+                                    ],
+                                  ),
+                                  borderRadius: BorderRadius.circular(12),
+                                  boxShadow: [
+                                    BoxShadow(
                                       color: material.Colors.yellow
-                                          .withValues(alpha: 0.3),
-                                      width: 1),
+                                          .withValues(alpha: 0.2),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Icon(FluentIcons.add,
-                                        size: 14,
-                                        color: material.Colors.yellow),
+                                    const Icon(FluentIcons.add,
+                                        size: 14, color: material.Colors.black),
                                     const SizedBox(width: 6),
                                     Text(
-                                      'Add',
+                                      'Add Status',
                                       style: GoogleFonts.outfit(
-                                        color: material.Colors.yellow,
+                                        color: material.Colors.black,
                                         fontSize: 12,
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -2186,16 +2301,24 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
 
   Widget _buildHeaderIconButton(
       {required IconData icon, required VoidCallback onTap}) {
-    return material.IconButton(
-      icon: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: material.Colors.white.withValues(alpha: 0.05),
-          shape: BoxShape.circle,
+    return material.Material(
+      color: material.Colors.transparent,
+      child: material.InkWell(
+        onTap: onTap,
+        customBorder: const CircleBorder(),
+        child: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: material.Colors.white.withValues(alpha: 0.08),
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: material.Colors.white.withValues(alpha: 0.05),
+              width: 1,
+            ),
+          ),
+          child: Icon(icon, color: material.Colors.white, size: 20),
         ),
-        child: Icon(icon, color: material.Colors.white, size: 20),
       ),
-      onPressed: onTap,
     );
   }
 
@@ -2235,7 +2358,17 @@ class CircularProfileImage extends StatelessWidget {
           height: radius * 2,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            border: Border.all(color: borderColor, width: borderWidth),
+            border: Border.all(
+              color: borderColor.withValues(alpha: 0.5),
+              width: borderWidth,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: material.Colors.black.withValues(alpha: 0.3),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
             image: profileImageUrl != null
                 ? DecorationImage(
                     image: CachedNetworkImageProvider(profileImageUrl!),
@@ -2253,15 +2386,16 @@ class CircularProfileImage extends StatelessWidget {
             right: -2,
             bottom: -2,
             child: Container(
-              padding: const EdgeInsets.all(1.5),
+              padding: const EdgeInsets.all(2),
               decoration: BoxDecoration(
-                color: material.Colors.white,
+                color: material.Colors.black,
                 shape: BoxShape.circle,
+                border: Border.all(color: material.Colors.white, width: 1.5),
               ),
               child: const Icon(
-                FluentIcons.verified_brand,
-                color: Color(0xFFFFB703),
-                size: 12,
+                material.Icons.verified,
+                color: material.Colors.blue,
+                size: 14,
               ),
             ),
           ),

@@ -1,18 +1,9 @@
 // Automatic FlutterFlow imports
 import 'package:pocket_mates_app/auth_page/auth_page_widget.dart';
-import 'package:pocket_mates_app/auth_page/auth_page_widget.dart';
-import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.dart';
-import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.dart';
 import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
-import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
-
-import '/backend/supabase/supabase.dart';
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_util.dart';
 import 'index.dart'; // Imports other custom widgets
-import 'index.dart'; // Imports other custom widgets
-import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
@@ -452,7 +443,8 @@ class _CommunityChatPageState extends State<CommunityChatPage>
         decoration: BoxDecoration(
           color: Colors.black,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.yellow.withValues(alpha: 0.3), width: 1),
+          border:
+              Border.all(color: Colors.yellow.withValues(alpha: 0.3), width: 1),
           boxShadow: [
             BoxShadow(
               color: Colors.yellow.withValues(alpha: 0.1),
@@ -800,7 +792,8 @@ class _CommunityChatPageState extends State<CommunityChatPage>
               color: Colors.grey.shade900,
               borderRadius: BorderRadius.circular(12),
               border: isUnread
-                  ? Border.all(color: Colors.yellow.withValues(alpha: 0.3), width: 1)
+                  ? Border.all(
+                      color: Colors.yellow.withValues(alpha: 0.3), width: 1)
                   : null,
             ),
             child: ListTile(
@@ -910,11 +903,10 @@ class _CommunityChatPageState extends State<CommunityChatPage>
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => MessageScreen(
-          receiverId: otherUser['id'],
-          receiverName: otherUser['name'],
-          receiverProfileImage: otherUser['avatar'],
-          phonenumber: otherUser['phonenumber'],
+        builder: (context) => WhatsAppGroupChat(
+          groupId: 'p:${otherUser['id']}',
+          groupName: otherUser['name'],
+          groupImage: otherUser['avatar'],
         ),
       ),
     );
@@ -1504,7 +1496,8 @@ class _CreateGroupDialogState extends State<CreateGroupDialog>
                 decoration: BoxDecoration(
                   color: Colors.green.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.green.withValues(alpha: 0.5)),
+                  border:
+                      Border.all(color: Colors.green.withValues(alpha: 0.5)),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,

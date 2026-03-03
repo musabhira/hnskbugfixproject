@@ -3,11 +3,12 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
 import 'package:pocket_mates_app/custom_code/widgets/search_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/message_screen.dart';
 
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'package:flutter/material.dart';
+import 'index.dart';
+
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
@@ -22,7 +23,6 @@ import 'package:pocket_mates_app/src/features/profile/data/profile_repository.da
 
 // Automatic FlutterFlow imports
 import '/flutter_flow/flutter_flow_theme.dart';
-import 'index.dart'; // Imports other custom widgets
 import '/custom_code/actions/index.dart'; // Imports custom actions
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
@@ -420,11 +420,10 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
   void _navigateToMessages() {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => MessageScreen(
-          receiverId: widget.userId,
-          receiverName: _profileData?['name'] ?? 'User',
-          receiverProfileImage: _profileData?['profile_image_url'],
-          phonenumber: _profileData?['phone_no'],
+        builder: (context) => WhatsAppGroupChat(
+          groupId: 'p:${widget.userId}',
+          groupName: _profileData?['name'] ?? 'User',
+          groupImage: _profileData?['profile_image_url'],
         ),
       ),
     );

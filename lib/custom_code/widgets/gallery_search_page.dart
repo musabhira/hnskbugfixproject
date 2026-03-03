@@ -3,7 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/widgets/gallery_profile_search_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/message_screen.dart';
+import 'index.dart';
+
 import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
 import 'package:pocket_mates_app/custom_code/widgets/search_profile_detail_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/share_content_screen.dart';
@@ -750,20 +751,22 @@ class BuildDetailContentState extends State<BuildDetailContent> {
         ),
       );
 
+      final messageText = sharetext != null && sharetext!.isNotEmpty
+          ? sharetext!
+          : '${widget.item['gallery_title'] ?? ''}';
+
       // Insert message to group
       await _supabase.from('group_messages').insert({
         'group_id': groupId,
         'sender_id': _supabase.auth.currentUser?.id.toString() ?? '',
         'gallery_id': widget.item['gallery_id'],
-        'message_text':
-            '${sharetext ?? widget.item['gallery_title']}\n${widget.item['gallery_description']}\n${widget.item['gallery_image_url']}',
+        'message_text': messageText.trim(),
         'message_type': 'gallery',
       });
 
       // Update group's last message
       await _supabase.from('groups').update({
-        'last_message':
-            '${widget.item['gallery_title']}\n${widget.item['gallery_description']}\n${widget.item['gallery_image_url']}',
+        'last_message': messageText.trim(),
         'last_message_time': DateTime.now().toIso8601String(),
         'updated_at': DateTime.now().toIso8601String(),
       }).eq('id', groupId);
@@ -877,14 +880,49 @@ class BuildDetailContentState extends State<BuildDetailContent> {
         ),
       );
 
-      final messageContent =
-          '${widget.item['gallery_title']}\n${widget.item['gallery_description']}\n${widget.item['gallery_image_url']}\n$sharetext';
+      final messageContent = sharetext != null && sharetext!.isNotEmpty
+          ? sharetext!
+          : '${widget.item['gallery_title'] ?? ''}';
 
-      await _supabase.from('messages').insert({
+      final Map<String, dynamic> messageData = {
         'sender_id': _supabase.auth.currentUser!.id,
         'receiver_id': userId,
         'content': messageContent.trim(),
-      });
+        'message_text': messageContent.trim(),
+        'updated_at': DateTime.now().toIso8601String(),
+        'is_read': false,
+        'message_type': 'gallery',
+        'gallery_id': widget.item['gallery_id'],
+      };
+
+      await _supabase.from('messages').insert(messageData);
+
+      // Update conversation record
+      final currentUserId = _supabase.auth.currentUser!.id;
+      final existingConv = await _supabase
+          .from('conversations')
+          .select('id, unread_count')
+          .or('and(user1_id.eq.$currentUserId,user2_id.eq.$userId),and(user1_id.eq.$userId,user2_id.eq.$currentUserId)')
+          .maybeSingle();
+
+      if (existingConv != null) {
+        await _supabase.from('conversations').update({
+          'last_message': messageContent.trim(),
+          'last_message_time': DateTime.now().toIso8601String(),
+          'last_sender_id': currentUserId,
+          'unread_count': (existingConv['unread_count'] ?? 0) + 1,
+          'updated_at': DateTime.now().toIso8601String(),
+        }).eq('id', existingConv['id']);
+      } else {
+        await _supabase.from('conversations').insert({
+          'user1_id': currentUserId,
+          'user2_id': userId,
+          'last_message': messageContent.trim(),
+          'last_message_time': DateTime.now().toIso8601String(),
+          'last_sender_id': currentUserId,
+          'unread_count': 1,
+        });
+      }
 
       if (mounted) {
         Navigator.pop(context); // Close loading
@@ -1477,11 +1515,10 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => MessageScreen(
-                                receiverId: item['user_id'],
-                                receiverName: item['name'] ?? 'User',
-                                receiverProfileImage: item['profile_image_url'],
-                                phonenumber: item['phone_number'],
+                              builder: (context) => WhatsAppGroupChat(
+                                groupId: 'p:${item['user_id']}',
+                                groupName: item['name'] ?? 'User',
+                                groupImage: item['profile_image_url'],
                               ),
                             ),
                           );
