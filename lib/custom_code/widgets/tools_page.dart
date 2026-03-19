@@ -1024,10 +1024,10 @@ class _TaskManagerScreenState extends State<ToolsPage> {
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      canPop: _showToolsList,
+      canPop: widget.initialTab != null ? true : _showToolsList,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
-        if (!_showToolsList) {
+        if (widget.initialTab == null && !_showToolsList) {
           setState(() => _showToolsList = true);
         }
       },
@@ -1050,7 +1050,13 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                   IconButton(
                     icon: const Icon(Icons.arrow_back_ios_new_rounded,
                         color: Colors.white, size: 20),
-                    onPressed: () => setState(() => _showToolsList = true),
+                    onPressed: () {
+                      if (widget.initialTab != null) {
+                        Navigator.pop(context);
+                      } else {
+                        setState(() => _showToolsList = true);
+                      }
+                    },
                   ),
                   const SizedBox(width: 4),
                   Expanded(
