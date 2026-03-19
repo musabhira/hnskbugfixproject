@@ -581,6 +581,67 @@ class _TaskManagerScreenState extends State<ToolsPage> {
     );
   }
 
+  void _showWebSearchDialog() {
+    final TextEditingController searchController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF2C2C2C),
+        title: Text('Web Search', style: GoogleFonts.outfit(color: Colors.white)),
+        content: TextField(
+          controller: searchController,
+          style: const TextStyle(color: Colors.white),
+          decoration: const InputDecoration(
+            hintText: 'Ask anything...',
+            hintStyle: TextStyle(color: Colors.white54),
+            enabledBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: Colors.white24)),
+            focusedBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: Colors.yellowAccent)),
+          ),
+          onSubmitted: (query) {
+             if (query.trim().isNotEmpty) {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => DynamicWebViewPage(
+                      title: 'Browser',
+                      url: 'https://www.google.com/search?q=${Uri.encodeComponent(query.trim())}',
+                    ),
+                  ),
+                );
+             }
+          },
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+          ),
+          TextButton(
+            onPressed: () {
+              final query = searchController.text.trim();
+              if (query.isNotEmpty) {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => DynamicWebViewPage(
+                      title: 'Browser',
+                      url: 'https://www.google.com/search?q=${Uri.encodeComponent(query)}',
+                    ),
+                  ),
+                );
+              }
+            },
+            child: const Text('Search', style: TextStyle(color: Colors.yellowAccent)),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showWorldClockSimulation() {
     showDialog(
       context: context,
@@ -814,6 +875,13 @@ class _TaskManagerScreenState extends State<ToolsPage> {
         },
       },
       {
+        'title': 'Web Search',
+        'subtitle': 'Search the Internet',
+        'icon': Icons.travel_explore_rounded,
+        'color': Colors.orangeAccent,
+        'onTap': () => _showWebSearchDialog(),
+      },
+      {
         'title': 'Courses',
         'subtitle': 'Learning Academy',
         'icon': Icons.school_rounded,
@@ -993,17 +1061,47 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                                     ],
                                   ),
                                 ),
-                                IconButton(
-                                  icon: Icon(
-                                    isFav
-                                        ? Icons.favorite_rounded
-                                        : Icons.favorite_border_rounded,
-                                    color: isFav
-                                        ? Colors.redAccent
-                                        : Colors.white24,
-                                  ),
-                                  onPressed: () => _toggleFavoriteTool(
-                                      tool['title'] as String),
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.share_rounded, color: Colors.yellow, size: 20),
+                                      onPressed: () {
+                                        final userId = SupaFlow.client.auth.currentUser?.id;
+                                        if (userId != null) {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => ShareContentScreen(
+                                                contentToShare:
+                                                    "Check out this ${tool['title']} tool on Pocket Mates!",
+                                                currentUserId: userId,
+                                                contentType: 'tool',
+                                                metadata: {
+                                                  'title': tool['title'],
+                                                  'description': tool.containsKey('subtitle') ? tool['subtitle'] : '',
+                                                  'category': 'Tools',
+                                                },
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                      },
+                                    ),
+                                    const SizedBox(width: 4),
+                                    IconButton(
+                                      icon: Icon(
+                                        isFav
+                                            ? Icons.favorite_rounded
+                                            : Icons.favorite_border_rounded,
+                                        color: isFav
+                                            ? Colors.redAccent
+                                            : Colors.white24,
+                                      ),
+                                      onPressed: () => _toggleFavoriteTool(
+                                          tool['title'] as String),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
