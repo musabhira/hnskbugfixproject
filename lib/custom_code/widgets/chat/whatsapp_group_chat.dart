@@ -947,6 +947,11 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     final String name = profile['name'] ?? 'User';
     final String? avatar = profile['profile_image_url'];
 
+    final mainTextTheme = isMe ? Colors.black87 : Colors.white;
+    final subTextTheme = isMe ? Colors.black54 : Colors.white.withValues(alpha: 0.9);
+    final linkTheme = isMe ? Colors.black : Colors.yellow.withValues(alpha: 0.8);
+    final iconTheme = isMe ? Colors.black87 : Colors.yellow;
+
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -965,9 +970,13 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
           color: isMe
-              ? Colors.black.withOpacity(0.2)
-              : Colors.black.withOpacity(0.4),
-          border: Border.all(color: Colors.white.withOpacity(0.1), width: 1),
+              ? Colors.black.withValues(alpha: 0.05)
+              : Colors.black.withValues(alpha: 0.4),
+          border: Border.all(
+              color: isMe
+                  ? Colors.black.withValues(alpha: 0.1)
+                  : Colors.white.withValues(alpha: 0.1),
+              width: 1),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -990,16 +999,15 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                   Expanded(
                     child: Text(
                       name,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: mainTextTheme,
                         fontSize: 13,
                         fontWeight: FontWeight.bold,
                       ),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  const Icon(Icons.forum_outlined,
-                      color: Colors.yellow, size: 16),
+                  Icon(Icons.forum_outlined, color: iconTheme, size: 16),
                 ],
               ),
             ),
@@ -1014,7 +1022,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                         ? '${content.substring(0, 150)}...'
                         : content,
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.9),
+                      color: subTextTheme,
                       fontSize: 13,
                       height: 1.4,
                     ),
@@ -1023,7 +1031,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                   Text(
                     'Read more...',
                     style: TextStyle(
-                      color: Colors.yellow.withOpacity(0.8),
+                      color: linkTheme,
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                     ),
@@ -1333,6 +1341,11 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   }
 
   Widget _buildDocumentMessage(String url, bool isMe) {
+    final mainColor = isMe ? Colors.black87 : Colors.yellow;
+    final subColor = isMe ? Colors.black54 : Colors.grey;
+    final borderColor = isMe ? Colors.black.withValues(alpha: 0.1) : Colors.yellow.withValues(alpha: 0.2);
+    final iconBgColor = isMe ? Colors.white.withValues(alpha: 0.4) : Colors.yellow.withValues(alpha: 0.2);
+    
     return GestureDetector(
       onTap: () {
         // Implement downloading or opening the document using url_launcher or similar
@@ -1349,37 +1362,37 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
         margin: const EdgeInsets.only(bottom: 4),
         decoration: BoxDecoration(
           color: isMe
-              ? Colors.black.withOpacity(0.1)
-              : Colors.yellow.withOpacity(0.05),
+              ? Colors.black.withValues(alpha: 0.05)
+              : Colors.yellow.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.yellow.withOpacity(0.2)),
+          border: Border.all(color: borderColor),
         ),
         child: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: Colors.yellow.withOpacity(0.2),
+                color: iconBgColor,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.insert_drive_file, color: Colors.yellow, size: 24),
+              child: Icon(Icons.insert_drive_file, color: mainColor, size: 24),
             ),
             const SizedBox(width: 12),
-            const Expanded(
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('Document',
                       style: TextStyle(
-                          color: Colors.yellow,
+                          color: mainColor,
                           fontWeight: FontWeight.bold,
                           fontSize: 14)),
                   Text('Tap to view file',
-                      style: TextStyle(color: Colors.grey, fontSize: 11)),
+                      style: TextStyle(color: subColor, fontSize: 11)),
                 ],
               ),
             ),
-            const Icon(Icons.download, color: Colors.yellow, size: 20),
+            Icon(Icons.download, color: mainColor, size: 20),
           ],
         ),
       ),
@@ -1442,6 +1455,12 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     final String title = metadata['title'] ?? 'Tool';
     final String? description = metadata['description'];
 
+    final titleColor = isMe ? Colors.black87 : Colors.white;
+    final subColor = isMe ? Colors.black54 : Colors.white.withValues(alpha: 0.6);
+    final bgColor = isMe ? Colors.black.withValues(alpha: 0.05) : Colors.white.withValues(alpha: 0.05);
+    final borderColor = isMe ? Colors.black.withValues(alpha: 0.1) : Colors.yellow.withValues(alpha: 0.3);
+    final iconColor = isMe ? Colors.black : Colors.yellow;
+
     return GestureDetector(
       onTap: () {
         // Logic to open tool
@@ -1454,22 +1473,20 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
-          color: isMe
-              ? Colors.yellow.withOpacity(0.1)
-              : Colors.white.withOpacity(0.05),
-          border: Border.all(color: Colors.yellow.withOpacity(0.3), width: 1),
+          color: bgColor,
+          border: Border.all(color: borderColor, width: 1),
         ),
         child: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: Colors.yellow,
+                color: isMe ? Colors.black87 : Colors.yellow,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
                 _getToolIcon(title),
-                color: Colors.black,
+                color: isMe ? Colors.white : Colors.black,
                 size: 24,
               ),
             ),
@@ -1480,8 +1497,8 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: titleColor,
                       fontWeight: FontWeight.bold,
                       fontSize: 14,
                     ),
@@ -1490,7 +1507,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                     Text(
                       description,
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.6),
+                        color: subColor,
                         fontSize: 12,
                       ),
                       maxLines: 1,
@@ -1499,7 +1516,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                 ],
               ),
             ),
-            const Icon(Icons.arrow_forward_ios, size: 12, color: Colors.yellow),
+            Icon(Icons.arrow_forward_ios, size: 12, color: iconColor),
           ],
         ),
       ),

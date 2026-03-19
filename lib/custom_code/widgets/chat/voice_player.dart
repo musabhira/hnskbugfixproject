@@ -147,7 +147,7 @@ class _VoiceMessagePlayerState extends State<VoiceMessagePlayer> {
                         style: TextStyle(
                           fontSize: 11,
                           color: widget.isFromCurrentUser
-                              ? Colors.white70
+                              ? Colors.black54
                               : Colors.grey[600],
                         ),
                       ),
@@ -158,7 +158,7 @@ class _VoiceMessagePlayerState extends State<VoiceMessagePlayer> {
                         style: TextStyle(
                           fontSize: 11,
                           color: widget.isFromCurrentUser
-                              ? Colors.white70
+                              ? Colors.black54
                               : Colors.grey[600],
                         ),
                       ),
