@@ -3600,10 +3600,12 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
     } catch (e) {
       _showErrorSnackBar('Error uploading status: $e');
     } finally {
-      setState(() {
-        _isUploading = false;
-        _uploadProgress = 0.0;
-      });
+      if (mounted) {
+        setState(() {
+          _isUploading = false;
+          _uploadProgress = 0.0;
+        });
+      }
     }
   }
 
@@ -3645,11 +3647,19 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
             : _captionController.text.trim();
       }
 
+      final finalMetadata = <String, dynamic>{
+        if (metadata != null) ...metadata,
+        if (contentId != null && contentId.isNotEmpty && type != 'thought' && type != 'gallery') 
+          'content_id': contentId,
+        if (type != 'thought' && type != 'gallery' && type.isNotEmpty) 
+          'content_type': type,
+      };
+
       await supabase.from('statuses').insert({
         'user_id': widget.userId,
         'profile_id': widget.profileId,
         'media_type': mediaType,
-        'metadata': metadata,
+        'metadata': finalMetadata.isEmpty ? null : finalMetadata,
         'media_url': mediaUrl,
         'thumbnail_url': null,
         'caption': caption,
@@ -3662,7 +3672,7 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
         if (contentId != null && contentId.isNotEmpty) ...{
           if (type == 'thought')
             'thought_id': int.tryParse(contentId.toString()) ?? contentId
-          else
+          else if (type == 'gallery')
             'gallery_id': int.tryParse(contentId.toString()) ?? contentId
         }
       });
@@ -3683,10 +3693,12 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
     } catch (e) {
       _showErrorSnackBar('Error sharing status: $e');
     } finally {
-      setState(() {
-        _isUploading = false;
-        _uploadProgress = 0.0;
-      });
+      if (mounted) {
+        setState(() {
+          _isUploading = false;
+          _uploadProgress = 0.0;
+        });
+      }
     }
   }
 
@@ -3840,18 +3852,19 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        title: const Text('Add to Vibes',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+    return ScaffoldMessenger(
+      child: Scaffold(
         backgroundColor: Colors.black,
-        elevation: 0,
-        centerTitle: true,
-      ),
-      body: Stack(
-        children: [
-          if (_isUploading || _isCompressingImage)
+        appBar: AppBar(
+          title: const Text('Add to Vibes',
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+          backgroundColor: Colors.black,
+          elevation: 0,
+          centerTitle: true,
+        ),
+        body: Stack(
+          children: [
+            if (_isUploading || _isCompressingImage)
             Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -3951,7 +3964,7 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
             ),
         ],
       ),
-    );
+    ));
   }
 
   Widget _buildUploadOption({
