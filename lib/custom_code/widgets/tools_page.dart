@@ -56,6 +56,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
   bool _showAddChallenge = false;
   bool _showAddSchedule = false;
   bool _showToolsList = true;
+  bool _isWebSearchMode = false;
   int _selectedTab = 0;
   List<ScheduleItem> dailySchedule = [];
   DateTime selectedScheduleDate = DateTime.now();
@@ -969,14 +970,47 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                         ],
                       ),
                       child: TextField(
-                        onChanged: (value) =>
-                            setState(() => _toolsSearchQuery = value),
+                        onChanged: (value) {
+                          if (!_isWebSearchMode) {
+                            setState(() => _toolsSearchQuery = value);
+                          }
+                        },
+                        onSubmitted: (query) {
+                          if (_isWebSearchMode && query.trim().isNotEmpty) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => DynamicWebViewPage(
+                                  title: 'Browser',
+                                  url: 'https://www.google.com/search?q=${Uri.encodeComponent(query.trim())}',
+                                ),
+                              ),
+                            );
+                          }
+                        },
                         style: GoogleFonts.outfit(color: Colors.white),
                         decoration: InputDecoration(
-                          hintText: 'Search tools or features...',
-                          hintStyle: GoogleFonts.outfit(color: Colors.white38),
-                          prefixIcon:
-                              const Icon(Icons.search, color: Colors.white54),
+                          hintText: _isWebSearchMode ? 'Search Google...' : 'Search tools or features...',
+                          hintStyle: GoogleFonts.outfit(color: _isWebSearchMode ? Colors.yellow.withValues(alpha: 0.5) : Colors.white38),
+                          prefixIcon: Icon(
+                            _isWebSearchMode ? Icons.travel_explore_rounded : Icons.search, 
+                            color: _isWebSearchMode ? Colors.yellow : Colors.white54,
+                          ),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              Icons.public_rounded,
+                              color: _isWebSearchMode ? Colors.yellow : Colors.white38,
+                            ),
+                            tooltip: 'Web Mode',
+                            onPressed: () {
+                              setState(() {
+                                _isWebSearchMode = !_isWebSearchMode;
+                                if (_isWebSearchMode) {
+                                  _toolsSearchQuery = ''; 
+                                }
+                              });
+                            },
+                          ),
                           border: InputBorder.none,
                           contentPadding: const EdgeInsets.symmetric(
                               horizontal: 20, vertical: 16),
