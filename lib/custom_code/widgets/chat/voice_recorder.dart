@@ -1,16 +1,9 @@
 import 'dart:async';
-import 'dart:async';
-import 'dart:io';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter/services.dart';
 import 'package:record/record.dart';
-import 'package:record/record.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class VoiceMessageRecorder extends StatefulWidget {
@@ -31,19 +24,12 @@ class _VoiceMessageRecorderState extends State<VoiceMessageRecorder>
     with SingleTickerProviderStateMixin {
   final AudioRecorder _audioRecorder = AudioRecorder();
 
-  // State
   bool _isRecording = false;
-  bool _isLocked = false;
-  bool _isCancelled = false;
   Duration _duration = Duration.zero;
   Timer? _timer;
   String? _path;
 
-  // Gestures
-  double _dragOffset = 0.0; // Horizontal drag (cancel)
-  double _lockDragOffset = 0.0; // Vertical drag (lock)
-
-  // Animation
+  // Animation for recording indicator
   late AnimationController _animationController;
 
   @override
@@ -83,10 +69,6 @@ class _VoiceMessageRecorderState extends State<VoiceMessageRecorder>
         if (mounted) {
           setState(() {
             _isRecording = true;
-            _isLocked = false;
-            _isCancelled = false;
-            _dragOffset = 0.0;
-            _lockDragOffset = 0.0;
             _duration = Duration.zero;
           });
           widget.onRecordingStateChanged(true);
@@ -115,15 +97,11 @@ class _VoiceMessageRecorderState extends State<VoiceMessageRecorder>
       if (mounted) {
         setState(() {
           _isRecording = false;
-          _isLocked = false;
         });
         widget.onRecordingStateChanged(false);
       }
 
-      if (!isCancel &&
-          !_isCancelled &&
-          path != null &&
-          _duration.inMilliseconds > 500) {
+      if (!isCancel && path != null && _duration.inMilliseconds > 500) {
         // Send
         HapticFeedback.lightImpact();
         widget.onSendMessage(path, _duration.inSeconds);
@@ -136,12 +114,9 @@ class _VoiceMessageRecorderState extends State<VoiceMessageRecorder>
         }
       }
 
-      // Reset state used for UI
       if (mounted) {
         setState(() {
           _duration = Duration.zero;
-          _dragOffset = 0;
-          _lockDragOffset = 0;
         });
       }
     } catch (e) {
@@ -161,148 +136,66 @@ class _VoiceMessageRecorderState extends State<VoiceMessageRecorder>
 
   @override
   Widget build(BuildContext context) {
-    // When recording, we expand effectively taking up the Row's space (sibling Expanded shrinks)
-    final desiredWidth = MediaQuery.of(context).size.width - 60;
+    if (!_isRecording) {
+      return GestureDetector(
+        onTap: _start,
+        child: Container(
+          width: 50,
+          height: 50,
+          decoration: const BoxDecoration(
+            color: Colors.yellow,
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(
+            Icons.mic,
+            color: Colors.black,
+            size: 24,
+          ),
+        ),
+      );
+    }
 
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
-      width: _isRecording ? desiredWidth : 50,
+    return Container(
       height: 50,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
-        color: _isRecording
-            ? const Color(0xFF1F2C34)
-            : Colors.transparent, // Only bg when recording
+        color: const Color(0xFF121B22),
         borderRadius: BorderRadius.circular(25),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
-      child: Stack(
-        clipBehavior: Clip.none,
-        alignment: Alignment.centerRight,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          // 1. Sliding Cancellation UI (Visible when recording but NOT locked)
-          if (_isRecording && !_isLocked)
-            Positioned(
-                right: 60, // Left of the mic button
-                left: 10,
-                top: 0,
-                bottom: 0,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    // Timer & Icon
-                    Row(
-                      children: [
-                        FadeTransition(
-                          opacity: _animationController,
-                          child: const Icon(Icons.mic,
-                              color: Colors.red, size: 20),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          _formatDuration(_duration),
-                          style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16),
-                        ),
-                      ],
-                    ),
-                    // Cancel Text
-                    const Text(
-                      '< Slide to cancel',
-                      style: TextStyle(color: Colors.white54, fontSize: 13),
-                    ),
-                  ],
-                )),
-
-          // 2. Locked UI (Visible when Locked) - Replaces everything
-          if (_isLocked)
-            Positioned.fill(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    // Delete / Cancel Button
-                    IconButton(
-                      icon: const Icon(Icons.delete_outline,
-                          color: Colors.red, size: 28),
-                      onPressed: () => _stop(isCancel: true),
-                    ),
-
-                    // Timer
-                    Text(
-                      _formatDuration(_duration),
-                      style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18),
-                    ),
-
-                    // Send Button (Replaces Mic)
-                    GestureDetector(
-                      onTap: () => _stop(isCancel: false),
-                      child: Container(
-                        width: 40,
-                        height: 40,
-                        decoration: const BoxDecoration(
-                          color: Colors.green,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(Icons.send,
-                            color: Colors.white, size: 20),
-                      ),
-                    ),
-                  ],
-                ),
+          IconButton(
+            icon: const Icon(Icons.close, color: Colors.grey, size: 24),
+            onPressed: () => _stop(isCancel: true),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+          ),
+          const SizedBox(width: 12),
+          FadeTransition(
+            opacity: _animationController,
+            child: const Icon(Icons.circle, color: Colors.red, size: 10),
+          ),
+          const SizedBox(width: 4),
+          Text(
+            _formatDuration(_duration),
+            style: const TextStyle(
+                color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+          ),
+          const SizedBox(width: 12),
+          GestureDetector(
+            onTap: () => _stop(isCancel: false),
+            child: Container(
+              width: 36,
+              height: 36,
+              decoration: const BoxDecoration(
+                color: Colors.yellow,
+                shape: BoxShape.circle,
               ),
+              child: const Icon(Icons.send, color: Colors.black, size: 16),
             ),
-
-          // 3. The Details (Mic Button Trigger)
-          // Visible only when NOT locked.
-          if (!_isLocked)
-            Positioned(
-              right: 0,
-              top: 0,
-              bottom: 0,
-              child: GestureDetector(
-                onTap: () {
-                  if (_isRecording) {
-                    _stop(isCancel: false);
-                  } else {
-                    _start();
-                  }
-                },
-                child: Container(
-                  width: 50,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: _isCancelled
-                        ? Colors.grey
-                        : (_isRecording ? Colors.red : Colors.yellow),
-                    shape: BoxShape.circle,
-                    boxShadow: _isRecording
-                        ? [
-                            BoxShadow(
-                                color: Colors.red.withOpacity(0.3),
-                                blurRadius: 15)
-                          ]
-                        : null,
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        _isRecording ? Icons.stop : Icons.mic,
-                        color: (_isRecording || _isCancelled)
-                            ? Colors.white
-                            : Colors.black,
-                        size: 24,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
+          ),
         ],
       ),
     );

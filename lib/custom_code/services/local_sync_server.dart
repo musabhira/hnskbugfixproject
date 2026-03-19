@@ -123,6 +123,7 @@ class LocalSyncServer {
   }
 
   List<ChatConversation> getCachedConversations() {
+    if (!_isInitialized) return [];
     final List<dynamic>? list = _conversationBox.get('list');
     if (list == null) return [];
     return list
@@ -142,6 +143,7 @@ class LocalSyncServer {
   }
 
   List<dynamic> getCachedMessages(String chatOrGroupId) {
+    if (!_isInitialized) return [];
     final List<dynamic>? list = _messageBox.get(chatOrGroupId);
     if (list == null) return [];
     return list;

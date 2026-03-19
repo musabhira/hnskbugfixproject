@@ -95,6 +95,9 @@ extension NullSafePostgrestFilters on PostgrestFilterBuilder {
     return value != null ? overlaps(column, value) : this;
   }
 
+  PostgrestFilterBuilder inFilter(String column, List<dynamic> values) =>
+      filter(column, 'in', values);
+
   PostgrestFilterBuilder inFilterOrNull(String column, List<dynamic>? values) {
     return values != null ? inFilter(column, values) : this;
   }

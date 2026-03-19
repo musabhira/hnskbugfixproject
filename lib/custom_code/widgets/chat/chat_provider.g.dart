@@ -130,7 +130,7 @@ final class ChatMessagesProvider
   }
 }
 
-String _$chatMessagesHash() => r'7d52a37b215df4c751f9ce43dce26e86d2ad4ea6';
+String _$chatMessagesHash() => r'0b16d0cd36a08e44e4485fa7a98cecea6513acba';
 
 final class ChatMessagesFamily extends $Family
     with

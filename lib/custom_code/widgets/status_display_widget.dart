@@ -90,7 +90,10 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
       if (cachedString != null) {
         final List<dynamic> decoded = jsonDecode(cachedString);
         setState(() {
-          _statuses = List<Map<String, dynamic>>.from(decoded);
+          _followingStatuses = List<Map<String, dynamic>>.from(decoded);
+          // Assuming public might be similar, or we can just populate both for offline
+          _publicStatuses = List<Map<String, dynamic>>.from(decoded);
+          _statuses = _followingStatuses;
           _isLoading = false;
         });
       }
@@ -147,7 +150,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
 
   Future<void> _loadStatusesOptimized() async {
     try {
-      await _checkAndDeleteExpiredStatuses();
+      _checkAndDeleteExpiredStatuses(); // Run in background to not block loading
 
       // 1. Fetch user's groups to filter group mentions
       final myGroupsRes = await supabase
@@ -755,59 +758,29 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
     if (widget.isVertical) {
       return InkWell(
         onTap: _openStatusUpload,
-        borderRadius: BorderRadius.circular(20),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12),
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          margin: const EdgeInsets.symmetric(vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+                color: Colors.yellow.withValues(alpha: 0.3), width: 1),
+            color: Colors.yellow.withValues(alpha: 0.05),
+          ),
           child: Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Stack(
-                children: [
-                  Container(
-                    width: 64,
-                    height: 64,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.yellow.withValues(alpha: 0.2),
-                          Colors.yellow.withValues(alpha: 0.05),
-                        ],
-                      ),
-                      border: Border.all(
-                          color: Colors.yellow.withValues(alpha: 0.3),
-                          width: 1),
-                    ),
-                    child: const Icon(Icons.add_rounded,
-                        size: 26, color: Colors.yellow),
-                  ),
-                  Positioned(
-                    bottom: 0,
-                    right: 0,
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: const BoxDecoration(
-                          color: Colors.yellow, shape: BoxShape.circle),
-                      child:
-                          const Icon(Icons.add, size: 14, color: Colors.black),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(width: 16),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('My Vibes',
-                      style: GoogleFonts.outfit(
-                          color: Colors.white,
-                          fontSize: 17,
-                          fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 4),
-                  Text('Share your moment',
-                      style: GoogleFonts.outfit(
-                          color: Colors.white.withValues(alpha: 0.5),
-                          fontSize: 13)),
-                ],
+              const Icon(Icons.add_circle_outline_rounded,
+                  color: Colors.yellow, size: 20),
+              const SizedBox(width: 12),
+              Text(
+                'Add',
+                style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ],
           ),
@@ -822,49 +795,27 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
         margin: const EdgeInsets.only(right: 12),
         child: Column(
           children: [
-            Stack(
-              children: [
-                Container(
-                  width: 72,
-                  height: 72,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.white.withValues(alpha: 0.03),
-                    border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.1), width: 1),
-                  ),
-                  child: Center(
-                    child: Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Colors.yellow.withValues(alpha: 0.1),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(Icons.add_rounded,
-                          size: 24, color: Colors.yellow),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  bottom: 2,
-                  right: 2,
-                  child: Container(
-                    padding: const EdgeInsets.all(3),
-                    decoration: const BoxDecoration(
-                        color: Colors.yellow, shape: BoxShape.circle),
-                    child: const Icon(Icons.add, size: 14, color: Colors.black),
-                  ),
-                ),
-              ],
+            Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                    color: Colors.yellow.withValues(alpha: 0.3), width: 1),
+                color: Colors.yellow.withValues(alpha: 0.05),
+              ),
+              child:
+                  const Icon(Icons.add_rounded, size: 28, color: Colors.yellow),
             ),
-            const SizedBox(height: 2),
-            Text('My Vibes',
-                style: GoogleFonts.outfit(
-                  color: Colors.white.withValues(alpha: 0.6),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                ),
-                overflow: TextOverflow.ellipsis),
+            const SizedBox(height: 8),
+            Text(
+              'Add',
+              style: GoogleFonts.outfit(
+                color: Colors.white.withValues(alpha: 0.7),
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
           ],
         ),
       ),
@@ -1132,7 +1083,6 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
   VideoPlayerController? _currentVideoController;
   VideoPlayerController? _preloadedVideoController;
   bool _isPreloadedVideoReady = false;
-  int _totalStatusesViewed = 0;
   bool _isCurrentVideoReady = false;
   bool _isPaused = false;
   double _dragPosition = 0.0;
@@ -1616,14 +1566,6 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
     _currentVideoController?.removeListener(_onVideoProgress);
     _progressController.removeListener(_onProgressUpdate);
 
-    _totalStatusesViewed++;
-
-    // Show ad every 3rd status (at 3, 6, 9, etc.)
-    if (_totalStatusesViewed % 3 == 0) {
-      _showAdContainer();
-      return;
-    }
-
     if (_currentIndex < statuses.length - 1) {
       setState(() {
         _currentIndex++;
@@ -1633,107 +1575,6 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
     } else {
       widget.onNextGroup();
     }
-  }
-
-  void _showAdContainer() {
-    _progressController.stop();
-    _currentVideoController?.pause();
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => Material(
-        color: Colors.black,
-        child: Stack(
-          children: [
-            Center(
-              child: Container(
-                margin: const EdgeInsets.all(24),
-                padding: const EdgeInsets.all(32),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.yellow[700]!, Colors.orange[700]!],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.yellow.withValues(alpha: 0.5),
-                      blurRadius: 20,
-                      spreadRadius: 5,
-                    ),
-                  ],
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.handshake,
-                      size: 80,
-                      color: Colors.white,
-                    ),
-                    const SizedBox(height: 20),
-                    const Text(
-                      'HandSkill Community',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 12),
-                    const Text(
-                      'Join our amazing community\nand connect with others!',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.white,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 24),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                        // Continue to next status
-                        final statuses = widget.statusGroup['statuses'] as List;
-                        if (_currentIndex < statuses.length - 1) {
-                          setState(() {
-                            _currentIndex++;
-                          });
-                          _startCurrentStatus();
-                        } else {
-                          widget.onNextGroup();
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: Colors.orange[700],
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 48,
-                          vertical: 16,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                      ),
-                      child: const Text(
-                        'Continue',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 
   void _goToPrevious() {
@@ -2731,6 +2572,14 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
   final supabase = Supabase.instance.client;
   bool _isSharingMode = false;
 
+  // Local overrides for picked content
+  String? _localSharedContent;
+  String? _localSharedContentType;
+  String? _localSharedContentId;
+  Map<String, dynamic>? _localSharedMetadata;
+  XFile? _localPickedFile;
+  String? _localPickedMediaType;
+
   @override
   void initState() {
     super.initState();
@@ -2803,6 +2652,183 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
     }
   }
 
+  void _showThoughtPicker() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1F2C34),
+      builder: (context) {
+        return FutureBuilder(
+          future: supabase
+              .from('threads')
+              .select()
+              .eq('user_id', widget.userId)
+              .order('created_at', ascending: false)
+              .limit(20),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            final List thoughts = snapshot.data as List? ?? [];
+            return Column(
+              children: [
+                const Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Text('Share a Thought',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold)),
+                ),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: thoughts.length,
+                    itemBuilder: (context, index) {
+                      final t = thoughts[index];
+                      return ListTile(
+                        leading:
+                            const Icon(Icons.lightbulb, color: Colors.yellow),
+                        title: Text(t['content'] ?? '',
+                            maxLines: 2,
+                            style: const TextStyle(color: Colors.white)),
+                        onTap: () {
+                          setState(() {
+                            _localSharedContent = t['content'];
+                            _localSharedContentType = 'thought';
+                            _localSharedContentId = t['id'].toString();
+                            _isSharingMode = true;
+                            _captionController.text = t['content'];
+                          });
+                          Navigator.pop(context);
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showGalleryPicker() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1F2C34),
+      builder: (context) {
+        return FutureBuilder(
+          future: supabase
+              .from('gallery')
+              .select()
+              .eq('user_id', widget.userId)
+              .order('created_at', ascending: false)
+              .limit(20),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            final List items = snapshot.data as List? ?? [];
+            return Column(
+              children: [
+                const Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Text('Share from Gallery',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold)),
+                ),
+                Expanded(
+                  child: GridView.builder(
+                    padding: const EdgeInsets.all(8),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 3,
+                            crossAxisSpacing: 8,
+                            mainAxisSpacing: 8),
+                    itemCount: items.length,
+                    itemBuilder: (context, index) {
+                      final item = items[index];
+                      return GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _localSharedContent = item['image_url'];
+                            _localSharedContentType = 'gallery';
+                            _localSharedContentId = item['id'].toString();
+                            _localSharedMetadata = {
+                              'title': item['title'],
+                              'description': item['description']
+                            };
+                            _isSharingMode = true;
+                          });
+                          Navigator.pop(context);
+                        },
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: CachedNetworkImage(
+                            imageUrl: item['image_url'] ?? '',
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showToolPicker() {
+    final tools = [
+      {'title': 'Poster Designer', 'description': 'Create amazing posters'},
+      {'title': 'Bulk Sender', 'description': 'Send messages in bulk'},
+      {'title': 'Poki Games', 'description': 'Play games with mates'},
+      {'title': 'Drawing Academy', 'description': 'Learn to draw'},
+      {'title': 'Travel Radar', 'description': 'Explore nearby places'},
+    ];
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1F2C34),
+      builder: (context) => Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Padding(
+            padding: EdgeInsets.all(16),
+            child: Text('Tools to Share',
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold)),
+          ),
+          ...tools.map((t) => ListTile(
+                leading: const Icon(Icons.construction, color: Colors.yellow),
+                title: Text(t['title']!,
+                    style: const TextStyle(color: Colors.white)),
+                subtitle: Text(t['description']!,
+                    style: const TextStyle(color: Colors.grey)),
+                onTap: () {
+                  setState(() {
+                    _localSharedContent = t['title'];
+                    _localSharedContentType = 'tool';
+                    _localSharedMetadata = t;
+                    _isSharingMode = true;
+                    _captionController.text = t['title']!;
+                  });
+                  Navigator.pop(context);
+                },
+              )),
+          const SizedBox(height: 20),
+        ],
+      ),
+    );
+  }
+
   void _showCaptionDialog(XFile file, String mediaType) {
     showModalBottomSheet(
       context: context,
@@ -2827,14 +2853,23 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
     String? mediaType,
     bool isModal = false,
   }) {
+    // Local overrides
+    final sContent = _localSharedContent ?? widget.sharedContent;
+    final sType = _localSharedContentType ?? widget.sharedContentType;
+    final sId = _localSharedContentId ?? widget.sharedContentId;
+    final sMetadata = _localSharedMetadata ?? widget.sharedMetadata;
+
     // Determine content widget
     Widget contentWidget;
-    if (file != null) {
+    if (_localPickedFile != null || file != null) {
+      final actualFile = _localPickedFile ?? file;
+      final actualType = _localPickedMediaType ?? mediaType;
+
       contentWidget = FutureBuilder(
-        future: file.readAsBytes(),
+        future: actualFile!.readAsBytes(),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            if (mediaType == 'image') {
+            if (actualType == 'image') {
               return Image.memory(snapshot.data as Uint8List,
                   fit: BoxFit.contain);
             } else {
@@ -2853,131 +2888,159 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
           return const Center(child: CircularProgressIndicator());
         },
       );
-    } else if (widget.sharedContent != null) {
-      if (widget.sharedContentType == 'thought' &&
-          widget.sharedMetadata != null) {
-        final name = widget.sharedMetadata!['name'] ?? 'User';
-        final avatar = widget.sharedMetadata!['profile_image_url'];
-        final time = widget.sharedMetadata!['created_at'];
-        final createdAt = time != null ? DateTime.parse(time) : DateTime.now();
+    } else if (sType == 'thought' && sMetadata != null) {
+      final name = sMetadata['name'] ?? 'User';
+      final avatar = sMetadata['profile_image_url'];
+      final time = sMetadata['created_at'];
+      final createdAt = time != null ? DateTime.parse(time) : DateTime.now();
 
-        contentWidget = Container(
-          width: double.infinity,
-          height: double.infinity,
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF2C3E50), Color(0xFF000000)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
+      contentWidget = Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF2C3E50), Color(0xFF000000)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
-          alignment: Alignment.center,
-          padding: const EdgeInsets.all(24),
-          child: Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.08),
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: Colors.white.withOpacity(0.1)),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 16,
-                      backgroundImage: avatar != null
-                          ? CachedNetworkImageProvider(avatar)
-                          : null,
-                      child:
-                          avatar == null ? Text(name[0].toUpperCase()) : null,
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            name,
-                            style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13),
-                          ),
-                          Text(
-                            timeago.format(createdAt, locale: 'en_short'),
-                            style: const TextStyle(
-                                color: Colors.white38, fontSize: 11),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  widget.sharedContent!,
-                  style: const TextStyle(
-                      color: Colors.white, fontSize: 15, height: 1.4),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Icon(Icons.favorite_border,
-                        size: 16, color: Colors.white.withOpacity(0.4)),
-                    const SizedBox(width: 12),
-                    Icon(Icons.chat_bubble_outline_rounded,
-                        size: 16, color: Colors.white.withOpacity(0.4)),
-                    const SizedBox(width: 12),
-                    Icon(Icons.send_rounded,
-                        size: 16, color: Colors.white.withOpacity(0.4)),
-                  ],
-                ),
-              ],
-            ),
+        ),
+        alignment: Alignment.center,
+        padding: const EdgeInsets.all(24),
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.08),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: Colors.white.withOpacity(0.1)),
           ),
-        );
-      } else if (widget.sharedContentType == 'text') {
-        contentWidget = Container(
-          width: double.infinity,
-          height: double.infinity,
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFFCC2B5E), Color(0xFF753A88)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-          alignment: Alignment.center,
-          padding: const EdgeInsets.all(32),
-          child: Text(
-            widget.sharedContent!,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        );
-      } else {
-        // Gallery/URL
-        contentWidget = CachedNetworkImage(
-          imageUrl: widget.sharedContent!,
-          fit: BoxFit.contain,
-          errorWidget: (context, url, error) => const Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(Icons.error, color: Colors.white),
-              SizedBox(height: 8),
-              Text('Could not load image',
-                  style: TextStyle(color: Colors.white)),
+              Row(
+                children: [
+                  CircleAvatar(
+                    radius: 16,
+                    backgroundImage: avatar != null
+                        ? CachedNetworkImageProvider(avatar)
+                        : null,
+                    child: avatar == null ? Text(name[0].toUpperCase()) : null,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          name,
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13),
+                        ),
+                        Text(
+                          timeago.format(createdAt, locale: 'en_short'),
+                          style: const TextStyle(
+                              color: Colors.white38, fontSize: 11),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Text(
+                sContent!,
+                style: const TextStyle(
+                    color: Colors.white, fontSize: 15, height: 1.4),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Icon(Icons.favorite_border,
+                      size: 16, color: Colors.white.withOpacity(0.4)),
+                  const SizedBox(width: 12),
+                  Icon(Icons.chat_bubble_outline_rounded,
+                      size: 16, color: Colors.white.withOpacity(0.4)),
+                  const SizedBox(width: 12),
+                  Icon(Icons.send_rounded,
+                      size: 16, color: Colors.white.withOpacity(0.4)),
+                ],
+              ),
             ],
           ),
-        );
-      }
+        ),
+      );
+    } else if (sType == 'tool') {
+      contentWidget = Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF00B4DB), Color(0xFF0083B0)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        alignment: Alignment.center,
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.construction, size: 64, color: Colors.white),
+            const SizedBox(height: 24),
+            Text(
+              sContent!,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Shared Tool',
+              style: TextStyle(color: Colors.white70, fontSize: 16),
+            ),
+          ],
+        ),
+      );
+    } else if (sType == 'gallery') {
+      contentWidget = CachedNetworkImage(
+        imageUrl: sContent!,
+        fit: BoxFit.contain,
+        placeholder: (context, url) =>
+            const Center(child: CircularProgressIndicator()),
+      );
+    } else if (sType == 'text') {
+      contentWidget = Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFFCC2B5E), Color(0xFF753A88)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        alignment: Alignment.center,
+        padding: const EdgeInsets.all(32),
+        child: Text(
+          sContent!,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      );
+    } else if (sContent != null) {
+      contentWidget = CachedNetworkImage(
+        imageUrl: sContent,
+        fit: BoxFit.contain,
+      );
     } else {
       contentWidget = const SizedBox();
     }
@@ -3068,7 +3131,7 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
           padding: const EdgeInsets.all(20.0),
           child: Row(
             children: [
-              if (widget.sharedContentType != 'text')
+              if (sType != 'text')
                 Expanded(
                   child: Container(
                     decoration: BoxDecoration(
@@ -3094,11 +3157,15 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
               const SizedBox(width: 12),
               InkWell(
                 onTap: () {
-                  if (file != null) {
+                  if (_localPickedFile != null || file != null) {
                     Navigator.pop(context);
-                    _uploadStatus(file, mediaType!);
+                    _uploadStatus(_localPickedFile ?? file!,
+                        _localPickedMediaType ?? mediaType!);
+                  } else if (sContent != null) {
+                    _postSharedStatusWithParams(
+                        sContent, sType!, sId, sMetadata);
                   } else {
-                    _postSharedStatus();
+                    // Nothing to send
                   }
                 },
                 child: Container(
@@ -3540,7 +3607,8 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
     }
   }
 
-  Future<void> _postSharedStatus() async {
+  Future<void> _postSharedStatusWithParams(String content, String type,
+      String? contentId, Map<String, dynamic>? metadata) async {
     if (_isUploading) return;
 
     setState(() {
@@ -3549,33 +3617,29 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
     });
 
     try {
-      final mediaType = widget.sharedContentType == 'thought'
+      final mediaType = type == 'thought'
           ? 'thought'
-          : (widget.sharedContentType == 'gallery'
-              ? 'image'
-              : (widget.sharedContentType == 'tool' ? 'tool' : 'text'));
-      // If text or thought, the shared content IS the caption.
-      // If image, caption is from controller.
+          : (type == 'gallery' ? 'image' : (type == 'tool' ? 'tool' : 'text'));
+
       String? caption;
       String? mediaUrl;
 
       if (mediaType == 'text') {
-        caption = widget.sharedContent;
+        caption = content;
         mediaUrl = null;
       } else if (mediaType == 'thought') {
-        // For thoughts, if user typed a caption, use it. Otherwise use the thought content.
         caption = _captionController.text.trim().isNotEmpty
             ? _captionController.text.trim()
-            : widget.sharedContent;
+            : content;
         mediaUrl = null;
       } else if (mediaType == 'tool') {
         caption = _captionController.text.trim().isNotEmpty
             ? _captionController.text.trim()
-            : widget.sharedContent;
+            : content;
         mediaUrl = null;
       } else {
         // Image (Gallery share)
-        mediaUrl = widget.sharedContent;
+        mediaUrl = content;
         caption = _captionController.text.trim().isEmpty
             ? null
             : _captionController.text.trim();
@@ -3585,7 +3649,7 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
         'user_id': widget.userId,
         'profile_id': widget.profileId,
         'media_type': mediaType,
-        'metadata': widget.sharedMetadata,
+        'metadata': metadata,
         'media_url': mediaUrl,
         'thumbnail_url': null,
         'caption': caption,
@@ -3595,14 +3659,11 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
         'mentioned_group_id': _selectedGroupId,
         'mentioned_profile_id': _selectedProfileId,
         'is_active': true,
-        if (widget.sharedContentId != null &&
-            widget.sharedContentId!.isNotEmpty) ...{
-          if (widget.sharedContentType == 'thought')
-            'thought_id': int.tryParse(widget.sharedContentId.toString()) ??
-                widget.sharedContentId
+        if (contentId != null && contentId.isNotEmpty) ...{
+          if (type == 'thought')
+            'thought_id': int.tryParse(contentId.toString()) ?? contentId
           else
-            'gallery_id': int.tryParse(widget.sharedContentId.toString()) ??
-                widget.sharedContentId
+            'gallery_id': int.tryParse(contentId.toString()) ?? contentId
         }
       });
 
@@ -3614,9 +3675,8 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Status uploaded!'),
-            backgroundColor: Colors.yellow,
-          ),
+              content: Text('Status uploaded!'),
+              backgroundColor: Colors.yellow),
         );
         Navigator.pop(context, true);
       }
@@ -3811,50 +3871,83 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
           else if (_isSharingMode)
             _buildEditorUI()
           else
-            Column(
-              children: [
-                const Spacer(),
-                const Icon(Icons.auto_awesome, size: 80, color: Colors.yellow),
-                const SizedBox(height: 24),
-                const Text('What\'s on your mind?',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold)),
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 40, vertical: 12),
-                  child: Text(
-                      'Share a photo or video with your mates. It will disappear in 24 hours.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.white70, fontSize: 14)),
-                ),
-                const Spacer(),
-                Padding(
-                  padding: const EdgeInsets.all(32.0),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: _buildUploadOption(
+            SingleChildScrollView(
+              child: Column(
+                children: [
+                  const SizedBox(height: 60),
+                  const Icon(Icons.auto_awesome,
+                      size: 80, color: Colors.yellow),
+                  const SizedBox(height: 24),
+                  const Text('What\'s on your mind?',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold)),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+                    child: Text(
+                        'Share a photo, video, thought or tool with your mates.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.white70, fontSize: 14)),
+                  ),
+                  const SizedBox(height: 40),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                    child: GridView.count(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      crossAxisCount: 3,
+                      crossAxisSpacing: 16,
+                      mainAxisSpacing: 16,
+                      children: [
+                        _buildUploadOption(
                           icon: Icons.image_rounded,
                           label: 'Gallery',
-                          color: Colors.yellow,
+                          color: Colors.pink,
                           onTap: _pickImage,
                         ),
-                      ),
-                      const SizedBox(width: 20),
-                      Expanded(
-                        child: _buildUploadOption(
+                        _buildUploadOption(
                           icon: Icons.videocam_rounded,
                           label: 'Video',
-                          color: Colors.yellow,
+                          color: Colors.orange,
                           onTap: _pickVideo,
                         ),
-                      ),
-                    ],
+                        _buildUploadOption(
+                          icon: Icons.lightbulb_outline,
+                          label: 'Thought',
+                          color: Colors.amber,
+                          onTap: _showThoughtPicker,
+                        ),
+                        _buildUploadOption(
+                          icon: Icons.grid_view_rounded,
+                          label: 'Shop',
+                          color: Colors.teal,
+                          onTap: _showGalleryPicker,
+                        ),
+                        _buildUploadOption(
+                          icon: Icons.construction_rounded,
+                          label: 'Tool',
+                          color: Colors.deepOrange,
+                          onTap: _showToolPicker,
+                        ),
+                        _buildUploadOption(
+                          icon: Icons.text_fields_rounded,
+                          label: 'Text',
+                          color: Colors.blue,
+                          onTap: () {
+                            setState(() {
+                              _localSharedContent = 'Type something...';
+                              _localSharedContentType = 'text';
+                              _isSharingMode = true;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(height: 20),
-              ],
+                  const SizedBox(height: 40),
+                ],
+              ),
             ),
         ],
       ),

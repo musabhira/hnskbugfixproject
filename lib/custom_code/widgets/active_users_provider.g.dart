@@ -49,7 +49,7 @@ final class ActiveUsersProvider
   }
 }
 
-String _$activeUsersHash() => r'b356ea4764af6495ded320c364ad1904bdb9ea89';
+String _$activeUsersHash() => r'22f12e99ec44c09b7da5d85dcb3f995be18baddf';
 
 final class ActiveUsersFamily extends $Family
     with

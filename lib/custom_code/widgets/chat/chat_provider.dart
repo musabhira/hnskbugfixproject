@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -73,6 +74,7 @@ class ChatMessages extends _$ChatMessages {
   void _setupSubscription() {
     final isPersonal = groupId.startsWith('p:');
     final actualId = isPersonal ? groupId.substring(2) : groupId;
+    final uid = ref.read(currentUserIdProvider);
 
     _subscription = _supabase
         .channel('chat_messages_$groupId')
@@ -84,7 +86,7 @@ class ChatMessages extends _$ChatMessages {
               ? PostgresChangeFilter(
                   type: PostgresChangeFilterType.eq,
                   column: 'receiver_id',
-                  value: actualId,
+                  value: uid,
                 )
               : PostgresChangeFilter(
                   type: PostgresChangeFilterType.eq,
@@ -110,19 +112,38 @@ class ChatMessages extends _$ChatMessages {
 
         // Merge with current state to preserve pagination/scroll history
         state.whenData((currentMessages) {
-          if (latestMessages.isEmpty) return;
+          // Deduplicate: Match optimistic messages with real ones from polling
+          final Map<String, ChatMessage> combinedMap = {};
 
-          final Map<String, ChatMessage> combinedMap = {
-            for (var m in currentMessages) m.id: m,
-            for (var m in latestMessages) m.id: m,
-          };
+          // Add latest first (real identity)
+          for (var m in latestMessages) {
+            combinedMap[m.id] = m;
+          }
+
+          // Add current ones if they don't have a real counterpart
+          for (var m in currentMessages) {
+            if (m.isOptimistic) {
+              // Check if any in latest has same text/sender (approximate match)
+              bool hasCounterpart = latestMessages.any((lm) =>
+                  lm.senderId == m.senderId &&
+                  lm.messageText == m.messageText &&
+                  (lm.createdAt.difference(m.createdAt).inSeconds.abs() < 60));
+              if (!hasCounterpart) {
+                combinedMap[m.id] = m;
+              }
+            } else {
+              combinedMap[m.id] = m;
+            }
+          }
 
           final combinedList = combinedMap.values.toList()
             ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
           // Only update state if content is different
           if (combinedList.length != currentMessages.length ||
-              combinedList.first.id != latestMessages.first.id) {
+              (combinedList.isNotEmpty &&
+                  latestMessages.isNotEmpty &&
+                  combinedList.first.id != latestMessages.first.id)) {
             state = AsyncValue.data(combinedList);
             _saveToCache(combinedList); // Keep cache in sync with polling
           }
@@ -136,8 +157,24 @@ class ChatMessages extends _$ChatMessages {
   void _handleRealtimeUpdate(dynamic payload) {
     final eventType = payload.eventType;
 
+    final isPersonal = groupId.startsWith('p:');
+    final actualId = isPersonal ? groupId.substring(2) : groupId;
+    final uid = ref.read(currentUserIdProvider);
+
     if (eventType == PostgresChangeEvent.insert) {
       final newData = payload.newRecord as Map<String, dynamic>;
+
+      // Filter: Ensure message belongs to THIS conversation
+      if (isPersonal) {
+        final senderId = newData['sender_id']?.toString();
+        final receiverId = newData['receiver_id']?.toString();
+        bool isParticipant = (senderId == actualId && receiverId == uid) ||
+            (senderId == uid && receiverId == actualId);
+        if (!isParticipant) return;
+      } else {
+        if (newData['group_id']?.toString() != actualId) return;
+      }
+
       final messageId = newData['id'];
 
       // Fetch the full message with profiles
@@ -188,35 +225,38 @@ class ChatMessages extends _$ChatMessages {
     try {
       final offset = pageToFetch * _pageSize;
 
-      final query =
-          _supabase.from(isPersonal ? 'messages' : 'group_messages').select('''
-        *,
-        reply_to:reply_to_message_id(
-          id,
-          message_text,
-          message_type,
-          file_url,
-          sender_id,
-          sender:users!sender_id(
-            profile:profile!user_id(name, profile_image_url)
-          )
-        ),
-        sender:users!sender_id(
-          profile:profile!user_id(name, profile_image_url)
-        ),
-          gallery:gallery_id(
+      final String selectQuery = '''
             *,
-            user:users!user_id(
+            reply_to:reply_to_message_id(
+              id,
+              message_text,
+              message_type,
+              file_url,
+              sender_id,
+              sender:users!sender_id(
+                profile:profile!user_id(name, profile_image_url)
+              )
+            ),
+            sender:users!sender_id(
               profile:profile!user_id(name, profile_image_url)
+            ),
+            gallery:gallery_id(
+              *,
+              user:users!user_id(
+                profile:profile!user_id(name, profile_image_url)
+              )
+            ),
+            thought:thought_id(
+              *,
+              user:users!user_id(
+                profile:profile!user_id(name, profile_image_url)
+              )
             )
-          ),
-          thought:thought_id(
-            *,
-            user:users!user_id(
-              profile:profile!user_id(name, profile_image_url)
-            )
-          )
-        ''');
+          ''';
+
+      final query = _supabase
+          .from(isPersonal ? 'messages' : 'group_messages')
+          .select(selectQuery);
 
       final response = await (isPersonal
               ? query.or(
@@ -268,15 +308,26 @@ class ChatMessages extends _$ChatMessages {
   Future<void> cleanupOldMessages() async {
     final isPersonal = groupId.startsWith('p:');
     final actualId = isPersonal ? groupId.substring(2) : groupId;
+    final uid = ref.read(currentUserIdProvider);
+
     try {
       // Delete from Supabase messages older than 34 hours
       final cutoffTime = DateTime.now().subtract(const Duration(hours: 34));
 
-      await _supabase
-          .from(isPersonal ? 'messages' : 'group_messages')
-          .delete()
-          .eq(isPersonal ? 'receiver_id' : 'group_id', actualId)
-          .lt('created_at', cutoffTime.toIso8601String());
+      if (isPersonal) {
+        // Safe delete for personal chat: only messages between these match two users
+        await _supabase
+            .from('messages')
+            .delete()
+            .lt('created_at', cutoffTime.toIso8601String())
+            .or('and(sender_id.eq.$uid,receiver_id.eq.$actualId),and(sender_id.eq.$actualId,receiver_id.eq.$uid)');
+      } else {
+        await _supabase
+            .from('group_messages')
+            .delete()
+            .eq('group_id', actualId)
+            .lt('created_at', cutoffTime.toIso8601String());
+      }
 
       debugPrint('Supabase 34h cleanup completed for: $groupId');
     } catch (e) {
@@ -362,12 +413,17 @@ class ChatMessages extends _$ChatMessages {
 
     // Add optimistically to UI immediately
     _optimisticMessages.add(optimisticMessage);
-    state.whenData((messages) {
-      state = AsyncData([optimisticMessage, ...messages]);
-    });
+    final currentList = state.value ?? [];
+    state = AsyncValue.data([optimisticMessage, ...currentList]);
 
-    final messageData = {
-      if (!isPersonal) 'group_id': actualId else 'receiver_id': actualId,
+    String finalContent = text;
+    if (isPersonal && metadata != null) {
+      try {
+        finalContent = jsonEncode(metadata);
+      } catch (_) {}
+    }
+
+    final Map<String, dynamic> messageData = {
       'sender_id': uid,
       'message_text': text,
       'message_type': messageType,
@@ -379,11 +435,18 @@ class ChatMessages extends _$ChatMessages {
       'metadata': metadata,
     };
 
+    if (isPersonal) {
+      messageData['receiver_id'] = actualId;
+      messageData['content'] = finalContent; // Kept for legacy compatibility
+    } else {
+      messageData['group_id'] = actualId;
+    }
+
+    // Clean up nulls
+    messageData.removeWhere((key, value) => value == null);
+
     try {
-      final response = await _supabase
-          .from(isPersonal ? 'messages' : 'group_messages')
-          .insert(messageData)
-          .select('''
+      final String selectQueryInsert = '''
             *,
             reply_to:reply_to_message_id(
               id,
@@ -410,7 +473,13 @@ class ChatMessages extends _$ChatMessages {
                 profile:profile!user_id(name, profile_image_url)
               )
             )
-          ''').single();
+          ''';
+
+      final response = await _supabase
+          .from(isPersonal ? 'messages' : 'group_messages')
+          .insert(messageData)
+          .select(selectQueryInsert)
+          .single();
 
       final sender = _safeGet(response['sender']);
       final senderProfile = _safeGet(sender?['profile']);
@@ -452,7 +521,7 @@ class ChatMessages extends _$ChatMessages {
             'updated_at': DateTime.now().toIso8601String(),
             'last_sender_id': uid,
           }).or(
-              'and(user_id.eq.$uid,other_user_id.eq.$actualId),and(user_id.eq.$actualId,other_user_id.eq.$uid)');
+              'and(user1_id.eq.$uid,user2_id.eq.$actualId),and(user1_id.eq.$actualId,user2_id.eq.$uid)');
         } else {
           await _supabase.from('groups').update({
             'last_message': text,
@@ -464,11 +533,38 @@ class ChatMessages extends _$ChatMessages {
         debugPrint('Error updating metadata: $metaError');
       }
     } catch (e) {
-      // Remove optimistic message on error
+      // Offline / Insert failed: Mark as pending instead of removing
+      final pendingMessage = ChatMessage(
+        id: optimisticMessage.id,
+        groupId: optimisticMessage.groupId,
+        receiverId: optimisticMessage.receiverId,
+        senderId: optimisticMessage.senderId,
+        messageText: optimisticMessage.messageText,
+        messageType: optimisticMessage.messageType,
+        fileUrl: optimisticMessage.fileUrl,
+        voiceDuration: optimisticMessage.voiceDuration,
+        replyToMessageId: optimisticMessage.replyToMessageId,
+        createdAt: optimisticMessage.createdAt,
+        isOptimistic: false, // No longer just optimistic but pending
+        isPending: true,
+        metadata: optimisticMessage.metadata,
+      );
+
       _optimisticMessages.remove(optimisticMessage);
+
       state.whenData((messages) {
-        state = AsyncData(
-            messages.where((m) => m.id != optimisticMessage.id).toList());
+        final List<ChatMessage> updatedList = List.from(messages);
+        final optIndex =
+            updatedList.indexWhere((m) => m.id == optimisticMessage.id);
+
+        if (optIndex != -1) {
+          updatedList[optIndex] = pendingMessage;
+        } else {
+          updatedList.insert(0, pendingMessage);
+        }
+
+        state = AsyncData(updatedList);
+        _saveToCache(updatedList);
       });
       rethrow;
     }
@@ -509,9 +605,7 @@ class ChatMessages extends _$ChatMessages {
   Future<ChatMessage?> _fetchMessageById(String id) async {
     final isPersonal = groupId.startsWith('p:');
     try {
-      final response = await _supabase
-          .from(isPersonal ? 'messages' : 'group_messages')
-          .select('''
+      final String selectQueryFetch = '''
         *,
         reply_to:reply_to_message_id(
           id,
@@ -538,7 +632,11 @@ class ChatMessages extends _$ChatMessages {
             profile:profile!user_id(name, profile_image_url)
           )
         )
-      ''')
+      ''';
+
+      final response = await _supabase
+          .from(isPersonal ? 'messages' : 'group_messages')
+          .select(selectQueryFetch)
           .eq('id', id)
           .single();
 

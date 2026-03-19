@@ -17,10 +17,11 @@ import 'package:flutter/foundation.dart' hide Category;
 import 'package:flutter/services.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:video_compress/video_compress.dart';
 import 'package:video_player/video_player.dart';
-import '../webrtc_call_screen.dart';
+// import '../webrtc_call_screen.dart';
 import '../image_viewer.dart';
 import 'package:pocket_mates_app/custom_code/widgets/gallery_search_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
@@ -68,36 +69,12 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   String? _userRole; // 'admin' or 'member'
   bool _isSending = false;
   bool _showEmojiPicker = false;
-  bool _showAttachMenu = false;
   Map<String, dynamic>? _replyMessage;
   bool _showScrollToBottom = false;
-
-  late AnimationController _attachMenuAnimationController;
-  late Animation<double> _attachMenuAnimation;
 
   // UI related methods
   void safeSetState(VoidCallback fn) {
     if (mounted) setState(fn);
-  }
-
-  void _handleCall(String mode) {
-    // For group calling, we send a notification to all active members
-    // and join a shared room ID (using the groupId as a base)
-    final roomId = 'group_${widget.groupId}';
-
-    try {
-      sendMessage(text: '📞 Joined Group $mode Call');
-    } catch (_) {}
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => WebRTCCallScreen(
-          mode: mode,
-          targetUserId: roomId, // Using groupId-based room for group calling
-        ),
-      ),
-    );
   }
 
   @override
@@ -109,15 +86,6 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     _messageController.addListener(_onMessageChanged);
     // _setupSystemColor(); // New line from user's snippet, commented out to avoid compile error if not defined
     _fetchMembers();
-
-    _attachMenuAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 200),
-      vsync: this,
-    );
-    _attachMenuAnimation = CurvedAnimation(
-      parent: _attachMenuAnimationController,
-      curve: Curves.easeOut,
-    );
 
     _scrollController.addListener(() {
       if (_scrollController.hasClients) {
@@ -152,9 +120,19 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     _messageController.dispose();
     _scrollController.dispose();
     _focusNode.dispose();
-    _attachMenuAnimationController.dispose();
     super.dispose();
   }
+
+  // Staged content for previews
+  String? _stagedGalleryId;
+  String? _stagedGalleryTitle;
+  String? _stagedGalleryImage;
+  String? _stagedThoughtId;
+  String? _stagedThoughtText;
+  Map<String, dynamic>? _stagedTool;
+  String? _stagedVideoPath;
+  String? _stagedDocumentPath;
+  String? _stagedAudioPath;
 
   Future<void> _fetchMembers() async {
     if (widget.groupId.startsWith('p:')) return;
@@ -186,23 +164,36 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     }
   }
 
-  Future<void> sendMessage({
+  Future<void> _sendMessage({
     String? text,
     String messageType = 'text',
     String? fileUrl,
     int? voiceDuration,
+    String? galleryId,
+    String? thoughtId,
+    Map<String, dynamic>? metadata,
   }) async {
     if (_isSending) return;
 
-    // Filter out empty messages
-    if (messageType == 'text' && (text == null || text.trim().isEmpty)) return;
+    // Filter out truly empty messages
+    bool isEmpty = (text == null || text.trim().isEmpty) &&
+        fileUrl == null &&
+        galleryId == null &&
+        thoughtId == null &&
+        metadata == null;
 
-    // Speed: Clear UI immediately for "Fast" feel
+    if (isEmpty && messageType == 'text') return;
+
+    final replyId = _replyMessage?['id'];
+    _isSending = true;
     _messageController.clear();
     safeSetState(() {
       _replyMessage = null;
+      _stagedGalleryId = null;
+      _stagedThoughtId = null;
+      _stagedTool = null;
+      _stagedVideoPath = null;
     });
-    // Scroll immediately
     _scrollToBottom();
 
     try {
@@ -211,14 +202,16 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
             messageType: messageType,
             fileUrl: fileUrl,
             voiceDuration: voiceDuration,
-            replyToId: _replyMessage?['id'],
+            replyToId: replyId,
+            galleryId: galleryId,
+            thoughtId: thoughtId,
+            metadata: metadata,
           );
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
-        );
-      }
+      debugPrint('SendMessage Error: $e');
+      _showSnackBar('Failed to send: $e', isError: true);
+    } finally {
+      _isSending = false;
     }
   }
 
@@ -240,11 +233,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
       await _fetchMembers();
     } catch (e) {
       debugPrint('Refresh error: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Refresh failed: $e')),
-        );
-      }
+      _showSnackBar('Refresh failed: $e');
     }
   }
 
@@ -282,8 +271,8 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   @override
   Widget build(BuildContext context) {
     // App Theme Colors (Yellow/Black)
-    const backgroundColor = Colors.black;
-    const appBarColor = Color(0xFF1F2C34);
+    const backgroundColor = Color(0xFF070B0D); // Premium deep black/blue
+    const appBarColor = Color(0xFF121B22); // Sleek dark gray
     const accentColor = Colors.yellow;
 
     final chatMessagesAsync = ref.watch(chatMessagesProvider(widget.groupId));
@@ -363,14 +352,6 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
           ),
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.videocam, color: Colors.white),
-            onPressed: () => _handleCall('Video'),
-          ),
-          IconButton(
-            icon: const Icon(Icons.call, color: Colors.white),
-            onPressed: () => _handleCall('Voice'),
-          ),
           PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert, color: Colors.white),
             color: appBarColor,
@@ -379,21 +360,30 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
               if (value == 'info') _showGroupInfo();
               if (value == 'leave') _showLeaveGroupDialog();
             },
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 'info',
-                child:
-                    Text('Group Info', style: TextStyle(color: Colors.white)),
-              ),
-              const PopupMenuItem(
-                value: 'refresh',
-                child: Text('Refresh', style: TextStyle(color: Colors.white)),
-              ),
-              const PopupMenuItem(
-                value: 'leave',
-                child: Text('Leave Group', style: TextStyle(color: Colors.red)),
-              ),
-            ],
+            itemBuilder: (context) {
+              final isPersonalChat = widget.groupId.startsWith('p:');
+              return [
+                if (!isPersonalChat)
+                  const PopupMenuItem(
+                    value: 'info',
+                    child: Text('Group Info', style: TextStyle(color: Colors.white)),
+                  ),
+                const PopupMenuItem(
+                  value: 'refresh',
+                  child: Text('Refresh', style: TextStyle(color: Colors.white)),
+                ),
+                if (!isPersonalChat)
+                  const PopupMenuItem(
+                    value: 'leave',
+                    child: Text('Leave Group', style: TextStyle(color: Colors.red)),
+                  ),
+                if (isPersonalChat)
+                  const PopupMenuItem(
+                    value: 'refresh', // Temporary to avoid error if missing clear_chat action
+                    child: Text('Clear Chat', style: TextStyle(color: Colors.red)),
+                  ),
+              ];
+            },
           ),
         ],
       ),
@@ -437,11 +427,13 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
 
                     // Filter out truly empty/null messages
                     final filteredMessages = messages.where((m) {
-                      final hasText =
-                          m.messageText != null && m.messageText!.isNotEmpty;
-                      final hasFile =
-                          m.fileUrl != null && m.fileUrl!.isNotEmpty;
-                      return hasText || hasFile;
+                      // Allow messages that are optimistic or have content in known fields
+                      return m.isOptimistic ||
+                          (m.messageText != null &&
+                              m.messageText!.isNotEmpty) ||
+                          (m.fileUrl != null && m.fileUrl!.isNotEmpty) ||
+                          (m.messageType != 'text' &&
+                              m.messageType != 'system');
                     }).toList();
 
                     if (filteredMessages.isEmpty) {
@@ -475,7 +467,6 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                           final message = filteredMessages[index];
                           final isMe = message.senderId == _currentUserId;
 
-                          // Date separator logic
                           bool showDate = true;
                           if (index < filteredMessages.length - 1) {
                             final nextMessage = filteredMessages[index + 1];
@@ -483,12 +474,15 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                                 message.createdAt, nextMessage.createdAt);
                           }
 
-                          return Column(
-                            children: [
-                              if (showDate)
-                                _buildDateSeparator(message.createdAt),
-                              _buildMessageTile(message, isMe),
-                            ],
+                          return Container(
+                            key: ValueKey(message.id),
+                            child: Column(
+                              children: [
+                                if (showDate)
+                                  _buildDateSeparator(message.createdAt),
+                                _buildMessageTile(message, isMe),
+                              ],
+                            ),
                           );
                         },
                       ),
@@ -497,6 +491,13 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                 ),
               ),
               if (_replyMessage != null) _buildReplyPreview(_replyMessage!),
+              if (_stagedGalleryId != null ||
+                  _stagedThoughtId != null ||
+                  _stagedTool != null ||
+                  _stagedVideoPath != null ||
+                  _stagedDocumentPath != null ||
+                  _stagedAudioPath != null)
+                _buildStagedPreview(),
               _buildInputArea(),
               if (_showEmojiPicker) _buildEmojiPicker(),
             ],
@@ -512,7 +513,6 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                 child: const Icon(Icons.keyboard_arrow_down),
               ),
             ),
-          if (_showAttachMenu) _buildAttachMenu(),
         ],
       ),
     );
@@ -686,13 +686,17 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                               end: Alignment.bottomRight,
                             )
                           : null,
-                      color: isMe ? null : const Color(0xFF1F2C34),
+                      color: isMe ? null : const Color(0xFF121B22),
                       borderRadius: borderRadius,
+                      border: isMe
+                          ? null
+                          : Border.all(color: Colors.white.withOpacity(0.05)),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
+                          color: Colors.black.withOpacity(0.25),
                           offset: const Offset(0, 2),
-                          blurRadius: 4,
+                          blurRadius: 6,
+                          spreadRadius: 1,
                         )
                       ],
                     ),
@@ -725,14 +729,24 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                               if (message.messageType == 'tool' &&
                                   message.metadata != null)
                                 _buildToolMessage(message.metadata!, isMe),
+                              if (message.messageType == 'document' &&
+                                  message.fileUrl != null)
+                                _buildDocumentMessage(message.fileUrl!, isMe),
                               if (message.messageType == 'text' &&
                                   message.messageText != null &&
                                   message.messageText!.isNotEmpty)
-                                SelectableText(
-                                  message.messageText!,
-                                  style: TextStyle(
-                                      color: isMe ? Colors.black : Colors.white,
-                                      fontSize: 16),
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                      left: 8, right: 8, top: 4, bottom: 4),
+                                  child: SelectableText(
+                                    message.messageText!,
+                                    style: TextStyle(
+                                        color: isMe
+                                            ? Colors.black87
+                                            : Colors.white.withOpacity(0.93),
+                                        fontSize: 15,
+                                        height: 1.3),
+                                  ),
                                 ),
                             ],
                           ),
@@ -749,11 +763,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                                   onTap: () async {
                                     await Clipboard.setData(ClipboardData(
                                         text: message.messageText!));
-                                    if (context.mounted) {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(const SnackBar(
-                                              content: Text('Copied')));
-                                    }
+                                    _showSnackBar('Copied');
                                   },
                                   child: Icon(
                                     Icons.copy,
@@ -775,11 +785,12 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                               if (isMe) ...[
                                 const SizedBox(width: 4),
                                 Icon(
-                                  message.isOptimistic
+                                  (message.isOptimistic || message.isPending)
                                       ? Icons.access_time
                                       : Icons.done_all,
                                   size: 14,
-                                  color: message.isOptimistic
+                                  color: (message.isOptimistic ||
+                                          message.isPending)
                                       ? (isMe ? Colors.black54 : Colors.white54)
                                       : Colors.blue,
                                 ),
@@ -899,9 +910,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
             child: OutlinedButton(
               onPressed: () {
                 // Logic to open status viewer can be added later if needed
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Opening Vibe...')),
-                );
+                _showSnackBar('Opening Vibe...');
               },
               style: OutlinedButton.styleFrom(
                 side: const BorderSide(color: Colors.yellow, width: 1),
@@ -1323,6 +1332,60 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     );
   }
 
+  Widget _buildDocumentMessage(String url, bool isMe) {
+    return GestureDetector(
+      onTap: () {
+        // Implement downloading or opening the document using url_launcher or similar
+        // For now, simple snackbar to open document URL
+        _showSnackBar('Opening document...');
+        try {
+          // ignore: deprecated_member_use
+          // launch(url);
+        } catch (_) {}
+      },
+      child: Container(
+        width: 220,
+        padding: const EdgeInsets.all(12),
+        margin: const EdgeInsets.only(bottom: 4),
+        decoration: BoxDecoration(
+          color: isMe
+              ? Colors.black.withOpacity(0.1)
+              : Colors.yellow.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.yellow.withOpacity(0.2)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.yellow.withOpacity(0.2),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.insert_drive_file, color: Colors.yellow, size: 24),
+            ),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Document',
+                      style: TextStyle(
+                          color: Colors.yellow,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14)),
+                  Text('Tap to view file',
+                      style: TextStyle(color: Colors.grey, fontSize: 11)),
+                ],
+              ),
+            ),
+            const Icon(Icons.download, color: Colors.yellow, size: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildVideoMessage(String url) {
     return GestureDetector(
       onTap: () {
@@ -1491,68 +1554,71 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     }
   }
 
-  Future<void> _pickAndUploadVideo() async {
-    safeSetState(() => _showAttachMenu = false);
-    try {
-      final video = await _imagePicker.pickVideo(source: ImageSource.gallery);
-      if (video == null) return;
-
-      // Show loading
-      _showLoadingSnackBar('Compressing & Uploading Video...');
-
-      // Compress
-      final MediaInfo? mediaInfo = await VideoCompress.compressVideo(
-        video.path,
-        quality: VideoQuality.DefaultQuality,
-        deleteOrigin: false,
-      );
-
-      final fileToUpload = mediaInfo?.file ?? File(video.path);
-
-      final fileName = 'video_${DateTime.now().millisecondsSinceEpoch}.mp4';
-      final storagePath = 'group_${widget.groupId}/$fileName';
-
-      await _supabase.storage
-          .from('chat-media')
-          .upload(storagePath, fileToUpload);
-      final url =
-          _supabase.storage.from('chat-media').getPublicUrl(storagePath);
-
-      await sendMessage(text: 'Video 📹', messageType: 'video', fileUrl: url);
-
-      if (mounted) ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    } catch (e) {
-      _showErrorSnackBar('Error uploading video: $e');
+  /// Safe snack-bar helper that works with both MaterialApp and FluentApp.
+  void _showSnackBar(String message,
+      {bool isError = false, bool isLoading = false}) {
+    if (!mounted) return;
+    final sm = ScaffoldMessenger.maybeOf(context);
+    if (sm != null) {
+      sm.showSnackBar(SnackBar(
+        content: isLoading
+            ? Row(children: [
+                const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                        strokeWidth: 2, color: Colors.white)),
+                const SizedBox(width: 12),
+                Expanded(child: Text(message)),
+              ])
+            : Text(message),
+        backgroundColor: isError ? Colors.red : null,
+        duration: isLoading
+            ? const Duration(seconds: 10)
+            : const Duration(seconds: 3),
+      ));
+    } else {
+      // Fallback: show an overlay toast-style notification
+      debugPrint('[SnackBar] $message');
+      final overlay = Overlay.maybeOf(context);
+      if (overlay == null) return;
+      final entry = OverlayEntry(
+          builder: (_) => Positioned(
+                bottom: 60,
+                left: 20,
+                right: 20,
+                child: Material(
+                  color: Colors.transparent,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: isError ? Colors.red[800] : Colors.grey[900],
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(color: Colors.black54, blurRadius: 8)
+                      ],
+                    ),
+                    child: Text(message,
+                        style: const TextStyle(color: Colors.white),
+                        textAlign: TextAlign.center),
+                  ),
+                ),
+              ));
+      overlay.insert(entry);
+      Future.delayed(const Duration(seconds: 3), entry.remove);
     }
   }
 
-  void _showLoadingSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(
-                    strokeWidth: 2, color: Colors.white)),
-            const SizedBox(width: 12),
-            Text(message),
-          ],
-        ),
-        duration: const Duration(seconds: 10),
-      ),
-    );
-  }
+  void _showLoadingSnackBar(String message) =>
+      _showSnackBar(message, isLoading: true);
 
-  void _showErrorSnackBar(String message) {
+  void _showErrorSnackBar(String message) =>
+      _showSnackBar(message, isError: true);
+
+  void _hideSnackBar() {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-      ),
-    );
+    ScaffoldMessenger.maybeOf(context)?.hideCurrentSnackBar();
   }
 
   Widget _buildVoiceMessage(ChatMessage message) {
@@ -1565,14 +1631,15 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
 
   Widget _buildInputArea() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.black,
+        color: const Color(0xFF070B0D),
+        border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.05), width: 1)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.5),
-            offset: const Offset(0, -2),
-            blurRadius: 10,
+            color: Colors.black.withValues(alpha: 0.4),
+            offset: const Offset(0, -4),
+            blurRadius: 16,
           ),
         ],
       ),
@@ -1581,8 +1648,9 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
           Expanded(
             child: Container(
               decoration: BoxDecoration(
-                color: const Color(0xFF1F2C34),
-                borderRadius: BorderRadius.circular(24),
+                color: const Color(0xFF121B22),
+                borderRadius: BorderRadius.circular(30),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.08), width: 0.5),
               ),
               child: Row(
                 children: [
@@ -1598,47 +1666,48 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                     },
                   ),
                   Expanded(
-                    child: _isRecording
-                        ? const Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 12),
-                            child: Text('Recording...',
-                                style: TextStyle(
-                                    color: Colors.red,
-                                    fontWeight: FontWeight.bold)),
-                          )
-                        : TextField(
-                            controller: _messageController,
-                            focusNode: _focusNode,
-                            style: const TextStyle(color: Colors.white),
-                            decoration: const InputDecoration(
-                              hintText: 'Message',
-                              hintStyle: TextStyle(color: Colors.white38),
-                              border: InputBorder.none,
-                              contentPadding:
-                                  EdgeInsets.symmetric(horizontal: 12),
-                            ),
-                            minLines: 1,
-                            maxLines: 6,
-                          ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.attach_file, color: Colors.white70),
-                    onPressed: () =>
-                        safeSetState(() => _showAttachMenu = !_showAttachMenu),
-                  ),
-                  if (_messageController.text.isEmpty)
-                    IconButton(
-                      icon: const Icon(Icons.camera_alt, color: Colors.white70),
-                      onPressed: () => _pickAndUploadImage(ImageSource.camera),
+                    child: TextField(
+                      controller: _messageController,
+                      focusNode: _focusNode,
+                      style: const TextStyle(color: Colors.white),
+                      decoration: const InputDecoration(
+                        hintText: 'Message',
+                        hintStyle: TextStyle(color: Colors.white38),
+                        border: InputBorder.none,
+                        contentPadding:
+                            EdgeInsets.symmetric(horizontal: 12),
+                      ),
+                      minLines: 1,
+                      maxLines: 6,
                     ),
+                  ),
+                  if (!_isRecording) ...[
+                    IconButton(
+                      icon: const Icon(Icons.attach_file, color: Colors.white70),
+                      onPressed: () {
+                        _showAttachmentBottomSheet();
+                      },
+                    ),
+                    if (_messageController.text.isEmpty)
+                      IconButton(
+                        icon: const Icon(Icons.camera_alt, color: Colors.white70),
+                        onPressed: () => _pickAndUploadImage(ImageSource.camera),
+                      ),
+                  ],
                 ],
               ),
             ),
           ),
           const SizedBox(width: 8),
-          _messageController.text.isNotEmpty
+          _messageController.text.isNotEmpty ||
+                  _stagedGalleryId != null ||
+                  _stagedThoughtId != null ||
+                  _stagedTool != null ||
+                  _stagedVideoPath != null ||
+                  _stagedDocumentPath != null ||
+                  _stagedAudioPath != null
               ? GestureDetector(
-                  onTap: () => sendMessage(text: _messageController.text),
+                  onTap: _handleSendAction,
                   child: const CircleAvatar(
                     backgroundColor: Colors.yellow,
                     radius: 24,
@@ -1648,8 +1717,8 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
               : VoiceMessageRecorder(
                   onSendMessage: (path, duration) =>
                       _handleVoiceMessage(path, duration),
-                  onRecordingStateChanged: (isRecording) {
-                    safeSetState(() => _isRecording = isRecording);
+                  onRecordingStateChanged: (recording) {
+                    safeSetState(() => _isRecording = recording);
                   },
                 ),
         ],
@@ -1697,46 +1766,311 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     );
   }
 
-  Widget _buildAttachMenu() {
-    return Positioned(
-      bottom: 95,
-      left: 10,
-      right: 10,
-      child: Card(
-        color: const Color(0xFF242F35),
-        elevation: 10,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 25, horizontal: 10),
+  void _showAttachmentBottomSheet() {
+    FocusScope.of(context).unfocus();
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Container(
+          margin: const EdgeInsets.all(10),
+          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
+          decoration: BoxDecoration(
+            color: const Color(0xFF121B22),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: Colors.yellow.withValues(alpha: 0.15)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.6),
+                blurRadius: 15,
+                spreadRadius: 2,
+                offset: const Offset(0, 5),
+              ),
+            ],
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  _buildAttachOption(Icons.insert_drive_file, Colors.indigo,
-                      'Document', () {}),
+                  _buildAttachOption(Icons.insert_drive_file, Colors.blue,
+                      'Document', () {
+                    Navigator.pop(context);
+                    _pickAndStageDocument();
+                  }),
                   _buildAttachOption(Icons.camera_alt, Colors.pink, 'Camera',
-                      () => _pickAndUploadImage(ImageSource.camera)),
-                  _buildAttachOption(Icons.image, Colors.purple, 'Gallery',
-                      () => _pickAndUploadImage(ImageSource.gallery)),
+                      () {
+                    Navigator.pop(context);
+                    _pickAndUploadImage(ImageSource.camera);
+                  }),
+                  _buildAttachOption(Icons.image, Colors.purple, 'Gallery', () {
+                    Navigator.pop(context);
+                    _pickAndUploadImage(ImageSource.gallery);
+                  }),
                 ],
               ),
-              const SizedBox(height: 25),
+              const SizedBox(height: 20),
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  _buildAttachOption(Icons.videocam, Colors.orange, 'Video',
-                      () => _pickAndUploadVideo()),
-                  _buildAttachOption(
-                      Icons.location_on, Colors.green, 'Location', () {}),
-                  _buildAttachOption(
-                      Icons.person, Colors.blue, 'Contact', () {}),
+                  _buildAttachOption(Icons.audiotrack, Colors.orange, 'Audio',
+                      () {
+                    Navigator.pop(context);
+                    _pickAndStageAudio();
+                  }),
+                  _buildAttachOption(Icons.videocam, Colors.teal, 'Video', () {
+                    Navigator.pop(context);
+                    _pickAndStageVideo();
+                  }),
+                  _buildAttachOption(Icons.construction_rounded,
+                      Colors.deepOrange, 'Tool', () {
+                    Navigator.pop(context);
+                    _showToolPicker();
+                  }),
                 ],
               ),
             ],
           ),
-        ),
+        );
+      },
+    );
+  }
+
+  Widget _buildStagedPreview() {
+    String label = '';
+    IconData icon = Icons.insert_drive_file;
+    if (_stagedGalleryId != null) {
+      label = _stagedGalleryTitle ?? 'Gallery Item';
+      icon = Icons.grid_view_rounded;
+    } else if (_stagedThoughtId != null) {
+      label = _stagedThoughtText ?? 'Thought';
+      icon = Icons.lightbulb_outline;
+    } else if (_stagedTool != null) {
+      label = _stagedTool!['title'] ?? 'Tool';
+      icon = _getToolIcon(label);
+    } else if (_stagedVideoPath != null) {
+      label = 'Video Ready';
+      icon = Icons.videocam;
+    } else if (_stagedAudioPath != null) {
+      label = 'Audio Ready';
+      icon = Icons.audiotrack;
+    } else if (_stagedDocumentPath != null) {
+      label = 'Document Ready';
+      icon = Icons.insert_drive_file;
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: const Color(0xFF242F35),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.yellow.withOpacity(0.3)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.yellow.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: Colors.yellow, size: 20),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Sharing $label',
+                    style: const TextStyle(
+                        color: Colors.yellow,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold)),
+                if (_stagedThoughtText != null)
+                  Text(_stagedThoughtText!,
+                      style: const TextStyle(color: Colors.grey, fontSize: 11),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis),
+              ],
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.close, size: 18, color: Colors.grey),
+            onPressed: () {
+              safeSetState(() {
+                _stagedGalleryId = null;
+                _stagedThoughtId = null;
+                _stagedTool = null;
+                _stagedVideoPath = null;
+                _stagedAudioPath = null;
+                _stagedDocumentPath = null;
+              });
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _handleSendAction() async {
+    final text = _messageController.text;
+
+    if (_stagedGalleryId != null) {
+      await _sendMessage(
+          text: text,
+          messageType: 'gallery',
+          galleryId: _stagedGalleryId,
+          metadata: {
+            'title': _stagedGalleryTitle,
+            'image_url': _stagedGalleryImage
+          });
+    } else if (_stagedThoughtId != null) {
+      await _sendMessage(
+          text: text, messageType: 'thought', thoughtId: _stagedThoughtId);
+    } else if (_stagedTool != null) {
+      await _sendMessage(
+          text: text, messageType: 'tool', metadata: _stagedTool);
+    } else if (_stagedVideoPath != null) {
+      await _uploadStagedVideo(text);
+    } else if (_stagedDocumentPath != null) {
+      await _uploadStagedFile(text, _stagedDocumentPath!, 'document');
+    } else if (_stagedAudioPath != null) {
+      await _uploadStagedFile(text, _stagedAudioPath!, 'voice');
+    } else {
+      await _sendMessage(text: text);
+    }
+  }
+
+  Future<void> _uploadStagedFile(String? caption, String path, String type) async {
+    try {
+      _showLoadingSnackBar('Sending $type...');
+      final file = File(path);
+      final extension = path.split('.').last;
+      final fileName = '${type}_${DateTime.now().millisecondsSinceEpoch}.$extension';
+      final storagePath = 'group_${widget.groupId}/$fileName';
+
+      await _supabase.storage.from('chat-media').upload(storagePath, file);
+      final url = _supabase.storage.from('chat-media').getPublicUrl(storagePath);
+
+      await _sendMessage(
+          text: caption ?? (type == 'document' ? 'Document 📁' : 'Audio 🎵'),
+          messageType: type,
+          fileUrl: url);
+
+      safeSetState(() {
+        _stagedDocumentPath = null;
+        _stagedAudioPath = null;
+      });
+      _hideSnackBar();
+    } catch (e) {
+      _showErrorSnackBar('Error uploading $type: $e');
+    }
+  }
+
+  Future<void> _pickAndStageDocument() async {
+    try {
+      FilePickerResult? result = await FilePicker.platform.pickFiles();
+      if (result != null && result.files.single.path != null) {
+        safeSetState(() {
+          _stagedDocumentPath = result.files.single.path;
+        });
+      }
+    } catch (e) {
+      _showErrorSnackBar('Error picking document: $e');
+    }
+  }
+
+  Future<void> _pickAndStageAudio() async {
+    try {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.audio);
+      if (result != null && result.files.single.path != null) {
+        safeSetState(() {
+          _stagedAudioPath = result.files.single.path;
+        });
+      }
+    } catch (e) {
+      _showErrorSnackBar('Error picking audio: $e');
+    }
+  }
+
+  Future<void> _pickAndStageVideo() async {
+    try {
+      final video = await _imagePicker.pickVideo(source: ImageSource.gallery);
+      if (video == null) return;
+
+      safeSetState(() {
+        _stagedVideoPath = video.path;
+      });
+    } catch (e) {
+      _showErrorSnackBar('Error picking video: $e');
+    }
+  }
+
+  Future<void> _uploadStagedVideo(String? caption) async {
+    if (_stagedVideoPath == null) return;
+    try {
+      _showLoadingSnackBar('Sending Video...');
+      final file = File(_stagedVideoPath!);
+      final fileName = 'video_${DateTime.now().millisecondsSinceEpoch}.mp4';
+      final storagePath = 'group_${widget.groupId}/$fileName';
+
+      await _supabase.storage.from('chat-media').upload(storagePath, file);
+      final url =
+          _supabase.storage.from('chat-media').getPublicUrl(storagePath);
+
+      await _sendMessage(
+          text: caption ?? 'Video 📹', messageType: 'video', fileUrl: url);
+
+      _hideSnackBar();
+    } catch (e) {
+      _showErrorSnackBar('Error uploading video: $e');
+    }
+  }
+
+
+
+
+
+  void _showToolPicker() {
+    final tools = [
+      {'title': 'Poster Designer', 'description': 'Create amazing posters'},
+      {'title': 'Bulk Sender', 'description': 'Send messages in bulk'},
+      {'title': 'Poki Games', 'description': 'Play games with mates'},
+      {'title': 'Drawing Academy', 'description': 'Learn to draw'},
+      {'title': 'Travel Radar', 'description': 'Explore nearby places'},
+    ];
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF121B22),
+      builder: (context) => Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Padding(
+            padding: EdgeInsets.all(16),
+            child: Text('Tools to Share',
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold)),
+          ),
+          ...tools.map((t) => ListTile(
+                leading: Icon(_getToolIcon(t['title']!), color: Colors.yellow),
+                title: Text(t['title']!,
+                    style: const TextStyle(color: Colors.white)),
+                subtitle: Text(t['description']!,
+                    style: const TextStyle(color: Colors.grey)),
+                onTap: () {
+                  safeSetState(() {
+                    _stagedTool = t;
+                  });
+                  Navigator.pop(context);
+                },
+              )),
+          const SizedBox(height: 20),
+        ],
       ),
     );
   }
@@ -1758,18 +2092,13 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
       await _supabase.storage.from('group-images').uploadBinary(path, bytes);
       final url = _supabase.storage.from('group-images').getPublicUrl(path);
 
-      await sendMessage(messageType: 'image', fileUrl: url);
+      await _sendMessage(messageType: 'image', fileUrl: url);
       safeSetState(() {
-        _showAttachMenu = false;
         _showEmojiPicker = false;
       });
     } catch (e) {
       debugPrint('Error picking/uploading image: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
-        );
-      }
+      _showSnackBar('Error: $e', isError: true);
     }
   }
 
@@ -1798,7 +2127,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
       padding: const EdgeInsets.all(8),
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: const Color(0xFF1F2C34),
+        color: const Color(0xFF121B22),
         borderRadius: BorderRadius.circular(8),
         border: const Border(left: BorderSide(color: Colors.yellow, width: 4)),
       ),
@@ -2073,7 +2402,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
           'is_active': true,
         });
 
-        await sendMessage(
+        await _sendMessage(
           text: 'Added ${user.name} to the group',
           messageType: 'system',
         );
@@ -2139,11 +2468,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
       }
     } catch (e) {
       debugPrint('Error deleting group: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error deleting group: $e')),
-        );
-      }
+      _showSnackBar('Error deleting group: $e', isError: true);
     }
   }
 
@@ -2187,7 +2512,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
           .eq('user_id', _currentUserId);
 
       // Send system message
-      await sendMessage(
+      await _sendMessage(
         text: 'Left the group',
         messageType: 'system',
       );
@@ -2208,7 +2533,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
       final url =
           _supabase.storage.from('voice-messages').getPublicUrl(storagePath);
 
-      await sendMessage(
+      await _sendMessage(
         text: 'Voice Message 🎤',
         messageType: 'voice',
         fileUrl: url,
@@ -2216,11 +2541,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
       );
     } catch (e) {
       debugPrint('Error sending voice: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to send voice message: $e')),
-        );
-      }
+      _showSnackBar('Failed to send voice message: $e', isError: true);
     }
   }
 

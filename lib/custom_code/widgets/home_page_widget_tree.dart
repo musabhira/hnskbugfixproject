@@ -1866,7 +1866,7 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
 
   @override
   double get maxExtent =>
-      442.0; // 160 (Stranger Match) + 160 (Status) + 50 (Tabs) + 72 (Search)
+      452.0; // 160 (Stranger Match) + 170 (Status) + 50 (Tabs) + 72 (Search)
 
   @override
   double get minExtent => 282.0;
@@ -1875,7 +1875,7 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
   Widget build(
       BuildContext context, double shrinkOffset, bool overlapsContent) {
     final double strangerMatchHeight = 160.0;
-    final double statusSectionHeight = 160.0;
+    final double statusSectionHeight = 170.0;
 
     final double progress =
         (shrinkOffset / strangerMatchHeight).clamp(0.0, 1.0);
@@ -1920,7 +1920,7 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Stranger Match',
+                          'Handskill',
                           style: GoogleFonts.outfit(
                             color: material.Colors.white,
                             fontSize: 20,
@@ -2064,7 +2064,7 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                                         size: 14, color: material.Colors.black),
                                     const SizedBox(width: 6),
                                     Text(
-                                      'Add Status',
+                                      'Add',
                                       style: GoogleFonts.outfit(
                                         color: material.Colors.black,
                                         fontSize: 12,

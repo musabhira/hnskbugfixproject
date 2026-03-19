@@ -82,8 +82,12 @@ class ChatConversation {
   }) {
     // This expects a row from the 'conversations' table
     return ChatConversation(
-      id: otherProfile?['user_id'] ?? '',
-      name: otherProfile?['name'] ?? 'Unknown',
+      id: otherProfile?['user_id'] ??
+          (json['user1_id'] == currentUserId
+              ? json['user2_id']
+              : json['user1_id']) ??
+          '',
+      name: otherProfile?['name'] ?? 'Unknown User',
       imageUrl: otherProfile?['profile_image_url'],
       lastMessage: json['last_message'],
       lastMessageTime: json['last_message_time'] != null
@@ -229,12 +233,12 @@ class Conversations extends _$Conversations {
       _debounceTimer?.cancel();
     });
 
+    List<ChatConversation> cached = [];
     try {
       // Fetch initial data
       final profileId = await ref.watch(currentProfileIdProvider.future);
 
       // Try to load from cache first for instant display
-      List<ChatConversation> cached = [];
       try {
         cached = await _loadFromCache(userId);
       } catch (e) {
@@ -256,7 +260,7 @@ class Conversations extends _$Conversations {
       return await _fetchConversations(userId, profileId);
     } catch (e) {
       debugPrint('Unhandled error in Conversations build: $e');
-      // If everything fails, return empty list instead of breaking UI
+      if (cached.isNotEmpty) return cached;
       return [];
     }
   }
@@ -454,7 +458,7 @@ class Conversations extends _$Conversations {
       return combined;
     } catch (e) {
       print('Error fetching conversations: $e');
-      return [];
+      throw e;
     }
   }
 
@@ -481,10 +485,10 @@ class Conversations extends _$Conversations {
         query = query.eq('user_id', userId);
       }
 
-      final response = await query.eq('is_active', true).order(
-          'last_message_time',
-          referencedTable: 'groups',
-          ascending: false);
+      final response = await query
+          .eq('is_active', true)
+          .order('last_message_time',
+              referencedTable: 'groups', ascending: false);
 
       final groupList = (response as List)
           .map((item) => Map<String, dynamic>.from(item))
@@ -537,7 +541,7 @@ class Conversations extends _$Conversations {
           await Future.wait(conversationFutures);
       return conversations.whereType<ChatConversation>().toList();
     } catch (e) {
-      return [];
+      rethrow;
     }
   }
 
@@ -566,17 +570,18 @@ class Conversations extends _$Conversations {
     try {
       var query = _supabase
           .from('group_messages')
-          .select()
+          .select('id')
           .eq('group_id', groupId)
           .neq('sender_id', userId);
 
-      if (lastReadTime != null) {
+      if (lastReadTime != null && lastReadTime.isNotEmpty) {
         query = query.gt('created_at', lastReadTime);
       }
 
       final res = await query.count(CountOption.exact);
       return res.count;
     } catch (e) {
+      debugPrint('Error getting unread count: $e');
       return 0;
     }
   }
@@ -655,7 +660,7 @@ class Conversations extends _$Conversations {
 
       return chats;
     } catch (e) {
-      return [];
+      rethrow;
     }
   }
 
@@ -673,7 +678,7 @@ class Conversations extends _$Conversations {
               Map<String, dynamic>.from(json)))
           .toList();
     } catch (e) {
-      return [];
+      rethrow;
     }
   }
 
@@ -690,11 +695,10 @@ class Conversations extends _$Conversations {
             .eq('group_id', conversationId)
             .eq('user_id', userId);
       } else {
-        await _supabase
-            .from('conversations')
-            .update({'unread_count': 0})
-            .or('user1_id.eq.$userId,user2_id.eq.$userId')
-            .eq(conversationId.contains('-') ? 'id' : 'id', conversationId);
+        // conversationId here is the other user's ID
+        // We need to find the specific conversation between the two users
+        await _supabase.from('conversations').update({'unread_count': 0}).or(
+            'and(user1_id.eq.$userId,user2_id.eq.$conversationId),and(user1_id.eq.$conversationId,user2_id.eq.$userId)');
       }
       _debouncedRefresh();
     } catch (e) {
