@@ -1342,10 +1342,11 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
           final mediaUrl = status['media_url'];
           final profileId = status['profile_id'];
 
-          final fileName = mediaUrl.split('/').last;
-          final filePath = '$profileId/$fileName';
-
-          await supabase.storage.from('statuses').remove([filePath]);
+          if (mediaUrl != null && mediaUrl.toString().isNotEmpty) {
+            final fileName = mediaUrl.split('/').last;
+            final filePath = '$profileId/$fileName';
+            await supabase.storage.from('statuses').remove([filePath]);
+          }
           await supabase.from('statuses').delete().eq('id', statusId);
 
           debugPrint('Auto-deleted expired status: $statusId');
