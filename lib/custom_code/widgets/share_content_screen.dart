@@ -33,13 +33,16 @@ class ShareContentScreen extends StatefulWidget {
 }
 
 class _ShareContentScreenState extends State<ShareContentScreen> {
+  final GlobalKey<ScaffoldMessengerState> _scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
   final supabase = Supabase.instance.client;
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF121212),
-      appBar: AppBar(
+    return ScaffoldMessenger(
+      key: _scaffoldMessengerKey,
+      child: Scaffold(
+        backgroundColor: const Color(0xFF121212),
+        appBar: AppBar(
         title: const Text(
           'Share',
           style: TextStyle(fontWeight: FontWeight.bold),
@@ -85,7 +88,7 @@ class _ShareContentScreenState extends State<ShareContentScreen> {
           ],
         ),
       ),
-    );
+    ));
   }
 
   Widget _buildThoughtPreview() {
@@ -510,12 +513,14 @@ class _ShareContentScreenState extends State<ShareContentScreen> {
         Navigator.pop(context, true);
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error preparing status share: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (mounted) {
+        _scaffoldMessengerKey.currentState?.showSnackBar(
+          SnackBar(
+            content: Text('Error preparing status share: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 }

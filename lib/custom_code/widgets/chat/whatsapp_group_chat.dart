@@ -387,9 +387,12 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
           ),
         ],
       ),
-      body: Stack(
-        children: [
-          // Background Image/Pattern could go here
+      body: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        behavior: HitTestBehavior.translucent,
+        child: Stack(
+          children: [
+            // Background Image/Pattern could go here
           Column(
             children: [
               Expanded(
@@ -515,7 +518,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
             ),
         ],
       ),
-    );
+    ));
   }
 
   bool _isSameDay(DateTime d1, DateTime d2) {

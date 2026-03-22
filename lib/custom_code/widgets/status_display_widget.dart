@@ -2558,6 +2558,7 @@ class StatusUploadWidget extends StatefulWidget {
 }
 
 class _StatusUploadWidgetState extends State<StatusUploadWidget> {
+  final GlobalKey<ScaffoldMessengerState> _scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
   final ImagePicker _picker = ImagePicker();
   final TextEditingController _captionController = TextEditingController();
   bool _isUploading = false;
@@ -3683,7 +3684,7 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
       setState(() => _uploadProgress = 1.0);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        _scaffoldMessengerKey.currentState?.showSnackBar(
           const SnackBar(
               content: Text('Status uploaded!'),
               backgroundColor: Colors.yellow),
@@ -3840,8 +3841,11 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
   }
 
   void _showErrorSnackBar(String message) {
+    debugPrint('################ STATUS UPLOAD ERROR ################');
+    debugPrint(message);
+    debugPrint('#####################################################');
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      _scaffoldMessengerKey.currentState?.showSnackBar(
         SnackBar(
           content: Text(message),
           backgroundColor: Colors.red[700],
@@ -3853,6 +3857,7 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
   @override
   Widget build(BuildContext context) {
     return ScaffoldMessenger(
+      key: _scaffoldMessengerKey,
       child: Scaffold(
         backgroundColor: Colors.black,
         appBar: AppBar(
