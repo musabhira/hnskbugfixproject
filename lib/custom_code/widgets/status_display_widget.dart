@@ -3590,7 +3590,8 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
       _captionController.clear();
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        debugPrint('################ STATUS UPLOAD SUCCESS ################');
+        _scaffoldMessengerKey.currentState?.showSnackBar(
           const SnackBar(
             content: Text('Status uploaded!'),
             backgroundColor: Colors.yellow,
@@ -3684,6 +3685,7 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
       setState(() => _uploadProgress = 1.0);
 
       if (mounted) {
+        debugPrint('################ STATUS UPLOAD SUCCESS ################');
         _scaffoldMessengerKey.currentState?.showSnackBar(
           const SnackBar(
               content: Text('Status uploaded!'),
