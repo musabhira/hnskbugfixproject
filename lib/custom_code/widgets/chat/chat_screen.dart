@@ -1,43 +1,24 @@
 import 'dart:async';
-import 'dart:async';
-import 'dart:io';
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:fluent_ui/fluent_ui.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:record/record.dart';
 import 'package:record/record.dart';
 
 import 'package:timeago/timeago.dart' as timeago;
-import 'package:timeago/timeago.dart' as timeago;
 
 import 'package:pocket_mates_app/custom_code/widgets/chat/chat_models.dart';
-import 'package:pocket_mates_app/custom_code/widgets/chat/chat_models.dart';
-import 'package:pocket_mates_app/custom_code/widgets/chat/chat_provider.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/chat_provider.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/voice_player.dart';
-import 'package:pocket_mates_app/custom_code/widgets/chat/voice_player.dart';
-import 'package:pocket_mates_app/custom_code/widgets/webrtc_call_screen.dart';
 import 'package:pocket_mates_app/custom_code/widgets/webrtc_call_screen.dart';
 import 'package:pocket_mates_app/custom_code/widgets/image_viewer.dart';
-import 'package:pocket_mates_app/custom_code/widgets/image_viewer.dart';
 import 'package:pocket_mates_app/custom_code/widgets/gallery_search_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/gallery_search_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {

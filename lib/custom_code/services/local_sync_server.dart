@@ -16,7 +16,6 @@ class LocalSyncServer {
 
   late Box _conversationBox;
   late Box _messageBox;
-  late Box _settingsBox;
 
   bool _isInitialized = false;
   final SupabaseClient _supabase = SupaFlow.client;
@@ -35,7 +34,6 @@ class LocalSyncServer {
     // Open boxes
     _conversationBox = await Hive.openBox('conversations');
     _messageBox = await Hive.openBox('messages');
-    _settingsBox = await Hive.openBox('settings');
 
     _isInitialized = true;
     debugPrint('LocalSyncServer: Initialized');

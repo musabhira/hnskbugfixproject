@@ -1142,22 +1142,6 @@ class _MessageScreenState extends State<MessageScreen> {
     );
   }
 
-  void _showLoadingDialog(String message) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        backgroundColor: Colors.grey[900],
-        content: Row(
-          children: [
-            const CircularProgressIndicator(),
-            const SizedBox(width: 20),
-            Text(message, style: const TextStyle(color: Colors.white)),
-          ],
-        ),
-      ),
-    );
-  }
 
   void _makePhoneCall() async {
     if (_isBlocked || _isBlockedByOther) {
