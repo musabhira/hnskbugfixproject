@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pocket_mates_app/custom_code/widgets/teams/teams_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/teams/user_search_dialog.dart';
 
 class TeamDetailPage extends StatefulWidget {
   final Team team;
@@ -197,48 +198,29 @@ class _TeamDetailPageState extends State<TeamDetailPage>
   }
 
   void _showInviteMemberDialog() {
-    final emailController = TextEditingController();
-    // In real app, search by email/username. Here, we might need a search widget.
-    // For simplicity, let's assume we can input a USER ID for now, or this needs a user search feature which is larger scope.
-    // I'll put a placeholder for User ID input as per raw requirement.
-
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF2C2C2C),
-        title: Text('Add Member (User ID)',
-            style: GoogleFonts.outfit(color: Colors.white)),
-        content: TextField(
-          controller: emailController,
-          style: const TextStyle(color: Colors.white),
-          decoration: const InputDecoration(
-            hintText: 'Enter User UUID',
-            hintStyle: TextStyle(color: Colors.grey),
-          ),
-        ),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(context), child: Text('Cancel')),
-          ElevatedButton(
-            onPressed: () async {
-              if (emailController.text.isEmpty) return;
-              try {
-                await _service.inviteMember(
-                    widget.team.id, emailController.text);
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context)
-                    .showSnackBar(SnackBar(content: Text('Member added!')));
-                _loadData(); // Reload to see if they appeared (if auto-approved)
-              } catch (e) {
-                ScaffoldMessenger.of(context)
-                    .showSnackBar(SnackBar(content: Text('Error: $e')));
-              }
-            },
-            child: Text('Invite'),
-            style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.yellow, foregroundColor: Colors.black),
-          ),
-        ],
+      builder: (context) => UserSearchDialog(
+        multipleSelection: false,
+        onUsersSelected: (users) async {
+          if (users.isEmpty) return;
+          final user = users.first;
+          try {
+            await _service.inviteMember(widget.team.id, user.userId);
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Invited ${user.name}!')),
+              );
+            }
+            _loadData();
+          } catch (e) {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Error: $e')),
+              );
+            }
+          }
+        },
       ),
     );
   }

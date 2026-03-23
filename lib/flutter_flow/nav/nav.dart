@@ -106,7 +106,12 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           name: 'PocketMatesDashboard',
           path: '/pocketMates',
           builder: (context, params) => PocketMatesDashboard(),
-        )
+        ),
+        FFRoute(
+          name: ProfileCreateCustomWidget.routeName,
+          path: ProfileCreateCustomWidget.routePath,
+          builder: (context, params) => ProfileCreateCustomWidget(),
+        ),
       ].map((r) => r.toRoute(appStateNotifier)).toList(),
     );
 

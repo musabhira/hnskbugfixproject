@@ -24,6 +24,9 @@ class AuthPageModel extends FlutterFlowModel<AuthPageWidget> {
       tabBarController != null ? tabBarController!.index : 0;
   int get tabBarPreviousIndex =>
       tabBarController != null ? tabBarController!.previousIndex : 0;
+  
+  String? signInError;
+  String? signUpError;
 
   // State field(s) for emailAddress widget.
   FocusNode? emailAddressFocusNode;

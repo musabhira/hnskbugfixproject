@@ -1134,6 +1134,9 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
   bool _isLiked = false;
   int _likeCount = 0;
 
+  final TextEditingController _replyController = TextEditingController();
+  final FocusNode _replyFocusNode = FocusNode();
+
   @override
   void initState() {
     super.initState();
@@ -1145,6 +1148,17 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
       vsync: this,
       duration: const Duration(milliseconds: 300),
     );
+
+    _replyFocusNode.addListener(() {
+      if (_replyFocusNode.hasFocus) {
+        if (!_isPaused) _togglePause();
+      }
+    });
+
+    _replyController.addListener(() {
+      if (mounted) setState(() {});
+    });
+
     _checkAndDeleteExpiredStatuses();
     _initializeViewer();
   }
@@ -1190,6 +1204,8 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
     _progressController.dispose();
     _transitionController.dispose();
     _currentVideoController?.dispose();
+    _replyController.dispose();
+    _replyFocusNode.dispose();
     super.dispose();
   }
 
@@ -1239,6 +1255,53 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
       });
     } catch (e) {
       debugPrint('Error toggling like: $e');
+    }
+  }
+
+  Future<void> _sendReply() async {
+    final text = _replyController.text.trim();
+    if (text.isEmpty) return;
+
+    final statuses = widget.statusGroup['statuses'] as List;
+    final status = statuses[_currentIndex];
+    final receiverId = status['user_id'];
+
+    if (receiverId == widget.currentUserId) return;
+
+    try {
+      await supabase.from('messages').insert({
+        'sender_id': widget.currentUserId,
+        'receiver_id': receiverId,
+        'message_text': text,
+        'message_type': 'text',
+        'metadata': {
+          'replied_to_status_id': status['id'],
+          'status_media_url': status['media_url'],
+          'status_media_type': status['media_type'],
+          'reply_type': 'status_reply',
+        }
+      });
+
+      _replyController.clear();
+      _replyFocusNode.unfocus();
+
+      if (mounted) {
+        if (_isPaused) _togglePause(); // Resume after sending
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Reply sent'),
+            duration: Duration(seconds: 1),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Error sending status reply: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to send reply')),
+        );
+      }
     }
   }
 
@@ -1866,74 +1929,111 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                         ),
                         const SizedBox(width: 10),
                         Expanded(
-                          child: Row(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              if (widget.statusGroup['is_group'] == true) ...[
-                                Text(
-                                  profile['name'] ?? 'Group',
-                                  style: const TextStyle(
-                                    color: Colors.white70,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
+                              Row(
+                                children: [
+                                  if (widget.statusGroup['is_group'] == true) ...[
+                                    Text(
+                                      profile['name'] ?? 'Group',
+                                      style: const TextStyle(
+                                        color: Colors.white70,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                    const Padding(
+                                      padding:
+                                          EdgeInsets.symmetric(horizontal: 4),
+                                      child: Icon(Icons.chevron_right,
+                                          color: Colors.white38, size: 14),
+                                    ),
+                                  ],
+                                  Flexible(
+                                    child: Text(
+                                      currentStatus['profile']?['name'] ??
+                                          'Unknown',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 15,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                   ),
-                                ),
-                                const Padding(
-                                  padding: EdgeInsets.symmetric(horizontal: 4),
-                                  child: Icon(Icons.chevron_right,
-                                      color: Colors.white38, size: 14),
-                                ),
-                              ],
-                              Text(
-                                currentStatus['profile']?['name'] ?? 'Unknown',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 15,
-                                ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    _getTimeAgo(currentStatus['created_at']),
+                                    style: TextStyle(
+                                      color:
+                                          Colors.white.withValues(alpha: 0.6),
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
                               ),
-                              const SizedBox(width: 8),
-                              Text(
-                                _getTimeAgo(currentStatus['created_at']),
-                                style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.6),
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                ),
+                              Row(
+                                children: [
+                                  // Group Mention Tag
+                                  if (currentStatus['mentioned_group_id'] !=
+                                      null)
+                                    FutureBuilder(
+                                      future: supabase
+                                          .from('groups')
+                                          .select('name')
+                                          .eq('id',
+                                              currentStatus[
+                                                  'mentioned_group_id'])
+                                          .maybeSingle(),
+                                      builder: (context, snapshot) {
+                                        if (!snapshot.hasData ||
+                                            snapshot.data == null)
+                                          return const SizedBox.shrink();
+                                        final gName =
+                                            snapshot.data!['name'] ?? '';
+                                        return Padding(
+                                          padding: const EdgeInsets.only(
+                                              top: 4, right: 8),
+                                          child: _buildMentionTag(
+                                              gName, Icons.groups_rounded,
+                                              isUnderName: true),
+                                        );
+                                      },
+                                    ),
+                                  // User Mention Tag
+                                  if (currentStatus['mentioned_profile_id'] !=
+                                      null)
+                                    FutureBuilder(
+                                      future: supabase
+                                          .from('profile')
+                                          .select('name')
+                                          .eq('id',
+                                              currentStatus[
+                                                  'mentioned_profile_id'])
+                                          .maybeSingle(),
+                                      builder: (context, snapshot) {
+                                        if (!snapshot.hasData ||
+                                            snapshot.data == null)
+                                          return const SizedBox.shrink();
+                                        final pName =
+                                            snapshot.data!['name'] ?? '';
+                                        return Padding(
+                                          padding: const EdgeInsets.only(
+                                              top: 4, right: 8),
+                                          child: _buildMentionTag(
+                                              pName, Icons.person,
+                                              isUnderName: true),
+                                        );
+                                      },
+                                    ),
+                                ],
                               ),
                             ],
                           ),
                         ),
-                        // Group Mention Tag
-                        if (currentStatus['mentioned_group_id'] != null)
-                          FutureBuilder(
-                            future: supabase
-                                .from('groups')
-                                .select('name')
-                                .eq('id', currentStatus['mentioned_group_id'])
-                                .maybeSingle(),
-                            builder: (context, snapshot) {
-                              if (!snapshot.hasData || snapshot.data == null)
-                                return const SizedBox.shrink();
-                              final gName = snapshot.data!['name'] ?? '';
-                              return _buildMentionTag(
-                                  gName, Icons.groups_rounded);
-                            },
-                          ),
-                        // User Mention Tag
-                        if (currentStatus['mentioned_profile_id'] != null)
-                          FutureBuilder(
-                            future: supabase
-                                .from('profile')
-                                .select('name')
-                                .eq('id', currentStatus['mentioned_profile_id'])
-                                .maybeSingle(),
-                            builder: (context, snapshot) {
-                              if (!snapshot.hasData || snapshot.data == null)
-                                return const SizedBox.shrink();
-                              final pName = snapshot.data!['name'] ?? '';
-                              return _buildMentionTag(pName, Icons.person);
-                            },
-                          ),
                         const Spacer(),
                         // View Count (Only show for own status)
                         if (isOwnStatus)
@@ -1985,7 +2085,9 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
             // Caption
             if (currentStatus['caption'] != null &&
                 currentStatus['caption'].toString().isNotEmpty &&
-                currentStatus['media_type'] != 'text')
+                currentStatus['media_type'] != 'text' &&
+                currentStatus['media_type'] != 'thought' &&
+                currentStatus['media_type'] != 'tool')
               Positioned(
                 bottom: 30,
                 left: 16,
@@ -2006,44 +2108,116 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                   ),
                 ),
               ),
+            // Bottom Action Bar (Reply, Like, Share)
             Positioned(
-              bottom: 8, // distance from bottom
-              left: 8, // distance from left
+              bottom: MediaQuery.of(context).padding.bottom + 12,
+              left: 12,
+              right: 12,
               child: Row(
                 children: [
+                  // Reply Field (Only for others' statuses)
+                  if (!isOwnStatus)
+                    Expanded(
+                      child: Container(
+                        height: 48,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.4),
+                            width: 1,
+                          ),
+                          color: Colors.black.withValues(alpha: 0.2),
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                controller: _replyController,
+                                focusNode: _replyFocusNode,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                ),
+                                decoration: InputDecoration(
+                                  hintText:
+                                      'Reply to ${currentStatus['profile']?['name'] ?? 'status'}...',
+                                  hintStyle: TextStyle(
+                                    color: Colors.white.withValues(alpha: 0.6),
+                                    fontSize: 14,
+                                  ),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 16),
+                                  border: InputBorder.none,
+                                  enabledBorder: InputBorder.none,
+                                  focusedBorder: InputBorder.none,
+                                ),
+                                onSubmitted: (_) => _sendReply(),
+                              ),
+                            ),
+                            if (_replyController.text.trim().isNotEmpty)
+                              IconButton(
+                                icon: const Icon(Icons.send_rounded,
+                                    color: Colors.white, size: 20),
+                                onPressed: _sendReply,
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  
+                  if (!isOwnStatus) const SizedBox(width: 12),
+
+                  // Like Icon
                   GestureDetector(
                     onTap: () => _toggleLike(currentStatus['id']),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
+                      width: 44,
+                      height: 44,
                       decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.5),
-                        borderRadius: BorderRadius.circular(20),
+                        shape: BoxShape.circle,
+                        color: Colors.black.withValues(alpha: 0.4),
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
+                      child: Stack(
+                        alignment: Alignment.center,
                         children: [
                           Icon(
                             _isLiked ? Icons.favorite : Icons.favorite_border,
                             color: _isLiked ? Colors.red : Colors.white,
-                            size: 16,
+                            size: 24,
                           ),
-                          const SizedBox(width: 4),
-                          Text(
-                            '$_likeCount',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
+                          if (_likeCount > 0)
+                            Positioned(
+                              top: 6,
+                              right: 6,
+                              child: Container(
+                                padding: const EdgeInsets.all(2),
+                                decoration: const BoxDecoration(
+                                  color: Colors.red,
+                                  shape: BoxShape.circle,
+                                ),
+                                constraints: const BoxConstraints(
+                                  minWidth: 14,
+                                  minHeight: 14,
+                                ),
+                                child: Text(
+                                  '$_likeCount',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 8,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
                             ),
-                          ),
                         ],
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
+
+                  const SizedBox(width: 10),
+
+                  // Share Icon
                   GestureDetector(
                     onTap: () {
                       _togglePause(); // Pause while sharing
@@ -2076,84 +2250,21 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                       });
                     },
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
+                      width: 44,
+                      height: 44,
                       decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.5),
-                        borderRadius: BorderRadius.circular(20),
+                        shape: BoxShape.circle,
+                        color: Colors.black.withValues(alpha: 0.4),
                       ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.send_rounded,
-                            color: Colors.white,
-                            size: 16,
-                          ),
-                          SizedBox(width: 4),
-                          Text(
-                            'Share',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  if (currentStatus['thought_id'] != null)
-                    Padding(
-                      padding: const EdgeInsets.only(left: 8.0),
-                      child: GestureDetector(
-                        onTap: () {
-                          _togglePause(); // Pause status while viewing thought
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ThreadCommentsPage(
-                                threadId: currentStatus['thought_id'].toString(),
-                                threadContent: currentStatus['caption'] ?? '',
-                              ),
-                            ),
-                          ).then((_) {
-                            _togglePause(); // Resume when returning
-                          });
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: 0.5),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: const Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.remove_red_eye_outlined,
-                                color: Colors.white,
-                                size: 16,
-                              ),
-                              SizedBox(width: 4),
-                              Text(
-                                'View',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ],
-                          ),
+                      child: const Center(
+                        child: Icon(
+                          Icons.send_rounded,
+                          color: Colors.white,
+                          size: 22,
                         ),
                       ),
                     ),
+                  ),
                 ],
               ),
             ),
@@ -2225,9 +2336,11 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
           ),
         ),
         child: Center(
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 32),
-            padding: const EdgeInsets.all(24),
+          child: GestureDetector(
+            onTap: () => _showQuickActionDialog(status),
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 32),
+              padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
               color: const Color(0xFF262626),
               borderRadius: BorderRadius.circular(24),
@@ -2297,11 +2410,30 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                       child: Icon(Icons.format_quote_rounded,
                           color: Colors.yellow, size: 24),
                     ),
+                    const SizedBox(width: 8),
+                    // Direct Like on Card
+                    GestureDetector(
+                      onTap: () => _toggleLike(status['id']),
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.05),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          _isLiked ? Icons.favorite : Icons.favorite_border,
+                          color: _isLiked ? Colors.red : Colors.white70,
+                          size: 18,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 20),
                 Text(
                   thoughtContent,
+                  maxLines: 6,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 18,
@@ -2309,11 +2441,57 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                     fontWeight: FontWeight.w400,
                   ),
                 ),
+                const SizedBox(height: 32),
+                Center(
+                  child: InkWell(
+                    onTap: () {
+                      _togglePause(); // Pause status while viewing thought
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ThreadCommentsPage(
+                            threadId: status['thought_id'].toString(),
+                            threadContent: thoughtContent,
+                          ),
+                        ),
+                      ).then((_) {
+                        _togglePause(); // Resume when returning
+                      });
+                    },
+                    borderRadius: BorderRadius.circular(20),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: Colors.yellow.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(20),
+                        border:
+                            Border.all(color: Colors.yellow.withOpacity(0.3)),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.remove_red_eye_outlined,
+                              color: Colors.yellow, size: 16),
+                          SizedBox(width: 8),
+                          Text(
+                            'View Details',
+                            style: TextStyle(
+                                color: Colors.yellow,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
         ),
-      );
+      ),
+    );
     } else if (status['media_type'] == 'tool') {
       final metadata = status['metadata'] ?? {};
       final title = metadata['title'] ?? 'Tool';
@@ -2330,65 +2508,120 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
           ),
         ),
         child: Center(
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 40),
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.05),
-              borderRadius: BorderRadius.circular(30),
-              border:
-                  Border.all(color: Colors.yellow.withOpacity(0.3), width: 1.5),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: const BoxDecoration(
-                    color: Colors.yellow,
-                    shape: BoxShape.circle,
+          child: GestureDetector(
+            onTap: () => _showQuickActionDialog(status),
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 40),
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(30),
+                border: Border.all(
+                    color: Colors.yellow.withOpacity(0.3), width: 1.5),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Stack(
+                    alignment: Alignment.topRight,
+                    children: [
+                      Center(
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: const BoxDecoration(
+                            color: Colors.yellow,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.apps,
+                              color: Colors.black, size: 40),
+                        ),
+                      ),
+                      // Direct Like on Card
+                      GestureDetector(
+                        onTap: () => _toggleLike(status['id']),
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.05),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            _isLiked ? Icons.favorite : Icons.favorite_border,
+                            color: _isLiked ? Colors.red : Colors.white70,
+                            size: 18,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  child: const Icon(Icons.apps, color: Colors.black, size: 40),
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  title,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                if (description.isNotEmpty) ...[
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 20),
                   Text(
-                    description,
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.6),
-                      fontSize: 15,
+                    title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
                     ),
                     textAlign: TextAlign.center,
                   ),
-                ],
-                const SizedBox(height: 32),
-                ElevatedButton(
-                  onPressed: () async {
-                    _togglePause(); // Pause the status timer
-                    await _navigateToToolFromStatus(title);
-                    if (mounted) {
-                      _togglePause(); // Resume after returning
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.yellow,
-                    foregroundColor: Colors.black,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20)),
+                  if (description.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    Text(
+                      description,
+                      maxLines: 4,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.6),
+                        fontSize: 15,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                  const SizedBox(height: 32),
+                  InkWell(
+                    onTap: () async {
+                      _togglePause(); // Pause the status timer
+                      await _navigateToToolFromStatus(title);
+                      if (mounted) {
+                        _togglePause(); // Resume after returning
+                      }
+                    },
+                    borderRadius: BorderRadius.circular(20),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.yellow,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.yellow.withOpacity(0.3),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.open_in_new_rounded,
+                              color: Colors.black, size: 18),
+                          SizedBox(width: 8),
+                          Text(
+                            'Open Tool',
+                            style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                  child: const Text('Open Tool'),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -2603,11 +2836,176 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
       return '${difference.inDays}d';
     }
   }
+
+  void _showQuickActionDialog(Map<String, dynamic> status) {
+    if (!_isPaused) _togglePause();
+
+    final mediaType = status['media_type'];
+    final isThought = mediaType == 'thought';
+    final isTool = mediaType == 'tool';
+
+    showDialog(
+      context: context,
+      barrierColor: Colors.black.withOpacity(0.8),
+      builder: (context) => Center(
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 40),
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1A1A1A),
+              borderRadius: BorderRadius.circular(28),
+              border: Border.all(color: Colors.white10),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.5),
+                  blurRadius: 30,
+                  spreadRadius: 5,
+                )
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Icon Header
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.yellow.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    isThought ? Icons.lightbulb : Icons.apps,
+                    color: Colors.yellow,
+                    size: 32,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  isThought ? 'Action on Thought' : 'Action on Tool',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                // Action Buttons
+                _buildQuickActionItem(
+                  icon: Icons.remove_red_eye_outlined,
+                  label: isThought ? 'View Thread' : 'Open Tool',
+                  onTap: () {
+                    Navigator.pop(context);
+                    if (isThought) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ThreadCommentsPage(
+                            threadId: status['thought_id'].toString(),
+                            threadContent:
+                                status['caption'] ?? status['content'] ?? '',
+                          ),
+                        ),
+                      ).then((_) {
+                        if (mounted) _togglePause();
+                      });
+                    } else if (isTool) {
+                      final metadata = status['metadata'] ?? {};
+                      _navigateToToolFromStatus(metadata['title'] ?? 'Tool')
+                          .then((_) {
+                        if (mounted) _togglePause();
+                      });
+                    }
+                  },
+                ),
+                const Divider(color: Colors.white10, height: 1),
+                _buildQuickActionItem(
+                  icon: _isLiked ? Icons.favorite : Icons.favorite_border,
+                  label: _isLiked ? 'Unlike Vibe' : 'Like Vibe',
+                  iconColor: _isLiked ? Colors.red : Colors.white,
+                  onTap: () {
+                    Navigator.pop(context);
+                    _toggleLike(status['id']);
+                    _togglePause(); // Resume
+                  },
+                ),
+                const Divider(color: Colors.white10, height: 1),
+                _buildQuickActionItem(
+                  icon: Icons.send_rounded,
+                  label: 'Share Vibe',
+                  onTap: () {
+                    Navigator.pop(context);
+                    // Keep status paused while in share screen
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ShareContentScreen(
+                          contentToShare: isThought
+                              ? (status['caption'] ?? '')
+                              : (status['media_url'] ?? ''),
+                          contentId: status['thought_id']?.toString() ??
+                              status['gallery_id']?.toString(),
+                          contentType: isThought ? 'thought' : 'gallery',
+                          currentUserId: widget.currentUserId,
+                        ),
+                      ),
+                    ).then((_) {
+                      if (mounted) _togglePause();
+                    });
+                  },
+                ),
+                const SizedBox(height: 16),
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _togglePause(); // Resume
+                  },
+                  child: const Text('Cancel',
+                      style: TextStyle(color: Colors.white38)),
+                )
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuickActionItem({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+    Color iconColor = Colors.white,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+        child: Row(
+          children: [
+            Icon(icon, color: iconColor, size: 20),
+            const SizedBox(width: 16),
+            Text(
+              label,
+              style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500),
+            ),
+            const Spacer(),
+            const Icon(Icons.chevron_right_rounded,
+                color: Colors.white24, size: 16),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
-Widget _buildMentionTag(String name, IconData icon) {
+Widget _buildMentionTag(String name, IconData icon, {bool isUnderName = false}) {
   return Container(
-    margin: const EdgeInsets.only(left: 8),
+    margin: EdgeInsets.only(left: isUnderName ? 0 : 8),
     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
     decoration: BoxDecoration(
       color: Colors.yellow.withValues(alpha: 0.2),
@@ -2987,83 +3385,132 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
     } else if (sType == 'thought' && sMetadata != null) {
       final name = sMetadata['name'] ?? 'User';
       final avatar = sMetadata['profile_image_url'];
-      final time = sMetadata['created_at'];
-      final createdAt = time != null ? DateTime.parse(time) : DateTime.now();
 
       contentWidget = Container(
         width: double.infinity,
         height: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFF2C3E50), Color(0xFF000000)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+            colors: [Color(0xFF1A1A1A), Color(0xFF000000)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
           ),
         ),
-        alignment: Alignment.center,
-        padding: const EdgeInsets.all(24),
-        child: Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.08),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: Colors.white.withOpacity(0.1)),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  CircleAvatar(
-                    radius: 16,
-                    backgroundImage: avatar != null
-                        ? CachedNetworkImageProvider(avatar)
-                        : null,
-                    child: avatar == null ? Text(name[0].toUpperCase()) : null,
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          name,
-                          style: const TextStyle(
+        child: Center(
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 32),
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: const Color(0xFF262626),
+              borderRadius: BorderRadius.circular(24),
+              border:
+                  Border.all(color: Colors.yellow.withOpacity(0.2), width: 1),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.5),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                            color: Colors.yellow.withOpacity(0.5), width: 1.5),
+                      ),
+                      child: CircleAvatar(
+                        backgroundColor: Colors.black,
+                        backgroundImage: avatar != null
+                            ? CachedNetworkImageProvider(avatar)
+                            : null,
+                        child: avatar == null
+                            ? Text(name[0].toUpperCase(),
+                                style: const TextStyle(
+                                    color: Colors.yellow,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16))
+                            : null,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            name,
+                            style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
-                              fontSize: 13),
-                        ),
+                              fontSize: 14,
+                            ),
+                          ),
+                          const Text(
+                            'Shared a thought',
+                            style: TextStyle(
+                              color: Colors.white38,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Opacity(
+                      opacity: 0.3,
+                      child: Icon(Icons.format_quote_rounded,
+                          color: Colors.yellow, size: 24),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  sContent!,
+                  maxLines: 6,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    height: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 32),
+                Center(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.yellow.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: Colors.yellow.withOpacity(0.3)),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.remove_red_eye_outlined,
+                            color: Colors.yellow, size: 16),
+                        SizedBox(width: 8),
                         Text(
-                          timeago.format(createdAt, locale: 'en_short'),
-                          style: const TextStyle(
-                              color: Colors.white38, fontSize: 11),
+                          'View Details',
+                          style: TextStyle(
+                              color: Colors.yellow,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13),
                         ),
                       ],
                     ),
                   ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Text(
-                sContent!,
-                style: const TextStyle(
-                    color: Colors.white, fontSize: 15, height: 1.4),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Icon(Icons.favorite_border,
-                      size: 16, color: Colors.white.withOpacity(0.4)),
-                  const SizedBox(width: 12),
-                  Icon(Icons.chat_bubble_outline_rounded,
-                      size: 16, color: Colors.white.withOpacity(0.4)),
-                  const SizedBox(width: 12),
-                  Icon(Icons.send_rounded,
-                      size: 16, color: Colors.white.withOpacity(0.4)),
-                ],
-              ),
-            ],
+                ),
+              ],
+            ),
           ),
         ),
       );
@@ -3073,33 +3520,67 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
         height: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFF00B4DB), Color(0xFF0083B0)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+            colors: [Color(0xFF1A1A1A), Color(0xFF000000)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
           ),
         ),
-        alignment: Alignment.center,
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.construction, size: 64, color: Colors.white),
-            const SizedBox(height: 24),
-            Text(
-              sContent!,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-              ),
-              textAlign: TextAlign.center,
+        child: Center(
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 40),
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(30),
+              border:
+                  Border.all(color: Colors.yellow.withOpacity(0.3), width: 1.5),
             ),
-            const SizedBox(height: 12),
-            const Text(
-              'Shared Tool',
-              style: TextStyle(color: Colors.white70, fontSize: 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: const BoxDecoration(
+                    color: Colors.yellow,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.apps, color: Colors.black, size: 40),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  sContent!,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Shared Tool',
+                  maxLines: 1,
+                  style: TextStyle(color: Colors.white70, fontSize: 16),
+                ),
+                const SizedBox(height: 32),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.yellow,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Text(
+                    'Open Tool',
+                    style: TextStyle(
+                        color: Colors.black, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       );
     } else if (sType == 'gallery') {

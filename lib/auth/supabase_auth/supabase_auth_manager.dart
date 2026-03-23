@@ -140,15 +140,8 @@ class SupabaseAuthManager extends AuthManager with EmailSignInManager {
         AppStateNotifier.instance.update(authUser);
       }
       return authUser;
-    } on AuthException catch (e) {
-      final errorMsg = e.message.contains('User already registered')
-          ? 'Error: The email is already in use by a different account'
-          : 'Error: ${e.message}';
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(errorMsg)),
-      );
-      return null;
+    } on AuthException {
+      rethrow;
     }
   }
 }

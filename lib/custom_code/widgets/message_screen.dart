@@ -413,14 +413,36 @@ class _MessageScreenState extends State<MessageScreen> {
         }
       }
 
-      // 3. Save to LocalSyncServer for next time
-      await LocalSyncServer().saveMessages(widget.receiverId, messagesList);
+      // 3. MERGE with existing local cache (to preserve history NOT on server)
+      final existingCache = await LocalSyncServer().getCachedMessages(widget.receiverId);
+      final Map<String, Map<String, dynamic>> combinedMap = {};
+      
+      // Add existing local messages first 
+      for (var m in existingCache) {
+        if (m is Map<String, dynamic>) {
+          combinedMap[m['id'].toString()] = Map<String, dynamic>.from(m);
+        }
+      }
+      
+      // Overwrite/Add with fresh server messages
+      for (var m in messagesList) {
+        combinedMap[m['id'].toString()] = Map<String, dynamic>.from(m);
+      }
+      
+      final finalMessagesList = combinedMap.values.toList()
+        ..sort((a, b) => DateTime.parse(b['created_at'].toString())
+            .compareTo(DateTime.parse(a['created_at'].toString())));
+      
+      // Limit to 1000 messages for reasonable performance
+      final limitedList = finalMessagesList.take(1000).toList();
+      
+      await LocalSyncServer().saveMessages(widget.receiverId, limitedList);
 
-      _messagesStreamController.add(messagesList);
+      _messagesStreamController.add(limitedList);
 
       if (mounted) {
         safeSetState(() {
-          _messages = messagesList;
+          _messages = limitedList;
           _isLoading = false;
         });
       }
@@ -1220,6 +1242,51 @@ class _MessageScreenState extends State<MessageScreen> {
     }
   }
 
+  Future<void> _deleteMessage(String messageId) async {
+    try {
+      // Optimistic UI
+      safeSetState(() {
+        _messages.removeWhere((m) => m['id'] == messageId);
+      });
+
+      await _supabase.from('messages').delete().eq('id', messageId);
+      _showSuccessSnackBar('Message deleted');
+    } catch (e) {
+      debugPrint('Error deleting message: $e');
+      _showErrorSnackBar('Failed to delete message');
+      _loadMessages(); // Revert on error
+    }
+  }
+
+  void _confirmDelete(String messageId, {bool isEphemeral = false, Map<String, dynamic>? message}) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.grey[900],
+        title: const Text('Delete Message', style: TextStyle(color: Colors.white)),
+        content: const Text('Are you sure you want to delete this message?',
+            style: TextStyle(color: Colors.white70)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              if (isEphemeral && message != null) {
+                _deleteEphemeralMessageImmediately(message);
+              } else {
+                _deleteMessage(messageId);
+              }
+            },
+            child: const Text('Delete', style: TextStyle(color: Colors.redAccent)),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showSuccessSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -1695,6 +1762,20 @@ class _MessageScreenState extends State<MessageScreen> {
                   : null,
             ),
           if (!isMe) const SizedBox(width: 8),
+          if (isMe)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 2, right: 4),
+              child: IconButton(
+                icon: const Icon(Icons.delete_outline,
+                    size: 16, color: Colors.white38),
+                onPressed: () => _confirmDelete(message['id'].toString(),
+                    isEphemeral: true, message: message),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                splashRadius: 16,
+                tooltip: 'Delete message',
+              ),
+            ),
           Flexible(
             child: GestureDetector(
               onTap: () => _viewEphemeralMessage(message),
@@ -2590,6 +2671,19 @@ class _MessageScreenState extends State<MessageScreen> {
                   : null,
             ),
           if (!isMe) const SizedBox(width: 8),
+          if (isMe)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 2, right: 4),
+              child: IconButton(
+                icon: const Icon(Icons.delete_outline,
+                    size: 16, color: Colors.white38),
+                onPressed: () => _confirmDelete(message['id'].toString()),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                splashRadius: 16,
+                tooltip: 'Delete message',
+              ),
+            ),
           Flexible(
             child: GestureDetector(
               onLongPress: () async {

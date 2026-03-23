@@ -38,6 +38,7 @@ import 'package:pocket_mates_app/custom_code/widgets/notifications_list_page.dar
 import 'package:pocket_mates_app/custom_code/widgets/status_display_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/drawing_academy_home_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/thoughts_feed_section.dart';
+import 'package:pocket_mates_app/custom_code/widgets/teams/team_detail_page.dart';
 
 // Aliases for WhatsApp Groups Provider to avoid naming conflicts
 typedef ChatConversation = groups_provider.ChatConversation;
@@ -690,6 +691,20 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 
                         if (conversation.isNotification) {
                           _showNotificationDetails(context, conversation);
+                        } else if (conversation.isActiveTimer) {
+                          if (conversation.teamData != null) {
+                            try {
+                              final team = Team.fromJson(conversation.teamData!);
+                              Navigator.push(
+                                context,
+                                material.MaterialPageRoute(
+                                  builder: (context) => TeamDetailPage(team: team),
+                                ),
+                              );
+                            } catch (e) {
+                              debugPrint('Error parsing team from timer: $e');
+                            }
+                          }
                         } else if (conversation.isGroup) {
                           Navigator.push(
                             context,

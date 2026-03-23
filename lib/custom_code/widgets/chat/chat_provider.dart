@@ -311,8 +311,8 @@ class ChatMessages extends _$ChatMessages {
     final uid = ref.read(currentUserIdProvider);
 
     try {
-      // Delete from Supabase messages older than 34 hours
-      final cutoffTime = DateTime.now().subtract(const Duration(hours: 34));
+      // Delete from Supabase messages older than 24 hours
+      final cutoffTime = DateTime.now().subtract(const Duration(hours: 24));
 
       if (isPersonal) {
         // Safe delete for personal chat: only messages between these match two users
@@ -329,7 +329,7 @@ class ChatMessages extends _$ChatMessages {
             .lt('created_at', cutoffTime.toIso8601String());
       }
 
-      debugPrint('Supabase 34h cleanup completed for: $groupId');
+      debugPrint('Supabase 24h cleanup completed for: $groupId');
     } catch (e) {
       debugPrint('Error during database cleanup: $e');
     }

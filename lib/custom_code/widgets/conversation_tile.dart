@@ -1,10 +1,11 @@
 import 'package:fluent_ui/fluent_ui.dart';
+import 'dart:async' as async;
 import 'package:flutter/material.dart' as material;
 import 'package:google_fonts/google_fonts.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:pocket_mates_app/custom_code/widgets/chat/whats_app_groups_provider.dart';
 
-class ConversationTile extends StatelessWidget {
+class ConversationTile extends StatefulWidget {
   final ChatConversation conversation;
   final String currentUserId;
   final VoidCallback onTap;
@@ -20,9 +21,54 @@ class ConversationTile extends StatelessWidget {
     this.onLongPress,
   }) : super(key: key);
 
+  @override
+  State<ConversationTile> createState() => _ConversationTileState();
+}
+
+class _ConversationTileState extends State<ConversationTile> {
+  async.Timer? _timer;
+  String _elapsedString = '';
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.conversation.isActiveTimer) {
+      _startTicking();
+    }
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void _startTicking() {
+    _updateElapsed();
+    _timer = async.Timer.periodic(const Duration(seconds: 1), (timer) {
+      _updateElapsed();
+    });
+  }
+
+  void _updateElapsed() {
+    if (!mounted) return;
+    final start = widget.conversation.timerStartTime;
+    if (start == null) return;
+
+    final diff = DateTime.now().difference(start);
+    final hours = diff.inHours.toString().padLeft(2, '0');
+    final minutes = (diff.inMinutes % 60).toString().padLeft(2, '0');
+    final seconds = (diff.inSeconds % 60).toString().padLeft(2, '0');
+
+    setState(() {
+      _elapsedString = hours != '00' ? '$hours:$minutes:$seconds' : '$minutes:$seconds';
+    });
+  }
+
   material.IconData _getIconData() {
-    if (conversation.isTool) {
-      switch (conversation.toolTitle) {
+    if (widget.conversation.isActiveTimer) return material.Icons.timer_outlined;
+    if (widget.conversation.isTool) {
+      switch (widget.conversation.toolTitle) {
         case 'Drawing Tool':
           return material.Icons.brush;
         case 'Schedule':
@@ -49,14 +95,15 @@ class ConversationTile extends StatelessWidget {
           return material.Icons.build_circle;
       }
     }
-    if (conversation.isNotification) return FluentIcons.info;
-    if (conversation.isGroup) return FluentIcons.group;
+    if (widget.conversation.isNotification) return FluentIcons.info;
+    if (widget.conversation.isGroup) return FluentIcons.group;
     return FluentIcons.contact;
   }
 
   Color _getIconColor() {
-    if (conversation.isTool) {
-      switch (conversation.toolTitle) {
+    if (widget.conversation.isActiveTimer) return material.Colors.greenAccent;
+    if (widget.conversation.isTool) {
+      switch (widget.conversation.toolTitle) {
         case 'Drawing Tool':
           return material.Colors.purpleAccent;
         case 'Schedule':
@@ -83,7 +130,7 @@ class ConversationTile extends StatelessWidget {
           return material.Colors.yellow;
       }
     }
-    if (conversation.isNotification) return Colors.yellow;
+    if (widget.conversation.isNotification) return Colors.yellow;
     return Colors.white.withValues(alpha: 0.5);
   }
 
@@ -92,8 +139,8 @@ class ConversationTile extends StatelessWidget {
     return material.Material(
       color: Colors.transparent,
       child: material.InkWell(
-        onTap: onTap,
-        onLongPress: onLongPress,
+        onTap: widget.onTap,
+        onLongPress: widget.onLongPress,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
@@ -108,11 +155,11 @@ class ConversationTile extends StatelessWidget {
           child: Row(
             children: [
               GestureDetector(
-                onTap: conversation.hasStatus ? onStatusTap : onTap,
+                onTap: widget.conversation.hasStatus ? widget.onStatusTap : widget.onTap,
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
-                    if (conversation.hasStatus)
+                    if (widget.conversation.hasStatus)
                       Container(
                         width: 66,
                         height: 66,
@@ -133,20 +180,24 @@ class ConversationTile extends StatelessWidget {
                       width: 58,
                       height: 58,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF262626),
+                        color: widget.conversation.isActiveTimer 
+                            ? material.Colors.green.withValues(alpha: 0.1)
+                            : const Color(0xFF262626),
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.1),
+                          color: widget.conversation.isActiveTimer
+                              ? material.Colors.greenAccent.withValues(alpha: 0.3)
+                              : Colors.white.withValues(alpha: 0.1),
                           width: 1.5,
                         ),
-                        image: conversation.imageUrl != null
+                        image: widget.conversation.imageUrl != null
                             ? DecorationImage(
-                                image: NetworkImage(conversation.imageUrl!),
+                                image: NetworkImage(widget.conversation.imageUrl!),
                                 fit: BoxFit.cover,
                               )
                             : null,
                       ),
-                      child: conversation.imageUrl == null
+                      child: widget.conversation.imageUrl == null
                           ? Center(
                               child: Icon(
                                 _getIconData(),
@@ -156,7 +207,7 @@ class ConversationTile extends StatelessWidget {
                             )
                           : null,
                     ),
-                    if (conversation.isOnline && !conversation.isGroup)
+                    if (widget.conversation.isOnline && !widget.conversation.isGroup)
                       Positioned(
                         right: 2,
                         bottom: 2,
@@ -181,46 +232,71 @@ class ConversationTile extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      conversation.name,
-                      style: GoogleFonts.outfit(
-                        color: Colors.white,
-                        fontSize: 17,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.2,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            widget.conversation.name,
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 17,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.2,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        if (widget.conversation.isActiveTimer)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: material.Colors.green.withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              'LIVE',
+                              style: GoogleFonts.outfit(
+                                color: material.Colors.greenAccent,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
                     const SizedBox(height: 6),
                     Row(
                       children: [
-                        if (!conversation.isGroup &&
-                            conversation.lastSenderId == currentUserId)
+                        if (!widget.conversation.isGroup &&
+                            !widget.conversation.isActiveTimer &&
+                            widget.conversation.lastSenderId == widget.currentUserId)
                           Padding(
                             padding: const EdgeInsets.only(right: 6),
                             child: Icon(
-                              conversation.otherUnreadCount == 0
+                              widget.conversation.otherUnreadCount == 0
                                   ? material.Icons.done_all_rounded
                                   : material.Icons.check,
                               size: 16,
-                              color: conversation.otherUnreadCount == 0
+                              color: widget.conversation.otherUnreadCount == 0
                                   ? material.Colors.blue.withValues(alpha: 0.8)
                                   : material.Colors.grey.withValues(alpha: 0.7),
                             ),
                           ),
                         Expanded(
                           child: Text(
-                            conversation.lastMessage ??
-                                (conversation.isGroup
-                                    ? 'No messages yet'
-                                    : 'Start chatting'),
+                            widget.conversation.isActiveTimer
+                                ? (widget.conversation.taskTitle ?? 'Active Task')
+                                : (widget.conversation.lastMessage ??
+                                    (widget.conversation.isGroup
+                                        ? 'No messages yet'
+                                        : 'Start chatting')),
                             style: GoogleFonts.outfit(
-                              color: conversation.unreadCount > 0
+                              color: widget.conversation.unreadCount > 0 || widget.conversation.isActiveTimer
                                   ? Colors.white.withValues(alpha: 0.9)
                                   : Colors.white.withValues(alpha: 0.4),
                               fontSize: 14,
-                              fontWeight: conversation.unreadCount > 0
+                              fontWeight: widget.conversation.unreadCount > 0 || widget.conversation.isActiveTimer
                                   ? FontWeight.w500
                                   : FontWeight.normal,
                             ),
@@ -238,21 +314,31 @@ class ConversationTile extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  if (conversation.lastMessageTime != null)
+                  if (widget.conversation.isActiveTimer)
                     Text(
-                      timeago.format(conversation.lastMessageTime!,
+                      _elapsedString,
+                      style: GoogleFonts.outfit(
+                        color: material.Colors.greenAccent,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
+                    )
+                  else if (widget.conversation.lastMessageTime != null)
+                    Text(
+                      timeago.format(widget.conversation.lastMessageTime!,
                           locale: 'en_short'),
                       style: GoogleFonts.outfit(
-                        color: conversation.unreadCount > 0
+                        color: widget.conversation.unreadCount > 0
                             ? Colors.yellow
                             : Colors.white.withValues(alpha: 0.35),
                         fontSize: 12,
-                        fontWeight: conversation.unreadCount > 0
+                        fontWeight: widget.conversation.unreadCount > 0
                             ? FontWeight.bold
                             : FontWeight.w500,
                       ),
                     ),
-                  if (conversation.unreadCount > 0) ...[
+                  if (widget.conversation.unreadCount > 0) ...[
                     const SizedBox(height: 8),
                     Container(
                       constraints: const BoxConstraints(minWidth: 20),
@@ -270,7 +356,7 @@ class ConversationTile extends StatelessWidget {
                       ),
                       child: Center(
                         child: Text(
-                          conversation.unreadCount.toString(),
+                          widget.conversation.unreadCount.toString(),
                           style: GoogleFonts.outfit(
                             color: Colors.black,
                             fontSize: 10,

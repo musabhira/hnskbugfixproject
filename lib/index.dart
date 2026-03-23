@@ -4,3 +4,5 @@ export '/auth_page/auth_page_widget.dart' show AuthPageWidget;
 export '/custom_code/widgets/pocket_mates_dashboard.dart'
     show PocketMatesDashboard;
 export '/custom_code/widgets/webrtc_call_screen.dart' show WebRTCCallScreen;
+export '/custom_code/widgets/profile_create_custom_widget.dart'
+    show ProfileCreateCustomWidget;

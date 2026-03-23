@@ -442,4 +442,17 @@ class TeamsService {
         .order('created_at', ascending: false)
         .map((event) => event);
   }
+
+  Future<List<Map<String, dynamic>>> getActiveTimers() async {
+    final userId = _client.auth.currentUser?.id;
+    if (userId == null) return [];
+
+    final response = await _client
+        .from('team_tasks')
+        .select('*, teams(*)')
+        .eq('assigned_to', userId)
+        .not('timer_started_at', 'is', null);
+
+    return List<Map<String, dynamic>>.from(response as List);
+  }
 }

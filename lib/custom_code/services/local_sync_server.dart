@@ -177,7 +177,7 @@ class LocalSyncServer {
         // Let's check usage. MessageScreen sorts DESC. ChatProvider usually ASC for chat bubbles but reverse list view.
         // We will prepend to keep it consistent with "get latest".
         final List<dynamic> updated = [newData, ...current];
-        if (updated.length > 200)
+        if (updated.length > 1000)
           updated.removeLast(); // Keep cache size manageable
         saveMessages(chatId, updated);
       }
@@ -195,7 +195,7 @@ class LocalSyncServer {
       final bool exists = current.any((m) => m['id'].toString() == msgId);
       if (!exists) {
         final List<dynamic> updated = [newData, ...current];
-        if (updated.length > 200) updated.removeLast();
+        if (updated.length > 1000) updated.removeLast();
         saveMessages(groupId, updated);
       }
     }

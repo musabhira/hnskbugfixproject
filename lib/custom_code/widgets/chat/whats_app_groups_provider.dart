@@ -31,6 +31,11 @@ class ChatConversation {
   final bool isTool;
   final String? toolTitle;
   final bool isPinned;
+  final bool isActiveTimer;
+  final String? taskTitle;
+  final String? teamName;
+  final DateTime? timerStartTime;
+  final Map<String, dynamic>? teamData;
 
   ChatConversation({
     required this.id,
@@ -52,7 +57,33 @@ class ChatConversation {
     this.isTool = false,
     this.toolTitle,
     this.isPinned = false,
+    this.isActiveTimer = false,
+    this.taskTitle,
+    this.teamName,
+    this.timerStartTime,
+    this.teamData,
   });
+
+  factory ChatConversation.fromActiveTimer(Map<String, dynamic> json) {
+    return ChatConversation(
+      id: 'timer_${json['id']}',
+      name: json['teams']?['name'] ?? 'Task Timer',
+      taskTitle: json['title'],
+      teamName: json['teams']?['name'],
+      timerStartTime: json['timer_started_at'] != null
+          ? DateTime.parse(json['timer_started_at']).toLocal()
+          : null,
+      teamData: json['teams'],
+      lastMessage: 'Live Tracking: ${json['title']}',
+      lastMessageTime: json['timer_started_at'] != null
+          ? DateTime.parse(json['timer_started_at'])
+          : DateTime.now(),
+      unreadCount: 0,
+      isGroup: false,
+      isActiveTimer: true,
+      isPinned: true, // Show at top
+    );
+  }
 
   factory ChatConversation.fromGroupJson(Map<String, dynamic> json,
       {bool isPinned = false}) {
@@ -313,6 +344,12 @@ class Conversations extends _$Conversations {
           table: 'group_messages',
           callback: (payload) => _debouncedRefresh(),
         )
+        .onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'team_tasks', // Listen for timer start/stop
+          callback: (payload) => _debouncedRefresh(),
+        )
         .subscribe();
   }
 
@@ -344,13 +381,15 @@ class Conversations extends _$Conversations {
       final personalFuture = _fetchPersonalChats(userId);
       final notificationsFuture =
           _fetchNotifications(userId); // Fetch notifications
+      final timersFuture = _fetchActiveTimers(userId);
 
       final results = await Future.wait(
-          [groupsFuture, personalFuture, notificationsFuture]);
+          [groupsFuture, personalFuture, notificationsFuture, timersFuture]);
 
-      final groups = results[0];
-      final personal = results[1];
-      final notifications = results[2];
+      final List<ChatConversation> groups = results[0];
+      final List<ChatConversation> personal = results[1];
+      final List<ChatConversation> notifications = results[2];
+      final List<ChatConversation> activeTimers = results[3];
 
       debugPrint(
           'Fetched ${groups.length} groups, ${personal.length} personal chats, ${notifications.length} notifications');
@@ -434,6 +473,7 @@ class Conversations extends _$Conversations {
       // Combine and sort
       final combined = [
         ...notifications,
+        ...activeTimers,
         ...updatedGroups,
         ...updatedPersonal,
         ...toolChats
@@ -679,6 +719,25 @@ class Conversations extends _$Conversations {
           .toList();
     } catch (e) {
       rethrow;
+    }
+  }
+
+  Future<List<ChatConversation>> _fetchActiveTimers(String userId) async {
+    try {
+      final response = await _supabase
+          .from('team_tasks')
+          .select('*, teams(id, name)')
+          .eq('assigned_to', userId)
+          .not('timer_started_at', 'is', null);
+
+      final data = response as List<dynamic>;
+      return data
+          .map((json) => ChatConversation.fromActiveTimer(
+              Map<String, dynamic>.from(json)))
+          .toList();
+    } catch (e) {
+      debugPrint('Error fetching active timers: $e');
+      return [];
     }
   }
 

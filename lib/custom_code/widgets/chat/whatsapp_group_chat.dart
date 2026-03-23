@@ -215,6 +215,33 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     }
   }
 
+  void _confirmDelete(String messageId) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.grey[900],
+        title: const Text('Delete Message', style: TextStyle(color: Colors.white)),
+        content: const Text('Are you sure you want to delete this message?',
+            style: TextStyle(color: Colors.white70)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              ref
+                  .read(chatMessagesProvider(widget.groupId).notifier)
+                  .deleteMessage(messageId);
+            },
+            child: const Text('Delete', style: TextStyle(color: Colors.redAccent)),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _scrollToBottom() {
     if (_scrollController.hasClients) {
       _scrollController.animateTo(
@@ -616,6 +643,19 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                 }(),
                 child: const Icon(Icons.person, size: 14, color: Colors.white),
               ),
+            ),
+          ),
+        if (isMe || _userRole == 'admin')
+          Padding(
+            padding: const EdgeInsets.only(bottom: 2),
+            child: IconButton(
+              icon: const Icon(Icons.delete_outline,
+                  size: 16, color: Colors.white38),
+              onPressed: () => _confirmDelete(message.id),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              splashRadius: 16,
+              tooltip: 'Delete message',
             ),
           ),
         Flexible(
@@ -2358,7 +2398,18 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                         _showLeaveGroupDialog();
                       },
                     ),
-                    if ((_userRole?.toLowerCase() ?? '') == 'admin')
+                    if ((_userRole?.toLowerCase() ?? '') == 'admin') ...[
+                      ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: const Icon(Icons.delete_sweep_outlined,
+                            color: Colors.yellow),
+                        title: const Text('Clear all messages',
+                            style: TextStyle(color: Colors.yellow)),
+                        onTap: () {
+                          Navigator.pop(context);
+                          _clearChat();
+                        },
+                      ),
                       ListTile(
                         contentPadding: EdgeInsets.zero,
                         leading:
@@ -2370,6 +2421,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                           _deleteGroup();
                         },
                       ),
+                    ],
                     const SizedBox(height: 48),
                   ],
                 ),
@@ -2489,6 +2541,46 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     } catch (e) {
       debugPrint('Error deleting group: $e');
       _showSnackBar('Error deleting group: $e', isError: true);
+    }
+  }
+
+  Future<void> _clearChat() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1F2C34),
+        title: const Text('Clear Chat', style: TextStyle(color: Colors.white)),
+        content: const Text(
+          'Are you sure you want to clear all messages in this group? This action cannot be undone and will affect everyone.',
+          style: TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel', style: TextStyle(color: Colors.white70)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Clear All', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      try {
+        final supabase = ref.read(supabaseClientProvider);
+        await supabase
+            .from('group_messages')
+            .delete()
+            .eq('group_id', widget.groupId);
+        // Refresh the messages list
+        ref.invalidate(chatMessagesProvider(widget.groupId));
+        if (mounted) _showSnackBar('Chat cleared successfully');
+      } catch (e) {
+        debugPrint('Error clearing chat: $e');
+        if (mounted) _showSnackBar('Failed to clear chat', isError: true);
+      }
     }
   }
 
