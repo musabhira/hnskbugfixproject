@@ -1,5 +1,4 @@
 // Automatic FlutterFlow imports
-import '/flutter_flow/flutter_flow_util.dart';
 import 'package:flutter/material.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
@@ -13,8 +12,9 @@ import 'dart:convert';
 import 'package:image_picker/image_picker.dart';
 
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:image_downloader/image_downloader.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:gal/gal.dart';
+import 'package:dio/dio.dart';
+import 'package:path_provider/path_provider.dart';
 
 class AiPromptGenerator extends StatelessWidget {
   const AiPromptGenerator({
@@ -1860,21 +1860,21 @@ class AIService {
       }
 
       // Check permissions
-      if (Platform.isAndroid || Platform.isIOS) {
-        var status = await Permission.storage.status;
-        if (!status.isGranted) {
-          status = await Permission.storage.request();
-          if (!status.isGranted) return false;
-        }
+      final hasAccess = await Gal.hasAccess();
+      if (!hasAccess) {
+        await Gal.requestAccess();
       }
 
-      final imageId = await ImageDownloader.downloadImage(
-        imageUrl,
-        destination: AndroidDestinationType.directoryPictures
-          ..subDirectory("${fileName ?? 'ai_gen'}.jpg"),
-      );
+      final tempDir = await getTemporaryDirectory();
+      final path = '${tempDir.path}/${fileName ?? 'ai_gen'}_${DateTime.now().millisecondsSinceEpoch}.jpg';
 
-      return imageId != null;
+      // Download the file
+      await Dio().download(imageUrl, path);
+
+      // Save to gallery
+      await Gal.putImage(path);
+
+      return true;
     } catch (e) {
       print('Failed to save image: $e');
       return false;

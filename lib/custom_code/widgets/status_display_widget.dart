@@ -28,6 +28,7 @@ import 'package:pocket_mates_app/custom_code/widgets/bulk_sender/bulk_sender_pag
 import 'package:pocket_mates_app/custom_code/widgets/poki_games_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/nearby_users_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chess_game_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/thread_feed_page.dart';
 
 class StatusDisplayWidget extends StatefulWidget {
   final String currentUserId;
@@ -184,6 +185,13 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
       final List<Map<String, dynamic>> data =
           List<Map<String, dynamic>>.from(response);
 
+      // 3.5 Fetch viewed status IDs for the current user
+      final viewsRes = await supabase
+          .from('status_views')
+          .select('status_id')
+          .eq('viewer_user_id', widget.currentUserId);
+      final viewedStatusIds = Set<String>.from(viewsRes.map((e) => e['status_id'].toString()));
+
       // 4. Grouping logic
       final Map<String, Map<String, dynamic>> followingGroups = {};
       final Map<String, Map<String, dynamic>> publicGroups = {};
@@ -247,6 +255,25 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
         }
       }
 
+      // 4.5 Compute is_fully_watched for each group
+      void computeWatched(Map<String, Map<String, dynamic>> groups) {
+        for (var group in groups.values) {
+          final statuses = group['statuses'] as List;
+          bool fullyWatched = statuses.isNotEmpty;
+          for (var s in statuses) {
+            if (!viewedStatusIds.contains(s['id'].toString())) {
+              fullyWatched = false;
+              break;
+            }
+          }
+          group['is_fully_watched'] = fullyWatched;
+        }
+      }
+      
+      computeWatched(followingGroups);
+      computeWatched(publicGroups);
+      computeWatched(communityVibeBuckets);
+
       // 5. Combine and Sort
       final List<Map<String, dynamic>> followingList = [
         ...followingGroups.values,
@@ -258,6 +285,12 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
       final sortingFunc = (Map<String, dynamic> a, Map<String, dynamic> b) {
         if (a['is_own'] == true && b['is_own'] != true) return -1;
         if (a['is_own'] != true && b['is_own'] == true) return 1;
+
+        final bool aWatched = a['is_fully_watched'] ?? false;
+        final bool bWatched = b['is_fully_watched'] ?? false;
+        if (!aWatched && bWatched) return -1;
+        if (aWatched && !bWatched) return 1;
+
         // Since we fetch ascending: true, statuses.last is the NEWEST
         final aTime = (a['statuses'] as List).last['created_at'];
         final bTime = (b['statuses'] as List).last['created_at'];
@@ -326,7 +359,11 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
           currentProfileId: widget.currentProfileId,
         ),
       ),
-    );
+    ).then((_) {
+      if (mounted) {
+        _loadStatusesOptimized();
+      }
+    });
   }
 
   void _openStatusUpload() async {
@@ -828,6 +865,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
     final profile = statusGroup['profile'];
     final isOwn = statusGroup['is_own'] ?? false;
     final isGroup = statusGroup['is_group'] ?? false;
+    final isFullyWatched = statusGroup['is_fully_watched'] ?? false;
     final name = profile['name'] ?? 'Unknown';
     final profileImageUrl = profile['profile_image_url'];
     final statuses = statusGroup['statuses'] as List;
@@ -845,7 +883,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
           padding: const EdgeInsets.symmetric(vertical: 8),
           child: Row(
             children: [
-              _buildAvatarWithRing(profileImageUrl, name, 64, isGroup: isGroup),
+              _buildAvatarWithRing(profileImageUrl, name, 64, isGroup: isGroup, isWatched: isFullyWatched),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
@@ -882,7 +920,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
         margin: const EdgeInsets.only(right: 12),
         child: Column(
           children: [
-            _buildAvatarWithRing(profileImageUrl, name, 72, isGroup: isGroup),
+            _buildAvatarWithRing(profileImageUrl, name, 72, isGroup: isGroup, isWatched: isFullyWatched),
             const SizedBox(height: 2),
             Text(isOwn ? 'My Vibes' : name,
                 style: GoogleFonts.outfit(
@@ -899,31 +937,35 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
   }
 
   Widget _buildAvatarWithRing(String? url, String name, double size,
-      {bool isGroup = false}) {
+      {bool isGroup = false, bool isWatched = false}) {
     return Container(
       width: size,
       height: size,
       padding: const EdgeInsets.all(3),
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        gradient: isGroup
+        gradient: isWatched
             ? const LinearGradient(
-                colors: [
-                  Color(0xFF833AB4), // Purple
-                  Color(0xFFF77737), // Orange
-                  Color(0xFFFCAF45), // Yellow
-                ],
-                begin: Alignment.topRight,
-                end: Alignment.bottomLeft,
+                colors: [Color(0xFF555555), Color(0xFF555555)],
               )
-            : const LinearGradient(
-                colors: [
-                  Color(0xFFFFB703),
-                  Color(0xFFFB8500),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
+            : isGroup
+                ? const LinearGradient(
+                    colors: [
+                      Color(0xFF833AB4), // Purple
+                      Color(0xFFF77737), // Orange
+                      Color(0xFFFCAF45), // Yellow
+                    ],
+                    begin: Alignment.topRight,
+                    end: Alignment.bottomLeft,
+                  )
+                : const LinearGradient(
+                    colors: [
+                      Color(0xFFFFB703),
+                      Color(0xFFFB8500),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
       ),
       child: Container(
         padding: const EdgeInsets.all(2),
@@ -2063,6 +2105,55 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                       ),
                     ),
                   ),
+                  if (currentStatus['thought_id'] != null)
+                    Padding(
+                      padding: const EdgeInsets.only(left: 8.0),
+                      child: GestureDetector(
+                        onTap: () {
+                          _togglePause(); // Pause status while viewing thought
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ThreadCommentsPage(
+                                threadId: currentStatus['thought_id'].toString(),
+                                threadContent: currentStatus['caption'] ?? '',
+                              ),
+                            ),
+                          ).then((_) {
+                            _togglePause(); // Resume when returning
+                          });
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.5),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.remove_red_eye_outlined,
+                                color: Colors.white,
+                                size: 16,
+                              ),
+                              SizedBox(width: 4),
+                              Text(
+                                'View',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -2282,9 +2373,12 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                 ],
                 const SizedBox(height: 32),
                 ElevatedButton(
-                  onPressed: () {
-                    // Similar logic to _navigateToTool in WhatsAppGroupChat
-                    _navigateToToolFromStatus(title);
+                  onPressed: () async {
+                    _togglePause(); // Pause the status timer
+                    await _navigateToToolFromStatus(title);
+                    if (mounted) {
+                      _togglePause(); // Resume after returning
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.yellow,
@@ -2428,7 +2522,7 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
     return content;
   }
 
-  void _navigateToToolFromStatus(String title) {
+  Future<void> _navigateToToolFromStatus(String title) async {
     // Implement navigation matching WhatsAppGroupChat
     Widget? page;
     switch (title) {
@@ -2455,7 +2549,7 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
         break;
     }
     if (page != null) {
-      Navigator.push(context, MaterialPageRoute(builder: (_) => page!));
+      await Navigator.push(context, MaterialPageRoute(builder: (_) => page!));
     }
   }
 

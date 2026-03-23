@@ -114,11 +114,11 @@ dependencies:
   record: ^6.1.2
   photo_view: ^0.15.0
   emoji_picker_flutter: ^4.4.0
-  image_downloader: ^0.31.0
+  gal: ^2.3.2
+  dio: ^5.7.0
   universal_html: ^2.3.0
   http: ^1.4.0
   audioplayers: ^6.5.1
-  assets_audio_player: ^3.1.1
   fluent_ui: ^4.13.0
   perfect_freehand: ^2.5.2+1
   uuid: ^4.5.2

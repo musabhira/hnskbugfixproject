@@ -67,6 +67,7 @@ class TeamTask {
   final String status; // todo, in_progress, completed, bug, on_hold
   final String priority; // low, medium, high
   final int timeSpent; // in minutes
+  final DateTime? timerStartedAt;
 
   TeamTask({
     required this.id,
@@ -79,6 +80,7 @@ class TeamTask {
     required this.status,
     required this.priority,
     this.timeSpent = 0,
+    this.timerStartedAt,
   });
 
   factory TeamTask.fromJson(Map<String, dynamic> json) {
@@ -94,6 +96,9 @@ class TeamTask {
       status: json['status'] ?? 'todo',
       priority: json['priority'] ?? 'medium',
       timeSpent: json['time_spent'] ?? 0,
+      timerStartedAt: json['timer_started_at'] != null
+          ? DateTime.parse(json['timer_started_at'])
+          : null,
     );
   }
 }
@@ -130,6 +135,8 @@ class UserResult {
 
 class TeamsService {
   final SupabaseClient _client = Supabase.instance.client;
+
+  String? get authUserId => _client.auth.currentUser?.id;
 
   // --- Teams ---
 
@@ -355,6 +362,39 @@ class TeamsService {
     // 2. Update
     await _client.from('team_tasks').update({
       'time_spent': current + minutesToAdd,
+    }).eq('id', taskId);
+  }
+
+  Future<void> startTimer(String taskId) async {
+    final now = DateTime.now().toUtc().toIso8601String();
+    await _client.from('team_tasks').update({
+      'timer_started_at': now,
+      'status': 'in_progress',
+    }).eq('id', taskId);
+  }
+
+  Future<void> stopTimer(String taskId) async {
+    // 1. Get task data
+    final taskRes = await _client
+        .from('team_tasks')
+        .select('timer_started_at, time_spent')
+        .eq('id', taskId)
+        .single();
+
+    final startedAtJoined = taskRes['timer_started_at'];
+    if (startedAtJoined == null) return;
+
+    final startedAt = DateTime.parse(startedAtJoined);
+    final currentSpent = taskRes['time_spent'] as int? ?? 0;
+
+    // 2. Calculate duration
+    final diff = DateTime.now().toUtc().difference(startedAt);
+    final minutes = diff.inMinutes;
+
+    // 3. Update task
+    await _client.from('team_tasks').update({
+      'timer_started_at': null,
+      'time_spent': currentSpent + minutes,
     }).eq('id', taskId);
   }
 

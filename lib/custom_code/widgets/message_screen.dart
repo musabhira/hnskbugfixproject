@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -12,7 +11,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:record/record.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:url_launcher/url_launcher.dart';
@@ -23,12 +21,12 @@ import 'package:pocket_mates_app/custom_code/widgets/gallery_search_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/image_viewer.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/voice_player.dart';
-import 'package:image_downloader/image_downloader.dart';
+import 'package:gal/gal.dart';
+import 'package:dio/dio.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/voice_recorder.dart';
 import 'package:pocket_mates_app/custom_code/services/local_sync_server.dart';
 import 'package:pocket_mates_app/custom_code/widgets/thread_feed_page.dart';
 
-import '/flutter_flow/flutter_flow_util.dart';
 
 class MessageScreen extends StatefulWidget {
   final String receiverId;
@@ -2862,7 +2860,11 @@ class _EphemeralMediaViewerState extends State<EphemeralMediaViewer> {
               icon: const Icon(Icons.download_rounded, color: Colors.white),
               onPressed: () async {
                 try {
-                  await ImageDownloader.downloadImage(mediaUrl);
+                  final tempDir = await getTemporaryDirectory();
+                  final path = '${tempDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
+                  await Dio().download(mediaUrl, path);
+                  await Gal.putImage(path);
+                  
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Image saved to gallery')),

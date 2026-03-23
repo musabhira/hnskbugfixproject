@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
-import 'package:image_downloader/image_downloader.dart';
-import 'package:flutter/services.dart';
+import 'package:gal/gal.dart';
+import 'package:dio/dio.dart';
+import 'package:path_provider/path_provider.dart';
 
 class ImageViewer extends StatelessWidget {
   final String imageUrl;
@@ -11,11 +12,20 @@ class ImageViewer extends StatelessWidget {
 
   Future<void> _downloadImage(BuildContext context) async {
     try {
-      // Check permissions (handled by the library on modern android, but good to be safe)
-      var imageId = await ImageDownloader.downloadImage(imageUrl);
-      if (imageId == null) {
-        return;
+      // Check permissions (gal handles most of this but we use path_provider for temp)
+      final hasAccess = await Gal.hasAccess();
+      if (!hasAccess) {
+        await Gal.requestAccess();
       }
+
+      final tempDir = await getTemporaryDirectory();
+      final path = '${tempDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
+
+      // Download the file
+      await Dio().download(imageUrl, path);
+
+      // Save to gallery
+      await Gal.putImage(path);
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -25,12 +35,12 @@ class ImageViewer extends StatelessWidget {
           ),
         );
       }
-    } on PlatformException catch (error) {
+    } catch (error) {
       debugPrint(error.toString());
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to download image: ${error.message}'),
+            content: Text('Failed to download image: $error'),
             backgroundColor: Colors.red,
           ),
         );

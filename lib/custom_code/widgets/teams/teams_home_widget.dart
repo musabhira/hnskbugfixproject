@@ -1,12 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pocket_mates_app/custom_code/widgets/teams/teams_service.dart';
-import 'package:pocket_mates_app/custom_code/widgets/teams/teams_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/teams/team_detail_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/teams/team_detail_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/teams/user_search_dialog.dart';
 import 'package:pocket_mates_app/custom_code/widgets/teams/user_search_dialog.dart';
 
 class TeamsHomeWidget extends StatefulWidget {
