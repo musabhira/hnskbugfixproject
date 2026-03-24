@@ -21,3 +21,6 @@ export 'thread_feed_page.dart' show ThreadFeedPage, CreateThreadPage;
 export 'tools_page.dart' show TaskManagerScreen;
 export 'search_page.dart' show SearchPage;
 export 'chat/whatsapp_group_chat.dart' show WhatsAppGroupChat;
+export 'courses_widget.dart' show CoursesWidget, CourseDetailPage;
+export 'admin_panel_page.dart' show AdminDashboardPage;
+

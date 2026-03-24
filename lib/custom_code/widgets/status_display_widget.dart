@@ -29,6 +29,7 @@ import 'package:pocket_mates_app/custom_code/widgets/poki_games_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/nearby_users_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chess_game_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/thread_feed_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/courses_widget.dart';
 
 class StatusDisplayWidget extends StatefulWidget {
   final String currentUserId;
@@ -2492,7 +2493,172 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
         ),
       ),
     );
+    } else if (status['media_type'] == 'course') {
+      final metadata = status['metadata'] ?? {};
+      final title = metadata['course_title'] ?? 'Course';
+      final description = metadata['course_description'] ?? '';
+      final thumbnail = metadata['course_thumbnail'];
+
+      content = Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF1E3A8A), Color(0xFF000000)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: Center(
+          child: GestureDetector(
+            onTap: () => _showQuickActionDialog(status),
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 40),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(30),
+                border: Border.all(
+                    color: Colors.indigo.withOpacity(0.3), width: 1.5),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Stack(
+                    alignment: Alignment.topRight,
+                    children: [
+                      if (thumbnail != null)
+                        ClipRRect(
+                          borderRadius: const BorderRadius.vertical(
+                              top: Radius.circular(30)),
+                          child: CachedNetworkImage(
+                            imageUrl: thumbnail,
+                            height: 200,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                          ),
+                        )
+                      else
+                        Container(
+                          height: 200,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: Colors.indigo.withOpacity(0.2),
+                            borderRadius: const BorderRadius.vertical(
+                                top: Radius.circular(30)),
+                          ),
+                          child: const Icon(Icons.school_rounded,
+                              color: Colors.white54, size: 64),
+                        ),
+                      // Direct Like on Card
+                      Positioned(
+                        top: 10,
+                        right: 10,
+                        child: GestureDetector(
+                          onTap: () => _toggleLike(status['id']),
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.4),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              _isLiked ? Icons.favorite : Icons.favorite_border,
+                              color: _isLiked ? Colors.red : Colors.white70,
+                              size: 18,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Column(
+                      children: [
+                        Text(
+                          title,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        if (description.isNotEmpty) ...[
+                          const SizedBox(height: 12),
+                          Text(
+                            description,
+                            maxLines: 4,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.6),
+                              fontSize: 15,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                        const SizedBox(height: 32),
+                        InkWell(
+                          onTap: () {
+                            _togglePause(); // Pause the status timer
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => CourseDetailPage(
+                                  courseData: Map<String, dynamic>.from(metadata),
+                                ),
+                              ),
+                            ).then((_) {
+                              if (mounted) {
+                                _togglePause(); // Resume after returning
+                              }
+                            });
+                          },
+                          borderRadius: BorderRadius.circular(20),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 24, vertical: 12),
+                            decoration: BoxDecoration(
+                              color: Colors.indigoAccent,
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.indigo.withOpacity(0.3),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.play_circle_fill_rounded,
+                                    color: Colors.white, size: 18),
+                                SizedBox(width: 8),
+                                Text(
+                                  'Start Learning',
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
     } else if (status['media_type'] == 'tool') {
+
       final metadata = status['metadata'] ?? {};
       final title = metadata['title'] ?? 'Tool';
       final description = metadata['description'] ?? '';
@@ -2843,6 +3009,7 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
     final mediaType = status['media_type'];
     final isThought = mediaType == 'thought';
     final isTool = mediaType == 'tool';
+    final isCourse = mediaType == 'course';
 
     showDialog(
       context: context,
@@ -2876,14 +3043,18 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
-                    isThought ? Icons.lightbulb : Icons.apps,
+                    isThought
+                        ? Icons.lightbulb
+                        : (isCourse ? Icons.school_rounded : Icons.apps),
                     color: Colors.yellow,
                     size: 32,
                   ),
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  isThought ? 'Action on Thought' : 'Action on Tool',
+                  isThought
+                      ? 'Action on Thought'
+                      : (isCourse ? 'Action on Course' : 'Action on Tool'),
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 18,
@@ -2894,7 +3065,9 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                 // Action Buttons
                 _buildQuickActionItem(
                   icon: Icons.remove_red_eye_outlined,
-                  label: isThought ? 'View Thread' : 'Open Tool',
+                  label: isThought
+                      ? 'View Thread'
+                      : (isCourse ? 'Open Course' : 'Open Tool'),
                   onTap: () {
                     Navigator.pop(context);
                     if (isThought) {
@@ -2905,6 +3078,18 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                             threadId: status['thought_id'].toString(),
                             threadContent:
                                 status['caption'] ?? status['content'] ?? '',
+                          ),
+                        ),
+                      ).then((_) {
+                        if (mounted) _togglePause();
+                      });
+                    } else if (isCourse) {
+                      final metadata = status['metadata'] ?? {};
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => CourseDetailPage(
+                            courseData: Map<String, dynamic>.from(metadata),
                           ),
                         ),
                       ).then((_) {
@@ -2937,16 +3122,34 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                   onTap: () {
                     Navigator.pop(context);
                     // Keep status paused while in share screen
+                    String contentToShare = '';
+                    String contentType = 'gallery';
+                    String? contentId;
+
+                    if (isThought) {
+                      contentToShare = status['caption'] ?? '';
+                      contentType = 'thought';
+                      contentId = status['thought_id']?.toString();
+                    } else if (isCourse) {
+                      contentToShare = status['media_url'] ?? '';
+                      contentType = 'course';
+                      contentId = status['metadata']?['course_id']?.toString();
+                    } else if (isTool) {
+                      contentToShare = status['media_url'] ?? '';
+                      contentType = 'tool';
+                    } else {
+                      contentToShare = status['media_url'] ?? '';
+                      contentType = 'gallery';
+                      contentId = status['gallery_id']?.toString();
+                    }
+
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => ShareContentScreen(
-                          contentToShare: isThought
-                              ? (status['caption'] ?? '')
-                              : (status['media_url'] ?? ''),
-                          contentId: status['thought_id']?.toString() ??
-                              status['gallery_id']?.toString(),
-                          contentType: isThought ? 'thought' : 'gallery',
+                          contentToShare: contentToShare,
+                          contentId: contentId,
+                          contentType: contentType,
                           currentUserId: widget.currentUserId,
                         ),
                       ),
@@ -3323,7 +3526,72 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
     );
   }
 
+  void _showCoursePicker() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1F2C34),
+      builder: (context) {
+        return FutureBuilder(
+          future: supabase
+              .from('allcourses_tech')
+              .select()
+              .order('created_at', ascending: false)
+              .limit(20),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            final List courses = snapshot.data as List? ?? [];
+            return Column(
+              children: [
+                const Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Text('Share a Course',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold)),
+                ),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: courses.length,
+                    itemBuilder: (context, index) {
+                      final c = courses[index];
+                      return ListTile(
+                        leading:
+                            const Icon(Icons.school_rounded, color: Colors.yellow),
+                        title: Text(c['course_title'] ?? '',
+                            maxLines: 2,
+                            style: const TextStyle(color: Colors.white)),
+                        subtitle: Text(c['course_description'] ?? '',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(color: Colors.white60)),
+                        onTap: () {
+                          setState(() {
+                            _localSharedContent = c['course_title'];
+                            _localSharedContentType = 'course';
+                            _localSharedContentId = c['course_id'].toString();
+                            _localSharedMetadata = c;
+                            _isSharingMode = true;
+                            _captionController.text = c['course_title'];
+                          });
+                          Navigator.pop(context);
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
   void _showCaptionDialog(XFile file, String mediaType) {
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -3514,7 +3782,185 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
           ),
         ),
       );
+    } else if (sType == 'course') {
+      final thumbnail = sMetadata?['course_thumbnail'];
+      final title = sMetadata?['course_title'] ?? 'Course';
+      final desc = sMetadata?['course_description'] ?? '';
+
+      contentWidget = Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF1A237E), Color(0xFF000000)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: Center(
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 32),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(24),
+              border:
+                  Border.all(color: Colors.indigo.withOpacity(0.3), width: 1),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (thumbnail != null)
+                  ClipRRect(
+                    borderRadius:
+                        const BorderRadius.vertical(top: Radius.circular(24)),
+                    child: CachedNetworkImage(
+                      imageUrl: thumbnail,
+                      height: 180,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                    ),
+                  )
+                else
+                  Container(
+                    height: 180,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.indigo.withOpacity(0.2),
+                      borderRadius:
+                          const BorderRadius.vertical(top: Radius.circular(24)),
+                    ),
+                    child: const Icon(Icons.school_rounded,
+                        color: Colors.white54, size: 64),
+                  ),
+                Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    children: [
+                      Text(
+                        title,
+                        maxLines: 2,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        desc,
+                        maxLines: 2,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 14,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: Colors.indigo,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: const Text(
+                          'View Course',
+                          style: TextStyle(
+                              color: Colors.white, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    } else if (sType == 'course') {
+      contentWidget = Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF1E3A8A), Color(0xFF000000)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: Center(
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 40),
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(30),
+              border:
+                  Border.all(color: Colors.indigo.withOpacity(0.5), width: 1.5),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (sMetadata?['thumbnail'] != null)
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(15),
+                    child: CachedNetworkImage(
+                      imageUrl: sMetadata!['thumbnail'],
+                      height: 120,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                    ),
+                  )
+                else
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: const BoxDecoration(
+                      color: Colors.indigo,
+                      shape: BoxShape.circle,
+                    ),
+                    child:
+                        const Icon(Icons.school, color: Colors.white, size: 40),
+                  ),
+                const SizedBox(height: 20),
+                Text(
+                  sMetadata?['course_title'] ?? sContent!,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Shared Course',
+                  maxLines: 1,
+                  style: TextStyle(color: Colors.white70, fontSize: 16),
+                ),
+                const SizedBox(height: 32),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.indigo,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Text(
+                    'Start Learning',
+                    style: TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
     } else if (sType == 'tool') {
+
       contentWidget = Container(
         width: double.infinity,
         height: double.infinity,
@@ -4199,7 +4645,11 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
     try {
       final mediaType = type == 'thought'
           ? 'thought'
-          : (type == 'gallery' ? 'image' : (type == 'tool' ? 'tool' : 'text'));
+          : (type == 'gallery'
+              ? 'image'
+              : (type == 'tool'
+                  ? 'tool'
+                  : (type == 'course' ? 'course' : 'text')));
 
       String? caption;
       String? mediaUrl;
@@ -4212,7 +4662,7 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
             ? _captionController.text.trim()
             : content;
         mediaUrl = null;
-      } else if (mediaType == 'tool') {
+      } else if (mediaType == 'tool' || mediaType == 'course') {
         caption = _captionController.text.trim().isNotEmpty
             ? _captionController.text.trim()
             : content;
@@ -4227,9 +4677,12 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
 
       final finalMetadata = <String, dynamic>{
         if (metadata != null) ...metadata,
-        if (contentId != null && contentId.isNotEmpty && type != 'thought' && type != 'gallery') 
+        if (contentId != null &&
+            contentId.isNotEmpty &&
+            type != 'thought' &&
+            type != 'gallery')
           'content_id': contentId,
-        if (type != 'thought' && type != 'gallery' && type.isNotEmpty) 
+        if (type != 'thought' && type != 'gallery' && type.isNotEmpty)
           'content_type': type,
       };
 
@@ -4482,7 +4935,7 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
                   const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 40, vertical: 12),
                     child: Text(
-                        'Share a photo, video, thought or tool with your mates.',
+                        'Share a photo, video, thought, tool or course with your mates.',
                         textAlign: TextAlign.center,
                         style: TextStyle(color: Colors.white70, fontSize: 14)),
                   ),
@@ -4537,6 +4990,12 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
                               _isSharingMode = true;
                             });
                           },
+                        ),
+                        _buildUploadOption(
+                          icon: Icons.school_rounded,
+                          label: 'Course',
+                          color: Colors.indigo,
+                          onTap: _showCoursePicker,
                         ),
                       ],
                     ),

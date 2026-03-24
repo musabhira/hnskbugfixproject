@@ -192,48 +192,87 @@ class TeamsService {
   // --- Search ---
 
   Future<List<UserResult>> searchUsers(String query) async {
-    if (query.length < 2) return [];
+    if (query.isEmpty) return [];
 
-    // Search by name in profile OR email in users table
-    // Note: This requires a foreign key from profile.user_id to users.id
     try {
-      final response = await _client
-          .from('profile')
-          .select('id, user_id, name, profile_image_url, users!inner(email)')
-          .or('name.ilike.%$query%, users.email.ilike.%$query%')
-          .limit(20);
-
-      final data = response as List<dynamic>;
-      return data.map((json) => UserResult.fromJson(json)).toList();
-    } catch (e) {
-      // Fallback if join fails (e.g. strict RLS or missing data)
-      print('Search join failed: $e');
-      final response = await _client
+      // 1. Search in profile table by name
+      final profileRes = await _client
           .from('profile')
           .select('id, user_id, name, profile_image_url')
           .ilike('name', '%$query%')
           .limit(20);
 
-      final data = response as List<dynamic>;
-      return data.map((json) => UserResult.fromJson(json)).toList();
+      final profiles = profileRes as List<dynamic>;
+      final results = profiles.map((p) => UserResult.fromJson(p)).toList();
+
+      // 2. If results are few and query might be an email, search by email separately
+      if (results.length < 5 && query.contains('@')) {
+        final userRes = await _client
+            .from('users')
+            .select('id, email, profile:profile(id, user_id, name, profile_image_url)')
+            .ilike('email', '%$query%')
+            .limit(5);
+
+        final users = userRes as List<dynamic>;
+        for (var u in users) {
+          if (u['profile'] != null) {
+            final p = u['profile'] as Map<String, dynamic>;
+            p['email'] = u['email'];
+            // Check if already in results
+            if (!results.any((r) => r.userId == p['user_id'])) {
+              results.add(UserResult.fromJson(p));
+            }
+          }
+        }
+      }
+
+      return results;
+    } catch (e) {
+      print('Search failed: $e');
+      // Minimal fallback
+      final resp = await _client
+          .from('profile')
+          .select('id, user_id, name, profile_image_url')
+          .ilike('name', '%$query%')
+          .limit(10);
+      return (resp as List).map((j) => UserResult.fromJson(j)).toList();
     }
   }
 
   // --- Members & Invites ---
 
   Future<List<TeamMember>> getTeamMembers(String teamId) async {
-    // Joining profile to get names
-    final response = await _client
-        .from('team_members')
-        .select('*, profile:profile (name, profile_image_url, id)')
-        .eq('team_id', teamId);
+    try {
+      // 1. Fetch members
+      final response = await _client
+          .from('team_members')
+          .select('*')
+          .eq('team_id', teamId);
+      
+      final membersData = response as List<dynamic>;
+      if (membersData.isEmpty) return [];
 
-    final data = response as List<dynamic>;
-    return data.map((json) {
-      // Manual mapping for the joined profile if needed, or rely on FromJson if configured
-      // Standard Supabase join returns nested object in 'profile' key
-      return TeamMember.fromJson(json);
-    }).toList();
+      // 2. Fetch profiles for these users separately to avoid join errors
+      final userIds = membersData.map((m) => m['user_id'] as String).toList();
+      final profileResponse = await _client
+          .from('profile')
+          .select('id, user_id, name, profile_image_url')
+          .inFilter('user_id', userIds);
+      
+      final profiles = profileResponse as List<dynamic>;
+      final profileMap = { for (var p in profiles) p['user_id'] as String : p };
+
+      // 3. Combine
+      return membersData.map((json) {
+        final uid = json['user_id'] as String;
+        final memberJson = Map<String, dynamic>.from(json);
+        memberJson['user_profile'] = profileMap[uid];
+        return TeamMember.fromJson(memberJson);
+      }).toList();
+    } catch (e) {
+      print('Error in getTeamMembers: $e');
+      return [];
+    }
   }
 
   Future<void> inviteMember(String teamId, String userId,

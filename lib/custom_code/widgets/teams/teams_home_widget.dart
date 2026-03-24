@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:pocket_mates_app/custom_code/widgets/teams/teams_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/teams/team_detail_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/teams/user_search_dialog.dart';
+import 'package:pocket_mates_app/custom_code/widgets/teams/running_tasks_widget.dart';
 
 class TeamsHomeWidget extends StatefulWidget {
   const TeamsHomeWidget({Key? key}) : super(key: key);
@@ -194,6 +195,7 @@ class _TeamsHomeWidgetState extends State<TeamsHomeWidget> {
 
     return Column(
       children: [
+        RunningTasksWidget(service: _service),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
           child: Row(

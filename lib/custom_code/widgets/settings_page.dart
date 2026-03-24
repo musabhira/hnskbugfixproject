@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/widgets/legal_policy_widget.dart';
-import 'package:pocket_mates_app/custom_code/widgets/courses_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/index.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({Key? key}) : super(key: key);
@@ -156,7 +156,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => const AdminPanelPage()),
+                        builder: (context) => const AdminDashboardPage()),
                   );
                 }
               },

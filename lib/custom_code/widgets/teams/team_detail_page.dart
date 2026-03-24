@@ -211,8 +211,8 @@ class _TeamDetailPageState extends State<TeamDetailPage>
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text('Invited ${user.name}!')),
               );
+              _loadData();
             }
-            _loadData();
           } catch (e) {
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -648,9 +648,9 @@ class _TeamDetailPageState extends State<TeamDetailPage>
               backgroundColor: Colors.grey[800],
               child: const Icon(Icons.person, color: Colors.white),
             ),
-            title: Text(member.userId.substring(0, 8),
+            title: Text(_getMemberName(member.userId),
                 style: const TextStyle(
-                    color: Colors.white)), // Placeholder for name
+                    color: Colors.white)),
             subtitle: Text(member.role.toUpperCase(),
                 style: const TextStyle(color: Colors.yellow, fontSize: 12)),
             trailing: member.status == 'pending'

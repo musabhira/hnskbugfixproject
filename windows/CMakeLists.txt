@@ -4,6 +4,12 @@ project(pocket_mates_app LANGUAGES CXX)
 set(BINARY_NAME "pocket_mates_app")
 
 cmake_policy(SET CMP0063 NEW)
+if(POLICY CMP0175)
+  cmake_policy(SET CMP0175 NEW)
+endif()
+
+# Point to local nuget.exe in the project root
+set(NUGET "${CMAKE_CURRENT_SOURCE_DIR}/../nuget.exe" CACHE FILEPATH "Path to nuget.exe")
 
 set(CMAKE_INSTALL_RPATH "$ORIGIN/lib")
 

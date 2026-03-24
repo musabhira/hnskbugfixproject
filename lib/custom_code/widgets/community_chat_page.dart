@@ -47,6 +47,7 @@ class _CommunityChatPageState extends State<CommunityChatPage>
   final _supabase = SupaFlow.client;
   late String _currentUserId;
   String? _currentUserProfileId;
+  String? _currentUserName;
   late TabController _tabController;
 
   List<Map<String, dynamic>> _conversations = [];
@@ -75,11 +76,12 @@ class _CommunityChatPageState extends State<CommunityChatPage>
       // Get current user's profile_id
       final profileResponse = await _supabase
           .from('profile')
-          .select('id')
+          .select('id, name')
           .eq('user_id', _currentUserId)
           .single();
 
       _currentUserProfileId = profileResponse['id'];
+      _currentUserName = profileResponse['name'];
       _loadData();
     } catch (e) {
       debugPrint('Error getting user profile: $e');
@@ -573,13 +575,16 @@ class _CommunityChatPageState extends State<CommunityChatPage>
       subtitle = data['last_message'] ?? 'No messages yet';
     }
 
+    final hasMention = _currentUserName != null &&
+        subtitle.contains('@$_currentUserName');
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       decoration: BoxDecoration(
         color: Colors.grey.shade900,
         borderRadius: BorderRadius.circular(12),
-        border: isUnread
-            ? Border.all(color: Colors.yellow.withValues(alpha: 0.3), width: 1)
+        border: (isUnread || hasMention)
+            ? Border.all(color: hasMention ? Colors.green.withValues(alpha: 0.5) : Colors.yellow.withValues(alpha: 0.3), width: 1)
             : null,
       ),
       child: ListTile(
@@ -647,6 +652,21 @@ class _CommunityChatPageState extends State<CommunityChatPage>
                   ),
                 ),
               ),
+            if (hasMention) ...[
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.all(2),
+                decoration: const BoxDecoration(
+                  color: Colors.green,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.alternate_email,
+                  size: 10,
+                  color: Colors.white,
+                ),
+              ),
+            ],
           ],
         ),
         subtitle: Column(

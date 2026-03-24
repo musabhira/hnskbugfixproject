@@ -127,7 +127,6 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
         final query = text.substring(lastAtPos + 1, selection.baseOffset);
         if (!query.contains(' ')) {
           safeSetState(() {
-            _mentionQuery = query;
             _filteredMembers = _groupMembers.where((m) {
               final name = m['profile']?['name']?.toString().toLowerCase() ?? '';
               return name.contains(query.toLowerCase());
@@ -1879,6 +1878,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   }
 
   void _showAttachmentBottomSheet() {
+    if (!AuthHelper.checkLoggedIn(context)) return;
     FocusScope.of(context).unfocus();
     showModalBottomSheet(
       context: context,
