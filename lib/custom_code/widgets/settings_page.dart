@@ -151,7 +151,7 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
               onTap: () {
                 versionTapCount++;
-                if (versionTapCount == 12) {
+                if (versionTapCount == 20) {
                   versionTapCount = 0;
                   Navigator.push(
                     context,

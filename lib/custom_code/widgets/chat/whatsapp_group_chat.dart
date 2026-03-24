@@ -642,17 +642,21 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
 
     return GestureDetector(
       onHorizontalDragUpdate: (details) {
-        if (details.primaryDelta! > 10) {
-          // Swipe right to reply
-          safeSetState(() {
-            _replyMessage = {
-              'id': message.id,
-              'message_text': message.messageText,
-              'sender_id': message.senderId,
-              'sender_name': message.senderName,
-            };
-          });
-          HapticFeedback.lightImpact();
+        if (details.primaryDelta! > 8) {
+          if (_replyMessage?['id'] != message.id) {
+            safeSetState(() {
+              _replyMessage = {
+                'id': message.id,
+                'message_text': message.messageText,
+                'sender_id': message.senderId,
+                'sender_name': message.senderName,
+                'metadata': message.metadata,
+                'message_type': message.messageType,
+                'file_url': message.fileUrl,
+              };
+            });
+            HapticFeedback.lightImpact();
+          }
         }
       },
       child: Row(
@@ -801,9 +805,11 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              if (message.messageType == 'image' &&
-                                  message.fileUrl != null)
-                                _buildImageMessage(message.fileUrl!),
+                              if (message.replyToMessage != null || 
+                                  message.metadata?['reply_type'] == 'status_reply')
+                                _buildReplyInBubble(message, isMe),
+                              if (message.messageType == 'image')
+                                _buildImageMessage(message),
                               if (message.messageType == 'voice' &&
                                   message.fileUrl != null)
                                 _buildVoiceMessage(message),
@@ -815,15 +821,13 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                                 _buildGalleryMessage(message.gallery!, isMe),
                               if (message.messageType == 'status_mention')
                                 _buildStatusMentionMessage(message, isMe),
-                              if (message.messageType == 'video' &&
-                                  message.fileUrl != null)
-                                _buildVideoMessage(message.fileUrl!),
+                              if (message.messageType == 'video')
+                                _buildVideoMessage(message),
                               if (message.messageType == 'tool' &&
                                   message.metadata != null)
                                 _buildToolMessage(message.metadata!, isMe),
-                              if (message.messageType == 'document' &&
-                                  message.fileUrl != null)
-                                _buildDocumentMessage(message.fileUrl!, isMe),
+                              if (message.messageType == 'document')
+                                _buildDocumentMessage(message, isMe),
                               if (message.messageType == 'text' &&
                                   message.messageText != null &&
                                   message.messageText!.isNotEmpty)
@@ -1398,18 +1402,23 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     );
   }
 
-  Widget _buildImageMessage(String url) {
+  Widget _buildImageMessage(ChatMessage message) {
+    final url = message.fileUrl;
+    final localPath = message.metadata?['local_path'];
+
     return GestureDetector(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ImageViewer(
-              imageUrl: url,
-              title: widget.groupName,
+        if (url != null) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ImageViewer(
+                imageUrl: url,
+                title: widget.groupName,
+              ),
             ),
-          ),
-        );
+          );
+        }
       },
       child: Padding(
         padding: const EdgeInsets.only(bottom: 4),
@@ -1417,15 +1426,31 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
           borderRadius: BorderRadius.circular(8),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxHeight: 300),
-            child: CachedNetworkImage(
-              imageUrl: url,
-              fit: BoxFit.cover,
-              placeholder: (context, url) => Container(
-                  height: 200,
-                  width: 200,
-                  color: Colors.black12,
-                  child: const Center(child: CircularProgressIndicator())),
-              errorWidget: (context, url, error) => const Icon(Icons.error),
+            child: Stack(
+              children: [
+                if (localPath != null && File(localPath).existsSync())
+                  Image.file(File(localPath), fit: BoxFit.cover, width: double.infinity, height: 200)
+                else if (url != null)
+                  CachedNetworkImage(
+                    imageUrl: url,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => Container(
+                        height: 200,
+                        width: 200,
+                        color: Colors.black12,
+                        child: const Center(child: CircularProgressIndicator())),
+                    errorWidget: (context, url, error) => const Icon(Icons.error),
+                  )
+                else
+                  Container(height: 200, width: 200, color: Colors.black12, child: const Icon(Icons.image, color: Colors.white24)),
+                
+                if (message.isOptimistic)
+                  const Positioned.fill(
+                    child: Center(
+                      child: CircularProgressIndicator(color: Colors.yellow),
+                    ),
+                  ),
+              ],
             ),
           ),
         ),
@@ -1433,7 +1458,9 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     );
   }
 
-  Widget _buildDocumentMessage(String url, bool isMe) {
+  Widget _buildDocumentMessage(ChatMessage message, bool isMe) {
+    final url = message.fileUrl;
+    final localPath = message.metadata?['local_path'];
     final mainColor = isMe ? Colors.black87 : Colors.yellow;
     final subColor = isMe ? Colors.black54 : Colors.grey;
     final borderColor = isMe ? Colors.black.withValues(alpha: 0.1) : Colors.yellow.withValues(alpha: 0.2);
@@ -1441,13 +1468,15 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     
     return GestureDetector(
       onTap: () {
-        // Implement downloading or opening the document using url_launcher or similar
-        // For now, simple snackbar to open document URL
-        try {
-          final uri = Uri.parse(url);
-          launchUrl(uri, mode: LaunchMode.externalApplication);
-        } catch (e) {
-          _showErrorSnackBar('Could not open document: $e');
+        if (url != null) {
+          try {
+            final uri = Uri.parse(url);
+            launchUrl(uri, mode: LaunchMode.externalApplication);
+          } catch (e) {
+            _showErrorSnackBar('Could not open document: $e');
+          }
+        } else if (localPath != null) {
+          _showSnackBar('Document is still sending...');
         }
       },
       child: Container(
@@ -1481,30 +1510,38 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                           color: mainColor,
                           fontWeight: FontWeight.bold,
                           fontSize: 14)),
-                  Text('Tap to view file',
+                  Text(message.isOptimistic ? 'Sending...' : 'Tap to view file',
                       style: TextStyle(color: subColor, fontSize: 11)),
                 ],
               ),
             ),
-            Icon(Icons.download, color: mainColor, size: 20),
+            if (message.isOptimistic)
+              const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.yellow))
+            else
+              Icon(Icons.open_in_new, color: mainColor, size: 20),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildVideoMessage(String url) {
+  Widget _buildVideoMessage(ChatMessage message) {
+    final url = message.fileUrl;
+    final localPath = message.metadata?['local_path'];
+
     return GestureDetector(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => VideoPlayerPage(
-              videoUrl: url,
-              title: widget.groupName,
+        if (url != null) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => VideoPlayerPage(
+                videoUrl: url,
+                title: widget.groupName,
+              ),
             ),
-          ),
-        );
+          );
+        }
       },
       child: Padding(
         padding: const EdgeInsets.only(bottom: 4),
@@ -1514,30 +1551,31 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
             alignment: Alignment.center,
             children: [
               ConstrainedBox(
-                constraints: const BoxConstraints(maxHeight: 300),
-                child: FutureBuilder<String?>(
-                  future:
-                      VideoCompress.getFileThumbnail(url).then((f) => f.path),
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData && snapshot.data != null) {
-                      return Image.file(File(snapshot.data!),
-                          fit: BoxFit.cover);
-                    }
-                    return Container(
-                      height: 200,
-                      width: 200,
-                      color: Colors.black12,
-                      child: const Icon(Icons.videocam,
-                          color: Colors.white24, size: 40),
-                    );
-                  },
+                constraints: const BoxConstraints(maxHeight: 300, minHeight: 150),
+                child: localPath != null && File(localPath).existsSync()
+                  ? FutureBuilder<String?>(
+                      future: VideoCompress.getFileThumbnail(localPath).then((f) => f.path),
+                      builder: (context, snapshot) {
+                        return snapshot.hasData ? Image.file(File(snapshot.data!), fit: BoxFit.cover) : Container(color: Colors.black26);
+                      })
+                  : (url != null ? FutureBuilder<String?>(
+                      future: VideoCompress.getFileThumbnail(url).then((f) => f.path),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData && snapshot.data != null) {
+                          return Image.file(File(snapshot.data!), fit: BoxFit.cover);
+                        }
+                        return Container(height: 200, width: 200, color: Colors.black12, child: const Icon(Icons.videocam, color: Colors.white24, size: 40));
+                      },
+                    ) : Container(color: Colors.black26)),
+              ),
+              if (message.isOptimistic)
+                const CircularProgressIndicator(color: Colors.yellow)
+              else
+                const CircleAvatar(
+                  backgroundColor: Colors.black45,
+                  radius: 24,
+                  child: Icon(Icons.play_arrow, color: Colors.white, size: 30),
                 ),
-              ),
-              const CircleAvatar(
-                backgroundColor: Colors.black45,
-                radius: 24,
-                child: Icon(Icons.play_arrow, color: Colors.white, size: 30),
-              ),
             ],
           ),
         ),
@@ -1721,16 +1759,8 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     }
   }
 
-  void _showLoadingSnackBar(String message) =>
-      _showSnackBar(message, isLoading: true);
-
   void _showErrorSnackBar(String message) =>
       _showSnackBar(message, isError: true);
-
-  void _hideSnackBar() {
-    if (!mounted) return;
-    ScaffoldMessenger.maybeOf(context)?.hideCurrentSnackBar();
-  }
 
   Widget _buildVoiceMessage(ChatMessage message) {
     return VoiceMessagePlayer(
@@ -2090,35 +2120,24 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   }
 
   Future<void> _uploadStagedFile(String? caption, String path, String type) async {
-    try {
-      _showLoadingSnackBar('Sending $type...');
-      File file = File(path);
-      
-      // Bucket names: voice-messages for audio, chat-media or ephemeral_media for others
-      final String bucket = type == 'voice' ? 'voice-messages' : 'ephemeral_media';
-      
-      final extension = path.split('.').last;
-      final fileName = '${type}_${DateTime.now().millisecondsSinceEpoch}.$extension';
-      final storagePath = 'group_${widget.groupId}/$fileName';
+    final String optimisticId = 'temp_file_${DateTime.now().millisecondsSinceEpoch}';
+    
+    // 1. Immediate optimistic send
+    await _sendMessage(
+      text: caption ?? (type == 'document' ? 'Document 📁' : 'Audio 🎵'),
+      messageType: type,
+      metadata: {'local_path': path}, // Store local path for preview
+    );
 
-      // Upload
-      await _supabase.storage.from(bucket).upload(storagePath, file);
-      final url = _supabase.storage.from(bucket).getPublicUrl(storagePath);
-
-      await _sendMessage(
-          text: caption ?? (type == 'document' ? 'Document 📁' : 'Audio 🎵'),
-          messageType: type,
-          fileUrl: url);
-
-      safeSetState(() {
-        _stagedDocumentPath = null;
-        _stagedAudioPath = null;
-      });
-      _hideSnackBar();
-    } catch (e) {
-      _showErrorSnackBar('Error uploading $type: $e');
-    }
+    // 2. Perform upload in background
+    _performBackgroundUpload(optimisticId, path, type, caption);
+    
+    safeSetState(() {
+      _stagedDocumentPath = null;
+      _stagedAudioPath = null;
+    });
   }
+
 
   Future<File?> _compressVideo(String path) async {
     try {
@@ -2156,6 +2175,41 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     }
   }
 
+  Future<void> _performBackgroundUpload(
+      String optimisticId, String path, String type, String? caption) async {
+    try {
+      File file = File(path);
+      final String bucket = type == 'voice' ? 'voice-messages' : 'ephemeral_media';
+      final extension = path.split('.').last;
+      final fileName = '${type}_${DateTime.now().millisecondsSinceEpoch}.$extension';
+      final storagePath = '${widget.groupId}/$fileName';
+
+      if (type == 'image') {
+        final compressedBytes = await _compressImage(path);
+        if (compressedBytes != null) {
+          await _supabase.storage.from(bucket).uploadBinary(storagePath, compressedBytes);
+        } else {
+          await _supabase.storage.from(bucket).upload(storagePath, file);
+        }
+      } else {
+        await _supabase.storage.from(bucket).upload(storagePath, file);
+      }
+      
+      final url = _supabase.storage.from(bucket).getPublicUrl(storagePath);
+
+      // Call the provider sendMessage to record it on server and replace local optimistic
+      await ref.read(chatMessagesProvider(widget.groupId).notifier).sendMessage(
+            text: caption ?? (type == 'document' ? 'Document 📁' : (type == 'image' ? '' : 'Audio 🎵')),
+            messageType: type,
+            fileUrl: url,
+            metadata: {'local_path': path},
+          );
+    } catch (e) {
+      debugPrint('Background upload error: $e');
+      _showErrorSnackBar('Failed to deliver $type: $e');
+    }
+  }
+
   Future<void> _pickAndStageDocument() async {
     try {
       FilePickerResult? result = await FilePicker.platform.pickFiles();
@@ -2188,7 +2242,23 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
       if (!status.isGranted && !status.isLimited) {
         final status2 = await Permission.storage.request();
         if (!status2.isGranted) {
-           // Fallback to picker, some OS handles it
+           showDialog(
+             context: context,
+             builder: (context) => AlertDialog(
+               backgroundColor: const Color(0xFF1F2C34),
+               title: const Text('Access Required', style: TextStyle(color: Colors.white)),
+               content: const Text('We need video access to share videos. Please enable it in settings.',
+                   style: TextStyle(color: Colors.white70)),
+               actions: [
+                 TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+                 TextButton(onPressed: () {
+                   Navigator.pop(context);
+                   openAppSettings();
+                 }, child: const Text('Settings')),
+               ],
+             ),
+           );
+           return;
         }
       }
 
@@ -2205,37 +2275,52 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
 
   Future<void> _uploadStagedVideo(String? caption) async {
     if (_stagedVideoPath == null) return;
+    final path = _stagedVideoPath!;
+    
+    // 1. Immediate optimistic send
+    await _sendMessage(
+      text: caption ?? 'Video 📹',
+      messageType: 'video',
+      metadata: {'local_path': path},
+    );
+
+    // 2. Clear staged path to allow new picking
+    safeSetState(() => _stagedVideoPath = null);
+
+    // 3. Perform processing and upload in background
+    _performBackgroundVideoUpload(path, caption);
+  }
+
+  Future<void> _performBackgroundVideoUpload(String path, String? caption) async {
     try {
-      _showLoadingSnackBar('Compressing & Sending Video...');
-      
-      File fileToUpload = File(_stagedVideoPath!);
+      File fileToUpload = File(path);
       
       // Video Compression
-      final compressed = await _compressVideo(_stagedVideoPath!);
+      final compressed = await _compressVideo(path);
       if (compressed != null) {
         fileToUpload = compressed;
         debugPrint('Video compressed: ${fileToUpload.lengthSync()} bytes');
       }
 
       final fileName = 'video_${DateTime.now().millisecondsSinceEpoch}.mp4';
-      final storagePath = 'group_${widget.groupId}/$fileName';
+      final storagePath = '${widget.groupId}/$fileName';
 
-      // Using 'ephemeral_media' as it's more reliable than 'chat-media'
       await _supabase.storage.from('ephemeral_media').upload(storagePath, fileToUpload);
       final url = _supabase.storage.from('ephemeral_media').getPublicUrl(storagePath);
 
-      await _sendMessage(
-          text: caption ?? 'Video 📹', messageType: 'video', fileUrl: url);
+      await ref.read(chatMessagesProvider(widget.groupId).notifier).sendMessage(
+            text: caption ?? 'Video 📹',
+            messageType: 'video',
+            fileUrl: url,
+            metadata: {'local_path': path},
+          );
 
-      safeSetState(() => _stagedVideoPath = null);
-      _hideSnackBar();
-      
-      // Cleanup compressed file
       if (compressed != null) {
         VideoCompress.deleteAllCache();
       }
     } catch (e) {
-      _showErrorSnackBar('Error uploading video: $e');
+      debugPrint('Background video upload error: $e');
+      _showErrorSnackBar('Failed to deliver video: $e');
     }
   }
 
@@ -2291,28 +2376,26 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
         source: source,
         maxWidth: 1600,
         maxHeight: 1600,
-        imageQuality: 75,
+        imageQuality: 85,
       );
       if (image == null) return;
 
-      _showLoadingSnackBar('Sending Image...');
-      
-      // Image Compression
-      final compressedBytes = await _compressImage(image.path);
-      final finalBytes = compressedBytes ?? await image.readAsBytes();
+      final path = image.path;
+      final type = 'image';
 
-      final fileName = 'img_${DateTime.now().millisecondsSinceEpoch}.jpg';
-      final path = '$_currentUserId/$fileName';
+      // 1. Immediate optimistic send
+      await _sendMessage(
+        text: '', 
+        messageType: type,
+        metadata: {'local_path': path},
+      );
 
-      // Using 'ephemeral_media' for better compatibility
-      await _supabase.storage.from('ephemeral_media').uploadBinary(path, finalBytes);
-      final url = _supabase.storage.from('ephemeral_media').getPublicUrl(path);
+      // 2. Perform upload in background
+      _performBackgroundUpload('temp_img_${DateTime.now().millisecondsSinceEpoch}', path, type, '');
 
-      await _sendMessage(messageType: 'image', fileUrl: url);
       safeSetState(() {
         _showEmojiPicker = false;
       });
-      _hideSnackBar();
     } catch (e) {
       debugPrint('Error picking/uploading image: $e');
       _showErrorSnackBar('Error: $e');
@@ -2339,40 +2422,274 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     );
   }
 
-  Widget _buildReplyPreview(Map<String, dynamic> message) {
-    return Container(
-      padding: const EdgeInsets.all(8),
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: const Color(0xFF121B22),
-        borderRadius: BorderRadius.circular(8),
-        border: const Border(left: BorderSide(color: Colors.yellow, width: 4)),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.reply, size: 20, color: Colors.yellow),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('Replying to message',
-                    style: TextStyle(
-                        color: Colors.yellow,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold)),
-                Text(
-                  message['message_text'] ?? 'Image/Voice',
-                  style: const TextStyle(color: Colors.grey, fontSize: 12),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
+  Widget _buildReplyInBubble(ChatMessage message, bool isMe) {
+    // Check if it's a message reply or a status reply
+    final reply = message.replyToMessage;
+    final metadata = message.metadata;
+    final isStatusReply = metadata?['reply_type'] == 'status_reply';
+
+    if (isStatusReply) {
+      final statusMediaUrl = metadata?['status_media_url'];
+      final statusMediaType = metadata?['status_media_type'];
+
+      return Container(
+        margin: const EdgeInsets.fromLTRB(4, 4, 4, 8),
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: isMe ? Colors.black.withOpacity(0.1) : Colors.white.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(8),
+          border: Border(
+            left: BorderSide(
+              color: isMe ? Colors.black54 : Colors.yellow,
+              width: 3,
             ),
           ),
-          IconButton(
-            icon: const Icon(Icons.close, size: 20, color: Colors.grey),
-            onPressed: () => safeSetState(() => _replyMessage = null),
+        ),
+        child: IntrinsicHeight(
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Replied to Vibe',
+                      style: TextStyle(
+                        color: isMe ? Colors.black87 : Colors.yellow,
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    const Text(
+                      'Vibe Reaction',
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 10,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (statusMediaUrl != null)
+                Padding(
+                  padding: const EdgeInsets.only(left: 8),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: statusMediaType == 'text'
+                        ? Container(
+                            width: 34,
+                            height: 34,
+                            decoration: const BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [Color(0xFFCC2B5E), Color(0xFF753A88)],
+                              ),
+                            ),
+                            alignment: Alignment.center,
+                            child: const Icon(Icons.text_fields, color: Colors.white, size: 14),
+                          )
+                        : CachedNetworkImage(
+                            imageUrl: statusMediaUrl,
+                            width: 34,
+                            height: 34,
+                            fit: BoxFit.cover,
+                          ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (reply == null) return const SizedBox.shrink();
+
+    final replyText = reply['message_text']?.toString() ?? 'Media';
+    final replyMetadata = reply['metadata'] as Map<String, dynamic>?;
+    final isReplyToStatus = replyMetadata?['reply_type'] == 'status_reply';
+    final replyStatusMediaUrl = replyMetadata?['status_media_url'];
+    final replyStatusMediaType = replyMetadata?['status_media_type'];
+
+    final senderData = reply['sender'];
+    final senderProfile = senderData?['profile'];
+    final profile = senderProfile is List
+        ? (senderProfile.isNotEmpty ? senderProfile.first : null)
+        : senderProfile;
+    final senderName = profile?['name']?.toString() ?? 'User';
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(4, 4, 4, 8),
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: isMe ? Colors.black.withOpacity(0.1) : Colors.white.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(8),
+        border: Border(
+          left: BorderSide(
+            color: isMe ? Colors.black54 : Colors.yellow,
+            width: 3,
+          ),
+        ),
+      ),
+      child: IntrinsicHeight(
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    isReplyToStatus ? 'Replied to Vibe' : senderName,
+                    style: TextStyle(
+                      color: isMe ? Colors.black87 : Colors.yellow,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    replyText,
+                    style: TextStyle(
+                      color: isMe ? Colors.black54 : Colors.white70,
+                      fontSize: 12,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            if (isReplyToStatus && replyStatusMediaUrl != null)
+              Padding(
+                padding: const EdgeInsets.only(left: 8),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: replyStatusMediaType == 'text'
+                      ? Container(
+                          width: 34,
+                          height: 34,
+                          decoration: const BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [Color(0xFFCC2B5E), Color(0xFF753A88)],
+                            ),
+                          ),
+                          alignment: Alignment.center,
+                          child: const Icon(Icons.text_fields, color: Colors.white, size: 14),
+                        )
+                      : CachedNetworkImage(
+                          imageUrl: replyStatusMediaUrl,
+                          width: 34,
+                          height: 34,
+                          fit: BoxFit.cover,
+                        ),
+                ),
+              ),
+            if (reply['message_type'] == 'image' && reply['file_url'] != null)
+              Padding(
+                padding: const EdgeInsets.only(left: 8),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: CachedNetworkImage(
+                    imageUrl: reply['file_url'],
+                    width: 34,
+                    height: 34,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildReplyPreview(Map<String, dynamic> message) {
+    final metadata = message['metadata'] as Map<String, dynamic>?;
+    final isStatusReply = metadata?['reply_type'] == 'status_reply';
+    final statusMediaUrl = metadata?['status_media_url'];
+    final statusMediaType = metadata?['status_media_type'];
+
+    return Container(
+      padding: const EdgeInsets.all(8),
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F2C34),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withOpacity(0.05)),
+      ),
+      child: Stack(
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 4,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: Colors.yellow,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      isStatusReply ? 'Replying to Vibe' : (message['sender_name'] ?? 'Message'),
+                      style: const TextStyle(
+                        color: Colors.yellow,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      message['message_text'] ?? (isStatusReply ? 'Vibe Reaction' : 'Media'),
+                      style: const TextStyle(color: Colors.white70, fontSize: 12),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              if (isStatusReply && statusMediaUrl != null)
+                Padding(
+                  padding: const EdgeInsets.only(left: 8),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: statusMediaType == 'text'
+                        ? Container(
+                            width: 40,
+                            height: 40,
+                            decoration: const BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [Color(0xFFCC2B5E), Color(0xFF753A88)],
+                              ),
+                            ),
+                            alignment: Alignment.center,
+                            child: const Icon(Icons.text_fields,
+                                color: Colors.white, size: 16),
+                          )
+                        : CachedNetworkImage(
+                            imageUrl: statusMediaUrl,
+                            width: 40,
+                            height: 40,
+                            fit: BoxFit.cover,
+                          ),
+                  ),
+                ),
+              const SizedBox(width: 32), // Space for close icon
+            ],
+          ),
+          Positioned(
+            top: -10,
+            right: -10,
+            child: IconButton(
+              icon: const Icon(Icons.close, size: 18, color: Colors.white54),
+              onPressed: () => safeSetState(() => _replyMessage = null),
+            ),
           ),
         ],
       ),

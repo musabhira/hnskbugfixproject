@@ -1657,6 +1657,9 @@ class AIService {
               return AIResponse.success(
                   data['choices'][0]['message']['content']);
             }
+          } else if (response.statusCode == 401) {
+            return AIResponse.error(
+                'Authentication Error: Invalid API Key. Please check your OpenRouter token.');
           }
         } catch (e) {
           print('Vision model $model failed: $e');
@@ -1714,6 +1717,9 @@ class AIService {
           onProgress?.call(1.0);
           return AIResponse.success(data['data'][0]['url']);
         }
+      } else if (response.statusCode == 401) {
+        return AIResponse.error(
+            'Authentication Error: Invalid API Key. Please check your OpenRouter token.');
       }
 
       // Fallback: Generate new image based on description + prompt
@@ -1764,6 +1770,9 @@ class AIService {
       if (data['choices'] != null && data['choices'].isNotEmpty) {
         return AIResponse.success(data['choices'][0]['message']['content']);
       }
+    } else if (response.statusCode == 401) {
+      return AIResponse.error(
+          'Authentication Error: Invalid API Key. Please check your OpenRouter token.');
     }
 
     return AIResponse.error('Model $model failed: ${response.statusCode}');
@@ -1795,6 +1804,9 @@ class AIService {
       if (data['data'] != null && data['data'].isNotEmpty) {
         return AIResponse.success(data['data'][0]['url']);
       }
+    } else if (response.statusCode == 401) {
+      return AIResponse.error(
+          'Authentication Error: Invalid API Key. Please check your OpenRouter token.');
     }
 
     return AIResponse.error('Model $model failed: ${response.statusCode}');

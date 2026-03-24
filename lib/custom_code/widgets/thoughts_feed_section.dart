@@ -35,7 +35,7 @@ class _ThoughtsFeedSectionState extends State<ThoughtsFeedSection>
     with SingleTickerProviderStateMixin {
   final supabase = SupaFlow.client;
   late TabController _tabController;
-  final ScrollController _scrollController = ScrollController();
+  // Removed local _scrollController to use PrimaryScrollController from NestedScrollView
 
   List<Map<String, dynamic>> _publicThreads = [];
   List<Map<String, dynamic>> _followingThreads = [];
@@ -54,7 +54,7 @@ class _ThoughtsFeedSectionState extends State<ThoughtsFeedSection>
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(_handleTabChange);
-    _scrollController.addListener(_onScroll);
+    // Removed _scrollController.addListener(_onScroll);
     _loadCache();
     _fetchThreads(refresh: true);
     _fetchUserLikes();
@@ -72,7 +72,7 @@ class _ThoughtsFeedSectionState extends State<ThoughtsFeedSection>
   void dispose() {
     _tabController.removeListener(_handleTabChange);
     _tabController.dispose();
-    _scrollController.dispose();
+    // Removed _scrollController.dispose();
     super.dispose();
   }
 
@@ -87,13 +87,16 @@ class _ThoughtsFeedSectionState extends State<ThoughtsFeedSection>
     }
   }
 
-  void _onScroll() {
-    if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - 200) {
-      if (!_isLoadingMore && _hasMore) {
-        _fetchThreads();
+  bool _onScrollNotification(ScrollNotification notification) {
+    if (notification is ScrollUpdateNotification) {
+      if (notification.metrics.pixels >=
+          notification.metrics.maxScrollExtent - 200) {
+        if (!_isLoadingMore && _hasMore) {
+          _fetchThreads();
+        }
       }
     }
+    return false;
   }
 
   Future<void> _loadCache() async {
@@ -318,11 +321,14 @@ class _ThoughtsFeedSectionState extends State<ThoughtsFeedSection>
                       : _followingThreads.isEmpty)
               ? const Center(
                   child: CircularProgressIndicator(color: Colors.yellow))
-              : RefreshIndicator(
-                  onRefresh: () => _fetchThreads(refresh: true),
-                  color: Colors.yellow,
-                  backgroundColor: Colors.black,
-                  child: _buildFeedList(),
+              : NotificationListener<ScrollNotification>(
+                  onNotification: _onScrollNotification,
+                  child: RefreshIndicator(
+                    onRefresh: () => _fetchThreads(refresh: true),
+                    color: Colors.yellow,
+                    backgroundColor: Colors.black,
+                    child: _buildFeedList(),
+                  ),
                 ),
         ),
       ],
@@ -359,7 +365,7 @@ class _ThoughtsFeedSectionState extends State<ThoughtsFeedSection>
     }
 
     return ListView.builder(
-      controller: _scrollController,
+      // Removed controller to use PrimaryScrollController (NestedScrollView inner controller)
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
       itemCount: threads.length + (_hasMore ? 1 : 0),
       itemBuilder: (context, index) {

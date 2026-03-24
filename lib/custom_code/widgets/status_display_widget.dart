@@ -29,6 +29,7 @@ import 'package:pocket_mates_app/custom_code/widgets/poki_games_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/nearby_users_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chess_game_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/thread_feed_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.dart';
 import 'package:pocket_mates_app/custom_code/widgets/courses_widget.dart';
 
 class StatusDisplayWidget extends StatefulWidget {
@@ -558,6 +559,8 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
           Expanded(
             child: GridView.builder(
               padding: const EdgeInsets.all(16),
+              physics: const AlwaysScrollableScrollPhysics(
+                  parent: BouncingScrollPhysics()),
               itemCount: filteredData.length,
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
@@ -577,6 +580,8 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
 
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      physics: const AlwaysScrollableScrollPhysics(
+          parent: BouncingScrollPhysics()),
       itemCount: filteredData.length + (widget.isVertical ? 1 : 0),
       itemBuilder: (context, index) {
         if (widget.isVertical && index == 0) return _buildAddStatusButton();
@@ -1288,11 +1293,20 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
 
       if (mounted) {
         if (_isPaused) _togglePause(); // Resume after sending
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Reply sent'),
-            duration: Duration(seconds: 1),
-            behavior: SnackBarBehavior.floating,
+
+        // Navigate to the chat
+        final statuses = widget.statusGroup['statuses'] as List;
+        final status = statuses[_currentIndex];
+        final profile = status['profile'] ?? widget.statusGroup;
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => WhatsAppGroupChat(
+              groupId: 'p:$receiverId',
+              groupName: profile?['name'] ?? 'User',
+              groupImage: profile?['profile_image_url'],
+            ),
           ),
         );
       }

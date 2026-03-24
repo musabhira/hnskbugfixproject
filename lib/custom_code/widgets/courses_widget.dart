@@ -563,7 +563,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
 
       final response = await supabase
           .from('user_course_access')
-          .select('has_paid')
+          .select('has_paid, profile:profile!user_id(name)')
           .eq('user_id', userId)
           .eq('course_id', courseId)
           .maybeSingle();
@@ -572,7 +572,22 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
         setState(() {
           // If record exists and has_paid is true
           hasPaidAccess = response != null && response['has_paid'] == true;
+          if (response != null && response['profile'] != null) {
+            name = response['profile']['name']?.toString();
+          }
         });
+      }
+      
+      // If name still null, try fetching it directly
+      if (name == null) {
+        final profileRes = await supabase
+            .from('profile')
+            .select('name')
+            .eq('user_id', userId)
+            .maybeSingle();
+        if (profileRes != null && mounted) {
+          setState(() => name = profileRes['name']?.toString());
+        }
       }
     } catch (e) {
       // print('Error checking paid access: $e');
@@ -683,15 +698,15 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
 
         // Generate a new coupon code - user's initials + random alphanumeric
         final userResponse = await supabase
-            .from('profiles')
-            .select('full_name')
-            .eq('id', userId as Object)
+            .from('profile')
+            .select('name')
+            .eq('user_id', userId as Object)
             .single();
 
         String initials = 'USER';
-        if (userResponse['full_name'] != null) {
-          final name = userResponse['full_name'].toString();
-          initials = name
+        if (userResponse['name'] != null) {
+          final fullName = userResponse['name'].toString();
+          initials = fullName
               .split(' ')
               .map((e) => e.isNotEmpty ? e[0] : '')
               .join('')

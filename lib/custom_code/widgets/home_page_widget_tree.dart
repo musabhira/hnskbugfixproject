@@ -482,14 +482,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                                   conversationsAsync),
                                             ],
                                           ),
-                                          material.CustomScrollView(
-                                            physics: const BouncingScrollPhysics(
-                                                parent:
-                                                    AlwaysScrollableScrollPhysics()),
-                                            slivers: [
-                                              _buildVibesListSliver(),
-                                            ],
-                                          ),
+                                          _buildVibesSection(),
                                           ThoughtsFeedSection(
                                             currentUserId: _currentUserId ?? '',
                                             currentProfileId: profileId ?? '',
@@ -525,17 +518,14 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     }
   }
 
-  Widget _buildVibesListSliver() {
-    return SliverFillRemaining(
-      hasScrollBody: true,
-      child: StatusDisplayWidget(
-        key: ValueKey('vibes_list_$_refreshKeyCount'),
-        currentUserId: supabase.auth.currentUser?.id ?? '',
-        currentProfileId: profileId ?? '',
-        isVertical: true,
-        onStatusUploaded: _handleRefresh,
-        searchQuery: _chatTabIndex == 1 ? _searchQuery : '',
-      ),
+  Widget _buildVibesSection() {
+    return StatusDisplayWidget(
+      key: ValueKey('vibes_list_$_refreshKeyCount'),
+      currentUserId: supabase.auth.currentUser?.id ?? '',
+      currentProfileId: profileId ?? '',
+      isVertical: true,
+      onStatusUploaded: _handleRefresh,
+      searchQuery: _chatTabIndex == 1 ? _searchQuery : '',
     );
   }
 
@@ -999,13 +989,16 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
           customMessage: "Please login to view your profile",
         );
         if (isAuthenticated) {
-          Navigator.push(
-            context,
-            material.MaterialPageRoute(
-              builder: (context) =>
-                  VerfiedSwitchPage(userId: _currentUserId.toString()),
-            ),
-          );
+          final loggedInUser = supabase.auth.currentUser;
+          if (loggedInUser != null) {
+            Navigator.push(
+              context,
+              material.MaterialPageRoute(
+                builder: (context) =>
+                    VerfiedSwitchPage(userId: loggedInUser.id),
+              ),
+            );
+          }
         }
       },
       child: CircularProfileImage(

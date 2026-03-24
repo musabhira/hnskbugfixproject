@@ -813,7 +813,7 @@ class _MessageScreenState extends State<MessageScreen> {
         final compressed = await _compressVideoFile(filePath);
         if (compressed != null) {
           compressedFile = compressed;
-          file = compressedFile!;
+          file = compressedFile;
           debugPrint('Using compressed video for upload');
         }
       }

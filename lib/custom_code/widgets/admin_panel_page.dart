@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 // import 'package:pocket_mates_app/flutter_flow/flutter_flow_theme.dart';
@@ -22,19 +23,23 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
   int totalUsers = 0;
   int verifiedUsers = 0;
   int pendingCourseAccess = 0;
+  int totalReports = 0;
   bool isLoadingStats = true;
 
   // Filter and Search
   String userSearchQuery = "";
+  String authSearchQuery = "";
   List<Map<String, dynamic>> allProfiles = [];
   List<Map<String, dynamic>> pendingAccessList = [];
   bool isLoadingUsers = false;
   bool isLoadingAccess = false;
+  bool isLoadingAuth = false;
+  List<Map<String, dynamic>> allUsers = [];
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 5, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _showPasswordDialog();
     });
@@ -53,22 +58,25 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
+        backgroundColor: Colors.grey[900],
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Admin Access Required'),
+        title: const Text('Admin Access Required', style: TextStyle(color: Colors.white)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             const Text('Please enter the administrative PIN to unlock this section.', 
-              style: TextStyle(color: Colors.grey)),
+              style: TextStyle(color: Colors.white70)),
             const SizedBox(height: 20),
             TextField(
               controller: passwordController,
               obscureText: true,
               keyboardType: TextInputType.number,
+              style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
                 filled: true,
-                fillColor: Colors.grey[100],
+                fillColor: Colors.grey[850],
                 labelText: 'PIN CODE',
+                labelStyle: const TextStyle(color: Colors.grey),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,
@@ -79,12 +87,12 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context), // Pop dialog
+            onPressed: () => Navigator.pop(context),
             child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue,
+              backgroundColor: Colors.amber,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
             onPressed: () {
@@ -98,7 +106,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                 );
               }
             },
-            child: const Text('Unlock', style: TextStyle(color: Colors.white)),
+            child: const Text('Unlock', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -114,6 +122,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
       _loadStats(),
       _loadProfiles(),
       _loadPendingAccess(),
+      _loadReports(),
+      _loadUsersAuth(),
     ]);
   }
 
@@ -128,12 +138,23 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
           totalUsers = usersRes.length;
           verifiedUsers = usersRes.where((u) => u['verified'] == true).length;
           pendingCourseAccess = accessRes.length;
+          
           isLoadingStats = false;
         });
       }
+      _fetchCounts();
     } catch (e) {
       debugPrint('Error loading stats: $e');
       if (mounted) setState(() => isLoadingStats = false);
+    }
+  }
+
+  Future<void> _fetchCounts() async {
+    try {
+      final countRes = await supabase.from('reports').select('id');
+      if (mounted) setState(() => totalReports = countRes.length);
+    } catch (e) {
+      debugPrint('Error fetching report count: $e');
     }
   }
 
@@ -142,7 +163,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
     try {
       final res = await supabase
           .from('profile')
-          .select('id, name, shop_name, profile_image_url, verified, email')
+          .select('id, name, shop_name, profile_image_url, verified')
           .order('name');
       if (mounted) {
         setState(() {
@@ -159,25 +180,133 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
   Future<void> _loadPendingAccess() async {
     setState(() => isLoadingAccess = true);
     try {
-      final res = await supabase.from('user_course_access').select('''
-        id, 
-        has_paid,
-        user_id,
-        course_id,
-        created_at,
-        profile (id, name, shop_name, phone_no),
-        courses (id, title)
-      ''').eq('has_paid', false).order('created_at', ascending: false);
+      // First, get the pending requests
+      final accessRes = await supabase
+          .from('user_course_access')
+          .select('id, has_paid, user_id, course_id, created_at')
+          .eq('has_paid', false)
+          .order('created_at', ascending: false);
+
+      if (accessRes.isEmpty) {
+        if (mounted) {
+          setState(() {
+            pendingAccessList = [];
+            isLoadingAccess = false;
+          });
+        }
+        return;
+      }
+
+      final requests = List<Map<String, dynamic>>.from(accessRes);
+      final userIds = requests.map((r) => r['user_id'] as String).toSet().toList();
+      final courseIds = requests.map((r) => r['course_id'] as String).toSet().toList();
+
+      // Second, fetch profiles and courses for these IDs
+      final profilesRes = await supabase
+          .from('profile')
+          .select('user_id, name, shop_name, phone_no')
+          .inFilter('user_id', userIds);
       
+      final coursesRes = await supabase
+          .from('courses')
+          .select('id, title')
+          .inFilter('id', courseIds);
+
+      final profilesMap = {
+        for (var p in profilesRes) p['user_id'].toString(): p
+      };
+      
+      final coursesMap = {
+        for (var c in coursesRes) c['id'].toString(): c
+      };
+
+      // Combine them
+      final combined = requests.map((r) {
+        return {
+          ...r,
+          'profile': profilesMap[r['user_id']] ?? {'name': 'Unknown User'},
+          'courses': coursesMap[r['course_id']] ?? {'title': 'Unknown Course'}
+        };
+      }).toList();
+
       if (mounted) {
         setState(() {
-          pendingAccessList = List<Map<String, dynamic>>.from(res);
+          pendingAccessList = combined;
           isLoadingAccess = false;
         });
       }
     } catch (e) {
       debugPrint('Error loading access requests: $e');
       if (mounted) setState(() => isLoadingAccess = false);
+    }
+  }
+
+  List<Map<String, dynamic>> reportsList = [];
+  bool isLoadingReports = false;
+
+  Future<void> _loadReports() async {
+    setState(() => isLoadingReports = true);
+    try {
+      final res = await supabase.from('reports').select('*').order('created_at', ascending: false);
+      if (mounted) {
+        setState(() {
+          reportsList = List<Map<String, dynamic>>.from(res);
+          isLoadingReports = false;
+        });
+      }
+      _fetchCounts();
+    } catch (e) {
+      debugPrint('Error loading reports: $e');
+      if (mounted) setState(() => isLoadingReports = false);
+    }
+  }
+
+  Future<void> _loadUsersAuth() async {
+    setState(() => isLoadingAuth = true);
+    try {
+      // Fetch users (credentials)
+      final usersRes = await supabase
+          .from('users')
+          .select('id, email, password')
+          .order('id');
+      
+      // Fetch profiles (names)
+      final profilesRes = await supabase
+          .from('profile')
+          .select('user_id, name');
+
+      final profileMap = {
+        for (var p in profilesRes) p['user_id'].toString(): p['name']
+      };
+
+      if (mounted) {
+        setState(() {
+          allUsers = usersRes.map((u) {
+            return {
+              ...u,
+              'name': profileMap[u['id']] ?? 'Unknown User'
+            };
+          }).toList();
+          isLoadingAuth = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading auth data: $e');
+      if (mounted) setState(() => isLoadingAuth = false);
+    }
+  }
+
+  Future<void> _updateReportStatus(String reportId, String status) async {
+    try {
+      await supabase.from('reports').update({'status': status}).eq('id', reportId);
+      _loadReports();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Report marked as $status'), backgroundColor: Colors.blue),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error updating report: $e'), backgroundColor: Colors.red),
+      );
     }
   }
 
@@ -214,26 +343,28 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
 
   @override
   Widget build(BuildContext context) {
-    if (!isAuthenticated) return const Scaffold(backgroundColor: Colors.white);
+    if (!isAuthenticated) return const Scaffold(backgroundColor: Colors.black);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA), // Professional light grey background
+      backgroundColor: Colors.black,
       appBar: AppBar(
         title: const Text('Admin Dashboard', 
-          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.white,
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.black,
         elevation: 0,
         centerTitle: true,
         bottom: TabBar(
           controller: _tabController,
-          labelColor: Colors.blue,
+          labelColor: Colors.amber,
           unselectedLabelColor: Colors.grey,
-          indicatorColor: Colors.blue,
+          indicatorColor: Colors.amber,
           indicatorWeight: 3,
           tabs: const [
             Tab(icon: Icon(Icons.dashboard_outlined), text: 'Insight'),
             Tab(icon: Icon(Icons.people_outline), text: 'Users'),
             Tab(icon: Icon(Icons.school_outlined), text: 'Requests'),
+            Tab(icon: Icon(Icons.report_problem_outlined), text: 'Reports'),
+            Tab(icon: Icon(Icons.security_outlined), text: 'Auth'),
           ],
         ),
       ),
@@ -243,6 +374,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
           _buildInsightTab(),
           _buildUserTab(),
           _buildRequestsTab(),
+          _buildReportsTab(),
+          _buildAuthTab(),
         ],
       ),
     );
@@ -255,7 +388,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
         padding: const EdgeInsets.all(20),
         children: [
           const Text('Platform Statistics', 
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.blueGrey)),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white70)),
           const SizedBox(height: 15),
           Row(
             children: [
@@ -269,16 +402,20 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
             children: [
               _buildStatCard('Course Requests', pendingCourseAccess.toString(), Icons.pending_actions, Colors.orange),
               const SizedBox(width: 15),
-              _buildStatCard('Active Now', '...', Icons.bolt, Colors.purple),
+              _buildStatCard('Total Reports', totalReports.toString(), Icons.report, Colors.red),
             ],
           ),
           const SizedBox(height: 30),
           const Text('Quick Actions', 
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.blueGrey)),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white70)),
           const SizedBox(height: 15),
-          _buildQuickActionCard('Broadcast Message', 'Send a notification to all users', Icons.campaign_outlined, Colors.blue),
-          _buildQuickActionCard('Manage Subscriptions', 'View and edit user plans', Icons.subscriptions_outlined, Colors.indigo),
-          _buildQuickActionCard('Support Tickets', 'Resolve user complaints', Icons.support_agent_outlined, Colors.teal),
+          _buildQuickActionCard('Broadcast Message', 'Send a notification to all users', Icons.campaign_outlined, Colors.blue, () {
+            _tabController.animateTo(1); // Go to users
+          }),
+          _buildQuickActionCard('Manage Subscriptions', 'View and edit user plans', Icons.subscriptions_outlined, Colors.indigo, () {}),
+          _buildQuickActionCard('Support Tickets', 'Resolve user complaints', Icons.support_agent_outlined, Colors.teal, () {
+            _tabController.animateTo(3); // Go to reports
+          }),
         ],
       ),
     );
@@ -289,16 +426,16 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Colors.grey[900],
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4))],
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 10, offset: const Offset(0, 4))],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Icon(icon, color: color, size: 28),
             const SizedBox(height: 12),
-            Text(value, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+            Text(value, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
             Text(label, style: const TextStyle(color: Colors.grey, fontSize: 13)),
           ],
         ),
@@ -306,34 +443,37 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
     );
   }
 
-  Widget _buildQuickActionCard(String title, String subtitle, IconData icon, Color color) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 8, offset: const Offset(0, 2))],
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(color: color.withOpacity(0.1), shape: BoxShape.circle),
-            child: Icon(icon, color: color, size: 24),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                Text(subtitle, style: TextStyle(color: Colors.grey[600], fontSize: 13)),
-              ],
+  Widget _buildQuickActionCard(String title, String subtitle, IconData icon, Color color, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.grey[900],
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 8, offset: const Offset(0, 2))],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(color: color.withValues(alpha: 0.1), shape: BoxShape.circle),
+              child: Icon(icon, color: color, size: 24),
             ),
-          ),
-          Icon(Icons.chevron_right, color: Colors.grey[400]),
-        ],
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.white)),
+                  Text(subtitle, style: TextStyle(color: Colors.grey[400], fontSize: 13)),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right, color: Colors.grey[600]),
+          ],
+        ),
       ),
     );
   }
@@ -351,11 +491,13 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
           padding: const EdgeInsets.all(16),
           child: TextField(
             onChanged: (v) => setState(() => userSearchQuery = v),
+            style: const TextStyle(color: Colors.white),
             decoration: InputDecoration(
               hintText: 'Search users or shops...',
-              prefixIcon: const Icon(Icons.search),
+              hintStyle: const TextStyle(color: Colors.grey),
+              prefixIcon: const Icon(Icons.search, color: Colors.grey),
               filled: true,
-              fillColor: Colors.white,
+              fillColor: Colors.grey[900],
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
             ),
           ),
@@ -374,7 +516,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                     return Container(
                       margin: const EdgeInsets.only(bottom: 12),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: Colors.grey[900],
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: ListTile(
@@ -391,12 +533,12 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                         ),
                         title: Row(
                           children: [
-                            Text(user['name'] ?? 'Unknown User', style: const TextStyle(fontWeight: FontWeight.bold)),
+                            Text(user['name'] ?? 'Unknown User', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
                             if (isVerified) const SizedBox(width: 4),
-                            if (isVerified) const Icon(Icons.verified, color: Colors.blue, size: 16),
+                            if (isVerified) const Icon(Icons.verified, color: Colors.amber, size: 16),
                           ],
                         ),
-                        subtitle: Text(user['shop_name'] ?? 'No shop name', style: const TextStyle(fontSize: 12)),
+                        subtitle: Text(user['shop_name'] ?? 'No shop name', style: const TextStyle(fontSize: 12, color: Colors.grey)),
                         trailing: Switch(
                           value: isVerified,
                           activeColor: Colors.blue,
@@ -441,10 +583,10 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                 return Container(
                   margin: const EdgeInsets.only(bottom: 16),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: Colors.grey[900],
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.blue.withOpacity(0.05)),
-                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4))],
+                    border: Border.all(color: Colors.white.withOpacity(0.05)),
+                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 4))],
                   ),
                   child: Column(
                     children: [
@@ -462,8 +604,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(course['title'] ?? 'Unknown Course', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                                  Text('Request by: ${profile['name'] ?? "User"}', style: TextStyle(color: Colors.grey[600], fontSize: 13)),
+                                  Text(course['title'] ?? 'Unknown Course', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white)),
+                                  Text('Request by: ${profile['name'] ?? "User"}', style: TextStyle(color: Colors.grey[400], fontSize: 13)),
                                 ],
                               ),
                             ),
@@ -471,7 +613,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                           ],
                         ),
                       ),
-                      const Divider(height: 1),
+                      Divider(height: 1, color: Colors.white.withOpacity(0.1)),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                         child: Row(
@@ -498,6 +640,221 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                 );
               },
             ),
+    );
+  }
+
+  Widget _buildReportsTab() {
+    return RefreshIndicator(
+      onRefresh: _loadReports,
+      child: isLoadingReports
+          ? const Center(child: CircularProgressIndicator())
+          : (reportsList.isEmpty)
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.check_circle_outline, size: 64, color: Colors.grey[300]),
+                      const SizedBox(height: 16),
+                      const Text('No reports to review!', style: TextStyle(color: Colors.grey)),
+                    ],
+                  ),
+                )
+              : ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: reportsList.length,
+                  itemBuilder: (context, index) {
+                    final report = reportsList[index];
+                    final status = report['status'] ?? 'pending';
+                    final type = report['report_type'] ?? 'other';
+                    final date = DateTime.parse(report['created_at']);
+
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[900],
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 4)],
+                      ),
+                      child: ExpansionTile(
+                        leading: Icon(
+                          status == 'resolved' ? Icons.check_circle : Icons.warning_amber_rounded,
+                          color: status == 'resolved' ? Colors.green : Colors.orange,
+                        ),
+                        title: Text('${type.toString().toUpperCase()} - ${report['content_type']}',
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.white)),
+                        subtitle: Text('Status: $status • ${date.day}/${date.month}',
+                            style: TextStyle(color: Colors.grey[400], fontSize: 12)),
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text('Description:', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                                Text(report['description'] ?? 'No description provided.', style: const TextStyle(color: Colors.white70)),
+                                const SizedBox(height: 12),
+                                if (status == 'pending' || status == 'reviewed')
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      TextButton(
+                                        onPressed: () => _updateReportStatus(report['id'], 'dismissed'),
+                                        child: const Text('Dismiss', style: TextStyle(color: Colors.grey)),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      ElevatedButton(
+                                        onPressed: () => _updateReportStatus(report['id'], 'resolved'),
+                                        style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+                                        child: const Text('Mark Resolved', style: TextStyle(color: Colors.white)),
+                                      ),
+                                    ],
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+    );
+  }
+
+  Widget _buildAuthTab() {
+    final filteredUsers = allUsers.where((u) {
+      final name = u['name']?.toString().toLowerCase() ?? "";
+      final email = u['email']?.toString().toLowerCase() ?? "";
+      return name.contains(authSearchQuery.toLowerCase()) ||
+          email.contains(authSearchQuery.toLowerCase());
+    }).toList();
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: TextField(
+            onChanged: (v) => setState(() => authSearchQuery = v),
+            style: const TextStyle(color: Colors.white),
+            decoration: InputDecoration(
+              hintText: 'Search by name or email...',
+              hintStyle: const TextStyle(color: Colors.grey),
+              prefixIcon: const Icon(Icons.search, color: Colors.grey),
+              filled: true,
+              fillColor: Colors.grey[900],
+              border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none),
+            ),
+          ),
+        ),
+        Expanded(
+          child: RefreshIndicator(
+            onRefresh: _loadUsersAuth,
+            child: isLoadingAuth
+                ? const Center(child: CircularProgressIndicator())
+                : (filteredUsers.isEmpty)
+                    ? const Center(
+                        child: Text('No auth data found.',
+                            style: TextStyle(color: Colors.grey)))
+                    : ListView.builder(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        itemCount: filteredUsers.length,
+                        itemBuilder: (context, index) {
+                          final user = filteredUsers[index];
+                          final email = user['email'] ?? "No Email";
+                          final password = user['password'] ?? "";
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[900],
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: Colors.white10),
+                            ),
+                            child: ListTile(
+                              contentPadding: const EdgeInsets.all(12),
+                              title: Text(user['name'] ?? 'Unknown',
+                                  style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold)),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const SizedBox(height: 8),
+                                  // Email Row
+                                  Row(
+                                    children: [
+                                      const Icon(Icons.email_outlined,
+                                          size: 14, color: Colors.grey),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(email,
+                                            style: const TextStyle(
+                                                color: Colors.white70,
+                                                fontSize: 13)),
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(Icons.copy_rounded,
+                                            size: 18, color: Colors.blue),
+                                        onPressed: () {
+                                          Clipboard.setData(
+                                              ClipboardData(text: email));
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            const SnackBar(
+                                                content: Text('Email copied!'),
+                                                duration: Duration(seconds: 1)),
+                                          );
+                                        },
+                                        tooltip: 'Copy Email',
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 4),
+                                  // Password Row
+                                  Row(
+                                    children: [
+                                      const Icon(Icons.lock_outline,
+                                          size: 14, color: Colors.grey),
+                                      const SizedBox(width: 8),
+                                      const Expanded(
+                                        child: Text('••••••••',
+                                            style: TextStyle(
+                                                color: Colors.white70,
+                                                fontSize: 13,
+                                                letterSpacing: 2)),
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(Icons.content_copy,
+                                            size: 18, color: Colors.amber),
+                                        onPressed: () {
+                                          Clipboard.setData(
+                                              ClipboardData(text: password));
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            const SnackBar(
+                                                content:
+                                                    Text('Password copied!'),
+                                                duration: Duration(seconds: 1)),
+                                          );
+                                        },
+                                        tooltip: 'Copy Password',
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              leading: CircleAvatar(
+                                backgroundColor: Colors.amber.withOpacity(0.1),
+                                child: const Icon(Icons.lock_person,
+                                    color: Colors.amber),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+          ),
+        ),
+      ],
     );
   }
 }

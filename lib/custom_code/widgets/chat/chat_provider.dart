@@ -233,6 +233,7 @@ class ChatMessages extends _$ChatMessages {
               message_type,
               file_url,
               sender_id,
+              metadata,
               sender:users!sender_id(
                 profile:profile!user_id(name, profile_image_url)
               )
@@ -454,6 +455,7 @@ class ChatMessages extends _$ChatMessages {
               message_type,
               file_url,
               sender_id,
+              metadata,
               sender:users!sender_id(
                 profile:profile!user_id(name, profile_image_url)
               )
@@ -598,6 +600,25 @@ class ChatMessages extends _$ChatMessages {
         .toList();
   }
 
+  Future<void> updateOptimisticMessage(String optimisticId, String fileUrl) async {
+    state.whenData((messages) {
+      final index = messages.indexWhere((m) => m.id == optimisticId);
+      if (index != -1) {
+        final existing = messages[index];
+        final updated = ChatMessage.fromJson({
+          ...existing.toJson(),
+          'file_url': fileUrl,
+          'isOptimistic': false,
+          'isPending': false, // No longer pending once URL is there
+        });
+        final updatedList = List<ChatMessage>.from(messages);
+        updatedList[index] = updated;
+        state = AsyncValue.data(updatedList);
+        _saveToCache(updatedList);
+      }
+    });
+  }
+
   Future<void> _saveToCache(List<ChatMessage> messages) async {
     await LocalSyncServer().saveMessages(groupId, messages);
   }
@@ -613,6 +634,7 @@ class ChatMessages extends _$ChatMessages {
           message_type,
           file_url,
           sender_id,
+          metadata,
           sender:users!sender_id(
             profile:profile!user_id(name, profile_image_url)
           )

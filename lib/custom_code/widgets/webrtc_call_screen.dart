@@ -28,6 +28,8 @@ class _WebRTCCallScreenState extends State<WebRTCCallScreen> {
   String? remoteUserId;
   bool isConnected = false;
   bool isSearching = true;
+  String? currentRoomId;
+  RealtimeChannel? _roomSubscription;
   String _statusText = 'Initializing...';
   final Set<String> _triedUserIds = {};
   Timer? _matchingLoopTimer;
@@ -187,81 +189,73 @@ class _WebRTCCallScreenState extends State<WebRTCCallScreen> {
   Future<void> findRoom() async {
     if (!mounted) return;
     _matchingLoopTimer?.cancel();
-
-    if (widget.targetUserId != null && widget.targetUserId!.isNotEmpty) {
-      if (_triedUserIds.contains(widget.targetUserId)) {
-        setState(() => _statusText = 'User not available or busy.');
-        return;
-      }
-
-      setState(() {
-        isSearching = true;
-        isConnected = false;
-        remoteUserId = widget.targetUserId;
-        _statusText = 'Calling...';
-      });
-
-      debugPrint('Direct Call: Attempting to call: ${widget.targetUserId}');
-      _triedUserIds.add(widget.targetUserId!);
-      webViewController?.evaluateJavascript(
-          source: 'callPeer("${widget.targetUserId}", "${widget.mode}")');
-      _startConnectionTimeout();
-      return;
-    }
+    _roomSubscription?.unsubscribe();
 
     setState(() {
       isSearching = true;
       isConnected = false;
-      _statusText = 'Scanning active users...';
+      _statusText = 'Searching for a match...';
     });
-
-    List<String> availableUserIds = [];
 
     try {
-      final twoMinutesAgo = DateTime.now().subtract(const Duration(minutes: 2));
-      final List<dynamic> response = await supabase
-          .from('friendlist')
-          .select('user_id')
-          .neq('user_id', myUserId!)
-          .gte('joined_at', twoMinutesAgo.toIso8601String());
+      // 1. Try to join an existing waiting room
+      final matchRes = await supabase
+          .from('rooms')
+          .select('id, user1_id')
+          .eq('status', 'waiting')
+          .eq('mode', widget.mode)
+          .neq('user1_id', myUserId!)
+          .order('created_at', ascending: true)
+          .limit(1)
+          .maybeSingle();
 
-      if (response.isNotEmpty) {
-        availableUserIds =
-            response.map((e) => e['user_id'].toString()).toSet().toList();
-      }
-    } catch (e) {
-      debugPrint('Error fetching active users: $e');
-    }
+      if (matchRes != null) {
+        final roomId = matchRes['id'].toString();
+        final foundUserId = matchRes['user1_id'].toString();
 
-    final candidates =
-        availableUserIds.where((id) => !_triedUserIds.contains(id)).toList();
+        await supabase.from('rooms').update({'user2_id': myUserId, 'status': 'active'}).eq('id', roomId);
 
-    if (candidates.isEmpty) {
-      if (_triedUserIds.isNotEmpty && availableUserIds.isNotEmpty) {
-        setState(() => _statusText = 'Restarting match loop...');
-        await Future.delayed(const Duration(seconds: 2));
-        _triedUserIds.clear();
-        findRoom();
+        setState(() {
+          currentRoomId = roomId;
+          remoteUserId = foundUserId;
+          _statusText = 'Stranger found! Connecting...';
+        });
+
+        webViewController?.evaluateJavascript(source: 'callPeer("$foundUserId", "${widget.mode}")');
+        _startConnectionTimeout();
         return;
       }
-      setState(() => _statusText = 'No users available. Retrying...');
+
+      // 2. Create a room and wait
+      final newRoomId = 'room_${Random().nextInt(9999999)}';
+      await supabase.from('rooms').insert({'id': newRoomId, 'user1_id': myUserId, 'status': 'waiting', 'mode': widget.mode});
+
+      setState(() {
+        currentRoomId = newRoomId;
+        _statusText = 'Waiting for a stranger...';
+      });
+
+      _roomSubscription = supabase.channel('room_$newRoomId').onPostgresChanges(
+          event: PostgresChangeEvent.update,
+          schema: 'public',
+          table: 'rooms',
+          filter: PostgresChangeFilter(type: PostgresChangeFilterType.eq, column: 'id', value: newRoomId),
+          callback: (payload) {
+            final status = payload.newRecord['status'];
+            final u2 = payload.newRecord['user2_id'];
+            if (status == 'active' && u2 != null) {
+              _roomSubscription?.unsubscribe();
+              setState(() {
+                remoteUserId = u2.toString();
+                _statusText = 'Stranger joined!';
+              });
+            }
+          }).subscribe();
+    } catch (e) {
+      debugPrint('Matching Error: $e');
+      setState(() => _statusText = 'Connection error. Retrying...');
       _matchingLoopTimer = Timer(const Duration(seconds: 5), () => findRoom());
-      return;
     }
-
-    candidates.shuffle();
-    String matchUserId = candidates.first;
-
-    debugPrint('PeerJS: Attempting to call: $matchUserId');
-    _triedUserIds.add(matchUserId);
-
-    setState(() {
-      remoteUserId = matchUserId;
-      _statusText = 'Calling...';
-    });
-
-    webViewController?.evaluateJavascript(source: 'callPeer("$matchUserId")');
-    _startConnectionTimeout();
   }
 
   void _startConnectionTimeout() {
@@ -281,14 +275,28 @@ class _WebRTCCallScreenState extends State<WebRTCCallScreen> {
   }
 
   void nextStranger() {
-    _connectionTimeoutTimer?.cancel();
+    _cleanupRoom();
     webViewController?.evaluateJavascript(source: 'endCall()');
     findRoom();
   }
 
   void disconnectCall() {
+    _cleanupRoom();
     webViewController?.evaluateJavascript(source: 'endCall()');
     Navigator.pop(context);
+  }
+
+  Future<void> _cleanupRoom() async {
+    _connectionTimeoutTimer?.cancel();
+    _roomSubscription?.unsubscribe();
+    if (currentRoomId != null) {
+      try {
+        await supabase.from('rooms').delete().eq('id', currentRoomId!);
+      } catch (e) {
+        debugPrint('Cleanup error: $e');
+      }
+      currentRoomId = null;
+    }
   }
 
   void sendMessage() {
@@ -322,8 +330,7 @@ class _WebRTCCallScreenState extends State<WebRTCCallScreen> {
 
   @override
   void dispose() {
-    _matchingLoopTimer?.cancel();
-    _connectionTimeoutTimer?.cancel();
+    _cleanupRoom();
     messageController.dispose();
     scrollController.dispose();
     messageFocusNode.dispose();
