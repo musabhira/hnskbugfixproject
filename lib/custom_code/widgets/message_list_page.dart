@@ -15,6 +15,7 @@ class MessageListPage extends StatefulWidget {
 class _MessageListPageState extends State<MessageListPage> {
   final _supabase = SupaFlow.client;
   late String _currentUserId;
+  String? _currentUserName;
   List<Map<String, dynamic>> _conversations = [];
   bool _isLoading = true;
   Timer? _refreshTimer;
@@ -22,7 +23,7 @@ class _MessageListPageState extends State<MessageListPage> {
   @override
   void initState() {
     super.initState();
-    _currentUserId = _supabase.auth.currentUser!.id;
+    _currentUserId = _supabase.auth.currentUser?.id ?? '';
     _loadConversations();
     _setupAutoRefresh();
   }
@@ -35,11 +36,22 @@ class _MessageListPageState extends State<MessageListPage> {
 
   Future<void> _loadConversations() async {
     try {
+      final user = _supabase.auth.currentUser;
+      if (user == null) return;
+
+      // Get current user's name
+      final profileResponse = await _supabase
+          .from('profile')
+          .select('name')
+          .eq('user_id', user.id)
+          .single();
+      _currentUserName = profileResponse['name'];
+
       // First get conversations
       final conversationsResponse = await _supabase
           .from('conversations')
           .select('*')
-          .or('user1_id.eq.$_currentUserId,user2_id.eq.$_currentUserId')
+          .or('user1_id.eq.${user.id},user2_id.eq.${user.id}')
           .order('updated_at', ascending: false);
 
       // Get user IDs from conversations
@@ -214,11 +226,9 @@ class _MessageListPageState extends State<MessageListPage> {
                     final conversation = _conversations[index];
                     final otherUser = _getOtherUser(conversation);
                     final isUnread = (conversation['unread_count'] ?? 0) > 0;
-                    final lastMessageTime = conversation['last_message_time'] !=
-                            null
-                        ? timeago.format(
-                            DateTime.parse(conversation['last_message_time']))
-                        : '';
+                    final subtitle = conversation['last_message'] ?? '';
+                    final hasMention = _currentUserName != null && 
+                                       subtitle.contains('@$_currentUserName');
 
                     return Dismissible(
                       key: Key(conversation['id']),
@@ -275,7 +285,7 @@ class _MessageListPageState extends State<MessageListPage> {
                           color: Colors.black,
                           border: Border(
                             bottom: BorderSide(
-                              color: Colors.white.withValues(alpha: 0.05),
+                              color: Colors.white.withOpacity(0.05),
                               width: 1,
                             ),
                           ),
@@ -309,26 +319,49 @@ class _MessageListPageState extends State<MessageListPage> {
                                   isUnread ? FontWeight.bold : FontWeight.w500,
                             ),
                           ),
-                          subtitle: Text(
-                            conversation['last_message'] ?? 'No messages yet',
-                            style: TextStyle(
-                              color: isUnread
-                                  ? Colors.white70
-                                  : Colors.grey.shade500,
-                              fontSize: 14,
-                              fontWeight: isUnread
-                                  ? FontWeight.w500
-                                  : FontWeight.normal,
+                          subtitle: Row(
+                          children: [
+                            if (hasMention) ...[
+                              Container(
+                                padding: const EdgeInsets.all(2),
+                                margin: const EdgeInsets.only(right: 4),
+                                decoration: const BoxDecoration(
+                                  color: Colors.green,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.alternate_email,
+                                  size: 10,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                            Expanded(
+                              child: Text(
+                                subtitle.isEmpty ? 'No messages yet' : subtitle,
+                                style: TextStyle(
+                                  color: isUnread
+                                      ? Colors.white70
+                                      : Colors.grey.shade500,
+                                  fontSize: 14,
+                                  fontWeight: isUnread
+                                      ? FontWeight.w500
+                                      : FontWeight.normal,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          trailing: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
+                          ],
+                        ),
+                        trailing: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            if (conversation['last_message_time'] != null)
                               Text(
-                                lastMessageTime,
+                                timeago.format(DateTime.parse(
+                                    conversation['last_message_time'])),
                                 style: TextStyle(
                                   color: isUnread
                                       ? Colors.yellow
@@ -339,33 +372,33 @@ class _MessageListPageState extends State<MessageListPage> {
                                       : FontWeight.normal,
                                 ),
                               ),
-                              if (isUnread) ...[
-                                const SizedBox(height: 4),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 6, vertical: 2),
-                                  decoration: BoxDecoration(
-                                    color: Colors.yellow,
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: Text(
-                                    '${conversation['unread_count']}',
-                                    style: const TextStyle(
-                                      color: Colors.black,
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                            if (isUnread) ...[
+                              const SizedBox(height: 4),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: Colors.yellow,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Text(
+                                  '${conversation['unread_count']}',
+                                  style: const TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                              ],
+                              ),
                             ],
-                          ),
-                          onTap: () => _navigateToMessageScreen(otherUser),
+                          ],
                         ),
+                        onTap: () => _navigateToMessageScreen(otherUser),
                       ),
-                    );
-                  },
-                ),
+                    ),
+                  );
+                },
+              ),
     );
   }
 }

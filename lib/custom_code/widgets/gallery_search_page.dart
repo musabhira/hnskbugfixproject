@@ -14,6 +14,8 @@ import 'package:pocket_mates_app/flutter_flow/flutter_flow_theme.dart';
 import 'package:pocket_mates_app/flutter_flow/flutter_flow_util.dart';
 import 'package:fluent_ui/fluent_ui.dart' as fluent;
 
+import 'package:pocket_mates_app/auth/auth_helper.dart';
+
 class GalleryDetailsPage extends StatefulWidget {
   final Map<String, dynamic> item;
   final List<Map<String, dynamic>> allItems;
@@ -741,6 +743,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
   }
 
   Future<void> _shareToGroup(String groupId, String groupName) async {
+    if (!AuthHelper.checkLoggedIn(context)) return;
     try {
       // Show loading
       showDialog(
@@ -1060,14 +1063,8 @@ class BuildDetailContentState extends State<BuildDetailContent> {
 
   Future<void> _toggleLike() async {
     try {
-      final currentUserId = _supabase.auth.currentUser?.id;
-
-      if (currentUserId == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please log in to like items')),
-        );
-        return;
-      }
+      if (!AuthHelper.checkLoggedIn(context)) return;
+      final currentUserId = _supabase.auth.currentUser!.id;
 
       // Store previous values for rollback if needed
       final previousIsLiked = _isLiked;
@@ -1107,7 +1104,8 @@ class BuildDetailContentState extends State<BuildDetailContent> {
   }
 
   Future<void> _addComment() async {
-    if (_commentController.text.trim().isEmpty) return;
+    if (!AuthHelper.checkLoggedIn(context)) return;
+    if (_commentController.text.isEmpty) return;
 
     try {
       final userId = _supabase.auth.currentUser?.id;

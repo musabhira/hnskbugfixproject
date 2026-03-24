@@ -1043,6 +1043,28 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                                     ],
                                   ),
                                 ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 24.0),
+                                  child: FFButtonWidget(
+                                    onPressed: () => context.goNamed(
+                                        HomePageWidget.routeName),
+                                    text: 'Continue as Guest',
+                                    options: FFButtonOptions(
+                                      width: 230.0,
+                                      height: 44.0,
+                                      color: Colors.transparent,
+                                      textStyle: GoogleFonts.inter(
+                                        color: Colors.yellow,
+                                        fontWeight: FontWeight.w600,
+                                        decoration: TextDecoration.underline,
+                                      ),
+                                      borderSide: BorderSide.none,
+                                      elevation: 0.0,
+                                      borderRadius: BorderRadius.circular(12.0),
+                                    ),
+                                  ),
+                                ),
                               ],
                             ),
                           ),

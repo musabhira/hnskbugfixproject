@@ -13,14 +13,18 @@ import 'voice_recorder.dart';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
+import 'dart:typed_data';
 import 'package:flutter/foundation.dart' hide Category;
 import 'package:flutter/services.dart';
+import 'package:image/image.dart' as img;
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:video_compress/video_compress.dart';
 import 'package:video_player/video_player.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:url_launcher/url_launcher.dart';
 // import '../webrtc_call_screen.dart';
 import '../image_viewer.dart';
 import 'package:pocket_mates_app/custom_code/widgets/gallery_search_page.dart';
@@ -34,6 +38,8 @@ import 'package:pocket_mates_app/custom_code/widgets/nearby_users_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chess_game_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/teams/user_search_dialog.dart';
 import 'package:pocket_mates_app/custom_code/widgets/teams/teams_service.dart';
+
+import 'package:pocket_mates_app/auth/auth_helper.dart';
 
 class WhatsAppGroupChat extends ConsumerStatefulWidget {
   final double? width;
@@ -71,6 +77,8 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   bool _showEmojiPicker = false;
   Map<String, dynamic>? _replyMessage;
   bool _showScrollToBottom = false;
+  List<Map<String, dynamic>> _filteredMembers = [];
+  bool _showMentionSuggestions = false;
 
   // UI related methods
   void safeSetState(VoidCallback fn) {
@@ -110,6 +118,32 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   }
 
   void _onMessageChanged() {
+    final text = _messageController.text;
+    final selection = _messageController.selection;
+    
+    if (selection.baseOffset > 0) {
+      final lastAtPos = text.lastIndexOf('@', selection.baseOffset - 1);
+      if (lastAtPos != -1) {
+        final query = text.substring(lastAtPos + 1, selection.baseOffset);
+        if (!query.contains(' ')) {
+          safeSetState(() {
+            _mentionQuery = query;
+            _filteredMembers = _groupMembers.where((m) {
+              final name = m['profile']?['name']?.toString().toLowerCase() ?? '';
+              return name.contains(query.toLowerCase());
+            }).toList();
+            _showMentionSuggestions = _filteredMembers.isNotEmpty;
+          });
+        } else {
+          safeSetState(() => _showMentionSuggestions = false);
+        }
+      } else {
+        safeSetState(() => _showMentionSuggestions = false);
+      }
+    } else {
+      safeSetState(() => _showMentionSuggestions = false);
+    }
+    
     // Force rebuild to swap send/mic buttons
     if (mounted) setState(() {});
   }
@@ -528,6 +562,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                   _stagedDocumentPath != null ||
                   _stagedAudioPath != null)
                 _buildStagedPreview(),
+              if (_showMentionSuggestions) _buildMentionSuggestions(),
               _buildInputArea(),
               if (_showEmojiPicker) _buildEmojiPicker(),
             ],
@@ -606,10 +641,25 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
         ? radius.copyWith(topRight: Radius.zero)
         : radius.copyWith(topLeft: Radius.zero);
 
-    return Row(
-      mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
+    return GestureDetector(
+      onHorizontalDragUpdate: (details) {
+        if (details.primaryDelta! > 10) {
+          // Swipe right to reply
+          safeSetState(() {
+            _replyMessage = {
+              'id': message.id,
+              'message_text': message.messageText,
+              'sender_id': message.senderId,
+              'sender_name': message.senderName,
+            };
+          });
+          HapticFeedback.lightImpact();
+        }
+      },
+      child: Row(
+        mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
         if (!isMe)
           GestureDetector(
             onTap: () {
@@ -850,8 +900,9 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
           ),
         ),
       ],
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildStatusMentionMessage(ChatMessage message, bool isMe) {
     final metadata = message.metadata ?? {};
@@ -1393,11 +1444,12 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
       onTap: () {
         // Implement downloading or opening the document using url_launcher or similar
         // For now, simple snackbar to open document URL
-        _showSnackBar('Opening document...');
         try {
-          // ignore: deprecated_member_use
-          // launch(url);
-        } catch (_) {}
+          final uri = Uri.parse(url);
+          launchUrl(uri, mode: LaunchMode.externalApplication);
+        } catch (e) {
+          _showErrorSnackBar('Could not open document: $e');
+        }
       },
       child: Container(
         width: 220,
@@ -1751,7 +1803,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                     if (_messageController.text.isEmpty)
                       IconButton(
                         icon: const Icon(Icons.camera_alt, color: Colors.white70),
-                        onPressed: () => _pickAndUploadImage(ImageSource.camera),
+                        onPressed: () => _handleCameraAction(),
                       ),
                   ],
                 ],
@@ -1975,44 +2027,83 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   }
 
   Future<void> _handleSendAction() async {
+    if (!AuthHelper.checkLoggedIn(context)) return;
     final text = _messageController.text;
+    final mentions = _extractMentions(text);
+    final metadata = mentions.isNotEmpty ? {'mentions': mentions} : null;
 
     if (_stagedGalleryId != null) {
+      final galleryMetadata = {
+        'title': _stagedGalleryTitle,
+        'image_url': _stagedGalleryImage,
+        if (mentions.isNotEmpty) 'mentions': mentions,
+      };
       await _sendMessage(
           text: text,
           messageType: 'gallery',
           galleryId: _stagedGalleryId,
-          metadata: {
-            'title': _stagedGalleryTitle,
-            'image_url': _stagedGalleryImage
-          });
+          metadata: galleryMetadata);
     } else if (_stagedThoughtId != null) {
       await _sendMessage(
-          text: text, messageType: 'thought', thoughtId: _stagedThoughtId);
+          text: text, 
+          messageType: 'thought', 
+          thoughtId: _stagedThoughtId,
+          metadata: metadata);
     } else if (_stagedTool != null) {
+      final toolMetadata = Map<String, dynamic>.from(_stagedTool!);
+      if (mentions.isNotEmpty) toolMetadata['mentions'] = mentions;
       await _sendMessage(
-          text: text, messageType: 'tool', metadata: _stagedTool);
+          text: text, messageType: 'tool', metadata: toolMetadata);
     } else if (_stagedVideoPath != null) {
-      await _uploadStagedVideo(text);
+      await _uploadStagedVideo(text); // This also needs to handle metadata if we want
     } else if (_stagedDocumentPath != null) {
       await _uploadStagedFile(text, _stagedDocumentPath!, 'document');
     } else if (_stagedAudioPath != null) {
       await _uploadStagedFile(text, _stagedAudioPath!, 'voice');
     } else {
-      await _sendMessage(text: text);
+      await _sendMessage(text: text, metadata: metadata);
+    }
+  }
+
+  List<String> _extractMentions(String text) {
+    if (widget.groupId.startsWith('p:')) return [];
+    final mentions = <String>[];
+    for (final member in _groupMembers) {
+      final name = member['profile']?['name'];
+      if (name != null && text.contains('@$name')) {
+        mentions.add(member['user_id']);
+      }
+    }
+    return mentions;
+  }
+
+  Future<void> _handleCameraAction() async {
+    final status = await Permission.camera.request();
+    if (status.isGranted) {
+      _pickAndUploadImage(ImageSource.camera);
+    } else if (status.isPermanentlyDenied) {
+      _showErrorSnackBar('Camera access is permanently denied. Please enable it in settings.');
+      openAppSettings();
+    } else {
+      _showErrorSnackBar('Camera access denied. Please allow it to take photos.');
     }
   }
 
   Future<void> _uploadStagedFile(String? caption, String path, String type) async {
     try {
       _showLoadingSnackBar('Sending $type...');
-      final file = File(path);
+      File file = File(path);
+      
+      // Bucket names: voice-messages for audio, chat-media or ephemeral_media for others
+      final String bucket = type == 'voice' ? 'voice-messages' : 'ephemeral_media';
+      
       final extension = path.split('.').last;
       final fileName = '${type}_${DateTime.now().millisecondsSinceEpoch}.$extension';
       final storagePath = 'group_${widget.groupId}/$fileName';
 
-      await _supabase.storage.from('chat-media').upload(storagePath, file);
-      final url = _supabase.storage.from('chat-media').getPublicUrl(storagePath);
+      // Upload
+      await _supabase.storage.from(bucket).upload(storagePath, file);
+      final url = _supabase.storage.from(bucket).getPublicUrl(storagePath);
 
       await _sendMessage(
           text: caption ?? (type == 'document' ? 'Document 📁' : 'Audio 🎵'),
@@ -2026,6 +2117,42 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
       _hideSnackBar();
     } catch (e) {
       _showErrorSnackBar('Error uploading $type: $e');
+    }
+  }
+
+  Future<File?> _compressVideo(String path) async {
+    try {
+      final info = await VideoCompress.compressVideo(
+        path,
+        quality: VideoQuality.MediumQuality,
+        deleteOrigin: false,
+        includeAudio: true,
+      );
+      return info?.file;
+    } catch (e) {
+      debugPrint('Video compression error: $e');
+      return null;
+    }
+  }
+
+  Future<Uint8List?> _compressImage(String path) async {
+    try {
+      // Decode image
+      final bytes = await File(path).readAsBytes();
+      final decodedImage = img.decodeImage(bytes);
+      if (decodedImage == null) return null;
+
+      var finalImage = decodedImage;
+      // Resize if too large
+      if (decodedImage.width > 1200 || decodedImage.height > 1200) {
+        finalImage = img.copyResize(decodedImage, width: 1200);
+      }
+
+      // Encode with compression
+      return Uint8List.fromList(img.encodeJpg(finalImage, quality: 75));
+    } catch (e) {
+      debugPrint('Image compression error: $e');
+      return null;
     }
   }
 
@@ -2057,6 +2184,14 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
 
   Future<void> _pickAndStageVideo() async {
     try {
+      final status = await Permission.videos.request();
+      if (!status.isGranted && !status.isLimited) {
+        final status2 = await Permission.storage.request();
+        if (!status2.isGranted) {
+           // Fallback to picker, some OS handles it
+        }
+      }
+
       final video = await _imagePicker.pickVideo(source: ImageSource.gallery);
       if (video == null) return;
 
@@ -2071,19 +2206,34 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   Future<void> _uploadStagedVideo(String? caption) async {
     if (_stagedVideoPath == null) return;
     try {
-      _showLoadingSnackBar('Sending Video...');
-      final file = File(_stagedVideoPath!);
+      _showLoadingSnackBar('Compressing & Sending Video...');
+      
+      File fileToUpload = File(_stagedVideoPath!);
+      
+      // Video Compression
+      final compressed = await _compressVideo(_stagedVideoPath!);
+      if (compressed != null) {
+        fileToUpload = compressed;
+        debugPrint('Video compressed: ${fileToUpload.lengthSync()} bytes');
+      }
+
       final fileName = 'video_${DateTime.now().millisecondsSinceEpoch}.mp4';
       final storagePath = 'group_${widget.groupId}/$fileName';
 
-      await _supabase.storage.from('chat-media').upload(storagePath, file);
-      final url =
-          _supabase.storage.from('chat-media').getPublicUrl(storagePath);
+      // Using 'ephemeral_media' as it's more reliable than 'chat-media'
+      await _supabase.storage.from('ephemeral_media').upload(storagePath, fileToUpload);
+      final url = _supabase.storage.from('ephemeral_media').getPublicUrl(storagePath);
 
       await _sendMessage(
           text: caption ?? 'Video 📹', messageType: 'video', fileUrl: url);
 
+      safeSetState(() => _stagedVideoPath = null);
       _hideSnackBar();
+      
+      // Cleanup compressed file
+      if (compressed != null) {
+        VideoCompress.deleteAllCache();
+      }
     } catch (e) {
       _showErrorSnackBar('Error uploading video: $e');
     }
@@ -2139,26 +2289,33 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     try {
       final image = await _imagePicker.pickImage(
         source: source,
-        maxWidth: 1024,
-        maxHeight: 1024,
-        imageQuality: 80,
+        maxWidth: 1600,
+        maxHeight: 1600,
+        imageQuality: 75,
       );
       if (image == null) return;
 
-      final bytes = await image.readAsBytes();
+      _showLoadingSnackBar('Sending Image...');
+      
+      // Image Compression
+      final compressedBytes = await _compressImage(image.path);
+      final finalBytes = compressedBytes ?? await image.readAsBytes();
+
       final fileName = 'img_${DateTime.now().millisecondsSinceEpoch}.jpg';
       final path = '$_currentUserId/$fileName';
 
-      await _supabase.storage.from('group-images').uploadBinary(path, bytes);
-      final url = _supabase.storage.from('group-images').getPublicUrl(path);
+      // Using 'ephemeral_media' for better compatibility
+      await _supabase.storage.from('ephemeral_media').uploadBinary(path, finalBytes);
+      final url = _supabase.storage.from('ephemeral_media').getPublicUrl(path);
 
       await _sendMessage(messageType: 'image', fileUrl: url);
       safeSetState(() {
         _showEmojiPicker = false;
       });
+      _hideSnackBar();
     } catch (e) {
       debugPrint('Error picking/uploading image: $e');
-      _showSnackBar('Error: $e', isError: true);
+      _showErrorSnackBar('Error: $e');
     }
   }
 
@@ -2584,6 +2741,17 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     }
   }
 
+  // Helper for safe data extraction from Supabase joins
+  Map<String, dynamic>? _safeGet(dynamic input) {
+    if (input == null) return null;
+    if (input is Map) return Map<String, dynamic>.from(input);
+    if (input is List && input.isNotEmpty) {
+      final first = input.first;
+      if (first is Map) return Map<String, dynamic>.from(first);
+    }
+    return null;
+  }
+
   bool _isAdmin(String userId) {
     return _groupMembers.any((m) =>
         m['user_id'] == userId &&
@@ -2636,6 +2804,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   }
 
   Future<void> _handleVoiceMessage(String path, int duration) async {
+    if (!AuthHelper.checkLoggedIn(context)) return;
     try {
       final file = File(path);
       final fileName = 'voice_${DateTime.now().millisecondsSinceEpoch}.m4a';
@@ -2657,15 +2826,62 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     }
   }
 
-  // Helper for safe data extraction from Supabase joins
-  Map<String, dynamic>? _safeGet(dynamic input) {
-    if (input == null) return null;
-    if (input is Map) return Map<String, dynamic>.from(input);
-    if (input is List && input.isNotEmpty) {
-      final first = input.first;
-      if (first is Map) return Map<String, dynamic>.from(first);
-    }
-    return null;
+  Widget _buildMentionSuggestions() {
+    return Container(
+      constraints: const BoxConstraints(maxHeight: 200),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F2C34),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.yellow.withOpacity(0.3)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.4),
+            blurRadius: 10,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      child: ListView.builder(
+        shrinkWrap: true,
+        itemCount: _filteredMembers.length,
+        itemBuilder: (context, index) {
+          final member = _filteredMembers[index];
+          final profile = member['profile'];
+          return ListTile(
+            leading: CircleAvatar(
+              radius: 16,
+              backgroundImage: profile?['profile_image_url'] != null
+                  ? NetworkImage(profile['profile_image_url'])
+                  : null,
+              child: profile?['profile_image_url'] == null
+                  ? const Icon(Icons.person, size: 16)
+                  : null,
+            ),
+            title: Text(profile?['name'] ?? 'Unknown',
+                style: const TextStyle(color: Colors.white, fontSize: 14)),
+            onTap: () {
+              final text = _messageController.text;
+              final selection = _messageController.selection;
+              final lastAtPos = text.lastIndexOf('@', selection.baseOffset - 1);
+              
+              if (lastAtPos != -1) {
+                final newText = text.replaceRange(
+                  lastAtPos, 
+                  selection.baseOffset, 
+                  '@${profile?['name']} '
+                );
+                _messageController.value = TextEditingValue(
+                  text: newText,
+                  selection: TextSelection.collapsed(offset: lastAtPos + (profile?['name'] as String).length + 2),
+                );
+              }
+              safeSetState(() => _showMentionSuggestions = false);
+            },
+          );
+        },
+      ),
+    );
   }
 }
 
