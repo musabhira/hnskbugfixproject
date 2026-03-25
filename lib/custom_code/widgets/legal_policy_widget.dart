@@ -87,27 +87,29 @@ class PrivacyPolicyPage extends StatelessWidget {
     return const LegalPolicyWidget(
       title: 'Privacy Policy',
       content: '''
-At Pocket Mates, we take your privacy seriously. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our mobile application.
+At Pocket Mates, your privacy is our top priority. This Privacy Policy describes how we collect, use, and protect your information globally.
 
-1. Information We Collect
-We collect information that you provide directly to us, such as when you create an account, update your profile, or communicate with us. This may include your name, email address, phone number, and profile picture.
+1. Information Collection
+• Account Information: We collect your name, email, profile picture, and bio to provide basic social features.
+• Communication Data: For real-time communication (Audio/Video calls via WebRTC), data is transmitted peer-to-peer or via secured relay servers. We do not record or store your private calls.
+• Content Data: We store messages, posts, and media you share in group chats or feeds to ensure they are available to authorized recipients.
+• Device Data: We collect basic device info (OS version, device model) for troubleshooting and notification services.
 
-2. How We Use Your Information
-We use the information we collect to:
-- Provide and maintain our services
-- Personalize your experience
-- Communicate with you about updates and promotions
-- Monitor and analyze usage and trends
-- Protect the security and integrity of our platform
+2. Usage of Information
+• Service Delivery: To enable chatting, calls, and networking features.
+• Safety & Security: To monitor for fraudulent activity and enforce our community standards.
+• Notifications: To alert you of new messages or call requests.
 
-3. Sharing of Information
-We do not sell your personal information to third parties. We may share information with service providers who perform services for us, or when required by law.
+3. Data Sharing
+We do not sell your data. We share only necessary information with:
+• Supabase: Our core database and authentication provider.
+• Firebase: For push notification services.
 
-4. Data Security
-We implement reasonable security measures to protect your information. However, no method of transmission over the internet is 100% secure.
+4. User Rights & Data Deletion
+You have the right to access, correct, or delete your data at any time. You can use the "Delete Account" feature in the app settings to permanently remove your profile and all associated personal data from our active systems.
 
-5. Your Choices
-You can update your account information at any time through the app settings. You can also request to delete your account, which will permanently remove your data from our systems.
+5. Content Moderation
+We implement automated and manual reporting systems. Users can report any content or profile that violates our guidelines.
 ''',
     );
   }
@@ -121,22 +123,27 @@ class TermsOfServicePage extends StatelessWidget {
     return const LegalPolicyWidget(
       title: 'Terms of Service',
       content: '''
-Welcome to Pocket Mates! By using our application, you agree to these Terms of Service.
+Welcome to Pocket Mates! By using our platform, you agree to the following terms.
 
-1. Acceptance of Terms
-By accessing or using our services, you agree to be bound by these terms. If you do not agree, please do not use the app.
+1. User Conduct & Content (UGC)
+Pocket Mates is a community-driven app. You are solely responsible for the content you post. 
+• Zero Tolerance: There is NO tolerance for objectionable content or abusive users. This includes, but is not limited to, harassment, hate speech, explicit adult content, and illegal activities.
+• Reporting: Users can report any objectionable content using the "Report" button.
+• Blocking: Users can block any other user instantly. Blocked users will not be able to interact with you.
 
-2. User Content
-You are responsible for any content you post on Pocket Mates. You must not post content that is illegal, offensive, or violates the rights of others.
+2. Moderation & Enforcement
+We reserve the right to:
+• Review and remove any content reported by the community.
+• Suspend or permanently terminate accounts that violate these terms, without prior notice.
 
-3. Prohibited Activities
-You agree not to engage in any activity that interferes with or disrupts the operation of our services.
+3. Call & Messaging Services
+Our real-time communication tools (WebRTC) are provided as-is. You agree not to use these tools for unsolicited marketing or harassment.
 
-4. Termination
-We reserve the right to suspend or terminate your account at our discretion, without notice, for conduct that violates these terms.
+4. Intellectual Property
+You retain ownership of the content you post, but you grant Pocket Mates a non-exclusive license to host and display it within the app structure.
 
 5. Limitation of Liability
-Pocket Mates is provided "as is" without warranties of any kind. We are not liable for any direct or indirect damages arising from your use of the app.
+Pocket Mates is not liable for damages resulting from user interactions or content posted by third parties.
 ''',
     );
   }
@@ -150,19 +157,22 @@ class TermsAndConditionsPage extends StatelessWidget {
     return const LegalPolicyWidget(
       title: 'Terms & Conditions',
       content: '''
-These Terms & Conditions govern your use of the Pocket Mates platform.
+These Terms govern your legal relationship with Pocket Mates.
 
-1. License to Use
-We grant you a personal, non-exclusive license to use the app for personal, non-commercial purposes.
+1. Eligibility
+You must be at least 13 years old (or the legal minimum age in your country) to use this service.
 
-2. Intellectual Property
-All content and materials on Pocket Mates are the property of Pocket Mates or its licensors and are protected by intellectual property laws.
+2. Account Security
+You are responsible for maintaining the confidentiality of your account credentials.
 
-3. Privacy
-Your use of the app is also governed by our Privacy Policy.
+3. Updates to Service
+We may update the app and these terms occasionally. Your continued use after an update signifies your acceptance of the new terms.
 
-4. Changes to Terms
-We may update these terms from time to time. Your continued use of the app after changes are posted constitutes acceptance of the new terms.
+4. Dispute Resolution
+Any legal disputes will be governed by the laws of the jurisdiction where the company is registered.
+
+5. Termination
+Violating our community safety guidelines (UGC policy) is grounds for immediate account termination.
 ''',
     );
   }

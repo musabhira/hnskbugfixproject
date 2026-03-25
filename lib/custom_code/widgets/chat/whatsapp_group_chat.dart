@@ -7,6 +7,7 @@ import 'chat_provider.dart';
 import 'chat_models.dart';
 import 'voice_player.dart';
 import 'voice_recorder.dart';
+import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
 
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
@@ -419,6 +420,14 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
               if (value == 'refresh') _handleRefresh();
               if (value == 'info') _showGroupInfo();
               if (value == 'leave') _showLeaveGroupDialog();
+              if (value == 'report') {
+                ReportHelper.showReportDialog(
+                  context: context,
+                  contentType: 'user',
+                  contentId: widget.groupId.startsWith('p:') ? widget.groupId.substring(2) : widget.groupId,
+                  contentTitle: widget.groupName,
+                );
+              }
             },
             itemBuilder: (context) {
               final isPersonalChat = widget.groupId.startsWith('p:');
@@ -437,11 +446,16 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                     value: 'leave',
                     child: Text('Leave Group', style: TextStyle(color: Colors.red)),
                   ),
-                if (isPersonalChat)
+                if (isPersonalChat) ...[
                   const PopupMenuItem(
-                    value: 'refresh', // Temporary to avoid error if missing clear_chat action
+                    value: 'refresh',
                     child: Text('Clear Chat', style: TextStyle(color: Colors.red)),
                   ),
+                  const PopupMenuItem(
+                    value: 'report',
+                    child: Text('Report User', style: TextStyle(color: Colors.orange)),
+                  ),
+                ],
               ];
             },
           ),
@@ -709,6 +723,25 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
               constraints: const BoxConstraints(),
               splashRadius: 16,
               tooltip: 'Delete message',
+            ),
+          ),
+        if (!isMe)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 2, left: 4),
+            child: IconButton(
+              icon: const Icon(Icons.flag_outlined, size: 16, color: Colors.orange),
+              onPressed: () {
+                ReportHelper.showReportDialog(
+                  context: context,
+                  contentType: 'message',
+                  contentId: message.id,
+                  contentTitle: message.messageText ?? 'Media Message',
+                );
+              },
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              splashRadius: 16,
+              tooltip: 'Report message',
             ),
           ),
         Flexible(
