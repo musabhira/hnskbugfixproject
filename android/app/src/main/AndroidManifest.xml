@@ -14,7 +14,7 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <application
-        android:label="Handskill Friends"
+        android:label="Handskill : PocketMates"
         tools:replace="android:label"
         android:icon="@mipmap/launcher_icon"
         android:requestLegacyExternalStorage="true">
