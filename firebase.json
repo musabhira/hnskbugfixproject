@@ -20,6 +20,10 @@
         "destination": "/support-help.html"
       },
       {
+        "source": "/safety-standards.html",
+        "destination": "/safety-standards.html"
+      },
+      {
         "source": "**",
         "destination": "/index.html"
       }
