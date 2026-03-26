@@ -858,3 +858,11 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
     );
   }
 }
+
+/*
+[KEY.PROPERTIES BACKUP - SECURE STORAGE]
+storePassword=pocket123
+keyPassword=pocket123
+keyAlias=upload
+storeFile=upload-keystore.jks
+*/
