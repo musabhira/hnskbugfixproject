@@ -17,6 +17,21 @@ class AppUpdatesRow extends SupabaseDataRow {
   int get id => getField<int>('id')!;
   set id(int value) => setField<int>('id', value);
 
+  String? get androidVersion => getField<String>('android_version');
+  set androidVersion(String? value) => setField<String>('android_version', value);
+
+  String? get iosVersion => getField<String>('ios_version');
+  set iosVersion(String? value) => setField<String>('ios_version', value);
+
+  bool? get androidActive => getField<bool>('android_active');
+  set androidActive(bool? value) => setField<bool>('android_active', value);
+
+  bool? get iosActive => getField<bool>('ios_active');
+  set iosActive(bool? value) => setField<bool>('ios_active', value);
+
+  bool? get isMandatory => getField<bool>('is_mandatory');
+  set isMandatory(bool? value) => setField<bool>('is_mandatory', value);
+
   String get version => getField<String>('version')!;
   set version(String value) => setField<String>('version', value);
 

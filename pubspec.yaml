@@ -126,6 +126,7 @@ dependencies:
   hive_flutter: ^1.1.0
   flutter_chess_board: ^1.0.1
   file_picker: ^10.3.10
+  package_info_plus: ^9.0.0
 
 dependency_overrides:
   http: 1.4.0

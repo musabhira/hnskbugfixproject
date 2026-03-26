@@ -39,6 +39,10 @@ import 'package:pocket_mates_app/custom_code/widgets/status_display_widget.dart'
 import 'package:pocket_mates_app/custom_code/widgets/drawing_academy_home_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/thoughts_feed_section.dart';
 import 'package:pocket_mates_app/custom_code/widgets/teams/team_detail_page.dart';
+import 'dart:io' as io;
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'dart:math' as math;
 
 // Aliases for WhatsApp Groups Provider to avoid naming conflicts
 typedef ChatConversation = groups_provider.ChatConversation;
@@ -101,6 +105,11 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     _loadCachedData();
     _loadAllUserData();
     _searchController.addListener(_onSearchChanged);
+    
+    // Add post frame callback to check for updates after initial render
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkAppUpdate();
+    });
   }
 
   void _onSearchChanged() {
@@ -311,6 +320,228 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       return '${(count / 1000).toStringAsFixed(1).replaceAll('.0', '')}k';
     }
     return count.toString();
+  }
+
+  Future<void> _checkAppUpdate() async {
+    try {
+      final packageInfo = await PackageInfo.fromPlatform();
+      final currentVersion = packageInfo.version;
+
+      final updateData = await supabase
+          .from('app_updates')
+          .select('*')
+          .eq('id', 1)
+          .maybeSingle();
+
+      if (updateData == null) return;
+
+      final bool isAndroid = io.Platform.isAndroid;
+      final bool isIOS = io.Platform.isIOS;
+      
+      final String? storeVersion = isAndroid 
+          ? updateData['android_version'] 
+          : (isIOS ? updateData['ios_version'] : null);
+      
+      final bool isActive = isAndroid 
+          ? (updateData['android_active'] ?? false) 
+          : (isIOS ? (updateData['ios_active'] ?? false) : false);
+          
+      final String? storeLink = isAndroid 
+          ? updateData['android_link'] 
+          : (isIOS ? updateData['ios_link'] : null);
+
+      if (storeVersion != null && isActive) {
+        if (_shouldUpdate(currentVersion, storeVersion)) {
+          _showUpdateDialog(updateData, storeLink, storeVersion);
+        }
+      }
+    } catch (e) {
+      debugPrint('Error checking for updates: $e');
+    }
+  }
+
+  bool _shouldUpdate(String current, String store) {
+    try {
+      final currentParts = current.split('.');
+      final storeParts = store.split('.');
+      for (var i = 0; i < math.min(currentParts.length, storeParts.length); i++) {
+        final currentPart = int.parse(currentParts[i]);
+        final storePart = int.parse(storeParts[i]);
+        if (storePart > currentPart) return true;
+        if (storePart < currentPart) return false;
+      }
+      return storeParts.length > currentParts.length;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  void _showUpdateDialog(Map<String, dynamic> updateData, String? appStoreLink, String storeVersion) {
+    final title = updateData['title'] ?? 'New Update Available';
+    final description = updateData['description'] ?? 'A new version with exciting features is available now.';
+    final features = List<String>.from(updateData['features'] ?? []);
+    final isMandatory = updateData['is_mandatory'] ?? false;
+
+    showDialog(
+      context: context,
+      barrierDismissible: !isMandatory,
+      builder: (context) => material.BackdropFilter(
+        filter: material.ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+        child: material.Dialog(
+          backgroundColor: material.Colors.transparent,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 400),
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1E293B),
+              borderRadius: BorderRadius.circular(28),
+              border: Border.all(color: material.Colors.yellow.withOpacity(0.2), width: 1.5),
+              boxShadow: [
+                BoxShadow(
+                  color: material.Colors.yellow.withOpacity(0.1),
+                  blurRadius: 40,
+                  offset: const Offset(0, 10),
+                )
+              ],
+            ),
+            child: material.Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: material.Colors.yellow.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Icon(Icons.system_update_rounded, color: material.Colors.yellow, size: 28),
+                    ),
+                    const Spacer(),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: material.Colors.yellow,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        'v$storeVersion',
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  title,
+                  style: GoogleFonts.outfit(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: material.Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  description,
+                  style: TextStyle(
+                    color: material.Colors.white.withOpacity(0.7),
+                    height: 1.5,
+                    fontSize: 15,
+                  ),
+                ),
+                if (features.isNotEmpty) ...[
+                  const SizedBox(height: 20),
+                  const Text(
+                    "What's New:",
+                    style: TextStyle(
+                      color: material.Colors.yellow,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    maxHeight: 180,
+                    child: material.ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: features.length,
+                      itemBuilder: (context, i) => Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text("•", style: TextStyle(color: material.Colors.yellow)),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                features[i],
+                                style: TextStyle(color: material.Colors.white.withOpacity(0.8), fontSize: 13),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 32),
+                Row(
+                  children: [
+                    if (!isMandatory)
+                      Expanded(
+                        child: TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                          ),
+                          child: Text(
+                            'Later',
+                            style: TextStyle(color: material.Colors.white.withOpacity(0.5)),
+                          ),
+                        ),
+                      ),
+                    if (!isMandatory) const SizedBox(width: 12),
+                    Expanded(
+                      flex: 2,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: material.Colors.yellow,
+                          foregroundColor: material.Colors.black,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        onPressed: () async {
+                          if (appStoreLink != null) {
+                            final url = Uri.parse(appStoreLink);
+                            if (await canLaunchUrl(url)) {
+                              await launchUrl(url, mode: LaunchMode.externalApplication);
+                            }
+                          }
+                          if (!isMandatory) Navigator.pop(context);
+                        },
+                        child: const Text(
+                          'Update Now',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   void _handleSettings() {

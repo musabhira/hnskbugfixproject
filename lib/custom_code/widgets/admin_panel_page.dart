@@ -36,10 +36,14 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
   bool isLoadingAuth = false;
   List<Map<String, dynamic>> allUsers = [];
 
+  // App Update State
+  Map<String, dynamic>? appUpdateData;
+  bool isLoadingUpdate = false;
+
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 5, vsync: this);
+    _tabController = TabController(length: 6, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _showPasswordDialog();
     });
@@ -124,6 +128,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
       _loadPendingAccess(),
       _loadReports(),
       _loadUsersAuth(),
+      _loadAppUpdateData(),
     ]);
   }
 
@@ -357,6 +362,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
           controller: _tabController,
           labelColor: Colors.amber,
           unselectedLabelColor: Colors.grey,
+          isScrollable: true,
           indicatorColor: Colors.amber,
           indicatorWeight: 3,
           tabs: const [
@@ -365,6 +371,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
             Tab(icon: Icon(Icons.school_outlined), text: 'Requests'),
             Tab(icon: Icon(Icons.report_problem_outlined), text: 'Reports'),
             Tab(icon: Icon(Icons.security_outlined), text: 'Auth'),
+            Tab(icon: Icon(Icons.system_update_outlined), text: 'Update'),
           ],
         ),
       ),
@@ -376,6 +383,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
           _buildRequestsTab(),
           _buildReportsTab(),
           _buildAuthTab(),
+          _buildUpdateTab(),
         ],
       ),
     );
@@ -856,6 +864,209 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
         ),
       ],
     );
+  }
+
+  Widget _buildUpdateTab() {
+    if (isLoadingUpdate) return const Center(child: CircularProgressIndicator());
+    if (appUpdateData == null) {
+      return Center(
+        child: material.Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, size: 64, color: Colors.red),
+            const SizedBox(height: 16),
+            const Text('Failed to load update metadata', style: TextStyle(color: Colors.white)),
+            TextButton(onPressed: _loadAppUpdateData, child: const Text('Retry')),
+          ],
+        ),
+      );
+    }
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
+      child: material.Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Platform Versioning', 
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+          const SizedBox(height: 20),
+          
+          _buildUpdateControlCard(
+            'Android Deployment',
+            Icons.android,
+            Colors.green,
+            'android_version',
+            'android_active',
+            appUpdateData!['android_link'] ?? '',
+          ),
+          
+          const SizedBox(height: 20),
+          
+          _buildUpdateControlCard(
+            'iOS Deployment',
+            Icons.apple,
+            Colors.white,
+            'ios_version',
+            'ios_active',
+            appUpdateData!['ios_link'] ?? '',
+          ),
+          
+          const SizedBox(height: 30),
+          
+          const Text('Global Update Details', 
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+          const SizedBox(height: 15),
+          
+          _buildTextField('Update Title', 'title'),
+          const SizedBox(height: 15),
+          _buildTextField('Description', 'description', maxLines: 3),
+          const SizedBox(height: 15),
+          
+          Row(
+            children: [
+              const Text('Mandatory Update', style: TextStyle(color: Colors.white)),
+              const Spacer(),
+              Switch(
+                value: appUpdateData!['is_mandatory'] ?? false,
+                onChanged: (v) => setState(() => appUpdateData!['is_mandatory'] = v),
+                activeColor: Colors.red,
+              ),
+            ],
+          ),
+          
+          const SizedBox(height: 40),
+          
+          SizedBox(
+            width: double.infinity,
+            height: 50,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.amber,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              onPressed: _updateAppVersion,
+              child: const Text('Push Global Update Configuration', 
+                style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+            ),
+          ),
+          const SizedBox(height: 40),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildUpdateControlCard(String title, IconData icon, Color iconColor, String versionKey, String activeKey, String link) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey[900],
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white10),
+      ),
+      child: material.Column(
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: iconColor, size: 24),
+              const SizedBox(width: 12),
+              Text(title, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+              const Spacer(),
+              const Text('Active', style: TextStyle(color: Colors.grey, fontSize: 12)),
+              Switch(
+                value: appUpdateData![activeKey] ?? false,
+                onChanged: (v) => setState(() => appUpdateData![activeKey] = v),
+                activeColor: Colors.blue,
+              ),
+            ],
+          ),
+          const Divider(color: Colors.white10, height: 24),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: TextEditingController(text: appUpdateData![versionKey]?.toString() ?? '1.0.0'),
+                  style: const TextStyle(color: Colors.white),
+                  decoration: const InputDecoration(
+                    labelText: 'Store Version',
+                    labelStyle: TextStyle(color: Colors.grey),
+                    border: InputBorder.none,
+                  ),
+                  onChanged: (v) => appUpdateData![versionKey] = v,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.blue.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Text('Live', style: TextStyle(color: Colors.blue, fontSize: 10, fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTextField(String label, String key, {int maxLines = 1}) {
+    return TextField(
+      controller: TextEditingController(text: appUpdateData![key]?.toString() ?? ''),
+      maxLines: maxLines,
+      style: const TextStyle(color: Colors.white),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(color: Colors.grey),
+        filled: true,
+        fillColor: Colors.grey[900],
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+      ),
+      onChanged: (v) => appUpdateData![key] = v,
+    );
+  }
+
+  Future<void> _loadAppUpdateData() async {
+    setState(() => isLoadingUpdate = true);
+    try {
+      final res = await supabase.from('app_updates').select('*').eq('id', 1).maybeSingle();
+      if (mounted) {
+        setState(() {
+          appUpdateData = res;
+          isLoadingUpdate = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading app update data: $e');
+      if (mounted) setState(() => isLoadingUpdate = false);
+    }
+  }
+
+  Future<void> _updateAppVersion() async {
+    if (appUpdateData == null) return;
+    setState(() => isLoadingUpdate = true);
+    try {
+      await supabase.from('app_updates').update({
+        'android_version': appUpdateData!['android_version'],
+        'ios_version': appUpdateData!['ios_version'],
+        'android_active': appUpdateData!['android_active'],
+        'ios_active': appUpdateData!['ios_active'],
+        'is_mandatory': appUpdateData!['is_mandatory'],
+        'title': appUpdateData!['title'],
+        'description': appUpdateData!['description'],
+        'features': appUpdateData!['features'],
+      }).eq('id', 1);
+      
+      _loadAppUpdateData();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('App configuration updated successfully!'), backgroundColor: Colors.green),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error updating app config: $e'), backgroundColor: Colors.red),
+      );
+      if (mounted) setState(() => isLoadingUpdate = false);
+    }
   }
 }
 
