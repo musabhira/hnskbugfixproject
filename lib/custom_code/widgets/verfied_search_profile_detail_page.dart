@@ -38,6 +38,9 @@ class VerfiedSearchProfileDetailPage extends StatefulWidget {
 class _VerfiedSearchProfileDetailPageState
     extends State<VerfiedSearchProfileDetailPage>
     with SingleTickerProviderStateMixin {
+  void safeSetState(VoidCallback fn) {
+    if (mounted) setState(fn);
+  }
   Map<String, dynamic>? _profileData;
   List<Map<String, dynamic>> _galleryItems = [];
   List<Map<String, dynamic>> _serviceItems = [];
@@ -177,7 +180,7 @@ class _VerfiedSearchProfileDetailPageState
         _isLoading = false;
       });
     } catch (error) {
-      print('Error checking events table: $error');
+      debugPrint('Error checking events table: $error');
       setState(() {
         _hasEvents = false;
         _isLoading = false;
@@ -196,10 +199,10 @@ class _VerfiedSearchProfileDetailPageState
 
       setState(() {
         _userBanners = List<Map<String, dynamic>>.from(response);
-        print(_userBanners);
+        debugPrint(_userBanners.toString());
       });
     } catch (e) {
-      print('Error fetching user banners: $e');
+      debugPrint('Error fetching user banners: $e');
     }
   }
 
@@ -271,7 +274,7 @@ class _VerfiedSearchProfileDetailPageState
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                   side: BorderSide(
-                    color: Colors.yellow.withOpacity(0.5),
+                    color: Colors.yellow.withValues(alpha: 0.5),
                     width: 1,
                   ),
                 ),
@@ -284,7 +287,7 @@ class _VerfiedSearchProfileDetailPageState
               padding: const EdgeInsets.only(left: 8.0),
               child: IconButton(
                 style: IconButton.styleFrom(
-                  backgroundColor: Colors.yellow.withOpacity(0.1),
+                  backgroundColor: Colors.yellow.withValues(alpha: 0.1),
                 ),
                 onPressed: () {
                   final template = _profileData?['selected_website_template'];
@@ -403,11 +406,11 @@ class _VerfiedSearchProfileDetailPageState
         _followingCount = followingCountRaw;
         _followersCountFormatted = formatCount(followersCountRaw);
         _followingCountFormatted = formatCount(followingCountRaw);
-        print('Followers count: $_followersCountFormatted');
-        print('Following count: $_followingCountFormatted');
+        debugPrint('Followers count: $_followersCountFormatted');
+        debugPrint('Following count: $_followingCountFormatted');
       });
     } catch (e) {
-      print('Error fetching follow counts: $e');
+      debugPrint('Error fetching follow counts: $e');
     }
   }
 
@@ -547,7 +550,7 @@ class _VerfiedSearchProfileDetailPageState
       safeSetState(() {
         _isLoading = false;
       });
-      print('Error fetching profile data: $e');
+      debugPrint('Error fetching profile data: $e');
     }
   }
 
@@ -585,7 +588,7 @@ class _VerfiedSearchProfileDetailPageState
         _isFollowing = response.isNotEmpty;
       });
     } catch (e) {
-      print('Error checking follow status: $e');
+      debugPrint('Error checking follow status: $e');
     }
   }
 
@@ -618,7 +621,7 @@ class _VerfiedSearchProfileDetailPageState
             _isFollowing ? _followersCount + 1 : _followersCount - 1;
       });
     } catch (e) {
-      print('Error fetching profile data: $e');
+      debugPrint('Error fetching profile data: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error updating follow status: $e')),
       );
@@ -684,12 +687,12 @@ class _VerfiedSearchProfileDetailPageState
           .limit(1);
 
       safeSetState(() {
-        print(response);
+        debugPrint(response.toString());
         hideData = response.isNotEmpty ? response.first : null;
         isLoading = false;
       });
     } catch (e) {
-      print('Error fetching hide status: $e');
+      debugPrint('Error fetching hide status: $e');
       safeSetState(() {
         isLoading = false;
       });
@@ -893,12 +896,6 @@ class _VerfiedSearchProfileDetailPageState
     super.dispose();
   }
 
-  void safeSetState(VoidCallback fn) {
-    if (mounted) {
-      setState(fn);
-    }
-  }
-
   Color _getButtonColor() {
     return _profileData != null && _profileData!['button_color_code'] != null
         ? Color(int.parse(
@@ -1022,8 +1019,9 @@ class _VerfiedSearchProfileDetailPageState
 // https://handskillapp.web.app/verifiedProfile?userid=b7f62747-0eb9-46af-aafc-af62dd5eb86d
 // // https://handskillapp.web.app/searchprofileuser?userid=9109026b-80d0-4dad-aab4-712c90c975bd
   void _launchUrl(String url) async {
-    if (await canLaunch(url)) {
-      await launch(url);
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
     }
   }
 
@@ -2121,7 +2119,7 @@ class _VerfiedSearchProfileDetailPageState
                                                                                         decoration: BoxDecoration(
                                                                                           image: DecorationImage(
                                                                                             image: CachedNetworkImageProvider(
-                                                                                              item['gallery_image_url'] ?? 'https://via.placeholder.com/150',
+                                                                                              item['gallery_image_url'] ?? '',
                                                                                             ),
                                                                                             fit: BoxFit.cover,
                                                                                           ),
@@ -3229,6 +3227,9 @@ class AIAssistantWidget extends StatefulWidget {
 
 class _AIAssistantWidgetState extends State<AIAssistantWidget>
     with TickerProviderStateMixin {
+  void safeSetState(VoidCallback fn) {
+    if (mounted) setState(fn);
+  }
   final SupabaseClient _supabase = SupaFlow.client;
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
@@ -3369,7 +3370,7 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
       // Fetch follow counts
       await _fetchFollowCounts();
     } catch (e) {
-      print('Error fetching data: $e');
+      debugPrint('Error fetching data: $e');
     }
   }
 
@@ -3416,11 +3417,11 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
         // _followingCount = followingCountRaw;
         _followersCount = formatCount(followersCountRaw);
         _followingCount = formatCount(followingCountRaw);
-        print('Followers count: $_followersCount');
-        print('Following count: $_followingCount');
+        debugPrint('Followers count: $_followersCount');
+        debugPrint('Following count: $_followingCount');
       });
     } catch (e) {
-      print('Error fetching follow counts: $e');
+      debugPrint('Error fetching follow counts: $e');
     }
   }
 
@@ -5437,7 +5438,7 @@ class _PopularPageViewBannerState extends State<PopularPageViewBanner>
                 Positioned.fill(
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 300),
-                    transform: Matrix4.identity()..scale(isActive ? 1.05 : 1.0),
+                    transform: Matrix4.identity()..scale(isActive ? 1.05 : 1.0, isActive ? 1.05 : 1.0, 1.0),
                     child: Image.network(
                       item['image_url'],
                       fit: BoxFit.cover,

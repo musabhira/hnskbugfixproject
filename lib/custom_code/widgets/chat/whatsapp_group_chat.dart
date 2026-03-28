@@ -80,6 +80,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   bool _showScrollToBottom = false;
   List<Map<String, dynamic>> _filteredMembers = [];
   bool _showMentionSuggestions = false;
+  String? _mentionQuery;
 
   // UI related methods
   void safeSetState(VoidCallback fn) {
@@ -103,6 +104,12 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
         if (show != _showScrollToBottom) {
           safeSetState(() => _showScrollToBottom = show);
         }
+
+        // Pagination Trigger: Call loadMoreMessages when reaching the top of scrollable area
+        // In reverse: true, maxScrollExtent is the "top" (older messages)
+        if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+          ref.read(chatMessagesProvider(widget.groupId).notifier).loadMoreMessages();
+        }
       }
     });
 
@@ -120,23 +127,19 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
 
   void _onMessageChanged() {
     final text = _messageController.text;
-    final selection = _messageController.selection;
-    
-    if (selection.baseOffset > 0) {
-      final lastAtPos = text.lastIndexOf('@', selection.baseOffset - 1);
-      if (lastAtPos != -1) {
-        final query = text.substring(lastAtPos + 1, selection.baseOffset);
-        if (!query.contains(' ')) {
-          safeSetState(() {
-            _filteredMembers = _groupMembers.where((m) {
-              final name = m['profile']?['name']?.toString().toLowerCase() ?? '';
-              return name.contains(query.toLowerCase());
-            }).toList();
-            _showMentionSuggestions = _filteredMembers.isNotEmpty;
-          });
-        } else {
-          safeSetState(() => _showMentionSuggestions = false);
-        }
+    if (text.contains('@')) {
+      final lastAt = text.lastIndexOf('@');
+      final query = text.substring(lastAt + 1);
+      if (!query.contains(' ')) {
+        safeSetState(() {
+          _showMentionSuggestions = true;
+          _mentionQuery = query;
+          _filteredMembers = _groupMembers.where((m) {
+            final profile = _safeGet(m['profile']);
+            final name = (profile?['name'] ?? '').toString().toLowerCase();
+            return name.contains(_mentionQuery!.toLowerCase());
+          }).toList();
+        });
       } else {
         safeSetState(() => _showMentionSuggestions = false);
       }
@@ -144,8 +147,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
       safeSetState(() => _showMentionSuggestions = false);
     }
     
-    // Force rebuild to swap send/mic buttons
-    if (mounted) setState(() {});
+    // Note: Rebuild swap was moved to ValueListenableBuilder in _buildInputArea
   }
 
   @override
@@ -198,7 +200,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     }
   }
 
-  Future<void> _sendMessage({
+  Future<String?> _sendMessage({
     String? text,
     String messageType = 'text',
     String? fileUrl,
@@ -207,7 +209,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     String? thoughtId,
     Map<String, dynamic>? metadata,
   }) async {
-    if (_isSending) return;
+    if (_isSending) return null;
 
     // Filter out truly empty messages
     bool isEmpty = (text == null || text.trim().isEmpty) &&
@@ -216,7 +218,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
         thoughtId == null &&
         metadata == null;
 
-    if (isEmpty && messageType == 'text') return;
+    if (isEmpty && messageType == 'text') return null;
 
     final replyId = _replyMessage?['id'];
     _isSending = true;
@@ -231,7 +233,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     _scrollToBottom();
 
     try {
-      await ref.read(chatMessagesProvider(widget.groupId).notifier).sendMessage(
+      final message = await ref.read(chatMessagesProvider(widget.groupId).notifier).sendMessage(
             text: text ?? '',
             messageType: messageType,
             fileUrl: fileUrl,
@@ -241,9 +243,11 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
             thoughtId: thoughtId,
             metadata: metadata,
           );
+      return message?.id;
     } catch (e) {
       debugPrint('SendMessage Error: $e');
       _showSnackBar('Failed to send: $e', isError: true);
+      return null;
     } finally {
       _isSending = false;
     }
@@ -274,6 +278,58 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
         ],
       ),
     );
+  }
+
+  void _showBlockUserDialog() {
+    if (!widget.groupId.startsWith('p:')) return;
+    final otherUserId = widget.groupId.substring(2);
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.grey[900],
+        title: const Text('Block User?', style: TextStyle(color: Colors.white)),
+        content: Text(
+          'Are you sure you want to block ${widget.groupName}? They will no longer be able to message you, and you will not see their content.',
+          style: const TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await _blockUser(otherUserId);
+            },
+            child: const Text('Block', style: TextStyle(color: Colors.redAccent)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _blockUser(String blockedId) async {
+    try {
+      await _supabase.from('blocks').insert({
+        'blocker_id': _currentUserId,
+        'blocked_id': blockedId,
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${widget.groupName} has been blocked.')),
+        );
+        Navigator.pop(context); // Leave the chat
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error blocking user: $e')),
+        );
+      }
+    }
   }
 
   void _scrollToBottom() {
@@ -338,262 +394,280 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
 
     final chatMessagesAsync = ref.watch(chatMessagesProvider(widget.groupId));
 
-    return Scaffold(
-      backgroundColor: backgroundColor,
-      appBar: AppBar(
-        backgroundColor: appBarColor,
-        elevation: 0,
-        leadingWidth: 70,
-        titleSpacing: 0,
-        leading: InkWell(
-          borderRadius: BorderRadius.circular(24),
-          onTap: () => Navigator.pop(context),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.arrow_back, color: Colors.white),
-              const SizedBox(width: 4),
-              GestureDetector(
-                onTap: () {
-                  if (widget.groupImage != null) {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ImageViewer(
-                          imageUrl: widget.groupImage!,
-                          title: widget.groupName,
+    return Theme(
+      data: ThemeData.dark().copyWith(
+        scaffoldBackgroundColor: backgroundColor,
+        canvasColor: backgroundColor,
+        primaryColor: accentColor,
+      ),
+      child: Scaffold(
+        backgroundColor: backgroundColor,
+        appBar: AppBar(
+          backgroundColor: appBarColor,
+          elevation: 0,
+          leadingWidth: 70,
+          titleSpacing: 0,
+          leading: InkWell(
+            borderRadius: BorderRadius.circular(24),
+            onTap: () => Navigator.pop(context),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.arrow_back, color: Colors.white),
+                const SizedBox(width: 4),
+                GestureDetector(
+                  onTap: () {
+                    if (widget.groupImage != null) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ImageViewer(
+                            imageUrl: widget.groupImage!,
+                            title: widget.groupName,
+                          ),
                         ),
-                      ),
-                    );
-                  }
-                },
-                child: Hero(
-                  tag: 'group_avatar_${widget.groupId}',
-                  child: CircleAvatar(
-                    radius: 18,
-                    backgroundColor: Colors.grey[700],
-                    backgroundImage: widget.groupImage != null
-                        ? NetworkImage(widget.groupImage!)
-                        : null,
-                    child: widget.groupImage == null
-                        ? const Icon(Icons.group, color: Colors.white, size: 20)
-                        : null,
+                      );
+                    }
+                  },
+                  child: Hero(
+                    tag: 'group_avatar_${widget.groupId}',
+                    child: CircleAvatar(
+                      radius: 18,
+                      backgroundColor: Colors.grey[700],
+                      backgroundImage: widget.groupImage != null
+                          ? NetworkImage(widget.groupImage!)
+                          : null,
+                      child: widget.groupImage == null
+                          ? const Icon(Icons.group, color: Colors.white, size: 20)
+                          : null,
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-        title: InkWell(
-          onTap: _showGroupInfo,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                widget.groupName,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
+          title: InkWell(
+            onTap: _showGroupInfo,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  widget.groupName,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                widget.groupId.startsWith('p:')
-                    ? 'Tap for info'
-                    : (_groupMembers.isEmpty
-                        ? 'Tap for info'
-                        : '${_groupMembers.length} members'),
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: Colors.white70,
+                const SizedBox(height: 2),
+                Text(
+                  widget.groupId.startsWith('p:')
+                      ? 'Tap for info'
+                      : (_groupMembers.isEmpty
+                          ? 'Tap for info'
+                          : '${_groupMembers.length} members'),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Colors.white70,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-        actions: [
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert, color: Colors.white),
-            color: appBarColor,
-            onSelected: (value) {
-              if (value == 'refresh') _handleRefresh();
-              if (value == 'info') _showGroupInfo();
-              if (value == 'leave') _showLeaveGroupDialog();
-              if (value == 'report') {
-                ReportHelper.showReportDialog(
-                  context: context,
-                  contentType: 'user',
-                  contentId: widget.groupId.startsWith('p:') ? widget.groupId.substring(2) : widget.groupId,
-                  contentTitle: widget.groupName,
-                );
-              }
-            },
-            itemBuilder: (context) {
-              final isPersonalChat = widget.groupId.startsWith('p:');
-              return [
-                if (!isPersonalChat)
-                  const PopupMenuItem(
-                    value: 'info',
-                    child: Text('Group Info', style: TextStyle(color: Colors.white)),
-                  ),
-                const PopupMenuItem(
-                  value: 'refresh',
-                  child: Text('Refresh', style: TextStyle(color: Colors.white)),
-                ),
-                if (!isPersonalChat)
-                  const PopupMenuItem(
-                    value: 'leave',
-                    child: Text('Leave Group', style: TextStyle(color: Colors.red)),
-                  ),
-                if (isPersonalChat) ...[
+          actions: [
+            PopupMenuButton<String>(
+              icon: const Icon(Icons.more_vert, color: Colors.white),
+              color: appBarColor,
+              onSelected: (value) {
+                if (value == 'refresh') _handleRefresh();
+                if (value == 'info') _showGroupInfo();
+                if (value == 'leave') _showLeaveGroupDialog();
+                if (value == 'report') {
+                  ReportHelper.showReportDialog(
+                    context: context,
+                    contentType: 'user',
+                    contentId: widget.groupId.startsWith('p:') ? widget.groupId.substring(2) : widget.groupId,
+                    contentTitle: widget.groupName,
+                  );
+                }
+                if (value == 'block') _showBlockUserDialog();
+              },
+              itemBuilder: (context) {
+                final isPersonalChat = widget.groupId.startsWith('p:');
+                return [
+                  if (!isPersonalChat)
+                    const PopupMenuItem(
+                      value: 'info',
+                      child: Text('Group Info', style: TextStyle(color: Colors.white)),
+                    ),
                   const PopupMenuItem(
                     value: 'refresh',
-                    child: Text('Clear Chat', style: TextStyle(color: Colors.red)),
+                    child: Text('Refresh', style: TextStyle(color: Colors.white)),
                   ),
-                  const PopupMenuItem(
-                    value: 'report',
-                    child: Text('Report User', style: TextStyle(color: Colors.orange)),
-                  ),
-                ],
-              ];
-            },
-          ),
-        ],
-      ),
-      body: GestureDetector(
-        onTap: () => FocusScope.of(context).unfocus(),
-        behavior: HitTestBehavior.translucent,
-        child: Stack(
-          children: [
-            // Background Image/Pattern could go here
-          Column(
+                  if (!isPersonalChat)
+                    const PopupMenuItem(
+                      value: 'leave',
+                      child: Text('Leave Group', style: TextStyle(color: Colors.red)),
+                    ),
+                  if (isPersonalChat) ...[
+                    const PopupMenuItem(
+                      value: 'refresh',
+                      child: Text('Clear Chat', style: TextStyle(color: Colors.red)),
+                    ),
+                    const PopupMenuItem(
+                      value: 'report',
+                      child: Text('Report User', style: TextStyle(color: Colors.orange)),
+                    ),
+                    const PopupMenuItem(
+                      value: 'block',
+                      child: Text('Block User', style: TextStyle(color: Colors.red)),
+                    ),
+                  ],
+                ];
+              },
+            ),
+          ],
+        ),
+        body: GestureDetector(
+          onTap: () => FocusScope.of(context).unfocus(),
+          behavior: HitTestBehavior.translucent,
+          child: Stack(
             children: [
-              Expanded(
-                child: Builder(
-                  builder: (context) {
-                    final messages = chatMessagesAsync.value ?? [];
-                    final isLoadingInitial = chatMessagesAsync.isLoading &&
-                        !chatMessagesAsync.hasValue;
-                    final isErrorInitial = chatMessagesAsync.hasError &&
-                        !chatMessagesAsync.hasValue;
+              Column(
+                children: [
+                  Expanded(
+                    child: Builder(
+                      builder: (context) {
+                        final messages = chatMessagesAsync.value ?? [];
+                        final isLoadingInitial = chatMessagesAsync.isLoading &&
+                            !chatMessagesAsync.hasValue;
+                        final isErrorInitial = chatMessagesAsync.hasError &&
+                            !chatMessagesAsync.hasValue;
 
-                    if (isLoadingInitial) return _buildShimmerLoading();
+                        if (isLoadingInitial) return _buildShimmerLoading();
 
-                    if (isErrorInitial) {
-                      return Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.error_outline,
-                                color: Colors.red, size: 48),
-                            const SizedBox(height: 16),
-                            Text('Error: ${chatMessagesAsync.error}',
-                                style: const TextStyle(color: Colors.white)),
-                            TextButton(
-                              onPressed: () {
-                                ref.invalidate(
-                                    chatMessagesProvider(widget.groupId));
-                              },
-                              child: const Text('Retry'),
-                            ),
-                          ],
-                        ),
-                      );
-                    }
-
-                    // Filter out truly empty/null messages
-                    final filteredMessages = messages.where((m) {
-                      // Allow messages that are optimistic or have content in known fields
-                      return m.isOptimistic ||
-                          (m.messageText != null &&
-                              m.messageText!.isNotEmpty) ||
-                          (m.fileUrl != null && m.fileUrl!.isNotEmpty) ||
-                          (m.messageType != 'text' &&
-                              m.messageType != 'system');
-                    }).toList();
-
-                    if (filteredMessages.isEmpty) {
-                      return const Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.chat_bubble_outline,
-                                color: Colors.white12, size: 64),
-                            SizedBox(height: 16),
-                            Text(
-                              'No messages yet',
-                              style: TextStyle(color: Colors.white38),
-                            ),
-                          ],
-                        ),
-                      );
-                    }
-
-                    // Show list (even if refreshing)
-                    return RefreshIndicator(
-                      onRefresh: _handleRefresh,
-                      color: accentColor,
-                      backgroundColor: appBarColor,
-                      child: ListView.builder(
-                        controller: _scrollController,
-                        reverse: true,
-                        padding: const EdgeInsets.only(bottom: 8, top: 8),
-                        itemCount: filteredMessages.length,
-                        itemBuilder: (context, index) {
-                          final message = filteredMessages[index];
-                          final isMe = message.senderId == _currentUserId;
-
-                          bool showDate = true;
-                          if (index < filteredMessages.length - 1) {
-                            final nextMessage = filteredMessages[index + 1];
-                            showDate = !_isSameDay(
-                                message.createdAt, nextMessage.createdAt);
-                          }
-
-                          return Container(
-                            key: ValueKey(message.id),
+                        if (isErrorInitial) {
+                          return Center(
                             child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                if (showDate)
-                                  _buildDateSeparator(message.createdAt),
-                                _buildMessageTile(message, isMe),
+                                const Icon(Icons.error_outline,
+                                    color: Colors.red, size: 48),
+                                const SizedBox(height: 16),
+                                Text('Error: ${chatMessagesAsync.error}',
+                                    style: const TextStyle(color: Colors.white)),
+                                TextButton(
+                                  onPressed: () {
+                                    ref.invalidate(
+                                        chatMessagesProvider(widget.groupId));
+                                  },
+                                  child: const Text('Retry'),
+                                ),
                               ],
                             ),
                           );
-                        },
-                      ),
-                    );
-                  },
-                ),
+                        }
+
+                        final filteredMessages = messages.where((m) {
+                          return m.isOptimistic ||
+                              (m.messageText != null &&
+                                  m.messageText!.isNotEmpty) ||
+                              (m.fileUrl != null && m.fileUrl!.isNotEmpty) ||
+                              (m.messageType != 'text' &&
+                                  m.messageType != 'system');
+                        }).toList();
+
+                        if (filteredMessages.isEmpty) {
+                          return const Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.chat_bubble_outline,
+                                    color: Colors.white12, size: 64),
+                                SizedBox(height: 16),
+                                Text(
+                                  'No messages yet',
+                                  style: TextStyle(color: Colors.white38),
+                                ),
+                              ],
+                            ),
+                          );
+                        }
+
+                        return RefreshIndicator(
+                          onRefresh: _handleRefresh,
+                          color: accentColor,
+                          backgroundColor: appBarColor,
+                          child: ListView.builder(
+                            controller: _scrollController,
+                            physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+                            reverse: true,
+                            padding: const EdgeInsets.only(bottom: 8, top: 8),
+                            itemCount: filteredMessages.length + 1,
+                            itemBuilder: (context, index) {
+                              if (index == filteredMessages.length) {
+                                 return chatMessagesAsync.isLoading ? 
+                                    const Padding(
+                                      padding: EdgeInsets.symmetric(vertical: 20),
+                                      child: Center(child: CircularProgressIndicator(color: Colors.yellow, strokeWidth: 2)),
+                                    ) : const SizedBox(height: 100);
+                              }
+
+                              final message = filteredMessages[index];
+                              final isMe = message.senderId == _currentUserId;
+
+                              bool showDate = true;
+                              if (index < filteredMessages.length - 1) {
+                                final nextMessage = filteredMessages[index + 1];
+                                showDate = !_isSameDay(
+                                    message.createdAt, nextMessage.createdAt);
+                              }
+
+                              return Container(
+                                key: ValueKey(message.id),
+                                child: Column(
+                                  children: [
+                                    if (showDate)
+                                      _buildDateSeparator(message.createdAt),
+                                    _buildMessageTile(message, isMe),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  if (_replyMessage != null) _buildReplyPreview(_replyMessage!),
+                  if (_stagedGalleryId != null ||
+                      _stagedThoughtId != null ||
+                      _stagedTool != null ||
+                      _stagedVideoPath != null ||
+                      _stagedDocumentPath != null ||
+                      _stagedAudioPath != null)
+                    _buildStagedPreview(),
+                  if (_showMentionSuggestions) _buildMentionSuggestions(),
+                  _buildInputArea(),
+                  if (_showEmojiPicker) _buildEmojiPicker(),
+                ],
               ),
-              if (_replyMessage != null) _buildReplyPreview(_replyMessage!),
-              if (_stagedGalleryId != null ||
-                  _stagedThoughtId != null ||
-                  _stagedTool != null ||
-                  _stagedVideoPath != null ||
-                  _stagedDocumentPath != null ||
-                  _stagedAudioPath != null)
-                _buildStagedPreview(),
-              if (_showMentionSuggestions) _buildMentionSuggestions(),
-              _buildInputArea(),
-              if (_showEmojiPicker) _buildEmojiPicker(),
+              if (_showScrollToBottom)
+                Positioned(
+                  bottom: 90,
+                  right: 16,
+                  child: FloatingActionButton.small(
+                    onPressed: _scrollToBottom,
+                    backgroundColor: const Color(0xFF1F2C34),
+                    foregroundColor: accentColor,
+                    child: const Icon(Icons.keyboard_arrow_down),
+                  ),
+                ),
             ],
           ),
-          if (_showScrollToBottom)
-            Positioned(
-              bottom: 90,
-              right: 16,
-              child: FloatingActionButton.small(
-                onPressed: _scrollToBottom,
-                backgroundColor: const Color(0xFF1F2C34),
-                foregroundColor: accentColor,
-                child: const Icon(Icons.keyboard_arrow_down),
-              ),
-            ),
-        ],
+        ),
       ),
-    ));
+    );
   }
 
   bool _isSameDay(DateTime d1, DateTime d2) {
@@ -777,7 +851,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 4, vertical: 1),
                             decoration: BoxDecoration(
-                              color: Colors.yellow.withOpacity(0.2),
+                              color: Colors.yellow.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(4),
                               border:
                                   Border.all(color: Colors.yellow, width: 0.5),
@@ -822,7 +896,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                           : Border.all(color: Colors.white.withOpacity(0.05)),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.25),
+                          color: Colors.black.withValues(alpha: 0.25),
                           offset: const Offset(0, 2),
                           blurRadius: 6,
                           spreadRadius: 1,
@@ -872,7 +946,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                                     style: TextStyle(
                                         color: isMe
                                             ? Colors.black87
-                                            : Colors.white.withOpacity(0.93),
+                                            : Colors.white.withValues(alpha: 0.93),
                                         fontSize: 15,
                                         height: 1.3),
                                   ),
@@ -898,7 +972,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                                     Icons.copy,
                                     size: 12,
                                     color: (isMe ? Colors.black : Colors.white)
-                                        .withOpacity(0.6),
+                                        .withValues(alpha: 0.6),
                                   ),
                                 ),
                                 const SizedBox(width: 4),
@@ -907,7 +981,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                                 _formatTime(message.createdAt),
                                 style: TextStyle(
                                   color: (isMe ? Colors.black : Colors.white)
-                                      .withOpacity(0.6),
+                                      .withValues(alpha: 0.6),
                                   fontSize: 10,
                                 ),
                               ),
@@ -1855,46 +1929,68 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                       maxLines: 6,
                     ),
                   ),
-                  if (!_isRecording) ...[
-                    IconButton(
-                      icon: const Icon(Icons.attach_file, color: Colors.white70),
-                      onPressed: () {
-                        _showAttachmentBottomSheet();
-                      },
-                    ),
-                    if (_messageController.text.isEmpty)
-                      IconButton(
-                        icon: const Icon(Icons.camera_alt, color: Colors.white70),
-                        onPressed: () => _handleCameraAction(),
-                      ),
-                  ],
+                  ValueListenableBuilder<TextEditingValue>(
+                    valueListenable: _messageController,
+                    builder: (context, value, child) {
+                      if (!_isRecording && value.text.isEmpty) {
+                        return Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.attach_file, color: Colors.white70),
+                              onPressed: () => _showAttachmentBottomSheet(),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.camera_alt, color: Colors.white70),
+                              onPressed: () => _handleCameraAction(),
+                            ),
+                          ],
+                        );
+                      } else if (!_isRecording) {
+                         return IconButton(
+                            icon: const Icon(Icons.attach_file, color: Colors.white70),
+                            onPressed: () => _showAttachmentBottomSheet(),
+                          );
+                      }
+                      return const SizedBox.shrink();
+                    },
+                  ),
                 ],
               ),
             ),
           ),
           const SizedBox(width: 8),
-          _messageController.text.isNotEmpty ||
+          ValueListenableBuilder<TextEditingValue>(
+            valueListenable: _messageController,
+            builder: (context, value, child) {
+              final showSend = value.text.isNotEmpty ||
                   _stagedGalleryId != null ||
                   _stagedThoughtId != null ||
                   _stagedTool != null ||
                   _stagedVideoPath != null ||
                   _stagedDocumentPath != null ||
-                  _stagedAudioPath != null
-              ? GestureDetector(
+                  _stagedAudioPath != null;
+
+              if (showSend) {
+                return GestureDetector(
                   onTap: _handleSendAction,
                   child: const CircleAvatar(
                     backgroundColor: Colors.yellow,
                     radius: 24,
                     child: Icon(Icons.send, color: Colors.black),
                   ),
-                )
-              : VoiceMessageRecorder(
+                );
+              } else {
+                return VoiceMessageRecorder(
                   onSendMessage: (path, duration) =>
                       _handleVoiceMessage(path, duration),
                   onRecordingStateChanged: (recording) {
                     safeSetState(() => _isRecording = recording);
                   },
-                ),
+                );
+              }
+            },
+          ),
         ],
       ),
     );
@@ -2156,14 +2252,14 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     final String optimisticId = 'temp_file_${DateTime.now().millisecondsSinceEpoch}';
     
     // 1. Immediate optimistic send
-    await _sendMessage(
+    final messageId = await _sendMessage(
       text: caption ?? (type == 'document' ? 'Document 📁' : 'Audio 🎵'),
       messageType: type,
       metadata: {'local_path': path}, // Store local path for preview
     );
 
     // 2. Perform upload in background
-    _performBackgroundUpload(optimisticId, path, type, caption);
+    _performBackgroundUpload(messageId, path, type, caption);
     
     safeSetState(() {
       _stagedDocumentPath = null;
@@ -2209,7 +2305,8 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   }
 
   Future<void> _performBackgroundUpload(
-      String optimisticId, String path, String type, String? caption) async {
+      String? messageId, String path, String type, String? caption) async {
+    if (messageId == null) return;
     try {
       File file = File(path);
       final String bucket = type == 'voice' ? 'voice-messages' : 'ephemeral_media';
@@ -2230,12 +2327,10 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
       
       final url = _supabase.storage.from(bucket).getPublicUrl(storagePath);
 
-      // Call the provider sendMessage to record it on server and replace local optimistic
-      await ref.read(chatMessagesProvider(widget.groupId).notifier).sendMessage(
-            text: caption ?? (type == 'document' ? 'Document 📁' : (type == 'image' ? '' : 'Audio 🎵')),
-            messageType: type,
-            fileUrl: url,
-            metadata: {'local_path': path},
+      // Update the EXISTING record instead of sending a new one
+      await ref.read(chatMessagesProvider(widget.groupId).notifier).updateMessageFileUrl(
+            messageId,
+            url,
           );
     } catch (e) {
       debugPrint('Background upload error: $e');
@@ -2311,7 +2406,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     final path = _stagedVideoPath!;
     
     // 1. Immediate optimistic send
-    await _sendMessage(
+    final messageId = await _sendMessage(
       text: caption ?? 'Video 📹',
       messageType: 'video',
       metadata: {'local_path': path},
@@ -2321,10 +2416,11 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     safeSetState(() => _stagedVideoPath = null);
 
     // 3. Perform processing and upload in background
-    _performBackgroundVideoUpload(path, caption);
+    _performBackgroundVideoUpload(messageId, path, caption);
   }
 
-  Future<void> _performBackgroundVideoUpload(String path, String? caption) async {
+  Future<void> _performBackgroundVideoUpload(String? messageId, String path, String? caption) async {
+    if (messageId == null) return;
     try {
       File fileToUpload = File(path);
       
@@ -2341,11 +2437,10 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
       await _supabase.storage.from('ephemeral_media').upload(storagePath, fileToUpload);
       final url = _supabase.storage.from('ephemeral_media').getPublicUrl(storagePath);
 
-      await ref.read(chatMessagesProvider(widget.groupId).notifier).sendMessage(
-            text: caption ?? 'Video 📹',
-            messageType: 'video',
-            fileUrl: url,
-            metadata: {'local_path': path},
+      // Update the EXISTING record instead of sending a new one
+      await ref.read(chatMessagesProvider(widget.groupId).notifier).updateMessageFileUrl(
+            messageId,
+            url,
           );
 
       if (compressed != null) {
@@ -2417,14 +2512,14 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
       final type = 'image';
 
       // 1. Immediate optimistic send
-      await _sendMessage(
+      final messageId = await _sendMessage(
         text: '', 
         messageType: type,
         metadata: {'local_path': path},
       );
 
       // 2. Perform upload in background
-      _performBackgroundUpload('temp_img_${DateTime.now().millisecondsSinceEpoch}', path, type, '');
+      _performBackgroundUpload(messageId, path, type, '');
 
       safeSetState(() {
         _showEmojiPicker = false;

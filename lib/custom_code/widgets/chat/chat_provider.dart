@@ -380,7 +380,7 @@ class ChatMessages extends _$ChatMessages {
     }
   }
 
-  Future<void> sendMessage({
+  Future<ChatMessage?> sendMessage({
     required String text,
     required String messageType,
     String? fileUrl,
@@ -391,7 +391,7 @@ class ChatMessages extends _$ChatMessages {
     Map<String, dynamic>? metadata,
   }) async {
     final uid = ref.read(currentUserIdProvider);
-    if (uid.isEmpty) return;
+    if (uid.isEmpty) return null;
 
     final isPersonal = groupId.startsWith('p:');
     final actualId = isPersonal ? groupId.substring(2) : groupId;
@@ -516,7 +516,6 @@ class ChatMessages extends _$ChatMessages {
       // Update relevant metadata for the chat list
       try {
         if (isPersonal) {
-          // Update conversations table
           await _supabase.from('conversations').update({
             'last_message': text,
             'last_message_time': DateTime.now().toIso8601String(),
@@ -534,6 +533,8 @@ class ChatMessages extends _$ChatMessages {
       } catch (metaError) {
         debugPrint('Error updating metadata: $metaError');
       }
+
+      return fullMessage;
     } catch (e) {
       // Offline / Insert failed: Mark as pending instead of removing
       final pendingMessage = ChatMessage(
@@ -568,6 +569,36 @@ class ChatMessages extends _$ChatMessages {
         state = AsyncData(updatedList);
         _saveToCache(updatedList);
       });
+      return null;
+    }
+  }
+
+  Future<void> updateMessageFileUrl(String messageId, String fileUrl) async {
+    final isPersonal = groupId.startsWith('p:');
+    try {
+      await _supabase.from(isPersonal ? 'messages' : 'group_messages').update({
+        'file_url': fileUrl,
+      }).eq('id', messageId);
+
+      // Update local state for immediate feedback
+      state.whenData((messages) {
+        final index = messages.indexWhere((m) => m.id == messageId);
+        if (index != -1) {
+          final existing = messages[index];
+          final updated = ChatMessage.fromJson({
+            ...existing.toJson(),
+            'file_url': fileUrl,
+            'isOptimistic': false,
+            'isPending': false,
+          });
+          final updatedList = List<ChatMessage>.from(messages);
+          updatedList[index] = updated;
+          state = AsyncData(updatedList);
+          _saveToCache(updatedList);
+        }
+      });
+    } catch (e) {
+      debugPrint('Error updating message file URL: $e');
       rethrow;
     }
   }

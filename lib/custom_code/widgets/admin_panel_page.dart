@@ -105,9 +105,11 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                 setState(() => isAuthenticated = true);
                 _loadInitialData();
               } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Invalid PIN Code'), backgroundColor: Colors.red),
-                );
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Invalid PIN Code'), backgroundColor: Colors.red),
+                  );
+                }
               }
             },
             child: const Text('Unlock', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
@@ -305,13 +307,17 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
     try {
       await supabase.from('reports').update({'status': status}).eq('id', reportId);
       _loadReports();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Report marked as $status'), backgroundColor: Colors.blue),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Report marked as $status'), backgroundColor: Colors.blue),
+        );
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error updating report: $e'), backgroundColor: Colors.red),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error updating report: $e'), backgroundColor: Colors.red),
+        );
+      }
     }
   }
 
@@ -320,14 +326,18 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
       await supabase.from('profile').update({'verified': !currentStatus}).eq('id', userId);
       _loadProfiles(); // Refresh
       _loadStats(); // Update stats
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('User ${!currentStatus ? "Verified" : "Unverified"} successfully!'), 
-        backgroundColor: !currentStatus ? Colors.green : Colors.orange),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('User ${!currentStatus ? "Verified" : "Unverified"} successfully!'), 
+          backgroundColor: !currentStatus ? Colors.green : Colors.orange),
+        );
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error updating verification: $e'), backgroundColor: Colors.red),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error updating verification: $e'), backgroundColor: Colors.red),
+        );
+      }
     }
   }
 
@@ -336,13 +346,17 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
       await supabase.from('user_course_access').update({'has_paid': true}).eq('id', accessId);
       _loadPendingAccess();
       _loadStats();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Course access granted!'), backgroundColor: Colors.green),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Course access granted!'), backgroundColor: Colors.green),
+        );
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error granting access: $e'), backgroundColor: Colors.red),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error granting access: $e'), backgroundColor: Colors.red),
+        );
+      }
     }
   }
 
@@ -460,13 +474,13 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
         decoration: BoxDecoration(
           color: Colors.grey[900],
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 8, offset: const Offset(0, 2))],
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 8, offset: const Offset(0, 2))],
         ),
         child: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(color: color.withValues(alpha: 0.1), shape: BoxShape.circle),
+              decoration: BoxDecoration(color: color.withOpacity(0.1), shape: BoxShape.circle),
               child: Icon(icon, color: color, size: 24),
             ),
             const SizedBox(width: 16),
@@ -549,7 +563,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                         subtitle: Text(user['shop_name'] ?? 'No shop name', style: const TextStyle(fontSize: 12, color: Colors.grey)),
                         trailing: Switch(
                           value: isVerified,
-                          activeColor: Colors.blue,
+                          activeThumbColor: Colors.blue,
                           onChanged: (v) => _toggleUserVerification(user['id'], isVerified),
                         ),
                       ),
@@ -604,7 +618,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                           children: [
                             Container(
                               padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(color: Colors.orange.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+                              decoration: BoxDecoration(color: Colors.orange.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
                               child: const Icon(Icons.school, color: Colors.orange, size: 24),
                             ),
                             const SizedBox(width: 16),
@@ -852,7 +866,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                                 ],
                               ),
                               leading: CircleAvatar(
-                                backgroundColor: Colors.amber.withOpacity(0.1),
+                                backgroundColor: Colors.amber.withValues(alpha: 0.1),
                                 child: const Icon(Icons.lock_person,
                                     color: Colors.amber),
                               ),
@@ -870,7 +884,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
     if (isLoadingUpdate) return const Center(child: CircularProgressIndicator());
     if (appUpdateData == null) {
       return Center(
-        child: material.Column(
+        child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Icon(Icons.error_outline, size: 64, color: Colors.red),
@@ -884,7 +898,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
-      child: material.Column(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text('Platform Versioning', 
@@ -929,7 +943,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
               Switch(
                 value: appUpdateData!['is_mandatory'] ?? false,
                 onChanged: (v) => setState(() => appUpdateData!['is_mandatory'] = v),
-                activeColor: Colors.red,
+                activeThumbColor: Colors.red,
               ),
             ],
           ),
@@ -963,7 +977,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white10),
       ),
-      child: material.Column(
+      child: Column(
         children: [
           Row(
             children: [
@@ -975,7 +989,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
               Switch(
                 value: appUpdateData![activeKey] ?? false,
                 onChanged: (v) => setState(() => appUpdateData![activeKey] = v),
-                activeColor: Colors.blue,
+                activeThumbColor: Colors.blue,
               ),
             ],
           ),
@@ -998,7 +1012,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.blue.withOpacity(0.1),
+                  color: Colors.blue.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: const Text('Live', style: TextStyle(color: Colors.blue, fontSize: 10, fontWeight: FontWeight.bold)),
@@ -1058,13 +1072,17 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
       }).eq('id', 1);
       
       _loadAppUpdateData();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('App configuration updated successfully!'), backgroundColor: Colors.green),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('App configuration updated successfully!'), backgroundColor: Colors.green),
+        );
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error updating app config: $e'), backgroundColor: Colors.red),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error updating app config: $e'), backgroundColor: Colors.red),
+        );
+      }
       if (mounted) setState(() => isLoadingUpdate = false);
     }
   }

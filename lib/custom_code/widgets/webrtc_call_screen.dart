@@ -430,7 +430,7 @@ class _WebRTCCallScreenState extends State<WebRTCCallScreen> {
               width: double.infinity,
               height: double.infinity,
               decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.6),
+                color: Colors.black.withOpacity(0.6),
                 backgroundBlendMode: BlendMode.darken,
               ),
               child: ClipRRect(
@@ -445,9 +445,9 @@ class _WebRTCCallScreenState extends State<WebRTCCallScreen> {
                           padding: const EdgeInsets.all(30),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: Colors.white.withValues(alpha: 0.05),
+                            color: Colors.white.withOpacity(0.05),
                             border: Border.all(
-                                color: Colors.yellow.withValues(alpha: 0.3),
+                                color: Colors.yellow.withOpacity(0.3),
                                 width: 2),
                           ),
                           child: const Icon(Icons.radar,
@@ -512,7 +512,7 @@ class _WebRTCCallScreenState extends State<WebRTCCallScreen> {
                         borderRadius: BorderRadius.circular(30),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.orange.withValues(alpha: 0.4),
+                            color: Colors.orange.withOpacity(0.4),
                             blurRadius: 10,
                             offset: const Offset(0, 4),
                           ),
@@ -547,7 +547,7 @@ class _WebRTCCallScreenState extends State<WebRTCCallScreen> {
               builder: (context, sheetScrollController) {
                 return Container(
                   decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.85),
+                    color: Colors.black.withOpacity(0.85),
                     borderRadius:
                         const BorderRadius.vertical(top: Radius.circular(24)),
                     border: Border(
@@ -555,7 +555,7 @@ class _WebRTCCallScreenState extends State<WebRTCCallScreen> {
                             color: Colors.white.withValues(alpha: 0.1))),
                     boxShadow: [
                       BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.5),
+                          color: Colors.black.withOpacity(0.5),
                           blurRadius: 20)
                     ],
                   ),
@@ -698,7 +698,7 @@ class _WebRTCCallScreenState extends State<WebRTCCallScreen> {
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                                color: Colors.red.withValues(alpha: 0.5),
+                                color: Colors.red.withOpacity(0.5),
                                 blurRadius: 15,
                                 spreadRadius: 2)
                           ],
@@ -739,9 +739,9 @@ class _WebRTCCallScreenState extends State<WebRTCCallScreen> {
           child: Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.1),
+              color: Colors.white.withOpacity(0.1),
               shape: BoxShape.circle,
-              border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+              border: Border.all(color: Colors.white.withOpacity(0.2)),
             ),
             child: Icon(icon, color: color, size: 24),
           ),

@@ -646,7 +646,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                               //   backgroundImage: NetworkImage(
                               //     _supabase.auth.currentUser
                               //             ?.userMetadata?[''] ??
-                              //         'https://via.placeholder.com/36',
+                              //         '',
                               //   ),
                               //   backgroundColor: Colors.grey[300],
                               // ),
@@ -1609,7 +1609,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                             backgroundImage: NetworkImage(
                               _supabase.auth.currentUser
                                       ?.userMetadata?['avatar_url'] ??
-                                  'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR-7uOSBHPTHbUQa_3b_hl71XzW2ydiej3Pm39YYoi4281nATrXtKKuq7OdPQSbAdnDAsw&usqp=CAU',
+                                  '',
                             ),
                             backgroundColor: Colors.grey[300],
                           ),

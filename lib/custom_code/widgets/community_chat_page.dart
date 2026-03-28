@@ -12,21 +12,12 @@ import 'package:flutter/material.dart';
 // boilerplate code using the green button on the right!
 
 import 'package:image_picker/image_picker.dart';
-import 'package:image_picker/image_picker.dart';
-import 'dart:async';
 import 'dart:async';
 import 'package:timeago/timeago.dart' as timeago;
-import 'package:timeago/timeago.dart' as timeago;
-import 'dart:ui' as ui;
 import 'dart:ui' as ui;
 import 'package:shimmer/shimmer.dart';
-import 'package:shimmer/shimmer.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/services.dart';
-
 import 'package:image/image.dart' as img;
-import 'package:image/image.dart' as img;
-import 'package:flutter/material.dart' as flutter;
 import 'package:flutter/material.dart' as flutter;
 
 class CommunityChatPage extends StatefulWidget {

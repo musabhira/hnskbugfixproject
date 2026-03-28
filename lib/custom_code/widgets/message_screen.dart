@@ -1401,8 +1401,11 @@ class _MessageScreenState extends State<MessageScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
+    return Theme(
+      data: ThemeData.dark(),
+      child: Scaffold(
+        backgroundColor: const Color.fromARGB(255, 32, 31, 31),
+        appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
@@ -1644,8 +1647,9 @@ class _MessageScreenState extends State<MessageScreen> {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildBlockedView() {
     return Center(

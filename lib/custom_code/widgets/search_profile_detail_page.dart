@@ -21,13 +21,8 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pocket_mates_app/src/features/profile/data/profile_repository.dart';
 
-// Automatic FlutterFlow imports
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/custom_code/actions/index.dart'; // Imports custom actions
-// Begin custom widget code
-// DO NOT REMOVE OR MODIFY THE CODE ABOVE!
+import 'chat/whatsapp_group_chat.dart';
 
-import 'dart:math' as math;
 import 'dart:math' as math;
 
 class SearchProfileDetailPage extends StatefulWidget {
@@ -43,7 +38,7 @@ class SearchProfileDetailPage extends StatefulWidget {
   });
 
   @override
-  _SearchProfileDetailPageState createState() =>
+  State<SearchProfileDetailPage> createState() =>
       _SearchProfileDetailPageState();
 }
 
@@ -52,18 +47,15 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
   Map<String, dynamic>? _profileData;
   List<Map<String, dynamic>> _galleryItems = [];
   List<Map<String, dynamic>> _serviceItems = [];
-  List<Map<String, dynamic>> _commentItems = [];
   bool _isLoading = false;
   final _supabase = SupaFlow.client;
 
   late TabController _tabController;
   int _followersCount = 0;
-  int _followingCount = 0;
   ScrollController _scrollController = ScrollController();
   String _followersCountFormatted = '0';
   String _followingCountFormatted = '0';
   bool _isFollowing = false;
-  bool _isCurrentUser = false;
   String? _currentUserId;
   List<Map<String, dynamic>> userThreads = [];
   bool isLoading = true;
@@ -124,10 +116,6 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
   }
 
   void _checkIfCurrentUser() {
-    final currentUserId = _supabase.auth.currentUser?.id;
-    safeSetState(() {
-      _isCurrentUser = currentUserId == widget.userId;
-    });
   }
 
   String _formatCount(int count) {
@@ -222,7 +210,6 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
 
       safeSetState(() {
         _followersCount = followersCountRaw;
-        _followingCount = followingCountRaw;
         _followersCountFormatted = _formatCount(followersCountRaw);
         _followingCountFormatted = _formatCount(followingCountRaw);
       });
@@ -340,9 +327,7 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
       safeSetState(() {
         _profileData = profile;
         _galleryItems = uniqueGalleryItems.values.toList();
-        print(_galleryItems);
         _serviceItems = uniqueServiceItems.values.toList();
-        _commentItems = uniquecommentItems.values.toList();
         _isLoading = false;
       });
     } catch (e) {
@@ -431,15 +416,43 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
 
   Widget buildVerifiedTick(bool isVerified, Color? color) {
     if (!isVerified) return const SizedBox.shrink();
-
-    return Container(
-      margin: const EdgeInsets.only(left: 4),
+    return Padding(
+      padding: const EdgeInsets.only(left: 4.0),
       child: Icon(
         Icons.verified,
-        color: color ?? Colors.blue,
-        size: 20,
+        color: color,
+        size: 16,
       ),
     );
+  }
+
+  Color _getBgColor() {
+    return _profileData != null && _profileData!['bg_color_code'] != null
+        ? Color(int.parse('FF${_profileData!['bg_color_code'].substring(1)}',
+            radix: 16))
+        : Colors.black;
+  }
+
+  Color _getButtonColor() {
+    return _profileData != null && _profileData!['button_color_code'] != null
+        ? Color(int.parse('FF${_profileData!['button_color_code'].substring(1)}',
+            radix: 16))
+        : Colors.black;
+  }
+
+  Color _getButtonTextColor() {
+    return _profileData != null && _profileData!['button_text_color'] != null
+        ? Color(int.parse(
+            'FF${_profileData!['button_text_color'].substring(1)}',
+            radix: 16))
+        : Colors.white;
+  }
+
+  Color _getBgTextColor() {
+    return _profileData != null && _profileData!['bg_text_color'] != null
+        ? Color(int.parse('FF${_profileData!['bg_text_color'].substring(1)}',
+            radix: 16))
+        : Colors.black;
   }
 
   void _showGalleryItemDetails(Map<String, dynamic> item) {
@@ -447,14 +460,9 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
     int likeCount = item['like_count'] ?? 0;
     bool isLiked = item['like_id'] != null;
     String galleryId = item['gallery_id'] ?? '';
-    String commentcontent = item['comment_content'] ?? '';
-    String galleryTitle = item['gallery_title'] ?? '';
-    String gallerySecondTitle = '';
 
-    List<Map<String, dynamic>> comments = [];
     bool isLoading = true;
-    String? errorMessage;
-    bool _isMoreRecent(
+    bool isMoreRecent(
         Map<String, dynamic> comment1, Map<String, dynamic> comment2) {
       final time1 = comment1['created_at'] ?? comment1['comment_created_at'];
       final time2 = comment2['created_at'] ?? comment2['comment_created_at'];
@@ -501,7 +509,7 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
           if (commentContent != null && commentContent.isNotEmpty) {
             // Keep the first occurrence or the one with more recent timestamp
             if (!uniqueComments.containsKey(commentContent) ||
-                _isMoreRecent(comment, uniqueComments[commentContent]!)) {
+                isMoreRecent(comment, uniqueComments[commentContent]!)) {
               uniqueComments[commentContent] = comment;
             }
           }
@@ -565,32 +573,13 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
       } catch (error) {
         setModalState(() {
           _errorMessage = 'Failed to load comments: $error';
-          print(_errorMessage);
+          debugPrint(_errorMessage);
           _isLoading = false;
           // Don't clear _comments on error to preserve existing data
         });
       }
     }
 
-// Alternative approach: Fetch gallery info separately for better performance
-    Future<void> fetchGalleryInfo() async {
-      try {
-        final response = await _supabase
-            .from('gallery_with_comments_view')
-            .select('gallery_title, gallery_second_title')
-            .eq('gallery_id', galleryId)
-            .limit(1)
-            .single();
-
-        galleryTitle = response['gallery_title'] ?? 'No Title';
-        gallerySecondTitle =
-            response['gallery_second_title'] ?? 'No Second Title';
-      } catch (error) {
-        print('Error fetching gallery info: $error');
-        galleryTitle = 'No Title';
-        gallerySecondTitle = 'No Second Title';
-      }
-    }
 
     // Initialize comments list and controller
     final TextEditingController commentController = TextEditingController();
@@ -610,7 +599,8 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
             try {
               final userId = _supabase.auth.currentUser?.id;
               if (userId == null) {
-                ScaffoldMessenger.of(context).showSnackBar(
+                if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                       content: Text('You need to be logged in to like items')),
                 );
@@ -650,7 +640,8 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                 item['like_count'] =
                     math.max<int>(0, ((item['like_count'] ?? 0) as int) - 1);
 
-                ScaffoldMessenger.of(context).showSnackBar(
+                if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Removed from likes')),
                 );
               }
@@ -689,12 +680,14 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                 item['like_created_at'] = response['created_at'];
                 item['like_count'] = (item['like_count'] ?? 0) + 1;
 
-                ScaffoldMessenger.of(context).showSnackBar(
+                if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Added to likes')),
                 );
               }
             } catch (e) {
-              ScaffoldMessenger.of(context).showSnackBar(
+              if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text('Error toggling like: $e')),
               );
             }
@@ -707,7 +700,8 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
             try {
               final userId = _supabase.auth.currentUser?.id;
               if (userId == null) {
-                ScaffoldMessenger.of(context).showSnackBar(
+                if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                       content: Text('You need to be logged in to comment')),
                 );
@@ -724,7 +718,8 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
 
               final profileId = profileResponse['id'];
               if (profileId == null) {
-                ScaffoldMessenger.of(context).showSnackBar(
+                if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Profile not found')),
                 );
                 return;
@@ -749,14 +744,16 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
               // Re-fetch all comments to update the list
               await fetchComments(setModalState);
 
-              ScaffoldMessenger.of(context).showSnackBar(
+              if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Comment added successfully')),
               );
             } catch (e) {
-              ScaffoldMessenger.of(context).showSnackBar(
+              if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text('Error adding comment: $e')),
               );
-              print(e);
+              debugPrint(e.toString());
             }
           }
 
@@ -832,13 +829,14 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                     child: Container(
                                       width: double.infinity,
                                       decoration: BoxDecoration(
-                                        image: DecorationImage(
-                                          image: CachedNetworkImageProvider(
-                                            item['gallery_image_url'] ??
-                                                'https://via.placeholder.com/400',
-                                          ),
-                                          fit: BoxFit.cover,
-                                        ),
+                                        image: (item['gallery_image_url'] != null &&
+                                              item['gallery_image_url'] != '')
+                                          ? DecorationImage(
+                                              image: CachedNetworkImageProvider(
+                                                  item['gallery_image_url']),
+                                              fit: BoxFit.cover,
+                                            )
+                                          : null,
                                       ),
                                     ),
                                   ),
@@ -1092,11 +1090,11 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                           icon: const Icon(Icons.share),
                                           label: const Text('Share'),
                                           style: ElevatedButton.styleFrom(
-                                            padding: const EdgeInsets.symmetric(
-                                                vertical: 12),
                                             backgroundColor: _getButtonColor(),
                                             foregroundColor:
                                                 _getButtonTextColor(),
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 12),
                                             shape: RoundedRectangleBorder(
                                               borderRadius:
                                                   BorderRadius.circular(12),
@@ -1244,7 +1242,7 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                                   content: Text(
                                                       'Error deleting comment: $e')),
                                             );
-                                            print(e);
+                                            debugPrint(e.toString());
                                           }
                                         }
 
@@ -1256,7 +1254,7 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                                 BorderRadius.circular(16),
                                             border: Border.all(
                                                 color: _getBgColor()
-                                                    .withValues(alpha: 0.6)),
+                                                    .withOpacity(0.6)),
                                           ),
                                           child: Column(
                                             crossAxisAlignment:
@@ -1343,8 +1341,8 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                                         Icons.delete_outline,
                                                         size: 18,
                                                         color: _getBgTextColor()
-                                                            .withValues(
-                                                                alpha: 0.7),
+                                                            .withOpacity(
+                                                                0.7),
                                                       ),
                                                       onPressed: deleteComment,
                                                     ),
@@ -1395,7 +1393,6 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                           BoxShadow(
                             offset: const Offset(0, -2),
                             blurRadius: 6,
-                            // ignore: deprecated_member_use
                             color: Colors.black.withValues(alpha: 0.05),
                           ),
                         ],
@@ -1417,7 +1414,7 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                   ),
                                   filled: true,
                                   fillColor:
-                                      _getBgColor().withValues(alpha: 0.6),
+                                      _getBgColor().withOpacity(0.6),
                                   contentPadding: const EdgeInsets.symmetric(
                                     horizontal: 16,
                                     vertical: 10,
@@ -1480,69 +1477,6 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
     super.dispose();
   }
 
-  Future<void> _toggleLike(Map<String, dynamic> item) async {
-    try {
-      final userId = _supabase.auth.currentUser?.id;
-      if (userId == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('You need to be logged in to like items')),
-        );
-        return;
-      }
-
-      final galleryId = item['gallery_id'];
-      if (galleryId == null) return;
-
-      // If already liked, remove the like
-      if (item['like_id'] != null) {
-        await _supabase.from('likes').delete().eq('id', item['like_id']);
-
-        // Update local state
-        safeSetState(() {
-          final index = _galleryItems
-              .indexWhere((element) => element['gallery_id'] == galleryId);
-          if (index != -1) {
-            _galleryItems[index]['like_id'] = null;
-            _galleryItems[index]['like_created_at'] = null;
-          }
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Removed from likes')),
-        );
-      }
-      // If not liked, add a like
-      else {
-        final response = await _supabase
-            .from('likes')
-            .insert({
-              'user_id': userId,
-              'gallery_id': galleryId,
-            })
-            .select()
-            .single();
-
-        // Update local state
-        safeSetState(() {
-          final index = _galleryItems
-              .indexWhere((element) => element['gallery_id'] == galleryId);
-          if (index != -1) {
-            _galleryItems[index]['like_id'] = response['id'];
-            _galleryItems[index]['like_created_at'] = response['created_at'];
-          }
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Added to likes')),
-        );
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error toggling like: $e')),
-      );
-    }
-  }
 
 // Share gallery item
   void _shareGalleryItem(Map<String, dynamic> item) async {
@@ -1578,12 +1512,12 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
           .limit(1);
 
       safeSetState(() {
-        print(response);
+        debugPrint(response.toString());
         hideData = response.isNotEmpty ? response.first : null;
         isLoading = false;
       });
     } catch (e) {
-      print('Error fetching hide status: $e');
+      debugPrint('Error fetching hide status: $e');
       safeSetState(() {
         isLoading = false;
       });
@@ -1741,32 +1675,6 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
     return cleaned;
   }
 
-// Alternative version with custom message parameter
-  void _sendWhatsAppMessageWithText(String messageText) async {
-    try {
-      String phoneNumber = _profileData?['phone_no'];
-
-      if (phoneNumber.toString().isEmpty) {
-        _showErrorSnackBar('WhatsApp number not available');
-        return;
-      }
-
-      // Encode the message for URL
-      String encodedMessage = Uri.encodeComponent(messageText);
-
-      // Create WhatsApp URL with message
-      final whatsappUrl = 'https://wa.me/$phoneNumber?text=$encodedMessage';
-      final Uri uri = Uri.parse(whatsappUrl);
-
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      } else {
-        _showErrorSnackBar('WhatsApp is not installed or number is invalid');
-      }
-    } catch (e) {
-      _showErrorSnackBar('Error opening WhatsApp: ${e.toString()}');
-    }
-  }
 
 // Helper method to show error messages
   void _showErrorSnackBar(String message) {
@@ -1778,36 +1686,6 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
     );
-  }
-
-  Color _getButtonColor() {
-    return _profileData != null && _profileData!['button_color_code'] != null
-        ? Color(int.parse(
-            'FF${_profileData!['button_color_code'].substring(1)}',
-            radix: 16))
-        : Colors.yellow;
-  }
-
-  Color _getBgColor() {
-    return _profileData != null && _profileData!['bg_color_code'] != null
-        ? Color(int.parse('FF${_profileData!['bg_color_code'].substring(1)}',
-            radix: 16))
-        : Colors.black;
-  }
-
-  Color _getButtonTextColor() {
-    return _profileData != null && _profileData!['button_text_color'] != null
-        ? Color(int.parse(
-            'FF${_profileData!['button_text_color'].substring(1)}',
-            radix: 16))
-        : Colors.white;
-  }
-
-  Color _getBgTextColor() {
-    return _profileData != null && _profileData!['bg_text_color'] != null
-        ? Color(int.parse('FF${_profileData!['bg_text_color'].substring(1)}',
-            radix: 16))
-        : Colors.black;
   }
 
   Widget _buildStatWidget(
@@ -1853,7 +1731,6 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
       ),
     );
   }
-
   void _shareToWhatsApp() async {
     try {
       String profileUrl =
@@ -1861,7 +1738,8 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
       String message = 'Check out this profile: $profileUrl';
       String whatsappUrl =
           'https://wa.me/?text=${Uri.encodeComponent(message)}';
-      _launchUrl(whatsappUrl);
+      await launchUrl(Uri.parse(whatsappUrl),
+          mode: LaunchMode.externalApplication);
     } catch (e) {
       String profileUrl =
           '${WhatsAppShareHelper.baseAppUrl}/searchprofileuser?userid=${widget.userId}';
@@ -1879,7 +1757,7 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
     // Instagram doesn't support direct text sharing, so copy to clipboard
     flutter.Clipboard.setData(flutter.ClipboardData(text: profileUrl));
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Link copied! Paste in Instagram')),
+      const SnackBar(content: Text('Link copied for Instagram sharing')),
     );
   }
 
@@ -1898,11 +1776,7 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
     Share.share('Check out this profile: $profileUrl');
   }
 
-  void _launchUrl(String url) async {
-    if (await canLaunch(url)) {
-      await launch(url);
-    }
-  }
+
 
   void _showBlockDialog() {
     showDialog(
@@ -1963,6 +1837,154 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
     );
   }
 
+  Future<void> _blockUser() async {
+    try {
+      final currentUserId = _supabase.auth.currentUser?.id;
+      if (currentUserId == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('You need to be logged in to block users')),
+        );
+        return;
+      }
+
+      await _supabase.from('blocks').insert({
+        'blocker_id': currentUserId,
+        'blocked_id': widget.userId,
+      });
+
+      safeSetState(() {
+        _isBlocked = true;
+        _blockTime = DateTime.now();
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Blocked ${_profileData!['name'] ?? 'user'}')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error blocking user: $e')),
+      );
+    }
+  }
+
+  Future<void> _unblockUser() async {
+    try {
+      final currentUserId = _supabase.auth.currentUser?.id;
+      if (currentUserId == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('You need to be logged in to unblock users')),
+        );
+        return;
+      }
+
+      await _supabase
+          .from('blocks')
+          .delete()
+          .eq('blocker_id', currentUserId)
+          .eq('blocked_id', widget.userId);
+
+      safeSetState(() {
+        _isBlocked = false;
+        _blockTime = null;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Unblocked ${_profileData!['name'] ?? 'user'}')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error unblocking user: $e')),
+      );
+    }
+  }
+
+  String _formatBlockTime(DateTime time) {
+    return '${time.day}/${time.month}/${time.year} at ${time.hour}:${time.minute}';
+  }
+
+  Widget _buildBlockedView() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.block, size: 80, color: Colors.red.withValues(alpha: 0.7)),
+          const SizedBox(height: 24),
+          Text(
+            'You have blocked ${_profileData!['name'] ?? 'this user'}.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: _getBgTextColor(),
+            ),
+          ),
+          const SizedBox(height: 16),
+          if (_blockTime != null)
+            Text(
+              'Blocked on: ${_formatBlockTime(_blockTime!)}',
+              style: TextStyle(
+                color: _getBgTextColor().withOpacity(0.6),
+                fontSize: 14,
+              ),
+            ),
+          const SizedBox(height: 24),
+          ElevatedButton(
+            onPressed: _showBlockDialog,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: const Text('Unblock'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBlockedByOtherView() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.block, size: 80, color: Colors.grey.withValues(alpha: 0.7)),
+          const SizedBox(height: 24),
+          Text(
+            'You have been blocked by ${_profileData!['name'] ?? 'this user'}.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: _getBgTextColor(),
+            ),
+          ),
+          const SizedBox(height: 16),
+          if (_blockedByOtherTime != null)
+            Text(
+              'Blocked on: ${_formatBlockTime(_blockedByOtherTime!)}',
+              style: TextStyle(
+                color: _getBgTextColor().withOpacity(0.6),
+                fontSize: 14,
+              ),
+            ),
+          const SizedBox(height: 24),
+          Text(
+            'You cannot view their profile or interact with them.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: _getBgTextColor().withValues(alpha: 0.7),
+              fontSize: 16,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+
   @override
   Widget build(BuildContext context) {
     Color buttonColor = _getButtonColor();
@@ -2019,6 +2041,7 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
 
                 case 'navigate':
                   context.push('/home');
+                  break;
                 case 'report':
                   final isAuthenticated =
                       await AuthAlertBox.checkAuthAndShowAlert(
@@ -2034,7 +2057,8 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                       contentTitle: _profileData!['name'].toString(),
                       onReportSubmitted: () {
                         Navigator.of(context).pop(); // Go back to previous page
-                        ScaffoldMessenger.of(context).showSnackBar(
+                        if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text(
                                 'Thank you for your report. We\'ll review it soon.'),
@@ -2044,13 +2068,14 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                       },
                     );
                   }
+                  break;
                 case 'block':
-                  final isAuthenticated =
+                  final isAuthenticatedBlock =
                       await AuthAlertBox.checkAuthAndShowAlert(
                     context: context,
                     customMessage: "Please login to block content",
                   );
-                  if (isAuthenticated) {
+                  if (isAuthenticatedBlock) {
                     _showBlockDialog();
                   }
                   break;
@@ -2201,40 +2226,6 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                           : Stack(
                               children: [
                                 // Banner covering full screen with gradient overlay
-                                // Container(
-                                //   height:
-                                //       MediaQuery.of(context).size.height * 0.4,
-                                //   width: double.infinity,
-                                //   decoration: BoxDecoration(
-                                //     image: _profileData!['banner_image_url'] !=
-                                //             null
-                                //         ? DecorationImage(
-                                //             image: CachedNetworkImageProvider(
-                                //               _profileData!['banner_image_url'],
-                                //             ),
-                                //             fit: BoxFit.cover,
-                                //           )
-                                //         : null,
-                                //     color: _profileData!['banner_image_url'] ==
-                                //             null
-                                //         ? buttonColor
-                                //         : null,
-                                //   ),
-                                //   child: Container(
-                                //     decoration: BoxDecoration(
-                                //       gradient: LinearGradient(
-                                //         begin: Alignment.topCenter,
-                                //         end: Alignment.bottomCenter,
-                                //         colors: [
-                                //           Colors.transparent,
-                                //           bgColor.withValues(alpha: 0.8),
-                                //           bgColor,
-                                //         ],
-                                //         stops: const [0.1, 0.7, 0.9],
-                                //       ),
-                                //     ),
-                                //   ),
-                                // ),
                                 Container(
                                   height:
                                       MediaQuery.of(context).size.height * 0.4,
@@ -2299,21 +2290,21 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                             margin: const EdgeInsets.symmetric(
                                                 horizontal: 12),
                                             decoration: BoxDecoration(
-                                              color: bgColor.withValues(
-                                                  alpha: 0.95),
+                                              color: bgColor.withOpacity(
+                                                  0.95),
                                               borderRadius:
                                                   BorderRadius.circular(20),
                                               boxShadow: [
                                                 BoxShadow(
                                                   color: Colors.black
-                                                      .withValues(alpha: 0.1),
+                                                      .withOpacity(0.1),
                                                   blurRadius: 15,
                                                   spreadRadius: 2,
                                                 ),
                                               ],
                                               border: Border.all(
-                                                color: buttonColor.withValues(
-                                                    alpha: 0.2),
+                                                color: buttonColor.withOpacity(
+                                                    0.2),
                                                 width: 1,
                                               ),
                                             ),
@@ -2424,15 +2415,10 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                                                     _profileData![
                                                                             'name'] ??
                                                                         'No Name',
-                                                                    style:
-                                                                        TextStyle(
-                                                                      fontSize:
-                                                                          18,
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .bold,
-                                                                      color:
-                                                                          bgTextColor,
+                                                                    style: TextStyle(
+                                                                      fontSize: 18,
+                                                                      fontWeight: FontWeight.bold,
+                                                                      color: buttonTextColor,
                                                                     ),
                                                                   ),
                                                                   buildVerifiedTick(
@@ -2488,9 +2474,8 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                                                             .location_on,
                                                                         size:
                                                                             14,
-                                                                        color: bgTextColor.withValues(
-                                                                            alpha:
-                                                                                0.6),
+                                                                        color: bgTextColor.withOpacity(
+                                                                            0.6),
                                                                       ),
                                                                       const SizedBox(
                                                                           width:
@@ -2537,8 +2522,8 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                                       .symmetric(vertical: 12),
                                                   decoration: BoxDecoration(
                                                     color:
-                                                        buttonColor.withValues(
-                                                            alpha: 0.08),
+                                                        buttonColor.withOpacity(
+                                                            0.08),
                                                     borderRadius:
                                                         BorderRadius.circular(
                                                             12),
@@ -2604,22 +2589,22 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                                   11, 12, 11, 0),
                                               padding: const EdgeInsets.all(14),
                                               decoration: BoxDecoration(
-                                                color: bgColor.withValues(
-                                                    alpha: 0.95),
+                                                color: bgColor.withOpacity(
+                                                    0.95),
                                                 borderRadius:
                                                     BorderRadius.circular(20),
                                                 boxShadow: [
                                                   BoxShadow(
                                                     color: Colors.black
-                                                        .withValues(
-                                                            alpha: 0.08),
+                                                        .withOpacity(
+                                                            0.08),
                                                     blurRadius: 12,
                                                     spreadRadius: 1,
                                                   ),
                                                 ],
                                                 border: Border.all(
-                                                  color: buttonColor.withValues(
-                                                      alpha: 0.2),
+                                                  color: buttonColor.withOpacity(
+                                                      0.2),
                                                   width: 1,
                                                 ),
                                               ),
@@ -2651,8 +2636,8 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                                     _profileData!['bio'],
                                                     style: TextStyle(
                                                       color: bgTextColor
-                                                          .withValues(
-                                                              alpha: 0.9),
+                                                          .withOpacity(
+                                                              0.9),
                                                       fontSize: 13,
                                                       height: 1.5,
                                                     ),
@@ -2676,8 +2661,8 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                             margin: const EdgeInsets.all(11),
                                             padding: const EdgeInsets.all(11),
                                             decoration: BoxDecoration(
-                                              color: bgColor.withValues(
-                                                  alpha: 0.95),
+                                              color: bgColor.withOpacity(
+                                                  0.95),
                                               borderRadius:
                                                   BorderRadius.circular(20),
                                               boxShadow: [
@@ -2689,8 +2674,8 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                                 ),
                                               ],
                                               border: Border.all(
-                                                color: buttonColor.withValues(
-                                                    alpha: 0.2),
+                                                color: buttonColor.withOpacity(
+                                                    0.2),
                                                 width: 1,
                                               ),
                                             ),
@@ -2854,7 +2839,7 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                                                       image:
                                                                           CachedNetworkImageProvider(
                                                                         item['gallery_image_url'] ??
-                                                                            'https://via.placeholder.com/150',
+                                                                            '',
                                                                       ),
                                                                       fit: BoxFit
                                                                           .cover,
@@ -2951,11 +2936,14 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                                             color:
                                                                 bgTextColor)))
                                                 : ListView.builder(
-                                                    padding:
-                                                        const EdgeInsets.all(
-                                                            16),
-                                                    itemCount:
-                                                        _serviceItems.length,
+                                                     padding:
+                                                         const EdgeInsets.all(
+                                                             16),
+                                                     shrinkWrap: true,
+                                                     physics:
+                                                         const NeverScrollableScrollPhysics(),
+                                                     itemCount:
+                                                         _serviceItems.length,
                                                     // physics:
                                                     //     const NeverScrollableScrollPhysics(),
                                                     itemBuilder:
@@ -3118,12 +3106,14 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                                         color: bgTextColor),
                                                   ))
                                                 : ListView.builder(
-                                                    // physics:
-                                                    //     const NeverScrollableScrollPhysics(),
-                                                    itemCount:
-                                                        userThreads.length,
-                                                    itemBuilder:
-                                                        (context, index) {
+                                                     padding: EdgeInsets.zero,
+                                                     shrinkWrap: true,
+                                                     physics:
+                                                         const NeverScrollableScrollPhysics(),
+                                                     itemCount:
+                                                         userThreads.length,
+                                                     itemBuilder:
+                                                         (context, index) {
                                                       final thread =
                                                           userThreads[index];
                                                       //  final Map<String, dynamic> threads = userThreads[index];
@@ -3141,122 +3131,122 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                                           formattedLikes =
                                                           _formatCount(
                                                               totalLikes);
-                                                      return Card(
-                                                        color: buttonColor,
-                                                        margin: const EdgeInsets
-                                                            .symmetric(
-                                                          vertical: 1,
-                                                          horizontal: 16,
-                                                        ),
-                                                        child: Padding(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .all(16),
-                                                          child: Column(
-                                                            crossAxisAlignment:
-                                                                CrossAxisAlignment
-                                                                    .start,
-                                                            children: [
-                                                              Text(
-                                                                timeago.format(
-                                                                    DateTime.parse(
-                                                                        thread[
-                                                                            'created_at'])),
-                                                                style:
-                                                                    TextStyle(
-                                                                  color:
-                                                                      buttonTextColor,
-                                                                  fontSize: 12,
-                                                                ),
-                                                              ),
-                                                              const SizedBox(
-                                                                  height: 8),
-                                                              Text(
-                                                                thread[
-                                                                    'content'],
-                                                                style:
-                                                                    TextStyle(
-                                                                  fontSize: 14,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w500,
-                                                                  color:
-                                                                      buttonTextColor,
-                                                                ),
-                                                              ),
-                                                              const SizedBox(
-                                                                  height: 16),
-                                                              Row(
-                                                                mainAxisAlignment:
-                                                                    MainAxisAlignment
-                                                                        .spaceBetween,
-                                                                children: [
-                                                                  InkWell(
-                                                                    onTap: () =>
-                                                                        {
-                                                                      Navigator.push(
-                                                                          context,
-                                                                          MaterialPageRoute(
-                                                                              builder: (context) => ThreadCommentsPage(
-                                                                                    threadContent: thread['content'],
-                                                                                    threadId: thread['id'],
-                                                                                  )))
-                                                                    },
-                                                                    child: Row(
-                                                                      children: [
-                                                                        Icon(
-                                                                            Icons
-                                                                                .favorite,
-                                                                            size:
-                                                                                16,
-                                                                            color:
-                                                                                buttonTextColor),
-                                                                        const SizedBox(
-                                                                            width:
-                                                                                4),
-                                                                        Text(
-                                                                            formattedLikes,
-                                                                            style:
-                                                                                TextStyle(color: buttonTextColor)),
-                                                                      ],
-                                                                    ),
-                                                                  ),
-                                                                  InkWell(
-                                                                    onTap: () =>
-                                                                        {
-                                                                      Navigator.push(
-                                                                          context,
-                                                                          MaterialPageRoute(
-                                                                              builder: (context) => ThreadCommentsPage(
-                                                                                    threadContent: thread['content'],
-                                                                                    threadId: thread['id'],
-                                                                                  )))
-                                                                    },
-                                                                    child: Row(
-                                                                      children: [
-                                                                        Icon(
-                                                                            Icons
-                                                                                .comment,
-                                                                            size:
-                                                                                16,
-                                                                            color:
-                                                                                buttonTextColor),
-                                                                        const SizedBox(
-                                                                            width:
-                                                                                4),
-                                                                        Text(
-                                                                            '${thread['comment_count'] ?? 0}',
-                                                                            style:
-                                                                                TextStyle(color: buttonTextColor)),
-                                                                      ],
-                                                                    ),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        ),
-                                                      );
+                                                       return Card(
+                                                         color: buttonColor,
+                                                         margin: const EdgeInsets
+                                                             .symmetric(
+                                                           vertical: 1,
+                                                           horizontal: 16,
+                                                         ),
+                                                         child: Padding(
+                                                           padding:
+                                                               const EdgeInsets
+                                                                   .all(16),
+                                                           child: Column(
+                                                             crossAxisAlignment:
+                                                                 CrossAxisAlignment
+                                                                     .start,
+                                                             children: [
+                                                               Text(
+                                                                 timeago.format(
+                                                                     DateTime.parse(
+                                                                         thread[
+                                                                             'created_at'])),
+                                                                 style:
+                                                                     TextStyle(
+                                                                   color:
+                                                                       buttonTextColor,
+                                                                   fontSize: 12,
+                                                                 ),
+                                                               ),
+                                                               const SizedBox(
+                                                                   height: 8),
+                                                               Text(
+                                                                 thread[
+                                                                     'content'] ?? '',
+                                                                 style:
+                                                                     TextStyle(
+                                                                   fontSize: 14,
+                                                                   fontWeight:
+                                                                       FontWeight
+                                                                           .w500,
+                                                                   color:
+                                                                       buttonTextColor,
+                                                                 ),
+                                                               ),
+                                                               const SizedBox(
+                                                                   height: 16),
+                                                               Row(
+                                                                 mainAxisAlignment:
+                                                                     MainAxisAlignment
+                                                                         .spaceBetween,
+                                                                 children: [
+                                                                   InkWell(
+                                                                     onTap: () =>
+                                                                         {
+                                                                       Navigator.push(
+                                                                           context,
+                                                                           MaterialPageRoute(
+                                                                               builder: (context) => ThreadCommentsPage(
+                                                                                     threadContent: thread['content'] ?? '',
+                                                                                     threadId: thread['id'] ?? '',
+                                                                                   )))
+                                                                     },
+                                                                     child: Row(
+                                                                       children: [
+                                                                         Icon(
+                                                                             Icons
+                                                                                 .favorite,
+                                                                             size:
+                                                                                 16,
+                                                                             color:
+                                                                                 buttonTextColor),
+                                                                         const SizedBox(
+                                                                             width:
+                                                                                 4),
+                                                                         Text(
+                                                                             formattedLikes,
+                                                                             style:
+                                                                                 TextStyle(color: buttonTextColor)),
+                                                                       ],
+                                                                     ),
+                                                                   ),
+                                                                   InkWell(
+                                                                     onTap: () =>
+                                                                         {
+                                                                       Navigator.push(
+                                                                           context,
+                                                                           MaterialPageRoute(
+                                                                               builder: (context) => ThreadCommentsPage(
+                                                                                     threadContent: thread['content'] ?? '',
+                                                                                     threadId: thread['id'] ?? '',
+                                                                                   )))
+                                                                     },
+                                                                     child: Row(
+                                                                       children: [
+                                                                         Icon(
+                                                                             Icons
+                                                                                 .comment,
+                                                                             size:
+                                                                                 16,
+                                                                             color:
+                                                                                 buttonTextColor),
+                                                                         const SizedBox(
+                                                                             width:
+                                                                                 4),
+                                                                         Text(
+                                                                             '${thread['comment_count'] ?? 0}',
+                                                                             style:
+                                                                                 TextStyle(color: buttonTextColor)),
+                                                                       ],
+                                                                     ),
+                                                                   ),
+                                                                 ],
+                                                               ),
+                                                             ],
+                                                           ),
+                                                         ),
+                                                       );
                                                     },
                                                   ),
                                           ],
@@ -3286,8 +3276,7 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                               vertical: 8,
                                             ),
                                             decoration: BoxDecoration(
-                                              color: buttonColor.withValues(
-                                                  alpha: 0.9),
+                                              color: buttonColor.withValues(alpha: 0.9),
                                               borderRadius:
                                                   BorderRadius.circular(25),
                                               boxShadow: [
@@ -3300,8 +3289,7 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                                 ),
                                               ],
                                               border: Border.all(
-                                                color: buttonColor.withValues(
-                                                    alpha: 0.3),
+                                                color: buttonColor.withOpacity(0.3),
                                                 width: 1,
                                               ),
                                             ),
@@ -3342,187 +3330,6 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                   foregroundColor: _getButtonTextColor(),
                 ),
     );
-  }
-
-  Widget _buildBlockedView() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(
-            Icons.block,
-            size: 80,
-            color: Colors.red,
-          ),
-          const SizedBox(height: 16),
-          const Text(
-            'Blocked Profile',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'You have blocked ',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.white70,
-            ),
-          ),
-          if (_blockTime != null) ...[
-            const SizedBox(height: 8),
-            Text(
-              'Blocked ${_formatBlockTime(_blockTime!)}',
-              style: const TextStyle(
-                fontSize: 14,
-                color: Colors.white54,
-              ),
-            ),
-          ],
-          const SizedBox(height: 8),
-          const Text(
-            'Messages and calls are disabled',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.white54,
-            ),
-          ),
-          const SizedBox(height: 24),
-          ElevatedButton(
-            onPressed: _unblockUser,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(24),
-              ),
-            ),
-            child: const Text(
-              'Unblock User',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _blockUser() async {
-    try {
-      await _supabase.rpc('block_user', params: {
-        'target_user_id': widget.userId,
-      });
-
-      _showSuccessSnackBar('User blocked successfully');
-      _checkBlockStatus();
-    } catch (e) {
-      debugPrint('Error blocking user: $e');
-      _showErrorSnackBar('Failed to block user');
-    }
-  }
-
-  Future<void> _unblockUser() async {
-    try {
-      await _supabase.rpc('unblock_user', params: {
-        'target_user_id': widget.userId,
-      });
-
-      _showSuccessSnackBar('User unblocked successfully');
-      _checkBlockStatus();
-    } catch (e) {
-      debugPrint('Error unblocking user: $e');
-      _showErrorSnackBar('Failed to unblock user');
-    }
-  }
-
-  void _showSuccessSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.green,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        duration: const Duration(seconds: 3),
-      ),
-    );
-  }
-
-  Widget _buildBlockedByOtherView() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(
-            Icons.block,
-            size: 80,
-            color: Colors.red,
-          ),
-          const SizedBox(height: 16),
-          const Text(
-            'Blocked Profile',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'This user has blocked you',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.white70,
-            ),
-          ),
-          if (_blockedByOtherTime != null) ...[
-            const SizedBox(height: 8),
-            Text(
-              'Blocked ${_formatBlockTime(_blockedByOtherTime!)}',
-              style: const TextStyle(
-                fontSize: 14,
-                color: Colors.white54,
-              ),
-            ),
-          ],
-          const SizedBox(height: 8),
-          const Text(
-            'You cannot send or receive messages',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.white54,
-            ),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'Phone calls are also disabled',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.white54,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _formatBlockTime(DateTime blockTime) {
-    final now = DateTime.now();
-    final difference = now.difference(blockTime);
-
-    if (difference.inDays > 0) {
-      return '${difference.inDays} day${difference.inDays > 1 ? 's' : ''} ago';
-    } else if (difference.inHours > 0) {
-      return '${difference.inHours} hour${difference.inHours > 1 ? 's' : ''} ago';
-    } else if (difference.inMinutes > 0) {
-      return '${difference.inMinutes} minute${difference.inMinutes > 1 ? 's' : ''} ago';
-    } else {
-      return 'Just now';
-    }
   }
 }
 
@@ -5601,7 +5408,8 @@ class _ThreadCommentsPageState extends ConsumerState<ThreadCommentsPage>
                   contentTitle: comment['name'] ?? 'Comment',
                   onReportSubmitted: () {
                     // Optional: Show feedback to user
-                    ScaffoldMessenger.of(context).showSnackBar(
+                    if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text(
                             'Thank you for your report. We\'ll review it soon.'),

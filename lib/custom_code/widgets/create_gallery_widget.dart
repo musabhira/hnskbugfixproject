@@ -1,30 +1,15 @@
-// Automatic FlutterFlow imports
-import 'package:pocket_mates_app/custom_code/widgets/custom_text_field.dart';
 import 'package:pocket_mates_app/custom_code/widgets/custom_text_field.dart';
 import 'package:pocket_mates_app/custom_code/widgets/choice_chip_widget.dart';
-import 'package:pocket_mates_app/custom_code/widgets/choice_chip_widget.dart';
 import 'package:pocket_mates_app/flutter_flow/flutter_flow_widgets.dart';
-import 'package:pocket_mates_app/flutter_flow/flutter_flow_widgets.dart';
-
-import '/backend/supabase/supabase.dart';
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'index.dart'; // Imports other custom widgets
-import 'index.dart'; // Imports other custom widgets
-import '/custom_code/actions/index.dart'; // Imports custom actions
 import '/custom_code/actions/index.dart'; // Imports custom actions
 import 'package:flutter/material.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:image/image.dart' as img;
-import 'package:image/image.dart' as img;
-import 'dart:io' as io;
 import 'dart:io' as io;
 
 class CreateGalleryWidget extends StatefulWidget {
@@ -121,7 +106,7 @@ class _CreateGalleryWidgetState extends State<CreateGalleryWidget> {
 
       return Uint8List.fromList(compressedBytes);
     } catch (e) {
-      print('Error compressing image: $e');
+      debugPrint('Error compressing image: $e');
       // Return original bytes if compression fails
       return imageBytes;
     }
@@ -157,7 +142,7 @@ class _CreateGalleryWidgetState extends State<CreateGalleryWidget> {
         _isCompressingImage = false;
       });
       // Handle error if needed
-      print('Error selecting/compressing image: $e');
+      debugPrint('Error selecting/compressing image: $e');
     }
   }
 
@@ -679,96 +664,53 @@ class _CreateGalleryWidgetState extends State<CreateGalleryWidget> {
                                                   fit: BoxFit.cover,
                                                 ),
                                               )
-                                            : ClipRRect(
-                                                borderRadius:
-                                                    BorderRadius.circular(18.0),
-                                                child: Image.network(
-                                                  _imageUrlBanner ??
-                                                      'https://static.vecteezy.com/system/resources/previews/022/143/984/non_2x/1960s-hippie-vivid-colors-background-design-colorful-frizzy-template-for-psychedelic-60s-70s-parties-illustration-with-psychedelic-trippy-vibe-vector.jpg',
-                                                  width: double.infinity,
-                                                  height: double.infinity,
-                                                  fit: BoxFit.cover,
-                                                  errorBuilder: (context, error,
-                                                      stackTrace) {
-                                                    return Container(
-                                                      decoration: BoxDecoration(
+                                              : Container(
+                                                  decoration: BoxDecoration(
+                                                    color: FlutterFlowTheme.of(
+                                                            context)
+                                                        .alternate
+                                                        .withValues(alpha: 0.1),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            18.0),
+                                                  ),
+                                                  child: Column(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                    children: [
+                                                      Icon(
+                                                        Icons.image_outlined,
+                                                        size: 64,
                                                         color: FlutterFlowTheme
-                                                                    .of(context)
-                                                                .alternate
-                                                                .withOpacity(
-                                                                    0.1) ??
-                                                            Colors.grey
-                                                                .withOpacity(
-                                                                    0.1),
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(18.0),
+                                                                .of(context)
+                                                                .secondaryText
+                                                                .withValues(
+                                                                    alpha: 0.4),
                                                       ),
-                                                      child: Column(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .center,
-                                                        children: [
-                                                          Icon(
-                                                            Icons
-                                                                .image_outlined,
-                                                            size: 64,
-                                                            color: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .secondaryText
-                                                                    .withOpacity(
-                                                                        0.4) ??
-                                                                Colors.grey
-                                                                    .withOpacity(
-                                                                        0.4),
-                                                          ),
-                                                          const SizedBox(
-                                                              height: 16),
-                                                          Text(
-                                                            'No Image Selected',
-                                                            style: safeTextStyle(
-                                                                    FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .bodyLarge)
-                                                                .copyWith(
-                                                              color: FlutterFlowTheme.of(
-                                                                          context)
+                                                      const SizedBox(
+                                                          height: 16),
+                                                      Text(
+                                                        'No Image Selected',
+                                                        style: safeTextStyle(
+                                                                FlutterFlowTheme
+                                                                        .of(context)
+                                                                    .bodyLarge)
+                                                            .copyWith(
+                                                          color:
+                                                              FlutterFlowTheme
+                                                                          .of(context)
                                                                       .secondaryText
-                                                                      .withOpacity(
-                                                                          0.6) ??
-                                                                  Colors.grey
-                                                                      .withOpacity(
-                                                                          0.6),
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w500,
-                                                            ),
-                                                          ),
-                                                          const SizedBox(
-                                                              height: 8),
-                                                          Text(
-                                                            'Tap to choose an image',
-                                                            style: safeTextStyle(
-                                                                    FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .bodySmall)
-                                                                .copyWith(
-                                                              color: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .secondaryText
-                                                                      .withOpacity(
-                                                                          0.5) ??
-                                                                  Colors.grey
-                                                                      .withOpacity(
-                                                                          0.5),
-                                                            ),
-                                                          ),
-                                                        ],
+                                                                      .withValues(
+                                                                          alpha:
+                                                                              0.6),
+                                                          fontWeight:
+                                                              FontWeight.w500,
+                                                        ),
                                                       ),
-                                                    );
-                                                  },
+                                                    ],
+                                                  ),
                                                 ),
-                                              ),
                                   )
                                   // Interactive Overlay
                                   ,

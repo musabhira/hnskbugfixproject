@@ -1379,7 +1379,7 @@ class _ProfileDetailPageState extends State<ProfileDetailPage>
                                                 image:
                                                     CachedNetworkImageProvider(
                                                   item['gallery_image_url'] ??
-                                                      'https://via.placeholder.com/150',
+                                                      '',
                                                 ),
                                                 fit: BoxFit.cover,
                                               ),

@@ -14,6 +14,7 @@ import 'package:pocket_mates_app/custom_code/widgets/poster_designer/template_ga
 import 'package:pocket_mates_app/custom_code/widgets/bulk_sender/bulk_sender_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poki_games_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/nearby_users_page.dart';
+import 'dart:ui' as ui;
 import 'dart:convert';
 import 'dart:async' as async;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -23,7 +24,6 @@ import 'package:pocket_mates_app/custom_code/widgets/settings_page.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/material.dart' as material;
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/whats_app_groups_provider.dart'
     as groups_provider;
@@ -43,6 +43,7 @@ import 'dart:io' as io;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:math' as math;
+import 'package:pocket_mates_app/custom_code/widgets/eula_compliance_dialog.dart';
 
 // Aliases for WhatsApp Groups Provider to avoid naming conflicts
 typedef ChatConversation = groups_provider.ChatConversation;
@@ -109,6 +110,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     // Add post frame callback to check for updates after initial render
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkAppUpdate();
+      _checkEulaAndRedirect();
     });
   }
 
@@ -124,6 +126,48 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         _performSearch(query);
       }
     });
+  }
+
+  Future<void> _checkEulaAndRedirect() async {
+    final user = supabase.auth.currentUser;
+    if (user != null) {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final hasSeenEulaLocally = prefs.getBool('eula_accepted_${user.id}') ?? false;
+
+        if (!hasSeenEulaLocally) {
+          // If not seen locally, we MUST show it
+          _showEulaDialog();
+          return;
+        }
+
+        // Optional: Also check DB as a secondary verification
+        final profile = await supabase
+            .from('profile')
+            .select('eula_accepted')
+            .eq('user_id', user.id)
+            .single();
+
+        if (profile['eula_accepted'] != true) {
+          _showEulaDialog();
+        }
+      } catch (e) {
+        // If error, ignore for now
+      }
+    }
+  }
+
+  void _showEulaDialog() {
+    if (!mounted) return;
+    material.showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => EulaComplianceDialog(
+        onAccepted: () {
+          material.Navigator.pop(context);
+        },
+      ),
+    );
   }
 
   Future<void> _performSearch(String query) async {
@@ -386,7 +430,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       context: context,
       barrierDismissible: !isMandatory,
       builder: (context) => material.BackdropFilter(
-        filter: material.ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+        filter: ui.ImageFilter.blur(sigmaX: 5, sigmaY: 5),
         child: material.Dialog(
           backgroundColor: material.Colors.transparent,
           insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
@@ -396,10 +440,10 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
             decoration: BoxDecoration(
               color: const Color(0xFF1E293B),
               borderRadius: BorderRadius.circular(28),
-              border: Border.all(color: material.Colors.yellow.withOpacity(0.2), width: 1.5),
+              border: Border.all(color: material.Colors.yellow.withValues(alpha: 0.2), width: 1.5),
               boxShadow: [
                 BoxShadow(
-                  color: material.Colors.yellow.withOpacity(0.1),
+                  color: material.Colors.yellow.withValues(alpha: 0.1),
                   blurRadius: 40,
                   offset: const Offset(0, 10),
                 )
@@ -414,10 +458,10 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: material.Colors.yellow.withOpacity(0.1),
+                        color: material.Colors.yellow.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(16),
                       ),
-                      child: Icon(Icons.system_update_rounded, color: material.Colors.yellow, size: 28),
+                      child: Icon(material.Icons.system_update_rounded, color: material.Colors.yellow, size: 28),
                     ),
                     const Spacer(),
                     Container(
@@ -450,7 +494,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                 Text(
                   description,
                   style: TextStyle(
-                    color: material.Colors.white.withOpacity(0.7),
+                    color: material.Colors.white.withValues(alpha: 0.7),
                     height: 1.5,
                     fontSize: 15,
                   ),
@@ -466,8 +510,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  SizedBox(
-                    maxHeight: 180,
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxHeight: 180),
                     child: material.ListView.builder(
                       shrinkWrap: true,
                       itemCount: features.length,
@@ -481,7 +525,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                             Expanded(
                               child: Text(
                                 features[i],
-                                style: TextStyle(color: material.Colors.white.withOpacity(0.8), fontSize: 13),
+                                style: TextStyle(color: material.Colors.white.withValues(alpha: 0.8), fontSize: 13),
                               ),
                             ),
                           ],
@@ -495,22 +539,22 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                   children: [
                     if (!isMandatory)
                       Expanded(
-                        child: TextButton(
+                        child: material.TextButton(
                           onPressed: () => Navigator.pop(context),
-                          style: TextButton.styleFrom(
+                          style: material.TextButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 16),
                           ),
                           child: Text(
                             'Later',
-                            style: TextStyle(color: material.Colors.white.withOpacity(0.5)),
+                            style: TextStyle(color: material.Colors.white.withValues(alpha: 0.5)),
                           ),
                         ),
                       ),
                     if (!isMandatory) const SizedBox(width: 12),
                     Expanded(
                       flex: 2,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
+                      child: material.ElevatedButton(
+                        style: material.ElevatedButton.styleFrom(
                           backgroundColor: material.Colors.yellow,
                           foregroundColor: material.Colors.black,
                           padding: const EdgeInsets.symmetric(vertical: 16),
@@ -526,7 +570,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                               await launchUrl(url, mode: LaunchMode.externalApplication);
                             }
                           }
-                          if (!isMandatory) Navigator.pop(context);
+                          if (mounted && !isMandatory) Navigator.pop(context);
                         },
                         child: const Text(
                           'Update Now',
@@ -1040,91 +1084,6 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     );
   }
 
-  Widget _buildEntryPointCard(
-    BuildContext context, {
-    required String title,
-    required String subtitle,
-    required IconData icon,
-    required List<Color> colors,
-    required VoidCallback onTap,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          width: double.infinity,
-          height: 160,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: colors,
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(28),
-            boxShadow: [
-              BoxShadow(
-                color: colors[0].withValues(alpha: 0.3),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
-              ),
-            ],
-          ),
-          child: Stack(
-            children: [
-              Positioned(
-                right: -20,
-                bottom: -20,
-                child: Icon(
-                  icon,
-                  size: 140,
-                  color: Colors.white.withValues(alpha: 0.12),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(24.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: Icon(icon, color: Colors.white, size: 24),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      title,
-                      style: GoogleFonts.outfit(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      subtitle,
-                      style: GoogleFonts.outfit(
-                        fontSize: 14,
-                        color: Colors.white.withValues(alpha: 0.85),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      )
-          .animate()
-          .moveY(
-              begin: 20, end: 0, duration: 600.ms, curve: Curves.easeOutQuart)
-          .fadeIn(),
-    );
-  }
 
   Widget _buildBottomNavigationBar(BuildContext context) {
     return Container(
@@ -1185,7 +1144,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
           context: context,
           customMessage: "Please login to view your profile",
         );
-        if (isAuthenticated) {
+        if (isAuthenticated && mounted) {
           Navigator.push(
             context,
             PageRouteBuilder(
@@ -1219,7 +1178,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
           context: context,
           customMessage: "Please login to view your profile",
         );
-        if (isAuthenticated) {
+        if (isAuthenticated && mounted) {
           final loggedInUser = supabase.auth.currentUser;
           if (loggedInUser != null) {
             Navigator.push(
@@ -1249,7 +1208,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
-      child: Container(
+      child: SizedBox(
         height: 60,
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -1303,7 +1262,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                             context: context,
                             customMessage: "Please login to add to Gallery",
                           );
-                          if (isAuthenticated) {
+                          if (isAuthenticated && mounted) {
                             Navigator.push(
                               context,
                               material.MaterialPageRoute(
@@ -1420,7 +1379,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                             context: context,
                             customMessage: "Please login to add Thought",
                           );
-                          if (isAuthenticated) {
+                          if (isAuthenticated && mounted) {
                             Navigator.push(
                                 context,
                                 material.MaterialPageRoute(
@@ -1474,7 +1433,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                               context: context,
                               customMessage: "Please login to add Event",
                             );
-                            if (isAuthenticated) {
+                            if (isAuthenticated && mounted) {
                               Navigator.push(
                                   context,
                                   material.MaterialPageRoute(
@@ -1538,10 +1497,12 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     final activeUsersState = ref.read(activeUsersProvider(currentProfileId));
 
     if (!activeUsersState.hasValue) {
-      material.ScaffoldMessenger.of(context).showSnackBar(
-        const material.SnackBar(
-            content: Text('Connecting to active network...')),
-      );
+      if (mounted) {
+        material.ScaffoldMessenger.of(context).showSnackBar(
+          const material.SnackBar(
+              content: Text('Connecting to active network...')),
+        );
+      }
       return;
     }
 
@@ -1562,43 +1523,51 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
           .limit(10);
 
       if (allUsersData.isEmpty) {
-        material.ScaffoldMessenger.of(context).showSnackBar(
-          const material.SnackBar(content: Text('No users found in system.')),
-        );
+        if (mounted) {
+          material.ScaffoldMessenger.of(context).showSnackBar(
+            const material.SnackBar(content: Text('No users found in system.')),
+          );
+        }
         return;
       }
       final users = List.from(allUsersData);
       users.shuffle();
-      randomUser = users.first as Map<String, dynamic>;
+      // randomUser = users.first as Map<String, dynamic>; // Unused
     }
 
     // 4. Initiate Call Directly
     if (mode == 'Text') {
-      Navigator.push(
-        context,
-        material.MaterialPageRoute(
-          builder: (context) => const WebRTCCallScreen(
-            mode: 'Text',
+      if (mounted) {
+        Navigator.push(
+          context,
+          material.MaterialPageRoute(
+            builder: (context) => const WebRTCCallScreen(
+              mode: 'Text',
+            ),
           ),
-        ),
-      );
+        );
+      }
       return;
     }
 
-    material.ScaffoldMessenger.of(context).showSnackBar(
-      const material.SnackBar(
-          duration: Duration(seconds: 1),
-          content: Text('Finding a stranger...')),
-    );
+    if (mounted) {
+      material.ScaffoldMessenger.of(context).showSnackBar(
+        const material.SnackBar(
+            duration: Duration(seconds: 1),
+            content: Text('Finding a stranger...')),
+      );
+    }
 
-    Navigator.push(
-      context,
-      material.MaterialPageRoute(
-        builder: (context) => WebRTCCallScreen(
-          mode: mode,
+    if (mounted) {
+      Navigator.push(
+        context,
+        material.MaterialPageRoute(
+          builder: (context) => WebRTCCallScreen(
+            mode: mode,
+          ),
         ),
-      ),
-    );
+      );
+    }
   }
 
   Widget _buildNotificationsTile(int count) {
@@ -2031,14 +2000,16 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                 await ref
                     .read(conversationsProvider.notifier)
                     .dismissNotification(notification.id);
-                material.ScaffoldMessenger.of(context).showSnackBar(
-                  material.SnackBar(content: Text('Invitation accepted!')),
-                );
+                if (mounted) {
+                  material.ScaffoldMessenger.of(context).showSnackBar(
+                    material.SnackBar(content: Text('Invitation accepted!')),
+                  );
+                }
               },
               child: Text('Accept',
                   style: material.TextStyle(color: material.Colors.black)),
               style: ButtonStyle(
-                backgroundColor: ButtonState.all(material.Colors.yellow),
+                backgroundColor: WidgetStateProperty.all(material.Colors.yellow),
               ),
             ),
           ] else ...[
@@ -2052,7 +2023,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
               child: Text('Dismiss',
                   style: material.TextStyle(color: material.Colors.black)),
               style: ButtonStyle(
-                backgroundColor: ButtonState.all(material.Colors.yellow),
+                backgroundColor: WidgetStateProperty.all(material.Colors.yellow),
               ),
             ),
           ],
@@ -2405,7 +2376,7 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                             ),
                         ],
                       ),
-                      decoration: ButtonState.all(BoxDecoration(
+                      decoration: WidgetStateProperty.all(BoxDecoration(
                         border: Border.all(style: BorderStyle.none),
                       )),
                       style: GoogleFonts.outfit(

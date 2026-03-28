@@ -574,7 +574,7 @@ class MasonryGalleryItemCard extends StatelessWidget {
             children: [
               // Background Image
               Image.network(
-                item['gallery_image_url'] ?? 'https://via.placeholder.com/200',
+                item['gallery_image_url'] ?? '',
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
                   return Container(

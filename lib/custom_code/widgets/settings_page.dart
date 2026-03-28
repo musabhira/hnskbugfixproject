@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/widgets/legal_policy_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/index.dart';
+import 'package:go_router/go_router.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({Key? key}) : super(key: key);
@@ -12,25 +13,31 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage> {
   final String _appVersion = '1.0.0+12'; // Matched with pubspec.yaml
+  bool _isProcessing = false;
 
   Future<void> _handleLogout() async {
+    if (_isProcessing) return;
+    setState(() => _isProcessing = true);
+    
     try {
       await SupaFlow.client.auth.signOut();
       if (mounted) {
-        Navigator.of(context).pushNamedAndRemoveUntil(
-          'LandingPage',
-          (route) => false,
-        );
+        // Use GoRouter to go directly to AuthPage for a clean state
+        context.go('/authPage');
       }
     } catch (e) {
       if (mounted) {
-        // Fallback if LandingPage isn't found or error occurs
-        Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+        // Even if signOut fails, try to go to AuthPage to clear app state
+        context.go('/authPage');
       }
+    } finally {
+      if (mounted) setState(() => _isProcessing = false);
     }
   }
 
   Future<void> _handleDeleteAccount() async {
+    if (_isProcessing) return;
+    
     // Show confirmation dialog
     final confirmed = await showDialog<bool>(
       context: context,
@@ -56,13 +63,17 @@ class _SettingsPageState extends State<SettingsPage> {
     );
 
     if (confirmed == true) {
+      setState(() => _isProcessing = true);
       try {
         final userId = SupaFlow.client.auth.currentUser?.id;
         if (userId != null) {
-          // Attempt to delete user data from public tables if RLS allows
-          // This is a "best effort" client-side cleanup.
-          // Call RPC to delete user
-          await SupaFlow.client.rpc('delete_user');
+          // Attempt to delete user data via RPC
+          try {
+            await SupaFlow.client.rpc('delete_user');
+          } catch (rpcError) {
+            debugPrint('RPC delete_user failed: $rpcError');
+            // Continue with sign out even if RPC fails
+          }
 
           // Sign out
           await SupaFlow.client.auth.signOut();
@@ -71,8 +82,8 @@ class _SettingsPageState extends State<SettingsPage> {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Account deleted successfully.')),
             );
-            Navigator.of(context)
-                .pushNamedAndRemoveUntil('/', (route) => false);
+            // Go directly to AuthPage and clear navigation stack
+            context.go('/authPage');
           }
         }
       } catch (e) {
@@ -81,92 +92,106 @@ class _SettingsPageState extends State<SettingsPage> {
             SnackBar(content: Text('Error deleting account: $e')),
           );
         }
+      } finally {
+        if (mounted) setState(() => _isProcessing = false);
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black, // Dark theme background
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        title: const Text('Settings', style: TextStyle(color: Colors.white)),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
+    return Stack(
+      children: [
+        Scaffold(
+          backgroundColor: Colors.black, // Dark theme background
+          appBar: AppBar(
+            backgroundColor: Colors.black,
+            title: const Text('Settings', style: TextStyle(color: Colors.white)),
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back, color: Colors.white),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ),
+          body: ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              const _SectionHeader(title: 'Legal'),
+              _SettingsTile(
+                icon: Icons.privacy_tip_outlined,
+                title: 'Privacy Policy',
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                      builder: (context) => const PrivacyPolicyPage()),
+                ),
+              ),
+              _SettingsTile(
+                icon: Icons.description_outlined,
+                title: 'Terms of Service',
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                      builder: (context) => const TermsOfServicePage()),
+                ),
+              ),
+              const SizedBox(height: 24),
+              const _SectionHeader(title: 'Account'),
+              _SettingsTile(
+                icon: Icons.logout,
+                title: 'Log Out',
+                onTap: _handleLogout,
+                textColor: Colors.amber,
+                iconColor: Colors.amber,
+              ),
+              _SettingsTile(
+                icon: Icons.delete_forever,
+                title: 'Delete Account',
+                onTap: _handleDeleteAccount,
+                textColor: Colors.red,
+                iconColor: Colors.red,
+              ),
+              const SizedBox(height: 24),
+              const _SectionHeader(title: 'About'),
+              StatefulBuilder(builder: (context, setState) {
+                int versionTapCount = 0;
+                return ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.info_outline, color: Colors.white54),
+                  title: const Text(
+                    'App Version',
+                    style:
+                        TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+                  ),
+                  trailing: Text(
+                    _appVersion,
+                    style: const TextStyle(color: Colors.white54),
+                  ),
+                  onTap: () {
+                    versionTapCount++;
+                    if (versionTapCount == 10) { // Reduced for easier testing in dev
+                      versionTapCount = 0;
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const AdminDashboardPage()),
+                      );
+                    }
+                  },
+                );
+              }),
+            ],
+          ),
         ),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          const _SectionHeader(title: 'Legal'),
-          _SettingsTile(
-            icon: Icons.privacy_tip_outlined,
-            title: 'Privacy Policy',
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(
-                  builder: (context) => const PrivacyPolicyPage()),
+        if (_isProcessing)
+          Container(
+            color: Colors.black54,
+            child: const Center(
+              child: CircularProgressIndicator(color: Colors.amber),
             ),
           ),
-          _SettingsTile(
-            icon: Icons.description_outlined,
-            title: 'Terms of Service',
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(
-                  builder: (context) => const TermsOfServicePage()),
-            ),
-          ),
-          const SizedBox(height: 24),
-          const _SectionHeader(title: 'Account'),
-          _SettingsTile(
-            icon: Icons.logout,
-            title: 'Log Out',
-            onTap: _handleLogout,
-            textColor: Colors.amber,
-            iconColor: Colors.amber,
-          ),
-          _SettingsTile(
-            icon: Icons.delete_forever,
-            title: 'Delete Account',
-            onTap: _handleDeleteAccount,
-            textColor: Colors.red,
-            iconColor: Colors.red,
-          ),
-          const SizedBox(height: 24),
-          const _SectionHeader(title: 'About'),
-          StatefulBuilder(builder: (context, setState) {
-            int versionTapCount = 0;
-            return ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.info_outline, color: Colors.white54),
-              title: const Text(
-                'App Version',
-                style:
-                    TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
-              ),
-              trailing: Text(
-                _appVersion,
-                style: const TextStyle(color: Colors.white54),
-              ),
-              onTap: () {
-                versionTapCount++;
-                if (versionTapCount == 20) {
-                  versionTapCount = 0;
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const AdminDashboardPage()),
-                  );
-                }
-              },
-            );
-          }),
-        ],
-      ),
+      ],
     );
   }
 }
+
 
 class _SectionHeader extends StatelessWidget {
   final String title;

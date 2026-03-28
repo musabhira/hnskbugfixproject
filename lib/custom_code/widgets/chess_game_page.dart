@@ -9,7 +9,7 @@ class ChessMatchmakingPage extends StatefulWidget {
   const ChessMatchmakingPage({Key? key}) : super(key: key);
 
   @override
-  _ChessMatchmakingPageState createState() => _ChessMatchmakingPageState();
+  State<ChessMatchmakingPage> createState() => _ChessMatchmakingPageState();
 }
 
 class _ChessMatchmakingPageState extends State<ChessMatchmakingPage> {
@@ -29,7 +29,7 @@ class _ChessMatchmakingPageState extends State<ChessMatchmakingPage> {
     _gameChannel!.onBroadcast(
         event: 'challenge',
         callback: (payload) {
-          if (payload['targetId'] == _myUserId) {
+          if (payload['targetId'] == _myUserId && mounted) {
             _showChallengeDialog(
                 payload['challengerId'], payload['challengerName']);
           }
@@ -37,7 +37,7 @@ class _ChessMatchmakingPageState extends State<ChessMatchmakingPage> {
     _gameChannel!.onBroadcast(
         event: 'accept',
         callback: (payload) {
-          if (payload['targetId'] == _myUserId) {
+          if (payload['targetId'] == _myUserId && mounted) {
             _startGame(payload['matchId'], true,
                 targetUserId: payload['challengerId']);
           }
@@ -300,7 +300,7 @@ class ChessPlayPage extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _ChessPlayPageState createState() => _ChessPlayPageState();
+  State<ChessPlayPage> createState() => _ChessPlayPageState();
 }
 
 class _ChessPlayPageState extends State<ChessPlayPage> {
@@ -318,8 +318,10 @@ class _ChessPlayPageState extends State<ChessPlayPage> {
           event: 'move',
           callback: (payload) {
             if (payload['fen'] != null &&
-                payload['senderId'] != SupaFlow.client.auth.currentUser?.id) {
+                payload['senderId'] != SupaFlow.client.auth.currentUser?.id &&
+                mounted) {
               _controller.loadFen(payload['fen']);
+              setState(() {});
             }
           });
       _moveChannel!.subscribe();

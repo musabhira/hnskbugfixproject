@@ -1939,7 +1939,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                                   backgroundImage: NetworkImage(
                                     _supabase.auth.currentUser
                                             ?.userMetadata?['avatar_url'] ??
-                                        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR-7uOSBHPTHbUQa_3b_hl71XzW2ydiej3Pm39YYoi4281nATrXtKKuq7OdPQSbAdnDAsw&usqp=CAU',
+                                        '',
                                   ),
                                   backgroundColor: widget.bgColor,
                                 ),
@@ -2246,7 +2246,7 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
                   borderRadius: BorderRadius.circular(14),
                   child: Image.network(
                     widget.comment['commenter_profile_image_url'] ??
-                        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR-7uOSBHPTHbUQa_3b_hl71XzW2ydiej3Pm39YYoi4281nATrXtKKuq7OdPQSbAdnDAsw&usqp=CAU',
+                        '',
                     width: 32,
                     height: 32,
                     fit: BoxFit.cover,
@@ -2540,8 +2540,7 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(10),
                             child: Image.network(
-                              reply['profiles']?['profile_image_url'] ??
-                                  'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR-7uOSBHPTHbUQa_3b_hl71XzW2ydiej3Pm39YYoi4281nATrXtKKuq7OdPQSbAdnDAsw&usqp=CAU',
+                              reply['profiles']?['profile_image_url'] ?? '',
                               width: 24,
                               height: 24,
                               fit: BoxFit.cover,
@@ -2739,7 +2738,7 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
                         child: Image.network(
                           SupaFlow.client.auth.currentUser
                                   ?.userMetadata?['profile_image_url'] ??
-                              'https://via.placeholder.com/24',
+                              '',
                           width: 24,
                           height: 24,
                           fit: BoxFit.cover,

@@ -1,9 +1,6 @@
-// Automatic FlutterFlow imports
 import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
-
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -45,6 +42,10 @@ class CoursesWidget extends StatefulWidget {
 }
 
 class _CoursesWidgetState extends State<CoursesWidget> {
+  void safeSetState(VoidCallback fn) {
+    if (mounted) setState(fn);
+  }
+
   final supabase = SupaFlow.client;
   List<Map<String, dynamic>> courses = [];
   bool isLoading = true;
@@ -233,10 +234,10 @@ class _CoursesWidgetState extends State<CoursesWidget> {
           decoration: BoxDecoration(
             color: theme.secondaryBackground,
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: theme.alternate.withOpacity(0.1)),
+            border: Border.all(color: theme.alternate.withValues(alpha: 0.1)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withValues(alpha: 0.1),
                 blurRadius: 20,
                 offset: const Offset(0, 10),
               ),
@@ -260,7 +261,7 @@ class _CoursesWidgetState extends State<CoursesWidget> {
                         fit: BoxFit.cover,
                         errorWidget: (context, url, error) => Container(
                           height: 220,
-                          color: theme.accent1.withOpacity(0.2),
+                          color: theme.accent1.withValues(alpha: 0.2),
                           child: Icon(Icons.broken_image_outlined,
                               color: theme.accent1, size: 48),
                         ),
@@ -273,7 +274,7 @@ class _CoursesWidgetState extends State<CoursesWidget> {
                     right: 12,
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.4),
+                        color: Colors.black.withValues(alpha: 0.4),
                         shape: BoxShape.circle,
                       ),
                       child: BackdropFilter(
@@ -294,7 +295,7 @@ class _CoursesWidgetState extends State<CoursesWidget> {
                           child: Container(
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 10, vertical: 4),
-                            color: Colors.black.withOpacity(0.4),
+                            color: Colors.black.withValues(alpha: 0.4),
                             child: Row(
                               children: [
                                 Icon(Icons.language,
@@ -344,7 +345,7 @@ class _CoursesWidgetState extends State<CoursesWidget> {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
-                            color: theme.primary.withOpacity(0.1),
+                            color: theme.primary.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Row(
@@ -410,8 +411,11 @@ class _CoursesWidgetState extends State<CoursesWidget> {
                           ],
                         ),
                         ElevatedButton.icon(
-                          onPressed: () =>
-                              _navigateToCourseDetail(context, course),
+                          onPressed: () {
+                            if (mounted) {
+                              _navigateToCourseDetail(context, course);
+                            }
+                          },
                           icon: const Icon(Icons.play_circle_filled, size: 20),
                           label: const Text('Start Now'),
                           style: ElevatedButton.styleFrom(
@@ -449,6 +453,10 @@ class FavoriteButton extends StatefulWidget {
 }
 
 class _FavoriteButtonState extends State<FavoriteButton> {
+  void safeSetState(VoidCallback fn) {
+    if (mounted) setState(fn);
+  }
+
   bool? isFavorite;
   final supabase = SupaFlow.client;
 
@@ -476,7 +484,7 @@ class _FavoriteButtonState extends State<FavoriteButton> {
         });
       }
     } catch (e) {
-      print('Error checking favorite status: $e');
+      debugPrint('Error checking favorite status: $e');
     }
   }
 
@@ -484,8 +492,11 @@ class _FavoriteButtonState extends State<FavoriteButton> {
     try {
       final userId = supabase.auth.currentUser?.id;
       if (userId == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Please log in to add favorites')));
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Please log in to add favorites')),
+          );
+        }
         return;
       }
 
@@ -510,7 +521,7 @@ class _FavoriteButtonState extends State<FavoriteButton> {
       safeSetState(() {
         isFavorite = !(isFavorite ?? false);
       });
-      print('Error toggling favorite: $e');
+      debugPrint('Error toggling favorite: $e');
     }
   }
 
@@ -536,6 +547,10 @@ class CourseDetailPage extends StatefulWidget {
 }
 
 class _CourseDetailPageState extends State<CourseDetailPage> {
+  void safeSetState(VoidCallback fn) {
+    if (mounted) setState(fn);
+  }
+
   List<Map<String, dynamic>> lessons = [];
   int currentLessonIndex = 0;
   String currentVideoUrl = '';
@@ -590,7 +605,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
         }
       }
     } catch (e) {
-      // print('Error checking paid access: $e');
+      // debugPrint('Error checking paid access: $e');
     }
   }
 
@@ -620,7 +635,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
         }
       });
     } catch (e) {
-      print('Error fetching lessons: $e');
+      debugPrint('Error fetching lessons: $e');
       safeSetState(() {
         isLoading = false;
       });
@@ -677,7 +692,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
 
         return {'isValid': false, 'message': 'Invalid coupon code'};
       } catch (e) {
-        print('Error validating coupon: $e');
+        debugPrint('Error validating coupon: $e');
         return {'isValid': false, 'message': 'Error validating coupon'};
       }
     }
@@ -728,7 +743,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
 
         return couponCode;
       } catch (e) {
-        print('Error generating coupon: $e');
+        debugPrint('Error generating coupon: $e');
         return 'ERROR';
       }
     }
@@ -747,7 +762,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                   decoration: InputDecoration(
                     hintText: 'Have a coupon code?',
                     hintStyle: TextStyle(
-                        color: Colors.yellow.shade100.withOpacity(0.5)),
+                        color: Colors.yellow.shade100.withValues(alpha: 0.5)),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                       borderSide: BorderSide(color: Colors.yellow.shade700),
@@ -787,7 +802,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.yellow.shade700,
                   disabledBackgroundColor:
-                      Colors.yellow.shade900.withOpacity(0.3),
+                      Colors.yellow.shade900.withValues(alpha: 0.3),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -823,7 +838,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                     const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                 decoration: BoxDecoration(
                   // ignore: deprecated_member_use
-                  color: Colors.green.shade900.withOpacity(0.3),
+                  color: Colors.green.shade900.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: Colors.green.shade300),
                 ),
@@ -891,12 +906,14 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                 IconButton(
                   onPressed: () {
                     Clipboard.setData(ClipboardData(text: userCoupon));
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Coupon copied to clipboard!'),
-                        backgroundColor: Colors.green,
-                      ),
-                    );
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Coupon copied to clipboard!'),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                    }
                   },
                   icon: Icon(
                     Icons.copy,
@@ -965,7 +982,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                   end: Alignment.bottomRight,
                   colors: [
                     Colors.black87,
-                    Colors.yellow.shade900.withOpacity(0.7),
+                    Colors.yellow.shade900.withValues(alpha: 0.7),
                     Colors.black87,
                   ],
                 ),
@@ -1049,7 +1066,6 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                     ElevatedButton.icon(
                       onPressed: () async {
                         // If coupon is applied, we pass this information to WhatsApp
-                        // If coupon is applied, we pass this information to WhatsApp
                         await _openWhatsApp(userId, courseTitle, appliedCoupon);
 
                         try {
@@ -1063,30 +1079,25 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                           });
 
                           // Show success message
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content:
-                                  Text('Access request submitted successfully'),
-                              backgroundColor: Colors.green,
-                            ),
-                          );
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                    'Access request submitted successfully'),
+                                backgroundColor: Colors.green,
+                              ),
+                            );
 
-                          // Close dialog
-                          if (Navigator.canPop(context)) {
-                            WidgetsBinding.instance.addPostFrameCallback((_) {
-                              Navigator.pop(context);
-                            });
+                            // Close dialog
+                            if (Navigator.canPop(context)) {
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                Navigator.pop(context);
+                              });
+                            }
                           }
                         } catch (e) {
                           // Show error message
-                          print('Error submitting request: $e');
-                          // ScaffoldMessenger.of(context).showSnackBar(
-                          //   SnackBar(
-                          //     content: Text(
-                          //         'Error submitting request: ${e.toString()}'),
-                          //     backgroundColor: Colors.red,
-                          //   ),
-                          // );
+                          debugPrint('Error submitting request: $e');
                         }
                       },
                       style: ElevatedButton.styleFrom(
@@ -1101,7 +1112,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                       icon: const Icon(Icons.message, color: Colors.white),
                       label: Text(
                         isCouponValid
-                            ? 'Request Access & Pay via WhatsApp (â‚¹50 off)'
+                            ? 'Request Access & Pay via WhatsApp (₹50 off)'
                             : 'Request Access & Pay via WhatsApp',
                         style: const TextStyle(
                           color: Colors.white,
@@ -1144,42 +1155,6 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
     );
   }
 
-// Modified function to include coupon code in WhatsApp message
-  // Future<void> _openWhatsApp(String? userId, String courseTitle,
-  //     [String? couponCode]) async {
-  //   // First create access request in database
-  //   if (userId != null) {
-  //     try {
-  //       // Create access request record
-  //       await createUserCourseAccessRecord(
-  //           userId, widget.courseData['course_id'], couponCode);
-
-  //       // Show confirmation to user
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         const SnackBar(
-  //           content: Text('Access request sent to admin!'),
-  //           backgroundColor: Colors.green,
-  //         ),
-  //       );
-  //     } catch (e) {
-  //       print('Error creating access request: $e');
-  //     }
-  //   }
-
-  //   // Then open WhatsApp with coupon information if applicable
-  //   String couponInfo = '';
-  //   if (couponCode != null && couponCode.isNotEmpty) {
-  //     couponInfo = "\nI'm using coupon code: $couponCode for â‚¹50 discount";
-  //   }
-
-  //   final message =
-  //       "Hello, I want to purchase access to '$courseTitle'. My User ID is: ${userId ?? 'Not logged in'}$couponInfo";
-  //   final encodedMessage = Uri.encodeComponent(message);
-  //   final whatsappUrl = "https://wa.me/919746358192?text=$encodedMessage";
-
-  //   // Launch WhatsApp with Uri.parse
-  //   launchUrl(Uri.parse(whatsappUrl), mode: LaunchMode.externalApplication);
-  // }
   Future<void> _openWhatsApp(String? userId, String courseTitle,
       [String? couponCode]) async {
     // First create access request in database
@@ -1199,19 +1174,18 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
           );
         }
       } catch (e) {
-        print('Error creating access request: $e');
+        debugPrint('Error creating access request: $e');
       }
     }
 
     // Then open WhatsApp with coupon information if applicable
     String couponInfo = '';
     if (couponCode != null && couponCode.isNotEmpty) {
-      couponInfo = "\nI'm using coupon code: $couponCode for â‚¹50 discount";
+      couponInfo = "\nI'm using coupon code: $couponCode for ₹50 discount";
     }
 
     final message =
         "Hello, I want to purchase access to '$courseTitle'. My User ID is: ${userId ?? 'Not logged in'}$couponInfo\nMy User Name is: ${name ?? 'Not logged in'}";
-    Uri.encodeComponent(message);
     String phoneNumber = "+919746358192";
     // Multiple WhatsApp URL schemes to try
     String whatsappUrl =
@@ -1231,7 +1205,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
           mode: LaunchMode.externalApplication,
         );
       } catch (e2) {
-        print("WhatsApp is not available");
+        debugPrint("WhatsApp is not available");
       }
     }
   }
@@ -1268,7 +1242,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
         });
       }
     } catch (e) {
-      print('Error creating/updating access record: $e');
+      debugPrint('Error creating/updating access record: $e');
       rethrow;
     }
   }
@@ -1309,7 +1283,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                 });
               }
             } catch (e) {
-              print('Error getting/generating coupon: $e');
+              debugPrint('Error getting/generating coupon: $e');
             }
           }
 
@@ -1374,14 +1348,16 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
             userId, widget.courseData['course_id']);
 
         // Show confirmation to user
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Access request sent to admin!'),
-            backgroundColor: Colors.green,
-          ),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Access request sent to admin!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
       } catch (e) {
-        print('Error creating access request: $e');
+        debugPrint('Error creating access request: $e');
       }
     }
 
@@ -1394,6 +1370,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
     // Launch WhatsApp with Uri.parse
     launchUrl(Uri.parse(whatsappUrl), mode: LaunchMode.externalApplication);
   }
+
 
   Widget _buildLessonItem(Map<String, dynamic> lesson, int index) {
     final isCurrentLesson = currentLessonIndex == index;
@@ -1418,7 +1395,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
           color: isCurrentLesson
-              ? Colors.green.withOpacity(0.1)
+              ? Colors.green.withValues(alpha: 0.1)
               : Colors.transparent,
         ),
         child: ListTile(
@@ -1600,7 +1577,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                         end: Alignment.bottomCenter,
                         colors: [
                           Colors.transparent,
-                          Colors.black.withOpacity(0.5),
+                          Colors.black.withValues(alpha: 0.5),
                           Colors.black,
                         ],
                       ),
@@ -1618,13 +1595,15 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                     widget.courseData['course_title'] ?? 'course Item',
                 onReportSubmitted: () {
                   // Optional: Show feedback to user
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                          'Thank you for your report. We\'ll review it soon.'),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                            'Thank you for your report. We\'ll review it soon.'),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                  }
                 },
               ),
             ],
@@ -1644,17 +1623,17 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                           color: const Color(0xFF1A1A1A),
                           borderRadius: BorderRadius.circular(24),
                           border: Border.all(
-                            color: Colors.white.withOpacity(0.05),
+                            color: Colors.white.withValues(alpha: 0.05),
                             width: 1,
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.5),
+                              color: Colors.black.withValues(alpha: 0.5),
                               blurRadius: 20,
                               offset: const Offset(0, 10),
                             ),
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.5),
+                              color: Colors.black.withValues(alpha: 0.5),
                               blurRadius: 10,
                               offset: const Offset(0, 3),
                             ),
@@ -1702,10 +1681,10 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 16, vertical: 12),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.05),
+                                  color: Colors.white.withValues(alpha: 0.05),
                                   borderRadius: BorderRadius.circular(16),
                                   border: Border.all(
-                                    color: Colors.white.withOpacity(0.1),
+                                    color: Colors.white.withValues(alpha: 0.1),
                                     width: 1,
                                   ),
                                 ),
@@ -1791,11 +1770,11 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                                 padding: const EdgeInsets.all(16),
                                 decoration: BoxDecoration(
                                   // ignore: deprecated_member_use
-                                  color: Colors.white.withOpacity(0.05),
+                                  color: Colors.white.withValues(alpha: 0.05),
                                   borderRadius: BorderRadius.circular(12),
                                   border: Border.all(
                                     color:
-                                        Colors.yellow.shade400.withOpacity(0.2),
+                                        Colors.yellow.shade400.withValues(alpha: 0.2),
                                     width: 1,
                                   ),
                                 ),
@@ -2000,7 +1979,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                                 colors: [
                                   Colors.black87,
                                   // ignore: deprecated_member_use
-                                  Colors.yellow.shade900.withOpacity(0.5),
+                                  Colors.yellow.shade900.withValues(alpha: 0.5),
                                 ],
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
@@ -2022,7 +2001,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                           margin: const EdgeInsets.symmetric(horizontal: 16),
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Colors.green.shade900.withOpacity(0.7),
+                            color: Colors.green.shade900.withValues(alpha: 0.7),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(color: Colors.green.shade300),
                           ),
@@ -2109,6 +2088,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
     );
   }
 }
+
 // Admin panel parts removed. 
 // Legacy admin code removed.
 
@@ -2133,6 +2113,10 @@ class CouponCodeWidget extends StatefulWidget {
 }
 
 class _CouponCodeWidgetState extends State<CouponCodeWidget> {
+  void safeSetState(VoidCallback fn) {
+    if (mounted) setState(fn);
+  }
+
   bool isLoading = true;
   bool isGenerating = false;
   String? couponCode;
@@ -2187,11 +2171,11 @@ class _CouponCodeWidgetState extends State<CouponCodeWidget> {
 
       // No coupon found, but we've completed checking
       safeSetState(() {
-        print(name);
+        debugPrint(name);
         isLoading = false;
       });
     } catch (e) {
-      print('Error checking coupon code: $e');
+      debugPrint('Error checking coupon code: $e');
       safeSetState(() {
         errorMessage = 'Could not check for existing coupon. Please try again.';
         isLoading = false;
@@ -2261,7 +2245,7 @@ class _CouponCodeWidgetState extends State<CouponCodeWidget> {
       // Notify parent
       widget.onCouponGenerated(newCouponCode);
     } catch (e) {
-      print('Error generating coupon code: $e');
+      debugPrint('Error generating coupon code: $e');
       safeSetState(() {
         errorMessage = 'Could not generate coupon code. Please try again.';
         isGenerating = false;
@@ -2295,7 +2279,7 @@ class _CouponCodeWidgetState extends State<CouponCodeWidget> {
             end: Alignment.bottomRight,
             colors: [
               Colors.black87,
-              Colors.yellow.shade900.withOpacity(0.4),
+              Colors.yellow.shade900.withValues(alpha: 0.4),
               Colors.black87,
             ],
           ),
@@ -2328,7 +2312,7 @@ class _CouponCodeWidgetState extends State<CouponCodeWidget> {
       return Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.red.shade900.withOpacity(0.3),
+          color: Colors.red.shade900.withValues(alpha: 0.3),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: Colors.red.shade700, width: 1),
         ),
@@ -2373,7 +2357,7 @@ class _CouponCodeWidgetState extends State<CouponCodeWidget> {
             end: Alignment.bottomRight,
             colors: [
               Colors.black87,
-              Colors.yellow.shade900.withOpacity(0.4),
+              Colors.yellow.shade900.withValues(alpha: 0.4),
               Colors.black87,
             ],
           ),
@@ -2387,7 +2371,7 @@ class _CouponCodeWidgetState extends State<CouponCodeWidget> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.yellow.shade900.withOpacity(0.5),
+                color: Colors.yellow.shade900.withValues(alpha: 0.5),
                 borderRadius:
                     const BorderRadius.vertical(top: Radius.circular(14.5)),
               ),
@@ -2526,7 +2510,7 @@ class _CouponCodeWidgetState extends State<CouponCodeWidget> {
                       backgroundColor: Colors.yellow.shade700,
                       foregroundColor: Colors.black,
                       disabledBackgroundColor:
-                          Colors.yellow.shade900.withOpacity(0.3),
+                          Colors.yellow.shade900.withValues(alpha: 0.3),
                       minimumSize: const Size(double.infinity, 48),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -2567,7 +2551,7 @@ class _CouponCodeWidgetState extends State<CouponCodeWidget> {
           end: Alignment.bottomRight,
           colors: [
             Colors.black87,
-            Colors.yellow.shade900.withOpacity(0.4),
+            Colors.yellow.shade900.withValues(alpha: 0.4),
             Colors.black87,
           ],
         ),
@@ -2581,7 +2565,7 @@ class _CouponCodeWidgetState extends State<CouponCodeWidget> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.yellow.shade900.withOpacity(0.5),
+              color: Colors.yellow.shade900.withValues(alpha: 0.5),
               borderRadius:
                   const BorderRadius.vertical(top: Radius.circular(14.5)),
             ),
@@ -2689,12 +2673,14 @@ class _CouponCodeWidgetState extends State<CouponCodeWidget> {
                         onPressed: () {
                           Clipboard.setData(
                               ClipboardData(text: couponCode ?? ''));
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Coupon copied to clipboard!'),
-                              backgroundColor: Colors.green,
-                            ),
-                          );
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Coupon copied to clipboard!'),
+                                backgroundColor: Colors.green,
+                              ),
+                            );
+                          }
                         },
                         constraints: const BoxConstraints(),
                         padding: EdgeInsets.zero,
@@ -3064,12 +3050,14 @@ class WhatsAppShareHelper {
 
   /// Show error message to user
   static void _showError(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red.shade600,
-        duration: const Duration(seconds: 3),
-      ),
-    );
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: Colors.red.shade600,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
   }
 }
