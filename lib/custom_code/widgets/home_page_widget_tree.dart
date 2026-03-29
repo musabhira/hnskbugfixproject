@@ -707,9 +707,9 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                                 builder: (context, close) {
                                               return InfoBar(
                                                 title:
-                                                    const Text('Coming Soon'),
+                                                    const Text('Friends Match'),
                                                 content: const Text(
-                                                    'Strangers Friends coming soon!'),
+                                                    'Strangers Match feature is calibrating for your region.'),
                                                 severity: InfoBarSeverity.info,
                                               );
                                             });

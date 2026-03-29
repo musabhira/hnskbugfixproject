@@ -521,8 +521,8 @@ class _EventsDisplayHomePageState extends State<EventsDisplayHomePage> {
                                   const SizedBox(height: 16),
                                   Text(
                                     _searchController.text.isNotEmpty
-                                        ? 'events are coming soon'
-                                        : 'events are coming soon',
+                                        ? 'No matching events found'
+                                        : 'No events scheduled currently',
                                     style: TextStyle(
                                       color: Colors.grey.shade400,
                                       fontSize: 18,

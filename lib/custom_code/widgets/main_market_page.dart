@@ -3,8 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:pocket_mates_app/custom_code/widgets/main_market_logic.dart';
-import 'package:pocket_mates_app/custom_code/widgets/gallery_search_page.dart';
+import 'main_market_logic.dart';
+import 'gallery_profile_search_page.dart';
+import 'gallery_search_page.dart';
+import 'search_page.dart' show SearchPage;
 
 class MainMarketPage extends ConsumerStatefulWidget {
   const MainMarketPage({super.key});
@@ -81,7 +83,15 @@ class _MainMarketPageState extends ConsumerState<MainMarketPage>
                 ),
                 IconButton(
                   icon: const Icon(Icons.search, color: Colors.white70),
-                  onPressed: () {},
+                  onPressed: () {
+                    // Navigate to a search page or show search bar
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const GalleryProfileSearchPage(userid: ''),
+                      ),
+                    );
+                  },
                 ),
               ],
             ),

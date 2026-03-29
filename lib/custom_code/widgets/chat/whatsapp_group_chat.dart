@@ -280,17 +280,14 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     );
   }
 
-  void _showBlockUserDialog() {
-    if (!widget.groupId.startsWith('p:')) return;
-    final otherUserId = widget.groupId.substring(2);
-
+  void _showBlockUserDialog(String otherUserId, String otherUserName) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: Colors.grey[900],
-        title: const Text('Block User?', style: TextStyle(color: Colors.white)),
+        title: Text('Block $otherUserName?', style: const TextStyle(color: Colors.white)),
         content: Text(
-          'Are you sure you want to block ${widget.groupName}? They will no longer be able to message you, and you will not see their content.',
+          'Are you sure you want to block $otherUserName? They will no longer be able to message you, and you will not see their content.',
           style: const TextStyle(color: Colors.white70),
         ),
         actions: [
@@ -305,6 +302,75 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
             },
             child: const Text('Block', style: TextStyle(color: Colors.redAccent)),
           ),
+        ],
+      ),
+    );
+  }
+
+  void _showUserOptionsDialog(String userId, String name) {
+    if (userId == _currentUserId) return;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1F2C34),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            margin: const EdgeInsets.only(top: 8),
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: Colors.white24,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
+          const SizedBox(height: 24),
+          ListTile(
+            leading: const Icon(Icons.person_outline, color: Colors.blue),
+            title: const Text('View Profile', style: TextStyle(color: Colors.white)),
+            onTap: () {
+              Navigator.pop(context);
+              // Tapping avatar could also show the full image logic if needed
+              final member = _groupMembers.firstWhere(
+                  (m) => m['user_id'] == userId,
+                  orElse: () => {});
+              final url = member['profile']?['profile_image_url'];
+              if (url != null) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ImageViewer(imageUrl: url, title: name)),
+                );
+              }
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.flag_outlined, color: Colors.orange),
+            title: const Text('Report User', style: TextStyle(color: Colors.white)),
+            onTap: () {
+              Navigator.pop(context);
+              ReportHelper.showReportDialog(
+                context: context,
+                contentType: 'user',
+                contentId: userId,
+                contentTitle: name,
+              );
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.block, color: Colors.red),
+            title: const Text('Block User', style: TextStyle(color: Colors.white)),
+            onTap: () {
+              Navigator.pop(context);
+              _showBlockUserDialog(userId, name);
+            },
+          ),
+          const SizedBox(height: 16),
         ],
       ),
     );
@@ -490,7 +556,10 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                     contentTitle: widget.groupName,
                   );
                 }
-                if (value == 'block') _showBlockUserDialog();
+                if (value == 'block') {
+                  final otherUserId = widget.groupId.substring(2);
+                  _showBlockUserDialog(otherUserId, widget.groupName);
+                }
               },
               itemBuilder: (context) {
                 final isPersonalChat = widget.groupId.startsWith('p:');
@@ -753,23 +822,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
         children: [
         if (!isMe)
           GestureDetector(
-            onTap: () {
-              final member = _groupMembers.firstWhere(
-                  (m) => m['user_id'] == message.senderId,
-                  orElse: () => {});
-              final url = member['profile']?['profile_image_url'];
-              if (url != null) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ImageViewer(
-                      imageUrl: url,
-                      title: message.senderName,
-                    ),
-                  ),
-                );
-              }
-            },
+            onTap: () => _showUserOptionsDialog(message.senderId, message.senderName ?? 'User'),
             child: Padding(
               padding: const EdgeInsets.only(left: 8, bottom: 4),
               child: CircleAvatar(
@@ -832,38 +885,41 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
               children: [
                 // Sender Name (if group and not me)
                 if (!isMe && !widget.groupId.startsWith('p:'))
-                  Padding(
-                    padding: const EdgeInsets.only(left: 4, bottom: 2),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          message.senderName ?? 'User',
-                          style: const TextStyle(
-                            color: Colors.yellow,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        if (_isAdmin(message.senderId)) ...[
-                          const SizedBox(width: 4),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 4, vertical: 1),
-                            decoration: BoxDecoration(
-                              color: Colors.yellow.withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(4),
-                              border:
-                                  Border.all(color: Colors.yellow, width: 0.5),
-                            ),
-                            child: const Text(
-                              'Admin',
-                              style:
-                                  TextStyle(color: Colors.yellow, fontSize: 8),
+                  GestureDetector(
+                    onTap: () => _showUserOptionsDialog(message.senderId, message.senderName ?? 'User'),
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 4, bottom: 2),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            message.senderName ?? 'User',
+                            style: const TextStyle(
+                              color: Colors.yellow,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
+                          if (_isAdmin(message.senderId)) ...[
+                            const SizedBox(width: 4),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 4, vertical: 1),
+                              decoration: BoxDecoration(
+                                color: Colors.yellow.withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(4),
+                                border:
+                                    Border.all(color: Colors.yellow, width: 0.5),
+                              ),
+                              child: const Text(
+                                'Admin',
+                                style:
+                                    TextStyle(color: Colors.yellow, fontSize: 8),
+                              ),
+                            ),
+                          ],
                         ],
-                      ],
+                      ),
                     ),
                   ),
 

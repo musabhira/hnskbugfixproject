@@ -20,17 +20,15 @@ class _SettingsPageState extends State<SettingsPage> {
     setState(() => _isProcessing = true);
     
     try {
-      await SupaFlow.client.auth.signOut();
-      if (mounted) {
-        // Use GoRouter to go directly to AuthPage for a clean state
-        context.go('/authPage');
-      }
+      // Set a timeout to ensure responsiveness even if network is slow
+      await SupaFlow.client.auth.signOut().timeout(const Duration(seconds: 2));
     } catch (e) {
+      debugPrint('Logout timeout or error: $e');
+    } finally {
       if (mounted) {
-        // Even if signOut fails, try to go to AuthPage to clear app state
+        // Always navigate even if signOut fails/times out to keep the UI responsive
         context.go('/authPage');
       }
-    } finally {
       if (mounted) setState(() => _isProcessing = false);
     }
   }
