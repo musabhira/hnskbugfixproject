@@ -1,39 +1,21 @@
-// Automatic FlutterFlow imports
-import 'package:pocket_mates_app/custom_code/widgets/color_picker_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/color_picker_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/custom_phone_text_field.dart';
-import 'package:pocket_mates_app/custom_code/widgets/custom_phone_text_field.dart';
 import 'package:pocket_mates_app/custom_code/widgets/custom_text_field.dart';
-import 'package:pocket_mates_app/custom_code/widgets/custom_text_field.dart';
-import 'package:pocket_mates_app/pages/home_page/home_page_widget.dart';
 import 'package:pocket_mates_app/pages/home_page/home_page_widget.dart';
 
 import '/backend/supabase/supabase.dart';
-import '/backend/supabase/supabase.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-// Imports other custom widgets
-// Imports custom actions
-import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/foundation.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io' as io;
-import 'dart:io' as io;
-import 'package:country_state_city_picker/country_state_city_picker.dart';
 import 'package:country_state_city_picker/country_state_city_picker.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
 import 'package:image/image.dart' as img;
-import 'package:image/image.dart' as img;
-import 'package:flutter/services.dart';
 import 'package:flutter/services.dart';
 
 // Begin custom action code
@@ -83,8 +65,8 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
 
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _shopNameController = TextEditingController();
-  final TextEditingController _PhoneNumberController = TextEditingController();
-  final TextEditingController _BioController = TextEditingController();
+  final TextEditingController _phoneNumberController = TextEditingController();
+  final TextEditingController _bioController = TextEditingController();
   final TextEditingController _dayController = TextEditingController();
   final TextEditingController _monthController = TextEditingController();
   final TextEditingController _yearController = TextEditingController();
@@ -95,7 +77,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
   bool _isShopNameVerified = false;
   String? _shopNameMessage;
   bool _checkingShopName = false;
-  Color _shopNameMessageColor = Colors.grey;
+  Color _shopNameMessageColor = const Color(0xFF95A1AC); // Initial grey fallback
 
   // Getters to access the values
   int? get day =>
@@ -148,8 +130,8 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
           _nameController.text = profileResponse['name'] ?? '';
           _imageUrl = profileResponse['profile_image_url'] ?? '';
           _shopNameController.text = profileResponse['shop_name'] ?? '';
-          _PhoneNumberController.text = profileResponse['phone_no'] ?? '';
-          _BioController.text = profileResponse['bio'] ?? '';
+          _phoneNumberController.text = profileResponse['phone_no'] ?? '';
+          _bioController.text = profileResponse['bio'] ?? '';
           selectedCountry = profileResponse['country'] ?? '';
           selectedState = profileResponse['state'] ?? '';
           selectedCity = profileResponse['city'] ?? '';
@@ -172,7 +154,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error loading profile: $error'),
-            backgroundColor: Colors.red,
+            backgroundColor: FlutterFlowTheme.of(context).error,
           ),
         );
       }
@@ -206,7 +188,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
       List<int> compressedBytes = img.encodeJpg(image, quality: quality);
       return Uint8List.fromList(compressedBytes);
     } catch (e) {
-      print('Error compressing image: $e');
+      debugPrint('Error compressing image: $e');
       return imageBytes; // Return original if compression fails
     }
   }
@@ -245,7 +227,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error processing image: $e'),
-            backgroundColor: Colors.red,
+            backgroundColor: FlutterFlowTheme.of(context).error,
             duration: const Duration(seconds: 3),
           ),
         );
@@ -287,7 +269,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error processing banner image: $e'),
-            backgroundColor: Colors.red,
+            backgroundColor: FlutterFlowTheme.of(context).error,
             duration: const Duration(seconds: 3),
           ),
         );
@@ -307,10 +289,10 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
     } else if (_shopNameController.text.trim().isEmpty) {
       isValid = false;
       errorMessage = 'Please enter your shop name';
-    } else if (_PhoneNumberController.text.trim().isEmpty) {
+    } else if (_phoneNumberController.text.trim().isEmpty) {
       isValid = false;
       errorMessage = 'Please enter your phone number';
-    } else if (_BioController.text.trim().isEmpty) {
+    } else if (_bioController.text.trim().isEmpty) {
       isValid = false;
       errorMessage = 'Please enter your bio';
     }
@@ -326,7 +308,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
         isValid = false;
         errorMessage =
             'Shop name contains inappropriate content. Please use appropriate language.';
-      } else if (_containsObjectionableContent(_BioController.text)) {
+      } else if (_containsObjectionableContent(_bioController.text)) {
         isValid = false;
         errorMessage =
             'Bio contains inappropriate content. Please use appropriate language.';
@@ -376,7 +358,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(errorMessage),
-            backgroundColor: Colors.red,
+            backgroundColor: FlutterFlowTheme.of(context).error,
             duration: const Duration(seconds: 3),
           ),
         );
@@ -445,7 +427,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
       // Sanitize content before saving
       final sanitizedName = _sanitizeContent(_nameController.text);
       final sanitizedShopName = _sanitizeContent(_shopNameController.text);
-      final sanitizedBio = _sanitizeContent(_BioController.text);
+      final sanitizedBio = _sanitizeContent(_bioController.text);
 
       // Update profile data
       final existingProfile = await _supabase
@@ -462,7 +444,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
             'profile_image_url': _imageUrl,
             'shop_name': sanitizedShopName,
             'slug': _sanitizeSlug(sanitizedShopName),
-            'phone_no': _PhoneNumberController.text,
+            'phone_no': _phoneNumberController.text,
             'bio': sanitizedBio,
             'country': selectedCountry,
             'state': selectedState,
@@ -494,7 +476,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
             'profile_image_url': _imageUrl,
             'shop_name': sanitizedShopName,
             'slug': _sanitizeSlug(sanitizedShopName),
-            'phone_no': _PhoneNumberController.text,
+            'phone_no': _phoneNumberController.text,
             'bio': sanitizedBio,
             'country': selectedCountry,
             'state': selectedState,
@@ -522,9 +504,9 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Profile updated successfully!'),
-            backgroundColor: Colors.green,
+          SnackBar(
+            content: const Text('Profile updated successfully!'),
+            backgroundColor: FlutterFlowTheme.of(context).success,
             duration: Duration(seconds: 2),
           ),
         );
@@ -539,11 +521,11 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error updating profile: $error'),
-            backgroundColor: Colors.red,
+            backgroundColor: FlutterFlowTheme.of(context).error,
             duration: const Duration(seconds: 3),
           ),
         );
-        print('Error updating profile: $error');
+        debugPrint('Error updating profile: $error');
       }
     } finally {
       safeSetState(() => _isLoading = false);
@@ -595,7 +577,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
         });
       }
     } catch (e) {
-      print('Error checking shop name: $e');
+      debugPrint('Error checking shop name: $e');
     } finally {
       safeSetState(() => _checkingShopName = false);
     }
@@ -693,12 +675,12 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
           .limit(1);
 
       safeSetState(() {
-        print(response);
+        debugPrint(response.toString());
         hideData = response.isNotEmpty ? response.first : null;
         isLoading = false;
       });
     } catch (e) {
-      print('Error fetching hide status: $e');
+      debugPrint('Error fetching hide status: $e');
       safeSetState(() {
         isLoading = false;
       });
@@ -727,7 +709,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
 
       fetchHideStatus();
     } catch (e) {
-      print('Error saving hide status: $e');
+      debugPrint('Error saving hide status: $e');
     }
   }
 
@@ -830,7 +812,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
               title: 'City',
               value: selectedCity ?? '',
               icon: Icons.business_outlined,
-              color: FlutterFlowTheme.of(context).tertiary ?? Colors.purple,
+              color: FlutterFlowTheme.of(context).tertiary,
             ),
         ],
       ),
@@ -1248,8 +1230,8 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
                         Text(
-                          _PhoneNumberController.text.isNotEmpty
-                              ? '${_PhoneNumberController.text} | Edit phone number'
+                          _phoneNumberController.text.isNotEmpty
+                              ? '${_phoneNumberController.text} | Edit phone number'
                               : 'Add a new phone number',
                           style: const TextStyle(
                             color: Colors.white,
@@ -1263,7 +1245,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                   CustomPhoneTextField(
                     width: double.infinity,
                     height: double.infinity,
-                    controller: _PhoneNumberController,
+                    controller: _phoneNumberController,
                     hintText: 'Phone Number',
                     labelText: 'Phone Number',
                     initialCountryCode: 'IN', // Optional: Set India as default
@@ -1306,7 +1288,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                   CustomTextField(
                     width: double.infinity,
                     height: double.infinity,
-                    controller: _BioController,
+                    controller: _bioController,
                     hintText: 'Your bio',
                     labelText: 'Your bio',
                     maxLines: 3,
@@ -1519,14 +1501,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                   Container(
                     margin: const EdgeInsets.all(16.0),
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          Colors.black,
-                          Colors.grey[900]!,
-                        ],
-                      ),
+                      color: FlutterFlowTheme.of(context).primaryBackground,
                       borderRadius: BorderRadius.circular(20.0),
                       border: Border.all(
                         color: Colors.yellow,
@@ -1552,10 +1527,10 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         // Header
-                        const Text(
+                        Text(
                           'Live Color Preview',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: FlutterFlowTheme.of(context).primaryText,
                             fontSize: 16.0,
                             fontWeight: FontWeight.bold,
                             letterSpacing: 1.2,
@@ -1669,7 +1644,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                         Container(
                           padding: const EdgeInsets.all(12.0),
                           decoration: BoxDecoration(
-                            color: Colors.grey[800],
+                            color: FlutterFlowTheme.of(context).secondaryBackground,
                             borderRadius: BorderRadius.circular(12.0),
                           ),
                           child: Row(
@@ -1695,7 +1670,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                     initialColor: _selectedColor,
                     initialColorCode: _colorCode ?? '#111311',
                     onColorSelected: (color, code) {
-                      print('First Color Selected: $color, Code: $code');
+                      debugPrint('First Color Selected: $color, Code: $code');
                       safeSetState(() {
                         _selectedColor = color;
                         _colorCode = code;
@@ -1709,7 +1684,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                     initialColor: _selectedColor1,
                     initialColorCode: _colorCode1 ?? '#111311',
                     onColorSelected: (color, code) {
-                      print('First Color Selected: $color, Code: $code');
+                      debugPrint('First Color Selected: $color, Code: $code');
                       safeSetState(() {
                         _selectedColor1 = color;
                         _colorCode1 = code;
@@ -1723,7 +1698,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                     initialColor: _selectedColor2,
                     initialColorCode: _colorCode2 ?? '#111311',
                     onColorSelected: (color, code) {
-                      print('First Color Selected: $color, Code: $code');
+                      debugPrint('First Color Selected: $color, Code: $code');
                       safeSetState(() {
                         _selectedColor2 = color;
                         _colorCode2 = code;
@@ -1737,7 +1712,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                     // initialColor: _selectedColor3,
                     initialColorCode: _colorCode3 ?? '#111311',
                     onColorSelected: (color, code) {
-                      print('First Color Selected: $color, Code: $code');
+                      debugPrint('First Color Selected: $color, Code: $code');
                       safeSetState(() {
                         _selectedColor3 = color;
                         _colorCode3 = code;
@@ -1814,16 +1789,16 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
         const SizedBox(height: 4),
         Text(
           label,
-          style: const TextStyle(
-            color: Colors.white70,
+          style: TextStyle(
+            color: FlutterFlowTheme.of(context).secondaryText,
             fontSize: 10.0,
             fontWeight: FontWeight.w500,
           ),
         ),
         Text(
           colorCode.substring(1, 4).toUpperCase(),
-          style: const TextStyle(
-            color: Colors.white54,
+          style: TextStyle(
+            color: FlutterFlowTheme.of(context).secondaryText.withValues(alpha: 0.8),
             fontSize: 9.0,
           ),
         ),
@@ -1839,10 +1814,10 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
         width: 110,
         margin: const EdgeInsets.only(right: 12),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.yellow : Colors.grey[900],
+          color: isSelected ? Colors.yellow : FlutterFlowTheme.of(context).secondaryBackground,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected ? Colors.yellow : Colors.white10,
+            color: isSelected ? Colors.yellow : FlutterFlowTheme.of(context).alternate,
             width: 2,
           ),
           boxShadow: isSelected
@@ -1868,7 +1843,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
               name,
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: isSelected ? Colors.black : Colors.white,
+                color: isSelected ? Colors.black : FlutterFlowTheme.of(context).primaryText,
                 fontSize: 11,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),

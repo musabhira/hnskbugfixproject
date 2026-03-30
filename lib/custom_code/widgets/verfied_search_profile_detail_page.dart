@@ -7,6 +7,7 @@ import 'package:pocket_mates_app/custom_code/widgets/search_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/search_profile_detail_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/posters_tab.dart';
 import '/backend/supabase/supabase.dart';
+import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'index.dart';
 import 'package:flutter/material.dart';
@@ -45,7 +46,7 @@ class _VerfiedSearchProfileDetailPageState
   List<Map<String, dynamic>> _galleryItems = [];
   List<Map<String, dynamic>> _serviceItems = [];
   List<Map<String, dynamic>> _commentItems = [];
-  bool _isLoading = false;
+  bool _isLoading = true;
   final _supabase = SupaFlow.client;
   ScrollController _scrollController = ScrollController();
   late TabController _tabController;
@@ -475,6 +476,14 @@ class _VerfiedSearchProfileDetailPageState
 
       Map<String, dynamic>? profile =
           profileResponse.isNotEmpty ? profileResponse.first : null;
+
+      if (profile != null) {
+        safeSetState(() {
+          _profileData = profile;
+          // Optionally unset _isLoading if we want to show the card immediately, 
+          // or just keep it true for now and rely on _profileData != null in build.
+        });
+      }
 
       final galleryResponse = await _supabase
           .from('profile_gallery_service_likes_comments_view')
@@ -908,7 +917,7 @@ class _VerfiedSearchProfileDetailPageState
     return _profileData != null && _profileData!['bg_color_code'] != null
         ? Color(int.parse('FF${_profileData!['bg_color_code'].substring(1)}',
             radix: 16))
-        : Colors.black;
+        : FlutterFlowTheme.of(context).primaryBackground;
   }
 
   Color _getButtonTextColor() {
@@ -916,14 +925,14 @@ class _VerfiedSearchProfileDetailPageState
         ? Color(int.parse(
             'FF${_profileData!['button_text_color'].substring(1)}',
             radix: 16))
-        : Colors.white;
+        : FlutterFlowTheme.of(context).info;
   }
 
   Color _getBgTextColor() {
     return _profileData != null && _profileData!['bg_text_color'] != null
         ? Color(int.parse('FF${_profileData!['bg_text_color'].substring(1)}',
             radix: 16))
-        : Colors.black;
+        : FlutterFlowTheme.of(context).primaryText;
   }
 
   Widget _buildStatWidget(
@@ -1030,10 +1039,10 @@ class _VerfiedSearchProfileDetailPageState
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: Colors.grey[900],
+          backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
           title: Text(
             _isBlocked ? 'Unblock User' : 'Block User',
-            style: const TextStyle(color: Colors.white),
+            style: TextStyle(color: FlutterFlowTheme.of(context).primaryText),
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -1043,7 +1052,7 @@ class _VerfiedSearchProfileDetailPageState
                 _isBlocked
                     ? 'Are you sure you want to unblock ${_profileData!['name'] ?? 'No Name'}?'
                     : 'Are you sure you want to block  ${_profileData!['name'] ?? 'No Name'}? You won\'t be able to send or receive messages.',
-                style: const TextStyle(color: Colors.white70),
+                style: TextStyle(color: FlutterFlowTheme.of(context).secondaryText),
               ),
               if (_isBlocked && _blockTime != null) ...[
                 const SizedBox(height: 16),
@@ -1102,10 +1111,10 @@ class _VerfiedSearchProfileDetailPageState
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
+        iconTheme: IconThemeData(color: FlutterFlowTheme.of(context).info),
         actions: [
           PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert, color: Colors.white),
+            icon: Icon(Icons.more_vert, color: FlutterFlowTheme.of(context).info),
             color: bgColor, // Pass as parameter
             onSelected: (String value) async {
               switch (value) {
@@ -1292,28 +1301,22 @@ class _VerfiedSearchProfileDetailPageState
           ),
         ],
       ),
-      body: _isLoading
+      body: (_isLoading && _profileData == null) || _checkingBlockStatus
           ? ListViewShimmer(
-              cardHeight: 250.0,
-              baseColor: const Color.fromARGB(255, 30, 30, 30)!,
-              highlightColor: const Color.fromARGB(255, 43, 43, 43),
-              duration: const Duration(milliseconds: 2000),
-            )
-          : _profileData == null
-              ? ListViewShimmer(
-                  cardHeight: 250.0,
-                  baseColor: const Color.fromARGB(255, 30, 30, 30)!,
-                  highlightColor: const Color.fromARGB(255, 43, 43, 43),
-                  duration: const Duration(milliseconds: 2000),
-                )
-              : _checkingBlockStatus
-                  ? const Center(child: CircularProgressIndicator())
+                      cardHeight: 250.0,
+                      baseColor: const Color.fromARGB(255, 30, 30, 30),
+                      highlightColor: const Color.fromARGB(255, 43, 43, 43),
+                      duration: const Duration(milliseconds: 2000),
+                    )
                   : _isBlockedByOther
                       ? _buildBlockedByOtherView()
                       : _isBlocked
                           ? _buildBlockedView()
                           : Stack(
                               children: [
+                                // Background to prevent transparency glitches
+                                Container(color: bgColor),
+
                                 Container(
                                   height:
                                       MediaQuery.of(context).size.height * 0.4,
@@ -1326,6 +1329,7 @@ class _VerfiedSearchProfileDetailPageState
                                               _profileData!['banner_image_url'],
                                             ),
                                             fit: BoxFit.cover,
+                                            filterQuality: FilterQuality.high,
                                           )
                                         : null,
                                     color: _profileData!['banner_image_url'] ==

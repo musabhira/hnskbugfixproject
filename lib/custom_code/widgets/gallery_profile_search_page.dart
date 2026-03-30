@@ -254,6 +254,7 @@ class _GalleryProfileSearchPageState extends State<GalleryProfileSearchPage> {
                     Expanded(
                       child: TextBox(
                         controller: _searchController,
+                        style: TextStyle(color: bgtextcolor),
                         placeholder: 'Search gallery...',
                         prefix: Padding(
                           padding: const EdgeInsets.only(left: 8.0),
@@ -269,6 +270,10 @@ class _GalleryProfileSearchPageState extends State<GalleryProfileSearchPage> {
                               )
                             : null,
                         onChanged: (text) => _onSearchChanged(),
+                        decoration: WidgetStateProperty.all(const BoxDecoration(
+                          color: Colors.transparent,
+                          border: Border.fromBorderSide(BorderSide.none),
+                        )),
                       ),
                     ),
                   ],

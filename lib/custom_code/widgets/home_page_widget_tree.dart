@@ -3,8 +3,10 @@ import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.dart';
 import 'package:pocket_mates_app/custom_code/widgets/conversation_tile.dart';
 import 'package:pocket_mates_app/custom_code/widgets/profile_switch_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/native_webrtc_call_screen.dart';
 import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
 import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/native_webrtc_call_screen.dart';
 import 'package:pocket_mates_app/flutter_flow/flutter_flow_util.dart';
 import 'package:pocket_mates_app/flutter_flow/flutter_flow_theme.dart';
 import '/custom_code/widgets/index.dart';
@@ -1541,7 +1543,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         Navigator.push(
           context,
           material.MaterialPageRoute(
-            builder: (context) => const WebRTCCallScreen(
+            builder: (context) => const NativeWebRTCCallScreen(
               mode: 'Text',
             ),
           ),
@@ -1562,7 +1564,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       Navigator.push(
         context,
         material.MaterialPageRoute(
-          builder: (context) => WebRTCCallScreen(
+          builder: (context) => NativeWebRTCCallScreen(
             mode: mode,
           ),
         ),
@@ -2377,6 +2379,7 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                         ],
                       ),
                       decoration: WidgetStateProperty.all(BoxDecoration(
+                        color: material.Colors.transparent,
                         border: Border.all(style: BorderStyle.none),
                       )),
                       style: GoogleFonts.outfit(

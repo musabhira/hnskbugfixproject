@@ -40,6 +40,7 @@ import 'package:pocket_mates_app/custom_code/widgets/chess_game_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/teams/user_search_dialog.dart';
 import 'package:pocket_mates_app/custom_code/widgets/teams/teams_service.dart';
 
+import 'package:pocket_mates_app/flutter_flow/flutter_flow_theme.dart';
 import 'package:pocket_mates_app/auth/auth_helper.dart';
 
 class WhatsAppGroupChat extends ConsumerStatefulWidget {
@@ -422,8 +423,8 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
 
   Widget _buildShimmerLoading() {
     return Shimmer.fromColors(
-      baseColor: Colors.grey[800]!,
-      highlightColor: Colors.grey[700]!,
+      baseColor: FlutterFlowTheme.of(context).secondaryBackground,
+      highlightColor: FlutterFlowTheme.of(context).primaryBackground,
       child: ListView.builder(
         reverse: true,
         itemCount: 15,
@@ -441,7 +442,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
               ),
               height: 60,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: FlutterFlowTheme.of(context).primaryBackground,
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
@@ -557,8 +558,13 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                   );
                 }
                 if (value == 'block') {
-                  final otherUserId = widget.groupId.substring(2);
-                  _showBlockUserDialog(otherUserId, widget.groupName);
+                  final otherUserId = widget.groupId.startsWith('p:') ? widget.groupId.substring(2) : '';
+                  if (otherUserId.isNotEmpty) {
+                    _showBlockUserDialog(otherUserId, widget.groupName);
+                  }
+                }
+                if (value == 'clear') {
+                  _clearChat();
                 }
               },
               itemBuilder: (context) {
@@ -580,7 +586,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                     ),
                   if (isPersonalChat) ...[
                     const PopupMenuItem(
-                      value: 'refresh',
+                      value: 'clear',
                       child: Text('Clear Chat', style: TextStyle(color: Colors.red)),
                     ),
                     const PopupMenuItem(
@@ -675,11 +681,11 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                             itemCount: filteredMessages.length + 1,
                             itemBuilder: (context, index) {
                               if (index == filteredMessages.length) {
-                                 return chatMessagesAsync.isLoading ? 
+                                  return chatMessagesAsync.isLoading ? 
                                     const Padding(
                                       padding: EdgeInsets.symmetric(vertical: 20),
                                       child: Center(child: CircularProgressIndicator(color: Colors.yellow, strokeWidth: 2)),
-                                    ) : const SizedBox(height: 100);
+                                    ) : const SizedBox(height: 20);
                               }
 
                               final message = filteredMessages[index];
@@ -749,7 +755,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
         margin: const EdgeInsets.symmetric(vertical: 12),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
         decoration: BoxDecoration(
-          color: const Color(0xFF1F2C34).withValues(alpha: 0.6),
+          color: const Color(0xFF1F2C34).withOpacity(0.6),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: Colors.white10),
         ),
@@ -929,7 +935,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                         message.messageText!.isNotEmpty) {
                       await Clipboard.setData(
                           ClipboardData(text: message.messageText!));
-                      if (context.mounted) {
+                      if (mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(content: Text('Message copied')),
                         );
@@ -949,7 +955,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                       borderRadius: borderRadius,
                       border: isMe
                           ? null
-                          : Border.all(color: Colors.white.withOpacity(0.05)),
+                          : Border.all(color: Colors.white.withValues(alpha: 0.05)),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withValues(alpha: 0.25),
@@ -1002,7 +1008,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                                     style: TextStyle(
                                         color: isMe
                                             ? Colors.black87
-                                            : Colors.white.withValues(alpha: 0.93),
+                                            : Colors.white.withOpacity(0.93),
                                         fontSize: 15,
                                         height: 1.3),
                                   ),
@@ -1028,7 +1034,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                                     Icons.copy,
                                     size: 12,
                                     color: (isMe ? Colors.black : Colors.white)
-                                        .withValues(alpha: 0.6),
+                                        .withOpacity(0.6),
                                   ),
                                 ),
                                 const SizedBox(width: 4),
@@ -1082,11 +1088,11 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: isMe
-            ? Colors.black.withValues(alpha: 0.1)
-            : Colors.yellow.withValues(alpha: 0.05),
+            ? Colors.black.withOpacity(0.1)
+            : Colors.yellow.withOpacity(0.05),
         borderRadius: BorderRadius.circular(16),
         border:
-            Border.all(color: Colors.yellow.withValues(alpha: 0.2), width: 1),
+            Border.all(color: Colors.yellow.withOpacity(0.2), width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1096,7 +1102,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
               Container(
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: Colors.yellow.withValues(alpha: 0.1),
+                  color: Colors.yellow.withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
@@ -1208,8 +1214,8 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     final String? avatar = profile['profile_image_url'];
 
     final mainTextTheme = isMe ? Colors.black87 : Colors.white;
-    final subTextTheme = isMe ? Colors.black54 : Colors.white.withValues(alpha: 0.9);
-    final linkTheme = isMe ? Colors.black : Colors.yellow.withValues(alpha: 0.8);
+    final subTextTheme = isMe ? Colors.black54 : Colors.white.withOpacity(0.9);
+    final linkTheme = isMe ? Colors.black : Colors.yellow.withOpacity(0.8);
     final iconTheme = isMe ? Colors.black87 : Colors.yellow;
 
     return GestureDetector(
@@ -1230,12 +1236,12 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
           color: isMe
-              ? Colors.black.withValues(alpha: 0.05)
-              : Colors.black.withValues(alpha: 0.4),
+              ? Colors.black.withOpacity(0.05)
+              : Colors.black.withOpacity(0.4),
           border: Border.all(
               color: isMe
-                  ? Colors.black.withValues(alpha: 0.1)
-                  : Colors.white.withValues(alpha: 0.1),
+                  ? Colors.black.withOpacity(0.1)
+                  : Colors.white.withOpacity(0.1),
               width: 1),
         ),
         child: Column(
@@ -1342,19 +1348,12 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
         margin: const EdgeInsets.only(top: 4, bottom: 4),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Colors.grey[900]!,
-              const Color(0xFF1E1E1E),
-            ],
-          ),
+          color: FlutterFlowTheme.of(context).secondaryBackground,
           border:
-              Border.all(color: Colors.white.withValues(alpha: 0.1), width: 1),
+              Border.all(color: FlutterFlowTheme.of(context).alternate, width: 1),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.3),
+              color: Colors.black.withOpacity(0.1),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
@@ -1751,9 +1750,9 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     final String? description = metadata['description'];
 
     final titleColor = isMe ? Colors.black87 : Colors.white;
-    final subColor = isMe ? Colors.black54 : Colors.white.withValues(alpha: 0.6);
-    final bgColor = isMe ? Colors.black.withValues(alpha: 0.05) : Colors.white.withValues(alpha: 0.05);
-    final borderColor = isMe ? Colors.black.withValues(alpha: 0.1) : Colors.yellow.withValues(alpha: 0.3);
+    final subColor = isMe ? Colors.black54 : Colors.white.withOpacity(0.6);
+    final bgColor = isMe ? Colors.black.withOpacity(0.05) : Colors.white.withOpacity(0.05);
+    final borderColor = isMe ? Colors.black.withOpacity(0.1) : Colors.yellow.withOpacity(0.3);
     final iconColor = isMe ? Colors.black : Colors.yellow;
 
     return GestureDetector(
@@ -1907,7 +1906,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                     decoration: BoxDecoration(
                       color: isError ? Colors.red[800] : Colors.grey[900],
                       borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
+                      boxShadow: const [
                         BoxShadow(color: Colors.black54, blurRadius: 8)
                       ],
                     ),
@@ -1938,10 +1937,10 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       decoration: BoxDecoration(
         color: const Color(0xFF070B0D),
-        border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.05), width: 1)),
+        border: Border(top: BorderSide(color: Colors.white.withOpacity(0.05), width: 1)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.4),
+            color: Colors.black.withOpacity(0.4),
             offset: const Offset(0, -4),
             blurRadius: 16,
           ),
@@ -1954,7 +1953,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
               decoration: BoxDecoration(
                 color: const Color(0xFF121B22),
                 borderRadius: BorderRadius.circular(30),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.08), width: 0.5),
+                border: Border.all(color: Colors.white.withOpacity(0.08), width: 0.5),
               ),
               child: Row(
                 children: [
@@ -2059,7 +2058,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
         onEmojiSelected: (category, emoji) {
           _messageController.text += emoji.emoji;
         },
-        config: Config(
+        config: const Config(
           height: 256,
           checkPlatformCompatibility: true,
           emojiViewConfig: const EmojiViewConfig(
@@ -2105,10 +2104,10 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
           decoration: BoxDecoration(
             color: const Color(0xFF121B22),
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: Colors.yellow.withValues(alpha: 0.15)),
+            border: Border.all(color: Colors.yellow.withOpacity(0.15)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.6),
+                color: Colors.black.withOpacity(0.6),
                 blurRadius: 15,
                 spreadRadius: 2,
                 offset: const Offset(0, 5),
@@ -2200,7 +2199,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.yellow.withOpacity(0.1),
+              color: Colors.yellow.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(icon, color: Colors.yellow, size: 20),
@@ -2305,8 +2304,6 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   }
 
   Future<void> _uploadStagedFile(String? caption, String path, String type) async {
-    final String optimisticId = 'temp_file_${DateTime.now().millisecondsSinceEpoch}';
-    
     // 1. Immediate optimistic send
     final messageId = await _sendMessage(
       text: caption ?? (type == 'document' ? 'Document 📁' : 'Audio 🎵'),
@@ -2426,6 +2423,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
       if (!status.isGranted && !status.isLimited) {
         final status2 = await Permission.storage.request();
         if (!status2.isGranted) {
+           if (!mounted) return;
            showDialog(
              context: context,
              builder: (context) => AlertDialog(
@@ -2565,7 +2563,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
       if (image == null) return;
 
       final path = image.path;
-      final type = 'image';
+      const type = 'image';
 
       // 1. Immediate optimistic send
       final messageId = await _sendMessage(
@@ -3334,10 +3332,10 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
       decoration: BoxDecoration(
         color: const Color(0xFF1F2C34),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.yellow.withOpacity(0.3)),
+        border: Border.all(color: Colors.yellow.withValues(alpha: 0.3)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.4),
+            color: Colors.black.withValues(alpha: 0.4),
             blurRadius: 10,
             offset: const Offset(0, -2),
           ),
@@ -3453,7 +3451,7 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
                           _controller.value.isPlaying
                               ? Icons.pause
                               : Icons.play_arrow,
-                          color: Colors.white.withOpacity(0.5),
+                          color: Colors.white.withValues(alpha: 0.5),
                           size: 80,
                         ),
                       ),

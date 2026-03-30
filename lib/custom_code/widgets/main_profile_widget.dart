@@ -10,6 +10,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/custom_code/widgets/profile_custom_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
+import 'dart:io';
+import 'package:pocket_mates_app/flutter_flow/flutter_flow_theme.dart';
 import 'index.dart';
 
 import 'package:pocket_mates_app/custom_code/widgets/gallery_profile_search_page.dart';
@@ -82,8 +84,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
   @override
   void initState() {
-    super.initState();
-    _tabController = material.TabController(length: 3, vsync: this);
+    // Initialize controller with correct length if preloaded
+    final initialLength = (widget.preloadedProfile?['verified'] == true) ? 4 : 3;
+    _tabController = material.TabController(length: initialLength, vsync: this);
     _loadInitialData(); // Instant load strategy
     _fetchThreads();
   }
@@ -133,11 +136,23 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
   void _applyProfileData(Map<String, dynamic> data) {
     _profileData = data;
-    // Apply Colors
     _bgColor = _parseColor(data['bg_color_code']);
     _textColor = _parseColor(data['bg_text_color']);
     _btnColor = _parseColor(data['button_color_code']);
     _btnTextColor = _parseColor(data['button_text_color']);
+
+    // Sync TabController
+    final isVerified = data['verified'] == true;
+    final newLength = isVerified ? 4 : 3;
+    if (_tabController.length != newLength) {
+      final oldIndex = _tabController.index;
+      _tabController.dispose();
+      _tabController = material.TabController(
+        length: newLength,
+        vsync: this,
+        initialIndex: oldIndex < newLength ? oldIndex : 0,
+      );
+    }
   }
 
   Future<void> _fetchFreshData() async {
@@ -201,15 +216,6 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         _followingCount = counts['following'] ?? 0;
         _isFollowing = responses[3] as bool;
         _isBlocked = responses[4] as bool;
-
-        // Update TabController if verified
-        final isVerified = _profileData?['verified'] == true;
-        final newLength = isVerified ? 4 : 3;
-        if (_tabController.length != newLength) {
-          _tabController.dispose();
-          _tabController =
-              material.TabController(length: newLength, vsync: this);
-        }
       });
 
       // Lazy load full lists in background
@@ -382,31 +388,34 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   Widget build(BuildContext context) {
     if (_isBlocked) {
       return material.Scaffold(
-        body: Container(
-          color: material.Colors.white,
-          child: const Center(child: Text("You have blocked this user.")),
+        backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+        body: Center(
+          child: Text(
+            "You have blocked this user.",
+            style: TextStyle(color: FlutterFlowTheme.of(context).primaryText),
+          ),
         ),
       );
     }
 
     if (_isLoading && _profileData == null) {
       return material.Scaffold(
-        backgroundColor: const Color(0xFF161618),
+        backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
         body: Center(
           child: material.CircularProgressIndicator(
-            valueColor:
-                material.AlwaysStoppedAnimation<Color>(const Color(0xFFFFD700)),
+            valueColor: material.AlwaysStoppedAnimation<Color>(
+                FlutterFlowTheme.of(context).primary),
             strokeWidth: 3,
           ),
         ),
       );
     }
 
-    // Defaults
-    final bgColor = _bgColor ?? const Color(0xFF131314);
-    final textColor = _textColor ?? const Color(0xFFFFFFFF);
-    final btnColor = _btnColor ?? const Color(0xFFFFD700);
-    final btnTextColor = _btnTextColor ?? const Color(0xFF000000);
+    // Defaults based on Theme if not customized
+    final bgColor = _bgColor ?? FlutterFlowTheme.of(context).primaryBackground;
+    final textColor = _textColor ?? FlutterFlowTheme.of(context).primaryText;
+    final btnColor = _btnColor ?? FlutterFlowTheme.of(context).primary;
+    final btnTextColor = _btnTextColor ?? FlutterFlowTheme.of(context).info;
 
     return material.Scaffold(
       backgroundColor: bgColor,
@@ -422,7 +431,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   innerBoxIsScrolled ? bgColor : material.Colors.transparent,
               leading: material.IconButton(
                 icon: Icon(FluentIcons.back,
-                    color: material.Colors.white, size: 22),
+                    color: textColor, size: 22),
                 onPressed: () => Navigator.of(context).pop(),
               ),
               title: innerBoxIsScrolled
@@ -439,8 +448,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               actions: [
                 if (isMe)
                   material.IconButton(
-                    icon: const Icon(FluentIcons.view_dashboard,
-                        color: material.Colors.white),
+                    icon: Icon(FluentIcons.view_dashboard,
+                        color: textColor),
                     onPressed: () {
                       Navigator.push(
                         context,
@@ -453,16 +462,16 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                     },
                   ),
                 material.IconButton(
-                  icon: const Icon(FluentIcons.share,
-                      color: material.Colors.white, size: 22),
+                  icon: Icon(FluentIcons.share,
+                      color: textColor, size: 22),
                   onPressed: () => Share.share(
                       'Check out ${_profileData?['name']}\'s profile on Handskill Friends!'),
                 ),
                 material.Padding(
                   padding: const EdgeInsets.only(right: 8.0),
                   child: DropDownButton(
-                    leading: const Icon(FluentIcons.more,
-                        color: material.Colors.white),
+                    leading: Icon(FluentIcons.more,
+                        color: textColor),
                     items: [
                       MenuFlyoutItem(
                         text: const Text('Report'),
@@ -1032,30 +1041,53 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   }
 
   Widget _buildShimmerHeader() {
-    return Padding(
-      padding: const EdgeInsets.all(20),
+    final bgColor = FlutterFlowTheme.of(context).primaryBackground;
+    final baseColor = FlutterFlowTheme.of(context).secondaryBackground;
+    final highlightColor = FlutterFlowTheme.of(context).alternate;
+
+    return Container(
+      color: bgColor,
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       child: Shimmer.fromColors(
-        baseColor: const Color(0xFF333333),
-        highlightColor: const Color(0xFF444444),
+        baseColor: baseColor,
+        highlightColor: highlightColor,
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                const CircleAvatar(radius: 45),
-                const SizedBox(width: 20),
+                const CircleAvatar(
+                    radius: 50, backgroundColor: material.Colors.white),
+                const SizedBox(width: 24),
                 Expanded(
                   child: Container(
-                    height: 50,
+                    height: 60,
                     decoration: BoxDecoration(
                       color: material.Colors.white,
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(15),
                     ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 20),
-            Container(height: 20, width: 150, color: material.Colors.white),
+            const SizedBox(height: 24),
+            Container(
+              height: 30,
+              width: 200,
+              decoration: BoxDecoration(
+                color: material.Colors.white,
+                borderRadius: BorderRadius.circular(5),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              height: 80,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: material.Colors.white,
+                borderRadius: BorderRadius.circular(15),
+              ),
+            ),
           ],
         ),
       ),

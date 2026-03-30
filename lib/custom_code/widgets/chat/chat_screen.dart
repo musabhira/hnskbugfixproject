@@ -449,7 +449,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       placeholder: "Message",
                       placeholderStyle: const TextStyle(color: Colors.grey),
                       style: const TextStyle(color: Colors.white),
-                      decoration: ButtonState.all(const BoxDecoration()),
+                      decoration: WidgetStateProperty.all(const BoxDecoration(
+                        color: Colors.transparent,
+                        border: Border.fromBorderSide(BorderSide.none),
+                      )),
                       minLines: 1,
                       maxLines: 6,
                       onTap: () {

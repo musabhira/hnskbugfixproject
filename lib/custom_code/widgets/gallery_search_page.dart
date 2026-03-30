@@ -556,8 +556,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                               borderSide: BorderSide.none,
                             ),
                             filled: true,
-                            fillColor: FlutterFlowTheme.of(context)
-                                .secondaryBackground,
+                            fillColor: FlutterFlowTheme.of(context).secondaryBackground,
                           ),
                           onChanged: (value) {
                             if (value.length >= 2 || value.isEmpty) {
@@ -654,13 +653,17 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                               Expanded(
                                 child: TextField(
                                   controller: _commentController,
+                                  style: TextStyle(
+                                      color: FlutterFlowTheme.of(context)
+                                          .primaryText),
                                   maxLines: null,
                                   textCapitalization:
                                       TextCapitalization.sentences,
                                   decoration: InputDecoration(
                                     hintText: 'Add a comment...',
-                                    hintStyle:
-                                        const TextStyle(color: Colors.white70),
+                                    hintStyle: TextStyle(
+                                        color: FlutterFlowTheme.of(context)
+                                            .secondaryText),
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(24),
                                       borderSide: BorderSide.none,

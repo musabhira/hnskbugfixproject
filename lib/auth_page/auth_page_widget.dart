@@ -132,7 +132,7 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
         key: scaffoldKey,
-        backgroundColor: Colors.black,
+        backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
         body: SafeArea(
           top: true,
           child: Row(
@@ -143,8 +143,8 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                 child: Container(
                   width: 100.0,
                   height: double.infinity,
-                  decoration: const BoxDecoration(
-                    color: Colors.black,
+                  decoration: BoxDecoration(
+                    color: FlutterFlowTheme.of(context).primaryBackground,
                   ),
                   alignment: const AlignmentDirectional(0.0, -1.0),
                   child: SingleChildScrollView(
@@ -160,8 +160,8 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                             constraints: const BoxConstraints(
                               maxWidth: 602.0,
                             ),
-                            decoration: const BoxDecoration(
-                              color: Colors.black,
+                            decoration: BoxDecoration(
+                              color: FlutterFlowTheme.of(context).primaryBackground,
                             ),
                           ),
                         ),
@@ -171,8 +171,8 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                           constraints: const BoxConstraints(
                             maxWidth: 602.0,
                           ),
-                          decoration: const BoxDecoration(
-                            color: Colors.black,
+                          decoration: BoxDecoration(
+                            color: FlutterFlowTheme.of(context).primaryBackground,
                           ),
                           child: Padding(
                             padding: const EdgeInsetsDirectional.fromSTEB(
@@ -318,7 +318,8 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                                                               40.0),
                                                     ),
                                                     filled: true,
-                                                    fillColor: Colors.black,
+                                                    fillColor: FlutterFlowTheme.of(context)
+                                                        .secondaryBackground,
                                                     contentPadding:
                                                         const EdgeInsets.all(
                                                             24.0),
@@ -423,7 +424,8 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                                                               40.0),
                                                     ),
                                                     filled: true,
-                                                    fillColor: Colors.black,
+                                                    fillColor: FlutterFlowTheme.of(context)
+                                                        .secondaryBackground,
                                                     contentPadding:
                                                         const EdgeInsets.all(
                                                             24.0),
@@ -680,7 +682,8 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                                                               40.0),
                                                     ),
                                                     filled: true,
-                                                    fillColor: Colors.black,
+                                                    fillColor: FlutterFlowTheme.of(context)
+                                                        .secondaryBackground,
                                                     contentPadding:
                                                         const EdgeInsets.all(
                                                             24.0),
@@ -775,7 +778,8 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                                                       ),
                                                     ),
                                                     filled: true,
-                                                    fillColor: Colors.black,
+                                                    fillColor: FlutterFlowTheme.of(context)
+                                                        .secondaryBackground,
                                                     contentPadding:
                                                         const EdgeInsets.all(
                                                             24.0),

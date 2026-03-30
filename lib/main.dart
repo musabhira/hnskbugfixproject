@@ -129,6 +129,7 @@ class _MyAppState extends State<MyApp> {
       darkTheme: FluentThemeData(
         brightness: Brightness.dark,
         accentColor: Colors.blue,
+        scaffoldBackgroundColor: Colors.black,
       ),
       themeMode: _themeMode,
       routerConfig: _router,

@@ -10,6 +10,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../../flutter_flow/flutter_flow_theme.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:ui' as ui;
+import 'package:pocket_mates_app/custom_code/widgets/message_screen.dart';
 
 class WebRTCCallScreen extends StatefulWidget {
   final String mode; // 'Video', 'Voice', or 'Text'
@@ -40,6 +41,10 @@ class _WebRTCCallScreenState extends State<WebRTCCallScreen> {
   final TextEditingController messageController = TextEditingController();
   final ScrollController scrollController = ScrollController();
   final FocusNode messageFocusNode = FocusNode();
+
+  // Media state
+  bool _isMicMuted = false;
+  bool _isVideoMuted = false;
 
   @override
   void initState() {
@@ -177,6 +182,22 @@ class _WebRTCCallScreenState extends State<WebRTCCallScreen> {
             }
         }
 
+        function toggleAudio(mute) {
+            if (localStream) {
+                localStream.getAudioTracks().forEach(track => {
+                    track.enabled = !mute;
+                });
+            }
+        }
+
+        function toggleVideo(mute) {
+            if (localStream) {
+                localStream.getVideoTracks().forEach(track => {
+                    track.enabled = !mute;
+                });
+            }
+        }
+
         function endCall() {
             if (activeCall) activeCall.close();
             if (activeConn) activeConn.close();
@@ -221,6 +242,11 @@ class _WebRTCCallScreenState extends State<WebRTCCallScreen> {
           _statusText = 'Stranger found! Connecting...';
         });
 
+        if (widget.mode == 'Text') {
+          _navigateToSupabaseChat(foundUserId);
+          return;
+        }
+
         webViewController?.evaluateJavascript(source: 'callPeer("$foundUserId", "${widget.mode}")');
         _startConnectionTimeout();
         return;
@@ -249,6 +275,9 @@ class _WebRTCCallScreenState extends State<WebRTCCallScreen> {
                 remoteUserId = u2.toString();
                 _statusText = 'Stranger joined!';
               });
+              if (widget.mode == 'Text') {
+                _navigateToSupabaseChat(u2.toString());
+              }
             }
           }).subscribe();
     } catch (e) {
@@ -256,6 +285,24 @@ class _WebRTCCallScreenState extends State<WebRTCCallScreen> {
       setState(() => _statusText = 'Connection error. Retrying...');
       _matchingLoopTimer = Timer(const Duration(seconds: 5), () => findRoom());
     }
+  }
+
+  void _navigateToSupabaseChat(String receiverId) {
+    if (!mounted) return;
+    _connectionTimeoutTimer?.cancel();
+    _roomSubscription?.unsubscribe();
+    webViewController?.evaluateJavascript(source: 'endCall()');
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MessageScreen(
+          receiverId: receiverId,
+          receiverName: 'Stranger', // Anonymous chat
+          receiverProfileImage: null, // Hide real image
+        ),
+      ),
+    );
   }
 
   void _startConnectionTimeout() {
@@ -362,7 +409,10 @@ class _WebRTCCallScreenState extends State<WebRTCCallScreen> {
 
           // The magic WebView that runs PeerJS
           InAppWebView(
-            initialData: InAppWebViewInitialData(data: _peerHtml),
+            initialData: InAppWebViewInitialData(
+              data: _peerHtml,
+              baseUrl: WebUri("https://localhost/"),
+            ),
             initialSettings: InAppWebViewSettings(
               javaScriptEnabled: true,
               allowsInlineMediaPlayback: true,
@@ -683,10 +733,14 @@ class _WebRTCCallScreenState extends State<WebRTCCallScreen> {
                   children: [
                     _buildGlassButton(
                       onTap: () {
-                        // Add toggle functionality if needed via JS
+                        setState(() {
+                          _isMicMuted = !_isMicMuted;
+                        });
+                        webViewController?.evaluateJavascript(
+                            source: 'toggleAudio($_isMicMuted)');
                       },
-                      icon: Icons.mic, // Placeholder for state
-                      color: Colors.white,
+                      icon: _isMicMuted ? Icons.mic_off : Icons.mic,
+                      color: _isMicMuted ? Colors.red : Colors.white,
                     ),
                     const SizedBox(width: 24),
                     GestureDetector(
@@ -710,13 +764,18 @@ class _WebRTCCallScreenState extends State<WebRTCCallScreen> {
                         begin: const Offset(0.8, 0.8),
                         curve: Curves.elasticOut),
                     const SizedBox(width: 24),
-                    _buildGlassButton(
-                      onTap: () {
-                        // Add camera toggle
-                      },
-                      icon: Icons.videocam,
-                      color: Colors.white,
-                    ),
+                    if (widget.mode == 'Video')
+                      _buildGlassButton(
+                        onTap: () {
+                          setState(() {
+                            _isVideoMuted = !_isVideoMuted;
+                          });
+                          webViewController?.evaluateJavascript(
+                              source: 'toggleVideo($_isVideoMuted)');
+                        },
+                        icon: _isVideoMuted ? Icons.videocam_off : Icons.videocam,
+                        color: _isVideoMuted ? Colors.red : Colors.white,
+                      ),
                   ],
                 ),
               ),

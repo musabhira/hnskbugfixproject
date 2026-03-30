@@ -8,6 +8,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
+import '/flutter_flow/flutter_flow_theme.dart';
 
 class PostersTab extends StatefulWidget {
   final Map<String, dynamic>? profileData;
@@ -50,10 +51,10 @@ class _PostersTabState extends State<PostersTab> {
   @override
   Widget build(BuildContext context) {
     if (widget.galleryItems.isEmpty) {
-      return const Center(
+      return Center(
         child: Text(
           'Add items to your gallery to create posters!',
-          style: TextStyle(color: material.Colors.grey),
+          style: TextStyle(color: FlutterFlowTheme.of(context).secondaryText),
         ),
       );
     }
@@ -68,7 +69,7 @@ class _PostersTabState extends State<PostersTab> {
             style: GoogleFonts.outfit(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: material.Colors.white,
+              color: FlutterFlowTheme.of(context).primaryText,
             ),
           ),
           const SizedBox(height: 8),
@@ -76,7 +77,7 @@ class _PostersTabState extends State<PostersTab> {
             'Professionally designed posters using your gallery items.',
             style: GoogleFonts.outfit(
               fontSize: 14,
-              color: material.Colors.grey,
+              color: FlutterFlowTheme.of(context).secondaryText,
             ),
           ),
           const SizedBox(height: 24),
@@ -321,7 +322,13 @@ class _PostersTabState extends State<PostersTab> {
                   ),
                   child: CircleAvatar(
                     radius: 70,
-                    backgroundImage: CachedNetworkImageProvider(profileImg),
+                    backgroundColor: material.Colors.grey[200],
+                    backgroundImage: (profileImg.isNotEmpty) 
+                        ? CachedNetworkImageProvider(profileImg) 
+                        : null,
+                    child: profileImg.isEmpty 
+                        ? const Icon(material.Icons.person, size: 50, color: material.Colors.grey) 
+                        : null,
                   ),
                 ),
                 const SizedBox(height: 20),

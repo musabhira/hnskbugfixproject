@@ -1654,30 +1654,36 @@ class _CustomPhoneTextFieldState extends State<CustomPhoneTextField> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12.0),
             child: TextFormField(
-              style: const TextStyle(color: Colors.white),
+              style:
+                  TextStyle(color: FlutterFlowTheme.of(context).primaryText),
               controller: _searchController,
               decoration: InputDecoration(
                 hintText: 'Search countries...',
-                hintStyle:
-                    const TextStyle(color: Colors.white), // Hint text color
-                prefixIcon:
-                    const Icon(Icons.search, color: Colors.white), // Icon color
+                hintStyle: TextStyle(
+                    color: FlutterFlowTheme.of(context)
+                        .secondaryText), // Hint text color
+                prefixIcon: Icon(Icons.search,
+                    color: FlutterFlowTheme.of(context).primaryText), // Icon color
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.0),
-                  borderSide: const BorderSide(color: Colors.white),
+                  borderSide: BorderSide(
+                      color: FlutterFlowTheme.of(context).alternate),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.0),
-                  borderSide: const BorderSide(color: Colors.white),
+                  borderSide: BorderSide(
+                      color: FlutterFlowTheme.of(context).alternate),
                 ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.0),
-                  borderSide: const BorderSide(color: Colors.white),
+                  borderSide: BorderSide(
+                      color: FlutterFlowTheme.of(context).alternate),
                 ),
 
                 suffixIcon: _searchQuery.isNotEmpty
                     ? IconButton(
-                        icon: const Icon(Icons.clear, color: Colors.white),
+                        icon: Icon(Icons.clear,
+                            color: FlutterFlowTheme.of(context).primaryText),
                         onPressed: () {
                           _searchController.clear();
                           safeSetState(() {
