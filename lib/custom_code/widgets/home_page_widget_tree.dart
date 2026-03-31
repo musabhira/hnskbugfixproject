@@ -814,13 +814,6 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       filterNotifier: _vibesFilterNotifier,
     );
   }
-      currentUserId: supabase.auth.currentUser?.id ?? '',
-      currentProfileId: profileId ?? '',
-      isVertical: true,
-      onStatusUploaded: _handleRefresh,
-      searchQuery: _chatTabIndex == 1 ? _searchQuery : '',
-    );
-  }
 
   Widget _buildChatListSliver(
       AsyncValue<List<ChatConversation>> conversationsAsync) {
