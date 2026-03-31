@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:flutter/material.dart' as material;
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -9,7 +10,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:ui' as ui;
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:pocket_mates_app/custom_code/widgets/message_screen.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 class NativeWebRTCCallScreen extends StatefulWidget {
   final String mode; // 'Video', 'Voice', or 'Text'
@@ -44,10 +45,16 @@ class _NativeWebRTCCallScreenState extends State<NativeWebRTCCallScreen> {
   bool _isVideoMuted = false;
   bool _isCaller = false;
 
+  // Text Chat State
+  final List<Map<String, dynamic>> _chatMessages = [];
+  final TextEditingController _chatController = TextEditingController();
+  final ScrollController _chatScrollController = ScrollController();
+
   final Map<String, dynamic> _configuration = {
     'iceServers': [
       {'urls': 'stun:stun.l.google.com:19302'},
       {'urls': 'stun:stun1.l.google.com:19302'},
+      {'urls': 'stun:stun2.l.google.com:19302'},
     ]
   };
 
@@ -73,13 +80,21 @@ class _NativeWebRTCCallScreenState extends State<NativeWebRTCCallScreen> {
   }
 
   Future<void> _requestPermissions() async {
-    await [Permission.camera, Permission.microphone].request();
+    if (widget.mode == 'Video') {
+      await [Permission.camera, Permission.microphone].request();
+    } else if (widget.mode == 'Voice') {
+      await [Permission.microphone].request();
+    }
   }
 
   Future<void> _openUserMedia() async {
     final Map<String, dynamic> mediaConstraints = {
       'audio': true,
-      'video': widget.mode == 'Video' ? {'facingMode': 'user'} : false,
+      'video': widget.mode == 'Video' ? {
+        'facingMode': 'user',
+        'width': {'min': 640},
+        'height': {'min': 480},
+      } : false,
     };
     
     try {
@@ -105,6 +120,8 @@ class _NativeWebRTCCallScreenState extends State<NativeWebRTCCallScreen> {
     setState(() {
       isSearching = true;
       isConnected = false;
+      remoteUserId = null;
+      _chatMessages.clear();
       _statusText = 'Searching for a match...';
     });
 
@@ -124,32 +141,42 @@ class _NativeWebRTCCallScreenState extends State<NativeWebRTCCallScreen> {
         final roomId = matchRes['id'].toString();
         final foundUserId = matchRes['user1_id'].toString();
 
-        await supabase.from('rooms').update({'user2_id': myUserId, 'status': 'active'}).eq('id', roomId);
+        await supabase.from('rooms').update({
+          'user2_id': myUserId, 
+          'status': 'active'
+        }).eq('id', roomId);
 
         setState(() {
           currentRoomId = roomId;
           remoteUserId = foundUserId;
-          _isCaller = false; // The one who joined is the answerer
+          _isCaller = false; 
           _statusText = 'Stranger found! Connecting...';
+          if (widget.mode == 'Text') {
+            isConnected = true;
+            isSearching = false;
+          }
         });
 
-        if (widget.mode == 'Text') {
-          _navigateToSupabaseChat(foundUserId);
-          return;
-        }
-
         await _setupWebRTCAndSubscribe(roomId);
-        _startConnectionTimeout();
+        
+        if (widget.mode != 'Text') {
+           _startConnectionTimeout();
+        }
         return;
       }
 
       // 2. Create a room and wait
       final newRoomId = 'room_${Random().nextInt(9999999)}';
-      await supabase.from('rooms').insert({'id': newRoomId, 'user1_id': myUserId, 'status': 'waiting', 'mode': widget.mode});
+      await supabase.from('rooms').insert({
+        'id': newRoomId, 
+        'user1_id': myUserId, 
+        'status': 'waiting', 
+        'mode': widget.mode
+      });
 
       setState(() {
         currentRoomId = newRoomId;
-        _isCaller = true; // The one who created the room is the caller
+        _isCaller = true; 
         _statusText = 'Waiting for a stranger...';
       });
 
@@ -167,17 +194,21 @@ class _NativeWebRTCCallScreenState extends State<NativeWebRTCCallScreen> {
               setState(() {
                 remoteUserId = u2.toString();
                 _statusText = 'Stranger joined! Handshaking...';
+                if (widget.mode == 'Text') {
+                  isConnected = true;
+                  isSearching = false;
+                }
               });
               
-              if (widget.mode == 'Text') {
-                _navigateToSupabaseChat(u2.toString());
-                return;
+              if (widget.mode != 'Text') {
+                await _createOffer();
+              } else {
+                 // Text mode connection established
               }
-              
-              // As the caller, initiate the offer immediately once someone joins
-              await _createOffer();
             }
-          }).onBroadcast(event: 'webrtc', callback: _handleSignalingMessage).subscribe();
+          }).onBroadcast(event: 'webrtc', callback: _handleSignalingMessage)
+          .onBroadcast(event: 'chat', callback: _handleChatMessage)
+          .subscribe();
           
       if (widget.mode != 'Text') {
         await _setupWebRTCConnection();
@@ -185,43 +216,56 @@ class _NativeWebRTCCallScreenState extends State<NativeWebRTCCallScreen> {
     } catch (e) {
       debugPrint('Matching Error: $e');
       setState(() => _statusText = 'Connection error. Retrying...');
-      _matchingLoopTimer = Timer(const Duration(seconds: 5), () => findRoom());
+      _matchingLoopTimer = Timer(const Duration(seconds: 3), () => findRoom());
     }
   }
 
   Future<void> _setupWebRTCAndSubscribe(String roomId) async {
     _roomSubscription = supabase.channel('room_$roomId');
-    _roomSubscription!.onBroadcast(event: 'webrtc', callback: _handleSignalingMessage).subscribe();
-    await _setupWebRTCConnection();
+    _roomSubscription!.onBroadcast(event: 'webrtc', callback: _handleSignalingMessage)
+                      .onBroadcast(event: 'chat', callback: _handleChatMessage)
+                      .subscribe();
+    if (widget.mode != 'Text') {
+      await _setupWebRTCConnection();
+    }
   }
 
   Future<void> _setupWebRTCConnection() async {
+    if (_peerConnection != null) return;
+    
     _peerConnection = await createPeerConnection(_configuration);
 
     _peerConnection!.onIceCandidate = (RTCIceCandidate candidate) {
-      if (_roomSubscription != null) {
-        _roomSubscription!.sendBroadcastMessage(
-          event: 'webrtc',
-          payload: {
-            'type': 'candidate',
-            'candidate': candidate.toMap(),
-            'senderId': myUserId,
-          },
-        );
-      }
+      _roomSubscription?.sendBroadcastMessage(
+        event: 'webrtc',
+        payload: {
+          'type': 'candidate',
+          'candidate': candidate.toMap(),
+          'senderId': myUserId,
+        },
+      );
     };
 
     _peerConnection!.onAddStream = (MediaStream stream) {
-      setState(() {
-        _remoteStream = stream;
-        if (widget.mode == 'Video') {
-          _remoteRenderer.srcObject = _remoteStream;
-        }
-        isConnected = true;
-        isSearching = false;
-        _statusText = 'Connected';
-      });
-      _connectionTimeoutTimer?.cancel();
+      if (mounted) {
+        setState(() {
+          _remoteStream = stream;
+          if (widget.mode == 'Video') {
+            _remoteRenderer.srcObject = _remoteStream;
+          }
+          isConnected = true;
+          isSearching = false;
+          _statusText = 'Connected';
+        });
+        _connectionTimeoutTimer?.cancel();
+      }
+    };
+
+    _peerConnection!.onConnectionState = (state) {
+      if (state == RTCPeerConnectionState.RTCPeerConnectionStateDisconnected ||
+          state == RTCPeerConnectionState.RTCPeerConnectionStateFailed) {
+         nextStranger();
+      }
     };
 
     if (_localStream != null) {
@@ -231,6 +275,8 @@ class _NativeWebRTCCallScreenState extends State<NativeWebRTCCallScreen> {
 
   Future<void> _createOffer() async {
     try {
+      if (_peerConnection == null) await _setupWebRTCConnection();
+      
       RTCSessionDescription offer = await _peerConnection!.createOffer();
       await _peerConnection!.setLocalDescription(offer);
       
@@ -247,14 +293,15 @@ class _NativeWebRTCCallScreenState extends State<NativeWebRTCCallScreen> {
     }
   }
 
-  Future<void> _handleSignalingMessage(Map<String, dynamic> payload) async {
-    if (payload['senderId'] == myUserId) return; // Ignore own messages
+  void _handleSignalingMessage(Map<String, dynamic> payload) async {
+    if (payload['senderId'] == myUserId) return; 
 
     final type = payload['type'];
-    if (_peerConnection == null) return;
+    if (type == null) return;
 
     try {
       if (type == 'offer') {
+        if (_peerConnection == null) await _setupWebRTCConnection();
         final description = payload['description'];
         await _peerConnection!.setRemoteDescription(
             RTCSessionDescription(description['sdp'], description['type']));
@@ -281,35 +328,70 @@ class _NativeWebRTCCallScreenState extends State<NativeWebRTCCallScreen> {
           candidateData['sdpMid'],
           candidateData['sdpMLineIndex'],
         );
-        await _peerConnection!.addCandidate(candidate);
+        await _peerConnection?.addCandidate(candidate);
       }
     } catch (e) {
-      debugPrint("Signaling error: $e");
+      debugPrint("Signaling error: $type -> $e");
     }
   }
 
-  void _navigateToSupabaseChat(String receiverId) {
-    if (!mounted) return;
-    _connectionTimeoutTimer?.cancel();
-    _roomSubscription?.unsubscribe();
+  // --- TEXT CHAT LOGIC ---
 
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (context) => MessageScreen(
-          receiverId: receiverId,
-          receiverName: 'Stranger', // Anonymous chat
-          receiverProfileImage: null, // Hide real image
-        ),
-      ),
-    );
+  void _handleChatMessage(Map<String, dynamic> payload) {
+    if (payload['senderId'] == myUserId) return;
+    
+    setState(() {
+      _chatMessages.add({
+        'senderId': payload['senderId'],
+        'text': payload['text'],
+        'time': DateTime.now(),
+      });
+    });
+    _scrollToBottom();
   }
+
+  void _sendTextMessage() {
+    final text = _chatController.text.trim();
+    if (text.isEmpty || !isConnected) return;
+
+    _roomSubscription?.sendBroadcastMessage(
+      event: 'chat',
+      payload: {
+        'senderId': myUserId,
+        'text': text,
+      },
+    );
+
+    setState(() {
+      _chatMessages.add({
+        'senderId': myUserId,
+        'text': text,
+        'time': DateTime.now(),
+      });
+      _chatController.clear();
+    });
+    _scrollToBottom();
+  }
+
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_chatScrollController.hasClients) {
+        _chatScrollController.animateTo(
+          _chatScrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
+
+  // --- ROOM MANAGEMENT ---
 
   void _startConnectionTimeout() {
     _connectionTimeoutTimer?.cancel();
-    _connectionTimeoutTimer = Timer(const Duration(seconds: 15), () {
+    _connectionTimeoutTimer = Timer(const Duration(seconds: 20), () {
       if (mounted && !isConnected && isSearching) {
-        debugPrint('Connect timeout. Skipping user.');
+        debugPrint('Connect timeout. Skipping.');
         nextStranger();
       }
     });
@@ -327,7 +409,6 @@ class _NativeWebRTCCallScreenState extends State<NativeWebRTCCallScreen> {
 
   Future<void> _cleanupRoom() async {
     _connectionTimeoutTimer?.cancel();
-    _roomSubscription?.unsubscribe();
     _matchingLoopTimer?.cancel();
     
     if (currentRoomId != null) {
@@ -336,13 +417,23 @@ class _NativeWebRTCCallScreenState extends State<NativeWebRTCCallScreen> {
       } catch (e) {
         debugPrint('Cleanup error: $e');
       }
-      currentRoomId = null;
     }
+    
+    _roomSubscription?.unsubscribe();
+    _roomSubscription = null;
+    currentRoomId = null;
 
     _peerConnection?.close();
     _peerConnection = null;
+    _remoteStream = null;
     _remoteRenderer.srcObject = null;
-    isConnected = false;
+    
+    if (mounted) {
+      setState(() {
+        isConnected = false;
+        remoteUserId = null;
+      });
+    }
   }
 
   void _toggleMic() {
@@ -352,7 +443,7 @@ class _NativeWebRTCCallScreenState extends State<NativeWebRTCCallScreen> {
         final enabled = audioTracks[0].enabled;
         audioTracks[0].enabled = !enabled;
         setState(() {
-          _isMicMuted = enabled; // Toggled state
+          _isMicMuted = !enabled; 
         });
       }
     }
@@ -365,7 +456,7 @@ class _NativeWebRTCCallScreenState extends State<NativeWebRTCCallScreen> {
         final enabled = videoTracks[0].enabled;
         videoTracks[0].enabled = !enabled;
         setState(() {
-          _isVideoMuted = enabled; // Toggled state
+          _isVideoMuted = !enabled; 
         });
       }
     }
@@ -377,11 +468,50 @@ class _NativeWebRTCCallScreenState extends State<NativeWebRTCCallScreen> {
     _localStream?.dispose();
     _localRenderer.dispose();
     _remoteRenderer.dispose();
+    _chatController.dispose();
+    _chatScrollController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Stack(
+        children: [
+          // Background
+          _buildBackground(),
+
+          if (widget.mode == 'Video' && isConnected)
+            RTCVideoView(_remoteRenderer, objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover),
+
+          if (widget.mode == 'Text' && isConnected)
+            _buildTextChatArea(),
+
+          // Local PIP for Video 
+          if (widget.mode == 'Video' && _localStream != null)
+             _buildLocalPip(),
+
+          // Searching State
+          if (isSearching)
+            _buildSearchingOverlay(),
+
+          // Header
+          _buildHeader(),
+
+          // Center representation for Voice
+          if (widget.mode == 'Voice' && isConnected)
+            _buildVoiceCenter(),
+
+          // Bottom Controls
+          if (isConnected)
+            _buildBottomControls(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBackground() {
     final backgroundGradient = isConnected
         ? const LinearGradient(
             colors: [Colors.black, Color(0xFF1A1A1A)],
@@ -393,181 +523,279 @@ class _NativeWebRTCCallScreenState extends State<NativeWebRTCCallScreen> {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           );
+    return Container(decoration: BoxDecoration(gradient: backgroundGradient));
+  }
 
-    return Scaffold(
-      body: Stack(
-        children: [
-          Container(decoration: BoxDecoration(gradient: backgroundGradient)),
-
-          if (widget.mode == 'Video' && isConnected)
-            RTCVideoView(_remoteRenderer, objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover),
-
-          // Small local pip video
-          if (widget.mode == 'Video' && _localStream != null)
-            Positioned(
-              top: MediaQuery.of(context).padding.top + 80,
+  Widget _buildTextChatArea() {
+    return Column(
+      children: [
+        Expanded(
+          child: ListView.builder(
+            controller: _chatScrollController,
+            padding: EdgeInsets.only(
+              top: MediaQuery.of(context).padding.top + 100,
+              left: 20,
               right: 20,
-              width: 100,
-              height: 150,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.black,
-                    border: Border.all(color: Colors.white.withOpacity(0.5), width: 2),
-                    borderRadius: BorderRadius.circular(12),
+              bottom: 100,
+            ),
+            itemCount: _chatMessages.length,
+            itemBuilder: (context, index) {
+              final msg = _chatMessages[index];
+              final isMe = msg['senderId'] == myUserId;
+              return _buildChatMessageBubble(msg['text'], isMe);
+            },
+          ),
+        ),
+        _buildChatInput(),
+      ],
+    );
+  }
+
+  Widget _buildChatMessageBubble(String text, bool isMe) {
+    return Align(
+      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: isMe ? Colors.yellow : Colors.white.withOpacity(0.1),
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(16),
+            topRight: Radius.circular(16),
+            bottomLeft: Radius.circular(isMe ? 16 : 0),
+            bottomRight: Radius.circular(isMe ? 0 : 16),
+          ),
+        ),
+        child: Text(
+          text,
+          style: GoogleFonts.inter(
+            color: isMe ? Colors.black : Colors.white,
+            fontSize: 16,
+            fontWeight: isMe ? FontWeight.w600 : FontWeight.normal,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildChatInput() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      color: Colors.black.withOpacity(0.5),
+      child: SafeArea(
+        top: false,
+        child: Row(
+          children: [
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(30),
+                  border: Border.all(color: Colors.white.withOpacity(0.2)),
+                ),
+                child: TextField(
+                  controller: _chatController,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: const InputDecoration(
+                    hintText: 'Type a message...',
+                    hintStyle: TextStyle(color: Colors.white38),
+                    border: InputBorder.none,
                   ),
-                  child: RTCVideoView(_localRenderer, mirror: true, objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover),
+                  onSubmitted: (_) => _sendTextMessage(),
                 ),
               ),
             ),
-
-          if (isSearching && !isConnected)
-            Container(
-              width: double.infinity,
-              height: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.6),
-                backgroundBlendMode: BlendMode.darken,
-              ),
-              child: ClipRRect(
-                child: BackdropFilter(
-                  filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(30),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.white.withOpacity(0.05),
-                            border: Border.all(color: Colors.yellow.withOpacity(0.3), width: 2),
-                          ),
-                          child: const Icon(Icons.radar, color: Colors.yellow, size: 80),
-                        )
-                            .animate(onPlay: (c) => c.repeat())
-                            .scale(duration: 1.5.seconds, begin: const Offset(0.9, 0.9), end: const Offset(1.1, 1.1), curve: Curves.easeInOut)
-                            .shimmer(duration: 2.seconds, color: Colors.yellowAccent),
-                        const SizedBox(height: 40),
-                        Text(
-                          _statusText,
-                          style: GoogleFonts.outfit(
-                            color: Colors.white,
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1.2,
-                          ),
-                        ).animate().fadeIn(duration: 500.ms),
-                        const SizedBox(height: 10),
-                        Text(
-                          'Ensure your camera and mic are on',
-                          style: GoogleFonts.inter(
-                            color: Colors.white54,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+            const SizedBox(width: 12),
+            GestureDetector(
+              onTap: _sendTextMessage,
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: const BoxDecoration(
+                  color: Colors.yellow,
+                  shape: BoxShape.circle,
                 ),
+                child: const Icon(Icons.send_rounded, color: Colors.black),
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
 
-          // Header Controls
-          Positioned(
-            top: MediaQuery.of(context).padding.top + 16,
-            left: 20,
-            right: 20,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  Widget _buildLocalPip() {
+    return Positioned(
+      top: MediaQuery.of(context).padding.top + 80,
+      right: 20,
+      width: 100,
+      height: 150,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.black,
+            border: Border.all(color: Colors.white.withOpacity(0.5), width: 2),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: RTCVideoView(_localRenderer, mirror: true, objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSearchingOverlay() {
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.6),
+      ),
+      child: ClipRRect(
+        child: BackdropFilter(
+          filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _buildGlassButton(onTap: disconnectCall, icon: Icons.close, color: Colors.white),
-                if (isConnected)
-                  GestureDetector(
-                    onTap: nextStranger,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(colors: [Color(0xFFFFD700), Color(0xFFFFA500)]),
-                        borderRadius: BorderRadius.circular(30),
-                        boxShadow: [BoxShadow(color: Colors.orange.withOpacity(0.4), blurRadius: 10, offset: const Offset(0, 4))],
-                      ),
-                      child: Row(
-                        children: [
-                          const Text('Next', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16)),
-                          const SizedBox(width: 8),
-                          const Icon(Icons.arrow_forward_rounded, color: Colors.black, size: 20),
-                        ],
-                      ),
-                    ),
-                  ).animate().scale(duration: 300.ms, curve: Curves.easeOutBack),
+                _buildRadarIcon(),
+                const SizedBox(height: 40),
+                Text(
+                  _statusText,
+                  style: GoogleFonts.outfit(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.2,
+                  ),
+                ).animate().fadeIn(duration: 500.ms),
+                if (widget.mode != 'Text') ...[
+                  const SizedBox(height: 10),
+                  Text('Ensure your camera and mic are on',
+                    style: GoogleFonts.inter(color: Colors.white54, fontSize: 14)),
+                ],
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
 
-          // Voice Only Indication
-          if (widget.mode == 'Voice' && isConnected)
-            Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(40),
-                    decoration: BoxDecoration(
-                      color: Colors.blueAccent.withOpacity(0.2),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.record_voice_over, size: 80, color: Colors.blueAccent),
-                  ).animate(onPlay: (c) => c.repeat()).shimmer(duration: 2.seconds, color: Colors.lightBlueAccent).scale(duration: 1.5.seconds, begin: const Offset(0.95, 0.95), end: const Offset(1.05, 1.05)),
-                  const SizedBox(height: 30),
-                  Text('Voice Connected', style: GoogleFonts.outfit(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold)),
-                ],
-              ),
-            ),
+  Widget _buildRadarIcon() {
+    return Container(
+      padding: const EdgeInsets.all(30),
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: Colors.white.withOpacity(0.05),
+        border: Border.all(color: Colors.yellow.withOpacity(0.3), width: 2),
+      ),
+      child: const Icon(Icons.radar, color: Colors.yellow, size: 80),
+    ).animate(onPlay: (c) => c.repeat())
+     .scale(duration: 1.5.seconds, begin: const Offset(0.9, 0.9), end: const Offset(1.1, 1.1), curve: Curves.easeInOut)
+     .shimmer(duration: 2.seconds, color: Colors.yellowAccent);
+  }
 
-          // Floating Call Controls (Bottom)
+  Widget _buildHeader() {
+    return Positioned(
+      top: MediaQuery.of(context).padding.top + 16,
+      left: 20,
+      right: 20,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          _buildGlassButton(onTap: disconnectCall, icon: Icons.close, color: Colors.white),
           if (isConnected)
-            Positioned(
-              bottom: 50,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _buildGlassButton(
-                      onTap: _toggleMic,
-                      icon: _isMicMuted ? Icons.mic_off : Icons.mic,
-                      color: _isMicMuted ? Colors.red : Colors.white,
-                    ),
-                    const SizedBox(width: 24),
-                    GestureDetector(
-                      onTap: disconnectCall,
-                      child: Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: Colors.redAccent,
-                          shape: BoxShape.circle,
-                          boxShadow: [BoxShadow(color: Colors.red.withOpacity(0.5), blurRadius: 15, spreadRadius: 2)],
-                        ),
-                        child: const Icon(Icons.call_end, color: Colors.white, size: 32),
-                      ),
-                    ).animate().scale(begin: const Offset(0.8, 0.8), curve: Curves.elasticOut),
-                    const SizedBox(width: 24),
-                    if (widget.mode == 'Video')
-                      _buildGlassButton(
-                        onTap: _toggleVideo,
-                        icon: _isVideoMuted ? Icons.videocam_off : Icons.videocam,
-                        color: _isVideoMuted ? Colors.red : Colors.white,
-                      ),
-                  ],
-                ),
-              ),
-            ),
+            _buildNextButton(),
         ],
       ),
     );
+  }
+
+  Widget _buildNextButton() {
+    return GestureDetector(
+      onTap: nextStranger,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(colors: [Color(0xFFFFD700), Color(0xFFFFA500)]),
+          borderRadius: BorderRadius.circular(30),
+          boxShadow: [BoxShadow(color: Colors.orange.withOpacity(0.4), blurRadius: 10, offset: const Offset(0, 4))],
+        ),
+        child: Row(
+          children: [
+            const Text('Next', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16)),
+            const SizedBox(width: 8),
+            const Icon(Icons.arrow_forward_rounded, color: Colors.black, size: 20),
+          ],
+        ),
+      ),
+    ).animate().scale(duration: 300.ms, curve: Curves.easeOutBack);
+  }
+
+  Widget _buildVoiceCenter() {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(40),
+            decoration: BoxDecoration(
+              color: Colors.blueAccent.withOpacity(0.2),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.record_voice_over, size: 80, color: Colors.blueAccent),
+          ).animate(onPlay: (c) => c.repeat()).shimmer(duration: 2.seconds, color: Colors.lightBlueAccent).scale(duration: 1.5.seconds, begin: const Offset(0.95, 0.95), end: const Offset(1.05, 1.05)),
+          const SizedBox(height: 30),
+          Text('Voice Connected', style: GoogleFonts.outfit(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBottomControls() {
+    if (widget.mode == 'Text') return const SizedBox.shrink();
+    return Positioned(
+      bottom: 50,
+      left: 0,
+      right: 0,
+      child: Center(
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildGlassButton(
+              onTap: _toggleMic,
+              icon: _isMicMuted ? Icons.mic_off : Icons.mic,
+              color: _isMicMuted ? Colors.red : Colors.white,
+            ),
+            const SizedBox(width: 24),
+            _buildEndCallButton(),
+            const SizedBox(width: 24),
+            if (widget.mode == 'Video')
+              _buildGlassButton(
+                onTap: _toggleVideo,
+                icon: _isVideoMuted ? Icons.videocam_off : Icons.videocam,
+                color: _isVideoMuted ? Colors.red : Colors.white,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEndCallButton() {
+    return GestureDetector(
+      onTap: disconnectCall,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.redAccent,
+          shape: BoxShape.circle,
+          boxShadow: [BoxShadow(color: Colors.red.withOpacity(0.5), blurRadius: 15, spreadRadius: 2)],
+        ),
+        child: const Icon(Icons.call_end, color: Colors.white, size: 32),
+      ),
+    ).animate().scale(begin: const Offset(0.8, 0.8), curve: Curves.elasticOut);
   }
 
   Widget _buildGlassButton({required VoidCallback onTap, required IconData icon, required Color color}) {
