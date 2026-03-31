@@ -100,6 +100,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   bool _isSearchingPeople = false;
   bool _isSearchingProducts = false;
   async.Timer? _searchDebounce;
+  final ValueNotifier<String> _vibesFilterNotifier = ValueNotifier<String>('Public');
 
   @override
   void initState() {
@@ -113,7 +114,14 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkAppUpdate();
       _checkEulaAndRedirect();
+      _loadVibesFilterInitial();
     });
+  }
+
+  Future<void> _loadVibesFilterInitial() async {
+    final prefs = await SharedPreferences.getInstance();
+    final saved = prefs.getString('vibes_filter_selection') ?? 'Public';
+    _vibesFilterNotifier.value = saved;
   }
 
   void _onSearchChanged() {
@@ -238,6 +246,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   void dispose() {
     _pageController.dispose();
     _searchController.dispose();
+    _vibesFilterNotifier.dispose();
     if (_searchDebounce?.isActive ?? false) _searchDebounce!.cancel();
     super.dispose();
   }
@@ -739,6 +748,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                           searchController: _searchController,
                                           searchQuery: _searchQuery,
                                           isSearching: _isSearchingPeople,
+                                          vibesFilterNotifier: _vibesFilterNotifier,
                                         ),
                                       ),
                                     ];
@@ -798,6 +808,12 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   Widget _buildVibesSection() {
     return StatusDisplayWidget(
       key: ValueKey('vibes_list_$_refreshKeyCount'),
+      currentUserId: _currentUserId ?? '',
+      currentProfileId: profileId ?? '',
+      searchQuery: _chatTabIndex == 1 ? _searchQuery : '',
+      filterNotifier: _vibesFilterNotifier,
+    );
+  }
       currentUserId: supabase.auth.currentUser?.id ?? '',
       currentProfileId: profileId ?? '',
       isVertical: true,
@@ -2056,6 +2072,7 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
   final TextEditingController searchController;
   final String searchQuery;
   final bool isSearching;
+  final ValueNotifier<String> vibesFilterNotifier;
 
   _HomeMainHeaderDelegate({
     required this.currentUserId,
@@ -2074,6 +2091,7 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
     required this.searchController,
     required this.searchQuery,
     required this.isSearching,
+    required this.vibesFilterNotifier,
   });
 
   @override
@@ -2289,8 +2307,16 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                             ),
                             const Spacer(),
                             activeUsersRef.when(
-                              data: (data) => _buildActiveCounter(
-                                  data.activeFriends.length),
+                              data: (data) => Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  _buildActiveCounter(data.activeFriends.length),
+                                  if (selectedIndex == 1) ...[
+                                    const SizedBox(width: 8),
+                                    _buildVibesFilterMenu(),
+                                  ],
+                                ],
+                              ),
                               loading: () => const SizedBox(
                                 width: 14,
                                 height: 14,
@@ -2485,6 +2511,55 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
     );
   }
 
+  Widget _buildVibesFilterMenu() {
+    return ValueListenableBuilder<String>(
+      valueListenable: vibesFilterNotifier,
+      builder: (context, filter, child) {
+        return material.PopupMenuButton<String>(
+          initialValue: filter,
+          onSelected: (value) {
+            vibesFilterNotifier.value = value;
+          },
+          padding: EdgeInsets.zero,
+          itemBuilder: (context) => [
+            material.PopupMenuItem(
+              value: 'Public',
+              child: Row(
+                children: [
+                  Icon(material.Icons.public, color: filter == 'Public' ? material.Colors.yellow : material.Colors.white60, size: 18),
+                  const SizedBox(width: 10),
+                  Text('Public Vibes', style: GoogleFonts.outfit(color: filter == 'Public' ? material.Colors.yellow : material.Colors.white)),
+                ],
+              ),
+            ),
+            material.PopupMenuItem(
+              value: 'Friends',
+              child: Row(
+                children: [
+                  Icon(material.Icons.people_outline, color: filter == 'Friends' ? material.Colors.yellow : material.Colors.white60, size: 18),
+                  const SizedBox(width: 10),
+                  Text('Following Vibes', style: GoogleFonts.outfit(color: filter == 'Friends' ? material.Colors.yellow : material.Colors.white)),
+                ],
+              ),
+            ),
+          ],
+          child: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: material.Colors.white.withValues(alpha: 0.08),
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: material.Colors.white.withValues(alpha: 0.1),
+                width: 1,
+              ),
+            ),
+            child: Icon(material.Icons.more_vert_rounded, color: material.Colors.yellow, size: 18),
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildActiveCounter(int count) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -2541,7 +2616,8 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
         oldDelegate.searchQuery != searchQuery ||
         oldDelegate.isSearching != isSearching ||
         oldDelegate.statusRefreshKey != statusRefreshKey ||
-        oldDelegate.activeUsersRef != activeUsersRef;
+        oldDelegate.activeUsersRef != activeUsersRef ||
+        oldDelegate.vibesFilterNotifier != vibesFilterNotifier;
   }
 }
 

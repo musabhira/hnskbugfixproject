@@ -1,6 +1,7 @@
 // Automatic FlutterFlow imports
 import '/backend/supabase/supabase.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' as material;
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
@@ -40,6 +41,9 @@ class StatusDisplayWidget extends StatefulWidget {
   final bool isVertical;
   final VoidCallback? onStatusUploaded;
 
+  final String searchQuery;
+  final ValueNotifier<String>? filterNotifier;
+
   const StatusDisplayWidget({
     super.key,
     required this.currentUserId,
@@ -49,9 +53,8 @@ class StatusDisplayWidget extends StatefulWidget {
     this.isVertical = false,
     this.onStatusUploaded,
     this.searchQuery = '',
+    this.filterNotifier,
   });
-
-  final String searchQuery;
 
   @override
   State<StatusDisplayWidget> createState() => _StatusDisplayWidgetState();
@@ -65,6 +68,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
   List<Map<String, dynamic>> _publicStatuses = [];
   bool _isLoading = true;
   TabController? _tabController;
+  String _vibesFilter = 'Public'; // Default to Public
 
   @override
   void initState() {
@@ -75,13 +79,47 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
         setState(() {});
       }
     });
-    _loadCachedStatuses();
-    _loadStatusesOptimized();
+    _loadVibesFilter().then((_) {
+      _loadCachedStatuses();
+      _loadStatusesOptimized();
+    });
+    widget.filterNotifier?.addListener(_handleFilterChange);
+  }
+
+  void _handleFilterChange() {
+    if (widget.filterNotifier != null) {
+      _saveVibesFilter(widget.filterNotifier!.value);
+    }
+  }
+
+  Future<void> _loadVibesFilter() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      setState(() {
+        _vibesFilter = prefs.getString('vibes_filter_selection') ?? 'Public';
+      });
+    } catch (e) {
+      debugPrint('Error loading vibes filter: $e');
+    }
+  }
+
+  Future<void> _saveVibesFilter(String selection) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('vibes_filter_selection', selection);
+      setState(() {
+        _vibesFilter = selection;
+        _statuses = (selection == 'Public') ? _publicStatuses : _followingStatuses;
+      });
+    } catch (e) {
+      debugPrint('Error saving vibes filter: $e');
+    }
   }
 
   @override
   void dispose() {
     _tabController?.dispose();
+    widget.filterNotifier?.removeListener(_handleFilterChange);
     super.dispose();
   }
 
@@ -96,7 +134,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
           _followingStatuses = List<Map<String, dynamic>>.from(decoded);
           // Assuming public might be similar, or we can just populate both for offline
           _publicStatuses = List<Map<String, dynamic>>.from(decoded);
-          _statuses = _followingStatuses;
+          _statuses = (_vibesFilter == 'Public') ? _publicStatuses : _followingStatuses;
           _isLoading = false;
         });
       }
@@ -309,7 +347,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
         setState(() {
           _followingStatuses = followingList;
           _publicStatuses = publicList;
-          _statuses = followingList; // Default list
+          _statuses = (_vibesFilter == 'Public') ? publicList : followingList;
           _isLoading = false;
         });
         _precacheAllStatuses();
@@ -423,11 +461,67 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
                 scrollDirection: Axis.horizontal,
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                itemCount: _followingStatuses.length + 1,
+                itemCount: _statuses.length + 2, // Add 2 for "Add" and "Menu"
                 itemBuilder: (context, index) {
                   if (index == 0) return _buildAddStatusButton();
-                  final statusGroup = _followingStatuses[index - 1];
-                  return _buildStatusItem(statusGroup, index - 1, true);
+                  if (index == 1) {
+                    // Three-dot menu button
+                    return Container(
+                      width: 80,
+                      margin: const EdgeInsets.only(right: 12),
+                      child: Column(
+                        children: [
+                          material.PopupMenuButton<String>(
+                            onSelected: _saveVibesFilter,
+                            itemBuilder: (context) => [
+                              material.PopupMenuItem(
+                                value: 'Public',
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.public, color: _vibesFilter == 'Public' ? Colors.yellow : Colors.white60, size: 18),
+                                    const SizedBox(width: 10),
+                                    Text('Public Vibes', style: GoogleFonts.outfit(color: _vibesFilter == 'Public' ? Colors.yellow : Colors.white)),
+                                  ],
+                                ),
+                              ),
+                              material.PopupMenuItem(
+                                value: 'Friends',
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.people_outline, color: _vibesFilter == 'Friends' ? Colors.yellow : Colors.white60, size: 18),
+                                    const SizedBox(width: 10),
+                                    Text('Following Vibes', style: GoogleFonts.outfit(color: _vibesFilter == 'Friends' ? Colors.yellow : Colors.white)),
+                                  ],
+                                ),
+                              ),
+                            ],
+                            child: Container(
+                              width: 64,
+                              height: 64,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                    color: Colors.white.withValues(alpha: 0.2), width: 1),
+                                color: Colors.white.withValues(alpha: 0.05),
+                              ),
+                              child: const Icon(Icons.more_horiz_rounded, size: 28, color: Colors.white70),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            _vibesFilter,
+                            style: GoogleFonts.outfit(
+                              color: Colors.yellow.withValues(alpha: 0.7),
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                  final statusGroup = _statuses[index - 2];
+                  return _buildStatusItem(statusGroup, index - 2, true);
                 },
               ),
       ),
