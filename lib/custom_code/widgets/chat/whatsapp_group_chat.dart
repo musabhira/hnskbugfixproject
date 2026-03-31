@@ -83,6 +83,10 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   bool _showMentionSuggestions = false;
   String? _mentionQuery;
 
+  // Editing state
+  bool _isEditing = false;
+  String? _editingMessageId;
+
   // UI related methods
   void safeSetState(VoidCallback fn) {
     if (mounted) setState(fn);
@@ -258,8 +262,9 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: Colors.grey[900],
-        title: const Text('Delete Message', style: TextStyle(color: Colors.white)),
+        backgroundColor: const Color(0xFF1F2C34),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Delete Message', style: TextStyle(color: Colors.white, fontSize: 18)),
         content: const Text('Are you sure you want to delete this message?',
             style: TextStyle(color: Colors.white70)),
         actions: [
@@ -274,11 +279,29 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                   .read(chatMessagesProvider(widget.groupId).notifier)
                   .deleteMessage(messageId);
             },
-            child: const Text('Delete', style: TextStyle(color: Colors.redAccent)),
+            child: const Text('Delete', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
     );
+  }
+
+  void _handleEditAction(ChatMessage message) {
+    safeSetState(() {
+      _isEditing = true;
+      _editingMessageId = message.id;
+      _messageController.text = message.messageText ?? '';
+      _focusNode.requestFocus();
+    });
+  }
+
+  void _cancelEditing() {
+    safeSetState(() {
+      _isEditing = false;
+      _editingMessageId = null;
+      _messageController.clear();
+      _focusNode.unfocus();
+    });
   }
 
   void _showBlockUserDialog(String otherUserId, String otherUserName) {
@@ -715,6 +738,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                     ),
                   ),
                   if (_replyMessage != null) _buildReplyPreview(_replyMessage!),
+                  if (_isEditing) _buildEditPreview(),
                   if (_stagedGalleryId != null ||
                       _stagedThoughtId != null ||
                       _stagedTool != null ||
@@ -846,18 +870,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
             ),
           ),
         if (isMe || _userRole == 'admin')
-          Padding(
-            padding: const EdgeInsets.only(bottom: 2),
-            child: IconButton(
-              icon: const Icon(Icons.delete_outline,
-                  size: 16, color: Colors.white38),
-              onPressed: () => _confirmDelete(message.id),
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(),
-              splashRadius: 16,
-              tooltip: 'Delete message',
-            ),
-          ),
+          const SizedBox.shrink(), // Moved to context menu
         if (!isMe)
           Padding(
             padding: const EdgeInsets.only(bottom: 2, left: 4),
@@ -930,18 +943,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                   ),
 
                 GestureDetector(
-                  onLongPress: () async {
-                    if (message.messageText != null &&
-                        message.messageText!.isNotEmpty) {
-                      await Clipboard.setData(
-                          ClipboardData(text: message.messageText!));
-                      if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Message copied')),
-                        );
-                      }
-                    }
-                  },
+                  onLongPress: () => _showMessageContextMenu(message, isMe),
                   child: Container(
                     decoration: BoxDecoration(
                       gradient: isMe
@@ -997,20 +999,35 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                                 _buildToolMessage(message.metadata!, isMe),
                               if (message.messageType == 'document')
                                 _buildDocumentMessage(message, isMe),
-                              if (message.messageType == 'text' &&
-                                  message.messageText != null &&
-                                  message.messageText!.isNotEmpty)
                                 Padding(
                                   padding: const EdgeInsets.only(
                                       left: 8, right: 8, top: 4, bottom: 4),
-                                  child: SelectableText(
-                                    message.messageText!,
-                                    style: TextStyle(
-                                        color: isMe
-                                            ? Colors.black87
-                                            : Colors.white.withOpacity(0.93),
-                                        fontSize: 15,
-                                        height: 1.3),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      SelectableText(
+                                        message.messageText!,
+                                        onTap: () => _showMessageContextMenu(message, isMe),
+                                        style: TextStyle(
+                                            color: isMe
+                                                ? Colors.black87
+                                                : Colors.white.withOpacity(0.93),
+                                            fontSize: 15,
+                                            height: 1.3),
+                                      ),
+                                      if (message.isEdited)
+                                        Padding(
+                                          padding: const EdgeInsets.only(top: 2),
+                                          child: Text(
+                                            'edited',
+                                            style: TextStyle(
+                                              color: (isMe ? Colors.black54 : Colors.white54),
+                                              fontSize: 9,
+                                              fontStyle: FontStyle.italic,
+                                            ),
+                                          ),
+                                        ),
+                                    ],
                                   ),
                                 ),
                             ],
@@ -1921,8 +1938,118 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     }
   }
 
-  void _showErrorSnackBar(String message) =>
-      _showSnackBar(message, isError: true);
+  void _showMessageContextMenu(ChatMessage message, bool isMe) {
+    if (message.isOptimistic || message.isPending) return;
+    
+    final canDelete = isMe || _userRole == 'admin';
+    final canEdit = isMe && message.messageType == 'text';
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1F2C34),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            margin: const EdgeInsets.only(top: 8),
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: Colors.white24,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(height: 12),
+          ListTile(
+            leading: const Icon(Icons.reply, color: Colors.blue),
+            title: const Text('Reply', style: TextStyle(color: Colors.white)),
+            onTap: () {
+              Navigator.pop(context);
+              safeSetState(() {
+                _replyMessage = {
+                  'id': message.id,
+                  'message_text': message.messageText,
+                  'sender_id': message.senderId,
+                  'sender_name': message.senderName,
+                  'metadata': message.metadata,
+                  'message_type': message.messageType,
+                  'file_url': message.fileUrl,
+                };
+              });
+            },
+          ),
+          if (message.messageText != null)
+            ListTile(
+              leading: const Icon(Icons.copy, color: Colors.green),
+              title: const Text('Copy Text', style: TextStyle(color: Colors.white)),
+              onTap: () async {
+                Navigator.pop(context);
+                await Clipboard.setData(ClipboardData(text: message.messageText!));
+                _showSnackBar('Copied to clipboard');
+              },
+            ),
+          if (canEdit)
+            ListTile(
+              leading: const Icon(Icons.edit, color: Colors.orange),
+              title: const Text('Edit Message', style: TextStyle(color: Colors.white)),
+              onTap: () {
+                Navigator.pop(context);
+                _handleEditAction(message);
+              },
+            ),
+          ListTile(
+            leading: const Icon(Icons.flag_outlined, color: Colors.orangeAccent),
+            title: const Text('Report', style: TextStyle(color: Colors.white)),
+            onTap: () {
+              Navigator.pop(context);
+              ReportHelper.showReportDialog(
+                context: context,
+                contentType: 'message',
+                contentId: message.id,
+                contentTitle: message.messageText ?? 'Media Message',
+              );
+            },
+          ),
+          if (canDelete)
+            ListTile(
+              leading: const Icon(Icons.delete_outline, color: Colors.redAccent),
+              title: const Text('Delete Message', style: TextStyle(color: Colors.redAccent)),
+              onTap: () {
+                Navigator.pop(context);
+                _confirmDelete(message.id);
+              },
+            ),
+          const SizedBox(height: 16),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEditPreview() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      color: const Color(0xFF1F2C34),
+      child: Row(
+        children: [
+          const Icon(Icons.edit, color: Colors.yellow, size: 18),
+          const SizedBox(width: 12),
+          const Expanded(
+            child: Text(
+              'Editing message',
+              style: TextStyle(color: Colors.yellow, fontWeight: FontWeight.bold, fontSize: 13),
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.close, size: 18, color: Colors.white54),
+            onPressed: _cancelEditing,
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _buildVoiceMessage(ChatMessage message) {
     return VoiceMessagePlayer(
@@ -2028,11 +2155,11 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
 
               if (showSend) {
                 return GestureDetector(
-                  onTap: _handleSendAction,
-                  child: const CircleAvatar(
+                  onTap: _isEditing ? _submitEdit : _handleSendAction,
+                  child: CircleAvatar(
                     backgroundColor: Colors.yellow,
                     radius: 24,
-                    child: Icon(Icons.send, color: Colors.black),
+                    child: Icon(_isEditing ? Icons.check : Icons.send, color: Colors.black),
                   ),
                 );
               } else {
@@ -2289,6 +2416,24 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
       }
     }
     return mentions;
+  }
+
+  Future<void> _submitEdit() async {
+    if (_editingMessageId == null) return;
+    final newText = _messageController.text.trim();
+    if (newText.isEmpty) {
+      _cancelEditing();
+      return;
+    }
+
+    try {
+      final msgId = _editingMessageId!;
+      _cancelEditing();
+      await ref.read(chatMessagesProvider(widget.groupId).notifier).editMessage(msgId, newText);
+      _showSnackBar('Message updated');
+    } catch (e) {
+      _showErrorSnackBar('Failed to update: $e');
+    }
   }
 
   Future<void> _handleCameraAction() async {
@@ -3043,40 +3188,42 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                     }),
                     const SizedBox(height: 32),
 
-                    // Exit Group Button
-                    ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      leading: const Icon(Icons.logout, color: Colors.red),
-                      title: const Text('Exit group',
-                          style: TextStyle(color: Colors.red)),
-                      onTap: () {
-                        Navigator.pop(context);
-                        _showLeaveGroupDialog();
-                      },
-                    ),
-                    if ((_userRole?.toLowerCase() ?? '') == 'admin') ...[
+                    if (!widget.groupId.startsWith('p:')) ...[
+                      // Exit Group Button
                       ListTile(
                         contentPadding: EdgeInsets.zero,
-                        leading: const Icon(Icons.delete_sweep_outlined,
-                            color: Colors.yellow),
-                        title: const Text('Clear all messages',
-                            style: TextStyle(color: Colors.yellow)),
-                        onTap: () {
-                          Navigator.pop(context);
-                          _clearChat();
-                        },
-                      ),
-                      ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        leading:
-                            const Icon(Icons.delete_forever, color: Colors.red),
-                        title: const Text('Delete group',
+                        leading: const Icon(Icons.logout, color: Colors.red),
+                        title: const Text('Exit group',
                             style: TextStyle(color: Colors.red)),
                         onTap: () {
                           Navigator.pop(context);
-                          _deleteGroup();
+                          _showLeaveGroupDialog();
                         },
                       ),
+                      if ((_userRole?.toLowerCase() ?? '') == 'admin') ...[
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: const Icon(Icons.delete_sweep_outlined,
+                              color: Colors.yellow),
+                          title: const Text('Clear all messages',
+                              style: TextStyle(color: Colors.yellow)),
+                          onTap: () {
+                            Navigator.pop(context);
+                            _clearChat();
+                          },
+                        ),
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading:
+                              const Icon(Icons.delete_forever, color: Colors.red),
+                          title: const Text('Delete group',
+                              style: TextStyle(color: Colors.red)),
+                          onTap: () {
+                            Navigator.pop(context);
+                            _deleteGroup();
+                          },
+                        ),
+                      ],
                     ],
                     const SizedBox(height: 48),
                   ],
