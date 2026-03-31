@@ -624,8 +624,7 @@ class _CreateGalleryWidgetState extends State<CreateGalleryWidget> {
                                                       color: FlutterFlowTheme
                                                                   .of(context)
                                                               .secondaryText
-                                                              .withOpacity(
-                                                                  0.7) ??
+                                                              .withValues(alpha: 0.7) ??
                                                           Colors.grey
                                                               .withValues(alpha: 0.7),
                                                       fontWeight:
@@ -643,8 +642,7 @@ class _CreateGalleryWidgetState extends State<CreateGalleryWidget> {
                                                       color: FlutterFlowTheme
                                                                   .of(context)
                                                               .secondaryText
-                                                              .withOpacity(
-                                                                  0.5) ??
+                                                              .withValues(alpha: 0.5) ??
                                                           Colors.grey
                                                               .withValues(alpha: 0.5),
                                                     ),
@@ -774,8 +772,7 @@ class _CreateGalleryWidgetState extends State<CreateGalleryWidget> {
                                                             BoxShadow(
                                                               color: Colors
                                                                   .black
-                                                                  .withOpacity(
-                                                                      0.1),
+                                                                  .withValues(alpha: 0.1),
                                                               blurRadius: 10,
                                                               offset:
                                                                   const Offset(

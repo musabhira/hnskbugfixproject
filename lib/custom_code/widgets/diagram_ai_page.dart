@@ -68,7 +68,7 @@ class _DiagramAiPageState extends State<DiagramAiPage> {
               decoration: BoxDecoration(
                 color: const Color(0xFF1E1E1E),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Colors.white.withOpacity(0.1)),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
               ),
               child: Column(
                 children: [
@@ -78,7 +78,7 @@ class _DiagramAiPageState extends State<DiagramAiPage> {
                     decoration: InputDecoration(
                       hintText: 'e.g. How Photosynthesis works...',
                       hintStyle:
-                          TextStyle(color: Colors.white.withOpacity(0.3)),
+                          TextStyle(color: Colors.white.withValues(alpha: 0.3)),
                       border: InputBorder.none,
                     ),
                     maxLines: 2,
@@ -118,7 +118,7 @@ class _DiagramAiPageState extends State<DiagramAiPage> {
                 decoration: BoxDecoration(
                   color: const Color(0xFF1E1E1E),
                   borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: Colors.white.withOpacity(0.05)),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
                 ),
                 child: _imageUrl != null
                     ? ClipRRect(
@@ -134,7 +134,7 @@ class _DiagramAiPageState extends State<DiagramAiPage> {
                       )
                     : Center(
                         child: Icon(Icons.account_tree_outlined,
-                            size: 64, color: Colors.white.withOpacity(0.1)),
+                            size: 64, color: Colors.white.withValues(alpha: 0.1)),
                       ),
               ),
             ),

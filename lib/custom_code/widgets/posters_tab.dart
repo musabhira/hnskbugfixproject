@@ -157,7 +157,7 @@ class _PostersTabState extends State<PostersTab> {
                 end: Alignment.bottomCenter,
                 colors: [
                   material.Colors.transparent,
-                  material.Colors.black.withOpacity(0.8),
+                  material.Colors.black.withValues(alpha: 0.8),
                 ],
               ),
             ),
@@ -200,7 +200,7 @@ class _PostersTabState extends State<PostersTab> {
                   overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.outfit(
                     fontSize: 14,
-                    color: material.Colors.white.withOpacity(0.8),
+                    color: material.Colors.white.withValues(alpha: 0.8),
                   ),
                 ),
               ],
@@ -281,7 +281,7 @@ class _PostersTabState extends State<PostersTab> {
             'handskillapp.web.app/${widget.profileData?['slug'] ?? ''}',
             style: GoogleFonts.inter(
               fontSize: 12,
-              color: material.Colors.yellow.withOpacity(0.7),
+              color: material.Colors.yellow.withValues(alpha: 0.7),
             ),
           ),
         ],
@@ -457,7 +457,7 @@ class _PostersTabState extends State<PostersTab> {
       decoration: BoxDecoration(
         color: const Color(0xFF1A1A1A),
         border: Border.all(
-            color: material.Colors.yellow.withOpacity(0.3), width: 8),
+            color: material.Colors.yellow.withValues(alpha: 0.3), width: 8),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,

@@ -323,10 +323,10 @@ class _CustomSearchWidgetState extends State<CustomSearchWidget> {
         decoration: BoxDecoration(
           color: const Color(0xFF1A1A1A), // Matte dark grey
           borderRadius: BorderRadius.circular(15),
-          border: Border.all(color: Colors.white.withOpacity(0.05)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.2),
+              color: Colors.black.withValues(alpha: 0.2),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -603,7 +603,7 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
             decoration: BoxDecoration(
               color: const Color(0xFF161616),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.white.withOpacity(0.04)),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.04)),
             ),
             child: Row(
               children: [

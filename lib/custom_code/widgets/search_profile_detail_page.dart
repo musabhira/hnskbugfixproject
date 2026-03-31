@@ -1254,7 +1254,7 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                                 BorderRadius.circular(16),
                                             border: Border.all(
                                                 color: _getBgColor()
-                                                    .withOpacity(0.6)),
+                                                    .withValues(alpha: 0.6)),
                                           ),
                                           child: Column(
                                             crossAxisAlignment:
@@ -1313,8 +1313,7 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                                               style: TextStyle(
                                                                 fontSize: 12,
                                                                 color: _getBgTextColor()
-                                                                    .withOpacity(
-                                                                        0.7),
+                                                                    .withValues(alpha: 0.7),
                                                               ),
                                                             ),
                                                           ],
@@ -1341,8 +1340,7 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                                         Icons.delete_outline,
                                                         size: 18,
                                                         color: _getBgTextColor()
-                                                            .withOpacity(
-                                                                0.7),
+                                                            .withValues(alpha: 0.7),
                                                       ),
                                                       onPressed: deleteComment,
                                                     ),
@@ -1414,7 +1412,7 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                   ),
                                   filled: true,
                                   fillColor:
-                                      _getBgColor().withOpacity(0.6),
+                                      _getBgColor().withValues(alpha: 0.6),
                                   contentPadding: const EdgeInsets.symmetric(
                                     horizontal: 16,
                                     vertical: 10,
@@ -1923,7 +1921,7 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
             Text(
               'Blocked on: ${_formatBlockTime(_blockTime!)}',
               style: TextStyle(
-                color: _getBgTextColor().withOpacity(0.6),
+                color: _getBgTextColor().withValues(alpha: 0.6),
                 fontSize: 14,
               ),
             ),
@@ -1966,7 +1964,7 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
             Text(
               'Blocked on: ${_formatBlockTime(_blockedByOtherTime!)}',
               style: TextStyle(
-                color: _getBgTextColor().withOpacity(0.6),
+                color: _getBgTextColor().withValues(alpha: 0.6),
                 fontSize: 14,
               ),
             ),
@@ -2290,21 +2288,19 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                             margin: const EdgeInsets.symmetric(
                                                 horizontal: 12),
                                             decoration: BoxDecoration(
-                                              color: bgColor.withOpacity(
-                                                  0.95),
+                                              color: bgColor.withValues(alpha: 0.95),
                                               borderRadius:
                                                   BorderRadius.circular(20),
                                               boxShadow: [
                                                 BoxShadow(
                                                   color: Colors.black
-                                                      .withOpacity(0.1),
+                                                      .withValues(alpha: 0.1),
                                                   blurRadius: 15,
                                                   spreadRadius: 2,
                                                 ),
                                               ],
                                               border: Border.all(
-                                                color: buttonColor.withOpacity(
-                                                    0.2),
+                                                color: buttonColor.withValues(alpha: 0.2),
                                                 width: 1,
                                               ),
                                             ),
@@ -2326,16 +2322,14 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                                                   .circular(11),
                                                           border: Border.all(
                                                             color: buttonColor
-                                                                .withOpacity(
-                                                                    0.3),
+                                                                .withValues(alpha: 0.3),
                                                             width: 2.0,
                                                           ),
                                                           boxShadow: [
                                                             BoxShadow(
                                                               color: Colors
                                                                   .black
-                                                                  .withOpacity(
-                                                                      0.1),
+                                                                  .withValues(alpha: 0.1),
                                                               blurRadius: 8,
                                                             ),
                                                           ],
@@ -2387,8 +2381,7 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                                                       size: 40,
                                                                       color: Colors
                                                                           .white
-                                                                          .withOpacity(
-                                                                              0.7),
+                                                                          .withValues(alpha: 0.7),
                                                                     ),
                                                                   ),
                                                           ),
@@ -2448,8 +2441,7 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                                                           FontWeight
                                                                               .w500,
                                                                       color: bgTextColor
-                                                                          .withOpacity(
-                                                                              0.7),
+                                                                          .withValues(alpha: 0.7),
                                                                     ),
                                                                   ),
                                                                 ),
@@ -2474,8 +2466,7 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                                                             .location_on,
                                                                         size:
                                                                             14,
-                                                                        color: bgTextColor.withOpacity(
-                                                                            0.6),
+                                                                        color: bgTextColor.withValues(alpha: 0.6),
                                                                       ),
                                                                       const SizedBox(
                                                                           width:
@@ -2522,8 +2513,7 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                                       .symmetric(vertical: 12),
                                                   decoration: BoxDecoration(
                                                     color:
-                                                        buttonColor.withOpacity(
-                                                            0.08),
+                                                        buttonColor.withValues(alpha: 0.08),
                                                     borderRadius:
                                                         BorderRadius.circular(
                                                             12),
@@ -2589,22 +2579,19 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                                   11, 12, 11, 0),
                                               padding: const EdgeInsets.all(14),
                                               decoration: BoxDecoration(
-                                                color: bgColor.withOpacity(
-                                                    0.95),
+                                                color: bgColor.withValues(alpha: 0.95),
                                                 borderRadius:
                                                     BorderRadius.circular(20),
                                                 boxShadow: [
                                                   BoxShadow(
                                                     color: Colors.black
-                                                        .withOpacity(
-                                                            0.08),
+                                                        .withValues(alpha: 0.08),
                                                     blurRadius: 12,
                                                     spreadRadius: 1,
                                                   ),
                                                 ],
                                                 border: Border.all(
-                                                  color: buttonColor.withOpacity(
-                                                      0.2),
+                                                  color: buttonColor.withValues(alpha: 0.2),
                                                   width: 1,
                                                 ),
                                               ),
@@ -2636,8 +2623,7 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                                     _profileData!['bio'],
                                                     style: TextStyle(
                                                       color: bgTextColor
-                                                          .withOpacity(
-                                                              0.9),
+                                                          .withValues(alpha: 0.9),
                                                       fontSize: 13,
                                                       height: 1.5,
                                                     ),
@@ -2661,8 +2647,7 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                             margin: const EdgeInsets.all(11),
                                             padding: const EdgeInsets.all(11),
                                             decoration: BoxDecoration(
-                                              color: bgColor.withOpacity(
-                                                  0.95),
+                                              color: bgColor.withValues(alpha: 0.95),
                                               borderRadius:
                                                   BorderRadius.circular(20),
                                               boxShadow: [
@@ -2674,8 +2659,7 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                                 ),
                                               ],
                                               border: Border.all(
-                                                color: buttonColor.withOpacity(
-                                                    0.2),
+                                                color: buttonColor.withValues(alpha: 0.2),
                                                 width: 1,
                                               ),
                                             ),
@@ -3024,8 +3008,7 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                                                     style:
                                                                         TextStyle(
                                                                       color: buttonTextColor
-                                                                          .withOpacity(
-                                                                              0.8),
+                                                                          .withValues(alpha: 0.8),
                                                                       fontSize:
                                                                           14,
                                                                     ),
@@ -3046,8 +3029,7 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                                                     style:
                                                                         TextStyle(
                                                                       color: buttonTextColor
-                                                                          .withOpacity(
-                                                                              0.8),
+                                                                          .withValues(alpha: 0.8),
                                                                       height:
                                                                           1.3,
                                                                     ),
@@ -3289,7 +3271,7 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                                 ),
                                               ],
                                               border: Border.all(
-                                                color: buttonColor.withOpacity(0.3),
+                                                color: buttonColor.withValues(alpha: 0.3),
                                                 width: 1,
                                               ),
                                             ),

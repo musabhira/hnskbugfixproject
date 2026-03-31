@@ -156,15 +156,15 @@ class _DrawingAcademyHomePageState extends State<DrawingAcademyHomePage> {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  Colors.black.withOpacity(0.8),
-                  Colors.black.withOpacity(0.6),
+                  Colors.black.withValues(alpha: 0.8),
+                  Colors.black.withValues(alpha: 0.6),
                 ],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
               ),
               border: Border(
                 bottom: BorderSide(
-                  color: Colors.white.withOpacity(0.05),
+                  color: Colors.white.withValues(alpha: 0.05),
                   width: 1,
                 ),
               ),
@@ -188,7 +188,7 @@ class _DrawingAcademyHomePageState extends State<DrawingAcademyHomePage> {
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.yellow.withOpacity(0.3),
+                          color: Colors.yellow.withValues(alpha: 0.3),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -281,19 +281,19 @@ class _DrawingAcademyHomePageState extends State<DrawingAcademyHomePage> {
       margin: const EdgeInsets.only(right: 16, bottom: 8),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withOpacity(0.1), width: 1.5),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1), width: 1.5),
         image: DecorationImage(
           image: NetworkImage(event['image_url'] ?? ''),
           fit: BoxFit.cover,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.5),
+            color: Colors.black.withValues(alpha: 0.5),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
           BoxShadow(
-            color: Colors.yellow.withOpacity(0.1),
+            color: Colors.yellow.withValues(alpha: 0.1),
             blurRadius: 20,
             spreadRadius: -5,
           ),
@@ -307,7 +307,7 @@ class _DrawingAcademyHomePageState extends State<DrawingAcademyHomePage> {
             end: Alignment.bottomCenter,
             colors: [
               Colors.transparent,
-              Colors.black.withOpacity(0.8),
+              Colors.black.withValues(alpha: 0.8),
             ],
           ),
         ),
@@ -382,7 +382,7 @@ class _DrawingAcademyHomePageState extends State<DrawingAcademyHomePage> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.05),
+              color: Colors.white.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
@@ -425,10 +425,10 @@ class _DrawingAcademyHomePageState extends State<DrawingAcademyHomePage> {
         decoration: BoxDecoration(
           color: const Color(0xFF1A1A1A),
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: Colors.white.withOpacity(0.05), width: 1),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.05), width: 1),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.3),
+              color: Colors.black.withValues(alpha: 0.3),
               blurRadius: 15,
               offset: const Offset(0, 8),
             ),
@@ -448,7 +448,7 @@ class _DrawingAcademyHomePageState extends State<DrawingAcademyHomePage> {
                   errorBuilder: (_, __, ___) => Container(
                     width: 100,
                     height: 100,
-                    color: theme.accent1.withOpacity(0.2),
+                    color: theme.accent1.withValues(alpha: 0.2),
                     child:
                         Icon(Icons.image_not_supported, color: theme.accent1),
                   ),

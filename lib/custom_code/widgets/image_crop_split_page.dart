@@ -137,10 +137,10 @@ class _ImageCropSplitPageState extends State<ImageCropSplitPage> {
       decoration: BoxDecoration(
         color: Colors.grey.shade900,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.amber.withOpacity(0.3), width: 1),
+        border: Border.all(color: Colors.amber.withValues(alpha: 0.3), width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.amber.withOpacity(0.1),
+            color: Colors.amber.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -203,7 +203,7 @@ class _ImageCropSplitPageState extends State<ImageCropSplitPage> {
       return Container(
         height: 200,
         decoration: BoxDecoration(
-          border: Border.all(color: Colors.amber.withOpacity(0.5), width: 2),
+          border: Border.all(color: Colors.amber.withValues(alpha: 0.5), width: 2),
           borderRadius: BorderRadius.circular(12),
           color: Colors.black,
         ),
@@ -247,7 +247,7 @@ class _ImageCropSplitPageState extends State<ImageCropSplitPage> {
           Container(
             height: 300,
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.amber.withOpacity(0.3)),
+              border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
               borderRadius: BorderRadius.circular(12),
               color: Colors.black,
             ),
@@ -293,7 +293,7 @@ class _ImageCropSplitPageState extends State<ImageCropSplitPage> {
           margin: const EdgeInsets.only(bottom: 12),
           decoration: BoxDecoration(
             color:
-                isSelected ? Colors.amber.withOpacity(0.1) : Colors.transparent,
+                isSelected ? Colors.amber.withValues(alpha: 0.1) : Colors.transparent,
             border: Border.all(
               color: isSelected ? Colors.amber : Colors.grey.shade700,
               width: 2,
@@ -349,8 +349,8 @@ class _ImageCropSplitPageState extends State<ImageCropSplitPage> {
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.blue.withOpacity(0.1),
-            border: Border.all(color: Colors.blue.withOpacity(0.3)),
+            color: Colors.blue.withValues(alpha: 0.1),
+            border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Column(
@@ -409,7 +409,7 @@ class _ImageCropSplitPageState extends State<ImageCropSplitPage> {
                 Container(
                   decoration: BoxDecoration(
                     color: Colors.black,
-                    border: Border.all(color: Colors.amber.withOpacity(0.5)),
+                    border: Border.all(color: Colors.amber.withValues(alpha: 0.5)),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(
@@ -493,9 +493,9 @@ class _ImageCropSplitPageState extends State<ImageCropSplitPage> {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Colors.green.withOpacity(0.1),
+            color: Colors.green.withValues(alpha: 0.1),
             border: Border.all(
-              color: Colors.green.withOpacity(0.5),
+              color: Colors.green.withValues(alpha: 0.5),
             ),
             borderRadius: BorderRadius.circular(8),
           ),
@@ -587,7 +587,7 @@ class _ImageCropSplitPageState extends State<ImageCropSplitPage> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.amber.withOpacity(0.3),
+            color: Colors.amber.withValues(alpha: 0.3),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),

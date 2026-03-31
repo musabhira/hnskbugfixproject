@@ -594,7 +594,7 @@ class _NativeWebRTCCallScreenState extends State<NativeWebRTCCallScreen> {
                   end: Alignment.bottomRight,
                 )
               : null,
-          color: isMe ? null : Colors.white.withOpacity(0.08),
+          color: isMe ? null : Colors.white.withValues(alpha: 0.08),
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(20),
             topRight: const Radius.circular(20),
@@ -604,7 +604,7 @@ class _NativeWebRTCCallScreenState extends State<NativeWebRTCCallScreen> {
           border: isMe ? null : Border.all(color: Colors.white10),
           boxShadow: isMe ? [
             BoxShadow(
-              color: Colors.yellow.withOpacity(0.2),
+              color: Colors.yellow.withValues(alpha: 0.2),
               blurRadius: 8,
               offset: const Offset(0, 2),
             )
@@ -628,7 +628,7 @@ class _NativeWebRTCCallScreenState extends State<NativeWebRTCCallScreen> {
       padding: EdgeInsets.fromLTRB(16, 12, 16, MediaQuery.of(context).padding.bottom + 12),
       decoration: BoxDecoration(
         color: const Color(0xFF0F0F0F),
-        border: Border(top: BorderSide(color: Colors.white.withOpacity(0.1))),
+        border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.1))),
       ),
       child: Row(
         children: [
@@ -636,7 +636,7 @@ class _NativeWebRTCCallScreenState extends State<NativeWebRTCCallScreen> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.05),
+                color: Colors.white.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(30),
                 border: Border.all(color: Colors.white10),
               ),
@@ -681,7 +681,7 @@ class _NativeWebRTCCallScreenState extends State<NativeWebRTCCallScreen> {
         child: Container(
           decoration: BoxDecoration(
             color: Colors.black,
-            border: Border.all(color: Colors.white.withOpacity(0.5), width: 2),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.5), width: 2),
             borderRadius: BorderRadius.circular(12),
           ),
           child: RTCVideoView(_localRenderer, mirror: true, objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover),
@@ -695,7 +695,7 @@ class _NativeWebRTCCallScreenState extends State<NativeWebRTCCallScreen> {
       width: double.infinity,
       height: double.infinity,
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.6),
+        color: Colors.black.withValues(alpha: 0.6),
       ),
       child: ClipRRect(
         child: BackdropFilter(
@@ -733,8 +733,8 @@ class _NativeWebRTCCallScreenState extends State<NativeWebRTCCallScreen> {
       padding: const EdgeInsets.all(30),
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: Colors.white.withOpacity(0.05),
-        border: Border.all(color: Colors.yellow.withOpacity(0.3), width: 2),
+        color: Colors.white.withValues(alpha: 0.05),
+        border: Border.all(color: Colors.yellow.withValues(alpha: 0.3), width: 2),
       ),
       child: const Icon(Icons.radar, color: Colors.yellow, size: 80),
     ).animate(onPlay: (c) => c.repeat())
@@ -813,7 +813,7 @@ class _NativeWebRTCCallScreenState extends State<NativeWebRTCCallScreen> {
         decoration: BoxDecoration(
           gradient: const LinearGradient(colors: [Color(0xFFFFD700), Color(0xFFFFA500)]),
           borderRadius: BorderRadius.circular(30),
-          boxShadow: [BoxShadow(color: Colors.orange.withOpacity(0.4), blurRadius: 10, offset: const Offset(0, 4))],
+          boxShadow: [BoxShadow(color: Colors.orange.withValues(alpha: 0.4), blurRadius: 10, offset: const Offset(0, 4))],
         ),
         child: const Row(
           children: [
@@ -834,7 +834,7 @@ class _NativeWebRTCCallScreenState extends State<NativeWebRTCCallScreen> {
           Container(
             padding: const EdgeInsets.all(40),
             decoration: BoxDecoration(
-              color: Colors.blueAccent.withOpacity(0.2),
+              color: Colors.blueAccent.withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
             child: const Icon(Icons.record_voice_over, size: 80, color: Colors.blueAccent),
@@ -884,7 +884,7 @@ class _NativeWebRTCCallScreenState extends State<NativeWebRTCCallScreen> {
         decoration: BoxDecoration(
           color: Colors.redAccent,
           shape: BoxShape.circle,
-          boxShadow: [BoxShadow(color: Colors.red.withOpacity(0.5), blurRadius: 15, spreadRadius: 2)],
+          boxShadow: [BoxShadow(color: Colors.red.withValues(alpha: 0.5), blurRadius: 15, spreadRadius: 2)],
         ),
         child: const Icon(Icons.call_end, color: Colors.white, size: 32),
       ),
@@ -900,9 +900,9 @@ class _NativeWebRTCCallScreenState extends State<NativeWebRTCCallScreen> {
           child: Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withValues(alpha: 0.1),
               shape: BoxShape.circle,
-              border: Border.all(color: Colors.white.withOpacity(0.2)),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
             ),
             child: Icon(icon, color: color, size: 24),
           ),

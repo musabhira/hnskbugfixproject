@@ -180,7 +180,7 @@ class _NearbyUsersPageState extends State<NearbyUsersPage> {
             value: _isTravelModeActive,
             onChanged: _toggleTravelMode,
             activeThumbColor: Colors.blueAccent,
-            activeTrackColor: Colors.blueAccent.withOpacity(0.3),
+            activeTrackColor: Colors.blueAccent.withValues(alpha: 0.3),
           ),
           const SizedBox(width: 16),
         ],
@@ -194,7 +194,7 @@ class _NearbyUsersPageState extends State<NearbyUsersPage> {
             decoration: BoxDecoration(
               color: const Color(0xFF1E1E1E),
               border: Border(
-                  bottom: BorderSide(color: Colors.white.withOpacity(0.05))),
+                  bottom: BorderSide(color: Colors.white.withValues(alpha: 0.05))),
             ),
             child: Column(
               children: [
@@ -208,7 +208,7 @@ class _NearbyUsersPageState extends State<NearbyUsersPage> {
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(
-                              color: Colors.blueAccent.withOpacity(0.3),
+                              color: Colors.blueAccent.withValues(alpha: 0.3),
                               width: 1),
                         ),
                       ),
@@ -218,7 +218,7 @@ class _NearbyUsersPageState extends State<NearbyUsersPage> {
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(
-                              color: Colors.blueAccent.withOpacity(0.1),
+                              color: Colors.blueAccent.withValues(alpha: 0.1),
                               width: 1),
                         ),
                       ),

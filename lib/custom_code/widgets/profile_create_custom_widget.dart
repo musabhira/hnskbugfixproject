@@ -324,7 +324,7 @@ class _ProfileCreateCustomWidgetState extends State<ProfileCreateCustomWidget> {
       decoration: BoxDecoration(
         color: Colors.grey[900],
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.yellow.withOpacity(0.3)),
+        border: Border.all(color: Colors.yellow.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -537,10 +537,10 @@ class _ProfileCreateCustomWidgetState extends State<ProfileCreateCustomWidget> {
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Colors.yellow.withOpacity(0.1),
+                            color: Colors.yellow.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(10),
                             border: Border.all(
-                                color: Colors.yellow.withOpacity(0.3)),
+                                color: Colors.yellow.withValues(alpha: 0.3)),
                           ),
                           child: Row(
                             children: [

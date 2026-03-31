@@ -1421,16 +1421,14 @@ class _VerfiedSearchProfileDetailPageState
                                                                         11),
                                                             border: Border.all(
                                                               color: buttonColor
-                                                                  .withOpacity(
-                                                                      0.3),
+                                                                  .withValues(alpha: 0.3),
                                                               width: 2.0,
                                                             ),
                                                             boxShadow: [
                                                               BoxShadow(
                                                                 color: Colors
                                                                     .black
-                                                                    .withOpacity(
-                                                                        0.1),
+                                                                    .withValues(alpha: 0.1),
                                                                 blurRadius: 8,
                                                               ),
                                                             ],
@@ -1459,8 +1457,7 @@ class _VerfiedSearchProfileDetailPageState
                                                                           .person,
                                                                       size: 40,
                                                                       color: bgTextColor
-                                                                          .withOpacity(
-                                                                              0.7),
+                                                                          .withValues(alpha: 0.7),
                                                                     ),
                                                             ),
                                                           ),
@@ -1623,8 +1620,7 @@ class _VerfiedSearchProfileDetailPageState
                                                               children: [
                                                                 Divider(
                                                                   color: buttonColor
-                                                                      .withOpacity(
-                                                                          0.2),
+                                                                      .withValues(alpha: 0.2),
                                                                   thickness: 1,
                                                                 ),
                                                                 const SizedBox(
@@ -1640,8 +1636,7 @@ class _VerfiedSearchProfileDetailPageState
                                                                       fontSize:
                                                                           14,
                                                                       color: bgTextColor
-                                                                          .withOpacity(
-                                                                              0.8),
+                                                                          .withValues(alpha: 0.8),
                                                                       height:
                                                                           1.4,
                                                                     ),
@@ -1654,8 +1649,7 @@ class _VerfiedSearchProfileDetailPageState
                                                                       fontSize:
                                                                           14,
                                                                       color: bgTextColor
-                                                                          .withOpacity(
-                                                                              0.5),
+                                                                          .withValues(alpha: 0.5),
                                                                       fontStyle:
                                                                           FontStyle
                                                                               .italic,
@@ -1724,8 +1718,7 @@ class _VerfiedSearchProfileDetailPageState
                                                                   decoration:
                                                                       BoxDecoration(
                                                                     color: buttonColor
-                                                                        .withOpacity(
-                                                                            0.08),
+                                                                        .withValues(alpha: 0.08),
                                                                     borderRadius:
                                                                         BorderRadius.circular(
                                                                             12),
@@ -1779,8 +1772,7 @@ class _VerfiedSearchProfileDetailPageState
                                                                   decoration:
                                                                       BoxDecoration(
                                                                     color: bgColor
-                                                                        .withOpacity(
-                                                                            0.95),
+                                                                        .withValues(alpha: 0.95),
                                                                     borderRadius:
                                                                         BorderRadius.circular(
                                                                             20),
@@ -1799,8 +1791,7 @@ class _VerfiedSearchProfileDetailPageState
                                                                         Border
                                                                             .all(
                                                                       color: buttonColor
-                                                                          .withOpacity(
-                                                                              0.2),
+                                                                          .withValues(alpha: 0.2),
                                                                       width: 1,
                                                                     ),
                                                                   ),
@@ -2308,8 +2299,7 @@ class _VerfiedSearchProfileDetailPageState
                                                                   style:
                                                                       TextStyle(
                                                                     color: buttonTextColor
-                                                                        .withOpacity(
-                                                                            0.8),
+                                                                        .withValues(alpha: 0.8),
                                                                     fontSize:
                                                                         14,
                                                                   ),
@@ -2330,8 +2320,7 @@ class _VerfiedSearchProfileDetailPageState
                                                                   style:
                                                                       TextStyle(
                                                                     color: buttonTextColor
-                                                                        .withOpacity(
-                                                                            0.8),
+                                                                        .withValues(alpha: 0.8),
                                                                     height: 1.3,
                                                                   ),
                                                                 ),
@@ -2628,12 +2617,10 @@ class _VerfiedSearchProfileDetailPageState
                                                           colors: [
                                                             _getButtonTextColor()
                                                                 // ignore: deprecated_member_use
-                                                                .withOpacity(
-                                                                    0.8),
+                                                                .withValues(alpha: 0.8),
                                                             _getButtonTextColor()
                                                                 // ignore: deprecated_member_use
-                                                                .withOpacity(
-                                                                    0.3),
+                                                                .withValues(alpha: 0.3),
                                                           ],
                                                           begin:
                                                               Alignment.topLeft,
@@ -2647,8 +2634,7 @@ class _VerfiedSearchProfileDetailPageState
                                                           BoxShadow(
                                                             color:
                                                                 _getButtonTextColor()
-                                                                    .withOpacity(
-                                                                        0.8),
+                                                                    .withValues(alpha: 0.8),
                                                             blurRadius: 8,
                                                             offset:
                                                                 const Offset(0, 4),
@@ -2820,8 +2806,7 @@ class _VerfiedSearchProfileDetailPageState
                                                         BoxShadow(
                                                           color:
                                                               _getButtonTextColor()
-                                                                  .withOpacity(
-                                                                      0.8),
+                                                                  .withValues(alpha: 0.8),
                                                           blurRadius: 8,
                                                           offset: const Offset(0, 4),
                                                         ),
