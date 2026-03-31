@@ -216,34 +216,56 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
   Future<void> _toggleRecording() async {
     try {
       if (_isRecording) {
-        var res = await _screenRecorder.stopRecord();
+        // Stop recording
+        final RecordOutput? result = await _screenRecorder.stopRecord();
         setState(() => _isRecording = false);
-        if (res != null && res['file'] != null) {
-          final file = res['file'] as File;
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text('Recording saved to gallery'),
-            action: SnackBarAction(label: 'Share', onPressed: () => Share.shareXFiles([XFile(file.path)])),
-          ));
+        
+        if (result != null && result.success == true) {
+          final String? videoPath = result.videoPath;
+          if (videoPath != null) {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text('Recording saved successfully!', style: GoogleFonts.outfit()),
+              backgroundColor: Colors.green,
+              action: SnackBarAction(
+                label: 'SHARE',
+                textColor: Colors.white,
+                onPressed: () => Share.shareXFiles([XFile(videoPath)]),
+              ),
+            ));
+          }
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to save recording')));
         }
       } else {
-        Directory? tempDir = await getTemporaryDirectory();
-        String path = '${tempDir.path}/rec_${DateTime.now().millisecondsSinceEpoch}.mp4';
+        // Start recording (ed_screen_recorder handles permissions internally)
         
-        var res = await _screenRecorder.startRecord(
-          fileName: "PocketMates_Draw",
-          dirPathToSave: tempDir.path,
+        final Directory appDir = await getTemporaryDirectory();
+        final String videoDir = appDir.path;
+        final String fileName = "PM_Drawing_${DateTime.now().millisecondsSinceEpoch}";
+
+        final RecordOutput? result = await _screenRecorder.startRecord(
+          fileName: fileName,
+          dirPathToSave: videoDir,
           addTimeCode: true,
+          videoFrame: 30, // FPS
+          videoBitrate: 3000000, // 3Mbps
         );
-        
-        if (res != null && res['success'] == true) {
+
+        if (result != null && result.success == true) {
           setState(() => _isRecording = true);
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text('Recording started...'),
+            duration: Duration(seconds: 1),
+          ));
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to start recording')));
+          final msg = result?.message ?? 'Unknown error';
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to start recording: $msg')));
         }
       }
     } catch (e) {
       debugPrint("Recording error: $e");
       setState(() => _isRecording = false);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
     }
   }
 
