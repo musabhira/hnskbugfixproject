@@ -104,10 +104,10 @@ class _ShareContentScreenState extends State<ShareContentScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFF1E1E1E),
         borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: Colors.yellow.withOpacity(0.2), width: 1),
+        border: Border.all(color: Colors.yellow.withValues(alpha: 0.2), width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -129,7 +129,7 @@ class _ShareContentScreenState extends State<ShareContentScreen> {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                          color: Colors.yellow.withOpacity(0.5), width: 2),
+                          color: Colors.yellow.withValues(alpha: 0.5), width: 2),
                     ),
                     child: CircleAvatar(
                       backgroundColor: Colors.black,
@@ -159,7 +159,7 @@ class _ShareContentScreenState extends State<ShareContentScreen> {
                         Text(
                           timeago.format(createdAt, locale: 'en'),
                           style: TextStyle(
-                              color: Colors.white.withOpacity(0.4),
+                              color: Colors.white.withValues(alpha: 0.4),
                               fontSize: 13),
                         ),
                       ],
@@ -168,7 +168,7 @@ class _ShareContentScreenState extends State<ShareContentScreen> {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Colors.yellow.withOpacity(0.1),
+                      color: Colors.yellow.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(Icons.format_quote_rounded,
@@ -197,18 +197,18 @@ class _ShareContentScreenState extends State<ShareContentScreen> {
             Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              color: Colors.white.withOpacity(0.03),
+              color: Colors.white.withValues(alpha: 0.03),
               child: Row(
                 children: [
                   Icon(Icons.favorite_rounded,
-                      size: 18, color: Colors.pink.withOpacity(0.8)),
+                      size: 18, color: Colors.pink.withValues(alpha: 0.8)),
                   const SizedBox(width: 6),
                   Text('${widget.metadata!['like_count'] ?? 0}',
                       style:
                           const TextStyle(color: Colors.white60, fontSize: 12)),
                   const SizedBox(width: 20),
                   Icon(Icons.chat_bubble_outline_rounded,
-                      size: 18, color: Colors.blue.withOpacity(0.8)),
+                      size: 18, color: Colors.blue.withValues(alpha: 0.8)),
                   const SizedBox(width: 6),
                   Text('${widget.metadata!['comment_count'] ?? 0}',
                       style:
@@ -232,7 +232,7 @@ class _ShareContentScreenState extends State<ShareContentScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFF1E1E1E),
         borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: Colors.yellow.withOpacity(0.3), width: 1),
+        border: Border.all(color: Colors.yellow.withValues(alpha: 0.3), width: 1),
       ),
       child: Row(
         children: [
@@ -263,7 +263,7 @@ class _ShareContentScreenState extends State<ShareContentScreen> {
                     child: Text(
                       description,
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.6),
+                        color: Colors.white.withValues(alpha: 0.6),
                         fontSize: 14,
                       ),
                     ),
@@ -281,9 +281,9 @@ class _ShareContentScreenState extends State<ShareContentScreen> {
       padding: const EdgeInsets.all(24),
       margin: const EdgeInsets.symmetric(horizontal: 24),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         children: [
@@ -547,16 +547,16 @@ class _ShareActionButton extends StatelessWidget {
         height: 64,
         padding: const EdgeInsets.symmetric(horizontal: 20),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: color.withOpacity(0.2)),
+          border: Border.all(color: color.withValues(alpha: 0.2)),
         ),
         child: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.2),
+                color: color.withValues(alpha: 0.2),
                 shape: BoxShape.circle,
               ),
               child: Icon(icon, color: color, size: 24),
@@ -572,7 +572,7 @@ class _ShareActionButton extends StatelessWidget {
             ),
             const Spacer(),
             Icon(Icons.arrow_forward_ios_rounded,
-                color: color.withOpacity(0.5), size: 16),
+                color: color.withValues(alpha: 0.5), size: 16),
           ],
         ),
       ),
@@ -639,10 +639,12 @@ class _GroupSelectionBottomSheetState extends State<GroupSelectionBottomSheet> {
 
       final userIds = <String>{};
       for (final conv in response) {
-        if (conv['user1_id'] != widget.currentUserId)
+        if (conv['user1_id'] != widget.currentUserId) {
           userIds.add(conv['user1_id']);
-        if (conv['user2_id'] != widget.currentUserId)
+        }
+        if (conv['user2_id'] != widget.currentUserId) {
           userIds.add(conv['user2_id']);
+        }
       }
 
       if (userIds.isNotEmpty) {
@@ -719,7 +721,7 @@ class _GroupSelectionBottomSheetState extends State<GroupSelectionBottomSheet> {
                 hintStyle: const TextStyle(color: Colors.white38),
                 prefixIcon: const Icon(Icons.search, color: Colors.white38),
                 filled: true,
-                fillColor: Colors.white.withOpacity(0.05),
+                fillColor: Colors.white.withValues(alpha: 0.05),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,

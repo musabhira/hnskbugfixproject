@@ -10,7 +10,7 @@ class CustomizedProductsTable extends SupabaseTable<CustomizedProductsRow> {
 }
 
 class CustomizedProductsRow extends SupabaseDataRow {
-  CustomizedProductsRow(Map<String, dynamic> data) : super(data);
+  CustomizedProductsRow(super.data);
 
   @override
   SupabaseTable get table => CustomizedProductsTable();

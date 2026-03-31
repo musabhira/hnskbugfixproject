@@ -3,7 +3,6 @@ import 'package:pocket_mates_app/custom_code/widgets/search_profile_detail_page.
 import 'package:pocket_mates_app/custom_code/widgets/verfied_search_profile_detail_page.dart';
 
 import '/backend/supabase/supabase.dart';
-import '/flutter_flow/flutter_flow_util.dart';
 // Imports other custom widgets
 // Imports custom actions
 import 'package:fluent_ui/fluent_ui.dart' hide Colors;

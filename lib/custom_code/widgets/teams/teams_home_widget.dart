@@ -6,7 +6,7 @@ import 'package:pocket_mates_app/custom_code/widgets/teams/user_search_dialog.da
 import 'package:pocket_mates_app/custom_code/widgets/teams/running_tasks_widget.dart';
 
 class TeamsHomeWidget extends StatefulWidget {
-  const TeamsHomeWidget({Key? key}) : super(key: key);
+  const TeamsHomeWidget({super.key});
 
   @override
   State<TeamsHomeWidget> createState() => _TeamsHomeWidgetState();
@@ -80,15 +80,15 @@ class _TeamsHomeWidgetState extends State<TeamsHomeWidget> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                Text('Initial Members:', style: TextStyle(color: Colors.grey)),
+                const Text('Initial Members:', style: TextStyle(color: Colors.grey)),
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 8,
                   children: selectedMembers
                       .map((u) => Chip(
-                            label: Text(u.name, style: TextStyle(fontSize: 12)),
+                            label: Text(u.name, style: const TextStyle(fontSize: 12)),
                             backgroundColor: Colors.yellow,
-                            deleteIcon: Icon(Icons.close, size: 14),
+                            deleteIcon: const Icon(Icons.close, size: 14),
                             onDeleted: () {
                               setStateDialog(() {
                                 selectedMembers
@@ -117,8 +117,8 @@ class _TeamsHomeWidgetState extends State<TeamsHomeWidget> {
                       ),
                     );
                   },
-                  icon: Icon(Icons.person_add, color: Colors.yellow),
-                  label: Text('Search & Add Members',
+                  icon: const Icon(Icons.person_add, color: Colors.yellow),
+                  label: const Text('Search & Add Members',
                       style: TextStyle(color: Colors.yellow)),
                 ),
               ],

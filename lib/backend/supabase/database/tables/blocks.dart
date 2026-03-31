@@ -9,7 +9,7 @@ class BlocksTable extends SupabaseTable<BlocksRow> {
 }
 
 class BlocksRow extends SupabaseDataRow {
-  BlocksRow(Map<String, dynamic> data) : super(data);
+  BlocksRow(super.data);
 
   @override
   SupabaseTable get table => BlocksTable();

@@ -1,14 +1,9 @@
 // Automatic FlutterFlow imports
 import '/backend/supabase/supabase.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import 'index.dart'; // Imports other custom widgets
-import '/custom_code/actions/index.dart'; // Imports custom actions
 import 'package:flutter/material.dart';
 import '/pages/home_page/home_page_widget.dart';
 import '/auth_page/auth_page_widget.dart';
-import '/auth/auth_helper.dart';
-import 'package:go_router/go_router.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
@@ -569,7 +564,7 @@ class _AutoLoginBottomSheetState extends State<AutoLoginBottomSheet> {
                                 color: Colors.grey[850]?.withValues(alpha: 0.7),
                                 borderRadius: BorderRadius.circular(15),
                                 border: Border.all(
-                                    color: Colors.amber.withOpacity(0.3)),
+                                    color: Colors.amber.withValues(alpha: 0.3)),
                               ),
                               child: ListTile(
                                 contentPadding: const EdgeInsets.all(15),

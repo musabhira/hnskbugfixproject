@@ -1,18 +1,11 @@
 // Automatic FlutterFlow imports
 import 'package:pocket_mates_app/custom_code/widgets/gallery_search_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/gallery_search_page.dart';
 
 import '/backend/supabase/supabase.dart';
-import '/backend/supabase/supabase.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import 'index.dart'; // Imports other custom widgets
-import 'index.dart'; // Imports other custom widgets
-import '/custom_code/actions/index.dart'; // Imports custom actions
-import '/custom_code/actions/index.dart'; // Imports custom actions
-import 'package:flutter/material.dart';
+// Imports other custom widgets
+// Imports other custom widgets
+// Imports custom actions
+// Imports custom actions
 import 'package:flutter/material.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
@@ -21,9 +14,7 @@ import 'package:flutter/material.dart';
 // boilerplate code using the green button on the right!
 
 import 'dart:async';
-import 'dart:async';
 
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
 class GalleryFollowingTabViewPage extends StatefulWidget {
@@ -38,8 +29,8 @@ class GalleryFollowingTabViewPage extends StatefulWidget {
 
 class _GalleryFollowingTabViewPageState
     extends State<GalleryFollowingTabViewPage> {
-  List<String> _followingCategories = ['Following'];
-  bool _isLoadingCategories = false;
+  final List<String> _followingCategories = ['Following'];
+  final bool _isLoadingCategories = false;
   final supabase = Supabase.instance.client;
 
   @override

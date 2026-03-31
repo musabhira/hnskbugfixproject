@@ -13,13 +13,13 @@ class ConversationTile extends StatefulWidget {
   final VoidCallback? onLongPress;
 
   const ConversationTile({
-    Key? key,
+    super.key,
     required this.conversation,
     required this.currentUserId,
     required this.onTap,
     this.onStatusTap,
     this.onLongPress,
-  }) : super(key: key);
+  });
 
   @override
   State<ConversationTile> createState() => _ConversationTileState();
@@ -163,9 +163,9 @@ class _ConversationTileState extends State<ConversationTile> {
                       Container(
                         width: 66,
                         height: 66,
-                        decoration: BoxDecoration(
+                        decoration: const BoxDecoration(
                           shape: BoxShape.circle,
-                          gradient: const LinearGradient(
+                          gradient: LinearGradient(
                             colors: [
                               Color(0xFF833AB4), // Purple
                               Color(0xFFF77737), // Orange

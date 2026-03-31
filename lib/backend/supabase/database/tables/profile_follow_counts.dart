@@ -10,7 +10,7 @@ class ProfileFollowCountsTable extends SupabaseTable<ProfileFollowCountsRow> {
 }
 
 class ProfileFollowCountsRow extends SupabaseDataRow {
-  ProfileFollowCountsRow(Map<String, dynamic> data) : super(data);
+  ProfileFollowCountsRow(super.data);
 
   @override
   SupabaseTable get table => ProfileFollowCountsTable();

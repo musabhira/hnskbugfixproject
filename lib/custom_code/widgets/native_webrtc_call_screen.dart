@@ -1,8 +1,6 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:math';
 
-import 'package:flutter/material.dart' as material;
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -10,7 +8,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:ui' as ui;
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:timeago/timeago.dart' as timeago;
 
 class NativeWebRTCCallScreen extends StatefulWidget {
   final String mode; // 'Video', 'Voice', or 'Text'
@@ -44,6 +41,11 @@ class _NativeWebRTCCallScreenState extends State<NativeWebRTCCallScreen> {
   bool _isMicMuted = false;
   bool _isVideoMuted = false;
   bool _isCaller = false;
+
+  // Remote User Profile Info
+  String? _remoteUserName;
+  String? _remoteUserImage;
+  bool _isRemoteVerified = false;
 
   // Text Chat State
   final List<Map<String, dynamic>> _chatMessages = [];
@@ -157,6 +159,7 @@ class _NativeWebRTCCallScreenState extends State<NativeWebRTCCallScreen> {
           }
         });
 
+        _fetchRemoteUserInfo(foundUserId);
         await _setupWebRTCAndSubscribe(roomId);
         
         if (widget.mode != 'Text') {
@@ -200,10 +203,10 @@ class _NativeWebRTCCallScreenState extends State<NativeWebRTCCallScreen> {
                 }
               });
               
+              _fetchRemoteUserInfo(u2.toString());
+              
               if (widget.mode != 'Text') {
                 await _createOffer();
-              } else {
-                 // Text mode connection established
               }
             }
           }).onBroadcast(event: 'webrtc', callback: _handleSignalingMessage)
@@ -217,6 +220,26 @@ class _NativeWebRTCCallScreenState extends State<NativeWebRTCCallScreen> {
       debugPrint('Matching Error: $e');
       setState(() => _statusText = 'Connection error. Retrying...');
       _matchingLoopTimer = Timer(const Duration(seconds: 3), () => findRoom());
+    }
+  }
+
+  Future<void> _fetchRemoteUserInfo(String userId) async {
+    try {
+      final res = await supabase
+          .from('profile')
+          .select('name, profile_image_url, verified')
+          .eq('user_id', userId)
+          .maybeSingle();
+
+      if (res != null && mounted) {
+        setState(() {
+          _remoteUserName = res['name'];
+          _remoteUserImage = res['profile_image_url'];
+          _isRemoteVerified = res['verified'] ?? false;
+        });
+      }
+    } catch (e) {
+      debugPrint("Error fetching remote info: $e");
     }
   }
 
@@ -432,6 +455,9 @@ class _NativeWebRTCCallScreenState extends State<NativeWebRTCCallScreen> {
       setState(() {
         isConnected = false;
         remoteUserId = null;
+        _remoteUserName = null;
+        _remoteUserImage = null;
+        _isRemoteVerified = false;
       });
     }
   }
@@ -555,23 +581,42 @@ class _NativeWebRTCCallScreenState extends State<NativeWebRTCCallScreen> {
     return Align(
       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 4),
+        margin: const EdgeInsets.symmetric(vertical: 6),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width * 0.75,
+        ),
         decoration: BoxDecoration(
-          color: isMe ? Colors.yellow : Colors.white.withOpacity(0.1),
+          gradient: isMe 
+              ? const LinearGradient(
+                  colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                )
+              : null,
+          color: isMe ? null : Colors.white.withOpacity(0.08),
           borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(16),
-            topRight: Radius.circular(16),
-            bottomLeft: Radius.circular(isMe ? 16 : 0),
-            bottomRight: Radius.circular(isMe ? 0 : 16),
+            topLeft: const Radius.circular(20),
+            topRight: const Radius.circular(20),
+            bottomLeft: Radius.circular(isMe ? 20 : 4),
+            bottomRight: Radius.circular(isMe ? 4 : 20),
           ),
+          border: isMe ? null : Border.all(color: Colors.white10),
+          boxShadow: isMe ? [
+            BoxShadow(
+              color: Colors.yellow.withOpacity(0.2),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            )
+          ] : null,
         ),
         child: Text(
           text,
           style: GoogleFonts.inter(
             color: isMe ? Colors.black : Colors.white,
             fontSize: 16,
-            fontWeight: isMe ? FontWeight.w600 : FontWeight.normal,
+            fontWeight: isMe ? FontWeight.w600 : FontWeight.w400,
+            letterSpacing: 0.2,
           ),
         ),
       ),
@@ -580,46 +625,47 @@ class _NativeWebRTCCallScreenState extends State<NativeWebRTCCallScreen> {
 
   Widget _buildChatInput() {
     return Container(
-      padding: const EdgeInsets.all(20),
-      color: Colors.black.withOpacity(0.5),
-      child: SafeArea(
-        top: false,
-        child: Row(
-          children: [
-            Expanded(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(30),
-                  border: Border.all(color: Colors.white.withOpacity(0.2)),
+      padding: EdgeInsets.fromLTRB(16, 12, 16, MediaQuery.of(context).padding.bottom + 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F0F0F),
+        border: Border(top: BorderSide(color: Colors.white.withOpacity(0.1))),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(30),
+                border: Border.all(color: Colors.white10),
+              ),
+              child: TextField(
+                controller: _chatController,
+                textCapitalization: TextCapitalization.sentences,
+                style: const TextStyle(color: Colors.white, fontSize: 16),
+                decoration: const InputDecoration(
+                  hintText: 'Say something nice...',
+                  hintStyle: TextStyle(color: Colors.white38),
+                  border: InputBorder.none,
                 ),
-                child: TextField(
-                  controller: _chatController,
-                  style: const TextStyle(color: Colors.white),
-                  decoration: const InputDecoration(
-                    hintText: 'Type a message...',
-                    hintStyle: TextStyle(color: Colors.white38),
-                    border: InputBorder.none,
-                  ),
-                  onSubmitted: (_) => _sendTextMessage(),
-                ),
+                onSubmitted: (_) => _sendTextMessage(),
               ),
             ),
-            const SizedBox(width: 12),
-            GestureDetector(
-              onTap: _sendTextMessage,
-              child: Container(
-                padding: const EdgeInsets.all(12),
-                decoration: const BoxDecoration(
-                  color: Colors.yellow,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.send_rounded, color: Colors.black),
+          ),
+          const SizedBox(width: 12),
+          GestureDetector(
+            onTap: _sendTextMessage,
+            child: Container(
+              padding: const EdgeInsets.all(14),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(colors: [Color(0xFFFFD700), Color(0xFFFFA500)]),
+                shape: BoxShape.circle,
               ),
+              child: const Icon(Icons.send_rounded, color: Colors.black, size: 24),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -704,7 +750,54 @@ class _NativeWebRTCCallScreenState extends State<NativeWebRTCCallScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _buildGlassButton(onTap: disconnectCall, icon: Icons.close, color: Colors.white),
+          Row(
+            children: [
+              _buildGlassButton(onTap: disconnectCall, icon: Icons.close, color: Colors.white),
+              if (isConnected) ...[
+                const SizedBox(width: 12),
+                Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 20,
+                      backgroundColor: Colors.white10,
+                      backgroundImage: _remoteUserImage != null ? NetworkImage(_remoteUserImage!) : null,
+                      child: _remoteUserImage == null ? const Icon(Icons.person, color: Colors.white38) : null,
+                    ),
+                    const SizedBox(width: 10),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              _remoteUserName ?? 'Stranger',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            if (_isRemoteVerified) ...[
+                              const SizedBox(width: 4),
+                              const Icon(Icons.verified, color: Colors.blue, size: 14),
+                            ],
+                          ],
+                        ),
+                        Text(
+                          'Online',
+                          style: GoogleFonts.inter(
+                            color: Colors.greenAccent,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+            ],
+          ),
           if (isConnected)
             _buildNextButton(),
         ],
@@ -722,11 +815,11 @@ class _NativeWebRTCCallScreenState extends State<NativeWebRTCCallScreen> {
           borderRadius: BorderRadius.circular(30),
           boxShadow: [BoxShadow(color: Colors.orange.withOpacity(0.4), blurRadius: 10, offset: const Offset(0, 4))],
         ),
-        child: Row(
+        child: const Row(
           children: [
-            const Text('Next', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16)),
-            const SizedBox(width: 8),
-            const Icon(Icons.arrow_forward_rounded, color: Colors.black, size: 20),
+            Text('Next', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16)),
+            SizedBox(width: 8),
+            Icon(Icons.arrow_forward_rounded, color: Colors.black, size: 20),
           ],
         ),
       ),
@@ -802,7 +895,6 @@ class _NativeWebRTCCallScreenState extends State<NativeWebRTCCallScreen> {
     return GestureDetector(
       onTap: onTap,
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(50),
         child: BackdropFilter(
           filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: Container(

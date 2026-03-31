@@ -9,7 +9,7 @@ class TrendingTable extends SupabaseTable<TrendingRow> {
 }
 
 class TrendingRow extends SupabaseDataRow {
-  TrendingRow(Map<String, dynamic> data) : super(data);
+  TrendingRow(super.data);
 
   @override
   SupabaseTable get table => TrendingTable();

@@ -1,22 +1,15 @@
 // Automatic FlutterFlow imports
 import 'package:pocket_mates_app/custom_code/widgets/choice_chip_widget.dart';
-import 'package:pocket_mates_app/custom_code/widgets/choice_chip_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/custom_text_field.dart';
-import 'package:pocket_mates_app/custom_code/widgets/custom_text_field.dart';
-import 'package:pocket_mates_app/flutter_flow/flutter_flow_widgets.dart';
 import 'package:pocket_mates_app/flutter_flow/flutter_flow_widgets.dart';
 
 import '/backend/supabase/supabase.dart';
-import '/backend/supabase/supabase.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_util.dart';
 import 'index.dart'; // Imports other custom widgets
-import 'index.dart'; // Imports other custom widgets
-import '/custom_code/actions/index.dart'; // Imports custom actions
-import '/custom_code/actions/index.dart'; // Imports custom actions
-import 'package:flutter/material.dart';
+// Imports other custom widgets
+// Imports custom actions
+// Imports custom actions
 import 'package:flutter/material.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!

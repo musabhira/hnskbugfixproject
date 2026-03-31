@@ -9,7 +9,7 @@ class LikespostsTable extends SupabaseTable<LikespostsRow> {
 }
 
 class LikespostsRow extends SupabaseDataRow {
-  LikespostsRow(Map<String, dynamic> data) : super(data);
+  LikespostsRow(super.data);
 
   @override
   SupabaseTable get table => LikespostsTable();

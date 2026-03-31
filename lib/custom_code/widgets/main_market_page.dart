@@ -6,7 +6,6 @@ import 'package:shimmer/shimmer.dart';
 import 'main_market_logic.dart';
 import 'gallery_profile_search_page.dart';
 import 'gallery_search_page.dart';
-import 'search_page.dart' show SearchPage;
 
 class MainMarketPage extends ConsumerStatefulWidget {
   const MainMarketPage({super.key});
@@ -130,10 +129,10 @@ class _MainMarketPageState extends ConsumerState<MainMarketPage>
             child: Container(
               constraints: const BoxConstraints(maxWidth: 450, maxHeight: 650),
               decoration: BoxDecoration(
-                gradient: LinearGradient(
+                gradient: const LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [const Color(0xFF1E1E1E), Colors.black],
+                  colors: [Color(0xFF1E1E1E), Colors.black],
                 ),
                 borderRadius: BorderRadius.circular(28),
                 border: Border.all(color: Colors.amber.withValues(alpha: 0.15)),

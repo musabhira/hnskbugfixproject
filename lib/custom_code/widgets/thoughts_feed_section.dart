@@ -283,9 +283,9 @@ class _ThoughtsFeedSectionState extends State<ThoughtsFeedSection>
           height: 44,
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.06),
+            color: Colors.white.withValues(alpha: 0.06),
             borderRadius: BorderRadius.circular(22),
-            border: Border.all(color: Colors.white.withOpacity(0.05)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
           ),
           child: TabBar(
             controller: _tabController,
@@ -294,7 +294,7 @@ class _ThoughtsFeedSectionState extends State<ThoughtsFeedSection>
               borderRadius: BorderRadius.circular(22),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.yellow.withOpacity(0.2),
+                  color: Colors.yellow.withValues(alpha: 0.2),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
@@ -345,7 +345,7 @@ class _ThoughtsFeedSectionState extends State<ThoughtsFeedSection>
           Center(
             child: Column(
               children: [
-                Icon(Icons.forum_outlined, size: 64, color: Colors.white24),
+                const Icon(Icons.forum_outlined, size: 64, color: Colors.white24),
                 const SizedBox(height: 16),
                 Text(
                   widget.searchQuery.isNotEmpty
@@ -448,9 +448,9 @@ class _TwitterThreadCardState extends State<TwitterThreadCard> {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.04),
+        color: Colors.white.withValues(alpha: 0.04),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -476,13 +476,13 @@ class _TwitterThreadCardState extends State<TwitterThreadCard> {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: Colors.yellow.withOpacity(0.3),
+                        color: Colors.yellow.withValues(alpha: 0.3),
                         width: 1,
                       ),
                     ),
                     child: CircleAvatar(
                       radius: 20,
-                      backgroundColor: Colors.white.withOpacity(0.1),
+                      backgroundColor: Colors.white.withValues(alpha: 0.1),
                       backgroundImage: avatar != null
                           ? CachedNetworkImageProvider(avatar)
                           : null,
@@ -539,7 +539,7 @@ class _TwitterThreadCardState extends State<TwitterThreadCard> {
                   Text(
                     displayedContent,
                     style: GoogleFonts.inter(
-                      color: Colors.white.withOpacity(0.9),
+                      color: Colors.white.withValues(alpha: 0.9),
                       fontSize: 14,
                       height: 1.5,
                     ),

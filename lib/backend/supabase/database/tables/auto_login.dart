@@ -9,7 +9,7 @@ class AutoLoginTable extends SupabaseTable<AutoLoginRow> {
 }
 
 class AutoLoginRow extends SupabaseDataRow {
-  AutoLoginRow(Map<String, dynamic> data) : super(data);
+  AutoLoginRow(super.data);
 
   @override
   SupabaseTable get table => AutoLoginTable();

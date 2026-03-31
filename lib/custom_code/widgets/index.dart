@@ -23,4 +23,5 @@ export 'search_page.dart' show SearchPage;
 export 'chat/whatsapp_group_chat.dart' show WhatsAppGroupChat;
 export 'courses_widget.dart' show CoursesWidget, CourseDetailPage;
 export 'admin_panel_page.dart' show AdminDashboardPage;
+export 'quick_account_bottom_sheet.dart' show AutoLoginBottomSheet;
 

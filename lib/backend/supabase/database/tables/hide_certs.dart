@@ -9,7 +9,7 @@ class HideCertsTable extends SupabaseTable<HideCertsRow> {
 }
 
 class HideCertsRow extends SupabaseDataRow {
-  HideCertsRow(Map<String, dynamic> data) : super(data);
+  HideCertsRow(super.data);
 
   @override
   SupabaseTable get table => HideCertsTable();

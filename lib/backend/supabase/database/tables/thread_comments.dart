@@ -10,7 +10,7 @@ class ThreadCommentsTable extends SupabaseTable<ThreadCommentsRow> {
 }
 
 class ThreadCommentsRow extends SupabaseDataRow {
-  ThreadCommentsRow(Map<String, dynamic> data) : super(data);
+  ThreadCommentsRow(super.data);
 
   @override
   SupabaseTable get table => ThreadCommentsTable();

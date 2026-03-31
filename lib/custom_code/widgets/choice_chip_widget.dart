@@ -1,7 +1,6 @@
 import 'package:pocket_mates_app/flutter_flow/form_field_controller.dart';
 import 'package:pocket_mates_app/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
 import 'package:flutter/material.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!

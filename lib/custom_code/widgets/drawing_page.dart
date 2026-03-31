@@ -298,10 +298,14 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
   }
 
   Future<void> _saveImage() async {
+    final settings = await _showSaveCustomizationDialog();
+    if (settings == null) return;
+    final double pixelRatio = settings['pixelRatio'] ?? 3.0;
+
     try {
       RenderRepaintBoundary? boundary = _canvasKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
       if (boundary == null) return;
-      ui.Image image = await boundary.toImage(pixelRatio: 3.0);
+      ui.Image image = await boundary.toImage(pixelRatio: pixelRatio);
       ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
       if (byteData != null) {
         final bytes = byteData.buffer.asUint8List();
@@ -319,10 +323,14 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
   }
 
   Future<void> _exportImage() async {
+    final settings = await _showSaveCustomizationDialog();
+    if (settings == null) return;
+    final double pixelRatio = settings['pixelRatio'] ?? 3.0;
+
     try {
       RenderRepaintBoundary? boundary = _canvasKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
       if (boundary == null) return;
-      ui.Image image = await boundary.toImage(pixelRatio: 3.0);
+      ui.Image image = await boundary.toImage(pixelRatio: pixelRatio);
       ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
       if (byteData != null) {
         final bytes = byteData.buffer.asUint8List();
@@ -695,7 +703,7 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
         Row(children: [
           const Text('Grid', style: TextStyle(color: Colors.white54, fontSize: 12)),
           const Spacer(),
-          Switch(value: _showGrid, activeColor: Colors.amber, onChanged: (v) => setState(() => _showGrid = v)),
+          Switch(value: _showGrid, activeThumbColor: Colors.amber, onChanged: (v) => setState(() => _showGrid = v)),
         ]),
       ]),
     ).animate().fadeIn().slideX(begin: -0.1);
@@ -797,7 +805,7 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           Text('Preferences', style: GoogleFonts.outfit(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 20),
-          ListTile(leading: const Icon(Icons.grid_3x3, color: Colors.white54), title: Text('Canvas Grid', style: GoogleFonts.outfit(color: Colors.white70)), trailing: Switch(value: _showGrid, activeColor: Colors.amber, onChanged: (v) => setState(() => _showGrid = v))),
+          ListTile(leading: const Icon(Icons.grid_3x3, color: Colors.white54), title: Text('Canvas Grid', style: GoogleFonts.outfit(color: Colors.white70)), trailing: Switch(value: _showGrid, activeThumbColor: Colors.amber, onChanged: (v) => setState(() => _showGrid = v))),
           ListTile(leading: const Icon(Icons.format_paint, color: Colors.white54), title: Text('Paper Texture', style: GoogleFonts.outfit(color: Colors.white70)), trailing: Container(width: 28, height: 28, decoration: BoxDecoration(color: _canvasBgColor, shape: BoxShape.circle, border: Border.all(color: Colors.white24))), onTap: () { Navigator.pop(ctx); _showCanvasBgPicker(); }),
           const SizedBox(height: 16),
         ]),
@@ -843,7 +851,7 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
           Row(children: [
             Text('Fill Shape', style: GoogleFonts.outfit(color: Colors.white54)),
             const Spacer(),
-            Switch(value: _shapeFilled, activeColor: Colors.amber, onChanged: (v) => setState(() => _shapeFilled = v)),
+            Switch(value: _shapeFilled, activeThumbColor: Colors.amber, onChanged: (v) => setState(() => _shapeFilled = v)),
           ]),
           const SizedBox(height: 16),
         ]),
@@ -936,5 +944,259 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
       content: SingleChildScrollView(child: ColorPicker(pickerColor: _selectedColor, onColorChanged: (c) => setState(() => _selectedColor = c), pickerAreaHeightPercent: 0.7, labelTypes: const [])),
       actions: [TextButton(child: const Text('Select'), onPressed: () => Navigator.pop(ctx))],
     ));
+  }
+
+  Future<Map<String, dynamic>?> _showSaveCustomizationDialog() async {
+    double selectedPixelRatio = 3.0;
+
+    return showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              backgroundColor: Colors.black,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
+              ),
+              title: const Row(
+                children: [
+                  Icon(Icons.settings, color: Colors.yellow, size: 24),
+                  SizedBox(width: 8),
+                  Text(
+                    'Save Settings',
+                    style: TextStyle(color: Colors.white, fontSize: 20),
+                  ),
+                ],
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Color fix warning for high pixel ratios
+                  if (selectedPixelRatio > 6.0)
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.orange),
+                      ),
+                      child: const Row(
+                        children: [
+                          Icon(Icons.warning, color: Colors.orange, size: 16),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'High ratios may cause color issues',
+                              style:
+                                  TextStyle(color: Colors.orange, fontSize: 12),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                  const Text(
+                    'Select Image Quality:',
+                    style: TextStyle(color: Colors.white, fontSize: 16),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Quality options with color-safe recommendations
+                  _buildQualityOption('Standard (1x)', 1.0, selectedPixelRatio,
+                      () => setState(() => selectedPixelRatio = 1.0)),
+                  _buildQualityOption('High (2x)', 2.0, selectedPixelRatio,
+                      () => setState(() => selectedPixelRatio = 2.0)),
+                  _buildQualityOption(
+                      'Ultra HD (3x) ✓',
+                      3.0,
+                      selectedPixelRatio,
+                      () => setState(() => selectedPixelRatio = 3.0)),
+                  _buildQualityOption(
+                      'Super HD (5x) ✓',
+                      5.0,
+                      selectedPixelRatio,
+                      () => setState(() => selectedPixelRatio = 5.0)),
+                  _buildQualityOption('Maximum (8x)', 8.0, selectedPixelRatio,
+                      () => setState(() => selectedPixelRatio = 8.0)),
+
+                  const SizedBox(height: 20),
+                  const Divider(color: Colors.grey),
+                  const SizedBox(height: 16),
+
+                  // Custom slider section
+                  const Row(
+                    children: [
+                      Icon(Icons.tune, color: Colors.yellow, size: 20),
+                      SizedBox(width: 8),
+                      Text(
+                        'Custom Pixel Ratio:',
+                        style: TextStyle(color: Colors.white, fontSize: 16),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Slider with labels
+                  Row(
+                    children: [
+                      const Text('1x',
+                          style: TextStyle(color: Colors.grey, fontSize: 12)),
+                      Expanded(
+                        child: SliderTheme(
+                          data: SliderTheme.of(context).copyWith(
+                            activeTrackColor: Colors.yellow,
+                            inactiveTrackColor: Colors.grey[700],
+                            thumbColor: Colors.yellow,
+                            overlayColor: Colors.yellow.withValues(alpha: 0.3),
+                            thumbShape: const RoundSliderThumbShape(
+                                enabledThumbRadius: 12),
+                            overlayShape: const RoundSliderOverlayShape(
+                                overlayRadius: 20),
+                            valueIndicatorColor: Colors.yellow,
+                            valueIndicatorTextStyle: const TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          child: Slider(
+                            value: selectedPixelRatio,
+                            min: 1.0,
+                            max: 10.0,
+                            divisions: 90, // 0.1 increments
+                            label: '${selectedPixelRatio.toStringAsFixed(1)}x',
+                            onChanged: (value) {
+                              setState(() {
+                                selectedPixelRatio = value;
+                              });
+                            },
+                          ),
+                        ),
+                      ),
+                      const Text('10x',
+                          style: TextStyle(color: Colors.grey, fontSize: 12)),
+                    ],
+                  ),
+
+                  const SizedBox(height: 8),
+                  Center(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.yellow.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: Colors.yellow, width: 1),
+                      ),
+                      child: Text(
+                        'Current: ${selectedPixelRatio.toStringAsFixed(1)}x',
+                        style: const TextStyle(
+                          color: Colors.yellow,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(null),
+                  child: const Text(
+                    'Cancel',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    String quality = '';
+                    switch (selectedPixelRatio) {
+                      case 1.0:
+                        quality = 'standard';
+                        break;
+                      case 2.0:
+                        quality = 'high';
+                        break;
+                      case 3.0:
+                        quality = 'ultra_hd';
+                        break;
+                      case 5.0:
+                        quality = 'super_hd';
+                        break;
+                      case 8.0:
+                        quality = 'maximum';
+                        break;
+                      default:
+                        quality = 'custom';
+                        break;
+                    }
+
+                    Navigator.of(context).pop({
+                      'pixelRatio': selectedPixelRatio,
+                      'quality': quality,
+                    });
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.yellow,
+                    foregroundColor: Colors.black,
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.save, size: 18),
+                      SizedBox(width: 4),
+                      Text('Save'),
+                    ],
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildQualityOption(
+      String title, double value, double current, VoidCallback onTap) {
+    final bool isSelected = current == value;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.yellow.withValues(alpha: 0.2) : Colors.grey[900],
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isSelected ? Colors.yellow : Colors.grey[700]!,
+            width: isSelected ? 2 : 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              isSelected
+                  ? Icons.radio_button_checked
+                  : Icons.radio_button_unchecked,
+              color: isSelected ? Colors.yellow : Colors.white,
+              size: 20,
+            ),
+            const SizedBox(width: 12),
+            Text(
+              title,
+              style: TextStyle(
+                color: isSelected ? Colors.yellow : Colors.white,
+                fontSize: 16,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

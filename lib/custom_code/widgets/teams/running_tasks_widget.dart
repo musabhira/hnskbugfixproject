@@ -6,7 +6,7 @@ import 'package:pocket_mates_app/custom_code/widgets/teams/teams_service.dart';
 
 class RunningTasksWidget extends StatefulWidget {
   final TeamsService service;
-  const RunningTasksWidget({Key? key, required this.service}) : super(key: key);
+  const RunningTasksWidget({super.key, required this.service});
 
   @override
   State<RunningTasksWidget> createState() => _RunningTasksWidgetState();
@@ -147,7 +147,7 @@ class _RunningTasksWidgetState extends State<RunningTasksWidget> {
                   ],
                 ),
                 const SizedBox(height: 12),
-                ..._activeTasks.map((task) => _buildTaskRow(task)).toList(),
+                ..._activeTasks.map((task) => _buildTaskRow(task)),
               ],
             ),
           ),

@@ -9,7 +9,7 @@ class SharesTable extends SupabaseTable<SharesRow> {
 }
 
 class SharesRow extends SupabaseDataRow {
-  SharesRow(Map<String, dynamic> data) : super(data);
+  SharesRow(super.data);
 
   @override
   SupabaseTable get table => SharesTable();

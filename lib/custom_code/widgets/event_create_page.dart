@@ -1,28 +1,18 @@
 // Automatic FlutterFlow imports
 import '/backend/supabase/supabase.dart';
-import '/backend/supabase/supabase.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import 'index.dart'; // Imports other custom widgets
-import 'index.dart'; // Imports other custom widgets
-import '/custom_code/actions/index.dart'; // Imports custom actions
-import '/custom_code/actions/index.dart'; // Imports custom actions
-import 'package:flutter/material.dart';
+// Imports other custom widgets
+// Imports other custom widgets
+// Imports custom actions
+// Imports custom actions
 import 'package:flutter/material.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
 import 'dart:io' as io;
-import 'dart:io' as io;
-import 'package:flutter/foundation.dart';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:image/image.dart' as img;
-import 'package:image/image.dart' as img;
-import 'package:flutter/services.dart';
 import 'package:flutter/services.dart';
 
 class EventCreatePage extends StatefulWidget {

@@ -10,7 +10,7 @@ class WatchSessionsTable extends SupabaseTable<WatchSessionsRow> {
 }
 
 class WatchSessionsRow extends SupabaseDataRow {
-  WatchSessionsRow(Map<String, dynamic> data) : super(data);
+  WatchSessionsRow(super.data);
 
   @override
   SupabaseTable get table => WatchSessionsTable();

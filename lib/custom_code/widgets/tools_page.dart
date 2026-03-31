@@ -6,7 +6,6 @@ import 'package:pocket_mates_app/custom_code/widgets/drawing_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/teams/teams_home_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poster_designer/template_gallery_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/bulk_sender/bulk_sender_page.dart';
-import 'package:flutter/services.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poki_games_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/nearby_users_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chess_game_page.dart';
@@ -65,14 +64,15 @@ class _TaskManagerScreenState extends State<ToolsPage> {
   bool _isGeneratingSchedule = false;
   String? _editingScheduleId;
 
-  List<ScheduleItem> _schedules = [];
+  final List<ScheduleItem> _schedules = [];
 
-  List<String> _completedTasks = [];
-  List<String> _completedChallenges = [];
+  final List<String> _completedTasks = [];
+  final List<String> _completedChallenges = [];
 
   String _toolsSearchQuery = '';
   List<String> _favoritedTools = [];
 
+  @override
   void initState() {
     super.initState();
     if (widget.initialTab != null) {
@@ -181,7 +181,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
   void _generateAISchedule() async {
     if (aiScheduleController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Please enter your schedule details'),
           backgroundColor: Color(0xFF2C2C2C),
         ),
@@ -208,12 +208,12 @@ class _TaskManagerScreenState extends State<ToolsPage> {
               content: Text(
                 'Schedule generated with ${generatedItems.length} items',
               ),
-              backgroundColor: Color(0xFF4CAF50),
+              backgroundColor: const Color(0xFF4CAF50),
             ),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
+            const SnackBar(
               content: Text('Failed to generate schedule'),
               backgroundColor: Color(0xFFE57373),
             ),
@@ -229,7 +229,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error generating schedule: $e'),
-          backgroundColor: Color(0xFFE57373),
+          backgroundColor: const Color(0xFFE57373),
         ),
       );
     }
@@ -240,7 +240,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
         selectedStartTime == null ||
         selectedEndTime == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Please fill all fields'),
           backgroundColor: Color(0xFFE57373),
         ),
@@ -283,7 +283,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
         title: scheduleController.text.trim(),
         startTime: startTime,
         endTime: endTime,
-        color: Color(0xFF424242),
+        color: const Color(0xFF424242),
         source: ScheduleSource.manual,
       );
 
@@ -462,11 +462,11 @@ class _TaskManagerScreenState extends State<ToolsPage> {
   Color _getPriorityColor(TaskPriority priority) {
     switch (priority) {
       case TaskPriority.high:
-        return Color(0xFFE57373);
+        return const Color(0xFFE57373);
       case TaskPriority.medium:
-        return Color(0xFFFFB74D);
+        return const Color(0xFFFFB74D);
       case TaskPriority.low:
-        return Color(0xFF81C784);
+        return const Color(0xFF81C784);
     }
   }
 
@@ -1146,7 +1146,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
 
   Widget _buildToolDetailView() {
     return Scaffold(
-      backgroundColor: Color(0xFF121212),
+      backgroundColor: const Color(0xFF121212),
       body: SafeArea(
         child: Column(
           children: [
@@ -1356,65 +1356,65 @@ class _TaskManagerScreenState extends State<ToolsPage> {
   Widget _buildAddTaskForm() {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 24),
-      padding: EdgeInsets.all(20),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Color(0xFF2C2C2C),
+        color: const Color(0xFF2C2C2C),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Color(0xFF424242)),
+        border: Border.all(color: const Color(0xFF424242)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           TextField(
             controller: taskController,
-            style: TextStyle(color: Colors.white),
+            style: const TextStyle(color: Colors.white),
             decoration: InputDecoration(
               hintText: 'What needs to be done?',
-              hintStyle: TextStyle(color: Color(0xFF757575)),
+              hintStyle: const TextStyle(color: Color(0xFF757575)),
               filled: true,
-              fillColor: Color(0xFF1E1E1E),
+              fillColor: const Color(0xFF1E1E1E),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide.none,
               ),
             ),
           ),
-          SizedBox(height: 12),
+          const SizedBox(height: 12),
           TextField(
             controller: taskNotesController,
-            style: TextStyle(color: Colors.white),
+            style: const TextStyle(color: Colors.white),
             maxLines: 2,
             decoration: InputDecoration(
               hintText: 'Add notes (optional)',
-              hintStyle: TextStyle(color: Color(0xFF757575)),
+              hintStyle: const TextStyle(color: Color(0xFF757575)),
               filled: true,
-              fillColor: Color(0xFF1E1E1E),
+              fillColor: const Color(0xFF1E1E1E),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide.none,
               ),
             ),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           Row(
             children: [
-              Text('Priority: ',
+              const Text('Priority: ',
                   style: TextStyle(color: Color(0xFFAAAAAA), fontSize: 14)),
               ...TaskPriority.values.map(
                 (priority) => GestureDetector(
                   onTap: () => setState(() => selectedPriority = priority),
                   child: Container(
-                    margin: EdgeInsets.only(right: 8),
-                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    margin: const EdgeInsets.only(right: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
                       color: selectedPriority == priority
                           ? _getPriorityColor(priority)
-                          : Color(0xFF424242),
+                          : const Color(0xFF424242),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
                       priority.toString().split('.').last.toUpperCase(),
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: Colors.white,
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
@@ -1425,21 +1425,21 @@ class _TaskManagerScreenState extends State<ToolsPage> {
               ),
             ],
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
               onPressed: _addTask,
-              child: Text('Add Task'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.yellow,
                 foregroundColor: Colors.black,
-                padding: EdgeInsets.symmetric(vertical: 14),
+                padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
                 elevation: 0,
               ),
+              child: const Text('Add Task'),
             ),
           ),
         ],
@@ -1449,12 +1449,12 @@ class _TaskManagerScreenState extends State<ToolsPage> {
 
   Widget _buildAddScheduleForm() {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 24),
-      padding: EdgeInsets.all(20),
+      margin: const EdgeInsets.symmetric(horizontal: 24),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Color(0xFF2C2C2C),
+        color: const Color(0xFF2C2C2C),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Color(0xFF424242)),
+        border: Border.all(color: const Color(0xFF424242)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1466,10 +1466,10 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                 child: GestureDetector(
                   onTap: () => setState(() => _useAISchedule = false),
                   child: Container(
-                    padding: EdgeInsets.symmetric(vertical: 10),
+                    padding: const EdgeInsets.symmetric(vertical: 10),
                     decoration: BoxDecoration(
                       color:
-                          !_useAISchedule ? Colors.yellow : Color(0xFF424242),
+                          !_useAISchedule ? Colors.yellow : const Color(0xFF424242),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
@@ -1484,21 +1484,21 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                   ),
                 ),
               ),
-              SizedBox(width: 8),
+              const SizedBox(width: 8),
               Expanded(
                 child: GestureDetector(
                   onTap: () => setState(() => _useAISchedule = true),
                   child: Container(
-                    padding: EdgeInsets.symmetric(vertical: 10),
+                    padding: const EdgeInsets.symmetric(vertical: 10),
                     decoration: BoxDecoration(
-                      color: _useAISchedule ? Colors.yellow : Color(0xFF424242),
+                      color: _useAISchedule ? Colors.yellow : const Color(0xFF424242),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.auto_awesome, color: Colors.white, size: 16),
-                        SizedBox(width: 4),
+                        const Icon(Icons.auto_awesome, color: Colors.white, size: 16),
+                        const SizedBox(width: 4),
                         Text(
                           'AI Generate',
                           style: TextStyle(
@@ -1514,24 +1514,24 @@ class _TaskManagerScreenState extends State<ToolsPage> {
               ),
             ],
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
 
           if (!_useAISchedule) ...[
             TextField(
               controller: scheduleController,
-              style: TextStyle(color: Colors.white),
+              style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
                 hintText: 'Activity name',
-                hintStyle: TextStyle(color: Color(0xFF757575)),
+                hintStyle: const TextStyle(color: Color(0xFF757575)),
                 filled: true,
-                fillColor: Color(0xFF1E1E1E),
+                fillColor: const Color(0xFF1E1E1E),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,
                 ),
               ),
             ),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
             Row(
               children: [
                 Expanded(
@@ -1543,7 +1543,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                         builder: (context, child) {
                           return Theme(
                             data: ThemeData.dark().copyWith(
-                              colorScheme: ColorScheme.dark(
+                              colorScheme: const ColorScheme.dark(
                                 primary: Color(0xFFFF6B9D),
                                 surface: Color(0xFF2C2C2C),
                               ),
@@ -1557,16 +1557,16 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                       }
                     },
                     child: Container(
-                      padding: EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: Color(0xFF1E1E1E),
+                        color: const Color(0xFF1E1E1E),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.access_time,
+                          const Icon(Icons.access_time,
                               color: Color(0xFFFF6B9D), size: 20),
-                          SizedBox(width: 8),
+                          const SizedBox(width: 8),
                           Text(
                             selectedStartTime != null
                                 ? selectedStartTime!.format(context)
@@ -1574,7 +1574,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                             style: TextStyle(
                               color: selectedStartTime != null
                                   ? Colors.white
-                                  : Color(0xFF757575),
+                                  : const Color(0xFF757575),
                               fontSize: 14,
                             ),
                           ),
@@ -1583,7 +1583,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                     ),
                   ),
                 ),
-                SizedBox(width: 12),
+                const SizedBox(width: 12),
                 Expanded(
                   child: GestureDetector(
                     onTap: () async {
@@ -1593,7 +1593,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                         builder: (context, child) {
                           return Theme(
                             data: ThemeData.dark().copyWith(
-                              colorScheme: ColorScheme.dark(
+                              colorScheme: const ColorScheme.dark(
                                 primary: Color(0xFFFF6B9D),
                                 surface: Color(0xFF2C2C2C),
                               ),
@@ -1607,16 +1607,16 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                       }
                     },
                     child: Container(
-                      padding: EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: Color(0xFF1E1E1E),
+                        color: const Color(0xFF1E1E1E),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.access_time,
+                          const Icon(Icons.access_time,
                               color: Color(0xFFFF6B9D), size: 20),
-                          SizedBox(width: 8),
+                          const SizedBox(width: 8),
                           Text(
                             selectedEndTime != null
                                 ? selectedEndTime!.format(context)
@@ -1624,7 +1624,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                             style: TextStyle(
                               color: selectedEndTime != null
                                   ? Colors.white
-                                  : Color(0xFF757575),
+                                  : const Color(0xFF757575),
                               fontSize: 14,
                             ),
                           ),
@@ -1635,49 +1635,58 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                 ),
               ],
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: _addScheduleItem,
-                child: Text(_editingScheduleId != null
-                    ? 'Update Schedule'
-                    : 'Add Schedule'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFFFF6B9D),
+                  backgroundColor: const Color(0xFFFF6B9D),
                   foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(vertical: 14),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                   elevation: 0,
                 ),
+                child: Text(_editingScheduleId != null
+                    ? 'Update Schedule'
+                    : 'Add Schedule'),
               ),
             ),
           ] else ...[
             TextField(
               controller: aiScheduleController,
-              style: TextStyle(color: Colors.white),
+              style: const TextStyle(color: Colors.white),
               maxLines: 4,
               decoration: InputDecoration(
                 hintText:
                     'Describe your day:\ne.g., "Wake at 6am, workout 30min, work 9-5, lunch at 1pm, sleep 11pm"',
-                hintStyle: TextStyle(color: Color(0xFF757575)),
+                hintStyle: const TextStyle(color: Color(0xFF757575)),
                 filled: true,
-                fillColor: Color(0xFF1E1E1E),
+                fillColor: const Color(0xFF1E1E1E),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,
                 ),
               ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: _isGeneratingSchedule ? null : _generateAISchedule,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFF6B9D),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  elevation: 0,
+                ),
                 child: _isGeneratingSchedule
-                    ? Row(
+                    ? const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           SizedBox(
@@ -1692,7 +1701,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                           Text('Generating...'),
                         ],
                       )
-                    : Row(
+                    : const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(Icons.auto_awesome, size: 18),
@@ -1700,15 +1709,6 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                           Text('Generate Schedule'),
                         ],
                       ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFFFF6B9D),
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  elevation: 0,
-                ),
               ),
             ),
           ],
@@ -1719,45 +1719,45 @@ class _TaskManagerScreenState extends State<ToolsPage> {
 
   Widget _buildAddChallengeForm() {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 24),
-      padding: EdgeInsets.all(20),
+      margin: const EdgeInsets.symmetric(horizontal: 24),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Color(0xFF2C2C2C),
+        color: const Color(0xFF2C2C2C),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Color(0xFF424242)),
+        border: Border.all(color: const Color(0xFF424242)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           TextField(
             controller: challengeController,
-            style: TextStyle(color: Colors.white),
+            style: const TextStyle(color: Colors.white),
             decoration: InputDecoration(
               hintText: 'Challenge name',
-              hintStyle: TextStyle(color: Color(0xFF757575)),
+              hintStyle: const TextStyle(color: Color(0xFF757575)),
               filled: true,
-              fillColor: Color(0xFF1E1E1E),
+              fillColor: const Color(0xFF1E1E1E),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide.none,
               ),
             ),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           Row(
             children: [
               Expanded(
                 flex: 2,
                 child: TextField(
                   keyboardType: TextInputType.number,
-                  style: TextStyle(color: Colors.white),
+                  style: const TextStyle(color: Colors.white),
                   onChanged: (value) =>
                       challengeDuration = int.tryParse(value) ?? 21,
                   decoration: InputDecoration(
                     hintText: '21',
-                    hintStyle: TextStyle(color: Color(0xFF757575)),
+                    hintStyle: const TextStyle(color: Color(0xFF757575)),
                     filled: true,
-                    fillColor: Color(0xFF1E1E1E),
+                    fillColor: const Color(0xFF1E1E1E),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide.none,
@@ -1765,24 +1765,24 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                   ),
                 ),
               ),
-              SizedBox(width: 12),
+              const SizedBox(width: 12),
               ...ChallengeType.values.map(
                 (type) => Expanded(
                   child: GestureDetector(
                     onTap: () => setState(() => selectedChallengeType = type),
                     child: Container(
-                      margin: EdgeInsets.only(left: 4),
-                      padding: EdgeInsets.symmetric(vertical: 12),
+                      margin: const EdgeInsets.only(left: 4),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
                       decoration: BoxDecoration(
                         color: selectedChallengeType == type
-                            ? Color(0xFF4CAF50)
-                            : Color(0xFF424242),
+                            ? const Color(0xFF4CAF50)
+                            : const Color(0xFF424242),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
                         _getChallengeTypeText(type),
                         textAlign: TextAlign.center,
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
@@ -1794,21 +1794,21 @@ class _TaskManagerScreenState extends State<ToolsPage> {
               ),
             ],
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
               onPressed: _addChallenge,
-              child: Text('Create Challenge'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xFF4CAF50),
+                backgroundColor: const Color(0xFF4CAF50),
                 foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(vertical: 14),
+                padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
                 elevation: 0,
               ),
+              child: const Text('Create Challenge'),
             ),
           ),
         ],
@@ -1826,7 +1826,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
     }
 
     return ReorderableListView.builder(
-      padding: EdgeInsets.symmetric(horizontal: 24),
+      padding: const EdgeInsets.symmetric(horizontal: 24),
       itemCount: tasks.length,
       onReorder: _reorderTasks,
       itemBuilder: (context, index) {
@@ -1846,7 +1846,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
     }
 
     return ListView.builder(
-      padding: EdgeInsets.symmetric(horizontal: 24),
+      padding: const EdgeInsets.symmetric(horizontal: 24),
       itemCount: dailySchedule.length,
       itemBuilder: (context, index) {
         return _buildScheduleCard(dailySchedule[index]);
@@ -1864,7 +1864,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
     }
 
     return ListView.builder(
-      padding: EdgeInsets.symmetric(horizontal: 24),
+      padding: const EdgeInsets.symmetric(horizontal: 24),
       itemCount: challenges.length,
       itemBuilder: (context, index) {
         final challenge = challenges[index];
@@ -1876,18 +1876,18 @@ class _TaskManagerScreenState extends State<ToolsPage> {
   Widget _buildTaskCard(Task task, int index) {
     return Container(
       key: ValueKey(task.id),
-      margin: EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 12),
       child: Hero(
         tag: 'task_${task.id}',
         child: Material(
           color: Colors.transparent,
           child: Container(
-            padding: EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Color(0xFF2C2C2C),
+              color: const Color(0xFF2C2C2C),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: task.isCompleted ? Color(0xFF4CAF50) : Color(0xFF424242),
+                color: task.isCompleted ? const Color(0xFF4CAF50) : const Color(0xFF424242),
                 width: task.isCompleted ? 2 : 1,
               ),
             ),
@@ -1904,21 +1904,21 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: task.isCompleted
-                              ? Color(0xFF4CAF50)
+                              ? const Color(0xFF4CAF50)
                               : Colors.transparent,
                           border: Border.all(
                             color: task.isCompleted
-                                ? Color(0xFF4CAF50)
-                                : Color(0xFF757575),
+                                ? const Color(0xFF4CAF50)
+                                : const Color(0xFF757575),
                             width: 2,
                           ),
                         ),
                         child: task.isCompleted
-                            ? Icon(Icons.check, color: Colors.white, size: 14)
+                            ? const Icon(Icons.check, color: Colors.white, size: 14)
                             : null,
                       ),
                     ),
-                    SizedBox(width: 12),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         task.title,
@@ -1940,20 +1940,20 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                         shape: BoxShape.circle,
                       ),
                     ),
-                    SizedBox(width: 8),
+                    const SizedBox(width: 8),
                     GestureDetector(
                       onTap: () => _deleteTask(task.id),
                       child:
-                          Icon(Icons.close, color: Color(0xFF757575), size: 20),
+                          const Icon(Icons.close, color: Color(0xFF757575), size: 20),
                     ),
-                    SizedBox(width: 14),
+                    const SizedBox(width: 14),
                   ],
                 ),
                 if (task.notes != null && task.notes!.isNotEmpty) ...[
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   Text(
                     task.notes!,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 14,
                       color: Color(0xFF9E9E9E),
                     ),
@@ -1987,12 +1987,12 @@ class _TaskManagerScreenState extends State<ToolsPage> {
         '${endHour12.toString().padLeft(2, '0')}:${endMin.toString().padLeft(2, '0')} $endPeriod';
 
     return Container(
-      margin: EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Color(0xFF2C2C2C),
+        color: const Color(0xFF2C2C2C),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: item.isCompleted ? Color(0xFF4CAF50) : Color(0xFF424242),
+          color: item.isCompleted ? const Color(0xFF4CAF50) : const Color(0xFF424242),
           width: item.isCompleted ? 2 : 1,
         ),
       ),
@@ -2001,27 +2001,27 @@ class _TaskManagerScreenState extends State<ToolsPage> {
           // Time column
           Container(
             width: 80,
-            padding: EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
             child: Column(
               children: [
                 Text(
                   startStr,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: Colors.white,
                   ),
                 ),
-                SizedBox(height: 4),
+                const SizedBox(height: 4),
                 Container(
                   width: 2,
                   height: 20,
-                  color: Color(0xFFFF6B9D),
+                  color: const Color(0xFFFF6B9D),
                 ),
-                SizedBox(height: 4),
+                const SizedBox(height: 4),
                 Text(
                   endStr,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: Color(0xFF9E9E9E),
@@ -2033,11 +2033,11 @@ class _TaskManagerScreenState extends State<ToolsPage> {
           Container(
             width: 1,
             height: 80,
-            color: Color(0xFF424242),
+            color: const Color(0xFF424242),
           ),
           Expanded(
             child: Padding(
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -2059,12 +2059,12 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                       if (item.source == ScheduleSource.aiGenerated)
                         Container(
                           padding:
-                              EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
-                            color: Color(0xFFFF6B9D),
+                            color: const Color(0xFFFF6B9D),
                             borderRadius: BorderRadius.circular(6),
                           ),
-                          child: Row(
+                          child: const Row(
                             children: [
                               Icon(Icons.auto_awesome,
                                   color: Colors.white, size: 10),
@@ -2084,10 +2084,10 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                   ),
                   if (item.description != null &&
                       item.description!.isNotEmpty) ...[
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Text(
                       item.description!,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 12,
                         color: Color(0xFF9E9E9E),
                       ),
@@ -2100,7 +2100,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
             ),
           ),
           Container(
-            padding: EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
             child: Column(
               children: [
                 GestureDetector(
@@ -2111,29 +2111,29 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: item.isCompleted
-                          ? Color(0xFF4CAF50)
+                          ? const Color(0xFF4CAF50)
                           : Colors.transparent,
                       border: Border.all(
                         color: item.isCompleted
-                            ? Color(0xFF4CAF50)
-                            : Color(0xFF757575),
+                            ? const Color(0xFF4CAF50)
+                            : const Color(0xFF757575),
                         width: 2,
                       ),
                     ),
                     child: item.isCompleted
-                        ? Icon(Icons.check, color: Colors.white, size: 14)
+                        ? const Icon(Icons.check, color: Colors.white, size: 14)
                         : null,
                   ),
                 ),
-                SizedBox(height: 8),
+                const SizedBox(height: 8),
                 GestureDetector(
                   onTap: () => _editScheduleItem(item),
-                  child: Icon(Icons.edit, color: Color(0xFF757575), size: 18),
+                  child: const Icon(Icons.edit, color: Color(0xFF757575), size: 18),
                 ),
-                SizedBox(height: 8),
+                const SizedBox(height: 8),
                 GestureDetector(
                   onTap: () => _deleteScheduleItem(item.id),
-                  child: Icon(Icons.delete, color: Color(0xFF757575), size: 18),
+                  child: const Icon(Icons.delete, color: Color(0xFF757575), size: 18),
                 ),
               ],
             ),
@@ -2157,13 +2157,13 @@ class _TaskManagerScreenState extends State<ToolsPage> {
     final isTodayCompleted = challenge.dailyTicks.containsKey(todayKey);
 
     return Container(
-      margin: EdgeInsets.only(bottom: 12),
-      padding: EdgeInsets.all(16),
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Color(0xFF2C2C2C),
+        color: const Color(0xFF2C2C2C),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isCompleted ? Color(0xFF4CAF50) : Color(0xFF424242),
+          color: isCompleted ? const Color(0xFF4CAF50) : const Color(0xFF424242),
           width: isCompleted ? 2 : 1,
         ),
       ),
@@ -2175,7 +2175,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
               Expanded(
                 child: Text(
                   challenge.title,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: Colors.white,
@@ -2184,12 +2184,12 @@ class _TaskManagerScreenState extends State<ToolsPage> {
               ),
               if (isCompleted)
                 Container(
-                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: Color(0xFF4CAF50),
+                    color: const Color(0xFF4CAF50),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Text(
+                  child: const Text(
                     'COMPLETED',
                     style: TextStyle(
                       color: Colors.white,
@@ -2198,21 +2198,21 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                     ),
                   ),
                 ),
-              SizedBox(width: 8),
+              const SizedBox(width: 8),
               GestureDetector(
                 onTap: () => _deleteChallenge(challenge.id),
-                child: Icon(Icons.close, color: Color(0xFF757575), size: 20),
+                child: const Icon(Icons.close, color: Color(0xFF757575), size: 20),
               ),
             ],
           ),
-          SizedBox(height: 12),
+          const SizedBox(height: 12),
 
           // Progress bar
           Container(
             width: double.infinity,
             height: 8,
             decoration: BoxDecoration(
-              color: Color(0xFF424242),
+              color: const Color(0xFF424242),
               borderRadius: BorderRadius.circular(4),
             ),
             child: FractionallySizedBox(
@@ -2220,28 +2220,28 @@ class _TaskManagerScreenState extends State<ToolsPage> {
               widthFactor: percentage / 100,
               child: Container(
                 decoration: BoxDecoration(
-                  color: Color(0xFF4CAF50),
+                  color: const Color(0xFF4CAF50),
                   borderRadius: BorderRadius.circular(4),
                 ),
               ),
             ),
           ),
 
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
 
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 '$completedDays / ${challenge.totalDays} days',
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 12,
                   color: Color(0xFF9E9E9E),
                 ),
               ),
               Text(
                 '${percentage.toInt()}%',
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
@@ -2251,20 +2251,20 @@ class _TaskManagerScreenState extends State<ToolsPage> {
           ),
 
           if (!isCompleted) ...[
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
             GestureDetector(
               onTap: () => _toggleChallengeDay(challenge.id),
               child: Container(
                 width: double.infinity,
-                padding: EdgeInsets.symmetric(vertical: 12),
+                padding: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
                   color:
-                      isTodayCompleted ? Color(0xFF4CAF50) : Color(0xFF424242),
+                      isTodayCompleted ? const Color(0xFF4CAF50) : const Color(0xFF424242),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
                     color: isTodayCompleted
-                        ? Color(0xFF4CAF50)
-                        : Color(0xFF757575),
+                        ? const Color(0xFF4CAF50)
+                        : const Color(0xFF757575),
                   ),
                 ),
                 child: Row(
@@ -2275,12 +2275,12 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                       color: Colors.white,
                       size: 16,
                     ),
-                    SizedBox(width: 4),
+                    const SizedBox(width: 4),
                     Text(
                       isTodayCompleted
                           ? 'Completed Today'
                           : 'Mark Today Complete',
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: Colors.white,
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
@@ -2674,7 +2674,7 @@ class ScheduleAIService {
     String userPrompt,
     DateTime selectedDate,
   ) async {
-    final systemPrompt =
+    const systemPrompt =
         '''Generate a detailed daily schedule based on the user's request. 
     Return a JSON array of schedule items with this format:
     [
@@ -2714,11 +2714,11 @@ class ScheduleAIService {
   ) {
     try {
       final List<Color> scheduleColors = [
-        Color(0xFFFFE082),
-        Color(0xFFFFB74D),
-        Color(0xFF81C784),
-        Color(0xFFE3F2FD),
-        Color(0xFFF3E5F5),
+        const Color(0xFFFFE082),
+        const Color(0xFFFFB74D),
+        const Color(0xFF81C784),
+        const Color(0xFFE3F2FD),
+        const Color(0xFFF3E5F5),
       ];
 
       final jsonList = jsonDecode(response) as List;
@@ -2763,7 +2763,7 @@ class ScheduleAIService {
     String userPrompt,
     String diagramName,
   ) async {
-    final systemPrompt =
+    const systemPrompt =
         '''Generate a detailed workflow plan based on the user's request.
     Return a JSON array of plan items with this format:
     [{"title": "Task name", "description": "Brief description"}]
@@ -2845,7 +2845,7 @@ class ScheduleAIService {
     String? customPrompt,
   }) async {
     final prompt =
-        '''Generate a ${duration}-second ${contentType} content in ${language}.
+        '''Generate a $duration-second $contentType content in $language.
 ${customPrompt != null ? 'Additional requirements: $customPrompt' : ''}
 Return ONLY valid JSON (no markdown):
 {
@@ -2881,7 +2881,7 @@ Return ONLY valid JSON (no markdown):
     required int postsPerDay,
   }) async {
     final prompt =
-        '''Create a ${daysCount}-day ${niche} content plan with ${postsPerDay} posts per day.
+        '''Create a $daysCount-day $niche content plan with $postsPerDay posts per day.
 Return ONLY valid JSON (no markdown):
 {
   "plan": [
@@ -2922,7 +2922,7 @@ Return ONLY valid JSON (no markdown):
     required int days,
   }) async {
     final prompt =
-        '''Create a strategy to reach ${targetFollowers} followers and ${targetViews} views in ${days} days.
+        '''Create a strategy to reach $targetFollowers followers and $targetViews views in $days days.
 Return ONLY valid JSON (no markdown):
 {
   "dailyGoals": {
@@ -3105,7 +3105,7 @@ class Diagram {
 }
 
 class DiagramListScreen extends StatefulWidget {
-  const DiagramListScreen({Key? key}) : super(key: key);
+  const DiagramListScreen({super.key});
 
   @override
   State<DiagramListScreen> createState() => _DiagramListScreenState();
@@ -3317,8 +3317,8 @@ class _DiagramListScreenState extends State<DiagramListScreen> {
                                 const Color(0xFFFF6B9D).withValues(alpha: 0.1),
                             shape: BoxShape.circle,
                           ),
-                          child: Icon(Icons.architecture,
-                              size: 32, color: const Color(0xFFFF6B9D)),
+                          child: const Icon(Icons.architecture,
+                              size: 32, color: Color(0xFFFF6B9D)),
                         ),
                         const SizedBox(height: 12),
                         Text(diagram.name,
@@ -3356,8 +3356,8 @@ class FlowCanvasScreen extends StatefulWidget {
   const FlowCanvasScreen({
     required this.diagram,
     required this.onUpdate,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   State<FlowCanvasScreen> createState() => _FlowCanvasScreenState();
@@ -3811,7 +3811,7 @@ class _FlowCanvasScreenState extends State<FlowCanvasScreen> {
                                   ),
                                 ),
                               );
-                            }).toList(),
+                            }),
                           ],
                         ),
                       ),

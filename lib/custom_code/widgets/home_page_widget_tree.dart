@@ -1,12 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
-import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.dart';
 import 'package:pocket_mates_app/custom_code/widgets/conversation_tile.dart';
 import 'package:pocket_mates_app/custom_code/widgets/profile_switch_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/native_webrtc_call_screen.dart';
 import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
 import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/native_webrtc_call_screen.dart';
 import 'package:pocket_mates_app/flutter_flow/flutter_flow_util.dart';
 import 'package:pocket_mates_app/flutter_flow/flutter_flow_theme.dart';
 import '/custom_code/widgets/index.dart';
@@ -31,10 +29,6 @@ import 'package:pocket_mates_app/custom_code/widgets/chat/whats_app_groups_provi
     as groups_provider;
 import 'package:pocket_mates_app/custom_code/widgets/chat/create_group_dialog.dart';
 import 'package:pocket_mates_app/custom_code/widgets/active_users_provider.dart';
-import 'package:pocket_mates_app/custom_code/widgets/create_gallery_widget.dart';
-import 'package:pocket_mates_app/custom_code/widgets/create_service_widget.dart';
-import 'package:pocket_mates_app/custom_code/widgets/event_create_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/thread_feed_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/teams/teams_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/notifications_list_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/status_display_widget.dart';
@@ -472,7 +466,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                         color: material.Colors.yellow.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(16),
                       ),
-                      child: Icon(material.Icons.system_update_rounded, color: material.Colors.yellow, size: 28),
+                      child: const Icon(material.Icons.system_update_rounded, color: material.Colors.yellow, size: 28),
                     ),
                     const Spacer(),
                     Container(
@@ -716,10 +710,10 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                           onTapFriends: () {
                                             displayInfoBar(context,
                                                 builder: (context, close) {
-                                              return InfoBar(
+                                              return const InfoBar(
                                                 title:
-                                                    const Text('Friends Match'),
-                                                content: const Text(
+                                                    Text('Friends Match'),
+                                                content: Text(
                                                     'Strangers Match feature is calibrating for your region.'),
                                                 severity: InfoBarSeverity.info,
                                               );
@@ -931,7 +925,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                   padding: const EdgeInsets.fromLTRB(20, 24, 20, 12),
                   child: Row(
                     children: [
-                      Icon(FluentIcons.chat,
+                      const Icon(FluentIcons.chat,
                           size: 18, color: material.Colors.yellow),
                       const SizedBox(width: 8),
                       Text(
@@ -1087,7 +1081,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
           child: Center(
             child: Text(
               'Error loading chats: $error',
-              style: material.TextStyle(color: material.Colors.red),
+              style: const material.TextStyle(color: material.Colors.red),
             ),
           ),
         ),
@@ -1960,7 +1954,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       builder: (context) => ContentDialog(
         title: Row(
           children: [
-            Icon(material.Icons.notifications_active,
+            const Icon(material.Icons.notifications_active,
                 color: material.Colors.yellow, size: 28),
             const SizedBox(width: 12),
             Expanded(
@@ -2001,7 +1995,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                     .read(conversationsProvider.notifier)
                     .dismissNotification(notification.id);
               },
-              child: Text('Decline',
+              child: const Text('Decline',
                   style: material.TextStyle(color: material.Colors.red)),
             ),
             FilledButton(
@@ -2013,15 +2007,15 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                     .dismissNotification(notification.id);
                 if (mounted) {
                   material.ScaffoldMessenger.of(context).showSnackBar(
-                    material.SnackBar(content: Text('Invitation accepted!')),
+                    const material.SnackBar(content: Text('Invitation accepted!')),
                   );
                 }
               },
-              child: Text('Accept',
-                  style: material.TextStyle(color: material.Colors.black)),
               style: ButtonStyle(
                 backgroundColor: WidgetStateProperty.all(material.Colors.yellow),
               ),
+              child: const Text('Accept',
+                  style: material.TextStyle(color: material.Colors.black)),
             ),
           ] else ...[
             FilledButton(
@@ -2031,11 +2025,11 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                     .read(conversationsProvider.notifier)
                     .dismissNotification(notification.id);
               },
-              child: Text('Dismiss',
-                  style: material.TextStyle(color: material.Colors.black)),
               style: ButtonStyle(
                 backgroundColor: WidgetStateProperty.all(material.Colors.yellow),
               ),
+              child: const Text('Dismiss',
+                  style: material.TextStyle(color: material.Colors.black)),
             ),
           ],
         ],
@@ -2097,8 +2091,8 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
   @override
   Widget build(
       BuildContext context, double shrinkOffset, bool overlapsContent) {
-    final double strangerMatchHeight = 160.0;
-    final double statusSectionHeight = 170.0;
+    const double strangerMatchHeight = 160.0;
+    const double statusSectionHeight = 170.0;
 
     final double progress =
         (shrinkOffset / strangerMatchHeight).clamp(0.0, 1.0);
@@ -2190,7 +2184,7 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                             Navigator.push(
                               context,
                               material.MaterialPageRoute(
-                                builder: (context) => SearchPage(),
+                                builder: (context) => const SearchPage(),
                               ),
                             );
                           },
@@ -2304,10 +2298,6 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   _buildActiveCounter(data.activeFriends.length),
-                                  if (selectedIndex == 1) ...[
-                                    const SizedBox(width: 8),
-                                    _buildVibesFilterMenu(),
-                                  ],
                                 ],
                               ),
                               loading: () => const SizedBox(
@@ -2325,6 +2315,7 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                         currentUserId: currentUserId,
                         currentProfileId: currentProfileId,
                         onStatusUploaded: onRefresh,
+                        filterNotifier: vibesFilterNotifier,
                       ),
                     ],
                   ),
@@ -2428,7 +2419,7 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
             duration: const Duration(milliseconds: 200),
             decoration: BoxDecoration(
               border: isSelected
-                  ? Border(
+                  ? const Border(
                       bottom: BorderSide(
                         color: material.Colors.yellow,
                         width: 2.5,
@@ -2458,7 +2449,6 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
     required IconData icon,
     required Color color,
     required VoidCallback onTap,
-    bool isFullWidth = false,
   }) {
     return Expanded(
       child: material.Material(
@@ -2504,54 +2494,7 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
     );
   }
 
-  Widget _buildVibesFilterMenu() {
-    return ValueListenableBuilder<String>(
-      valueListenable: vibesFilterNotifier,
-      builder: (context, filter, child) {
-        return material.PopupMenuButton<String>(
-          initialValue: filter,
-          onSelected: (value) {
-            vibesFilterNotifier.value = value;
-          },
-          padding: EdgeInsets.zero,
-          itemBuilder: (context) => [
-            material.PopupMenuItem(
-              value: 'Public',
-              child: Row(
-                children: [
-                  Icon(material.Icons.public, color: filter == 'Public' ? material.Colors.yellow : material.Colors.white60, size: 18),
-                  const SizedBox(width: 10),
-                  Text('Public Vibes', style: GoogleFonts.outfit(color: filter == 'Public' ? material.Colors.yellow : material.Colors.white)),
-                ],
-              ),
-            ),
-            material.PopupMenuItem(
-              value: 'Friends',
-              child: Row(
-                children: [
-                  Icon(material.Icons.people_outline, color: filter == 'Friends' ? material.Colors.yellow : material.Colors.white60, size: 18),
-                  const SizedBox(width: 10),
-                  Text('Following Vibes', style: GoogleFonts.outfit(color: filter == 'Friends' ? material.Colors.yellow : material.Colors.white)),
-                ],
-              ),
-            ),
-          ],
-          child: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: material.Colors.white.withValues(alpha: 0.08),
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: material.Colors.white.withValues(alpha: 0.1),
-                width: 1,
-              ),
-            ),
-            child: Icon(material.Icons.more_vert_rounded, color: material.Colors.yellow, size: 18),
-          ),
-        );
-      },
-    );
-  }
+
 
   Widget _buildActiveCounter(int count) {
     return Container(
@@ -2621,7 +2564,7 @@ class CircularProfileImage extends StatelessWidget {
   final double borderWidth;
   final bool isVerified;
 
-  CircularProfileImage({
+  const CircularProfileImage({
     super.key,
     required this.profileImageUrl,
     this.radius = 16.0,

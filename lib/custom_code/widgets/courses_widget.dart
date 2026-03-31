@@ -3,7 +3,6 @@ import 'package:flutter/foundation.dart';
 import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
 import 'index.dart'; // Imports other custom widgets
 import 'package:flutter/material.dart';
 // Begin custom widget code
@@ -74,19 +73,23 @@ class _CoursesWidgetState extends State<CoursesWidget> {
         error = null;
       });
 
-      final response = await supabase.from('allcourses_tech').select();
+      final response = await supabase.from('courses').select();
 
       if (mounted) {
         final allCourses = List<Map<String, dynamic>>.from(response);
-        final uniqueTitles = <String>{};
         final uniqueCourses = <Map<String, dynamic>>[];
 
         for (final course in allCourses) {
-          final title = course['course_title'] as String;
-          if (!uniqueTitles.contains(title)) {
-            uniqueTitles.add(title);
-            uniqueCourses.add(course);
-          }
+          // Manual mapping to maintain UI compatibility with existing keys
+          uniqueCourses.add({
+            'course_id': course['id'],
+            'course_title': course['title'],
+            'course_thumbnail': course['thumbnail'],
+            'course_language': course['language'],
+            'course_price': course['price'],
+            'course_retail_price': course['retail_price'],
+            'course_description': course['description'],
+          });
         }
 
         safeSetState(() {
@@ -250,7 +253,7 @@ class _CoursesWidgetState extends State<CoursesWidget> {
               Stack(
                 children: [
                   Hero(
-                    tag: 'course-${courseId}',
+                    tag: 'course-$courseId',
                     child: ClipRRect(
                       borderRadius:
                           const BorderRadius.vertical(top: Radius.circular(24)),
@@ -578,31 +581,26 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
 
       final response = await supabase
           .from('user_course_access')
-          .select('has_paid, profile:profile!user_id(name)')
+          .select('has_paid')
           .eq('user_id', userId)
           .eq('course_id', courseId)
           .maybeSingle();
 
       if (mounted) {
         setState(() {
-          // If record exists and has_paid is true
           hasPaidAccess = response != null && response['has_paid'] == true;
-          if (response != null && response['profile'] != null) {
-            name = response['profile']['name']?.toString();
-          }
         });
       }
       
-      // If name still null, try fetching it directly
-      if (name == null) {
-        final profileRes = await supabase
-            .from('profile')
-            .select('name')
-            .eq('user_id', userId)
-            .maybeSingle();
-        if (profileRes != null && mounted) {
-          setState(() => name = profileRes['name']?.toString());
-        }
+      // Fetch profile name separately to avoid complex join issues if relation is missing
+      final profileRes = await supabase
+          .from('profile')
+          .select('name')
+          .eq('user_id', userId)
+          .maybeSingle();
+      
+      if (profileRes != null && mounted) {
+        setState(() => name = profileRes['name']?.toString());
       }
     } catch (e) {
       // debugPrint('Error checking paid access: $e');
@@ -622,11 +620,9 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
           .order('created_at');
 
       List<Map<String, dynamic>> lessonsList = [];
-      if (response is List) {
-        lessonsList =
-            response.map((item) => Map<String, dynamic>.from(item)).toList();
-      }
-
+      lessonsList =
+          response.map((item) => Map<String, dynamic>.from(item)).toList();
+    
       setState(() {
         lessons = lessonsList;
         isLoading = false;
@@ -1442,7 +1438,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                   top: 4,
                   right: 4,
                   child: Container(
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       color: Colors.green,
                       shape: BoxShape.circle,
                       boxShadow: [
@@ -1454,7 +1450,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                       ],
                     ),
                     padding: const EdgeInsets.all(4),
-                    child: Icon(
+                    child: const Icon(
                       Icons.check,
                       color: Colors.white,
                       size: 16,
@@ -1488,8 +1484,8 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                 ),
               // Alternative: Add checkmark in title area
               if (isCurrentLesson && !isLocked)
-                Padding(
-                  padding: const EdgeInsets.only(left: 8),
+                const Padding(
+                  padding: EdgeInsets.only(left: 8),
                   child: Icon(
                     Icons.check_circle,
                     color: Colors.green,
@@ -1612,6 +1608,40 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                if (currentVideoUrl.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 16),
+                    child: Container(
+                      height: 220,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: Colors.black87,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                            color: Colors.yellow.shade700.withValues(alpha: 0.3)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.5),
+                            blurRadius: 15,
+                            offset: const Offset(0, 5),
+                          ),
+                        ],
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: FlutterFlowVideoLayer(
+                          path: currentVideoUrl,
+                          videoType: VideoType.network,
+                          autoPlay: false,
+                          looping: false,
+                          showControls: true,
+                          allowFullScreen: true,
+                          allowPlaybackSpeedMenu: false,
+                        ),
+                      ),
+                    ),
+                  ).animate().fadeIn().scale(begin: const Offset(0.95, 0.95)),
                 _buildCouponCodeSection(),
                 Padding(
                   padding: const EdgeInsets.all(16),
@@ -1754,7 +1784,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                                   const SizedBox(width: 8),
                                   Text(
                                     'Language: ${widget.courseData['course_language'] ?? 'Not specified'}',
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 16,
                                       fontWeight: FontWeight.w500,
@@ -1793,7 +1823,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                                     Text(
                                       widget.courseData['course_description'] ??
                                           'No description available',
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         color: Colors.white,
                                         fontSize: 14,
                                         height: 1.5,
@@ -1806,7 +1836,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                               const SizedBox(height: 8),
 
                               if (!hasPaidAccess)
-                                Container(
+                                SizedBox(
                                   width: double.infinity,
                                   child: ElevatedButton(
                                     onPressed: () {
@@ -1886,7 +1916,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                                       ),
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor:
-                                            Color(0xFF25D366), // WhatsApp green
+                                            const Color(0xFF25D366), // WhatsApp green
                                         foregroundColor: Colors.white,
                                         padding: const EdgeInsets.symmetric(
                                             vertical: 16),
@@ -1965,37 +1995,6 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                           ),
                         ),
                       ),
-                      if (currentVideoUrl.isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 25, vertical: 16),
-                          child: Container(
-                            height: 200,
-                            width: double.infinity,
-                            margin: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12),
-                              gradient: LinearGradient(
-                                colors: [
-                                  Colors.black87,
-                                  // ignore: deprecated_member_use
-                                  Colors.yellow.shade900.withValues(alpha: 0.5),
-                                ],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                            ),
-                            child: FlutterFlowVideoLayer(
-                              path: currentVideoUrl,
-                              videoType: VideoType.network,
-                              autoPlay: false,
-                              looping: true,
-                              showControls: true,
-                              allowFullScreen: true,
-                              allowPlaybackSpeedMenu: false,
-                            ),
-                          ).animate().fadeIn().slideY(begin: 0.2, end: 0),
-                        ),
                       if (hasPaidAccess)
                         Container(
                           margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -2796,7 +2795,7 @@ class WhatsAppShareHelper {
   }) async {
     String formattedNumber = phoneNumber.replaceAll(RegExp(r'[^0-9+]'), '');
     if (!formattedNumber.startsWith('+')) {
-      formattedNumber = '$formattedNumber'; // Add your country code
+      formattedNumber = formattedNumber; // Add your country code
     }
 
     String encodedMessage = Uri.encodeComponent(message);

@@ -10,7 +10,7 @@ class AdWatchLimitsTable extends SupabaseTable<AdWatchLimitsRow> {
 }
 
 class AdWatchLimitsRow extends SupabaseDataRow {
-  AdWatchLimitsRow(Map<String, dynamic> data) : super(data);
+  AdWatchLimitsRow(super.data);
 
   @override
   SupabaseTable get table => AdWatchLimitsTable();

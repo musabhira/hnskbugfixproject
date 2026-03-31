@@ -9,7 +9,7 @@ class PromptsTable extends SupabaseTable<PromptsRow> {
 }
 
 class PromptsRow extends SupabaseDataRow {
-  PromptsRow(Map<String, dynamic> data) : super(data);
+  PromptsRow(super.data);
 
   @override
   SupabaseTable get table => PromptsTable();

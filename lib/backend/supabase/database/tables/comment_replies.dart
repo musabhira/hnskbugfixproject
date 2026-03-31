@@ -10,7 +10,7 @@ class CommentRepliesTable extends SupabaseTable<CommentRepliesRow> {
 }
 
 class CommentRepliesRow extends SupabaseDataRow {
-  CommentRepliesRow(Map<String, dynamic> data) : super(data);
+  CommentRepliesRow(super.data);
 
   @override
   SupabaseTable get table => CommentRepliesTable();

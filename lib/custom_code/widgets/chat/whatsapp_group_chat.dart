@@ -8,6 +8,7 @@ import 'chat_models.dart';
 import 'voice_player.dart';
 import 'voice_recorder.dart';
 import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chat/whats_app_groups_provider.dart' hide supabaseClientProvider;
 
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
@@ -434,6 +435,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   Future<void> _handleRefresh() async {
     try {
       ref.invalidate(chatMessagesProvider(widget.groupId));
+      ref.invalidate(conversationsProvider);
       await ref.read(chatMessagesProvider(widget.groupId).future);
       await _fetchMembers();
     } catch (e) {
@@ -549,7 +551,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                 const SizedBox(height: 2),
                 Text(
                   widget.groupId.startsWith('p:')
-                      ? 'Tap for info'
+                      ? 'Tap to view profile'
                       : (_groupMembers.isEmpty
                           ? 'Tap for info'
                           : '${_groupMembers.length} members'),
@@ -954,7 +956,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                           : Border.all(color: Colors.white.withValues(alpha: 0.05)),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.25),
+                          color: Colors.black.withValues(alpha: 0.5),
                           offset: const Offset(0, 2),
                           blurRadius: 6,
                           spreadRadius: 1,
@@ -1005,7 +1007,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                                         style: TextStyle(
                                             color: isMe
                                                 ? Colors.black87
-                                                : Colors.white.withOpacity(0.93),
+                                                : Colors.white.withValues(alpha: 0.93),
                                             fontSize: 15,
                                             height: 1.3),
                                       ),
@@ -1100,7 +1102,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
       decoration: BoxDecoration(
         color: isMe
             ? Colors.black.withValues(alpha: 0.1)
-            : Colors.yellow.withOpacity(0.05),
+            : Colors.yellow.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
         border:
             Border.all(color: Colors.yellow.withValues(alpha: 0.2), width: 1),
@@ -1246,8 +1248,8 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
           color: isMe
-              ? Colors.black.withOpacity(0.05)
-              : Colors.black.withOpacity(0.4),
+              ? Colors.black.withValues(alpha: 0.05)
+              : Colors.black.withValues(alpha: 0.4),
           border: Border.all(
               color: isMe
                   ? Colors.black.withValues(alpha: 0.1)
@@ -1359,7 +1361,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
               Border.all(color: FlutterFlowTheme.of(context).alternate, width: 1),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
+              color: Colors.black.withValues(alpha: 0.3),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
@@ -1394,15 +1396,12 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                         radius: 14,
                         backgroundColor: Colors.grey[800],
                         backgroundImage: () {
-                          try {
-                            final profileList = galleryData['user']?['profile'];
-                            if (profileList is List && profileList.isNotEmpty) {
-                              final url = profileList[0]['profile_image_url'];
-                              if (url is String && url.isNotEmpty) {
-                                return NetworkImage(url);
-                              }
+                          final profileList = galleryData['user']?['profile'];
+                          if (profileList is List && profileList.isNotEmpty) {
+                            final url = profileList[0]['profile_image_url'];
+                            if (url is String && url.isNotEmpty) {
+                              return NetworkImage(url);
                             }
-                          } catch (e) {
                           }
                           return null;
                         }(),
@@ -1417,17 +1416,14 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                         children: [
                           Text(
                             () {
-                              try {
-                                final profileList =
-                                    galleryData['user']?['profile'];
-                                if (profileList is List &&
-                                    profileList.isNotEmpty) {
-                                  final name = profileList[0]['name'];
-                                  if (name is String) {
-                                    return name;
-                                  }
+                              final profileList =
+                                  galleryData['user']?['profile'];
+                              if (profileList is List &&
+                                  profileList.isNotEmpty) {
+                                final name = profileList[0]['name'];
+                                if (name is String) {
+                                  return name;
                                 }
-                              } catch (e) {
                               }
                               return 'Unknown';
                             }(),
@@ -1751,7 +1747,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
 
     final titleColor = isMe ? Colors.black87 : Colors.white;
     final subColor = isMe ? Colors.black54 : Colors.white.withValues(alpha: 0.6);
-    final bgColor = isMe ? Colors.black.withOpacity(0.05) : Colors.white.withOpacity(0.05);
+    final bgColor = isMe ? Colors.black.withValues(alpha: 0.05) : Colors.white.withValues(alpha: 0.05);
     final borderColor = isMe ? Colors.black.withValues(alpha: 0.1) : Colors.yellow.withValues(alpha: 0.3);
     final iconColor = isMe ? Colors.black : Colors.yellow;
 
@@ -2002,10 +1998,10 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       decoration: BoxDecoration(
         color: const Color(0xFF070B0D),
-        border: Border(top: BorderSide(color: Colors.white.withOpacity(0.05), width: 1)),
+        border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.05), width: 1)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.4),
+            color: Colors.black.withValues(alpha: 0.4),
             offset: const Offset(0, -4),
             blurRadius: 16,
           ),
@@ -2018,7 +2014,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
               decoration: BoxDecoration(
                 color: const Color(0xFF121B22),
                 borderRadius: BorderRadius.circular(30),
-                border: Border.all(color: Colors.white.withOpacity(0.08), width: 0.5),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.08), width: 0.5),
               ),
               child: Row(
                 children: [
@@ -2701,7 +2697,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
         margin: const EdgeInsets.fromLTRB(4, 4, 4, 8),
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: isMe ? Colors.black.withValues(alpha: 0.1) : Colors.white.withOpacity(0.05),
+          color: isMe ? Colors.black.withValues(alpha: 0.1) : Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(8),
           border: Border(
             left: BorderSide(
@@ -2787,7 +2783,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
       margin: const EdgeInsets.fromLTRB(4, 4, 4, 8),
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: isMe ? Colors.black.withValues(alpha: 0.1) : Colors.white.withOpacity(0.05),
+        color: isMe ? Colors.black.withValues(alpha: 0.1) : Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(8),
         border: Border(
           left: BorderSide(
@@ -2881,7 +2877,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
       decoration: BoxDecoration(
         color: const Color(0xFF1F2C34),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
       child: Stack(
         children: [
@@ -2963,6 +2959,20 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
 
   // ... (Keep existing helper methods like _showGroupInfo, _pickAndSendImage)
   void _showGroupInfo() {
+    if (widget.groupId.startsWith('p:')) {
+      final parts = widget.groupId.substring(2).split('_');
+      final targetId = parts.firstWhere((id) => id != _currentUserId, orElse: () => '');
+      
+      if (targetId.isNotEmpty) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => VerfiedSwitchPage(userId: targetId),
+          ),
+        );
+      }
+      return;
+    }
     showModalBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1F2C34),

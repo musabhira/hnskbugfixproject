@@ -10,7 +10,7 @@ class GroupActivitiesTable extends SupabaseTable<GroupActivitiesRow> {
 }
 
 class GroupActivitiesRow extends SupabaseDataRow {
-  GroupActivitiesRow(Map<String, dynamic> data) : super(data);
+  GroupActivitiesRow(super.data);
 
   @override
   SupabaseTable get table => GroupActivitiesTable();

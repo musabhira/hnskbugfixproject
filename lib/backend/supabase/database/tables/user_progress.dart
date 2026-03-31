@@ -9,7 +9,7 @@ class UserProgressTable extends SupabaseTable<UserProgressRow> {
 }
 
 class UserProgressRow extends SupabaseDataRow {
-  UserProgressRow(Map<String, dynamic> data) : super(data);
+  UserProgressRow(super.data);
 
   @override
   SupabaseTable get table => UserProgressTable();

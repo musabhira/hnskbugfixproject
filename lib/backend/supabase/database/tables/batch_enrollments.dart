@@ -10,7 +10,7 @@ class BatchEnrollmentsTable extends SupabaseTable<BatchEnrollmentsRow> {
 }
 
 class BatchEnrollmentsRow extends SupabaseDataRow {
-  BatchEnrollmentsRow(Map<String, dynamic> data) : super(data);
+  BatchEnrollmentsRow(super.data);
 
   @override
   SupabaseTable get table => BatchEnrollmentsTable();

@@ -15,10 +15,10 @@ class PostersTab extends StatefulWidget {
   final List<Map<String, dynamic>> galleryItems;
 
   const PostersTab({
-    Key? key,
+    super.key,
     required this.profileData,
     required this.galleryItems,
-  }) : super(key: key);
+  });
 
   @override
   State<PostersTab> createState() => _PostersTabState();

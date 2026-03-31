@@ -11,7 +11,7 @@ class GalleryWithCommentsViewTable
 }
 
 class GalleryWithCommentsViewRow extends SupabaseDataRow {
-  GalleryWithCommentsViewRow(Map<String, dynamic> data) : super(data);
+  GalleryWithCommentsViewRow(super.data);
 
   @override
   SupabaseTable get table => GalleryWithCommentsViewTable();

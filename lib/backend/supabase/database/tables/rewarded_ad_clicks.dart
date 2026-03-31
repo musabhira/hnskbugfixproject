@@ -10,7 +10,7 @@ class RewardedAdClicksTable extends SupabaseTable<RewardedAdClicksRow> {
 }
 
 class RewardedAdClicksRow extends SupabaseDataRow {
-  RewardedAdClicksRow(Map<String, dynamic> data) : super(data);
+  RewardedAdClicksRow(super.data);
 
   @override
   SupabaseTable get table => RewardedAdClicksTable();

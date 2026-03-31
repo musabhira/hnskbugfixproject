@@ -9,7 +9,7 @@ class CommunitiesTable extends SupabaseTable<CommunitiesRow> {
 }
 
 class CommunitiesRow extends SupabaseDataRow {
-  CommunitiesRow(Map<String, dynamic> data) : super(data);
+  CommunitiesRow(super.data);
 
   @override
   SupabaseTable get table => CommunitiesTable();

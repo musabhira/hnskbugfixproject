@@ -10,7 +10,7 @@ class MessageNotificationsTable extends SupabaseTable<MessageNotificationsRow> {
 }
 
 class MessageNotificationsRow extends SupabaseDataRow {
-  MessageNotificationsRow(Map<String, dynamic> data) : super(data);
+  MessageNotificationsRow(super.data);
 
   @override
   SupabaseTable get table => MessageNotificationsTable();

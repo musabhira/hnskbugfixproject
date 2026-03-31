@@ -5,7 +5,7 @@ import 'poster_models.dart';
 import 'poster_editor_page.dart';
 
 class TemplateGalleryPage extends StatelessWidget {
-  const TemplateGalleryPage({Key? key}) : super(key: key);
+  const TemplateGalleryPage({super.key});
 
   @override
   Widget build(BuildContext context) {

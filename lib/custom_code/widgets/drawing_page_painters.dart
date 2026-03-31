@@ -135,7 +135,7 @@ class LayerPainter extends CustomPainter {
       case ShapeTool.arrow:
         canvas.drawLine(start, end, paint);
         final angle = math.atan2(end.dy - start.dy, end.dx - start.dx);
-        final arrowLen = 20.0;
+        const arrowLen = 20.0;
         final p1 = Offset(end.dx - arrowLen * math.cos(angle - 0.4), end.dy - arrowLen * math.sin(angle - 0.4));
         final p2 = Offset(end.dx - arrowLen * math.cos(angle + 0.4), end.dy - arrowLen * math.sin(angle + 0.4));
         canvas.drawLine(end, p1, paint);
@@ -152,7 +152,11 @@ class LayerPainter extends CustomPainter {
           final radius = i.isEven ? r : ir;
           final x = cx + radius * math.cos(angle);
           final y = cy + radius * math.sin(angle);
-          if (i == 0) path.moveTo(x, y); else path.lineTo(x, y);
+          if (i == 0) {
+            path.moveTo(x, y);
+          } else {
+            path.lineTo(x, y);
+          }
         }
         path.close();
         canvas.drawPath(path, paint);
@@ -240,7 +244,7 @@ class ShapePreviewPainter extends CustomPainter {
       case ShapeTool.arrow:
         canvas.drawLine(start, end, paint);
         final angle = math.atan2(end.dy - start.dy, end.dx - start.dx);
-        final arrowLen = 20.0;
+        const arrowLen = 20.0;
         final p1 = Offset(end.dx - arrowLen * math.cos(angle - 0.4), end.dy - arrowLen * math.sin(angle - 0.4));
         final p2 = Offset(end.dx - arrowLen * math.cos(angle + 0.4), end.dy - arrowLen * math.sin(angle + 0.4));
         canvas.drawLine(end, p1, paint);
@@ -263,7 +267,11 @@ class ShapePreviewPainter extends CustomPainter {
       final radius = i.isEven ? r : ir;
       final x = cx + radius * math.cos(angle);
       final y = cy + radius * math.sin(angle);
-      if (i == 0) path.moveTo(x, y); else path.lineTo(x, y);
+      if (i == 0) {
+        path.moveTo(x, y);
+      } else {
+        path.lineTo(x, y);
+      }
     }
     path.close();
     canvas.drawPath(path, paint);

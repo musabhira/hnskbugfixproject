@@ -8,8 +8,7 @@ import 'package:image/image.dart' as img;
 class CreateGroupDialog extends StatefulWidget {
   final VoidCallback onGroupCreated;
 
-  const CreateGroupDialog({Key? key, required this.onGroupCreated})
-      : super(key: key);
+  const CreateGroupDialog({super.key, required this.onGroupCreated});
 
   @override
   _CreateGroupDialogState createState() => _CreateGroupDialogState();
@@ -26,7 +25,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog>
   late AnimationController _animationController;
   late Animation<double> _scaleAnimation;
   List<dynamic> _searchResults = [];
-  List<dynamic> _selectedMembers = [];
+  final List<dynamic> _selectedMembers = [];
 
   bool _isCreating = false;
   bool _isSearching = false;

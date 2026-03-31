@@ -10,7 +10,7 @@ class GroupMessagesTable extends SupabaseTable<GroupMessagesRow> {
 }
 
 class GroupMessagesRow extends SupabaseDataRow {
-  GroupMessagesRow(Map<String, dynamic> data) : super(data);
+  GroupMessagesRow(super.data);
 
   @override
   SupabaseTable get table => GroupMessagesTable();

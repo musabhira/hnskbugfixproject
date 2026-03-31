@@ -11,9 +11,7 @@ import 'package:flutter/material.dart';
 // Set your widget name, define your parameter, and then add the
 // boilerplate code using the green button on the right!
 import 'dart:math';
-import 'dart:math';
 
-import 'package:intl/intl.dart';
 import 'package:intl/intl.dart';
 
 class EventsDisplayHomePage extends StatefulWidget {

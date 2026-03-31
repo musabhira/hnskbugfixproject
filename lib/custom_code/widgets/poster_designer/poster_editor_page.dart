@@ -3,7 +3,6 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart' as material;
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart' as cp;
@@ -14,7 +13,7 @@ import 'package:uuid/uuid.dart';
 class PosterEditorPage extends StatefulWidget {
   final PosterDesign? initialDesign;
 
-  const PosterEditorPage({Key? key, this.initialDesign}) : super(key: key);
+  const PosterEditorPage({super.key, this.initialDesign});
 
   @override
   State<PosterEditorPage> createState() => _PosterEditorPageState();
@@ -74,7 +73,7 @@ class _PosterEditorPageState extends State<PosterEditorPage> {
           controller: controller,
           maxLines: 3,
           autofocus: true,
-          style: material.TextStyle(color: material.Colors.white),
+          style: const material.TextStyle(color: material.Colors.white),
           decoration: const material.InputDecoration(
             hintText: 'Enter your text...',
             hintStyle: material.TextStyle(color: material.Colors.grey),

@@ -9,7 +9,7 @@ class ThreadsViewTable extends SupabaseTable<ThreadsViewRow> {
 }
 
 class ThreadsViewRow extends SupabaseDataRow {
-  ThreadsViewRow(Map<String, dynamic> data) : super(data);
+  ThreadsViewRow(super.data);
 
   @override
   SupabaseTable get table => ThreadsViewTable();

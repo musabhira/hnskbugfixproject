@@ -10,7 +10,7 @@ class PremiumbannergalleryTable extends SupabaseTable<PremiumbannergalleryRow> {
 }
 
 class PremiumbannergalleryRow extends SupabaseDataRow {
-  PremiumbannergalleryRow(Map<String, dynamic> data) : super(data);
+  PremiumbannergalleryRow(super.data);
 
   @override
   SupabaseTable get table => PremiumbannergalleryTable();

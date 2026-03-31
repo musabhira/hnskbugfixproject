@@ -9,7 +9,7 @@ class BatchesTable extends SupabaseTable<BatchesRow> {
 }
 
 class BatchesRow extends SupabaseDataRow {
-  BatchesRow(Map<String, dynamic> data) : super(data);
+  BatchesRow(super.data);
 
   @override
   SupabaseTable get table => BatchesTable();

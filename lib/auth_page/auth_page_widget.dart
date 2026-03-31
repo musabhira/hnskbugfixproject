@@ -283,7 +283,7 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                                                     ),
                                                     focusedBorder:
                                                         OutlineInputBorder(
-                                                      borderSide: BorderSide(
+                                                      borderSide: const BorderSide(
                                                         color: Colors.yellow,
                                                         width: 2.0,
                                                       ),
@@ -332,13 +332,15 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                                                   cursorColor: Colors.yellow,
                                                   validator: (val) {
                                                     if (val == null ||
-                                                        val.isEmpty)
+                                                        val.isEmpty) {
                                                       return 'Email is required';
+                                                    }
                                                     if (_model.signInError !=
                                                             null &&
                                                         _model.signInError!
-                                                            .contains('email'))
+                                                            .contains('email')) {
                                                       return _model.signInError;
+                                                    }
                                                     return null;
                                                   },
                                                 ),
@@ -389,7 +391,7 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                                                     ),
                                                     focusedBorder:
                                                         OutlineInputBorder(
-                                                      borderSide: BorderSide(
+                                                      borderSide: const BorderSide(
                                                         color: Colors.yellow,
                                                         width: 2.0,
                                                       ),
@@ -455,8 +457,9 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                                                   cursorColor: Colors.yellow,
                                                   validator: (val) {
                                                     if (val == null ||
-                                                        val.isEmpty)
+                                                        val.isEmpty) {
                                                       return 'Password is required';
+                                                    }
                                                     if (_model.signInError !=
                                                             null &&
                                                         (_model.signInError!
@@ -464,8 +467,9 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                                                                     'Password') ||
                                                             _model.signInError!
                                                                 .contains(
-                                                                    'credentials')))
+                                                                    'credentials'))) {
                                                       return _model.signInError;
+                                                    }
                                                     return null;
                                                   },
                                                 ),
@@ -483,7 +487,9 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                                                     onPressed: () async {
                                                       if (!_signInFormKey
                                                           .currentState!
-                                                          .validate()) return;
+                                                          .validate()) {
+                                                        return;
+                                                      }
                                                       GoRouter.of(context)
                                                           .prepareAuthEvent();
                                                       try {
@@ -498,8 +504,9 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                                                               .passwordTextController
                                                               .text,
                                                         );
-                                                        if (user == null)
+                                                        if (user == null) {
                                                           return;
+                                                        }
                                                         context.goNamedAuth(
                                                             HomePageWidget
                                                                 .routeName,
@@ -652,7 +659,7 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                                                     ),
                                                     focusedBorder:
                                                         OutlineInputBorder(
-                                                      borderSide: BorderSide(
+                                                      borderSide: const BorderSide(
                                                           color: Colors.yellow,
                                                           width: 2.0),
                                                       borderRadius:
@@ -696,13 +703,15 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                                                   cursorColor: Colors.yellow,
                                                   validator: (val) {
                                                     if (val == null ||
-                                                        val.isEmpty)
+                                                        val.isEmpty) {
                                                       return 'Email is required';
+                                                    }
                                                     if (_model.signUpError !=
                                                             null &&
                                                         _model.signUpError!
-                                                            .contains('email'))
+                                                            .contains('email')) {
                                                       return _model.signUpError;
+                                                    }
                                                     return null;
                                                   },
                                                 ),
@@ -751,7 +760,7 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                                                     ),
                                                     focusedBorder:
                                                         OutlineInputBorder(
-                                                      borderSide: BorderSide(
+                                                      borderSide: const BorderSide(
                                                           color: Colors.yellow,
                                                           width: 2.0),
                                                       borderRadius:
@@ -790,14 +799,16 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                                                   cursorColor: Colors.yellow,
                                                   validator: (val) {
                                                     if (val == null ||
-                                                        val.isEmpty)
+                                                        val.isEmpty) {
                                                       return 'Password is required';
+                                                    }
                                                     if (_model.signUpError !=
                                                             null &&
                                                         _model.signUpError!
                                                             .contains(
-                                                                'Password'))
+                                                                'Password')) {
                                                       return _model.signUpError;
+                                                    }
                                                     return null;
                                                   },
                                                 ),
@@ -834,7 +845,7 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                                                     ),
                                                     focusedBorder:
                                                         OutlineInputBorder(
-                                                      borderSide: BorderSide(
+                                                      borderSide: const BorderSide(
                                                           color: Colors.yellow,
                                                           width: 2.0),
                                                       borderRadius:
@@ -874,8 +885,9 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                                                     if (val !=
                                                         _model
                                                             .passwordCreateTextController
-                                                            .text)
+                                                            .text) {
                                                       return 'Passwords do not match';
+                                                    }
                                                     return null;
                                                   },
                                                 ),
@@ -966,7 +978,9 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                                                     }
                                                     if (!_signUpFormKey
                                                         .currentState!
-                                                        .validate()) return;
+                                                        .validate()) {
+                                                      return;
+                                                    }
                                                     GoRouter.of(context)
                                                         .prepareAuthEvent();
                                                     try {
@@ -1081,7 +1095,7 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
                   child: Container(
                     width: 100.0,
                     height: double.infinity,
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       color: Colors.black,
                       image: DecorationImage(
                         fit: BoxFit.cover,

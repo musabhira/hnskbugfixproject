@@ -9,10 +9,10 @@ class UserSearchDialog extends StatefulWidget {
   final bool multipleSelection;
 
   const UserSearchDialog({
-    Key? key,
+    super.key,
     required this.onUsersSelected,
     this.multipleSelection = true,
-  }) : super(key: key);
+  });
 
   @override
   State<UserSearchDialog> createState() => _UserSearchDialogState();

@@ -52,7 +52,7 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
 
   late TabController _tabController;
   int _followersCount = 0;
-  ScrollController _scrollController = ScrollController();
+  final ScrollController _scrollController = ScrollController();
   String _followersCountFormatted = '0';
   String _followingCountFormatted = '0';
   bool _isFollowing = false;
@@ -1472,7 +1472,7 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
 
   @override
   void dispose() {
-    _tabController?.dispose();
+    _tabController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -2761,7 +2761,7 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
 
                                     // Tab Content
                                     SliverFillRemaining(
-                                      child: Container(
+                                      child: SizedBox(
                                         height: 800,
                                         child: TabBarView(
                                           controller: _tabController,
@@ -4657,11 +4657,11 @@ class CircularShimmer extends StatelessWidget {
   final double size;
 
   const CircularShimmer({
-    Key? key,
+    super.key,
     required this.buttonColor,
     required this.bgColor,
     this.size = 40,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -4672,7 +4672,7 @@ class CircularShimmer extends StatelessWidget {
         child: Container(
           width: size,
           height: size,
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             color: Colors.white,
             shape: BoxShape.circle,
           ),

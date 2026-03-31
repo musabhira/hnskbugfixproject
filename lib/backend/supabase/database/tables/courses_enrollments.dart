@@ -10,7 +10,7 @@ class CoursesEnrollmentsTable extends SupabaseTable<CoursesEnrollmentsRow> {
 }
 
 class CoursesEnrollmentsRow extends SupabaseDataRow {
-  CoursesEnrollmentsRow(Map<String, dynamic> data) : super(data);
+  CoursesEnrollmentsRow(super.data);
 
   @override
   SupabaseTable get table => CoursesEnrollmentsTable();

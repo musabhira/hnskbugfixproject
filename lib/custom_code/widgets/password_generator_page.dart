@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'dart:math';
 
 class PasswordGeneratorPage extends StatefulWidget {
-  const PasswordGeneratorPage({Key? key}) : super(key: key);
+  const PasswordGeneratorPage({super.key});
 
   @override
   _PasswordGeneratorPageState createState() => _PasswordGeneratorPageState();
@@ -197,7 +197,7 @@ class _PasswordGeneratorPageState extends State<PasswordGeneratorPage> {
       trailing: Switch(
         value: value,
         onChanged: onChanged,
-        activeColor: Colors.blueAccent,
+        activeThumbColor: Colors.blueAccent,
       ),
     );
   }

@@ -10,7 +10,7 @@ class AnnouncementsTable extends SupabaseTable<AnnouncementsRow> {
 }
 
 class AnnouncementsRow extends SupabaseDataRow {
-  AnnouncementsRow(Map<String, dynamic> data) : super(data);
+  AnnouncementsRow(super.data);
 
   @override
   SupabaseTable get table => AnnouncementsTable();

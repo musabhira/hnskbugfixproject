@@ -9,7 +9,7 @@ class GalleryTable extends SupabaseTable<GalleryRow> {
 }
 
 class GalleryRow extends SupabaseDataRow {
-  GalleryRow(Map<String, dynamic> data) : super(data);
+  GalleryRow(super.data);
 
   @override
   SupabaseTable get table => GalleryTable();

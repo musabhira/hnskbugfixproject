@@ -4,7 +4,6 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/services/local_sync_server.dart';
 
@@ -225,7 +224,7 @@ class ChatMessages extends _$ChatMessages {
     try {
       final offset = pageToFetch * _pageSize;
 
-      final String selectQuery = '''
+      const String selectQuery = '''
             *,
             reply_to:reply_to_message_id(
               id,
@@ -447,7 +446,7 @@ class ChatMessages extends _$ChatMessages {
     messageData.removeWhere((key, value) => value == null);
 
     try {
-      final String selectQueryInsert = '''
+      const String selectQueryInsert = '''
             *,
             reply_to:reply_to_message_id(
               id,
@@ -657,7 +656,7 @@ class ChatMessages extends _$ChatMessages {
   Future<ChatMessage?> _fetchMessageById(String id) async {
     final isPersonal = groupId.startsWith('p:');
     try {
-      final String selectQueryFetch = '''
+      const String selectQueryFetch = '''
         *,
         reply_to:reply_to_message_id(
           id,

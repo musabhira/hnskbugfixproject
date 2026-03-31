@@ -3,11 +3,10 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:http/http.dart' as http;
 
 class BulkSenderPage extends StatefulWidget {
-  const BulkSenderPage({Key? key}) : super(key: key);
+  const BulkSenderPage({super.key});
 
   @override
   State<BulkSenderPage> createState() => _BulkSenderPageState();
@@ -109,8 +108,8 @@ class _BulkSenderPageState extends State<BulkSenderPage>
 
   void _showSuccessInfo() {
     material.ScaffoldMessenger.of(context).showSnackBar(
-      material.SnackBar(
-        content: const Text('All messages sent successfully!'),
+      const material.SnackBar(
+        content: Text('All messages sent successfully!'),
         backgroundColor: material.Colors.green,
         behavior: material.SnackBarBehavior.floating,
       ),
@@ -380,7 +379,7 @@ class _BulkSenderPageState extends State<BulkSenderPage>
         const SizedBox(height: 8),
         material.TextField(
           controller: _apiUrlController,
-          style: material.TextStyle(color: material.Colors.white, fontSize: 13),
+          style: const material.TextStyle(color: material.Colors.white, fontSize: 13),
           decoration: material.InputDecoration(
             hintText: 'Instance URL (e.g., https://api.ultramsg.com/...)',
             filled: true,
@@ -392,7 +391,7 @@ class _BulkSenderPageState extends State<BulkSenderPage>
         const SizedBox(height: 8),
         material.TextField(
           controller: _apiTokenController,
-          style: material.TextStyle(color: material.Colors.white, fontSize: 13),
+          style: const material.TextStyle(color: material.Colors.white, fontSize: 13),
           decoration: material.InputDecoration(
             hintText: 'API Token',
             filled: true,
@@ -493,8 +492,7 @@ class _BulkSenderPageState extends State<BulkSenderPage>
 class MultiContactPickerDialog extends StatefulWidget {
   final List<Contact> contacts;
 
-  const MultiContactPickerDialog({Key? key, required this.contacts})
-      : super(key: key);
+  const MultiContactPickerDialog({super.key, required this.contacts});
 
   @override
   State<MultiContactPickerDialog> createState() =>

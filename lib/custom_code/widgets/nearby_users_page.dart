@@ -154,7 +154,7 @@ class _NearbyUsersPageState extends State<NearbyUsersPage> {
       debugPrint("Error fetching nearby users: $e");
       if (e.toString().contains("function get_nearby_users does not exist")) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
               content:
                   Text("Please run the Setup SQL in Supabase Dashboard!")));
         }
@@ -179,7 +179,7 @@ class _NearbyUsersPageState extends State<NearbyUsersPage> {
           Switch(
             value: _isTravelModeActive,
             onChanged: _toggleTravelMode,
-            activeColor: Colors.blueAccent,
+            activeThumbColor: Colors.blueAccent,
             activeTrackColor: Colors.blueAccent.withOpacity(0.3),
           ),
           const SizedBox(width: 16),
@@ -250,7 +250,7 @@ class _NearbyUsersPageState extends State<NearbyUsersPage> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.directions_bus,
+                            const Icon(Icons.directions_bus,
                                 size: 64, color: Colors.white10),
                             const SizedBox(height: 16),
                             Text("Waiting for travelers...",

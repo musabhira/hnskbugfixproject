@@ -6,7 +6,7 @@ import 'package:pocket_mates_app/custom_code/widgets/teams/user_search_dialog.da
 
 class TeamDetailPage extends StatefulWidget {
   final Team team;
-  const TeamDetailPage({Key? key, required this.team}) : super(key: key);
+  const TeamDetailPage({super.key, required this.team});
 
   @override
   State<TeamDetailPage> createState() => _TeamDetailPageState();
@@ -98,7 +98,7 @@ class _TeamDetailPageState extends State<TeamDetailPage>
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
-                  value: assignedTo,
+                  initialValue: assignedTo,
                   dropdownColor: const Color(0xFF333333),
                   style: const TextStyle(color: Colors.white),
                   decoration: const InputDecoration(
@@ -116,7 +116,7 @@ class _TeamDetailPageState extends State<TeamDetailPage>
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
-                  value: priority,
+                  initialValue: priority,
                   dropdownColor: const Color(0xFF333333),
                   style: const TextStyle(color: Colors.white),
                   decoration: const InputDecoration(
@@ -186,10 +186,10 @@ class _TeamDetailPageState extends State<TeamDetailPage>
                 Navigator.pop(context);
                 _loadData();
               },
-              child: const Text('Add Task'),
               style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.yellow,
                   foregroundColor: Colors.black),
+              child: const Text('Add Task'),
             ),
           ],
         );
@@ -540,13 +540,13 @@ class _TeamDetailPageState extends State<TeamDetailPage>
           mainAxisSize: MainAxisSize.min,
           children: [
             Text("Total spent: ${task.timeSpent} mins",
-                style: TextStyle(color: Colors.grey)),
-            SizedBox(height: 10),
+                style: const TextStyle(color: Colors.grey)),
+            const SizedBox(height: 10),
             TextField(
               controller: controller,
               keyboardType: TextInputType.number,
-              style: TextStyle(color: Colors.white),
-              decoration: InputDecoration(
+              style: const TextStyle(color: Colors.white),
+              decoration: const InputDecoration(
                 labelText: 'Minutes to add',
                 labelStyle: TextStyle(color: Colors.grey),
                 enabledBorder: UnderlineInputBorder(
@@ -557,7 +557,7 @@ class _TeamDetailPageState extends State<TeamDetailPage>
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context), child: Text('Cancel')),
+              onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
           ElevatedButton(
             onPressed: () async {
               final mins = int.tryParse(controller.text);
@@ -567,9 +567,9 @@ class _TeamDetailPageState extends State<TeamDetailPage>
                 _loadData(); // Refresh UI
               }
             },
-            child: Text('Log'),
             style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.yellow, foregroundColor: Colors.black),
+            child: const Text('Log'),
           ),
         ],
       ),
@@ -659,11 +659,11 @@ class _TeamDetailPageState extends State<TeamDetailPage>
                       await _service.updateMemberStatus(member.id, 'approved');
                       _loadData();
                     },
-                    child: const Text('Approve'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.yellow,
                       foregroundColor: Colors.black,
                     ),
+                    child: const Text('Approve'),
                   )
                 : const Icon(Icons.check_circle, color: Colors.green),
           ),

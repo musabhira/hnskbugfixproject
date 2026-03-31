@@ -1,9 +1,6 @@
 // Automatic FlutterFlow imports
-import '/backend/supabase/supabase.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
-import 'index.dart'; // Imports other custom widgets
-import '/custom_code/actions/index.dart'; // Imports custom actions
+// Imports other custom widgets
+// Imports custom actions
 import 'package:flutter/material.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
@@ -11,12 +8,10 @@ import 'package:flutter/material.dart';
 // Set your widget name, define your parameter, and then add the
 // boilerplate code using the green button on the right!
 
-import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'dart:ui' as ui;
-import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:gal/gal.dart';
 import 'package:universal_html/html.dart' as html;
@@ -464,8 +459,9 @@ class _ImageCropSplitPageState extends State<ImageCropSplitPage> {
                       ),
                       IconButton(
                         onPressed: () => setState(() {
-                          if (_numberOfCuts < 100)
+                          if (_numberOfCuts < 100) {
                             _numberOfCuts++; // reasonable upper limit
+                          }
                         }),
                         icon: const Icon(Icons.add),
                         color: Colors.amber,
@@ -681,8 +677,9 @@ class _ImageCropSplitPageState extends State<ImageCropSplitPage> {
   }
 
   Future<void> _processAndDownloadImages() async {
-    if (_imageBytes == null || _selectedFormat == null || _uiImage == null)
+    if (_imageBytes == null || _selectedFormat == null || _uiImage == null) {
       return;
+    }
 
     setState(() {
       _isProcessing = true;
@@ -712,7 +709,7 @@ class _ImageCropSplitPageState extends State<ImageCropSplitPage> {
       );
 
       final Size targetSize = _selectedFormat!['size'];
-      final double cropWidth = 1080.0;
+      const double cropWidth = 1080.0;
       final double cropHeight = targetSize.height;
 
       // Process all requested cuts without any limits

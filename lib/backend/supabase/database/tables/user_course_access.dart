@@ -10,7 +10,7 @@ class UserCourseAccessTable extends SupabaseTable<UserCourseAccessRow> {
 }
 
 class UserCourseAccessRow extends SupabaseDataRow {
-  UserCourseAccessRow(Map<String, dynamic> data) : super(data);
+  UserCourseAccessRow(super.data);
 
   @override
   SupabaseTable get table => UserCourseAccessTable();

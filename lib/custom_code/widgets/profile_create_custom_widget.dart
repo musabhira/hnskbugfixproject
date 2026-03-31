@@ -344,7 +344,7 @@ class _ProfileCreateCustomWidgetState extends State<ProfileCreateCustomWidget> {
             onStateChanged: (value) =>
                 safeSetState(() => selectedState = value),
             onCityChanged: (value) => safeSetState(() => selectedCity = value),
-            style: TextStyle(
+            style: const TextStyle(
               color: Colors.white,
               fontSize: 14,
             ),
@@ -429,13 +429,13 @@ class _ProfileCreateCustomWidgetState extends State<ProfileCreateCustomWidget> {
                                   height: 16,
                                   child: fluent.ProgressRing(strokeWidth: 2.0),
                                 )
-                              : Row(
+                              : const Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    const Icon(fluent.FluentIcons.edit,
+                                    Icon(fluent.FluentIcons.edit,
                                         size: 14),
-                                    const SizedBox(width: 8),
-                                    const Text('Edit Banner'),
+                                    SizedBox(width: 8),
+                                    Text('Edit Banner'),
                                   ],
                                 ),
                         ),

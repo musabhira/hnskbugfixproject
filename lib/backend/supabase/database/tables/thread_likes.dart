@@ -9,7 +9,7 @@ class ThreadLikesTable extends SupabaseTable<ThreadLikesRow> {
 }
 
 class ThreadLikesRow extends SupabaseDataRow {
-  ThreadLikesRow(Map<String, dynamic> data) : super(data);
+  ThreadLikesRow(super.data);
 
   @override
   SupabaseTable get table => ThreadLikesTable();

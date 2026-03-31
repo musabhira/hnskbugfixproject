@@ -443,7 +443,7 @@ class _MessageScreenState extends State<MessageScreen> {
               )
             )
           ''')
-          .or('and(sender_id.eq."${_senderId}",receiver_id.eq."${widget.receiverId}"),and(sender_id.eq."${widget.receiverId}",receiver_id.eq."${_senderId}")')
+          .or('and(sender_id.eq."$_senderId",receiver_id.eq."${widget.receiverId}"),and(sender_id.eq."${widget.receiverId}",receiver_id.eq."$_senderId")')
           .order('created_at', ascending: false)
           .limit(50);
 
@@ -463,7 +463,7 @@ class _MessageScreenState extends State<MessageScreen> {
       }
 
       // 3. MERGE with existing local cache (to preserve history NOT on server)
-      final existingCache = await LocalSyncServer().getCachedMessages(widget.receiverId);
+      final existingCache = LocalSyncServer().getCachedMessages(widget.receiverId);
       final Map<String, Map<String, dynamic>> combinedMap = {};
       
       // Add existing local messages first 
@@ -913,9 +913,9 @@ class _MessageScreenState extends State<MessageScreen> {
 
         // Update conversation summary
         String lastMsg = 'Ephemeral message';
-        if (type == 'image')
+        if (type == 'image') {
           lastMsg = 'Photo 📷';
-        else if (type == 'video')
+        } else if (type == 'video')
           lastMsg = 'Video 🎥';
         else if (type == 'audio') lastMsg = 'Audio 🎙️';
         await _updateConversation(lastMsg);
@@ -2628,7 +2628,7 @@ class _MessageScreenState extends State<MessageScreen> {
       } else if (title == 'Shared Item' && line.trim().isNotEmpty) {
         title = line.trim();
       } else if (line.trim().isNotEmpty) {
-        desc += line.trim() + ' ';
+        desc += '${line.trim()} ';
       }
     }
 

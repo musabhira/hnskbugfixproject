@@ -9,7 +9,7 @@ class OfflineEventTable extends SupabaseTable<OfflineEventRow> {
 }
 
 class OfflineEventRow extends SupabaseDataRow {
-  OfflineEventRow(Map<String, dynamic> data) : super(data);
+  OfflineEventRow(super.data);
 
   @override
   SupabaseTable get table => OfflineEventTable();

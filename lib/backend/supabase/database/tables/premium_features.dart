@@ -10,7 +10,7 @@ class PremiumFeaturesTable extends SupabaseTable<PremiumFeaturesRow> {
 }
 
 class PremiumFeaturesRow extends SupabaseDataRow {
-  PremiumFeaturesRow(Map<String, dynamic> data) : super(data);
+  PremiumFeaturesRow(super.data);
 
   @override
   SupabaseTable get table => PremiumFeaturesTable();

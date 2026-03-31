@@ -1,7 +1,7 @@
 // Automatic FlutterFlow imports
 import '/backend/supabase/supabase.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/material.dart' as material;
+
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
@@ -322,7 +322,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
       final List<Map<String, dynamic>> publicList =
           publicGroups.values.toList();
 
-      final sortingFunc = (Map<String, dynamic> a, Map<String, dynamic> b) {
+      int sortingFunc(Map<String, dynamic> a, Map<String, dynamic> b) {
         if (a['is_own'] == true && b['is_own'] != true) return -1;
         if (a['is_own'] != true && b['is_own'] == true) return 1;
 
@@ -335,7 +335,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
         final aTime = (a['statuses'] as List).last['created_at'];
         final bTime = (b['statuses'] as List).last['created_at'];
         return DateTime.parse(bTime).compareTo(DateTime.parse(aTime));
-      };
+      }
 
       followingList.sort(sortingFunc);
       publicList.sort(sortingFunc);
@@ -425,6 +425,9 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
 
   @override
   Widget build(BuildContext context) {
+    final combined = _getCombinedHorizontalStatuses();
+    final onlyGroups = combined.whereType<Map<String, dynamic>>().toList();
+
     if (widget.isVertical) {
       return Material(
         color: Colors.transparent,
@@ -435,16 +438,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
           ),
           child: Column(
             children: [
-              _buildCategorySelector(),
-              Expanded(
-                child: TabBarView(
-                  controller: _tabController,
-                  children: [
-                    _buildStatusList(_publicStatuses, isGrid: true),
-                    _buildStatusList(_followingStatuses, isGrid: false),
-                  ],
-                ),
-              ),
+              _buildStatusList(onlyGroups, isGrid: false),
             ],
           ),
         ),
@@ -454,120 +448,55 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
     return Material(
       color: Colors.transparent,
       child: Container(
-        height: 120,
+        height: 125,
+        alignment: Alignment.center,
         child: _isLoading
             ? _buildShimmerLoading()
             : ListView.builder(
                 scrollDirection: Axis.horizontal,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                itemCount: _statuses.length + 2, // Add 2 for "Add" and "Menu"
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                itemCount: combined.length + 1, // Add 1 for "Add"
                 itemBuilder: (context, index) {
                   if (index == 0) return _buildAddStatusButton();
-                  if (index == 1) {
-                    // Three-dot menu button
-                    return Container(
-                      width: 80,
-                      margin: const EdgeInsets.only(right: 12),
-                      child: Column(
-                        children: [
-                          material.PopupMenuButton<String>(
-                            onSelected: _saveVibesFilter,
-                            itemBuilder: (context) => [
-                              material.PopupMenuItem(
-                                value: 'Public',
-                                child: Row(
-                                  children: [
-                                    Icon(Icons.public, color: _vibesFilter == 'Public' ? Colors.yellow : Colors.white60, size: 18),
-                                    const SizedBox(width: 10),
-                                    Text('Public Vibes', style: GoogleFonts.outfit(color: _vibesFilter == 'Public' ? Colors.yellow : Colors.white)),
-                                  ],
-                                ),
-                              ),
-                              material.PopupMenuItem(
-                                value: 'Friends',
-                                child: Row(
-                                  children: [
-                                    Icon(Icons.people_outline, color: _vibesFilter == 'Friends' ? Colors.yellow : Colors.white60, size: 18),
-                                    const SizedBox(width: 10),
-                                    Text('Following Vibes', style: GoogleFonts.outfit(color: _vibesFilter == 'Friends' ? Colors.yellow : Colors.white)),
-                                  ],
-                                ),
-                              ),
-                            ],
-                            child: Container(
-                              width: 64,
-                              height: 64,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                    color: Colors.white.withValues(alpha: 0.2), width: 1),
-                                color: Colors.white.withValues(alpha: 0.05),
-                              ),
-                              child: const Icon(Icons.more_horiz_rounded, size: 28, color: Colors.white70),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            _vibesFilter,
-                            style: GoogleFonts.outfit(
-                              color: Colors.yellow.withValues(alpha: 0.7),
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
+                  
+                  final item = combined[index - 1];
+                  if (item is String && item == 'DIVIDER') {
+                    return _buildMiniDivider();
                   }
-                  final statusGroup = _statuses[index - 2];
-                  return _buildStatusItem(statusGroup, index - 2, true);
+
+                  final statusGroup = item as Map<String, dynamic>;
+                  // Calculate the actual index in the maps-only list for the viewer
+                  final actualMapIndex = onlyGroups.indexOf(statusGroup);
+                  
+                  return _buildStatusItem(statusGroup, actualMapIndex, true, listOverride: onlyGroups);
                 },
               ),
       ),
     );
   }
 
-  Widget _buildCategorySelector() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-      ),
-      child: Row(
-        children: [
-          Expanded(child: _buildCategoryButton('Public', 0)),
-          Expanded(child: _buildCategoryButton('Friends', 1)),
-        ],
-      ),
-    );
+
+
+  List<dynamic> _getCombinedHorizontalStatuses() {
+    final following = _followingStatuses;
+    final publicExcludingFollowing = _publicStatuses.where((p) => 
+      !_followingStatuses.any((f) => f['profile']['id'] == p['profile']['id'])
+    ).toList();
+
+    if (following.isEmpty) return publicExcludingFollowing;
+    if (publicExcludingFollowing.isEmpty) return following;
+
+    return [...following, 'DIVIDER', ...publicExcludingFollowing];
   }
 
-  Widget _buildCategoryButton(String label, int index) {
-    bool isSelected = _tabController?.index == index;
-    return GestureDetector(
-      onTap: () {
-        _tabController?.animateTo(index);
-        setState(() {});
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        decoration: BoxDecoration(
-          color: isSelected ? Colors.yellow : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Center(
-          child: Text(
-            label,
-            style: GoogleFonts.outfit(
-              color: isSelected ? Colors.black : Colors.white70,
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
+  Widget _buildMiniDivider() {
+    return Container(
+      width: 1.5,
+      height: 48,
+      margin: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(1),
       ),
     );
   }
@@ -1521,10 +1450,12 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
           }
         }
       } else if (nextStatus['media_type'] == 'image') {
-        precacheImage(
-          CachedNetworkImageProvider(nextStatus['media_url']),
-          context,
-        );
+        if (mounted) {
+          precacheImage(
+            CachedNetworkImageProvider(nextStatus['media_url']),
+            context,
+          );
+        }
       }
     }
 
@@ -1532,10 +1463,12 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
     if (_currentIndex + 2 < statuses.length) {
       final nextNextStatus = statuses[_currentIndex + 2];
       if (nextNextStatus['media_type'] == 'image') {
-        precacheImage(
-          CachedNetworkImageProvider(nextNextStatus['media_url']),
-          context,
-        );
+        if (mounted) {
+          precacheImage(
+            CachedNetworkImageProvider(nextNextStatus['media_url']),
+            context,
+          );
+        }
       }
     }
   }
@@ -1849,9 +1782,11 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
       }
     } catch (e) {
       debugPrint('Error deleting status: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to delete status')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to delete status')),
+        );
+      }
     }
   }
 
@@ -2099,8 +2034,9 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                                           .maybeSingle(),
                                       builder: (context, snapshot) {
                                         if (!snapshot.hasData ||
-                                            snapshot.data == null)
+                                            snapshot.data == null) {
                                           return const SizedBox.shrink();
+                                        }
                                         final gName =
                                             snapshot.data!['name'] ?? '';
                                         return Padding(
@@ -2125,8 +2061,9 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                                           .maybeSingle(),
                                       builder: (context, snapshot) {
                                         if (!snapshot.hasData ||
-                                            snapshot.data == null)
+                                            snapshot.data == null) {
                                           return const SizedBox.shrink();
+                                        }
                                         final pName =
                                             snapshot.data!['name'] ?? '';
                                         return Padding(
@@ -2454,10 +2391,10 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
               color: const Color(0xFF262626),
               borderRadius: BorderRadius.circular(24),
               border:
-                  Border.all(color: Colors.yellow.withOpacity(0.2), width: 1),
+                  Border.all(color: Colors.yellow.withValues(alpha: 0.2), width: 1),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.5),
+                  color: Colors.black.withValues(alpha: 0.5),
                   blurRadius: 20,
                   offset: const Offset(0, 10),
                 ),
@@ -2475,7 +2412,7 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: Border.all(
-                            color: Colors.yellow.withOpacity(0.5), width: 1.5),
+                            color: Colors.yellow.withValues(alpha: 0.5), width: 1.5),
                       ),
                       child: CircleAvatar(
                         backgroundColor: Colors.black,
@@ -2526,7 +2463,7 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                       child: Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.05),
+                          color: Colors.white.withValues(alpha: 0.05),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
@@ -2572,10 +2509,10 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                       padding: const EdgeInsets.symmetric(
                           horizontal: 20, vertical: 10),
                       decoration: BoxDecoration(
-                        color: Colors.yellow.withOpacity(0.1),
+                        color: Colors.yellow.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(20),
                         border:
-                            Border.all(color: Colors.yellow.withOpacity(0.3)),
+                            Border.all(color: Colors.yellow.withValues(alpha: 0.3)),
                       ),
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,
@@ -2623,10 +2560,10 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
             child: Container(
               margin: const EdgeInsets.symmetric(horizontal: 40),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.05),
+                color: Colors.white.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(30),
                 border: Border.all(
-                    color: Colors.indigo.withOpacity(0.3), width: 1.5),
+                    color: Colors.indigo.withValues(alpha: 0.3), width: 1.5),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -2650,7 +2587,7 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                           height: 200,
                           width: double.infinity,
                           decoration: BoxDecoration(
-                            color: Colors.indigo.withOpacity(0.2),
+                            color: Colors.indigo.withValues(alpha: 0.2),
                             borderRadius: const BorderRadius.vertical(
                                 top: Radius.circular(30)),
                           ),
@@ -2666,7 +2603,7 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                           child: Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(0.4),
+                              color: Colors.black.withValues(alpha: 0.4),
                               shape: BoxShape.circle,
                             ),
                             child: Icon(
@@ -2701,7 +2638,7 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                             maxLines: 4,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              color: Colors.white.withOpacity(0.6),
+                              color: Colors.white.withValues(alpha: 0.6),
                               fontSize: 15,
                             ),
                             textAlign: TextAlign.center,
@@ -2733,7 +2670,7 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                               borderRadius: BorderRadius.circular(20),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.indigo.withOpacity(0.3),
+                                  color: Colors.indigo.withValues(alpha: 0.3),
                                   blurRadius: 12,
                                   offset: const Offset(0, 4),
                                 ),
@@ -2788,10 +2725,10 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
               margin: const EdgeInsets.symmetric(horizontal: 40),
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.05),
+                color: Colors.white.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(30),
                 border: Border.all(
-                    color: Colors.yellow.withOpacity(0.3), width: 1.5),
+                    color: Colors.yellow.withValues(alpha: 0.3), width: 1.5),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -2816,7 +2753,7 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                         child: Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.05),
+                            color: Colors.white.withValues(alpha: 0.05),
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
@@ -2847,7 +2784,7 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                       maxLines: 4,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.6),
+                        color: Colors.white.withValues(alpha: 0.6),
                         fontSize: 15,
                       ),
                       textAlign: TextAlign.center,
@@ -2871,7 +2808,7 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.yellow.withOpacity(0.3),
+                            color: Colors.yellow.withValues(alpha: 0.3),
                             blurRadius: 12,
                             offset: const Offset(0, 4),
                           ),
@@ -2993,11 +2930,11 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                   padding:
                       const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                   decoration: BoxDecoration(
-                    color: Colors.yellow.withOpacity(0.9),
+                    color: Colors.yellow.withValues(alpha: 0.9),
                     borderRadius: BorderRadius.circular(30),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.3),
+                        color: Colors.black.withValues(alpha: 0.3),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
@@ -3121,7 +3058,7 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
 
     showDialog(
       context: context,
-      barrierColor: Colors.black.withOpacity(0.8),
+      barrierColor: Colors.black.withValues(alpha: 0.8),
       builder: (context) => Center(
         child: Material(
           color: Colors.transparent,
@@ -3134,7 +3071,7 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
               border: Border.all(color: Colors.white10),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.5),
+                  color: Colors.black.withValues(alpha: 0.5),
                   blurRadius: 30,
                   spreadRadius: 5,
                 )
@@ -3147,7 +3084,7 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.yellow.withOpacity(0.1),
+                    color: Colors.yellow.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -3442,7 +3379,8 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
       }
 
       if (kIsWeb) {
-        _videoPreviewController = VideoPlayerController.network(file.path);
+        _videoPreviewController =
+            VideoPlayerController.networkUrl(Uri.parse(file.path));
       } else {
         _videoPreviewController =
             VideoPlayerController.file(io.File(file.path));
@@ -3780,10 +3718,10 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
               color: const Color(0xFF262626),
               borderRadius: BorderRadius.circular(24),
               border:
-                  Border.all(color: Colors.yellow.withOpacity(0.2), width: 1),
+                  Border.all(color: Colors.yellow.withValues(alpha: 0.2), width: 1),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.5),
+                  color: Colors.black.withValues(alpha: 0.5),
                   blurRadius: 20,
                   offset: const Offset(0, 10),
                 ),
@@ -3801,7 +3739,7 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: Border.all(
-                            color: Colors.yellow.withOpacity(0.5), width: 1.5),
+                            color: Colors.yellow.withValues(alpha: 0.5), width: 1.5),
                       ),
                       child: CircleAvatar(
                         backgroundColor: Colors.black,
@@ -3864,9 +3802,9 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 20, vertical: 10),
                     decoration: BoxDecoration(
-                      color: Colors.yellow.withOpacity(0.1),
+                      color: Colors.yellow.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.yellow.withOpacity(0.3)),
+                      border: Border.all(color: Colors.yellow.withValues(alpha: 0.3)),
                     ),
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
@@ -3909,10 +3847,10 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
           child: Container(
             margin: const EdgeInsets.symmetric(horizontal: 32),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.05),
+              color: Colors.white.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(24),
               border:
-                  Border.all(color: Colors.indigo.withOpacity(0.3), width: 1),
+                  Border.all(color: Colors.indigo.withValues(alpha: 0.3), width: 1),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -3933,7 +3871,7 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
                     height: 180,
                     width: double.infinity,
                     decoration: BoxDecoration(
-                      color: Colors.indigo.withOpacity(0.2),
+                      color: Colors.indigo.withValues(alpha: 0.2),
                       borderRadius:
                           const BorderRadius.vertical(top: Radius.circular(24)),
                     ),
@@ -4002,10 +3940,10 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
             margin: const EdgeInsets.symmetric(horizontal: 40),
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.05),
+              color: Colors.white.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(30),
               border:
-                  Border.all(color: Colors.indigo.withOpacity(0.5), width: 1.5),
+                  Border.all(color: Colors.indigo.withValues(alpha: 0.5), width: 1.5),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -4084,10 +4022,10 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
             margin: const EdgeInsets.symmetric(horizontal: 40),
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.05),
+              color: Colors.white.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(30),
               border:
-                  Border.all(color: Colors.yellow.withOpacity(0.3), width: 1.5),
+                  Border.all(color: Colors.yellow.withValues(alpha: 0.3), width: 1.5),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,

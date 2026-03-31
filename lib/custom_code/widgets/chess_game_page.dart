@@ -6,7 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '/backend/supabase/supabase.dart';
 
 class ChessMatchmakingPage extends StatefulWidget {
-  const ChessMatchmakingPage({Key? key}) : super(key: key);
+  const ChessMatchmakingPage({super.key});
 
   @override
   State<ChessMatchmakingPage> createState() => _ChessMatchmakingPageState();
@@ -292,12 +292,12 @@ class ChessPlayPage extends StatefulWidget {
   final String? targetUserId;
 
   const ChessPlayPage({
-    Key? key,
+    super.key,
     required this.matchId,
     required this.isWhite,
     this.isAi = false,
     this.targetUserId,
-  }) : super(key: key);
+  });
 
   @override
   State<ChessPlayPage> createState() => _ChessPlayPageState();

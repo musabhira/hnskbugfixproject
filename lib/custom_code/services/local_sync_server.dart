@@ -1,8 +1,6 @@
 import 'dart:async';
-import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/chat_models.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/whats_app_groups_provider.dart';
@@ -150,7 +148,6 @@ class LocalSyncServer {
   void _handleGlobalMessageUpdate(PostgresChangePayload payload) {
     // Determine which conversation this message belongs to and update Hive
     final newData = payload.newRecord;
-    if (newData == null) return;
 
     final currentUserId = _supabase.auth.currentUser?.id;
     if (currentUserId == null) return;
@@ -177,8 +174,9 @@ class LocalSyncServer {
         // Let's check usage. MessageScreen sorts DESC. ChatProvider usually ASC for chat bubbles but reverse list view.
         // We will prepend to keep it consistent with "get latest".
         final List<dynamic> updated = [newData, ...current];
-        if (updated.length > 1000)
+        if (updated.length > 1000) {
           updated.removeLast(); // Keep cache size manageable
+        }
         saveMessages(chatId, updated);
       }
     }
@@ -186,7 +184,6 @@ class LocalSyncServer {
 
   void _handleGroupMessageUpdate(PostgresChangePayload payload) {
     final newData = payload.newRecord;
-    if (newData == null) return;
 
     final groupId = newData['group_id'];
     if (groupId != null) {

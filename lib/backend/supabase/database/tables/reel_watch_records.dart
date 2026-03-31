@@ -10,7 +10,7 @@ class ReelWatchRecordsTable extends SupabaseTable<ReelWatchRecordsRow> {
 }
 
 class ReelWatchRecordsRow extends SupabaseDataRow {
-  ReelWatchRecordsRow(Map<String, dynamic> data) : super(data);
+  ReelWatchRecordsRow(super.data);
 
   @override
   SupabaseTable get table => ReelWatchRecordsTable();

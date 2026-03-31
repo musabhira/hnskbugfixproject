@@ -1,6 +1,5 @@
 import '/flutter_flow/flutter_flow_util.dart';
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:flutter/material.dart' as material;
 import '/custom_code/widgets/index.dart' as custom_widgets;
 import 'home_page_model.dart';
 export 'home_page_model.dart';

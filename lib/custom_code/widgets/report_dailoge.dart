@@ -1,14 +1,10 @@
 // Automatic FlutterFlow imports
 import 'package:pocket_mates_app/auth_page/auth_page_widget.dart';
-import 'package:pocket_mates_app/auth_page/auth_page_widget.dart';
 
 import '/backend/supabase/supabase.dart';
-import '/backend/supabase/supabase.dart';
-import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 // Imports other custom widgets
 // Imports custom actions
-import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!

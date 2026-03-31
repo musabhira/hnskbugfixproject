@@ -12,8 +12,7 @@ class ProfileGalleryServiceLikesCommentsViewTable
 }
 
 class ProfileGalleryServiceLikesCommentsViewRow extends SupabaseDataRow {
-  ProfileGalleryServiceLikesCommentsViewRow(Map<String, dynamic> data)
-      : super(data);
+  ProfileGalleryServiceLikesCommentsViewRow(super.data);
 
   @override
   SupabaseTable get table => ProfileGalleryServiceLikesCommentsViewTable();

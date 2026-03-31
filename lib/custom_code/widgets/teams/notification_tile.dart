@@ -8,10 +8,10 @@ class NotificationTile extends StatelessWidget {
   final VoidCallback onRefresh;
 
   const NotificationTile({
-    Key? key,
+    super.key,
     required this.notification,
     required this.onRefresh,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(material.BuildContext context) {

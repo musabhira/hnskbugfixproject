@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'ai_prompt_service.dart';
 
 class DiagramAiPage extends StatefulWidget {
-  const DiagramAiPage({Key? key}) : super(key: key);
+  const DiagramAiPage({super.key});
 
   @override
   _DiagramAiPageState createState() => _DiagramAiPageState();

@@ -7,10 +7,10 @@ class DynamicWebViewPage extends StatefulWidget {
   final String url;
 
   const DynamicWebViewPage({
-    Key? key,
+    super.key,
     required this.title,
     required this.url,
-  }) : super(key: key);
+  });
 
   @override
   State<DynamicWebViewPage> createState() => _DynamicWebViewPageState();

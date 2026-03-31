@@ -498,7 +498,7 @@ class Conversations extends _$Conversations {
       return combined;
     } catch (e) {
       print('Error fetching conversations: $e');
-      throw e;
+      rethrow;
     }
   }
 

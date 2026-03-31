@@ -14,17 +14,11 @@ import 'package:fluent_ui/fluent_ui.dart';
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
 import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
-import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
-import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
 
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:share_plus/share_plus.dart';
 
 class GalleryProfileSearchPage extends StatefulWidget {
@@ -588,7 +582,7 @@ class GallerySearchCard extends StatelessWidget {
                             child: item['profile_image_url'] != null
                                 ? Image.network(item['profile_image_url'],
                                     fit: BoxFit.cover)
-                                : Icon(
+                                : const Icon(
                                     FluentIcons.contact,
                                     size: 14,
                                     color: Colors.white,
@@ -1355,7 +1349,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                 ),
               ),
               MenuFlyoutItem(
-                text: Row(
+                text: const Row(
                   children: [
                     Icon(FluentIcons.chat, size: 16),
                     SizedBox(width: 8),
@@ -1834,6 +1828,15 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                                 );
                               }
                             },
+                            style: ButtonStyle(
+                              backgroundColor:
+                                  ButtonState.all(widget.buttoncolorcode),
+                              padding: ButtonState.all(
+                                  const EdgeInsets.symmetric(vertical: 16)),
+                              shape: ButtonState.all(RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              )),
+                            ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
@@ -1848,15 +1851,6 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                                   ),
                                 ),
                               ],
-                            ),
-                            style: ButtonStyle(
-                              backgroundColor:
-                                  ButtonState.all(widget.buttoncolorcode),
-                              padding: ButtonState.all(
-                                  const EdgeInsets.symmetric(vertical: 16)),
-                              shape: ButtonState.all(RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              )),
                             ),
                           ),
                         ),
@@ -1881,20 +1875,6 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                               ),
                             ),
                             Button(
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(FluentIcons.chat,
-                                      size: 18, color: widget.buttoncolorcode),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    'View All (${_comments.length})',
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: widget.buttoncolorcode),
-                                  ),
-                                ],
-                              ),
                               onPressed: () async {
                                 final isAuthenticated =
                                     await AuthAlertBox.checkAuthAndShowAlert(
@@ -1910,6 +1890,20 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                               style: ButtonStyle(
                                 foregroundColor:
                                     ButtonState.all(widget.buttoncolorcode),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(FluentIcons.chat,
+                                      size: 18, color: widget.buttoncolorcode),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'View All (${_comments.length})',
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: widget.buttoncolorcode),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
@@ -1974,7 +1968,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
 
                         // Comments preview (3 most recent)
                         _isLoading
-                            ? Center(
+                            ? const Center(
                                 child: ProgressRing(
                                 value: 0.5,
                                 strokeWidth: 2,
@@ -2288,7 +2282,7 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
                 ),
               ),
               IconButton(
-                icon: Icon(FluentIcons.more,
+                icon: const Icon(FluentIcons.more,
                     color: material.Colors.grey, size: 20),
                 onPressed: () {
                   final currentUserId = _supabase.auth.currentUser?.id;
@@ -2345,8 +2339,8 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
                                         context,
                                         builder: (context, close) =>
                                             const InfoBar(
-                                          title: const Text('Success'),
-                                          content: const Text(
+                                          title: Text('Success'),
+                                          content: Text(
                                               'Comment deleted successfully'),
                                           severity: InfoBarSeverity.success,
                                         ),
@@ -2599,7 +2593,7 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
                         if (reply['user_id'] ==
                             SupaFlow.client.auth.currentUser?.id)
                           IconButton(
-                            icon: Icon(FluentIcons.more,
+                            icon: const Icon(FluentIcons.more,
                                 size: 16, color: Colors.grey),
                             onPressed: () {
                               showDialog(
@@ -2660,8 +2654,8 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
                                                   builder: (context, close) =>
                                                       const InfoBar(
                                                     title:
-                                                        const Text('Success'),
-                                                    content: const Text(
+                                                        Text('Success'),
+                                                    content: Text(
                                                         'Reply deleted successfully'),
                                                     severity:
                                                         InfoBarSeverity.success,
@@ -2698,8 +2692,8 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
                                             context,
                                             builder: (context, close) =>
                                                 const InfoBar(
-                                              title: const Text('Copied'),
-                                              content: const Text(
+                                              title: Text('Copied'),
+                                              content: Text(
                                                   'Reply copied to clipboard'),
                                               severity: InfoBarSeverity.success,
                                             ),
@@ -2783,7 +2777,7 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
                     ),
                     if (_isReplying)
                       IconButton(
-                        icon: Icon(
+                        icon: const Icon(
                           FluentIcons.send,
                           color: material.Colors.blue,
                           size: 20,

@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class LegalPolicyWidget extends StatelessWidget {
@@ -8,10 +6,10 @@ class LegalPolicyWidget extends StatelessWidget {
   final String content;
 
   const LegalPolicyWidget({
-    Key? key,
+    super.key,
     required this.title,
     required this.content,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -80,7 +78,7 @@ class LegalPolicyWidget extends StatelessWidget {
 }
 
 class PrivacyPolicyPage extends StatelessWidget {
-  const PrivacyPolicyPage({Key? key}) : super(key: key);
+  const PrivacyPolicyPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -116,7 +114,7 @@ We implement automated and manual reporting systems. Users can report any conten
 }
 
 class TermsOfServicePage extends StatelessWidget {
-  const TermsOfServicePage({Key? key}) : super(key: key);
+  const TermsOfServicePage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -150,7 +148,7 @@ Pocket Mates is not liable for damages resulting from user interactions or conte
 }
 
 class TermsAndConditionsPage extends StatelessWidget {
-  const TermsAndConditionsPage({Key? key}) : super(key: key);
+  const TermsAndConditionsPage({super.key});
 
   @override
   Widget build(BuildContext context) {

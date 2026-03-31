@@ -9,7 +9,7 @@ class TotalSharesTable extends SupabaseTable<TotalSharesRow> {
 }
 
 class TotalSharesRow extends SupabaseDataRow {
-  TotalSharesRow(Map<String, dynamic> data) : super(data);
+  TotalSharesRow(super.data);
 
   @override
   SupabaseTable get table => TotalSharesTable();

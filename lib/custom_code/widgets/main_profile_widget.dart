@@ -10,7 +10,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/custom_code/widgets/profile_custom_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
-import 'dart:io';
 import 'package:pocket_mates_app/flutter_flow/flutter_flow_theme.dart';
 import 'index.dart';
 
@@ -30,7 +29,7 @@ class MainProfileWidget extends StatefulWidget {
   final List<Map<String, dynamic>>? userThreads;
 
   const MainProfileWidget({
-    Key? key,
+    super.key,
     this.userId,
     this.width,
     this.height,
@@ -38,7 +37,7 @@ class MainProfileWidget extends StatefulWidget {
     this.followersCount,
     this.followingCount,
     this.userThreads,
-  }) : super(key: key);
+  });
 
   @override
   _MainProfileWidgetState createState() => _MainProfileWidgetState();
@@ -446,7 +445,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   : null,
               centerTitle: true,
               actions: [
-                if (isMe)
+                if (isMe) ...[
                   material.IconButton(
                     icon: Icon(FluentIcons.view_dashboard,
                         color: textColor),
@@ -461,6 +460,13 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       );
                     },
                   ),
+                  material.IconButton(
+                    icon: Icon(FluentIcons.contact_list,
+                        color: textColor, size: 22),
+                    onPressed: () => AutoLoginBottomSheet.show(context),
+                    tooltip: 'Switch Account',
+                  ),
+                ],
                 material.IconButton(
                   icon: Icon(FluentIcons.share,
                       color: textColor, size: 22),
@@ -1130,14 +1136,13 @@ class _GalleryTab extends StatelessWidget {
   final Color btnTextColor;
 
   const _GalleryTab({
-    Key? key,
     required this.userId,
     required this.items,
     required this.textColor,
     required this.bgColor,
     required this.btnColor,
     required this.btnTextColor,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1301,13 +1306,12 @@ class _ServicesTab extends StatelessWidget {
   final String userId;
 
   const _ServicesTab({
-    Key? key,
     required this.items,
     required this.textColor,
     required this.btnColor,
     required this.btnTextColor,
     required this.userId,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1476,12 +1480,11 @@ class _ThreadsTab extends StatelessWidget {
   final Color btnTextColor;
 
   const _ThreadsTab({
-    Key? key,
     required this.items,
     required this.textColor,
     required this.btnColor,
     required this.btnTextColor,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

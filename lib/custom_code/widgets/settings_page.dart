@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 class SettingsPage extends StatefulWidget {
-  const SettingsPage({Key? key}) : super(key: key);
+  const SettingsPage({super.key});
 
   @override
   State<SettingsPage> createState() => _SettingsPageState();
@@ -209,7 +209,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
 class _SectionHeader extends StatelessWidget {
   final String title;
-  const _SectionHeader({Key? key, required this.title}) : super(key: key);
+  const _SectionHeader({required this.title});
 
   @override
   Widget build(BuildContext context) {
@@ -236,13 +236,12 @@ class _SettingsTile extends StatelessWidget {
   final Color? iconColor;
 
   const _SettingsTile({
-    Key? key,
     required this.icon,
     required this.title,
     required this.onTap,
     this.textColor,
     this.iconColor,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

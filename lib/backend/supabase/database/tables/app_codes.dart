@@ -9,7 +9,7 @@ class AppCodesTable extends SupabaseTable<AppCodesRow> {
 }
 
 class AppCodesRow extends SupabaseDataRow {
-  AppCodesRow(Map<String, dynamic> data) : super(data);
+  AppCodesRow(super.data);
 
   @override
   SupabaseTable get table => AppCodesTable();

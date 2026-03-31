@@ -9,7 +9,7 @@ class HomeTable extends SupabaseTable<HomeRow> {
 }
 
 class HomeRow extends SupabaseDataRow {
-  HomeRow(Map<String, dynamic> data) : super(data);
+  HomeRow(super.data);
 
   @override
   SupabaseTable get table => HomeTable();

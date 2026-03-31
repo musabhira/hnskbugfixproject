@@ -467,7 +467,7 @@ class _CommunityChatPageState extends State<CommunityChatPage>
                   child: CircleAvatar(
                     radius: 30,
                     backgroundColor: Colors.grey[800],
-                    child: Icon(Icons.group, color: Colors.yellow, size: 30),
+                    child: const Icon(Icons.group, color: Colors.yellow, size: 30),
                   ),
                 ),
           title: Text(
@@ -1133,8 +1133,7 @@ class ContactsListView extends StatelessWidget {
 class CreateGroupDialog extends StatefulWidget {
   final VoidCallback onGroupCreated;
 
-  const CreateGroupDialog({Key? key, required this.onGroupCreated})
-      : super(key: key);
+  const CreateGroupDialog({super.key, required this.onGroupCreated});
 
   @override
   _CreateGroupDialogState createState() => _CreateGroupDialogState();
@@ -1152,7 +1151,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog>
   late AnimationController _animationController;
   late Animation<double> _scaleAnimation;
   List<dynamic> _searchResults = [];
-  List<dynamic> _selectedMembers = [];
+  final List<dynamic> _selectedMembers = [];
 
   bool _isCreating = false;
   bool _isSearching = false;
@@ -1222,7 +1221,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog>
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                'Image compressed: ${originalSize}KB → ${compressedSize}KB (${compressionRatio}% reduction)',
+                'Image compressed: ${originalSize}KB → ${compressedSize}KB ($compressionRatio% reduction)',
               ),
               backgroundColor: Colors.green,
               behavior: SnackBarBehavior.floating,
@@ -1734,7 +1733,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog>
   Widget _buildSectionTitle(String title) {
     return Text(
       title,
-      style: TextStyle(
+      style: const TextStyle(
         color: ui.Color(0xFFFFD700),
         fontSize: 16,
         fontWeight: FontWeight.bold,
@@ -1755,7 +1754,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog>
       decoration: InputDecoration(
         hintText: hintText,
         hintStyle: const TextStyle(color: Colors.white38),
-        prefixIcon: Icon(icon, color: ui.Color(0xFFFFD700)),
+        prefixIcon: Icon(icon, color: const ui.Color(0xFFFFD700)),
         filled: true,
         fillColor: const ui.Color(0xFF2A2A2A),
         border: OutlineInputBorder(
@@ -1764,7 +1763,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog>
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(
+          borderSide: const BorderSide(
             color: ui.Color(0xFFFFD700),
             width: 2,
           ),

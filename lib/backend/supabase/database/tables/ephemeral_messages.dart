@@ -10,7 +10,7 @@ class EphemeralMessagesTable extends SupabaseTable<EphemeralMessagesRow> {
 }
 
 class EphemeralMessagesRow extends SupabaseDataRow {
-  EphemeralMessagesRow(Map<String, dynamic> data) : super(data);
+  EphemeralMessagesRow(super.data);
 
   @override
   SupabaseTable get table => EphemeralMessagesTable();

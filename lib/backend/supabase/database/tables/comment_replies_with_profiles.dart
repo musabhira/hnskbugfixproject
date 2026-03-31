@@ -11,7 +11,7 @@ class CommentRepliesWithProfilesTable
 }
 
 class CommentRepliesWithProfilesRow extends SupabaseDataRow {
-  CommentRepliesWithProfilesRow(Map<String, dynamic> data) : super(data);
+  CommentRepliesWithProfilesRow(super.data);
 
   @override
   SupabaseTable get table => CommentRepliesWithProfilesTable();

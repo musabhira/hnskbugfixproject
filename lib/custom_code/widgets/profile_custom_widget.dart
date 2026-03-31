@@ -507,7 +507,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
           SnackBar(
             content: const Text('Profile updated successfully!'),
             backgroundColor: FlutterFlowTheme.of(context).success,
-            duration: Duration(seconds: 2),
+            duration: const Duration(seconds: 2),
           ),
         );
 

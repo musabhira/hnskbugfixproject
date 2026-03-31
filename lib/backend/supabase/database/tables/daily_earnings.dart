@@ -10,7 +10,7 @@ class DailyEarningsTable extends SupabaseTable<DailyEarningsRow> {
 }
 
 class DailyEarningsRow extends SupabaseDataRow {
-  DailyEarningsRow(Map<String, dynamic> data) : super(data);
+  DailyEarningsRow(super.data);
 
   @override
   SupabaseTable get table => DailyEarningsTable();

@@ -5,7 +5,7 @@ import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'index.dart'; // Imports other custom widgets
-import '/custom_code/actions/index.dart'; // Imports custom actions
+// Imports custom actions
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
@@ -263,7 +263,7 @@ class _CreateGalleryWidgetState extends State<CreateGalleryWidget> {
           SnackBar(
             content: Row(
               children: [
-                Icon(
+                const Icon(
                   Icons.error_outline_rounded,
                   color: Colors.white,
                   size: 20,

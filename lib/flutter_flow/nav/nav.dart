@@ -1,20 +1,13 @@
 import 'dart:async';
 
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:go_router/go_router.dart';
-import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
 
-import '/backend/supabase/supabase.dart';
 
 import '/auth/base_auth_user_provider.dart';
 
-import '/main.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/lat_lng.dart';
-import '/flutter_flow/place.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import 'serialization_util.dart';
 
 import '/index.dart';
 
@@ -84,33 +77,33 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
       refreshListenable: appStateNotifier,
       navigatorKey: appNavigatorKey,
       errorBuilder: (context, state) =>
-          appStateNotifier.loggedIn ? HomePageWidget() : AuthPageWidget(),
+          appStateNotifier.loggedIn ? const HomePageWidget() : const AuthPageWidget(),
       routes: [
         FFRoute(
           name: '_initialize',
           path: '/',
           builder: (context, _) =>
-              appStateNotifier.loggedIn ? HomePageWidget() : AuthPageWidget(),
+              appStateNotifier.loggedIn ? const HomePageWidget() : const AuthPageWidget(),
         ),
         FFRoute(
           name: HomePageWidget.routeName,
           path: HomePageWidget.routePath,
-          builder: (context, params) => HomePageWidget(),
+          builder: (context, params) => const HomePageWidget(),
         ),
         FFRoute(
           name: AuthPageWidget.routeName,
           path: AuthPageWidget.routePath,
-          builder: (context, params) => AuthPageWidget(),
+          builder: (context, params) => const AuthPageWidget(),
         ),
         FFRoute(
           name: 'PocketMatesDashboard',
           path: '/pocketMates',
-          builder: (context, params) => PocketMatesDashboard(),
+          builder: (context, params) => const PocketMatesDashboard(),
         ),
         FFRoute(
           name: ProfileCreateCustomWidget.routeName,
           path: ProfileCreateCustomWidget.routePath,
-          builder: (context, params) => ProfileCreateCustomWidget(),
+          builder: (context, params) => const ProfileCreateCustomWidget(),
         ),
       ].map((r) => r.toRoute(appStateNotifier)).toList(),
     );
@@ -353,7 +346,7 @@ class TransitionInfo {
   final Duration duration;
   final Alignment? alignment;
 
-  static TransitionInfo appDefault() => TransitionInfo(hasTransition: false);
+  static TransitionInfo appDefault() => const TransitionInfo(hasTransition: false);
 }
 
 class RootPageContext {

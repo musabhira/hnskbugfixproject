@@ -85,7 +85,7 @@ class _DrawingAcademyHomePageState extends State<DrawingAcademyHomePage> {
       }
     } catch (e) {
       print('Error fetching courses: $e');
-      throw e;
+      rethrow;
     }
   }
 

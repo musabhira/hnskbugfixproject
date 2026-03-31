@@ -9,7 +9,7 @@ class HideTable extends SupabaseTable<HideRow> {
 }
 
 class HideRow extends SupabaseDataRow {
-  HideRow(Map<String, dynamic> data) : super(data);
+  HideRow(super.data);
 
   @override
   SupabaseTable get table => HideTable();

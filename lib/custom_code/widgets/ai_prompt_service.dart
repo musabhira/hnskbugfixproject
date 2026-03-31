@@ -30,15 +30,15 @@ class AiPromptGenerator extends StatelessWidget {
     return Scaffold(
       body: SafeArea(
         child: Padding(
-          padding: EdgeInsets.all(20),
+          padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildHeader(),
-              SizedBox(height: 30),
+              const SizedBox(height: 30),
               _buildQuickStats(),
-              SizedBox(height: 30),
-              Text(
+              const SizedBox(height: 30),
+              const Text(
                 'AI Features',
                 style: TextStyle(
                   color: Colors.white,
@@ -46,7 +46,7 @@ class AiPromptGenerator extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               Expanded(
                 child: GridView.count(
                   crossAxisCount: 2,
@@ -60,7 +60,7 @@ class AiPromptGenerator extends StatelessWidget {
                       'Complete AI Generator',
                       Icons.auto_awesome,
                       Colors.purple,
-                      EnhancedAIGenerator(),
+                      const EnhancedAIGenerator(),
                     ),
                     _buildFeatureCard(
                       context,
@@ -68,7 +68,7 @@ class AiPromptGenerator extends StatelessWidget {
                       'Simple Text Generation',
                       Icons.text_fields,
                       Colors.blue,
-                      SimpleTextGenerator(),
+                      const SimpleTextGenerator(),
                     ),
                     _buildFeatureCard(
                       context,
@@ -76,7 +76,7 @@ class AiPromptGenerator extends StatelessWidget {
                       'Quick Image Creation',
                       Icons.image,
                       Colors.green,
-                      QuickImageGenerator(),
+                      const QuickImageGenerator(),
                     ),
                     _buildFeatureCard(
                       context,
@@ -84,7 +84,7 @@ class AiPromptGenerator extends StatelessWidget {
                       'Image Analysis',
                       Icons.visibility,
                       Colors.orange,
-                      VisionAIExample(),
+                      const VisionAIExample(),
                     ),
                     _buildFeatureCard(
                       context,
@@ -92,7 +92,7 @@ class AiPromptGenerator extends StatelessWidget {
                       'Conversation AI',
                       Icons.chat,
                       Colors.pink,
-                      ChatWithAI(),
+                      const ChatWithAI(),
                     ),
                     _buildFeatureCard(
                       context,
@@ -115,7 +115,7 @@ class AiPromptGenerator extends StatelessWidget {
 
   Widget _buildHeader() {
     return Container(
-      padding: EdgeInsets.all(20),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -130,15 +130,15 @@ class AiPromptGenerator extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            padding: EdgeInsets.all(12),
+            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(Icons.smart_toy, color: Colors.black, size: 32),
+            child: const Icon(Icons.smart_toy, color: Colors.black, size: 32),
           ),
-          SizedBox(width: 16),
-          Expanded(
+          const SizedBox(width: 16),
+          const Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -169,7 +169,7 @@ class AiPromptGenerator extends StatelessWidget {
     final analytics = AIAnalytics.getAnalytics();
 
     return Container(
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.grey[900],
         borderRadius: BorderRadius.circular(16),
@@ -195,13 +195,13 @@ class AiPromptGenerator extends StatelessWidget {
       children: [
         Text(
           value,
-          style: TextStyle(
+          style: const TextStyle(
             color: Colors.yellow,
             fontSize: 20,
             fontWeight: FontWeight.bold,
           ),
         ),
-        SizedBox(height: 4),
+        const SizedBox(height: 4),
         Text(
           label,
           textAlign: TextAlign.center,
@@ -240,28 +240,28 @@ class AiPromptGenerator extends StatelessWidget {
           border: Border.all(color: Colors.grey[800]!),
         ),
         child: Padding(
-          padding: EdgeInsets.all(16),
+          padding: const EdgeInsets.all(16),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                padding: EdgeInsets.all(12),
+                padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: color.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(icon, color: color, size: 32),
               ),
-              SizedBox(height: 12),
+              const SizedBox(height: 12),
               Text(
                 title,
-                style: TextStyle(
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              SizedBox(height: 4),
+              const SizedBox(height: 4),
               Text(
                 subtitle,
                 textAlign: TextAlign.center,
@@ -286,25 +286,25 @@ class AiPromptGenerator extends StatelessWidget {
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
           backgroundColor: Colors.grey[900],
-          title: Text('Batch Image Generation',
+          title: const Text('Batch Image Generation',
               style: TextStyle(color: Colors.white)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: promptController,
-                style: TextStyle(color: Colors.white),
+                style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
                   hintText: 'Enter your prompt...',
                   hintStyle: TextStyle(color: Colors.grey[500]),
-                  border: OutlineInputBorder(),
+                  border: const OutlineInputBorder(),
                 ),
                 maxLines: 2,
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               Row(
                 children: [
-                  Text('Images: ', style: TextStyle(color: Colors.white)),
+                  const Text('Images: ', style: TextStyle(color: Colors.white)),
                   Expanded(
                     child: Slider(
                       value: imageCount.toDouble(),
@@ -319,7 +319,7 @@ class AiPromptGenerator extends StatelessWidget {
                       },
                     ),
                   ),
-                  Text('$imageCount', style: TextStyle(color: Colors.white)),
+                  Text('$imageCount', style: const TextStyle(color: Colors.white)),
                 ],
               ),
             ],
@@ -327,7 +327,7 @@ class AiPromptGenerator extends StatelessWidget {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text('Cancel', style: TextStyle(color: Colors.grey)),
+              child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
             ),
             ElevatedButton(
               onPressed: () {
@@ -344,7 +344,7 @@ class AiPromptGenerator extends StatelessWidget {
                   );
                 }
               },
-              child: Text('Generate'),
+              child: const Text('Generate'),
             ),
           ],
         ),
@@ -427,6 +427,8 @@ class AppConfig {
 }
 
 class SimpleTextGenerator extends StatefulWidget {
+  const SimpleTextGenerator({super.key});
+
   @override
   _SimpleTextGeneratorState createState() => _SimpleTextGeneratorState();
 }
@@ -457,25 +459,25 @@ class _SimpleTextGeneratorState extends State<SimpleTextGenerator> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Quick AI Text')),
+      appBar: AppBar(title: const Text('Quick AI Text')),
       body: Padding(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Column(
           children: [
             TextField(
               controller: _controller,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 hintText: 'Enter your prompt...',
                 border: OutlineInputBorder(),
               ),
               maxLines: 3,
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             ElevatedButton(
               onPressed: _loading ? null : _generateText,
-              child: _loading ? CircularProgressIndicator() : Text('Generate'),
+              child: _loading ? const CircularProgressIndicator() : const Text('Generate'),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Expanded(
               child: SingleChildScrollView(
                 child: Text(_result),
@@ -490,6 +492,8 @@ class _SimpleTextGeneratorState extends State<SimpleTextGenerator> {
 
 // Example 2: Image Generation with Progress
 class QuickImageGenerator extends StatefulWidget {
+  const QuickImageGenerator({super.key});
+
   @override
   _QuickImageGeneratorState createState() => _QuickImageGeneratorState();
 }
@@ -534,30 +538,30 @@ class _QuickImageGeneratorState extends State<QuickImageGenerator> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Quick AI Image')),
+      appBar: AppBar(title: const Text('Quick AI Image')),
       body: Padding(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Column(
           children: [
             TextField(
               controller: _controller,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 hintText: 'Describe the image...',
                 border: OutlineInputBorder(),
               ),
               maxLines: 2,
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             ElevatedButton(
               onPressed: _loading ? null : _generateImage,
               child: Text(_loading ? 'Generating...' : 'Generate Image'),
             ),
             if (_loading) ...[
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               LinearProgressIndicator(value: _progress),
               Text('${(_progress * 100).toInt()}%'),
             ],
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Expanded(
               child: _imageUrl != null
                   ? Column(
@@ -565,16 +569,16 @@ class _QuickImageGeneratorState extends State<QuickImageGenerator> {
                         Expanded(
                           child: Image.network(_imageUrl!, fit: BoxFit.contain),
                         ),
-                        SizedBox(height: 8),
+                        const SizedBox(height: 8),
                         ElevatedButton.icon(
                           onPressed: () =>
                               _aiService.saveImageToGallery(_imageUrl!),
-                          icon: Icon(Icons.download),
-                          label: Text('Save to Gallery'),
+                          icon: const Icon(Icons.download),
+                          label: const Text('Save to Gallery'),
                         ),
                       ],
                     )
-                  : Center(child: Text('No image generated yet')),
+                  : const Center(child: Text('No image generated yet')),
             ),
           ],
         ),
@@ -588,7 +592,7 @@ class BatchImageGenerator extends StatefulWidget {
   final String prompt;
   final int imageCount;
 
-  const BatchImageGenerator({
+  const BatchImageGenerator({super.key, 
     required this.prompt,
     this.imageCount = 4,
   });
@@ -637,11 +641,11 @@ class _BatchImageGeneratorState extends State<BatchImageGenerator> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Batch Generation'),
+        title: const Text('Batch Generation'),
         actions: [
           IconButton(
             onPressed: _generateImages,
-            icon: Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh),
           ),
         ],
       ),
@@ -650,18 +654,18 @@ class _BatchImageGeneratorState extends State<BatchImageGenerator> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
+                  const CircularProgressIndicator(),
+                  const SizedBox(height: 16),
                   Text('Generating ${widget.imageCount} images...'),
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   LinearProgressIndicator(value: _progress),
                   Text('${(_progress * 100).toInt()}%'),
                 ],
               ),
             )
           : GridView.builder(
-              padding: EdgeInsets.all(16),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              padding: const EdgeInsets.all(16),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
                 childAspectRatio: 1,
                 crossAxisSpacing: 8,
@@ -687,12 +691,12 @@ class _BatchImageGeneratorState extends State<BatchImageGenerator> {
                         onPressed: () =>
                             _aiService.saveImageToGallery(_images[index]),
                         icon: Container(
-                          padding: EdgeInsets.all(4),
+                          padding: const EdgeInsets.all(4),
                           decoration: BoxDecoration(
                             color: Colors.black.withValues(alpha: 0.7),
                             borderRadius: BorderRadius.circular(16),
                           ),
-                          child: Icon(Icons.download,
+                          child: const Icon(Icons.download,
                               color: Colors.white, size: 16),
                         ),
                       ),
@@ -707,6 +711,8 @@ class _BatchImageGeneratorState extends State<BatchImageGenerator> {
 
 // Example 4: Vision AI with Camera
 class VisionAIExample extends StatefulWidget {
+  const VisionAIExample({super.key});
+
   @override
   _VisionAIExampleState createState() => _VisionAIExampleState();
 }
@@ -763,7 +769,7 @@ class _VisionAIExampleState extends State<VisionAIExample> {
   }
 
   Widget _buildImageWidget() {
-    if (_imageFile == null) return SizedBox.shrink();
+    if (_imageFile == null) return const SizedBox.shrink();
 
     return Container(
       height: 250,
@@ -774,7 +780,7 @@ class _VisionAIExampleState extends State<VisionAIExample> {
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 8,
-            offset: Offset(0, 4),
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -787,7 +793,7 @@ class _VisionAIExampleState extends State<VisionAIExample> {
                 errorBuilder: (context, error, stackTrace) {
                   return Container(
                     color: Colors.grey[300],
-                    child: Center(
+                    child: const Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -806,7 +812,7 @@ class _VisionAIExampleState extends State<VisionAIExample> {
                 errorBuilder: (context, error, stackTrace) {
                   return Container(
                     color: Colors.grey[300],
-                    child: Center(
+                    child: const Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -831,10 +837,10 @@ class _VisionAIExampleState extends State<VisionAIExample> {
             onPressed: _loading
                 ? null
                 : () => _pickAndAnalyzeImage(ImageSource.camera),
-            icon: Icon(Icons.camera_alt),
-            label: Text('Camera'),
+            icon: const Icon(Icons.camera_alt),
+            label: const Text('Camera'),
             style: ElevatedButton.styleFrom(
-              padding: EdgeInsets.symmetric(vertical: 16),
+              padding: const EdgeInsets.symmetric(vertical: 16),
               backgroundColor: Colors.blue,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
@@ -843,16 +849,16 @@ class _VisionAIExampleState extends State<VisionAIExample> {
             ),
           ),
         ),
-        SizedBox(width: 12),
+        const SizedBox(width: 12),
         Expanded(
           child: ElevatedButton.icon(
             onPressed: _loading
                 ? null
                 : () => _pickAndAnalyzeImage(ImageSource.gallery),
-            icon: Icon(Icons.photo_library),
-            label: Text('Gallery'),
+            icon: const Icon(Icons.photo_library),
+            label: const Text('Gallery'),
             style: ElevatedButton.styleFrom(
-              padding: EdgeInsets.symmetric(vertical: 16),
+              padding: const EdgeInsets.symmetric(vertical: 16),
               backgroundColor: Colors.green,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
@@ -872,7 +878,7 @@ class _VisionAIExampleState extends State<VisionAIExample> {
           value: _progress > 0 ? _progress : null,
           strokeWidth: 3,
         ),
-        SizedBox(height: 16),
+        const SizedBox(height: 16),
         Text(
           'Analyzing image...',
           style: TextStyle(
@@ -882,7 +888,7 @@ class _VisionAIExampleState extends State<VisionAIExample> {
           ),
         ),
         if (_progress > 0) ...[
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           Text(
             '${(_progress * 100).toInt()}%',
             style: TextStyle(
@@ -896,7 +902,7 @@ class _VisionAIExampleState extends State<VisionAIExample> {
   }
 
   Widget _buildAnalysisWidget() {
-    if (_analysis.isEmpty) return SizedBox.shrink();
+    if (_analysis.isEmpty) return const SizedBox.shrink();
 
     final isError = _analysis.startsWith('Error') ||
         _analysis.startsWith('Failed') ||
@@ -909,7 +915,7 @@ class _VisionAIExampleState extends State<VisionAIExample> {
       ),
       child: Container(
         width: double.infinity,
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
           color: isError
@@ -926,7 +932,7 @@ class _VisionAIExampleState extends State<VisionAIExample> {
                   color: isError ? Colors.red : Colors.blue,
                   size: 20,
                 ),
-                SizedBox(width: 8),
+                const SizedBox(width: 8),
                 Text(
                   isError ? 'Analysis Error' : 'Image Analysis',
                   style: TextStyle(
@@ -937,10 +943,10 @@ class _VisionAIExampleState extends State<VisionAIExample> {
                 ),
               ],
             ),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
             SelectableText(
               _analysis,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 14,
                 height: 1.5,
                 color: Colors.black87,
@@ -957,7 +963,7 @@ class _VisionAIExampleState extends State<VisionAIExample> {
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           'Vision AI',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
@@ -968,13 +974,13 @@ class _VisionAIExampleState extends State<VisionAIExample> {
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: EdgeInsets.all(16),
+          padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Instructions
               Container(
-                padding: EdgeInsets.all(16),
+                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: Colors.blue.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
@@ -982,8 +988,8 @@ class _VisionAIExampleState extends State<VisionAIExample> {
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.info_outline, color: Colors.blue),
-                    SizedBox(width: 12),
+                    const Icon(Icons.info_outline, color: Colors.blue),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         'Take a photo or select an image from gallery to get AI-powered analysis.',
@@ -996,15 +1002,15 @@ class _VisionAIExampleState extends State<VisionAIExample> {
                   ],
                 ),
               ),
-              SizedBox(height: 24),
+              const SizedBox(height: 24),
 
               // Action Buttons
               _buildActionButtons(),
-              SizedBox(height: 24),
+              const SizedBox(height: 24),
 
               // Image Display
               _buildImageWidget(),
-              if (_imageFile != null) SizedBox(height: 24),
+              if (_imageFile != null) const SizedBox(height: 24),
 
               // Loading or Analysis
               if (_loading) ...[
@@ -1015,9 +1021,9 @@ class _VisionAIExampleState extends State<VisionAIExample> {
 
               // API Key Warning
               if (AIService.OPENROUTER_API_KEY == 'YOUR_API_KEY_HERE') ...[
-                SizedBox(height: 24),
+                const SizedBox(height: 24),
                 Container(
-                  padding: EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: Colors.orange.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
@@ -1026,8 +1032,8 @@ class _VisionAIExampleState extends State<VisionAIExample> {
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.warning_amber, color: Colors.orange),
-                      SizedBox(width: 12),
+                      const Icon(Icons.warning_amber, color: Colors.orange),
+                      const SizedBox(width: 12),
                       Expanded(
                         child: Text(
                           'Please replace YOUR_API_KEY_HERE with your actual OpenRouter API key.',
@@ -1100,17 +1106,17 @@ mixin AIServiceMixin<T extends StatefulWidget> on State<T> {
   }
 
   Widget buildAILoadingIndicator() {
-    if (!isAILoading) return SizedBox.shrink();
+    if (!isAILoading) return const SizedBox.shrink();
 
     return Container(
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          CircularProgressIndicator(),
-          SizedBox(height: 8),
+          const CircularProgressIndicator(),
+          const SizedBox(height: 8),
           LinearProgressIndicator(value: aiProgress),
-          SizedBox(height: 4),
+          const SizedBox(height: 4),
           Text('${(aiProgress * 100).toInt()}%'),
         ],
       ),
@@ -1120,6 +1126,8 @@ mixin AIServiceMixin<T extends StatefulWidget> on State<T> {
 
 // Example 6: Using AI Service Mixin in a custom widget
 class ChatWithAI extends StatefulWidget {
+  const ChatWithAI({super.key});
+
   @override
   _ChatWithAIState createState() => _ChatWithAIState();
 }
@@ -1149,7 +1157,7 @@ class _ChatWithAIState extends State<ChatWithAI> with AIServiceMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('AI Chat')),
+      appBar: AppBar(title: const Text('AI Chat')),
       body: Column(
         children: [
           Expanded(
@@ -1163,7 +1171,7 @@ class _ChatWithAIState extends State<ChatWithAI> with AIServiceMixin {
           ),
           buildAILoadingIndicator(),
           Padding(
-            padding: EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
             child: Row(
               children: [
                 Expanded(
@@ -1177,11 +1185,11 @@ class _ChatWithAIState extends State<ChatWithAI> with AIServiceMixin {
                     ),
                   ),
                 ),
-                SizedBox(width: 8),
+                const SizedBox(width: 8),
                 FloatingActionButton(
                   onPressed: isAILoading ? null : _sendMessage,
-                  child: Icon(Icons.send),
                   mini: true,
+                  child: const Icon(Icons.send),
                 ),
               ],
             ),
@@ -1202,26 +1210,26 @@ class ChatMessage {
 class ChatBubble extends StatelessWidget {
   final ChatMessage message;
 
-  const ChatBubble({required this.message});
+  const ChatBubble({super.key, required this.message});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: Row(
         mainAxisAlignment:
             message.isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
         children: [
           if (!message.isUser) ...[
-            CircleAvatar(
+            const CircleAvatar(
               backgroundColor: Colors.blue,
               child: Icon(Icons.smart_toy, color: Colors.white),
             ),
-            SizedBox(width: 8),
+            const SizedBox(width: 8),
           ],
           Flexible(
             child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
                 color: message.isUser ? Colors.blue : Colors.grey[300],
                 borderRadius: BorderRadius.circular(18),
@@ -1235,8 +1243,8 @@ class ChatBubble extends StatelessWidget {
             ),
           ),
           if (message.isUser) ...[
-            SizedBox(width: 8),
-            CircleAvatar(
+            const SizedBox(width: 8),
+            const CircleAvatar(
               backgroundColor: Colors.green,
               child: Icon(Icons.person, color: Colors.white),
             ),
@@ -1353,7 +1361,7 @@ class AIServiceWithRetry {
             results.add(AIResponse.error('Failed after $maxRetries attempts'));
           }
 
-          await Future.delayed(Duration(seconds: 1));
+          await Future.delayed(const Duration(seconds: 1));
         } catch (e) {
           if (attempt == maxRetries - 1) {
             results.add(AIResponse.error('Exception: $e'));
@@ -1378,10 +1386,11 @@ class AIAnalytics {
   static void logTextGeneration(
       bool success, String model, Duration responseTime) {
     textGenerationCount++;
-    if (success)
+    if (success) {
       successfulGenerations++;
-    else
+    } else {
       failedGenerations++;
+    }
     modelUsageCount[model] = (modelUsageCount[model] ?? 0) + 1;
 
     final currentAvg = averageResponseTime[model] ?? 0.0;
@@ -1391,10 +1400,11 @@ class AIAnalytics {
   static void logImageGeneration(
       bool success, String model, Duration responseTime) {
     imageGenerationCount++;
-    if (success)
+    if (success) {
       successfulGenerations++;
-    else
+    } else {
       failedGenerations++;
+    }
     modelUsageCount[model] = (modelUsageCount[model] ?? 0) + 1;
 
     final currentAvg = averageResponseTime[model] ?? 0.0;
@@ -1583,7 +1593,7 @@ class AIService {
 
       // Small delay to avoid rate limits
       if (i < count - 1) {
-        await Future.delayed(Duration(milliseconds: 500));
+        await Future.delayed(const Duration(milliseconds: 500));
       }
     }
 
@@ -1931,6 +1941,8 @@ class AdminConfig {
 }
 
 class EnhancedAIGenerator extends StatefulWidget {
+  const EnhancedAIGenerator({super.key});
+
   @override
   _EnhancedAIGeneratorState createState() => _EnhancedAIGeneratorState();
 }
@@ -1967,9 +1979,9 @@ class _EnhancedAIGeneratorState extends State<EnhancedAIGenerator>
   void initState() {
     super.initState();
     _fadeController =
-        AnimationController(duration: Duration(milliseconds: 500), vsync: this);
+        AnimationController(duration: const Duration(milliseconds: 500), vsync: this);
     _scaleController =
-        AnimationController(duration: Duration(milliseconds: 300), vsync: this);
+        AnimationController(duration: const Duration(milliseconds: 300), vsync: this);
   }
 
   @override
@@ -1985,7 +1997,7 @@ class _EnhancedAIGeneratorState extends State<EnhancedAIGenerator>
       floatingActionButton: FloatingActionButton(
         onPressed: _toggleAdminPanel,
         backgroundColor: Colors.yellow,
-        child: Icon(Icons.admin_panel_settings, color: Colors.black),
+        child: const Icon(Icons.admin_panel_settings, color: Colors.black),
       ),
     );
   }
@@ -2003,27 +2015,27 @@ class _EnhancedAIGeneratorState extends State<EnhancedAIGenerator>
 
   Widget _buildHeader() {
     return Container(
-      padding: EdgeInsets.fromLTRB(20, 50, 20, 20),
+      padding: const EdgeInsets.fromLTRB(20, 50, 20, 20),
       child: Row(
         children: [
           Container(
-            padding: EdgeInsets.all(12),
+            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
+              gradient: const LinearGradient(
                 colors: [Colors.yellow, Colors.orange],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(15),
             ),
-            child: Icon(Icons.auto_awesome, color: Colors.black, size: 28),
+            child: const Icon(Icons.auto_awesome, color: Colors.black, size: 28),
           ),
-          SizedBox(width: 15),
+          const SizedBox(width: 15),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                const Text(
                   'AI Studio',
                   style: TextStyle(
                     color: Colors.white,
@@ -2063,11 +2075,11 @@ class _EnhancedAIGeneratorState extends State<EnhancedAIGenerator>
       },
     ];
 
-    return Container(
+    return SizedBox(
       height: 120,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        padding: EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         itemCount: modes.length,
         itemBuilder: (context, index) {
           final mode = modes[index];
@@ -2076,9 +2088,9 @@ class _EnhancedAIGeneratorState extends State<EnhancedAIGenerator>
           return GestureDetector(
             onTap: () => setState(() => _selectedMode = index),
             child: AnimatedContainer(
-              duration: Duration(milliseconds: 300),
-              margin: EdgeInsets.only(right: 12),
-              padding: EdgeInsets.all(16),
+              duration: const Duration(milliseconds: 300),
+              margin: const EdgeInsets.only(right: 12),
+              padding: const EdgeInsets.all(16),
               width: 100,
               decoration: BoxDecoration(
                 gradient: isSelected
@@ -2106,7 +2118,7 @@ class _EnhancedAIGeneratorState extends State<EnhancedAIGenerator>
                     color: isSelected ? Colors.white : Colors.grey[400],
                     size: 28,
                   ),
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   Text(
                     mode['title'] as String,
                     style: TextStyle(
@@ -2126,7 +2138,7 @@ class _EnhancedAIGeneratorState extends State<EnhancedAIGenerator>
 
   Widget _buildInputSection() {
     return Container(
-      margin: EdgeInsets.all(16),
+      margin: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.grey[900],
         borderRadius: BorderRadius.circular(20),
@@ -2136,10 +2148,10 @@ class _EnhancedAIGeneratorState extends State<EnhancedAIGenerator>
         children: [
           if (_selectedMode >= 3) _buildImageSelector(),
           Container(
-            padding: EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
             child: TextField(
               controller: _promptController,
-              style: TextStyle(color: Colors.white, fontSize: 16),
+              style: const TextStyle(color: Colors.white, fontSize: 16),
               maxLines: 3,
               decoration: InputDecoration(
                 hintText: _getHintText(),
@@ -2154,16 +2166,16 @@ class _EnhancedAIGeneratorState extends State<EnhancedAIGenerator>
           ),
           if (_progress > 0 && (_isLoadingText || _isLoadingImages))
             Container(
-              margin: EdgeInsets.fromLTRB(16, 0, 16, 8),
+              margin: const EdgeInsets.fromLTRB(16, 0, 16, 8),
               child: LinearProgressIndicator(
                 value: _progress,
                 backgroundColor: Colors.grey[800],
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.yellow),
+                valueColor: const AlwaysStoppedAnimation<Color>(Colors.yellow),
               ),
             ),
           Container(
             width: double.infinity,
-            margin: EdgeInsets.fromLTRB(16, 0, 16, 16),
+            margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             child: ElevatedButton.icon(
               onPressed: (_isLoadingText || _isLoadingImages)
                   ? null
@@ -2171,13 +2183,13 @@ class _EnhancedAIGeneratorState extends State<EnhancedAIGenerator>
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.yellow,
                 foregroundColor: Colors.black,
-                padding: EdgeInsets.symmetric(vertical: 16),
+                padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
               icon: (_isLoadingText || _isLoadingImages)
-                  ? SizedBox(
+                  ? const SizedBox(
                       width: 16,
                       height: 16,
                       child: CircularProgressIndicator(
@@ -2190,7 +2202,7 @@ class _EnhancedAIGeneratorState extends State<EnhancedAIGenerator>
                 (_isLoadingText || _isLoadingImages)
                     ? 'Generating...'
                     : 'Generate ${_getModeTitle()}',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
             ),
           ),
@@ -2201,7 +2213,7 @@ class _EnhancedAIGeneratorState extends State<EnhancedAIGenerator>
 
   Widget _buildImageSelector() {
     return Container(
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       child: Row(
         children: [
           GestureDetector(
@@ -2229,14 +2241,14 @@ class _EnhancedAIGeneratorState extends State<EnhancedAIGenerator>
                       color: Colors.grey[500], size: 32),
             ),
           ),
-          SizedBox(width: 12),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   _selectedImage != null ? 'Image Selected' : 'Select Image',
-                  style: TextStyle(
+                  style: const TextStyle(
                       color: Colors.white, fontWeight: FontWeight.w600),
                 ),
                 Text(
@@ -2255,7 +2267,7 @@ class _EnhancedAIGeneratorState extends State<EnhancedAIGenerator>
 
   Widget _buildOutputSection() {
     return Container(
-      margin: EdgeInsets.fromLTRB(16, 0, 16, 16),
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       decoration: BoxDecoration(
         color: Colors.grey[900],
         borderRadius: BorderRadius.circular(20),
@@ -2264,20 +2276,20 @@ class _EnhancedAIGeneratorState extends State<EnhancedAIGenerator>
       child: Column(
         children: [
           Container(
-            padding: EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
             child: Row(
               children: [
                 Icon(_getModeIcon(), color: Colors.yellow),
-                SizedBox(width: 8),
+                const SizedBox(width: 8),
                 Text(
                   'Generated ${_getModeTitle()}',
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                Spacer(),
+                const Spacer(),
                 if (_hasOutput())
                   IconButton(
                     onPressed: _clearOutput,
@@ -2304,10 +2316,10 @@ class _EnhancedAIGeneratorState extends State<EnhancedAIGenerator>
             Icons.text_fields, 'Generated text will appear here');
       } else {
         return SingleChildScrollView(
-          padding: EdgeInsets.all(16),
+          padding: const EdgeInsets.all(16),
           child: SelectableText(
             _generatedText,
-            style: TextStyle(color: Colors.white, fontSize: 15, height: 1.5),
+            style: const TextStyle(color: Colors.white, fontSize: 15, height: 1.5),
           ),
         );
       }
@@ -2326,7 +2338,7 @@ class _EnhancedAIGeneratorState extends State<EnhancedAIGenerator>
 
   Widget _buildImageGrid() {
     return GridView.builder(
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: _generatedImages.length == 1 ? 1 : 2,
         childAspectRatio: 1,
@@ -2364,13 +2376,13 @@ class _EnhancedAIGeneratorState extends State<EnhancedAIGenerator>
                   children: [
                     IconButton(
                       onPressed: () => _downloadImage(imageUrl, index),
-                      icon: Icon(Icons.download, color: Colors.white, size: 20),
-                      constraints: BoxConstraints(minWidth: 32, minHeight: 32),
+                      icon: const Icon(Icons.download, color: Colors.white, size: 20),
+                      constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
                     ),
                     IconButton(
                       onPressed: () => _shareImage(imageUrl),
-                      icon: Icon(Icons.share, color: Colors.white, size: 20),
-                      constraints: BoxConstraints(minWidth: 32, minHeight: 32),
+                      icon: const Icon(Icons.share, color: Colors.white, size: 20),
+                      constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
                     ),
                   ],
                 ),
@@ -2415,8 +2427,8 @@ class _EnhancedAIGeneratorState extends State<EnhancedAIGenerator>
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.error, color: Colors.red, size: 32),
-                  SizedBox(height: 8),
+                  const Icon(Icons.error, color: Colors.red, size: 32),
+                  const SizedBox(height: 8),
                   Text('Failed to load',
                       style: TextStyle(color: Colors.grey[400], fontSize: 12)),
                 ],
@@ -2433,20 +2445,20 @@ class _EnhancedAIGeneratorState extends State<EnhancedAIGenerator>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(color: Colors.yellow),
-          SizedBox(height: 16),
+          const CircularProgressIndicator(color: Colors.yellow),
+          const SizedBox(height: 16),
           Text(message, style: TextStyle(color: Colors.grey[400])),
           if (_progress > 0) ...[
-            SizedBox(height: 16),
-            Container(
+            const SizedBox(height: 16),
+            SizedBox(
               width: 200,
               child: LinearProgressIndicator(
                 value: _progress,
                 backgroundColor: Colors.grey[800],
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.yellow),
+                valueColor: const AlwaysStoppedAnimation<Color>(Colors.yellow),
               ),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Text('${(_progress * 100).toInt()}%',
                 style: TextStyle(color: Colors.grey[400], fontSize: 12)),
           ],
@@ -2461,7 +2473,7 @@ class _EnhancedAIGeneratorState extends State<EnhancedAIGenerator>
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(icon, color: Colors.grey[600], size: 48),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           Text(message,
               style: TextStyle(color: Colors.grey[400], fontSize: 16)),
         ],
@@ -2474,8 +2486,8 @@ class _EnhancedAIGeneratorState extends State<EnhancedAIGenerator>
       color: Colors.black.withValues(alpha: 0.9),
       child: Center(
         child: Container(
-          margin: EdgeInsets.all(20),
-          padding: EdgeInsets.all(20),
+          margin: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             color: Colors.grey[900],
             borderRadius: BorderRadius.circular(16),
@@ -2486,26 +2498,26 @@ class _EnhancedAIGeneratorState extends State<EnhancedAIGenerator>
             children: [
               Row(
                 children: [
-                  Icon(Icons.admin_panel_settings, color: Colors.yellow),
-                  SizedBox(width: 8),
-                  Text('Admin Panel',
+                  const Icon(Icons.admin_panel_settings, color: Colors.yellow),
+                  const SizedBox(width: 8),
+                  const Text('Admin Panel',
                       style: TextStyle(
                           color: Colors.white,
                           fontSize: 18,
                           fontWeight: FontWeight.bold)),
-                  Spacer(),
+                  const Spacer(),
                   IconButton(
                     onPressed: () => setState(() => _showAdminPanel = false),
                     icon: Icon(Icons.close, color: Colors.grey[400]),
                   ),
                 ],
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               if (!_isAdminAuthenticated) ...[
                 TextField(
                   controller: _adminPasswordController,
                   obscureText: true,
-                  style: TextStyle(color: Colors.white),
+                  style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
                     hintText: 'Enter admin password',
                     hintStyle: TextStyle(color: Colors.grey[500]),
@@ -2515,13 +2527,13 @@ class _EnhancedAIGeneratorState extends State<EnhancedAIGenerator>
                         borderSide: BorderSide(color: Colors.grey[700]!)),
                   ),
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: _authenticateAdmin,
-                  child: Text('Login'),
                   style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.yellow,
                       foregroundColor: Colors.black),
+                  child: const Text('Login'),
                 ),
               ] else ...[
                 _buildAdminControls(),
@@ -2536,9 +2548,9 @@ class _EnhancedAIGeneratorState extends State<EnhancedAIGenerator>
   Widget _buildAdminControls() {
     return Column(
       children: [
-        Text('Max Images per Generation',
+        const Text('Max Images per Generation',
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        SizedBox(height: 8),
+        const SizedBox(height: 8),
         Slider(
           value: AdminConfig.maxImageGeneration.toDouble(),
           min: 1,
@@ -2553,12 +2565,12 @@ class _EnhancedAIGeneratorState extends State<EnhancedAIGenerator>
         ),
         Text('${AdminConfig.maxImageGeneration} images',
             style: TextStyle(color: Colors.grey[400])),
-        SizedBox(height: 20),
-        Text('Features',
+        const SizedBox(height: 20),
+        const Text('Features',
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         ...AdminConfig.enabledFeatures.entries.map((entry) {
           return CheckboxListTile(
-            title: Text(entry.key, style: TextStyle(color: Colors.white)),
+            title: Text(entry.key, style: const TextStyle(color: Colors.white)),
             value: entry.value,
             activeColor: Colors.yellow,
             onChanged: (value) {
@@ -2567,7 +2579,7 @@ class _EnhancedAIGeneratorState extends State<EnhancedAIGenerator>
               });
             },
           );
-        }).toList(),
+        }),
       ],
     );
   }
@@ -2880,7 +2892,7 @@ class _EnhancedAIGeneratorState extends State<EnhancedAIGenerator>
         content: Text(message),
         backgroundColor: Colors.yellow[700],
         behavior: SnackBarBehavior.floating,
-        margin: EdgeInsets.all(16),
+        margin: const EdgeInsets.all(16),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
     );

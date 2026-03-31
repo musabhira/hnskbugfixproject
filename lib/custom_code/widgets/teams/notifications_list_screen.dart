@@ -5,7 +5,7 @@ import 'package:pocket_mates_app/custom_code/widgets/teams/notifications_local_s
 import 'package:pocket_mates_app/custom_code/widgets/teams/teams_service.dart';
 
 class NotificationsListScreen extends StatefulWidget {
-  const NotificationsListScreen({Key? key}) : super(key: key);
+  const NotificationsListScreen({super.key});
 
   @override
   State<NotificationsListScreen> createState() =>

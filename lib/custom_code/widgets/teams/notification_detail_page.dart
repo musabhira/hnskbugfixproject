@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:pocket_mates_app/custom_code/widgets/teams/teams_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/teams/teams_service.dart';
 
 class NotificationDetailPage extends StatefulWidget {
@@ -10,10 +7,10 @@ class NotificationDetailPage extends StatefulWidget {
   final VoidCallback onUpdate;
 
   const NotificationDetailPage({
-    Key? key,
+    super.key,
     required this.notification,
     required this.onUpdate,
-  }) : super(key: key);
+  });
 
   @override
   State<NotificationDetailPage> createState() => _NotificationDetailPageState();

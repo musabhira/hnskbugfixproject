@@ -96,8 +96,9 @@ class MarketNotifier extends Notifier<MarketState> {
                 userTrending.map((e) => e['category'].toString()).toList();
             List<String> prioritized = ['All'];
             for (var t in trending) {
-              if (orderedCategories.contains(t) && t != 'All')
+              if (orderedCategories.contains(t) && t != 'All') {
                 prioritized.add(t);
+              }
             }
             for (var c in orderedCategories) {
               if (!prioritized.contains(c)) prioritized.add(c);
@@ -120,7 +121,9 @@ class MarketNotifier extends Notifier<MarketState> {
     final page = isRefresh ? 0 : (state.currentPage[category] ?? 0);
     if (!isRefresh &&
         (state.itemsByCategory[category]?.isNotEmpty ?? false) &&
-        state.hasMore[category] == false) return;
+        state.hasMore[category] == false) {
+      return;
+    }
 
     try {
       if (isRefresh) {
@@ -166,7 +169,9 @@ class MarketNotifier extends Notifier<MarketState> {
 
   Future<void> loadMore(String category) async {
     if (state.isLoadingMore[category] == true ||
-        state.hasMore[category] == false) return;
+        state.hasMore[category] == false) {
+      return;
+    }
 
     final Map<String, bool> loadingMore = Map.from(state.isLoadingMore);
     loadingMore[category] = true;

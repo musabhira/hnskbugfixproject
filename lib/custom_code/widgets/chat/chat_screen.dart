@@ -360,14 +360,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(FluentIcons.error, color: Colors.red, size: 48),
-                      SizedBox(height: 16),
-                      Text("Error loading messages",
+                      const SizedBox(height: 16),
+                      const Text("Error loading messages",
                           style: TextStyle(color: Colors.white)),
-                      SizedBox(height: 8),
+                      const SizedBox(height: 8),
                       Button(
                         onPressed: () => ref
                             .invalidate(chatMessagesProvider(widget.groupId)),
-                        child: Text('Retry'),
+                        child: const Text('Retry'),
                       ),
                     ],
                   ),
@@ -726,12 +726,12 @@ class _MessageBubble extends StatelessWidget {
         margin: const EdgeInsets.symmetric(vertical: 4),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
-          gradient: LinearGradient(
+          gradient: const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                const Color(0xFF262626),
-                const Color(0xFF1E1E1E),
+                Color(0xFF262626),
+                Color(0xFF1E1E1E),
               ]),
           border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
           boxShadow: [
@@ -787,7 +787,7 @@ class _MessageBubble extends StatelessWidget {
                                 }
                               }
                             } catch (_) {}
-                            return Icon(FluentIcons.contact,
+                            return const Icon(FluentIcons.contact,
                                 size: 12, color: Colors.white);
                           }(),
                         ),
