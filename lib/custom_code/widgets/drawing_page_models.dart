@@ -98,7 +98,21 @@ class DrawingStroke {
   final bool isEraser;
   final double opacity;
   final BrushType brushType;
-  DrawingStroke({required this.color, required this.strokeWidth, required this.points, this.isEraser = false, this.opacity = 1.0, this.brushType = BrushType.pen});
+  final ShapeTool? shapeType;
+  final Offset? shapeEnd;
+  final bool isFilled;
+
+  DrawingStroke({
+    required this.color,
+    required this.strokeWidth,
+    required this.points,
+    this.isEraser = false,
+    this.opacity = 1.0,
+    this.brushType = BrushType.pen,
+    this.shapeType,
+    this.shapeEnd,
+    this.isFilled = false,
+  });
 }
 
 class DrawingLayer {

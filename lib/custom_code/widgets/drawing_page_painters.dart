@@ -26,8 +26,13 @@ class LayerPainter extends CustomPainter {
       ..color = stroke.color.withValues(alpha: stroke.opacity)
       ..strokeWidth = stroke.strokeWidth
       ..strokeJoin = StrokeJoin.round
-      ..style = PaintingStyle.stroke
+      ..style = stroke.isFilled ? PaintingStyle.fill : PaintingStyle.stroke
       ..isAntiAlias = true;
+
+    if (stroke.shapeType != null && stroke.shapeEnd != null) {
+      _drawShape(canvas, stroke.shapeType!, stroke.points[0].offset, stroke.shapeEnd!, paint);
+      return;
+    }
 
     // Brush-specific rendering
     switch (stroke.brushType) {
@@ -103,6 +108,55 @@ class LayerPainter extends CustomPainter {
         ..style = PaintingStyle.stroke
         ..maskFilter = MaskFilter.blur(BlurStyle.normal, stroke.strokeWidth * 3);
       canvas.drawPath(path, glowPaint);
+    }
+  }
+
+  void _drawShape(Canvas canvas, ShapeTool shape, Offset start, Offset end, Paint paint) {
+    switch (shape) {
+      case ShapeTool.line:
+        canvas.drawLine(start, end, paint);
+        break;
+      case ShapeTool.rectangle:
+        canvas.drawRect(Rect.fromPoints(start, end), paint);
+        break;
+      case ShapeTool.circle:
+        final center = Offset((start.dx + end.dx) / 2, (start.dy + end.dy) / 2);
+        final radius = (end - start).distance / 2;
+        canvas.drawCircle(center, radius, paint);
+        break;
+      case ShapeTool.triangle:
+        final path = Path();
+        path.moveTo((start.dx + end.dx) / 2, start.dy);
+        path.lineTo(end.dx, end.dy);
+        path.lineTo(start.dx, end.dy);
+        path.close();
+        canvas.drawPath(path, paint);
+        break;
+      case ShapeTool.arrow:
+        canvas.drawLine(start, end, paint);
+        final angle = math.atan2(end.dy - start.dy, end.dx - start.dx);
+        final arrowLen = 20.0;
+        final p1 = Offset(end.dx - arrowLen * math.cos(angle - 0.4), end.dy - arrowLen * math.sin(angle - 0.4));
+        final p2 = Offset(end.dx - arrowLen * math.cos(angle + 0.4), end.dy - arrowLen * math.sin(angle + 0.4));
+        canvas.drawLine(end, p1, paint);
+        canvas.drawLine(end, p2, paint);
+        break;
+      case ShapeTool.star:
+        final cx = (start.dx + end.dx) / 2;
+        final cy = (start.dy + end.dy) / 2;
+        final r = (end - start).distance / 2;
+        final ir = r * 0.4;
+        final path = Path();
+        for (int i = 0; i < 10; i++) {
+          final angle = (i * math.pi / 5) - math.pi / 2;
+          final radius = i.isEven ? r : ir;
+          final x = cx + radius * math.cos(angle);
+          final y = cy + radius * math.sin(angle);
+          if (i == 0) path.moveTo(x, y); else path.lineTo(x, y);
+        }
+        path.close();
+        canvas.drawPath(path, paint);
+        break;
     }
   }
 
