@@ -213,38 +213,46 @@ class _DrawingAppHomeState extends State<DrawingAppHome> {
   Widget _buildDrawingCard(File file) {
     return GestureDetector(
       onTap: () {
-        // Option to view or resume
-        Navigator.push(context, MaterialPageRoute(builder: (context) => const DrawingPage()));
+        Navigator.push(context, MaterialPageRoute(builder: (context) => DrawingPage(sessionPath: file.path.replaceAll('.png', '.json'))));
       },
       child: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFF1A1A1A),
-          borderRadius: BorderRadius.circular(16),
+          color: const Color(0xFF1E1E1E),
+          borderRadius: BorderRadius.circular(20),
           image: DecorationImage(image: FileImage(file), fit: BoxFit.cover),
           border: Border.all(color: Colors.white10),
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 4))],
         ),
         clipBehavior: Clip.antiAlias,
-        child: Align(
-          alignment: Alignment.bottomCenter,
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.bottomCenter,
-                end: Alignment.topCenter,
-                colors: [Colors.black, Colors.transparent],
-              ),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.bottomCenter,
+              end: Alignment.topCenter,
+              colors: [Colors.black.withValues(alpha: 0.8), Colors.transparent],
             ),
-            child: Text(
-              _getFileName(file.path),
-              style: GoogleFonts.outfit(color: Colors.white, fontSize: 12),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _getFileName(file.path),
+                  style: GoogleFonts.outfit(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Text(
+                  'Last modified: ${file.lastModifiedSync().day}/${file.lastModifiedSync().month}',
+                  style: GoogleFonts.outfit(color: Colors.white54, fontSize: 10),
+                ),
+              ],
             ),
           ),
         ),
-      ).animate().fadeIn(delay: 100.ms).scale(),
+      ).animate().fadeIn(delay: 100.ms).moveY(begin: 20, end: 0),
     );
   }
 

@@ -16,7 +16,8 @@ import 'drawing_page_models.dart';
 import 'drawing_page_painters.dart';
 
 class DrawingPage extends StatefulWidget {
-  const DrawingPage({super.key});
+  final String? sessionPath;
+  const DrawingPage({super.key, this.sessionPath});
   @override
   State<DrawingPage> createState() => _DrawingPageState();
 }
@@ -66,6 +67,11 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
   SymmetryMode _symmetryMode = SymmetryMode.none;
   List<String> _recentDrawingsPaths = [];
   Offset _sidebarOffset = const Offset(8, 0);
+  double _sidebarRotation = 0.0;
+  double _sidebarScale = 1.0;
+  double _lastRotation = 0.0;
+  double _lastScale = 1.0;
+  bool _isVerticalSidebar = true;
 
   // Canvas
   final TransformationController _transformationController = TransformationController();
@@ -87,7 +93,11 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
       setState(() {
         _sidebarOffset = Offset(8, (size.height - 400) / 2);
       });
-      _checkLastSession();
+      if (widget.sessionPath != null) {
+        _loadSession(widget.sessionPath!);
+      } else {
+        _checkLastSession();
+      }
     });
   }
 
@@ -247,16 +257,9 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
       final fillColor = _selectedColor;
       
       setState(() {
-        _layers[_activeLayerIndex].strokes.add(DrawingStroke(
-          color: fillColor,
-          strokeWidth: 1.0,
-          points: [DrawingPoint(startPos, 1.0)],
-          brushType: BrushType.fill,
-          isFilled: true,
-          shapeType: ShapeTool.rectangle, // Represent as a generic fill
-          shapeEnd: Offset(width.toDouble(), height.toDouble()),
-        ));
+        _layers[_activeLayerIndex].backgroundColor = fillColor;
       });
+      _autoSave();
       
     } catch (e) {
       debugPrint("Fill error: $e");
@@ -279,6 +282,7 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
         _shapeStart = null;
         _shapeEnd = null;
       });
+      _autoSave();
       return;
     }
     if (_currentStroke != null) {
@@ -325,25 +329,40 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
     } catch (e) { debugPrint("AutoSave error: $e"); }
   }
 
-  Future<void> _loadSession() async {
+  Future<void> _loadSession([String? path]) async {
     try {
-      final dir = await getApplicationDocumentsDirectory();
-      final file = File('${dir.path}/current_session.json');
+      File file;
+      if (path != null) {
+        file = File(path);
+      } else {
+        final dir = await getApplicationDocumentsDirectory();
+        file = File('${dir.path}/current_session.json');
+      }
+      
       if (!await file.exists()) return;
       
       setState(() => _isLoadingSession = true);
       final json = jsonDecode(await file.readAsString());
       final List layersJson = json['layers'];
       
+      final List<DrawingLayer> loadedLayers = [];
+      for (var lj in layersJson) {
+        final layer = DrawingLayer.fromJson(lj);
+        if (layer.imageBytes != null) {
+          final ui.Codec codec = await ui.instantiateImageCodec(layer.imageBytes!);
+          final ui.FrameInfo frameInfo = await codec.getNextFrame();
+          layer.importedImage = frameInfo.image;
+        }
+        loadedLayers.add(layer);
+      }
+
       setState(() {
         _layers.clear();
-        for (var lj in layersJson) {
-          _layers.add(DrawingLayer.fromJson(lj));
-        }
+        _layers.addAll(loadedLayers);
         _activeLayerIndex = 0;
         _isLoadingSession = false;
       });
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Session Resumed!'), backgroundColor: Colors.green));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Session Loaded!'), backgroundColor: Colors.green));
     } catch (e) {
       debugPrint("Load error: $e");
       if (mounted) setState(() => _isLoadingSession = false);
@@ -528,10 +547,24 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
       final picker = ImagePicker();
       final picked = await picker.pickImage(source: ImageSource.gallery);
       if (picked == null) return;
+      
       final bytes = await picked.readAsBytes();
+      final ui.Codec codec = await ui.instantiateImageCodec(bytes);
+      final ui.FrameInfo frameInfo = await codec.getNextFrame();
+      final ui.Image image = frameInfo.image;
+
       setState(() {
-        _imageOverlays.add(ImageOverlay(id: DateTime.now().millisecondsSinceEpoch.toString(), bytes: bytes, position: Offset(_canvasSize / 2 - 150, _canvasSize / 2 - 150)));
+        final newLayer = DrawingLayer(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          name: 'Image Layer ${_layers.length + 1}',
+          importedImage: image,
+          imageBytes: bytes,
+          imageOffset: Offset(_canvasSize / 2 - image.width / 2, _canvasSize / 2 - image.height / 2),
+        );
+        _layers.add(newLayer);
+        _activeLayerIndex = _layers.length - 1;
       });
+      _autoSave();
     } catch (e) {
       debugPrint("Import error: $e");
     }
@@ -557,21 +590,93 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
 
   void _addText() {
     final controller = TextEditingController();
+    double tempFontSize = 40.0;
+    Color tempColor = _selectedColor;
+
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF1E1E1E),
-        title: Text('Add Text', style: GoogleFonts.outfit(color: Colors.white)),
-        content: TextField(controller: controller, autofocus: true, style: const TextStyle(color: Colors.white), decoration: const InputDecoration(hintText: 'Enter text...', hintStyle: TextStyle(color: Colors.white38))),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-          TextButton(onPressed: () {
-            if (controller.text.isNotEmpty) {
-              setState(() => _textOverlays.add(TextOverlay(id: DateTime.now().toString(), text: controller.text, position: Offset(_canvasSize / 2, _canvasSize / 2), color: _selectedColor, style: GoogleFonts.outfit())));
-              Navigator.pop(ctx);
-            }
-          }, child: const Text('Add', style: TextStyle(color: Colors.yellow))),
-        ],
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          backgroundColor: const Color(0xFF1E1E1E),
+          title: Text('Add Text', style: GoogleFonts.outfit(color: Colors.white)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: controller,
+                autofocus: true,
+                style: GoogleFonts.outfit(color: Colors.white, fontSize: tempFontSize / 2),
+                decoration: const InputDecoration(
+                  hintText: 'Enter text...',
+                  hintStyle: TextStyle(color: Colors.white38),
+                  enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white24)),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  const Icon(Icons.format_size, color: Colors.white54, size: 18),
+                  Expanded(
+                    child: Slider(
+                      value: tempFontSize,
+                      min: 10,
+                      max: 200,
+                      activeColor: Colors.amber,
+                      onChanged: (v) => setDialogState(() => tempFontSize = v),
+                    ),
+                  ),
+                  Text('${tempFontSize.toInt()}px', style: const TextStyle(color: Colors.white54, fontSize: 10)),
+                ],
+              ),
+              const SizedBox(height: 10),
+              GestureDetector(
+                onTap: () {
+                  showDialog(
+                    context: context,
+                    builder: (c) => AlertDialog(
+                      backgroundColor: const Color(0xFF1E1E1E),
+                      content: SingleChildScrollView(
+                        child: ColorPicker(
+                          pickerColor: tempColor,
+                          onColorChanged: (c) => setDialogState(() => tempColor = c),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+                child: Row(
+                  children: [
+                    const Icon(Icons.color_lens_outlined, color: Colors.white54, size: 18),
+                    const SizedBox(width: 12),
+                    Container(width: 40, height: 20, decoration: BoxDecoration(color: tempColor, borderRadius: BorderRadius.circular(4), border: Border.all(color: Colors.white24))),
+                    const SizedBox(width: 8),
+                    const Text('Select Color', style: TextStyle(color: Colors.white54, fontSize: 12)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+            TextButton(
+              onPressed: () {
+                if (controller.text.isNotEmpty) {
+                  setState(() => _textOverlays.add(TextOverlay(
+                    id: DateTime.now().millisecondsSinceEpoch.toString(),
+                    text: controller.text,
+                    position: Offset(_canvasSize / 2, _canvasSize / 2),
+                    color: tempColor,
+                    fontSize: tempFontSize,
+                    style: GoogleFonts.outfit(),
+                  )));
+                  _autoSave();
+                  Navigator.pop(ctx);
+                }
+              },
+              child: const Text('Add Text', style: TextStyle(color: Colors.amber, fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -623,7 +728,32 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
                           if (!layer.isVisible) return const SizedBox.shrink();
                           return Opacity(
                             opacity: layer.opacity,
-                            child: CustomPaint(painter: LayerPainter(strokes: layer.strokes, activeStroke: (_layers.indexOf(layer) == _activeLayerIndex) ? _currentStroke : null), size: Size(_canvasSize, _canvasSize)),
+                            child: Stack(
+                              children: [
+                                if (layer.backgroundColor != null)
+                                  Container(
+                                    width: _canvasSize,
+                                    height: _canvasSize,
+                                    color: layer.backgroundColor,
+                                  ),
+                                if (layer.importedImage != null)
+                                  Positioned(
+                                    left: layer.imageOffset.dx,
+                                    top: layer.imageOffset.dy,
+                                    child: Transform.scale(
+                                      scale: layer.imageScale,
+                                      child: RawImage(image: layer.importedImage),
+                                    ),
+                                  ),
+                                CustomPaint(
+                                  painter: LayerPainter(
+                                    strokes: layer.strokes, 
+                                    activeStroke: (_layers.indexOf(layer) == _activeLayerIndex) ? _currentStroke : null
+                                  ), 
+                                  size: Size(_canvasSize, _canvasSize)
+                                ),
+                              ],
+                            ),
                           );
                         }),
                         if (_activeTool == DrawingTool.shape && _shapeStart != null && _shapeEnd != null)
@@ -650,15 +780,31 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
             left: _sidebarOffset.dx,
             top: _sidebarOffset.dy,
             child: GestureDetector(
-              onPanUpdate: (details) {
+              onScaleStart: (details) {
+                _lastRotation = _sidebarRotation;
+                _lastScale = _sidebarScale;
+              },
+              onScaleUpdate: (details) {
                 setState(() {
-                  _sidebarOffset = Offset(
-                    (_sidebarOffset.dx + details.delta.dx).clamp(0, screenSize.width - 60),
-                    (_sidebarOffset.dy + details.delta.dy).clamp(0, screenSize.height - 450),
-                  );
+                  _sidebarRotation = _lastRotation + details.rotation;
+                  _sidebarScale = (_lastScale * details.scale).clamp(0.5, 2.0);
+                  
+                  // Handle drag if only one finger (translation delta)
+                  if (details.pointerCount == 1) {
+                    _sidebarOffset = Offset(
+                      (_sidebarOffset.dx + details.focalPointDelta.dx).clamp(0, screenSize.width - 60),
+                      (_sidebarOffset.dy + details.focalPointDelta.dy).clamp(0, screenSize.height - 400),
+                    );
+                  }
                 });
               },
-              child: _buildLeftSidebar(theme),
+              child: Transform.rotate(
+                angle: _sidebarRotation,
+                child: Transform.scale(
+                  scale: _sidebarScale,
+                  child: _buildLeftSidebar(theme),
+                ),
+              ),
             ),
           ),
 
@@ -778,6 +924,14 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
              else _symmetryMode = SymmetryMode.none;
           });
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Symmetry: ${_symmetryMode.name}'), duration: const Duration(seconds: 1)));
+        }),
+        const SizedBox(height: 14),
+        _sideBtn(Icons.image_outlined, false, _importImage),
+        const SizedBox(height: 8),
+        _sideBtn(Icons.sync_alt_rounded, false, () {
+          setState(() {
+            _sidebarRotation = (_sidebarRotation == 0) ? 1.5708 : 0; // Toggle 90 deg
+          });
         }),
       ]),
     );

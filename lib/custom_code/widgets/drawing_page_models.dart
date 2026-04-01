@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'dart:convert';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 
@@ -123,7 +124,7 @@ class DrawingStroke {
   });
 
   Map<String, dynamic> toJson() => {
-    'c': color.value,
+    'c': color.toARGB32(),
     'w': strokeWidth,
     'pts': points.map((p) => p.toJson()).toList(),
     'e': isEraser,
@@ -157,16 +158,20 @@ class DrawingLayer {
   List<DrawingStroke> redoStack;
   Color? backgroundColor;
   ui.Image? importedImage;
+  Uint8List? imageBytes;
   Offset imageOffset;
   double imageScale;
 
-  DrawingLayer({required this.id, required this.name, this.isVisible = true, this.isLocked = false, this.opacity = 1.0, List<DrawingStroke>? strokes, this.backgroundColor, this.importedImage, this.imageOffset = Offset.zero, this.imageScale = 1.0})
+  DrawingLayer({required this.id, required this.name, this.isVisible = true, this.isLocked = false, this.opacity = 1.0, List<DrawingStroke>? strokes, this.backgroundColor, this.importedImage, this.imageBytes, this.imageOffset = Offset.zero, this.imageScale = 1.0})
       : strokes = strokes ?? [], redoStack = [];
 
   Map<String, dynamic> toJson() => {
     'id': id, 'n': name, 'v': isVisible, 'l': isLocked, 'o': opacity,
     's': strokes.map((s) => s.toJson()).toList(),
-    'bg': backgroundColor?.value,
+    'bg': backgroundColor?.toARGB32(),
+    'ib': imageBytes != null ? base64Encode(imageBytes!) : null,
+    'ix': imageOffset.dx, 'iy': imageOffset.dy,
+    'is': imageScale,
   };
 
   factory DrawingLayer.fromJson(Map<String, dynamic> j) => DrawingLayer(
@@ -177,6 +182,9 @@ class DrawingLayer {
     opacity: j['o'] ?? 1.0,
     strokes: (j['s'] as List).map((s) => DrawingStroke.fromJson(s)).toList(),
     backgroundColor: j['bg'] != null ? Color(j['bg']) : null,
+    imageBytes: j['ib'] != null ? base64Decode(j['ib']) : null,
+    imageOffset: Offset(j['ix'] ?? 0.0, j['iy'] ?? 0.0),
+    imageScale: j['is'] ?? 1.0,
   );
 }
 
