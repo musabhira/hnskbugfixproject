@@ -3,9 +3,10 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 
 // ── Enums ──
-enum BrushType { pen, marker, pencil, airbrush, watercolor, chalk, charcoal, calligraphy, glow, fill }
-enum ShapeTool { line, rectangle, circle, triangle, arrow, star }
-enum DrawingTool { brush, eraser, lasso, shape, eyedropper, fillBucket, smudge, transform }
+enum BrushType { pen, marker, pencil, airbrush, watercolor, chalk, charcoal, calligraphy, glow, fill, sprinkle }
+enum ShapeTool { line, rectangle, circle, triangle, arrow, star, pentagon, hexagon }
+enum DrawingTool { brush, eraser, lasso, shape, eyedropper, fillBucket, smudge, transform, symmetry }
+enum SymmetryMode { none, horizontal, vertical, quad, radial }
 
 // ── Brush Info ──
 class BrushInfo {
@@ -89,6 +90,9 @@ class DrawingPoint {
   final Offset offset;
   final double pressure;
   DrawingPoint(this.offset, this.pressure);
+
+  Map<String, dynamic> toJson() => {'dx': offset.dx, 'dy': offset.dy, 'p': pressure};
+  factory DrawingPoint.fromJson(Map<String, dynamic> j) => DrawingPoint(Offset(j['dx'], j['dy']), j['p']);
 }
 
 class DrawingStroke {
@@ -101,6 +105,8 @@ class DrawingStroke {
   final ShapeTool? shapeType;
   final Offset? shapeEnd;
   final bool isFilled;
+  final ui.Image? fillImage;
+  final Offset? fillOffset;
 
   DrawingStroke({
     required this.color,
@@ -112,7 +118,35 @@ class DrawingStroke {
     this.shapeType,
     this.shapeEnd,
     this.isFilled = false,
+    this.fillImage,
+    this.fillOffset,
   });
+
+  Map<String, dynamic> toJson() => {
+    'c': color.value,
+    'w': strokeWidth,
+    'pts': points.map((p) => p.toJson()).toList(),
+    'e': isEraser,
+    'o': opacity,
+    'bt': brushType.index,
+    'st': shapeType?.index,
+    'se': shapeEnd != null ? {'dx': shapeEnd!.dx, 'dy': shapeEnd!.dy} : null,
+    'f': isFilled,
+    'fo': fillOffset != null ? {'dx': fillOffset!.dx, 'dy': fillOffset!.dy} : null,
+  };
+
+  factory DrawingStroke.fromJson(Map<String, dynamic> j) => DrawingStroke(
+    color: Color(j['c']),
+    strokeWidth: j['w'],
+    points: (j['pts'] as List).map((p) => DrawingPoint.fromJson(p)).toList(),
+    isEraser: j['e'] ?? false,
+    opacity: j['o'] ?? 1.0,
+    brushType: BrushType.values[j['bt'] ?? 0],
+    shapeType: j['st'] != null ? ShapeTool.values[j['st']] : null,
+    shapeEnd: j['se'] != null ? Offset(j['se']['dx'], j['se']['dy']) : null,
+    isFilled: j['f'] ?? false,
+    fillOffset: j['fo'] != null ? Offset(j['fo']['dx'], j['fo']['dy']) : null,
+  );
 }
 
 class DrawingLayer {
@@ -128,6 +162,22 @@ class DrawingLayer {
 
   DrawingLayer({required this.id, required this.name, this.isVisible = true, this.isLocked = false, this.opacity = 1.0, List<DrawingStroke>? strokes, this.backgroundColor, this.importedImage, this.imageOffset = Offset.zero, this.imageScale = 1.0})
       : strokes = strokes ?? [], redoStack = [];
+
+  Map<String, dynamic> toJson() => {
+    'id': id, 'n': name, 'v': isVisible, 'l': isLocked, 'o': opacity,
+    's': strokes.map((s) => s.toJson()).toList(),
+    'bg': backgroundColor?.value,
+  };
+
+  factory DrawingLayer.fromJson(Map<String, dynamic> j) => DrawingLayer(
+    id: j['id'],
+    name: j['n'],
+    isVisible: j['v'] ?? true,
+    isLocked: j['l'] ?? false,
+    opacity: j['o'] ?? 1.0,
+    strokes: (j['s'] as List).map((s) => DrawingStroke.fromJson(s)).toList(),
+    backgroundColor: j['bg'] != null ? Color(j['bg']) : null,
+  );
 }
 
 class TextOverlay {

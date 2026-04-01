@@ -73,6 +73,9 @@ class LayerPainter extends CustomPainter {
       case BrushType.fill:
         paint.style = PaintingStyle.fill;
         break;
+      case BrushType.sprinkle:
+        paint.strokeCap = StrokeCap.round;
+        break;
     }
 
     if (stroke.isEraser) {
@@ -97,6 +100,18 @@ class LayerPainter extends CustomPainter {
     }
 
     canvas.drawPath(path, paint);
+    
+    // Sprinkle dots effect
+    if (stroke.brushType == BrushType.sprinkle && !stroke.isEraser) {
+      final rand = math.Random(stroke.points.length);
+      final dotsPaint = Paint()..color = stroke.color.withValues(alpha: stroke.opacity * 0.8)..style = PaintingStyle.fill;
+      for (final p in stroke.points) {
+        for (int i = 0; i < 5; i++) {
+          final off = Offset(rand.nextDouble() * stroke.strokeWidth * 2 - stroke.strokeWidth, rand.nextDouble() * stroke.strokeWidth * 2 - stroke.strokeWidth);
+          canvas.drawCircle(p.offset + off, rand.nextDouble() * 2, dotsPaint);
+        }
+      }
+    }
 
     // Glow extra pass
     if (stroke.brushType == BrushType.glow && !stroke.isEraser) {
@@ -142,26 +157,42 @@ class LayerPainter extends CustomPainter {
         canvas.drawLine(end, p2, paint);
         break;
       case ShapeTool.star:
+      case ShapeTool.pentagon:
+      case ShapeTool.hexagon:
         final cx = (start.dx + end.dx) / 2;
         final cy = (start.dy + end.dy) / 2;
         final r = (end - start).distance / 2;
-        final ir = r * 0.4;
-        final path = Path();
-        for (int i = 0; i < 10; i++) {
-          final angle = (i * math.pi / 5) - math.pi / 2;
-          final radius = i.isEven ? r : ir;
-          final x = cx + radius * math.cos(angle);
-          final y = cy + radius * math.sin(angle);
-          if (i == 0) {
-            path.moveTo(x, y);
-          } else {
-            path.lineTo(x, y);
-          }
-        }
-        path.close();
-        canvas.drawPath(path, paint);
+        if (shape == ShapeTool.star) _drawStar(canvas, cx, cy, r, paint);
+        else if (shape == ShapeTool.pentagon) _drawPolygon(canvas, cx, cy, r, 5, paint);
+        else _drawPolygon(canvas, cx, cy, r, 6, paint);
         break;
     }
+  }
+
+  void _drawStar(Canvas canvas, double cx, double cy, double r, Paint paint) {
+    final ir = r * 0.4;
+    final path = Path();
+    for (int i = 0; i < 10; i++) {
+      final angle = (i * math.pi / 5) - math.pi / 2;
+      final radius = i.isEven ? r : ir;
+      final x = cx + radius * math.cos(angle);
+      final y = cy + radius * math.sin(angle);
+      if (i == 0) path.moveTo(x, y); else path.lineTo(x, y);
+    }
+    path.close();
+    canvas.drawPath(path, paint);
+  }
+
+  void _drawPolygon(Canvas canvas, double cx, double cy, double r, int sides, Paint paint) {
+    final path = Path();
+    for (int i = 0; i < sides; i++) {
+      final angle = (i * 2 * math.pi / sides) - math.pi / 2;
+      final x = cx + r * math.cos(angle);
+      final y = cy + r * math.sin(angle);
+      if (i == 0) path.moveTo(x, y); else path.lineTo(x, y);
+    }
+    path.close();
+    canvas.drawPath(path, paint);
   }
 
   @override
@@ -221,6 +252,10 @@ class ShapePreviewPainter extends CustomPainter {
       ..style = filled ? PaintingStyle.fill : PaintingStyle.stroke
       ..isAntiAlias = true;
 
+    final cx = (start.dx + end.dx) / 2;
+    final cy = (start.dy + end.dy) / 2;
+    final r = (end - start).distance / 2;
+
     switch (shape) {
       case ShapeTool.line:
         canvas.drawLine(start, end, paint);
@@ -229,13 +264,11 @@ class ShapePreviewPainter extends CustomPainter {
         canvas.drawRect(Rect.fromPoints(start, end), paint);
         break;
       case ShapeTool.circle:
-        final center = Offset((start.dx + end.dx) / 2, (start.dy + end.dy) / 2);
-        final radius = (end - start).distance / 2;
-        canvas.drawCircle(center, radius, paint);
+        canvas.drawCircle(Offset(cx, cy), r, paint);
         break;
       case ShapeTool.triangle:
         final path = Path();
-        path.moveTo((start.dx + end.dx) / 2, start.dy);
+        path.moveTo(cx, start.dy);
         path.lineTo(end.dx, end.dy);
         path.lineTo(start.dx, end.dy);
         path.close();
@@ -251,15 +284,18 @@ class ShapePreviewPainter extends CustomPainter {
         canvas.drawLine(end, p2, paint);
         break;
       case ShapeTool.star:
-        _drawStar(canvas, paint);
+        _drawStar(canvas, cx, cy, r, paint);
+        break;
+      case ShapeTool.pentagon:
+        _drawPolygon(canvas, cx, cy, r, 5, paint);
+        break;
+      case ShapeTool.hexagon:
+        _drawPolygon(canvas, cx, cy, r, 6, paint);
         break;
     }
   }
 
-  void _drawStar(Canvas canvas, Paint paint) {
-    final cx = (start.dx + end.dx) / 2;
-    final cy = (start.dy + end.dy) / 2;
-    final r = (end - start).distance / 2;
+  void _drawStar(Canvas canvas, double cx, double cy, double r, Paint paint) {
     final ir = r * 0.4;
     final path = Path();
     for (int i = 0; i < 10; i++) {
@@ -267,11 +303,19 @@ class ShapePreviewPainter extends CustomPainter {
       final radius = i.isEven ? r : ir;
       final x = cx + radius * math.cos(angle);
       final y = cy + radius * math.sin(angle);
-      if (i == 0) {
-        path.moveTo(x, y);
-      } else {
-        path.lineTo(x, y);
-      }
+      if (i == 0) path.moveTo(x, y); else path.lineTo(x, y);
+    }
+    path.close();
+    canvas.drawPath(path, paint);
+  }
+
+  void _drawPolygon(Canvas canvas, double cx, double cy, double r, int sides, Paint paint) {
+    final path = Path();
+    for (int i = 0; i < sides; i++) {
+      final angle = (i * 2 * math.pi / sides) - math.pi / 2;
+      final x = cx + r * math.cos(angle);
+      final y = cy + r * math.sin(angle);
+      if (i == 0) path.moveTo(x, y); else path.lineTo(x, y);
     }
     path.close();
     canvas.drawPath(path, paint);
