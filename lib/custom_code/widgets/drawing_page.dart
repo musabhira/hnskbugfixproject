@@ -17,7 +17,15 @@ import 'drawing_page_painters.dart';
 
 class DrawingPage extends StatefulWidget {
   final String? sessionPath;
-  const DrawingPage({super.key, this.sessionPath});
+  final double? canvasWidth;
+  final double? canvasHeight;
+
+  const DrawingPage({
+    super.key, 
+    this.sessionPath,
+    this.canvasWidth,
+    this.canvasHeight,
+  });
   @override
   State<DrawingPage> createState() => _DrawingPageState();
 }
@@ -63,7 +71,6 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
   bool _isReplaying = false;
   bool _isLoadingSession = false;
   bool _showSavedIndicator = false;
-  int _replayStrokesCount = 0;
   SymmetryMode _symmetryMode = SymmetryMode.none;
   List<String> _recentDrawingsPaths = [];
   Offset _sidebarOffset = const Offset(8, 0);
@@ -71,23 +78,35 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
   double _sidebarScale = 1.0;
   double _lastRotation = 0.0;
   double _lastScale = 1.0;
-  bool _isVerticalSidebar = true;
+  String? _projectId;
+  final String _selectedFont = 'Outfit';
 
   // Canvas
   final TransformationController _transformationController = TransformationController();
   int _pointerCount = 0;
-  final double _canvasSize = 3000;
+  late double _canvasWidth;
+  late double _canvasHeight;
 
   @override
   void initState() {
     super.initState();
+    _canvasWidth = widget.canvasWidth ?? 3000;
+    _canvasHeight = widget.canvasHeight ?? 3000;
+    
+    if (widget.sessionPath != null) {
+      final fileName = widget.sessionPath!.split('/').last.split('\\').last;
+      _projectId = fileName.replaceAll('sketch_', '').replaceAll('.json', '');
+    } else {
+      _projectId = DateTime.now().millisecondsSinceEpoch.toString();
+    }
+    
     _addLayer();
     _loadRecentDrawings();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final size = MediaQuery.of(context).size;
       _transformationController.value = Matrix4.identity()
-        ..setTranslationRaw(-(_canvasSize / 2) + size.width / 2, -(_canvasSize / 2) + size.height / 2, 0);
+        ..setTranslationRaw(-(_canvasWidth / 2) + size.width / 2, -(_canvasHeight / 2) + size.height / 2, 0);
       
       // Center sidebar vertically
       setState(() {
@@ -135,6 +154,7 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
       _activeLayerIndex = index + 1;
     });
   }
+
 
   void _mergeDown(int index) {
     if (index <= 0) return;
@@ -205,16 +225,15 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
   }
 
   void _applySymmetry(Offset pos) {
-    final center = _canvasSize / 2;
     if (_symmetryMode == SymmetryMode.horizontal) {
-      final symX = center + (center - pos.dx);
+      final symX = _canvasWidth + (_canvasWidth - pos.dx);
       _currentStroke?.points.add(DrawingPoint(Offset(symX, pos.dy), 1.0));
     } else if (_symmetryMode == SymmetryMode.vertical) {
-      final symY = center + (center - pos.dy);
+      final symY = _canvasHeight + (_canvasHeight - pos.dy);
       _currentStroke?.points.add(DrawingPoint(Offset(pos.dx, symY), 1.0));
     } else if (_symmetryMode == SymmetryMode.quad) {
-      final symX = center + (center - pos.dx);
-      final symY = center + (center - pos.dy);
+      final symX = _canvasWidth + (_canvasWidth - pos.dx);
+      final symY = _canvasHeight + (_canvasHeight - pos.dy);
       _currentStroke?.points.add(DrawingPoint(Offset(symX, pos.dy), 1.0));
       _currentStroke?.points.add(DrawingPoint(Offset(pos.dx, symY), 1.0));
       _currentStroke?.points.add(DrawingPoint(Offset(symX, symY), 1.0));
@@ -222,7 +241,6 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
   }
 
   Future<void> _floodFill(Offset startPos) async {
-    // Show loading
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Filling...'), duration: Duration(milliseconds: 500)));
     
     try {
@@ -236,24 +254,6 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
       final ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
       if (byteData == null || !mounted) return;
 
-      final Uint8List bytes = byteData.buffer.asUint8List();
-      final int width = image.width;
-      final int height = image.height;
-      
-      // Map global canvas pos (3000x3000) to actual boundary pos
-      // Since InteractiveViewer and pixelRatio 1.0, width/height is the visible part.
-      // We actually need the full canvas if we want to fill the full thing.
-      // But for simplicity, we'll fill the visible area or just use the current boundary.
-      
-      final int startX = startPos.dx.toInt().clamp(0, width - 1);
-      final int startY = startPos.dy.toInt().clamp(0, height - 1);
-
-      // Simple flood fill result
-      // In a real app we'd use a more advanced pixel-by-pixel check
-      // For now, let's add a "Fill Layer" which is just a color background if empty,
-      // or a rectangle fill if it's too much logic for a tool call.
-      
-      // Actually, let's implement the core queue-based flood fill logic
       final fillColor = _selectedColor;
       
       setState(() {
@@ -307,26 +307,66 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
           duration: const Duration(seconds: 4),
         ));
       }
-    } catch (e) { print("Error checking session: $e"); }
+    } catch (e) {
+      debugPrint("Error checking session: $e");
+    }
   }
 
   Future<void> _autoSave() async {
+    if (_projectId == null) return;
     try {
       final dir = await getApplicationDocumentsDirectory();
-      final file = File('${dir.path}/current_session.json');
+      final drawingDir = Directory('${dir.path}/saved_drawings');
+      if (!await drawingDir.exists()) await drawingDir.create(recursive: true);
+
+      // Save Data
+      final jsonFile = File('${drawingDir.path}/sketch_${_projectId}.json');
       final data = {
         'layers': _layers.map((l) => l.toJson()).toList(),
+        'textOverlays': _textOverlays.map((t) => t.toJson()).toList(),
+        'imageOverlays': _imageOverlays.map((i) => i.toJson()).toList(),
+        'canvasWidth': _canvasWidth,
+        'canvasHeight': _canvasHeight,
         'ts': DateTime.now().millisecondsSinceEpoch,
       };
-      await file.writeAsString(jsonEncode(data));
+      await jsonFile.writeAsString(jsonEncode(data));
+      
+      // Also save to current_session for quick resume
+      final sessionFile = File('${dir.path}/current_session.json');
+      await sessionFile.writeAsString(jsonEncode(data));
+
+      // Save Preview Thumbnail (low quality for performance)
+      _savePreviewThumbnail(drawingDir.path);
       
       if (mounted) {
         setState(() => _showSavedIndicator = true);
         Future.delayed(const Duration(seconds: 1), () {
-          if (mounted) setState(() => _showSavedIndicator = false);
+          if (mounted) {
+            setState(() => _showSavedIndicator = false);
+          }
         });
       }
-    } catch (e) { debugPrint("AutoSave error: $e"); }
+    } catch (e) { 
+      debugPrint("AutoSave error: $e"); 
+    }
+  }
+
+  Future<void> _savePreviewThumbnail(String drawingDirPath) async {
+    try {
+      RenderRepaintBoundary? boundary = _canvasKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+      if (boundary == null) return;
+      
+      // Use lower pixelRatio for faster thumbnail generation
+      ui.Image image = await boundary.toImage(pixelRatio: 0.5);
+      ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      if (byteData != null) {
+        final bytes = byteData.buffer.asUint8List();
+        final file = File('$drawingDirPath/sketch_${_projectId}.png');
+        await file.writeAsBytes(bytes);
+      }
+    } catch (e) {
+      debugPrint("Thumbnail save error: $e");
+    }
   }
 
   Future<void> _loadSession([String? path]) async {
@@ -344,6 +384,8 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
       setState(() => _isLoadingSession = true);
       final json = jsonDecode(await file.readAsString());
       final List layersJson = json['layers'];
+      final List? textJson = json['textOverlays'];
+      final List? imgsJson = json['imageOverlays'];
       
       final List<DrawingLayer> loadedLayers = [];
       for (var lj in layersJson) {
@@ -357,8 +399,26 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
       }
 
       setState(() {
+        _canvasWidth = json['canvasWidth']?.toDouble() ?? 3000;
+        _canvasHeight = json['canvasHeight']?.toDouble() ?? 3000;
+        
         _layers.clear();
         _layers.addAll(loadedLayers);
+        
+        _textOverlays.clear();
+        if (textJson != null) {
+          for (var tj in textJson) {
+            _textOverlays.add(TextOverlay.fromJson(tj));
+          }
+        }
+
+        _imageOverlays.clear();
+        if (imgsJson != null) {
+          for (var ij in imgsJson) {
+            _imageOverlays.add(ImageOverlay.fromJson(ij));
+          }
+        }
+
         _activeLayerIndex = 0;
         _isLoadingSession = false;
       });
@@ -394,18 +454,15 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
         
         if (result.success == true) {
           final String videoPath = result.file.path;
-          if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text('Recording saved successfully!', style: GoogleFonts.outfit()),
             backgroundColor: Colors.green,
             action: SnackBarAction(
-              label: 'SHARE',
-              textColor: Colors.white,
-              onPressed: () => Share.shareXFiles([XFile(videoPath)]),
+              label: 'Share',
+              onPressed: () => SharePlus.shareXFiles([XFile(videoPath)]),
             ),
           ));
         } else {
-          if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to save recording')));
         }
       } else {
@@ -454,7 +511,6 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
     setState(() {
       _layers[_activeLayerIndex].strokes.clear();
       _isReplaying = true;
-      _replayStrokesCount = 0;
     });
 
     for (final s in allStrokes) {
@@ -462,7 +518,6 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
       await Future.delayed(const Duration(milliseconds: 100));
       setState(() {
         _layers[_activeLayerIndex].strokes.add(s);
-        _replayStrokesCount++;
       });
     }
 
@@ -502,14 +557,16 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
         if (!await drawingDir.exists()) await drawingDir.create(recursive: true);
         
         final timestamp = DateTime.now().millisecondsSinceEpoch;
-        final jsonFile = File('${drawingDir.path}/sketch_${timestamp}.json');
+        final jsonFile = File('${drawingDir.path}/sketch_$timestamp.json');
         final projectData = {
           'layers': _layers.map((l) => l.toJson()).toList(),
+          'canvasWidth': _canvasWidth,
+          'canvasHeight': _canvasHeight,
           'ts': timestamp,
         };
         await jsonFile.writeAsString(jsonEncode(projectData));
 
-        final file = File('${drawingDir.path}/sketch_${timestamp}.png');
+        final file = File('${drawingDir.path}/sketch_$timestamp.png');
         await file.writeAsBytes(bytes);
         if (!mounted) return;
         _loadRecentDrawings();
@@ -535,7 +592,7 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
         final dir = await getTemporaryDirectory();
         final path = '${dir.path}/export_${DateTime.now().millisecondsSinceEpoch}.png';
         File(path).writeAsBytesSync(bytes);
-        await Share.shareXFiles([XFile(path)], text: 'Created with PocketMates');
+        await SharePlus.shareXFiles([XFile(path)], text: 'Created with PocketMates');
       }
     } catch (e) {
       debugPrint("Export error: $e");
@@ -559,7 +616,7 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
           name: 'Image Layer ${_layers.length + 1}',
           importedImage: image,
           imageBytes: bytes,
-          imageOffset: Offset(_canvasSize / 2 - image.width / 2, _canvasSize / 2 - image.height / 2),
+          imageOffset: Offset(_canvasWidth / 2 - image.width / 2, _canvasHeight / 2 - image.height / 2),
         );
         _layers.add(newLayer);
         _activeLayerIndex = _layers.length - 1;
@@ -585,7 +642,9 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
       final dir = await getApplicationDocumentsDirectory();
       final file = File('${dir.path}/current_session.json');
       if (await file.exists()) await file.delete();
-    } catch (e) {}
+    } catch (e) {
+      debugPrint("Clear autosave error: $e");
+    }
   }
 
   void _addText() {
@@ -664,13 +723,13 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
                   setState(() => _textOverlays.add(TextOverlay(
                     id: DateTime.now().millisecondsSinceEpoch.toString(),
                     text: controller.text,
-                    position: Offset(_canvasSize / 2, _canvasSize / 2),
+                    position: Offset(_canvasWidth / 2, _canvasHeight / 2),
                     color: tempColor,
                     fontSize: tempFontSize,
-                    style: GoogleFonts.outfit(),
+                    style: GoogleFonts.getFont(_selectedFont),
                   )));
                   _autoSave();
-                  Navigator.pop(ctx);
+                  if (ctx.mounted) Navigator.pop(ctx);
                 }
               },
               child: const Text('Add Text', style: TextStyle(color: Colors.amber, fontWeight: FontWeight.bold)),
@@ -705,8 +764,8 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
                 boundaryMargin: const EdgeInsets.all(double.infinity),
                 constrained: false,
                 child: Container(
-                  width: _canvasSize,
-                  height: _canvasSize,
+                  width: _canvasWidth,
+                  height: _canvasHeight,
                   decoration: BoxDecoration(
                     color: _canvasBgColor,
                     boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.5), blurRadius: 120)],
@@ -716,11 +775,16 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
                     child: Stack(
                       children: [
                         Container(color: _canvasBgColor),
-                        if (_showGrid) CustomPaint(painter: GridPainter(), size: Size(_canvasSize, _canvasSize)),
+                        if (_showGrid) CustomPaint(painter: GridPainter(), size: Size(_canvasWidth, _canvasHeight)),
                         ..._imageOverlays.map((img) => Positioned(
                           left: img.position.dx, top: img.position.dy,
                           child: GestureDetector(
-                            onPanUpdate: (d) { if (_pointerCount <= 1) setState(() => img.position += d.delta); },
+                            onPanUpdate: (d) {
+                              if (_pointerCount <= 1) {
+                                setState(() => img.position += d.delta);
+                              }
+                            },
+                            onPanEnd: (_) => _autoSave(),
                             child: Transform.scale(scale: img.scale, child: Transform.rotate(angle: img.rotation, child: Image.memory(img.bytes, width: 300, fit: BoxFit.contain))),
                           ),
                         )),
@@ -732,8 +796,8 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
                               children: [
                                 if (layer.backgroundColor != null)
                                   Container(
-                                    width: _canvasSize,
-                                    height: _canvasSize,
+                                    width: _canvasWidth,
+                                    height: _canvasHeight,
                                     color: layer.backgroundColor,
                                   ),
                                 if (layer.importedImage != null)
@@ -750,20 +814,25 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
                                     strokes: layer.strokes, 
                                     activeStroke: (_layers.indexOf(layer) == _activeLayerIndex) ? _currentStroke : null
                                   ), 
-                                  size: Size(_canvasSize, _canvasSize)
+                                  size: Size(_canvasWidth, _canvasHeight)
                                 ),
                               ],
                             ),
                           );
                         }),
                         if (_activeTool == DrawingTool.shape && _shapeStart != null && _shapeEnd != null)
-                          CustomPaint(painter: ShapePreviewPainter(shape: _selectedShape, start: _shapeStart!, end: _shapeEnd!, color: _selectedColor, strokeWidth: _strokeWidth, filled: _shapeFilled), size: Size(_canvasSize, _canvasSize)),
+                          CustomPaint(painter: ShapePreviewPainter(shape: _selectedShape, start: _shapeStart!, end: _shapeEnd!, color: _selectedColor, strokeWidth: _strokeWidth, filled: _shapeFilled), size: Size(_canvasWidth, _canvasHeight)),
                         if (_pointerCount <= 1)
                           GestureDetector(onPanStart: _onPanStart, onPanUpdate: _onPanUpdate, onPanEnd: _onPanEnd, child: Container(color: Colors.transparent)),
                         ..._textOverlays.map((t) => Positioned(
                           left: t.position.dx, top: t.position.dy,
                           child: GestureDetector(
-                            onPanUpdate: (d) { if (_pointerCount <= 1) setState(() => t.position += d.delta); },
+                            onPanUpdate: (d) {
+                              if (_pointerCount <= 1) {
+                                setState(() => t.position += d.delta);
+                              }
+                            },
+                            onPanEnd: (_) => _autoSave(),
                             child: Text(t.text, style: t.style.copyWith(color: t.color, fontSize: t.fontSize)),
                           ),
                         )),
@@ -918,10 +987,15 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
         _sideBtn(Icons.grid_3x3_rounded, _activeTool == DrawingTool.symmetry, () {
           setState(() {
              _activeTool = DrawingTool.symmetry;
-             if (_symmetryMode == SymmetryMode.none) _symmetryMode = SymmetryMode.horizontal;
-             else if (_symmetryMode == SymmetryMode.horizontal) _symmetryMode = SymmetryMode.vertical;
-             else if (_symmetryMode == SymmetryMode.vertical) _symmetryMode = SymmetryMode.quad;
-             else _symmetryMode = SymmetryMode.none;
+             if (_symmetryMode == SymmetryMode.none) {
+               _symmetryMode = SymmetryMode.horizontal;
+             } else if (_symmetryMode == SymmetryMode.horizontal) {
+               _symmetryMode = SymmetryMode.vertical;
+             } else if (_symmetryMode == SymmetryMode.vertical) {
+               _symmetryMode = SymmetryMode.quad;
+             } else {
+               _symmetryMode = SymmetryMode.none;
+             }
           });
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Symmetry: ${_symmetryMode.name}'), duration: const Duration(seconds: 1)));
         }),
@@ -1136,9 +1210,15 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
         ClipRRect(borderRadius: BorderRadius.circular(16), child: Image.file(File(path))),
         const SizedBox(height: 16),
         Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-          _headerBtn(Icons.share_rounded, () async { await Share.shareXFiles([XFile(path)], text: 'PocketMates Sketch'); }),
+          _headerBtn(Icons.share_rounded, () async { 
+            await SharePlus.shareXFiles([XFile(path)], text: 'PocketMates Sketch'); 
+          }),
           const SizedBox(width: 16),
-          _headerBtn(Icons.delete_outline_rounded, () async { await File(path).delete(); _loadRecentDrawings(); Navigator.pop(ctx); }),
+          _headerBtn(Icons.delete_outline_rounded, () async { 
+            await File(path).delete(); 
+            _loadRecentDrawings(); 
+            if (ctx.mounted) Navigator.pop(ctx); 
+          }),
         ]),
       ]),
     ));

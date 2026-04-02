@@ -195,6 +195,15 @@ class TextOverlay {
   double fontSize, rotation;
   TextStyle style;
   TextOverlay({required this.id, required this.text, required this.position, required this.color, this.fontSize = 20.0, this.rotation = 0.0, required this.style});
+
+  Map<String, dynamic> toJson() => {
+    'id': id, 't': text, 'x': position.dx, 'y': position.dy, 'c': color.toARGB32(), 's': fontSize, 'r': rotation
+  };
+
+  factory TextOverlay.fromJson(Map<String, dynamic> j) => TextOverlay(
+    id: j['id'], text: j['t'], position: Offset(j['x'], j['y']), color: Color(j['c']), fontSize: j['s'] ?? 20.0, rotation: j['r'] ?? 0.0,
+    style: const TextStyle() // Style is handled by DrawingPage fonts
+  );
 }
 
 class ImageOverlay {
@@ -203,4 +212,12 @@ class ImageOverlay {
   Offset position;
   double scale, rotation;
   ImageOverlay({required this.id, required this.bytes, this.position = Offset.zero, this.scale = 1.0, this.rotation = 0.0});
+
+  Map<String, dynamic> toJson() => {
+    'id': id, 'b': base64Encode(bytes), 'x': position.dx, 'y': position.dy, 's': scale, 'r': rotation
+  };
+
+  factory ImageOverlay.fromJson(Map<String, dynamic> j) => ImageOverlay(
+    id: j['id'], bytes: base64Decode(j['b']), position: Offset(j['x'], j['y']), scale: j['s'] ?? 1.0, rotation: j['r'] ?? 0.0,
+  );
 }

@@ -1,0 +1,24 @@
+﻿Analyzing 2 items...                                            
+
+warning - The value of the field '_replayStrokesCount' isn't used - lib\custom_code\widgets\drawing_page.dart:66:7 - unused_field
+   info - The private field _isVerticalSidebar could be 'final' - lib\custom_code\widgets\drawing_page.dart:74:8 - prefer_final_fields
+warning - The value of the field '_isVerticalSidebar' isn't used - lib\custom_code\widgets\drawing_page.dart:74:8 - unused_field
+warning - The value of the local variable 'bytes' isn't used - lib\custom_code\widgets\drawing_page.dart:239:23 - unused_local_variable
+warning - The value of the local variable 'startX' isn't used - lib\custom_code\widgets\drawing_page.dart:248:17 - unused_local_variable
+warning - The value of the local variable 'startY' isn't used - lib\custom_code\widgets\drawing_page.dart:249:17 - unused_local_variable
+   info - Don't invoke 'print' in production code - lib\custom_code\widgets\drawing_page.dart:310:19 - avoid_print
+   info - 'Share' is deprecated and shouldn't be used. Use SharePlus instead - lib\custom_code\widgets\drawing_page.dart:404:32 - deprecated_member_use
+   info - 'shareXFiles' is deprecated and shouldn't be used. Use SharePlus.instance.share() instead - lib\custom_code\widgets\drawing_page.dart:404:38 - deprecated_member_use
+   info - Unnecessary braces in a string interpolation - lib\custom_code\widgets\drawing_page.dart:505:58 - unnecessary_brace_in_string_interps
+   info - Unnecessary braces in a string interpolation - lib\custom_code\widgets\drawing_page.dart:512:54 - unnecessary_brace_in_string_interps
+   info - 'Share' is deprecated and shouldn't be used. Use SharePlus instead - lib\custom_code\widgets\drawing_page.dart:538:15 - deprecated_member_use
+   info - 'shareXFiles' is deprecated and shouldn't be used. Use SharePlus.instance.share() instead - lib\custom_code\widgets\drawing_page.dart:538:21 - deprecated_member_use
+   info - Empty catch block - lib\custom_code\widgets\drawing_page.dart:588:17 - empty_catches
+   info - Statements in an if should be enclosed in a block - lib\custom_code\widgets\drawing_page.dart:921:54 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\custom_code\widgets\drawing_page.dart:922:65 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\custom_code\widgets\drawing_page.dart:923:63 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\custom_code\widgets\drawing_page.dart:924:19 - curly_braces_in_flow_control_structures
+   info - 'Share' is deprecated and shouldn't be used. Use SharePlus instead - lib\custom_code\widgets\drawing_page.dart:1139:60 - deprecated_member_use
+   info - 'shareXFiles' is deprecated and shouldn't be used. Use SharePlus.instance.share() instead - lib\custom_code\widgets\drawing_page.dart:1139:66 - deprecated_member_use
+   info - Don't use 'BuildContext's across async gaps - lib\custom_code\widgets\drawing_page.dart:1141:127 - use_build_context_synchronously
+
