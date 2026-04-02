@@ -320,7 +320,7 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
       if (!await drawingDir.exists()) await drawingDir.create(recursive: true);
 
       // Save Data
-      final jsonFile = File('${drawingDir.path}/sketch_${_projectId}.json');
+      final jsonFile = File('${dir.path}/sketch_$_projectId.json');
       final data = {
         'layers': _layers.map((l) => l.toJson()).toList(),
         'textOverlays': _textOverlays.map((t) => t.toJson()).toList(),
@@ -361,8 +361,8 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
       ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
       if (byteData != null) {
         final bytes = byteData.buffer.asUint8List();
-        final file = File('$drawingDirPath/sketch_${_projectId}.png');
-        await file.writeAsBytes(bytes);
+        final pngFile = File('$drawingDirPath/sketch_$_projectId.png');
+        await pngFile.writeAsBytes(bytes);
       }
     } catch (e) {
       debugPrint("Thumbnail save error: $e");
@@ -454,15 +454,17 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
         
         if (result.success == true) {
           final String videoPath = result.file.path;
+          if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text('Recording saved successfully!', style: GoogleFonts.outfit()),
             backgroundColor: Colors.green,
             action: SnackBarAction(
               label: 'Share',
-              onPressed: () => SharePlus.shareXFiles([XFile(videoPath)]),
+              onPressed: () => Share.shareXFiles([XFile(videoPath)]),
             ),
           ));
         } else {
+          if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to save recording')));
         }
       } else {
@@ -592,7 +594,7 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
         final dir = await getTemporaryDirectory();
         final path = '${dir.path}/export_${DateTime.now().millisecondsSinceEpoch}.png';
         File(path).writeAsBytesSync(bytes);
-        await SharePlus.shareXFiles([XFile(path)], text: 'Created with PocketMates');
+        await Share.shareXFiles([XFile(path)], text: 'Created with PocketMates');
       }
     } catch (e) {
       debugPrint("Export error: $e");
@@ -1211,7 +1213,7 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
         const SizedBox(height: 16),
         Row(mainAxisAlignment: MainAxisAlignment.center, children: [
           _headerBtn(Icons.share_rounded, () async { 
-            await SharePlus.shareXFiles([XFile(path)], text: 'PocketMates Sketch'); 
+            await Share.shareXFiles([XFile(path)], text: 'PocketMates Sketch'); 
           }),
           const SizedBox(width: 16),
           _headerBtn(Icons.delete_outline_rounded, () async { 
