@@ -320,7 +320,7 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
       if (!await drawingDir.exists()) await drawingDir.create(recursive: true);
 
       // Save Data
-      final jsonFile = File('${dir.path}/sketch_$_projectId.json');
+      final jsonFile = File('${drawingDir.path}/sketch_$_projectId.json');
       final data = {
         'layers': _layers.map((l) => l.toJson()).toList(),
         'textOverlays': _textOverlays.map((t) => t.toJson()).toList(),
