@@ -762,19 +762,6 @@ class _TaskManagerScreenState extends State<ToolsPage> {
             MaterialPageRoute(builder: (context) => const PokiGamesPage())),
       },
       {
-        'title': 'Crazy Games',
-        'subtitle': 'crazygames.com',
-        'icon': Icons.sports_esports_rounded,
-        'color': Colors.deepOrangeAccent,
-        'onTap': () => Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => const DynamicWebViewPage(
-                      title: 'Crazy Games',
-                      url: 'https://crazygames.com',
-                    ))),
-      },
-      {
         'title': 'Dynamic Web App',
         'subtitle': 'Any URL',
         'icon': Icons.public_rounded,
@@ -835,23 +822,6 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                       title: 'WhatsApp Web',
                       url: 'https://web.whatsapp.com',
                     ))),
-      },
-      {
-        'title': 'Gallery Sharing',
-        'subtitle': 'Share from Gallery',
-        'icon': Icons.share_rounded,
-        'color': Colors.blueAccent,
-        'onTap': () {
-          final userId = SupaFlow.client.auth.currentUser?.id ?? '';
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => ShareContentScreen(
-                        contentToShare: 'Sharing from Gallery',
-                        currentUserId: userId,
-                        contentType: 'gallery',
-                      )));
-        },
       },
       {
         'title': 'Web Search',
