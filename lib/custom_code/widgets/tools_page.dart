@@ -2,6 +2,7 @@ import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pocket_mates_app/custom_code/widgets/drawing_app_home.dart';
 import 'package:pocket_mates_app/custom_code/widgets/drawing_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/teams/teams_home_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poster_designer/template_gallery_page.dart';
@@ -688,7 +689,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
         'icon': Icons.brush,
         'color': Colors.purpleAccent,
         'onTap': () => Navigator.push(context,
-            MaterialPageRoute(builder: (context) => const DrawingPage())),
+            MaterialPageRoute(builder: (context) => const DrawingAppHome())),
       },
       {
         'title': 'Schedule',
@@ -2379,7 +2380,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
           color: Colors.orange,
           onTap: () {
             Navigator.of(context).push(
-              MaterialPageRoute(builder: (context) => const DrawingPage()),
+            MaterialPageRoute(builder: (context) => const DrawingAppHome()),
             );
           },
         ),

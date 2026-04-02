@@ -806,6 +806,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       currentProfileId: profileId ?? '',
       searchQuery: _chatTabIndex == 1 ? _searchQuery : '',
       filterNotifier: _vibesFilterNotifier,
+      isVertical: true,
     );
   }
 

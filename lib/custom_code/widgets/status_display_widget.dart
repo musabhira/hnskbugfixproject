@@ -436,11 +436,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
             minHeight: 200,
             maxHeight: MediaQuery.of(context).size.height,
           ),
-          child: Column(
-            children: [
-              _buildStatusList(onlyGroups, isGrid: false),
-            ],
-          ),
+          child: _buildStatusList(combined, isGrid: false),
         ),
       );
     }
@@ -501,13 +497,17 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
     );
   }
 
-  Widget _buildStatusList(List<Map<String, dynamic>> statusData,
+  Widget _buildStatusList(List<dynamic> statusData,
       {required bool isGrid}) {
-    final filteredData = statusData.where((group) {
+    final filteredData = statusData.where((item) {
+      if (item is! Map<String, dynamic>) return true; // Keep dividers
       if (widget.searchQuery.isEmpty) return true;
-      final name = group['profile']?['name']?.toString().toLowerCase() ?? '';
+      final name = item['profile']?['name']?.toString().toLowerCase() ?? '';
       return name.contains(widget.searchQuery.toLowerCase());
     }).toList();
+
+    // In vertical mode, we only want groups for viewing, but we want the full list for building
+    final onlyGroups = filteredData.whereType<Map<String, dynamic>>().toList();
 
     if (_isLoading) return _buildVerticalShimmer();
     if (filteredData.isEmpty && !widget.isVertical) {
@@ -584,7 +584,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
               padding: const EdgeInsets.all(16),
               physics: const AlwaysScrollableScrollPhysics(
                   parent: BouncingScrollPhysics()),
-              itemCount: filteredData.length,
+              itemCount: onlyGroups.length, // Use onlyGroups for grid
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
                 mainAxisSpacing: 16,
@@ -592,8 +592,8 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
                 childAspectRatio: 0.8,
               ),
               itemBuilder: (context, index) {
-                final statusGroup = filteredData[index];
-                return _buildGridStatusItem(statusGroup, index, filteredData);
+                final statusGroup = onlyGroups[index];
+                return _buildGridStatusItem(statusGroup, index, onlyGroups);
               },
             ),
           ),
@@ -605,16 +605,55 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       physics: const AlwaysScrollableScrollPhysics(
           parent: BouncingScrollPhysics()),
-      itemCount: filteredData.length + (widget.isVertical ? 1 : 0),
+      itemCount: filteredData.length,
       itemBuilder: (context, index) {
-        if (widget.isVertical && index == 0) return _buildAddStatusButton();
-        final actualIndex = widget.isVertical ? index - 1 : index;
-        if (actualIndex < 0) return const SizedBox.shrink();
+        if (widget.isVertical && index == 0) {
+           if (widget.searchQuery.isNotEmpty) return const SizedBox.shrink();
+           
+           final item = filteredData[0];
+           if (item is String) return const SizedBox.shrink(); // Should not happen with current logic
 
-        final statusGroup = filteredData[actualIndex];
-        return _buildStatusItem(statusGroup, actualIndex, false,
-            listOverride: filteredData);
+           final statusGroup = item as Map<String, dynamic>;
+           final viewerIndex = onlyGroups.indexOf(statusGroup);
+           
+           return Column(
+             crossAxisAlignment: CrossAxisAlignment.start,
+             children: [
+               _buildVerticalSectionHeader('My Vibes'),
+               _buildStatusItem(statusGroup, viewerIndex, false,
+                   listOverride: onlyGroups),
+             ],
+           );
+        }
+        
+        final item = filteredData[index];
+        
+        if (item is String && item == 'DIVIDER') {
+           return _buildVerticalSectionHeader('Explore Vibes');
+        }
+
+        final statusGroup = item as Map<String, dynamic>;
+        // Calculate index among Map items for the viewer
+        final viewerIndex = onlyGroups.indexOf(statusGroup);
+        
+        return _buildStatusItem(statusGroup, viewerIndex, false,
+            listOverride: onlyGroups);
       },
+    );
+  }
+
+  Widget _buildVerticalSectionHeader(String label) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 20, bottom: 12, left: 4),
+      child: Text(
+        label,
+        style: GoogleFonts.outfit(
+          color: Colors.white.withValues(alpha: 0.4),
+          fontSize: 13,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 0.5,
+        ),
+      ),
     );
   }
 
@@ -907,12 +946,12 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
     if (!isHorizontal) {
       return InkWell(
         onTap: () => _openStatusViewer(index, activeList),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(12),
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
+          padding: const EdgeInsets.symmetric(vertical: 10),
           child: Row(
             children: [
-              _buildAvatarWithRing(profileImageUrl, name, 64, isGroup: isGroup, isWatched: isFullyWatched),
+              _buildAvatarWithRing(profileImageUrl, name, 60, isGroup: isGroup, isWatched: isFullyWatched),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
@@ -921,21 +960,24 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
                     Text(isOwn ? 'My Vibes' : name,
                         style: GoogleFonts.outfit(
                             color: Colors.white,
-                            fontSize: 17,
+                            fontSize: 16,
                             fontWeight: FontWeight.w600)),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 2),
                     Text(
                         isGroup
-                            ? 'Community Vibe • $timeString'
+                            ? 'Community Update • $timeString'
                             : (isOwn
-                                ? 'Share a Vibe • $timeString'
+                                ? 'Tap to see your vibes'
                                 : timeString),
                         style: GoogleFonts.outfit(
                             color: Colors.white.withValues(alpha: 0.5),
-                            fontSize: 13)),
+                            fontSize: 13.5)),
                   ],
                 ),
               ),
+              if (!isOwn)
+                const Icon(Icons.chevron_right_rounded, 
+                    color: Colors.white24, size: 24),
             ],
           ),
         ),
