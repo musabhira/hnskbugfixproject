@@ -2,22 +2,23 @@ import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:pocket_mates_app/custom_code/widgets/drawing_app_home.dart';
-import 'package:pocket_mates_app/custom_code/widgets/drawing_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/teams/teams_home_widget.dart';
-import 'package:pocket_mates_app/custom_code/widgets/poster_designer/template_gallery_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/bulk_sender/bulk_sender_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/poki_games_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/nearby_users_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/chess_game_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/dynamic_web_view_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/password_generator_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/share_content_screen.dart';
+import '/custom_code/widgets/drawing_app_home.dart';
+import '/custom_code/widgets/teams/teams_home_widget.dart';
+import '/custom_code/widgets/poster_designer/template_gallery_page.dart';
+import '/custom_code/widgets/bulk_sender/bulk_sender_page.dart';
+import '/custom_code/widgets/poki_games_page.dart';
+import '/custom_code/widgets/nearby_users_page.dart';
+import '/custom_code/widgets/chess_game_page.dart';
+import '/custom_code/widgets/dynamic_web_view_page.dart';
+import '/custom_code/widgets/password_generator_page.dart';
+import '/custom_code/widgets/share_content_screen.dart';
+import '/custom_code/widgets/crazy_games_page.dart';
+import '/custom_code/widgets/test_feature_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'dart:math';
-import 'package:pocket_mates_app/custom_code/widgets/drawing_academy_home_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/ai_prompt_service.dart';
+import '/custom_code/widgets/drawing_academy_home_page.dart';
+import '/custom_code/widgets/ai_prompt_service.dart';
 
 class ToolsPage extends StatefulWidget {
   final double? width;
@@ -72,6 +73,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
 
   String _toolsSearchQuery = '';
   List<String> _favoritedTools = [];
+  List<String> _restrictedTools = [];
 
   @override
   void initState() {
@@ -82,6 +84,26 @@ class _TaskManagerScreenState extends State<ToolsPage> {
     }
     _loadData();
     _loadFavoritedTools();
+    _loadToolPermissions();
+  }
+
+  Future<void> _loadToolPermissions() async {
+    try {
+      final userId = SupaFlow.client.auth.currentUser?.id;
+      if (userId == null) return;
+
+      final response = await SupaFlow.client
+          .from('user_tool_permissions')
+          .select('tool_name')
+          .eq('user_id', userId)
+          .eq('is_blocked', true);
+
+      setState(() {
+        _restrictedTools = (response as List).map((e) => e['tool_name'] as String).toList();
+      });
+    } catch (e) {
+      debugPrint('Error loading tool permissions: $e');
+    }
   }
 
   Future<void> _loadFavoritedTools() async {
@@ -762,6 +784,14 @@ class _TaskManagerScreenState extends State<ToolsPage> {
             MaterialPageRoute(builder: (context) => const PokiGamesPage())),
       },
       {
+        'title': 'Crazy Games',
+        'subtitle': 'crazygames.com',
+        'icon': Icons.sports_esports_rounded,
+        'color': Colors.indigoAccent,
+        'onTap': () => Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const CrazyGamesPage())),
+      },
+      {
         'title': 'Dynamic Web App',
         'subtitle': 'Any URL',
         'icon': Icons.public_rounded,
@@ -840,12 +870,24 @@ class _TaskManagerScreenState extends State<ToolsPage> {
               _showToolsList = false;
             }),
       },
+      {
+        'title': 'Test Feature',
+        'subtitle': 'System Diagnostic',
+        'icon': Icons.bug_report_rounded,
+        'color': Colors.redAccent,
+        'onTap': () => Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => const TestFeaturePage())),
+      },
     ];
 
     final filteredTools = allTools
-        .where((tool) => (tool['title'] as String)
-            .toLowerCase()
-            .contains(_toolsSearchQuery.toLowerCase()))
+        .where((tool) =>
+            !_restrictedTools.contains(tool['title']) &&
+            (tool['title'] as String)
+                .toLowerCase()
+                .contains(_toolsSearchQuery.toLowerCase()))
         .toList();
 
     return Scaffold(

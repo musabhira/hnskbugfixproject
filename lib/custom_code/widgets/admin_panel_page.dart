@@ -43,7 +43,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 6, vsync: this);
+    _tabController = TabController(length: 7, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _showPasswordDialog();
     });
@@ -386,6 +386,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
             Tab(icon: Icon(Icons.report_problem_outlined), text: 'Reports'),
             Tab(icon: Icon(Icons.security_outlined), text: 'Auth'),
             Tab(icon: Icon(Icons.system_update_outlined), text: 'Update'),
+            Tab(icon: Icon(Icons.build_circle_outlined), text: 'Tools'),
           ],
         ),
       ),
@@ -398,8 +399,190 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
           _buildReportsTab(),
           _buildAuthTab(),
           _buildUpdateTab(),
+          _buildToolsTab(),
         ],
       ),
+    );
+  }
+
+  // Tools Tab Logic
+  String? selectedUserIdForTools;
+  List<String> restrictedToolsForSelectedUser = [];
+  bool isLoadingPermissions = false;
+
+  final List<String> allToolNames = [
+    'Drawing Tool',
+    'Schedule',
+    'Tasks',
+    'Challenges',
+    'Diagrams',
+    'Teams',
+    'Poster Maker',
+    'Bulk Sender',
+    'Poki Games',
+    'Crazy Games',
+    'Dynamic Web App',
+    'Chess Match',
+    'Travel Radar',
+    'Password Pro',
+    'QR & Barcode',
+    'World Clock',
+    'WhatsApp Web',
+    'Web Search',
+    'Courses',
+    'Test Feature',
+  ];
+
+  Future<void> _loadUserPermissions(String userId) async {
+    setState(() {
+      selectedUserIdForTools = userId;
+      isLoadingPermissions = true;
+      restrictedToolsForSelectedUser = [];
+    });
+
+    try {
+      final res = await supabase
+          .from('user_tool_permissions')
+          .select('tool_name')
+          .eq('user_id', userId)
+          .eq('is_blocked', true);
+
+      if (mounted) {
+        setState(() {
+          restrictedToolsForSelectedUser = (res as List).map((e) => e['tool_name'] as String).toList();
+          isLoadingPermissions = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading user permissions: $e');
+      if (mounted) setState(() => isLoadingPermissions = false);
+    }
+  }
+
+  Future<void> _toggleToolPermission(String toolName, bool block) async {
+    if (selectedUserIdForTools == null) return;
+
+    try {
+      if (block) {
+        await supabase.from('user_tool_permissions').upsert({
+          'user_id': selectedUserIdForTools,
+          'tool_name': toolName,
+          'is_blocked': true,
+        }, onConflict: 'user_id, tool_name');
+        if (mounted) {
+          setState(() {
+            if (!restrictedToolsForSelectedUser.contains(toolName)) {
+              restrictedToolsForSelectedUser.add(toolName);
+            }
+          });
+        }
+      } else {
+        await supabase
+            .from('user_tool_permissions')
+            .delete()
+            .eq('user_id', selectedUserIdForTools!)
+            .eq('tool_name', toolName);
+        if (mounted) {
+          setState(() {
+            restrictedToolsForSelectedUser.remove(toolName);
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('Error toggling tool permission: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error updating permission: $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
+  Widget _buildToolsTab() {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Select User to Manage Tools', 
+                style: TextStyle(color: Colors.white70, fontSize: 14)),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                decoration: BoxDecoration(
+                  color: Colors.grey[900],
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    dropdownColor: Colors.grey[900],
+                    hint: const Text('Choose a user', style: TextStyle(color: Colors.grey)),
+                    value: selectedUserIdForTools,
+                    isExpanded: true,
+                    style: const TextStyle(color: Colors.white),
+                    items: allProfiles.map((p) {
+                      return DropdownMenuItem<String>(
+                        value: p['id'],
+                        child: Text(p['name'] ?? 'Unknown User'),
+                      );
+                    }).toList(),
+                    onChanged: (val) {
+                      if (val != null) _loadUserPermissions(val);
+                    },
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        if (selectedUserIdForTools != null)
+          Expanded(
+            child: isLoadingPermissions
+              ? const Center(child: CircularProgressIndicator())
+              : ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: allToolNames.length,
+                  itemBuilder: (context, index) {
+                    final toolName = allToolNames[index];
+                    final isBlocked = restrictedToolsForSelectedUser.contains(toolName);
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[900],
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isBlocked ? Colors.red.withOpacity(0.3) : Colors.white10,
+                        ),
+                      ),
+                      child: ListTile(
+                        title: Text(toolName, style: const TextStyle(color: Colors.white)),
+                        trailing: Switch(
+                          activeColor: Colors.red,
+                          activeTrackColor: Colors.redAccent.withOpacity(0.3),
+                          inactiveThumbColor: Colors.green,
+                          inactiveTrackColor: Colors.green.withOpacity(0.3),
+                          value: isBlocked,
+                          onChanged: (val) => _toggleToolPermission(toolName, val),
+                        ),
+                        subtitle: Text(
+                          isBlocked ? 'Blocked Access' : 'Access Allowed',
+                          style: TextStyle(color: isBlocked ? Colors.red : Colors.green, fontSize: 12),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+          )
+        else
+          const Expanded(
+            child: Center(
+              child: Text('Select a user to manage their tool permissions.', 
+                style: TextStyle(color: Colors.grey)),
+            ),
+          ),
+      ],
     );
   }
 

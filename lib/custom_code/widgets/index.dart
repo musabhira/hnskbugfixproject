@@ -18,7 +18,7 @@ export 'create_service_widget.dart' show CreateServiceWidget;
 export 'choice_chip_widget.dart' show CustomChoiceChips;
 export 'event_create_page.dart' show EventCreatePage;
 export 'thread_feed_page.dart' show ThreadFeedPage, CreateThreadPage;
-export 'tools_page.dart' show TaskManagerScreen;
+export 'tools_page.dart' show ToolsPage;
 export 'search_page.dart' show SearchPage;
 export 'chat/whatsapp_group_chat.dart' show WhatsAppGroupChat;
 export 'courses_widget.dart' show CoursesWidget, CourseDetailPage;
