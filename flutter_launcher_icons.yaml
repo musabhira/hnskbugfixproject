@@ -3,13 +3,13 @@ flutter_launcher_icons:
   ios: true
   web:
     generate: true
-    image_path: "assets/images/app_launcher_icon.jpg"
+    image_path: "assets/images/app_launcher_icon.png"
   windows:
     generate: true
-    image_path: "assets/images/app_launcher_icon.jpg"
+    image_path: "assets/images/app_launcher_icon.png"
   macos:
     generate: true
-    image_path: "assets/images/app_launcher_icon.jpg"
-  image_path: "assets/images/app_launcher_icon.jpg"
+    image_path: "assets/images/app_launcher_icon.png"
+  image_path: "assets/images/app_launcher_icon.png"
   adaptive_icon_background: "#121212"
   adaptive_icon_foreground: "assets/images/adaptive_foreground_icon.jpg"

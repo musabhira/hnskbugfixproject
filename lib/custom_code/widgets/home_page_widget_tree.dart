@@ -664,12 +664,12 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         FocusManager.instance.primaryFocus?.unfocus();
       },
       child: Container(
-        color: material.Colors.black,
+        color: FlutterFlowTheme.of(context).primaryBackground,
         child: ScaffoldPage(
           padding: EdgeInsets.zero,
           bottomBar: _buildBottomNavigationBar(context),
           content: material.ColoredBox(
-            color: material.Colors.black,
+            color: FlutterFlowTheme.of(context).primaryBackground,
             child: _isLoading
                 ? const Center(child: ProgressRing())
                 : _currentIndex == 1
@@ -749,7 +749,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                   },
                                   body: material.Builder(
                                     builder: (context) => material.Material(
-                                      color: material.Colors.black,
+                                      color: FlutterFlowTheme.of(context).primaryBackground,
                                       child: PageView(
                                         controller: _pageController,
                                         onPageChanged: _onPageChanged,
@@ -1094,50 +1094,58 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   Widget _buildBottomNavigationBar(BuildContext context) {
     return Container(
       height: 80,
-      margin: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-      padding: const EdgeInsets.symmetric(horizontal: 10),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1A1A1A).withValues(alpha: 0.95),
+      margin: const EdgeInsets.fromLTRB(20, 0, 20, 26),
+      child: ClipRRect(
         borderRadius: BorderRadius.circular(40),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.4),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
+        child: BackdropFilter(
+          filter: ui.ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            decoration: BoxDecoration(
+              color: const Color(0xFF131317).withValues(alpha: 0.85),
+              borderRadius: BorderRadius.circular(40),
+              border: Border.all(
+                color: material.Colors.white.withValues(alpha: 0.08),
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.4),
+                  blurRadius: 32,
+                  offset: const Offset(0, 16),
+                ),
+              ],
+            ),
+            child: material.Material(
+              color: Colors.transparent,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _buildNavItem(
+                    icon: FluentIcons.view_dashboard,
+                    isSelected: _currentIndex == 0,
+                    onTap: () => setState(() => _currentIndex = 0),
+                  ),
+                  _buildNavItem(
+                    icon: FluentIcons.market,
+                    isSelected: _currentIndex == 1,
+                    onTap: () => setState(() => _currentIndex = 1),
+                  ),
+                  _buildNavItem(
+                    icon: FluentIcons.toolbox,
+                    isSelected: _currentIndex == 2,
+                    onTap: () => setState(() => _currentIndex = 2),
+                  ),
+                  _buildNavItem(
+                    icon: FluentIcons.education,
+                    isSelected: _currentIndex == 3,
+                    onTap: () => setState(() => _currentIndex = 3),
+                  ),
+                  _buildProfileNavItem(),
+                ],
+              ),
+            ),
           ),
-        ],
-      ),
-      child: material.Material(
-        color: Colors.transparent,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            _buildNavItem(
-              icon: FluentIcons.view_dashboard,
-              isSelected: _currentIndex == 0,
-              onTap: () => setState(() => _currentIndex = 0),
-            ),
-            _buildNavItem(
-              icon: FluentIcons.market,
-              isSelected: _currentIndex == 1,
-              onTap: () => setState(() => _currentIndex = 1),
-            ),
-            _buildNavItem(
-              icon: FluentIcons.toolbox,
-              isSelected: _currentIndex == 2,
-              onTap: () => setState(() => _currentIndex = 2),
-            ),
-            _buildNavItem(
-              icon: FluentIcons.education,
-              isSelected: _currentIndex == 3,
-              onTap: () => setState(() => _currentIndex = 3),
-            ),
-            _buildProfileNavItem(),
-          ],
         ),
       ),
     );
@@ -1201,7 +1209,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         profileImageUrl: _profileImageUrl,
         isVerified: _isVerified,
         radius: 20.0,
-        borderColor: Colors.yellow,
+        borderColor: FlutterFlowTheme.of(context).primary,
       ),
     );
   }
@@ -1225,15 +1233,15 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? material.Colors.yellow.withValues(alpha: 0.12)
+                    ? FlutterFlowTheme.of(context).primary.withValues(alpha: 0.15)
                     : material.Colors.transparent,
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Icon(
                 icon,
                 color: isSelected
-                    ? material.Colors.yellow
-                    : HomePageWidgetTree.textSecondary,
+                    ? FlutterFlowTheme.of(context).primary
+                    : FlutterFlowTheme.of(context).secondaryText,
                 size: 24,
               ),
             ),

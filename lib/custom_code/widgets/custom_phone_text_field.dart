@@ -1424,22 +1424,39 @@ class _CustomPhoneTextFieldState extends State<CustomPhoneTextField> {
     // Sort alphabetically for easy search
     _allCountries.sort((a, b) => a.name.compareTo(b.name));
 
-    // Set initial selected country
-    if (widget.initialCountryCode != null) {
-      _selectedCountry = _allCountries.firstWhere(
-        (country) => country.code == widget.initialCountryCode,
-        orElse: () =>
-            _allCountries.firstWhere((country) => country.code == 'US'),
-      );
+    // Try to parse initial value from widget.controller
+    String initialText = widget.controller.text.trim();
+    if (initialText.isNotEmpty) {
+      // Find matching country dial code
+      CountryCode? matched;
+      // Sort by dial code length descending for best match (e.g., +1 vs +1246)
+      List<CountryCode> sortedByDialCodeLen = List.from(_allCountries)
+        ..sort((a, b) => b.dialCode.length.compareTo(a.dialCode.length));
+
+      for (var country in sortedByDialCodeLen) {
+        if (initialText.startsWith(country.dialCode)) {
+          matched = country;
+          String numberPart = initialText.substring(country.dialCode.length).trim();
+          _phoneNumberController.text = numberPart;
+          break;
+        }
+      }
+      
+      if (matched != null) {
+        _selectedCountry = matched;
+      } else {
+        _selectedCountry = _allCountries.firstWhere(
+            (country) => country.code == (widget.initialCountryCode ?? 'IN'),
+            orElse: () => _allCountries.firstWhere((c) => c.code == 'IN'));
+        _phoneNumberController.text = initialText;
+      }
     } else {
-      _selectedCountry =
-          _allCountries.firstWhere((country) => country.code == 'US');
+      _selectedCountry = _allCountries.firstWhere(
+          (country) => country.code == (widget.initialCountryCode ?? 'IN'),
+          orElse: () => _allCountries.firstWhere((c) => c.code == 'IN'));
     }
 
-    // Update the main controller with the dial code
     _updateMainController();
-
-    // Add listener to update main controller when phone number changes
     _phoneNumberController.addListener(_updateMainController);
   }
 
@@ -1453,9 +1470,12 @@ class _CustomPhoneTextFieldState extends State<CustomPhoneTextField> {
   }
 
   void _updateMainController() {
-    // Combine country code and phone number
-    widget.controller.text =
-        "${_selectedCountry.dialCode} ${_phoneNumberController.text}";
+    String number = _phoneNumberController.text.trim();
+    if (number.isNotEmpty) {
+      widget.controller.text = "${_selectedCountry.dialCode} $number";
+    } else {
+      widget.controller.text = "";
+    }
   }
 
   void _selectCountry(CountryCode country) {
@@ -1469,114 +1489,106 @@ class _CustomPhoneTextFieldState extends State<CustomPhoneTextField> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsetsDirectional.fromSTEB(20.0, 0.0, 20.0, 16.0),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (_isCountryListOpen) ...[
-            _buildCountrySelector(),
-          ] else ...[
-            _buildPhoneField(context),
-          ],
-        ],
-      ),
-    );
-  }
+    final theme = DarkModeTheme();
+    if (_isCountryListOpen) {
+      return _buildCountrySelector(theme);
+    }
 
-  Widget _buildPhoneField(BuildContext context) {
-    return TextFormField(
-      maxLines: widget.maxLines,
-      keyboardType: widget.keyboardType,
-      controller: _phoneNumberController,
-      focusNode: _focusNode,
-      inputFormatters: [
-        FilteringTextInputFormatter.digitsOnly,
-      ],
-      decoration: InputDecoration(
-        labelText: widget.labelText,
-        hintText: widget.hintText,
-        labelStyle: FlutterFlowTheme.of(context).labelMedium.override(
-              fontFamily: 'Montserrat',
-              letterSpacing: 0.0,
-            ),
-        hintStyle: FlutterFlowTheme.of(context).labelMedium.override(
-              fontFamily: 'Montserrat',
-              letterSpacing: 0.0,
-            ),
-        enabledBorder: OutlineInputBorder(
-          borderSide: BorderSide(
-            color: FlutterFlowTheme.of(context).alternate,
-            width: 1.0,
-          ),
-          borderRadius: BorderRadius.circular(8.0),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderSide: BorderSide(
-            color: FlutterFlowTheme.of(context).error,
-            width: 1.0,
-          ),
-          borderRadius: BorderRadius.circular(8.0),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderSide: BorderSide(
-            color: FlutterFlowTheme.of(context).primary,
-            width: 1.0,
-          ),
-          borderRadius: BorderRadius.circular(8.0),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderSide: BorderSide(
-            color: FlutterFlowTheme.of(context).error,
-            width: 1.0,
-          ),
-          borderRadius: BorderRadius.circular(8.0),
-        ),
-        filled: true,
-        fillColor: FlutterFlowTheme.of(context).secondaryBackground,
-        contentPadding:
-            const EdgeInsetsDirectional.fromSTEB(20.0, 24.0, 20.0, 24.0),
-        prefixIcon: GestureDetector(
-          onTap: () {
-            safeSetState(() {
-              _isCountryListOpen = true;
-            });
-          },
-          child: Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  "${_selectedCountry.flag} ${_selectedCountry.dialCode}",
-                  style: FlutterFlowTheme.of(context).bodyMedium.override(
-                        fontFamily: 'Montserrat',
-                        letterSpacing: 0.0,
-                      ),
-                ),
-                const SizedBox(width: 4),
-                const Icon(Icons.arrow_drop_down),
-                Container(
-                  height: 24,
-                  width: 1,
-                  color: FlutterFlowTheme.of(context).alternate,
-                  margin: const EdgeInsets.symmetric(horizontal: 8.0),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-      style: FlutterFlowTheme.of(context).bodyMedium.override(
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+      child: TextFormField(
+        controller: _phoneNumberController,
+        focusNode: _focusNode,
+        keyboardType: widget.keyboardType,
+        maxLines: widget.maxLines,
+        decoration: InputDecoration(
+          labelText: widget.labelText,
+          hintText: widget.hintText,
+          labelStyle: theme.labelMedium.override(
             fontFamily: 'Montserrat',
             letterSpacing: 0.0,
+            color: theme.secondaryText,
           ),
+          hintStyle: theme.labelMedium.override(
+            fontFamily: 'Montserrat',
+            letterSpacing: 0.0,
+            color: theme.secondaryText,
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderSide: BorderSide(
+              color: theme.alternate,
+              width: 1.0,
+            ),
+            borderRadius: BorderRadius.circular(8.0),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderSide: BorderSide(
+              color: theme.error,
+              width: 1.0,
+            ),
+            borderRadius: BorderRadius.circular(8.0),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderSide: BorderSide(
+              color: theme.primary,
+              width: 1.0,
+            ),
+            borderRadius: BorderRadius.circular(8.0),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderSide: BorderSide(
+              color: theme.error,
+              width: 1.0,
+            ),
+            borderRadius: BorderRadius.circular(8.0),
+          ),
+          filled: true,
+          fillColor: theme.secondaryBackground,
+          contentPadding:
+              const EdgeInsetsDirectional.fromSTEB(20.0, 24.0, 20.0, 24.0),
+          prefixIcon: GestureDetector(
+            onTap: () {
+              safeSetState(() {
+                _isCountryListOpen = true;
+              });
+            },
+            child: Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    "${_selectedCountry.flag} ${_selectedCountry.dialCode}",
+                    style: theme.bodyMedium.override(
+                      fontFamily: 'Montserrat',
+                      letterSpacing: 0.0,
+                      color: theme.primaryText,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Icon(Icons.arrow_drop_down, color: theme.secondaryText),
+                  Container(
+                    height: 24,
+                    width: 1,
+                    color: theme.alternate,
+                    margin: const EdgeInsets.symmetric(horizontal: 8.0),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        style: theme.bodyMedium.override(
+          fontFamily: 'Montserrat',
+          letterSpacing: 0.0,
+          color: theme.primaryText,
+        ),
+      ),
     );
   }
 
-  Widget _buildCountrySelector() {
+  Widget _buildCountrySelector(DarkModeTheme theme) {
     // Create a filtered map of countries based on search
     Map<String, List<CountryCode>> filteredCountriesByRegion() {
       if (_searchQuery.isEmpty) {
@@ -1622,10 +1634,10 @@ class _CustomPhoneTextFieldState extends State<CustomPhoneTextField> {
     return Container(
       height: 350,
       decoration: BoxDecoration(
-        color: FlutterFlowTheme.of(context).secondaryBackground,
+        color: theme.secondaryBackground,
         borderRadius: BorderRadius.circular(8.0),
         border: Border.all(
-          color: FlutterFlowTheme.of(context).alternate,
+          color: theme.alternate,
           width: 1.0,
         ),
       ),
@@ -1638,10 +1650,13 @@ class _CustomPhoneTextFieldState extends State<CustomPhoneTextField> {
               children: [
                 Text(
                   'Select Country',
-                  style: FlutterFlowTheme.of(context).titleMedium,
+                  style: theme.titleMedium.override(
+                    fontFamily: 'Montserrat',
+                    color: theme.primaryText,
+                  ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.close),
+                  icon: Icon(Icons.close, color: theme.secondaryText),
                   onPressed: () {
                     safeSetState(() {
                       _isCountryListOpen = false;
@@ -1654,36 +1669,27 @@ class _CustomPhoneTextFieldState extends State<CustomPhoneTextField> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12.0),
             child: TextFormField(
-              style:
-                  TextStyle(color: FlutterFlowTheme.of(context).primaryText),
+              style: TextStyle(color: theme.primaryText),
               controller: _searchController,
               decoration: InputDecoration(
                 hintText: 'Search countries...',
-                hintStyle: TextStyle(
-                    color: FlutterFlowTheme.of(context)
-                        .secondaryText), // Hint text color
-                prefixIcon: Icon(Icons.search,
-                    color: FlutterFlowTheme.of(context).primaryText), // Icon color
+                hintStyle: TextStyle(color: theme.secondaryText),
+                prefixIcon: Icon(Icons.search, color: theme.secondaryText),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.0),
-                  borderSide: BorderSide(
-                      color: FlutterFlowTheme.of(context).alternate),
+                  borderSide: BorderSide(color: theme.alternate),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.0),
-                  borderSide: BorderSide(
-                      color: FlutterFlowTheme.of(context).alternate),
+                  borderSide: BorderSide(color: theme.primary),
                 ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.0),
-                  borderSide: BorderSide(
-                      color: FlutterFlowTheme.of(context).alternate),
+                  borderSide: BorderSide(color: theme.alternate),
                 ),
-
                 suffixIcon: _searchQuery.isNotEmpty
                     ? IconButton(
-                        icon: Icon(Icons.clear,
-                            color: FlutterFlowTheme.of(context).primaryText),
+                        icon: Icon(Icons.clear, color: theme.secondaryText),
                         onPressed: () {
                           _searchController.clear();
                           safeSetState(() {
@@ -1706,7 +1712,10 @@ class _CustomPhoneTextFieldState extends State<CustomPhoneTextField> {
                 ? Center(
                     child: Text(
                       'No countries found',
-                      style: FlutterFlowTheme.of(context).bodyMedium,
+                      style: theme.bodyMedium.override(
+                        fontFamily: 'Montserrat',
+                        color: theme.secondaryText,
+                      ),
                     ),
                   )
                 : DefaultTabController(
@@ -1719,15 +1728,16 @@ class _CustomPhoneTextFieldState extends State<CustomPhoneTextField> {
                             tabs: filteredCountries.keys.map((region) {
                               return Tab(text: region);
                             }).toList(),
-                            labelColor: FlutterFlowTheme.of(context).primary,
-                            unselectedLabelColor:
-                                FlutterFlowTheme.of(context).secondaryText,
+                            labelColor: theme.primary,
+                            unselectedLabelColor: theme.secondaryText,
+                            indicatorColor: theme.primary,
                           ),
                         Expanded(
                           child: filteredCountries.length == 1
                               ? _buildCountryList(
                                   filteredCountries.values.first,
                                   _selectedCountry,
+                                  theme,
                                 )
                               : TabBarView(
                                   children:
@@ -1735,6 +1745,7 @@ class _CustomPhoneTextFieldState extends State<CustomPhoneTextField> {
                                     return _buildCountryList(
                                       entry.value,
                                       _selectedCountry,
+                                      theme,
                                     );
                                   }).toList(),
                                 ),
@@ -1748,26 +1759,21 @@ class _CustomPhoneTextFieldState extends State<CustomPhoneTextField> {
     );
   }
 
-  Widget _buildCountryList(
-      List<CountryCode> countries, CountryCode selectedCountry) {
+  Widget _buildCountryList(List<CountryCode> countries,
+      CountryCode selectedCountry, DarkModeTheme theme) {
     return ListView.builder(
       itemCount: countries.length,
       itemBuilder: (context, index) {
         final country = countries[index];
         return ListTile(
           leading: Text(country.flag,
-              style: TextStyle(
-                  fontSize: 24,
-                  color: FlutterFlowTheme.of(context).primaryText)),
-          title: Text(country.name,
-              style:
-                  TextStyle(color: FlutterFlowTheme.of(context).primaryText)),
-          subtitle: Text(country.dialCode,
-              style:
-                  TextStyle(color: FlutterFlowTheme.of(context).primaryText)),
+              style: TextStyle(fontSize: 24, color: theme.primaryText)),
+          title: Text(country.name, style: TextStyle(color: theme.primaryText)),
+          subtitle:
+              Text(country.dialCode, style: TextStyle(color: theme.primaryText)),
           onTap: () => _selectCountry(country),
           selected: selectedCountry.code == country.code,
-          selectedTileColor: FlutterFlowTheme.of(context).primaryText,
+          selectedTileColor: theme.secondaryText,
         );
       },
     );

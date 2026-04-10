@@ -344,3 +344,48 @@ class GridPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant GridPainter oldDelegate) => false;
 }
+
+class LassoPainter extends CustomPainter {
+  final List<DrawingPoint> points;
+  LassoPainter({required this.points});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (points.length < 2) return;
+    final paint = Paint()
+      ..color = Colors.amber.withValues(alpha: 0.5)
+      ..strokeWidth = 2.0
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..isAntiAlias = true;
+      
+    final fillPaint = Paint()
+      ..color = Colors.amber.withValues(alpha: 0.1)
+      ..style = PaintingStyle.fill;
+
+    final path = Path();
+    path.moveTo(points[0].offset.dx, points[0].offset.dy);
+    for (int i = 1; i < points.length; i++) {
+      path.lineTo(points[i].offset.dx, points[i].offset.dy);
+    }
+    
+    canvas.drawPath(path, fillPaint);
+    canvas.drawPath(path, paint);
+    
+    // Draw dashing (simulated)
+    final dashPaint = Paint()
+      ..color = Colors.white
+      ..strokeWidth = 1.0
+      ..style = PaintingStyle.stroke;
+      
+    // Simple dash simulation
+    for (int i = 0; i < points.length - 1; i += 4) {
+      final p1 = points[i].offset;
+      final p2 = points[i+1].offset;
+      canvas.drawLine(p1, p2, dashPaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant LassoPainter oldDelegate) => true;
+}

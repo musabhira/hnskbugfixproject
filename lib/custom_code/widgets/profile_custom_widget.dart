@@ -61,7 +61,6 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
   bool _isCompressingProfile = false;
   bool _isCompressingBanner = false;
   String? _selectedTemplateId = 'default';
-  bool _isVerified = false;
 
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _shopNameController = TextEditingController();
@@ -146,7 +145,6 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
           instaIdController.text = profileResponse['insta_id'] ?? '';
           instaLinkController.text = profileResponse['insta_link'] ?? '';
           _selectedTemplateId = profileResponse['web_template_id'] ?? 'default';
-          _isVerified = profileResponse['verified'] ?? false;
         });
       }
     } catch (error) {
@@ -640,6 +638,12 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
     return false;
   }
 
+  void safeSetState(VoidCallback fn) {
+    if (mounted) {
+      setState(fn);
+    }
+  }
+
   // Helper method to sanitize content
   String _sanitizeContent(String text) {
     // Remove leading/trailing whitespace
@@ -714,6 +718,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
   }
 
   Widget buildBeautifulLocationPicker() {
+    final theme = DarkModeTheme();
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(20.0, 1.0, 20.0, 0.0),
       child: Column(
@@ -724,7 +729,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: FlutterFlowTheme.of(context).primaryText,
+              color: theme.primaryText,
             ),
           ),
           const SizedBox(height: 15),
@@ -732,7 +737,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
           // Custom implementation showing initial values
           Container(
             decoration: BoxDecoration(
-              color: FlutterFlowTheme.of(context).primaryBackground,
+              color: theme.primaryBackground,
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
@@ -768,7 +773,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                 dropdownColor: Colors.black,
                 // Style customization
                 style: TextStyle(
-                  color: FlutterFlowTheme.of(context).primaryText,
+                  color: theme.primaryText,
                   fontWeight: FontWeight.w500,
                   fontSize: 16,
                 ),
@@ -783,7 +788,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: FlutterFlowTheme.of(context).primaryText,
+              color: theme.primaryText,
             ),
           ),
           const SizedBox(height: 10),
@@ -794,7 +799,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
               title: 'Country',
               value: selectedCountry ?? '',
               icon: Icons.flag_outlined,
-              color: FlutterFlowTheme.of(context).primary,
+              color: theme.primary,
             ),
 
           // State display
@@ -803,7 +808,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
               title: 'State/Province',
               value: selectedState ?? '',
               icon: Icons.location_city_outlined,
-              color: FlutterFlowTheme.of(context).secondary,
+              color: theme.secondary,
             ),
 
           // City display
@@ -812,7 +817,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
               title: 'City',
               value: selectedCity ?? '',
               icon: Icons.business_outlined,
-              color: FlutterFlowTheme.of(context).tertiary,
+              color: theme.tertiary,
             ),
         ],
       ),
@@ -840,6 +845,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
     required IconData icon,
     required Color color,
   }) {
+    final theme = DarkModeTheme();
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
@@ -859,15 +865,14 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
         title: Text(
           title,
           style: TextStyle(
-            color:
-                FlutterFlowTheme.of(context).primaryText.withValues(alpha: 0.7),
+            color: theme.primaryText.withValues(alpha: 0.7),
             fontSize: 14,
           ),
         ),
         subtitle: Text(
           value,
           style: TextStyle(
-            color: FlutterFlowTheme.of(context).primaryText,
+            color: theme.primaryText,
             fontWeight: FontWeight.bold,
             fontSize: 16,
           ),
@@ -879,6 +884,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
   @override
   Widget build(BuildContext context) {
     bool isHidden = hideData?['is_hidden'] ?? false;
+    final theme = DarkModeTheme();
 
     return SizedBox(
       width: widget.width,
@@ -886,7 +892,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
       child: Scaffold(
         key: scaffoldKey,
         appBar: AppBar(
-          backgroundColor: Colors.black,
+          backgroundColor: theme.primaryBackground,
           automaticallyImplyLeading: false,
           leading: Row(
             mainAxisSize: MainAxisSize.min,
@@ -894,7 +900,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
               IconButton(
                 icon: Icon(
                   Icons.arrow_back_ios_rounded,
-                  color: FlutterFlowTheme.of(context).primaryText,
+                  color: theme.primaryText,
                   size: 24.0,
                 ),
                 onPressed: () async {
@@ -904,7 +910,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
               IconButton(
                 icon: Icon(
                   Icons.close_rounded,
-                  color: FlutterFlowTheme.of(context).primaryText,
+                  color: theme.primaryText,
                   size: 24.0,
                 ),
                 onPressed: () async {
@@ -918,7 +924,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
           centerTitle: true,
           elevation: 2.0,
         ),
-        backgroundColor: Colors.black,
+        backgroundColor: theme.primaryBackground,
         body: SizedBox(
           width: double.infinity,
           height: double.infinity,
@@ -937,14 +943,12 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                             24.0, 16.0, 0.0, 16.0),
                         child: Text(
                           'Create your Online shop Profile',
-                          style: FlutterFlowTheme.of(context)
-                              .headlineMedium
-                              .override(
-                                fontFamily: 'Poppins',
-                                color: FlutterFlowTheme.of(context).primaryText,
-                                fontSize: 22.0,
-                                letterSpacing: 0.0,
-                              ),
+                          style: theme.headlineMedium.override(
+                            fontFamily: 'Poppins',
+                            color: theme.primaryText,
+                            fontSize: 22.0,
+                            letterSpacing: 0.0,
+                          ),
                         ),
                       ),
                     ],
@@ -980,188 +984,139 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                                 padding: const EdgeInsetsDirectional.fromSTEB(
                                     0.0, 130.0, 0.0, 16.0),
                                 child: Row(
-                                    mainAxisSize: MainAxisSize.max,
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      GestureDetector(
-                                        onTap: (_isLoading ||
-                                                _isCompressingProfile)
-                                            ? null
-                                            : _selectImage,
-                                        child: Stack(
-                                          alignment: Alignment.bottomRight,
-                                          children: [
-                                            CircleAvatar(
-                                              radius: 50,
-                                              backgroundColor: Colors.grey[200],
-                                              backgroundImage:
-                                                  _selectedImageBytes != null
-                                                      ? MemoryImage(
-                                                              _selectedImageBytes!)
-                                                          as ImageProvider<
-                                                              Object>
-                                                      : (_imageUrl != null &&
-                                                              _imageUrl!
-                                                                  .isNotEmpty
-                                                          ? NetworkImage(
-                                                                  _imageUrl!)
-                                                              as ImageProvider<
-                                                                  Object>
-                                                          : null),
-                                              child: _isCompressingProfile
-                                                  ? const CircularProgressIndicator(
-                                                      strokeWidth: 2,
-                                                      valueColor:
-                                                          AlwaysStoppedAnimation<
-                                                                  Color>(
-                                                              Colors.yellow),
-                                                    )
-                                                  : (_selectedImageBytes ==
-                                                              null &&
-                                                          (_imageUrl == null ||
-                                                              _imageUrl!
-                                                                  .isEmpty)
-                                                      ? const Icon(Icons.person,
-                                                          size: 40,
-                                                          color: Colors.grey)
-                                                      : null),
-                                            ),
-                                            if (!_isCompressingProfile)
-                                              Container(
-                                                decoration: const BoxDecoration(
-                                                  shape: BoxShape.circle,
-                                                  color: Colors.yellow,
-                                                ),
-                                                padding:
-                                                    const EdgeInsets.all(6),
-                                                child: const Icon(
-                                                  Icons.camera_alt,
-                                                  color: Colors.black,
-                                                  size: 18,
-                                                ),
-                                              ),
-                                            if (_isCompressingProfile)
-                                              Container(
-                                                decoration: const BoxDecoration(
-                                                  shape: BoxShape.circle,
-                                                  color: Colors.yellow,
-                                                ),
-                                                padding:
-                                                    const EdgeInsets.all(6),
-                                                child: const SizedBox(
-                                                  width: 18,
-                                                  height: 18,
-                                                  child:
-                                                      CircularProgressIndicator(
+                                  mainAxisSize: MainAxisSize.max,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    GestureDetector(
+                                      onTap: (_isLoading ||
+                                              _isCompressingProfile)
+                                          ? null
+                                          : _selectImage,
+                                      child: Stack(
+                                        alignment: Alignment.bottomRight,
+                                        children: [
+                                          CircleAvatar(
+                                            radius: 50,
+                                            backgroundColor: theme.secondaryBackground,
+                                            backgroundImage: _selectedImageBytes !=
+                                                    null
+                                                ? MemoryImage(
+                                                    _selectedImageBytes!)
+                                                : (_imageUrl != null &&
+                                                        _imageUrl!.isNotEmpty
+                                                    ? NetworkImage(_imageUrl!)
+                                                    : null) as ImageProvider?,
+                                            child: _isCompressingProfile
+                                                ? CircularProgressIndicator(
                                                     strokeWidth: 2,
                                                     valueColor:
                                                         AlwaysStoppedAnimation<
-                                                                Color>(
-                                                            Colors.white),
-                                                  ),
-                                                ),
+                                                            Color>(
+                                                      theme.primary,
+                                                    ),
+                                                  )
+                                                : (_selectedImageBytes ==
+                                                            null &&
+                                                        (_imageUrl == null ||
+                                                            _imageUrl!.isEmpty)
+                                                    ? Icon(Icons.person,
+                                                        size: 40,
+                                                        color: theme.secondaryText)
+                                                    : null),
+                                          ),
+                                          if (!_isLoading &&
+                                              !_isCompressingProfile)
+                                            Container(
+                                              padding: const EdgeInsets.all(4),
+                                              decoration: BoxDecoration(
+                                                color: theme.primary,
+                                                shape: BoxShape.circle,
                                               ),
-                                          ],
-                                        ),
-                                      ),
-                                    ]),
-                              ),
-                              Align(
-                                alignment:
-                                    const AlignmentDirectional(-0.04, -1.16),
-                                child: InkWell(
-                                  onTap: (_isLoading || _isCompressingBanner)
-                                      ? null
-                                      : _selectImageBanner,
-                                  child: Container(
-                                    width: 128.0,
-                                    height: 30.0,
-                                    decoration: BoxDecoration(
-                                      color: _isCompressingBanner
-                                          ? Colors.yellow.withValues(alpha: 0.7)
-                                          : Colors.grey[900],
-                                      borderRadius: const BorderRadius.only(
-                                        bottomLeft: Radius.circular(20.0),
-                                        bottomRight: Radius.circular(20.0),
-                                        topLeft: Radius.circular(0.0),
-                                        topRight: Radius.circular(0.0),
-                                      ),
-                                    ),
-                                    child: Align(
-                                      alignment:
-                                          const AlignmentDirectional(0.0, 0.0),
-                                      child: _isCompressingBanner
-                                          ? Row(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                const SizedBox(
-                                                  width: 16,
-                                                  height: 16,
-                                                  child:
-                                                      CircularProgressIndicator(
-                                                    strokeWidth: 2,
-                                                    valueColor:
-                                                        AlwaysStoppedAnimation<
-                                                                Color>(
-                                                            Colors.white),
-                                                  ),
-                                                ),
-                                                const SizedBox(width: 8),
-                                                Text(
-                                                  'Processing...',
-                                                  style: FlutterFlowTheme.of(
-                                                          context)
-                                                      .bodyMedium
-                                                      .override(
-                                                        fontFamily:
-                                                            'Montserrat',
-                                                        color: Colors.white,
-                                                        fontSize: 12,
-                                                        letterSpacing: 0.0,
-                                                      ),
-                                                ),
-                                              ],
-                                            )
-                                          : Text(
-                                              'Edit Banner',
-                                              style:
-                                                  FlutterFlowTheme.of(context)
-                                                      .bodyMedium
-                                                      .override(
-                                                        fontFamily:
-                                                            'Montserrat',
-                                                        letterSpacing: 0.0,
-                                                      ),
+                                              child: const Icon(
+                                                Icons.add_a_photo,
+                                                color: Colors.white,
+                                                size: 20,
+                                              ),
                                             ),
+                                        ],
+                                      ),
                                     ),
-                                  ),
+                                  ],
                                 ),
                               ),
                             ],
                           ),
                         ],
                       ),
+                      // Edit button for banner
+                      Positioned(
+                        right: 32,
+                        bottom: 60,
+                        child: GestureDetector(
+                          onTap: (_isLoading || _isCompressingBanner)
+                              ? null
+                              : _selectImageBanner,
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: theme.primary,
+                              shape: BoxShape.circle,
+                            ),
+                            child: _isCompressingBanner
+                                ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : const Icon(
+                                    Icons.edit,
+                                    color: Colors.white,
+                                    size: 20,
+                                  ),
+                          ),
+                        ),
+                      ),
                     ],
                   ),
+                  const SizedBox(height: 10),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                    child: Text(
+                      'Banner image and Profile picture',
+                      style: theme.bodyMedium.override(
+                        fontFamily: 'Montserrat',
+                        color: theme.secondaryText,
+                        fontSize: 12.0,
+                        letterSpacing: 0.0,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+
+                  // Warning Message
                   Padding(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 20.0, vertical: 12),
                     child: Container(
                       decoration: BoxDecoration(
-                        // ignore: deprecated_member_use
-                        color: Colors.yellow
-                            .withValues(alpha: 0.2), // less opacity
+                        color: theme.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: theme.primary.withValues(alpha: 0.2)),
                       ),
                       padding: const EdgeInsets.all(12),
                       child: Row(
                         children: [
+                          Icon(Icons.info_outline, color: theme.primary, size: 20),
+                          const SizedBox(width: 12),
                           Expanded(
                             child: Text(
-                              'Please avoid using inappropriate words in your name, shop name, or description.',
-                              style: TextStyle(
-                                color: Colors.yellow[
-                                    800], // slightly darker text for contrast
+                              'Avoid using inappropriate words in your name, shop name, or description.',
+                              style: theme.bodySmall.override(
+                                fontFamily: 'Montserrat',
+                                color: theme.primaryText,
                                 fontSize: 11,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -1172,69 +1127,84 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                     ),
                   ),
 
+                  // Name Text Field
                   CustomTextField(
                     width: double.infinity,
-                    height: double.infinity,
+                    height: 56.0,
                     controller: _nameController,
-                    hintText: 'Your Name',
                     labelText: 'Your Name',
+                    hintText: 'Enter your full name',
                   ),
 
+                  // Shop Name Text Field
                   Row(
                     children: [
                       Expanded(
                         child: CustomTextField(
                           width: double.infinity,
-                          height: double.infinity,
+                          height: 56.0,
                           controller: _shopNameController,
-                          hintText: 'Shop Name',
                           labelText: 'Shop Name',
+                          hintText: 'Unique name for your shop',
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      Column(mainAxisSize: MainAxisSize.min, children: [
-                        IconButton(
-                          onPressed: _checkingShopName ? null : _checkShopName,
-                          icon: _checkingShopName
-                              ? const SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                      strokeWidth: 2, color: Colors.yellow))
-                              : Icon(Icons.check_circle,
-                                  color: _isShopNameVerified
-                                      ? Colors.green
-                                      : Colors.grey),
-                          tooltip: 'Verify Availability',
+                      Padding(
+                        padding: const EdgeInsets.only(right: 20, top: 16),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              onPressed: _checkingShopName ? null : _checkShopName,
+                              icon: _checkingShopName
+                                  ? SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                          strokeWidth: 2, color: theme.primary))
+                                  : Icon(Icons.check_circle,
+                                      color: _isShopNameVerified
+                                          ? theme.success
+                                          : theme.secondaryText),
+                              tooltip: 'Verify Availability',
+                            ),
+                            Text('Verify',
+                                style: theme.bodySmall.override(
+                                  fontFamily: 'Montserrat',
+                                  color: theme.primaryText,
+                                  fontSize: 10,
+                                )),
+                          ],
                         ),
-                        const Text('Verify',
-                            style:
-                                TextStyle(color: Colors.white, fontSize: 10)),
-                      ])
+                      )
                     ],
                   ),
                   if (_shopNameMessage != null)
                     Padding(
-                      padding: const EdgeInsets.only(left: 20, bottom: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
                       child: Text(
                         _shopNameMessage!,
-                        style: TextStyle(
-                            color: _shopNameMessageColor, fontSize: 12),
+                        style: theme.bodySmall.override(
+                          fontFamily: 'Montserrat',
+                          color: _shopNameMessageColor,
+                          fontSize: 12,
+                        ),
                       ),
                     ),
 
+                  // Phone Number Section
                   Padding(
                     padding: const EdgeInsetsDirectional.fromSTEB(
-                        20.0, 0.0, 20.0, 10.0),
+                        24.0, 16.0, 24.0, 8.0),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
                         Text(
                           _phoneNumberController.text.isNotEmpty
-                              ? '${_phoneNumberController.text} | Edit phone number'
-                              : 'Add a new phone number',
-                          style: const TextStyle(
-                            color: Colors.white,
+                              ? '${_phoneNumberController.text} | Phone number'
+                              : 'Add your phone number',
+                          style: theme.bodyMedium.override(
+                            fontFamily: 'Montserrat',
+                            color: theme.primaryText,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -1244,320 +1214,237 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
 
                   CustomPhoneTextField(
                     width: double.infinity,
-                    height: double.infinity,
+                    height: 56.0,
                     controller: _phoneNumberController,
-                    hintText: 'Phone Number',
                     labelText: 'Phone Number',
-                    initialCountryCode: 'IN', // Optional: Set India as default
+                    hintText: 'Enter your phone number',
+                    initialCountryCode: 'IN',
                   ),
-                  Container(
-                    padding: const EdgeInsets.only(
-                        left: 20, right: 20, top: 2, bottom: 18),
+
+                  // Privacy Switch
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 12),
                     child: Container(
                       decoration: BoxDecoration(
-                        // ignore: deprecated_member_use
-                        color: Colors.yellow
-                            .withValues(alpha: 0.2), // less opacity
+                        color: theme.secondaryBackground,
                         borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: theme.alternate),
                       ),
                       padding: const EdgeInsets.all(12),
                       child: Row(
                         children: [
+                          Icon(Icons.security, color: theme.primary, size: 20),
+                          const SizedBox(width: 12),
                           Expanded(
                             child: Text(
-                              'Hide whatsapp & Phone Number, Hide a Phone call feature',
-                              style: TextStyle(
-                                color: Colors.yellow[800],
+                              'Hide WhatsApp & Phone number from public view',
+                              style: theme.bodySmall.override(
+                                fontFamily: 'Montserrat',
+                                color: theme.primaryText,
                                 fontSize: 12,
                               ),
                             ),
                           ),
-                          const Spacer(),
                           Switch(
                             value: isHidden,
                             onChanged: (value) => saveHideStatus(value),
-                            activeThumbColor: Colors.yellow,
+                            activeColor: theme.primary,
+                            activeTrackColor: theme.primary.withValues(alpha: 0.3),
                             inactiveThumbColor: Colors.white,
-                            inactiveTrackColor: Colors.grey,
+                            inactiveTrackColor: theme.alternate,
                           ),
                         ],
                       ),
                     ),
                   ),
 
+                  // Bio Text Field
                   CustomTextField(
                     width: double.infinity,
-                    height: double.infinity,
+                    height: 56.0,
                     controller: _bioController,
-                    hintText: 'Your bio',
-                    labelText: 'Your bio',
+                    labelText: 'Your Bio',
+                    hintText: 'Tell the world about yourself...',
                     maxLines: 3,
-                  ), // Generated code for this Text Widget...
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                  ),
+
+                  // DOB Section
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                     child: Row(
                       children: [
                         Text(
                           'Date of Birth',
-                          style: TextStyle(
-                            color: Colors.white,
+                          style: theme.bodyMedium.override(
+                            fontFamily: 'Montserrat',
+                            color: theme.primaryText,
                             fontSize: 16,
-                            fontWeight: FontWeight.w500,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ],
                     ),
                   ),
                   Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: Row(
                       children: [
-                        // Day TextField
                         Expanded(
-                          flex: 1,
                           child: TextField(
                             controller: _dayController,
-                            style: const TextStyle(color: Colors.white),
+                            style: TextStyle(color: theme.primaryText),
                             keyboardType: TextInputType.number,
                             textAlign: TextAlign.center,
+                            decoration: InputDecoration(
+                              hintText: 'DD',
+                              hintStyle: TextStyle(color: theme.secondaryText),
+                              filled: true,
+                              fillColor: theme.secondaryBackground,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide(color: theme.alternate),
+                              ),
+                            ),
                             inputFormatters: [
                               FilteringTextInputFormatter.digitsOnly,
                               LengthLimitingTextInputFormatter(2),
                             ],
-                            decoration: InputDecoration(
-                              hintText: 'Day',
-                              hintStyle: const TextStyle(color: Colors.white70),
-                              filled: true,
-                              fillColor: Colors.black,
-                              enabledBorder: OutlineInputBorder(
-                                borderSide:
-                                    const BorderSide(color: Colors.white),
-                                borderRadius: BorderRadius.circular(4.0),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderSide:
-                                    const BorderSide(color: Colors.white),
-                                borderRadius: BorderRadius.circular(4.0),
-                              ),
-                            ),
                           ),
                         ),
-                        const SizedBox(width: 4),
-                        // Month TextField
+                        const SizedBox(width: 12),
                         Expanded(
-                          flex: 1,
                           child: TextField(
                             controller: _monthController,
-                            style: const TextStyle(color: Colors.white),
+                            style: TextStyle(color: theme.primaryText),
                             keyboardType: TextInputType.number,
                             textAlign: TextAlign.center,
+                            decoration: InputDecoration(
+                              hintText: 'MM',
+                              hintStyle: TextStyle(color: theme.secondaryText),
+                              filled: true,
+                              fillColor: theme.secondaryBackground,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide(color: theme.alternate),
+                              ),
+                            ),
                             inputFormatters: [
                               FilteringTextInputFormatter.digitsOnly,
                               LengthLimitingTextInputFormatter(2),
                             ],
-                            decoration: InputDecoration(
-                              hintText: 'Month',
-                              hintStyle: const TextStyle(color: Colors.white70),
-                              filled: true,
-                              fillColor: Colors.black,
-                              enabledBorder: OutlineInputBorder(
-                                borderSide:
-                                    const BorderSide(color: Colors.white),
-                                borderRadius: BorderRadius.circular(4.0),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderSide:
-                                    const BorderSide(color: Colors.white),
-                                borderRadius: BorderRadius.circular(4.0),
-                              ),
-                            ),
                           ),
                         ),
-                        const SizedBox(width: 4),
-                        // Year TextField
+                        const SizedBox(width: 12),
                         Expanded(
-                          flex: 2,
                           child: TextField(
                             controller: _yearController,
-                            style: const TextStyle(color: Colors.white),
+                            style: TextStyle(color: theme.primaryText),
                             keyboardType: TextInputType.number,
                             textAlign: TextAlign.center,
+                            decoration: InputDecoration(
+                              hintText: 'YYYY',
+                              hintStyle: TextStyle(color: theme.secondaryText),
+                              filled: true,
+                              fillColor: theme.secondaryBackground,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide(color: theme.alternate),
+                              ),
+                            ),
                             inputFormatters: [
                               FilteringTextInputFormatter.digitsOnly,
                               LengthLimitingTextInputFormatter(4),
                             ],
-                            decoration: InputDecoration(
-                              hintText: 'Year',
-                              hintStyle: const TextStyle(color: Colors.white70),
-                              filled: true,
-                              fillColor: Colors.black,
-                              enabledBorder: OutlineInputBorder(
-                                borderSide:
-                                    const BorderSide(color: Colors.white),
-                                borderRadius: BorderRadius.circular(4.0),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderSide:
-                                    const BorderSide(color: Colors.white),
-                                borderRadius: BorderRadius.circular(4.0),
-                              ),
-                            ),
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(
-                    height: 5,
-                  ),
+
+                  // Social Links Section
                   Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 20.0, vertical: 12),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        // ignore: deprecated_member_use
-                        color: Colors.yellow
-                            .withValues(alpha: 0.2), // less opacity
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      padding: const EdgeInsets.all(12),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              'Want to link your Instagram profile? Drop your Instagram ID here — we’ll use it only to connect with you. Don’t worry, it stays private.',
-                              style: TextStyle(
-                                color: Colors.yellow[800],
-                                fontSize: 11,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                    padding: const EdgeInsetsDirectional.fromSTEB(0, 24, 0, 0),
+                    child: CustomTextField(
+                      width: double.infinity,
+                      height: 56.0,
+                      controller: instaIdController,
+                      labelText: 'Instagram ID',
+                      hintText: '@username',
                     ),
                   ),
                   CustomTextField(
                     width: double.infinity,
-                    height: double.infinity,
-                    controller: instaIdController,
-                    hintText: 'Instagram ID (Optional)',
-                    labelText: 'Your Instagram ID (Optional)',
-                  ),
-                  CustomTextField(
-                    width: double.infinity,
-                    height: double.infinity,
+                    height: 56.0,
                     controller: instaLinkController,
-                    hintText: 'Instagram profile Link add (Optional)',
-                    labelText: 'Your Instagram profile Link (Optional)',
+                    labelText: 'Instagram Profile Link',
+                    hintText: 'https://instagram.com/yourprofile',
                   ),
 
-                  if (_isVerified) ...[
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 20.0, vertical: 12),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Premium Web Templates',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
+                  // Template Selection
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                    child: Row(
+                      children: [
+                        Text(
+                          'Web Profile Template',
+                          style: theme.bodyMedium.override(
+                            fontFamily: 'Montserrat',
+                            color: theme.primaryText,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
                           ),
-                          const SizedBox(height: 8),
-                          const Text(
-                            'Select a premium design for your public website.',
-                            style: TextStyle(
-                              color: Colors.white70,
-                              fontSize: 12,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          SizedBox(
-                            height: 140,
-                            child: ListView(
-                              scrollDirection: Axis.horizontal,
-                              children: [
-                                _buildTemplateItem('default', 'Modern Gold',
-                                    Icons.dashboard_rounded),
-                                _buildTemplateItem(
-                                    'neon', 'Cyber Neon', Icons.bolt_rounded),
-                                _buildTemplateItem('elite', 'Luxury Elite',
-                                    Icons.auto_awesome_rounded),
-                                _buildTemplateItem('glass', 'Bubble Glass',
-                                    Icons.blur_on_rounded),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-
-                  Container(
-                    margin: const EdgeInsets.all(16.0),
-                    decoration: BoxDecoration(
-                      color: FlutterFlowTheme.of(context).primaryBackground,
-                      borderRadius: BorderRadius.circular(20.0),
-                      border: Border.all(
-                        color: Colors.yellow,
-                        width: 3.0,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.yellow.withValues(alpha: 0.3),
-                          blurRadius: 15.0,
-                          spreadRadius: 2.0,
-                          offset: const Offset(0, 5),
-                        ),
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.5),
-                          blurRadius: 10.0,
-                          spreadRadius: 1.0,
-                          offset: const Offset(0, 3),
                         ),
                       ],
+                    ),
+                  ),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Row(
+                      children: [
+                        _buildTemplateItem('default', 'Glassmorphism', Icons.auto_awesome),
+                        _buildTemplateItem('minimal', 'Minimal Dark', Icons.blur_on),
+                        _buildTemplateItem('modern', 'Modern Grid', Icons.grid_view_rounded),
+                        _buildTemplateItem('classic', 'Artisan Classic', Icons.palette_outlined),
+                      ],
+                    ),
+                  ),
+
+                  // Live Preview Section
+                  const SizedBox(height: 24),
+                  Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 20),
+                    decoration: BoxDecoration(
+                      color: theme.secondaryBackground,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: theme.alternate),
                     ),
                     padding: const EdgeInsets.all(20.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        // Header
                         Text(
                           'Live Color Preview',
-                          style: TextStyle(
-                            color: FlutterFlowTheme.of(context).primaryText,
+                          style: theme.bodyMedium.override(
+                            fontFamily: 'Montserrat',
+                            color: theme.primaryText,
                             fontSize: 16.0,
                             fontWeight: FontWeight.bold,
-                            letterSpacing: 1.2,
                           ),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 20),
-
-                        // Mini Profile Card
                         AnimatedContainer(
                           duration: const Duration(milliseconds: 300),
                           decoration: BoxDecoration(
                             color: _selectedColor ??
                                 _convertStringToColor(_colorCode ?? '#FFFFFF'),
                             borderRadius: BorderRadius.circular(16.0),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.1),
-                                blurRadius: 8.0,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
                           ),
                           padding: const EdgeInsets.all(20.0),
                           child: Column(
                             children: [
-                              // Profile Picture
                               CircleAvatar(
                                 radius: 30,
                                 backgroundColor: (_selectedColor1 ??
@@ -1573,10 +1460,8 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                                 ),
                               ),
                               const SizedBox(height: 12),
-
-                              // Name
                               Text(
-                                'John Doe',
+                                _nameController.text.isNotEmpty ? _nameController.text : 'Your Name',
                                 style: TextStyle(
                                   color: _selectedColor1 ??
                                       _convertStringToColor(
@@ -1585,22 +1470,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              const SizedBox(height: 4),
-
-                              // Email
-                              Text(
-                                'john.doe@email.com',
-                                style: TextStyle(
-                                  color: (_selectedColor1 ??
-                                          _convertStringToColor(
-                                              _colorCode1 ?? '#212121'))
-                                      .withValues(alpha: 0.7),
-                                  fontSize: 14.0,
-                                ),
-                              ),
                               const SizedBox(height: 16),
-
-                              // Action Button
                               AnimatedContainer(
                                 duration: const Duration(milliseconds: 300),
                                 decoration: BoxDecoration(
@@ -1608,16 +1478,6 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                                       _convertStringToColor(
                                           _colorCode2 ?? '#2196F3'),
                                   borderRadius: BorderRadius.circular(12.0),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: (_selectedColor2 ??
-                                              _convertStringToColor(
-                                                  _colorCode2 ?? '#2196F3'))
-                                          .withValues(alpha: 0.3),
-                                      blurRadius: 6.0,
-                                      offset: const Offset(0, 3),
-                                    ),
-                                  ],
                                 ),
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 24.0, vertical: 12.0),
@@ -1637,14 +1497,11 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                             ],
                           ),
                         ),
-
-                        const SizedBox(height: 20),
-
-                        // Color Info Footer
+                        const SizedBox(height: 16),
                         Container(
                           padding: const EdgeInsets.all(12.0),
                           decoration: BoxDecoration(
-                            color: FlutterFlowTheme.of(context).secondaryBackground,
+                            color: theme.primaryBackground,
                             borderRadius: BorderRadius.circular(12.0),
                           ),
                           child: Row(
@@ -1652,10 +1509,8 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                             children: [
                               _buildColorInfo('BG', _colorCode ?? '#FFFFFF'),
                               _buildColorInfo('Text', _colorCode1 ?? '#212121'),
-                              _buildColorInfo(
-                                  'Button', _colorCode2 ?? '#2196F3'),
-                              _buildColorInfo(
-                                  'Btn Text', _colorCode3 ?? '#FFFFFF'),
+                              _buildColorInfo('Btn', _colorCode2 ?? '#2196F3'),
+                              _buildColorInfo('Btn Text', _colorCode3 ?? '#FFFFFF'),
                             ],
                           ),
                         ),
@@ -1663,14 +1518,14 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                     ),
                   ),
 
+                  // Color Pickers
                   ColorPickerWidget(
                     width: double.infinity,
-                    height: double.infinity,
-                    label: 'Edit background Color',
+                    height: 56.0,
+                    label: 'Website Background color',
                     initialColor: _selectedColor,
-                    initialColorCode: _colorCode ?? '#111311',
+                    initialColorCode: _colorCode ?? '#FFFFFF',
                     onColorSelected: (color, code) {
-                      debugPrint('First Color Selected: $color, Code: $code');
                       safeSetState(() {
                         _selectedColor = color;
                         _colorCode = code;
@@ -1679,12 +1534,11 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                   ),
                   ColorPickerWidget(
                     width: double.infinity,
-                    height: double.infinity,
-                    label: 'Edit background text Color',
+                    height: 56.0,
+                    label: 'Website Text color',
                     initialColor: _selectedColor1,
-                    initialColorCode: _colorCode1 ?? '#111311',
+                    initialColorCode: _colorCode1 ?? '#212121',
                     onColorSelected: (color, code) {
-                      debugPrint('First Color Selected: $color, Code: $code');
                       safeSetState(() {
                         _selectedColor1 = color;
                         _colorCode1 = code;
@@ -1693,12 +1547,11 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                   ),
                   ColorPickerWidget(
                     width: double.infinity,
-                    height: double.infinity,
-                    label: 'Edit button Color',
+                    height: 56.0,
+                    label: 'Website Button color',
                     initialColor: _selectedColor2,
-                    initialColorCode: _colorCode2 ?? '#111311',
+                    initialColorCode: _colorCode2 ?? '#2196F3',
                     onColorSelected: (color, code) {
-                      debugPrint('First Color Selected: $color, Code: $code');
                       safeSetState(() {
                         _selectedColor2 = color;
                         _colorCode2 = code;
@@ -1707,12 +1560,11 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                   ),
                   ColorPickerWidget(
                     width: double.infinity,
-                    height: double.infinity,
-                    label: 'Edit botton text Color',
-                    // initialColor: _selectedColor3,
-                    initialColorCode: _colorCode3 ?? '#111311',
+                    height: 56.0,
+                    label: 'Website Button Text color',
+                    initialColor: _selectedColor3,
+                    initialColorCode: _colorCode3 ?? '#FFFFFF',
                     onColorSelected: (color, code) {
-                      debugPrint('First Color Selected: $color, Code: $code');
                       safeSetState(() {
                         _selectedColor3 = color;
                         _colorCode3 = code;
@@ -1721,45 +1573,24 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                   ),
 
                   buildBeautifulLocationPicker(),
-                  Align(
-                    alignment: const AlignmentDirectional(0.0, 0.05),
-                    child: Padding(
-                      padding: const EdgeInsetsDirectional.fromSTEB(
-                          20.0, 10.0, 20.0, 24.0),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: FFButtonWidget(
-                              onPressed: _isLoading ? null : _saveProfile,
-                              text: _nameController.text.isEmpty
-                                  ? 'save, Go to Home'
-                                  : 'Save',
-                              options: FFButtonOptions(
-                                width: 270.0,
-                                height: 50.0,
-                                padding: const EdgeInsetsDirectional.fromSTEB(
-                                    0.0, 0.0, 0.0, 0.0),
-                                iconPadding:
-                                    const EdgeInsetsDirectional.fromSTEB(
-                                        0.0, 0.0, 0.0, 0.0),
-                                color: FlutterFlowTheme.of(context).primary,
-                                textStyle: FlutterFlowTheme.of(context)
-                                    .titleMedium
-                                    .override(
-                                      fontFamily: 'Poppins',
-                                      color: Colors.black,
-                                      letterSpacing: 0.0,
-                                    ),
-                                elevation: 2.0,
-                                borderSide: const BorderSide(
-                                  color: Colors.transparent,
-                                  width: 1.0,
-                                ),
-                                borderRadius: BorderRadius.circular(12.0),
-                              ),
-                            ),
-                          ),
-                        ],
+
+                  // Save Button
+                  Padding(
+                    padding: const EdgeInsetsDirectional.fromSTEB(20, 24, 20, 40),
+                    child: FFButtonWidget(
+                      onPressed: _isLoading ? null : _saveProfile,
+                      text: _isLoading ? 'Saving...' : 'Complete Profile',
+                      options: FFButtonOptions(
+                        width: double.infinity,
+                        height: 50.0,
+                        color: theme.primary,
+                        textStyle: theme.titleMedium.override(
+                          fontFamily: 'Montserrat',
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        elevation: 3.0,
+                        borderRadius: BorderRadius.circular(12.0),
                       ),
                     ),
                   ),
@@ -1773,6 +1604,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
   }
 
   Widget _buildColorInfo(String label, String colorCode) {
+    final theme = DarkModeTheme();
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -1790,7 +1622,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
         Text(
           label,
           style: TextStyle(
-            color: FlutterFlowTheme.of(context).secondaryText,
+            color: theme.secondaryText,
             fontSize: 10.0,
             fontWeight: FontWeight.w500,
           ),
@@ -1798,7 +1630,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
         Text(
           colorCode.substring(1, 4).toUpperCase(),
           style: TextStyle(
-            color: FlutterFlowTheme.of(context).secondaryText.withValues(alpha: 0.8),
+            color: theme.secondaryText.withValues(alpha: 0.8),
             fontSize: 9.0,
           ),
         ),
@@ -1807,23 +1639,24 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
   }
 
   Widget _buildTemplateItem(String id, String name, IconData icon) {
+    final theme = DarkModeTheme();
     final isSelected = _selectedTemplateId == id;
     return GestureDetector(
-      onTap: () => setState(() => _selectedTemplateId = id),
+      onTap: () => safeSetState(() => _selectedTemplateId = id),
       child: Container(
         width: 110,
         margin: const EdgeInsets.only(right: 12),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.yellow : FlutterFlowTheme.of(context).secondaryBackground,
+          color: isSelected ? theme.primary : theme.secondaryBackground,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected ? Colors.yellow : FlutterFlowTheme.of(context).alternate,
+            color: isSelected ? theme.primary : theme.alternate,
             width: 2,
           ),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: Colors.yellow.withValues(alpha: 0.3),
+                    color: theme.primary.withValues(alpha: 0.3),
                     blurRadius: 10,
                     spreadRadius: 1,
                   )
@@ -1835,7 +1668,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
           children: [
             Icon(
               icon,
-              color: isSelected ? Colors.black : Colors.white60,
+              color: isSelected ? Colors.white : Colors.white60,
               size: 32,
             ),
             const SizedBox(height: 12),
@@ -1843,7 +1676,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
               name,
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: isSelected ? Colors.black : FlutterFlowTheme.of(context).primaryText,
+                color: isSelected ? Colors.white : theme.primaryText,
                 fontSize: 11,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),
