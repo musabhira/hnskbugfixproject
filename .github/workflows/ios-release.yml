@@ -8,7 +8,7 @@ on:
 jobs:
   build:
     name: Build and Release iOS
-    runs-on: macos-15
+    runs-on: macos-14
 
     steps:
       - name: Checkout Repository
@@ -58,14 +58,20 @@ jobs:
 
       - name: Build and Sign IPA
         run: |
-          # Get version from pubspec.yaml
-          VERSION_NAME=$(grep 'version:' pubspec.yaml | sed 's/version: //; s/+.*//')
+          # Get version and build number from pubspec.yaml
+          VERSION_NAME=$(grep 'version:' pubspec.yaml | sed 's/version: //; s/+.*//' | xargs)
+          BUILD_NUMBER=$(grep 'version:' pubspec.yaml | sed 's/.*+//' | xargs)
+          
+          echo "Building version $VERSION_NAME+$BUILD_NUMBER"
+          
           flutter build ipa --release \
+            --build-name=$VERSION_NAME \
+            --build-number=$BUILD_NUMBER \
             --export-options-plist=ios/ExportOptions.plist
           
       - name: Check for IPA
         run: |
-          if [ ! -f build/ios/ipa/*.ipa ]; then
+          if ! ls build/ios/ipa/*.ipa 1> /dev/null 2>&1; then
             echo "IPA file not found!"
             exit 1
           fi
