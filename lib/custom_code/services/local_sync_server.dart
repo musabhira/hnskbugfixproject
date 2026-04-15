@@ -111,16 +111,16 @@ class LocalSyncServer {
     }
   }
 
-  Future<void> saveConversations(List<ChatConversation> conversations) async {
+  Future<void> saveConversations(String userId, List<ChatConversation> conversations) async {
     final List<Map<String, dynamic>> jsonList =
         conversations.map((e) => e.toJson()).toList();
-    await _conversationBox.put('list', jsonList);
+    await _conversationBox.put('list_$userId', jsonList);
     _conversationController.add(conversations);
   }
 
-  List<ChatConversation> getCachedConversations() {
+  List<ChatConversation> getCachedConversations(String userId) {
     if (!_isInitialized) return [];
-    final List<dynamic>? list = _conversationBox.get('list');
+    final List<dynamic>? list = _conversationBox.get('list_$userId');
     if (list == null) return [];
     return list
         .map((e) => ChatConversation.fromJson(Map<String, dynamic>.from(e)))
@@ -130,17 +130,17 @@ class LocalSyncServer {
   // --- MESSAGES ---
 
   Future<void> saveMessages(
-      String chatOrGroupId, List<dynamic> messages) async {
+      String userId, String chatOrGroupId, List<dynamic> messages) async {
     final List<Map<String, dynamic>> jsonList = messages.map((e) {
       if (e is ChatMessage) return e.toJson();
       return Map<String, dynamic>.from(e);
     }).toList();
-    await _messageBox.put(chatOrGroupId, jsonList);
+    await _messageBox.put('${userId}_$chatOrGroupId', jsonList);
   }
 
-  List<dynamic> getCachedMessages(String chatOrGroupId) {
+  List<dynamic> getCachedMessages(String userId, String chatOrGroupId) {
     if (!_isInitialized) return [];
-    final List<dynamic>? list = _messageBox.get(chatOrGroupId);
+    final List<dynamic>? list = _messageBox.get('${userId}_$chatOrGroupId');
     if (list == null) return [];
     return list;
   }
@@ -164,44 +164,42 @@ class LocalSyncServer {
     }
 
     if (chatId != null) {
-      final List<dynamic> current = getCachedMessages(chatId);
+      final List<dynamic> current = getCachedMessages(currentUserId, chatId);
       final String msgId = newData['id'].toString();
       final bool exists = current.any((m) => m['id'].toString() == msgId);
 
       if (!exists) {
-        // Insert at top as we sort DESC usually, but depends on usage.
-        // MessageScreen sorts DESC (newest first). ChatProvider sorts ASC (oldest first)?
-        // Let's check usage. MessageScreen sorts DESC. ChatProvider usually ASC for chat bubbles but reverse list view.
-        // We will prepend to keep it consistent with "get latest".
         final List<dynamic> updated = [newData, ...current];
         if (updated.length > 1000) {
           updated.removeLast(); // Keep cache size manageable
         }
-        saveMessages(chatId, updated);
+        saveMessages(currentUserId, chatId, updated);
       }
     }
   }
 
   void _handleGroupMessageUpdate(PostgresChangePayload payload) {
     final newData = payload.newRecord;
+    final currentUserId = _supabase.auth.currentUser?.id;
+    if (currentUserId == null) return;
 
     final groupId = newData['group_id'];
     if (groupId != null) {
-      final List<dynamic> current = getCachedMessages(groupId);
+      final List<dynamic> current = getCachedMessages(currentUserId, groupId);
       final String msgId = newData['id'].toString();
       final bool exists = current.any((m) => m['id'].toString() == msgId);
       if (!exists) {
         final List<dynamic> updated = [newData, ...current];
         if (updated.length > 1000) updated.removeLast();
-        saveMessages(groupId, updated);
+        saveMessages(currentUserId, groupId, updated);
       }
     }
   }
 
   // Speed optimization: Tap inside should be fast
   // This is where we provide the local data instantly
-  Future<List<dynamic>> getMessagesForChat(String chatId,
+  Future<List<dynamic>> getMessagesForChat(String userId, String chatId,
       {bool isGroup = false}) async {
-    return getCachedMessages(chatId);
+    return getCachedMessages(userId, chatId);
   }
 }

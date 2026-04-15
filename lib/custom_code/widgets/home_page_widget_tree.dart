@@ -664,12 +664,12 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         FocusManager.instance.primaryFocus?.unfocus();
       },
       child: Container(
-        color: FlutterFlowTheme.of(context).primaryBackground,
+        color: material.Colors.black,
         child: ScaffoldPage(
           padding: EdgeInsets.zero,
           bottomBar: _buildBottomNavigationBar(context),
           content: material.ColoredBox(
-            color: FlutterFlowTheme.of(context).primaryBackground,
+            color: material.Colors.black,
             child: _isLoading
                 ? const Center(child: ProgressRing())
                 : _currentIndex == 1
@@ -1095,7 +1095,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     return Container(
       height: 70, // Slightly reduced height for full-width look
       decoration: BoxDecoration(
-        color: const Color(0xFF131317), // Solid blackish background
+        color: material.Colors.black, // Pure black background
         border: Border(
           top: BorderSide(
             color: material.Colors.white.withValues(alpha: 0.08),
@@ -1826,7 +1826,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
           decoration: BoxDecoration(
-            color: const material.Color(0xFF0F0F0F),
+            color: material.Colors.black,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: material.Colors.white.withValues(alpha: 0.05),

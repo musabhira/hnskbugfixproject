@@ -297,11 +297,11 @@ class Conversations extends _$Conversations {
   }
 
   Future<List<ChatConversation>> _loadFromCache(String userId) async {
-    return LocalSyncServer().getCachedConversations();
+    return LocalSyncServer().getCachedConversations(userId);
   }
 
   Future<void> _saveToCache(String userId, List<ChatConversation> list) async {
-    await LocalSyncServer().saveConversations(list);
+    await LocalSyncServer().saveConversations(userId, list);
   }
 
   void _setupRealtimeSubscriptions(String userId) {

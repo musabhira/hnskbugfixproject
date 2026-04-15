@@ -16,10 +16,11 @@ class ModernBottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = FlutterFlowTheme.of(context);
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
 
     return Container(
-      height: 70,
+      height: 85 + bottomPadding,
+      padding: EdgeInsets.only(bottom: bottomPadding),
       decoration: BoxDecoration(
         color: Colors.black.withValues(alpha: 0.95),
         border: Border(

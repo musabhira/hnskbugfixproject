@@ -691,8 +691,8 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
             else if (mediaType == 'thought')
               Container(
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.black, const Color(0xFF0F0F0F)],
+                  gradient: const LinearGradient(
+                    colors: [Colors.black, Colors.black],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -2418,7 +2418,7 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
         height: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFF1A1A1A), Color(0xFF000000)],
+            colors: [const Color(0xFF000000), Color(0xFF000000)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -2755,7 +2755,7 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
         height: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFF1A1A1A), Color(0xFF000000)],
+            colors: [const Color(0xFF000000), Color(0xFF000000)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -3108,7 +3108,7 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
             margin: const EdgeInsets.symmetric(horizontal: 40),
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: const Color(0xFF1A1A1A),
+              color: Colors.black,
               borderRadius: BorderRadius.circular(28),
               border: Border.all(color: Colors.white10),
               boxShadow: [
@@ -3747,7 +3747,7 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
         height: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFF1A1A1A), Color(0xFF000000)],
+            colors: [const Color(0xFF000000), Color(0xFF000000)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -4054,7 +4054,7 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
         height: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFF1A1A1A), Color(0xFF000000)],
+            colors: [const Color(0xFF000000), Color(0xFF000000)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),

@@ -405,7 +405,7 @@ class _MessageScreenState extends State<MessageScreen> {
     try {
       // 1. Try loading from LocalSyncServer FIRST for high speed
       final cached =
-          await LocalSyncServer().getMessagesForChat(widget.receiverId);
+          await LocalSyncServer().getMessagesForChat(_senderId, widget.receiverId);
       if (cached.isNotEmpty && mounted) {
         final merged = List<Map<String, dynamic>>.from(cached);
         final optimisticMessages =
@@ -463,7 +463,7 @@ class _MessageScreenState extends State<MessageScreen> {
       }
 
       // 3. MERGE with existing local cache (to preserve history NOT on server)
-      final existingCache = LocalSyncServer().getCachedMessages(widget.receiverId);
+      final existingCache = LocalSyncServer().getCachedMessages(_senderId, widget.receiverId);
       final Map<String, Map<String, dynamic>> combinedMap = {};
       
       // Add existing local messages first 
@@ -485,7 +485,7 @@ class _MessageScreenState extends State<MessageScreen> {
       // Limit to 1000 messages for reasonable performance
       final limitedList = finalMessagesList.take(1000).toList();
       
-      await LocalSyncServer().saveMessages(widget.receiverId, limitedList);
+      await LocalSyncServer().saveMessages(_senderId, widget.receiverId, limitedList);
 
       _messagesStreamController.add(limitedList);
 
@@ -1404,7 +1404,7 @@ class _MessageScreenState extends State<MessageScreen> {
     return Theme(
       data: ThemeData.dark(),
       child: Scaffold(
-        backgroundColor: const Color.fromARGB(255, 32, 31, 31),
+        backgroundColor: Colors.black,
         appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.black,

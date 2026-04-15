@@ -624,7 +624,9 @@ class ChatMessages extends _$ChatMessages {
 
   // Cache Logic: Persist messages locally for 34h+ history
   Future<List<ChatMessage>> _loadFromCache() async {
-    final cachedData = LocalSyncServer().getCachedMessages(groupId);
+    final uid = ref.read(currentUserIdProvider);
+    if (uid.isEmpty) return [];
+    final cachedData = LocalSyncServer().getCachedMessages(uid, groupId);
     return cachedData
         .map((m) => ChatMessage.fromJson(Map<String, dynamic>.from(m)))
         .toList();
@@ -650,7 +652,9 @@ class ChatMessages extends _$ChatMessages {
   }
 
   Future<void> _saveToCache(List<ChatMessage> messages) async {
-    await LocalSyncServer().saveMessages(groupId, messages);
+    final uid = ref.read(currentUserIdProvider);
+    if (uid.isEmpty) return;
+    await LocalSyncServer().saveMessages(uid, groupId, messages);
   }
 
   Future<ChatMessage?> _fetchMessageById(String id) async {
