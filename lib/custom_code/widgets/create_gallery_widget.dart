@@ -723,7 +723,7 @@ class _CreateGalleryWidgetState extends State<CreateGalleryWidget> {
                                           decoration: BoxDecoration(
                                             borderRadius:
                                                 BorderRadius.circular(18.0),
-                                            color: Colors.black.withOpacity(
+                                            color: Colors.black.withValues(alpha: 
                                                 _selectedImageBytesBanner !=
                                                         null
                                                     ? 0.0

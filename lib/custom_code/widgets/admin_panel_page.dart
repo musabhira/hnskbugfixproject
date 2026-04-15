@@ -553,16 +553,16 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                         color: Colors.grey[900],
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: isBlocked ? Colors.red.withOpacity(0.3) : Colors.white10,
+                          color: isBlocked ? Colors.red.withValues(alpha: 0.3) : Colors.white10,
                         ),
                       ),
                       child: ListTile(
                         title: Text(toolName, style: const TextStyle(color: Colors.white)),
                         trailing: Switch(
                           activeColor: Colors.red,
-                          activeTrackColor: Colors.redAccent.withOpacity(0.3),
+                          activeTrackColor: Colors.redAccent.withValues(alpha: 0.3),
                           inactiveThumbColor: Colors.green,
-                          inactiveTrackColor: Colors.green.withOpacity(0.3),
+                          inactiveTrackColor: Colors.green.withValues(alpha: 0.3),
                           value: isBlocked,
                           onChanged: (val) => _toggleToolPermission(toolName, val),
                         ),

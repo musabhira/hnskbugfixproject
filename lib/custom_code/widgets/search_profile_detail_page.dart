@@ -4568,12 +4568,11 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
                           width: 6,
                           height: 6,
                           decoration: BoxDecoration(
-                            color: _getButtonColor().withOpacity(
+                            color: _getButtonColor().withValues(alpha: 
                               0.3 +
                                   0.7 *
                                       (((_typingAnimation.value + index * 0.3) %
-                                          1.0)),
-                            ),
+                                          1.0))),
                             borderRadius: BorderRadius.circular(3),
                           ),
                         );
