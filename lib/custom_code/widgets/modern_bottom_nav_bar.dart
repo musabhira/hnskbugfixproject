@@ -18,34 +18,29 @@ class ModernBottomNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
 
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(24),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Container(
-            height: 65,
-            decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.7),
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.1),
-                width: 1.5,
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ModernNavItem(
-                  icon: Icons.class_rounded,
-                  label: 'Batch',
-                  isSelected: selectedIndex == 0,
-                  onTap: onBatchTap,
-                ),
-              ],
-            ),
+    return Container(
+      height: 70,
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.95),
+        border: Border(
+          top: BorderSide(
+            color: Colors.white.withValues(alpha: 0.1),
+            width: 1.5,
           ),
+        ),
+      ),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            ModernNavItem(
+              icon: Icons.class_rounded,
+              label: 'Batch',
+              isSelected: selectedIndex == 0,
+              onTap: onBatchTap,
+            ),
+          ],
         ),
       ),
     );

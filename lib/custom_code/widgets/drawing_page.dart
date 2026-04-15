@@ -48,7 +48,7 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
   BrushInfo _selectedBrushInfo = allBrushes[0];
   String _selectedBrushCategory = 'Favorites';
   BrushType _selectedBrushType = BrushType.pencil;
-  Color _selectedColor = Colors.white;
+  Color _selectedColor = Colors.black;
   Color _canvasBgColor = Colors.white;
   double _strokeWidth = 4.0;
   double _eraserWidth = 20.0;
@@ -424,6 +424,9 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
           _canvasHeight = json['canvasHeight']?.toDouble() ?? 3000;
           _layers.clear();
           _layers.addAll(loadedLayers);
+          if (_layers.isEmpty) {
+            _layers.add(DrawingLayer(id: DateTime.now().millisecondsSinceEpoch.toString(), name: 'Layer 1'));
+          }
           _textOverlays.clear();
           for (var tj in textJson) _textOverlays.add(TextOverlay.fromJson(tj));
           _imageOverlays.clear();
@@ -644,7 +647,8 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
           Positioned.fill(
             child: Listener(
               onPointerDown: (_) => setState(() => _pointerCount++),
-              onPointerUp: (_) => setState(() => _pointerCount--),
+              onPointerUp: (_) => setState(() => _pointerCount = _pointerCount > 0 ? _pointerCount - 1 : 0),
+              onPointerCancel: (_) => setState(() => _pointerCount = 0),
               child: InteractiveViewer(
                 transformationController: _transformationController,
                 panEnabled: _pointerCount > 1,
@@ -659,44 +663,49 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
                   decoration: BoxDecoration(color: _canvasBgColor),
                   child: RepaintBoundary(
                     key: _canvasKey,
-                    child: Stack(
-                      children: [
-                        Container(color: _canvasBgColor),
-                        if (_showGrid) CustomPaint(painter: GridPainter(), size: Size(_canvasWidth, _canvasHeight)),
-                        ..._imageOverlays.map((img) => Positioned(
-                          left: img.position.dx, top: img.position.dy,
-                          child: GestureDetector(
-                            onTap: () => setState(() => _selectedOverlayId = img.id),
-                            child: Transform.rotate(
-                              angle: img.rotation,
-                              child: Transform.scale(
-                                scale: img.scale,
-                                child: Container(
-                                  decoration: BoxDecoration(border: _selectedOverlayId == img.id ? Border.all(color: Colors.amber, width: 2) : null),
-                                  child: Image.memory(img.bytes, width: 300, fit: BoxFit.contain),
+                    child: GestureDetector(
+                      onPanStart: _handlePanStart,
+                      onPanUpdate: _handlePanUpdate,
+                      onPanEnd: _handlePanEnd,
+                      child: Stack(
+                        children: [
+                          Container(color: _canvasBgColor),
+                          if (_showGrid) CustomPaint(painter: GridPainter(), size: Size(_canvasWidth, _canvasHeight)),
+                          ..._imageOverlays.map((img) => Positioned(
+                            left: img.position.dx, top: img.position.dy,
+                            child: GestureDetector(
+                              onTap: () => setState(() => _selectedOverlayId = img.id),
+                              child: Transform.rotate(
+                                angle: img.rotation,
+                                child: Transform.scale(
+                                  scale: img.scale,
+                                  child: Container(
+                                    decoration: BoxDecoration(border: _selectedOverlayId == img.id ? Border.all(color: Colors.amber, width: 2) : null),
+                                    child: Image.memory(img.bytes, width: 300, fit: BoxFit.contain),
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        )),
-                        ..._layers.map((layer) {
-                          if (!layer.isVisible) return const SizedBox.shrink();
-                          return Opacity(
-                            opacity: layer.opacity,
-                            child: CustomPaint(
-                              painter: LayerPainter(strokes: layer.strokes, activeStroke: (_layers.indexOf(layer) == _activeLayerIndex) ? _currentStroke : null),
+                          )),
+                          ..._layers.map((layer) {
+                            if (!layer.isVisible) return const SizedBox.shrink();
+                            return Opacity(
+                              opacity: layer.opacity,
+                              child: CustomPaint(
+                                painter: LayerPainter(strokes: layer.strokes, activeStroke: (_layers.indexOf(layer) == _activeLayerIndex) ? _currentStroke : null),
+                                size: Size(_canvasWidth, _canvasHeight),
+                              ),
+                            );
+                          }),
+                          if (_activeTool == DrawingTool.lasso && _lassoPath != null)
+                            CustomPaint(
+                              painter: LassoPainter(points: _lassoPoints),
                               size: Size(_canvasWidth, _canvasHeight),
                             ),
-                          );
-                        }),
-                        if (_activeTool == DrawingTool.lasso && _lassoPath != null)
-                          CustomPaint(
-                            painter: LassoPainter(points: _lassoPoints),
-                            size: Size(_canvasWidth, _canvasHeight),
-                          ),
-                        
-                        if (_selectedOverlayId != null) _buildSelectionHandles(),
-                      ],
+                          
+                          if (_selectedOverlayId != null) _buildSelectionHandles(),
+                        ],
+                      ),
                     ),
                   ),
                 ),

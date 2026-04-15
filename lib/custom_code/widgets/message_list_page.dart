@@ -282,7 +282,7 @@ class _MessageListPageState extends State<MessageListPage> {
                       },
                       child: Container(
                         decoration: BoxDecoration(
-                          color: Colors.black,
+                          color: const Color(0xFF0F0F0F),
                           border: Border(
                             bottom: BorderSide(
                               color: Colors.white.withValues(alpha: 0.05),

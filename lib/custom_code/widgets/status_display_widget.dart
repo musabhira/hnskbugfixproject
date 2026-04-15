@@ -525,10 +525,10 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
                   child: Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF2A2A2A),
+                      color: Colors.black,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.08)),
+                          color: Colors.white.withValues(alpha: 0.12)),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -553,10 +553,10 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
                   child: Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF2A2A2A),
+                      color: Colors.black,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.08)),
+                          color: Colors.white.withValues(alpha: 0.12)),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -690,9 +690,9 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
               )
             else if (mediaType == 'thought')
               Container(
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [Color(0xFF262626), Color(0xFF1A1A1A)],
+                    colors: [Colors.black, const Color(0xFF0F0F0F)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -1048,12 +1048,12 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
                   imageUrl: url,
                   fit: BoxFit.cover,
                   placeholder: (context, url) =>
-                      Container(color: const Color(0xFF1A1A1A)),
+                      Container(color: Colors.black),
                   errorWidget: (context, url, error) =>
                       const Icon(Icons.person, color: Colors.white24),
                 )
               : Container(
-                  color: const Color(0xFF262626),
+                  color: Colors.black,
                   child: Center(
                     child: Text(name[0].toUpperCase(),
                         style: GoogleFonts.outfit(

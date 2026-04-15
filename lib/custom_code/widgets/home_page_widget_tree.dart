@@ -749,7 +749,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                   },
                                   body: material.Builder(
                                     builder: (context) => material.Material(
-                                      color: FlutterFlowTheme.of(context).primaryBackground,
+                                      color: material.Colors.black,
                                       child: PageView(
                                         controller: _pageController,
                                         onPageChanged: _onPageChanged,
@@ -1093,59 +1093,50 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 
   Widget _buildBottomNavigationBar(BuildContext context) {
     return Container(
-      height: 80,
-      margin: const EdgeInsets.fromLTRB(20, 0, 20, 26),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(40),
-        child: BackdropFilter(
-          filter: ui.ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            decoration: BoxDecoration(
-              color: const Color(0xFF131317).withValues(alpha: 0.85),
-              borderRadius: BorderRadius.circular(40),
-              border: Border.all(
-                color: material.Colors.white.withValues(alpha: 0.08),
-                width: 1.5,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.4),
-                  blurRadius: 32,
-                  offset: const Offset(0, 16),
-                ),
-              ],
-            ),
-            child: material.Material(
-              color: Colors.transparent,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _buildNavItem(
-                    icon: FluentIcons.view_dashboard,
-                    isSelected: _currentIndex == 0,
-                    onTap: () => setState(() => _currentIndex = 0),
-                  ),
-                  _buildNavItem(
-                    icon: FluentIcons.market,
-                    isSelected: _currentIndex == 1,
-                    onTap: () => setState(() => _currentIndex = 1),
-                  ),
-                  _buildNavItem(
-                    icon: FluentIcons.toolbox,
-                    isSelected: _currentIndex == 2,
-                    onTap: () => setState(() => _currentIndex = 2),
-                  ),
-                  _buildNavItem(
-                    icon: FluentIcons.education,
-                    isSelected: _currentIndex == 3,
-                    onTap: () => setState(() => _currentIndex = 3),
-                  ),
-                  _buildProfileNavItem(),
-                ],
-              ),
-            ),
+      height: 70, // Slightly reduced height for full-width look
+      decoration: BoxDecoration(
+        color: const Color(0xFF131317), // Solid blackish background
+        border: Border(
+          top: BorderSide(
+            color: material.Colors.white.withValues(alpha: 0.08),
+            width: 1.5,
           ),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.4),
+            blurRadius: 20,
+            offset: const Offset(0, -4),
+          ),
+        ],
+      ),
+      child: material.Material(
+        color: Colors.transparent,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            _buildNavItem(
+              icon: FluentIcons.view_dashboard,
+              isSelected: _currentIndex == 0,
+              onTap: () => setState(() => _currentIndex = 0),
+            ),
+            _buildNavItem(
+              icon: FluentIcons.market,
+              isSelected: _currentIndex == 1,
+              onTap: () => setState(() => _currentIndex = 1),
+            ),
+            _buildNavItem(
+              icon: FluentIcons.toolbox,
+              isSelected: _currentIndex == 2,
+              onTap: () => setState(() => _currentIndex = 2),
+            ),
+            _buildNavItem(
+              icon: FluentIcons.education,
+              isSelected: _currentIndex == 3,
+              onTap: () => setState(() => _currentIndex = 3),
+            ),
+            _buildProfileNavItem(),
+          ],
         ),
       ),
     );
@@ -1597,10 +1588,10 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: material.Colors.yellow.withValues(alpha: 0.05),
+            color: material.Colors.black,
             border: Border(
               bottom: BorderSide(
-                color: material.Colors.yellow.withValues(alpha: 0.15),
+                color: material.Colors.white.withValues(alpha: 0.08),
                 width: 1,
               ),
             ),
@@ -1835,7 +1826,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
           decoration: BoxDecoration(
-            color: material.Colors.white.withValues(alpha: 0.04),
+            color: const material.Color(0xFF0F0F0F),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: material.Colors.white.withValues(alpha: 0.05),
@@ -2242,14 +2233,14 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                 Container(
                   height: statusSectionHeight,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF0F0F0F),
+                    color: material.Colors.black,
                     borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(32),
                       topRight: Radius.circular(32),
                     ),
                     border: Border(
                       top: BorderSide(
-                          color: material.Colors.white.withValues(alpha: 0.1),
+                          color: material.Colors.white.withValues(alpha: 0.12),
                           width: 1),
                     ),
                   ),
@@ -2348,7 +2339,7 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
                   child: Container(
                     decoration: BoxDecoration(
-                      color: const Color(0xFF1E1E1E),
+                      color: material.Colors.black,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
                         color: material.Colors.white.withValues(alpha: 0.08),

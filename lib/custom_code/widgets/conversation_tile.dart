@@ -144,7 +144,7 @@ class _ConversationTileState extends State<ConversationTile> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: const Color(0xFF000000), // Pure black for flat look
+            color: Colors.black, // Matching Vibes background color
             border: Border(
               bottom: BorderSide(
                 color: Colors.white.withValues(alpha: 0.05),
