@@ -276,8 +276,10 @@ class _ThoughtsFeedSectionState extends State<ThoughtsFeedSection>
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
+    return Container(
+      color: Colors.black,
+      child: Column(
+        children: [
         // Tab Switcher
         Container(
           height: 44,

@@ -19,7 +19,7 @@ class ModernBottomNavBar extends StatelessWidget {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
 
     return Container(
-      height: 85 + bottomPadding,
+      height: 95 + bottomPadding,
       padding: EdgeInsets.only(bottom: bottomPadding),
       decoration: BoxDecoration(
         color: Colors.black.withValues(alpha: 0.95),

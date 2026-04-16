@@ -1092,8 +1092,10 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 
 
   Widget _buildBottomNavigationBar(BuildContext context) {
+    final bottomPadding = material.MediaQuery.of(context).padding.bottom;
     return Container(
-      height: 70, // Slightly reduced height for full-width look
+      height: 95 + bottomPadding, // Increased height for premium feel
+      padding: EdgeInsets.only(bottom: bottomPadding),
       decoration: BoxDecoration(
         color: material.Colors.black, // Pure black background
         border: Border(
@@ -1104,7 +1106,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.4),
+            color: material.Colors.black.withValues(alpha: 0.4),
             blurRadius: 20,
             offset: const Offset(0, -4),
           ),
@@ -1196,11 +1198,16 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
           }
         }
       },
-      child: CircularProfileImage(
-        profileImageUrl: _profileImageUrl,
-        isVerified: _isVerified,
-        radius: 20.0,
-        borderColor: FlutterFlowTheme.of(context).primary,
+      child: material.SizedBox(
+        height: 70,
+        child: material.Center(
+          child: CircularProfileImage(
+            profileImageUrl: _profileImageUrl,
+            isVerified: _isVerified,
+            radius: 22.0,
+            borderColor: FlutterFlowTheme.of(context).primary,
+          ),
+        ),
       ),
     );
   }
@@ -1214,7 +1221,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: SizedBox(
-        height: 60,
+        height: 70,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
