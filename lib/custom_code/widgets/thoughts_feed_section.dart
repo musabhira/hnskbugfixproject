@@ -334,7 +334,8 @@ class _ThoughtsFeedSectionState extends State<ThoughtsFeedSection>
                 ),
         ),
       ],
-    );
+    ),
+   );
   }
 
   Widget _buildFeedList() {
