@@ -67,7 +67,54 @@ class ChatMessages extends _$ChatMessages {
       return cached;
     }
 
+    // Mark pending messages as read
+    markMessagesAsRead();
+
     return freshFuture;
+  }
+
+  Future<void> markMessagesAsRead() async {
+    final isPersonal = groupId.startsWith('p:');
+    final actualId = isPersonal ? groupId.substring(2) : groupId;
+    final uid = ref.read(currentUserIdProvider);
+    if (uid.isEmpty) return;
+
+    try {
+      if (isPersonal) {
+        await _supabase
+            .from('messages')
+            .update({'is_read': true})
+            .eq('receiver_id', uid)
+            .eq('sender_id', actualId)
+            .eq('is_read', false);
+      } else {
+        await _supabase
+            .from('group_messages')
+            .update({'is_read': true})
+            .eq('group_id', actualId)
+            .neq('sender_id', uid)
+            .eq('is_read', false);
+      }
+
+      // Update local state if needed
+      state.whenData((messages) {
+        bool hasChanges = false;
+        final updated = messages.map((m) {
+          if (m.senderId != uid && !m.isRead) {
+            hasChanges = true;
+            return ChatMessage.fromJson({...m.toJson(), 'is_read': true});
+          }
+          return m;
+        }).toList();
+        
+        if (hasChanges) {
+          state = AsyncData(updated);
+          _saveToCache(updated);
+        }
+      });
+    } catch (e) {
+      debugPrint('Error marking messages as read: $e');
+    }
   }
 
   void _setupSubscription() {
@@ -75,31 +122,49 @@ class ChatMessages extends _$ChatMessages {
     final actualId = isPersonal ? groupId.substring(2) : groupId;
     final uid = ref.read(currentUserIdProvider);
 
-    _subscription = _supabase
-        .channel('chat_messages_$groupId')
-        .onPostgresChanges(
-          event: PostgresChangeEvent.all,
-          schema: 'public',
-          table: isPersonal ? 'messages' : 'group_messages',
-          filter: isPersonal
-              ? PostgresChangeFilter(
-                  type: PostgresChangeFilterType.eq,
-                  column: 'receiver_id',
-                  value: uid,
-                )
-              : PostgresChangeFilter(
-                  type: PostgresChangeFilterType.eq,
-                  column: 'group_id',
-                  value: actualId,
-                ),
-          callback: (payload) {
-            _debounceTimer?.cancel();
-            _debounceTimer = Timer(const Duration(milliseconds: 300), () {
-              _handleRealtimeUpdate(payload);
-            });
-          },
-        )
-        .subscribe();
+    final channel = _supabase.channel('chat_messages_$groupId');
+
+    channel.onPostgresChanges(
+      event: PostgresChangeEvent.all,
+      schema: 'public',
+      table: isPersonal ? 'messages' : 'group_messages',
+      filter: isPersonal
+          ? PostgresChangeFilter(
+              type: PostgresChangeFilterType.eq,
+              column: 'receiver_id',
+              value: uid,
+            )
+          : PostgresChangeFilter(
+              type: PostgresChangeFilterType.eq,
+              column: 'group_id',
+              value: actualId,
+            ),
+      callback: (payload) {
+        _debounceTimer?.cancel();
+        _debounceTimer = Timer(const Duration(milliseconds: 300), () {
+          _handleRealtimeUpdate(payload);
+        });
+      },
+    );
+
+    // If personal, also listen for updates to messages I SENT (to get read receipts)
+    if (isPersonal) {
+      channel.onPostgresChanges(
+        event: PostgresChangeEvent.update,
+        schema: 'public',
+        table: 'messages',
+        filter: PostgresChangeFilter(
+          type: PostgresChangeFilterType.eq,
+          column: 'sender_id',
+          value: uid,
+        ),
+        callback: (payload) {
+          _handleRealtimeUpdate(payload);
+        },
+      );
+    }
+
+    _subscription = channel.subscribe();
   }
 
   void _startPolling() {
@@ -189,9 +254,37 @@ class ChatMessages extends _$ChatMessages {
             ];
             state = AsyncData(updatedMessages);
             _saveToCache(updatedMessages);
+
+            // Mark as read if we are the receiver
+            if (fullMessage.senderId != uid) {
+              markMessagesAsRead();
+            }
           });
         }
       });
+    } else if (eventType == PostgresChangeEvent.update) {
+      final newData = payload.newRecord as Map<String, dynamic>;
+      final updatedId = newData['id']?.toString();
+      final isRead = newData['is_read'] == true;
+
+      if (updatedId != null) {
+        state.whenData((messages) {
+          bool hasChanges = false;
+          final updated = messages.map((m) {
+            if (m.id == updatedId && m.isRead != isRead) {
+              hasChanges = true;
+              // Preserve existing properties, only update isRead
+              return ChatMessage.fromJson({...m.toJson(), 'is_read': isRead});
+            }
+            return m;
+          }).toList();
+
+          if (hasChanges) {
+            state = AsyncData(updated);
+            _saveToCache(updated);
+          }
+        });
+      }
     } else if (eventType == PostgresChangeEvent.delete) {
       final oldData = payload.oldRecord as Map<String, dynamic>;
       final deletedId = oldData['id'] as String;

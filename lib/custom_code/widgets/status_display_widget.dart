@@ -2245,7 +2245,7 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                             if (_replyController.text.trim().isNotEmpty)
                               IconButton(
                                 icon: const Icon(Icons.send_rounded,
-                                    color: Colors.white, size: 20),
+                                    color: Colors.yellow, size: 24),
                                 onPressed: _sendReply,
                               ),
                           ],
@@ -2305,54 +2305,58 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
 
                   const SizedBox(width: 10),
 
-                  // Share Icon
-                  GestureDetector(
-                    onTap: () {
-                      _togglePause(); // Pause while sharing
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ShareContentScreen(
-                            contentToShare:
-                                currentStatus['media_type'] == 'text' ||
+                  if (_replyController.text.trim().isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(left: 10),
+                      child: GestureDetector(
+                        onTap: () {
+                          _togglePause(); // Pause while sharing
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ShareContentScreen(
+                                contentToShare: currentStatus['media_type'] ==
+                                            'text' ||
                                         currentStatus['media_type'] == 'thought'
                                     ? (currentStatus['caption'] ?? '')
                                     : (currentStatus['media_url'] ?? ''),
-                            contentId:
-                                currentStatus['thought_id']?.toString() ??
+                                contentId: currentStatus['thought_id']
+                                        ?.toString() ??
                                     currentStatus['gallery_id']?.toString(),
-                            contentType: currentStatus['thought_id'] != null
-                                ? 'thought'
-                                : (currentStatus['gallery_id'] != null
-                                    ? 'gallery'
-                                    : (currentStatus['media_type'] == 'image' ||
-                                            currentStatus['media_type'] ==
-                                                'video'
+                                contentType: currentStatus['thought_id'] != null
+                                    ? 'thought'
+                                    : (currentStatus['gallery_id'] != null
                                         ? 'gallery'
-                                        : 'text')),
-                            currentUserId: widget.currentUserId,
+                                        : (currentStatus['media_type'] ==
+                                                    'image' ||
+                                                currentStatus['media_type'] ==
+                                                    'video'
+                                            ? 'gallery'
+                                            : 'text')),
+                                currentUserId: widget.currentUserId,
+                              ),
+                            ),
+                          ).then((_) {
+                            _togglePause(); // Resume when returning
+                          });
+                        },
+                        child: Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.black.withValues(alpha: 0.4),
                           ),
-                        ),
-                      ).then((_) {
-                        _togglePause(); // Resume when returning
-                      });
-                    },
-                    child: Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.black.withValues(alpha: 0.4),
-                      ),
-                      child: const Center(
-                        child: Icon(
-                          Icons.send_rounded,
-                          color: Colors.white,
-                          size: 22,
+                          child: const Center(
+                            child: Icon(
+                              Icons.ios_share_rounded,
+                              color: Colors.white,
+                              size: 22,
+                            ),
+                          ),
                         ),
                       ),
                     ),
-                  ),
                 ],
               ),
             ),

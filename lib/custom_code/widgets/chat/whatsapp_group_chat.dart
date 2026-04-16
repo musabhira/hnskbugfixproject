@@ -1067,10 +1067,9 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                                       ? Icons.access_time
                                       : Icons.done_all,
                                   size: 14,
-                                  color: (message.isOptimistic ||
-                                          message.isPending)
+                                  color: (message.isOptimistic || message.isPending)
                                       ? (isMe ? Colors.black54 : Colors.white54)
-                                      : Colors.blue,
+                                      : (message.isRead ? Colors.blue : (isMe ? Colors.black54 : Colors.white54)),
                                 ),
                               ]
                             ],

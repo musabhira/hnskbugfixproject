@@ -16,6 +16,7 @@ class ChatMessage {
   final bool isOptimistic; // For optimistic UI updates
   final bool isPending; // For offline queued messages
   final bool isEdited;
+  final bool isRead;
   final Map<String, dynamic>? gallery;
   final Map<String, dynamic>? thought;
   final Map<String, dynamic>? tool;
@@ -38,6 +39,7 @@ class ChatMessage {
     this.isOptimistic = false,
     this.isPending = false,
     this.isEdited = false,
+    this.isRead = false,
     this.gallery,
     this.thought,
     this.tool,
@@ -81,6 +83,7 @@ class ChatMessage {
       isOptimistic: json['isOptimistic'] ?? false,
       isPending: json['isPending'] ?? false,
       isEdited: json['is_edited'] ?? false,
+      isRead: json['is_read'] ?? false,
       gallery: _safeMap(json['gallery']),
       thought: _safeMap(json['thought']),
       tool: _safeMap(json['tool']),
@@ -105,6 +108,7 @@ class ChatMessage {
       'isOptimistic': isOptimistic,
       'isPending': isPending,
       'is_edited': isEdited,
+      'is_read': isRead,
       'gallery': gallery,
       'thought': thought,
       'tool': tool,
