@@ -1203,7 +1203,6 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         child: material.Center(
           child: CircularProfileImage(
             profileImageUrl: _profileImageUrl,
-            isVerified: _isVerified,
             radius: 22.0,
             borderColor: FlutterFlowTheme.of(context).primary,
           ),
@@ -1765,23 +1764,14 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Text(
-                          person['name'] ?? person['shop_name'] ?? 'Unknown',
-                          style: GoogleFonts.outfit(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w600,
-                            color: material.Colors.white,
-                            letterSpacing: 0.2,
-                          ),
-                        ),
-                        if (person['verified'] == true) ...[
-                          const SizedBox(width: 6),
-                          const Icon(material.Icons.verified,
-                              size: 16, color: material.Colors.blue),
-                        ],
-                      ],
+                    Text(
+                      person['name'] ?? person['shop_name'] ?? 'Unknown',
+                      style: GoogleFonts.outfit(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w600,
+                        color: material.Colors.white,
+                        letterSpacing: 0.2,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Text(
@@ -1907,21 +1897,12 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 2),
-                    Row(
-                      children: [
-                        Text(
-                          'by ${profile?['name'] ?? 'Unknown'}',
-                          style: GoogleFonts.inter(
-                            fontSize: 12,
-                            color: material.Colors.white.withValues(alpha: 0.4),
-                          ),
-                        ),
-                        if (profile?['verified'] == true) ...[
-                          const SizedBox(width: 4),
-                          const Icon(material.Icons.verified,
-                              size: 10, color: material.Colors.blue),
-                        ],
-                      ],
+                    Text(
+                      'by ${profile?['name'] ?? 'Unknown'}',
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        color: material.Colors.white.withValues(alpha: 0.4),
+                      ),
                     ),
                   ],
                 ),
@@ -2582,56 +2563,40 @@ class CircularProfileImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        Container(
-          width: radius * 2,
-          height: radius * 2,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: borderColor.withValues(alpha: 0.5),
-              width: borderWidth,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: material.Colors.black.withValues(alpha: 0.3),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-            image: profileImageUrl != null
-                ? DecorationImage(
-                    image: CachedNetworkImageProvider(profileImageUrl!),
-                    fit: BoxFit.cover,
-                  )
-                : null,
-          ),
-          child: profileImageUrl == null
-              ? Icon(FluentIcons.contact,
-                  color: material.Colors.grey, size: radius)
-              : null,
+    return Container(
+      width: radius * 2,
+      height: radius * 2,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: borderColor.withValues(alpha: 0.5),
+          width: borderWidth,
         ),
-        if (isVerified)
-          Positioned(
-            right: -2,
-            bottom: -2,
-            child: Container(
-              padding: const EdgeInsets.all(2),
-              decoration: BoxDecoration(
-                color: material.Colors.black,
-                shape: BoxShape.circle,
-                border: Border.all(color: material.Colors.white, width: 1.5),
-              ),
-              child: const Icon(
-                material.Icons.verified,
-                color: material.Colors.blue,
-                size: 14,
-              ),
-            ),
+        boxShadow: [
+          BoxShadow(
+            color: material.Colors.black.withValues(alpha: 0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
-      ],
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: profileImageUrl != null
+            ? CachedNetworkImage(
+                imageUrl: profileImageUrl!,
+                fit: BoxFit.cover,
+                placeholder: (context, url) => Container(
+                  color: material.Colors.grey.withValues(alpha: 0.1),
+                ),
+                errorWidget: (context, url, error) => Icon(
+                    FluentIcons.contact,
+                    color: material.Colors.grey,
+                    size: radius),
+              )
+            : Icon(FluentIcons.contact,
+                color: material.Colors.grey, size: radius),
+      ),
     );
   }
 }

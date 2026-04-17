@@ -787,14 +787,16 @@ class ChatMessages extends _$ChatMessages {
           .from(isPersonal ? 'messages' : 'group_messages')
           .select(selectQueryFetch)
           .eq('id', id)
-          .single();
+          .maybeSingle();
+
+      if (response == null) return null;
 
       final sender = _safeGet(response['sender']);
       final senderProfile = _safeGet(sender?['profile']);
       final replyTo = _safeGet(response['reply_to']);
 
       return ChatMessage.fromJson({
-        ...response,
+        ...Map<String, dynamic>.from(response),
         'sender_profile': senderProfile,
         'reply_to': replyTo,
         'gallery': _safeGet(response['gallery']),
