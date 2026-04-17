@@ -287,14 +287,18 @@ class ChatMessages extends _$ChatMessages {
       }
     } else if (eventType == PostgresChangeEvent.delete) {
       final oldData = payload.oldRecord as Map<String, dynamic>;
-      final deletedId = oldData['id'] as String;
+      final deletedId = oldData['id']?.toString();
 
-      state.whenData((messages) {
-        final updatedMessages =
-            messages.where((m) => m.id != deletedId).toList();
-        state = AsyncData(updatedMessages);
-        _saveToCache(updatedMessages);
-      });
+      if (deletedId != null) {
+        state.whenData((messages) {
+          final updatedMessages =
+              messages.where((m) => m.id != deletedId).toList();
+          if (updatedMessages.length < messages.length) {
+            state = AsyncData(updatedMessages);
+            _saveToCache(updatedMessages);
+          }
+        });
+      }
     }
   }
 
@@ -703,6 +707,11 @@ class ChatMessages extends _$ChatMessages {
     });
 
     try {
+      final uid = ref.read(currentUserIdProvider);
+      if (uid.isNotEmpty) {
+        await LocalSyncServer().deleteCachedMessage(uid, groupId, messageId);
+      }
+
       await _supabase
           .from(isPersonal ? 'messages' : 'group_messages')
           .delete()

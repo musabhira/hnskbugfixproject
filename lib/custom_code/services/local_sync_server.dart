@@ -146,11 +146,17 @@ class LocalSyncServer {
   }
 
   void _handleGlobalMessageUpdate(PostgresChangePayload payload) {
-    // Determine which conversation this message belongs to and update Hive
-    final newData = payload.newRecord;
-
     final currentUserId = _supabase.auth.currentUser?.id;
     if (currentUserId == null) return;
+
+    if (payload.eventType == PostgresChangeEvent.delete) {
+      final oldId = payload.oldRecord['id']?.toString();
+      if (oldId != null) _removeMessageFromCache(currentUserId, oldId);
+      return;
+    }
+
+    // Determine which conversation this message belongs to and update Hive
+    final newData = payload.newRecord;
 
     final senderId = newData['sender_id'];
     final receiverId = newData['receiver_id'];
@@ -179,10 +185,16 @@ class LocalSyncServer {
   }
 
   void _handleGroupMessageUpdate(PostgresChangePayload payload) {
-    final newData = payload.newRecord;
     final currentUserId = _supabase.auth.currentUser?.id;
     if (currentUserId == null) return;
 
+    if (payload.eventType == PostgresChangeEvent.delete) {
+      final oldId = payload.oldRecord['id']?.toString();
+      if (oldId != null) _removeMessageFromCache(currentUserId, oldId);
+      return;
+    }
+
+    final newData = payload.newRecord;
     final groupId = newData['group_id'];
     if (groupId != null) {
       final List<dynamic> current = getCachedMessages(currentUserId, groupId);
@@ -193,6 +205,27 @@ class LocalSyncServer {
         if (updated.length > 1000) updated.removeLast();
         saveMessages(currentUserId, groupId, updated);
       }
+    }
+  }
+
+  void _removeMessageFromCache(String userId, String messageId) {
+    final keys = _messageBox.keys.where((k) => k.toString().startsWith('${userId}_'));
+    for (var key in keys) {
+      final List<dynamic>? current = _messageBox.get(key);
+      if (current != null) {
+        final updated = current.where((m) => m['id'].toString() != messageId).toList();
+        if (updated.length < current.length) {
+          _messageBox.put(key, updated);
+        }
+      }
+    }
+  }
+
+  Future<void> deleteCachedMessage(String userId, String chatId, String messageId) async {
+    final List<dynamic> current = getCachedMessages(userId, chatId);
+    final updated = current.where((m) => m['id'].toString() != messageId).toList();
+    if (updated.length < current.length) {
+      await saveMessages(userId, chatId, updated);
     }
   }
 

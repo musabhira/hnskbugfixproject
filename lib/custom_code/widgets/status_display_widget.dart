@@ -1340,29 +1340,38 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
     if (receiverId == widget.currentUserId) return;
 
     try {
+      final originalText = text;
+      _replyController.clear();
+      _replyFocusNode.unfocus();
+
       await supabase.from('messages').insert({
         'sender_id': widget.currentUserId,
         'receiver_id': receiverId,
-        'message_text': text,
+        'message_text': originalText,
         'message_type': 'text',
         'metadata': {
           'replied_to_status_id': status['id'],
           'status_media_url': status['media_url'],
           'status_media_type': status['media_type'],
           'reply_type': 'status_reply',
+          'status_caption': status['caption'],
         }
       });
 
-      _replyController.clear();
-      _replyFocusNode.unfocus();
-
       if (mounted) {
-        if (_isPaused) _togglePause(); // Resume after sending
+        if (_isPaused) _togglePause();
 
-        // Navigate to the chat
         final statuses = widget.statusGroup['statuses'] as List;
-        final status = statuses[_currentIndex];
-        final profile = status['profile'] ?? widget.statusGroup;
+        final currentStatus = statuses[_currentIndex];
+        final profile = currentStatus['profile'] ?? widget.statusGroup;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Reply sent!'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 1),
+          ),
+        );
 
         Navigator.push(
           context,

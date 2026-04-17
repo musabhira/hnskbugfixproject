@@ -868,25 +868,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
               ),
             ),
           ),
-        if (!isMe)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 2, left: 4),
-            child: IconButton(
-              icon: const Icon(Icons.flag_outlined, size: 16, color: Colors.orange),
-              onPressed: () {
-                ReportHelper.showReportDialog(
-                  context: context,
-                  contentType: 'message',
-                  contentId: message.id,
-                  contentTitle: message.messageText ?? 'Media Message',
-                );
-              },
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(),
-              splashRadius: 16,
-              tooltip: 'Report message',
-            ),
-          ),
+
         Flexible(
           child: Container(
             margin: EdgeInsets.only(
