@@ -13,6 +13,8 @@ class FlutterFlowVideoLayer extends StatefulWidget {
     this.showControls = true,
     this.allowFullScreen = false,
     this.allowPlaybackSpeedMenu = false,
+    this.onProgress,
+    this.onCompleted,
   });
 
   final String path;
@@ -22,6 +24,8 @@ class FlutterFlowVideoLayer extends StatefulWidget {
   final bool showControls;
   final bool allowFullScreen;
   final bool allowPlaybackSpeedMenu;
+  final Function(double)? onProgress;
+  final VoidCallback? onCompleted;
 
   @override
   State<FlutterFlowVideoLayer> createState() => _FlutterFlowVideoLayerState();
@@ -68,10 +72,27 @@ class _FlutterFlowVideoLayerState extends State<FlutterFlowVideoLayer> {
   }
 
   void _videoListener() {
-    if (mounted && _isPlaying != _controller?.value.isPlaying) {
+    if (!mounted || _controller == null) return;
+
+    if (_isPlaying != _controller?.value.isPlaying) {
       setState(() {
         _isPlaying = _controller?.value.isPlaying ?? false;
       });
+    }
+
+    if (_controller!.value.isInitialized) {
+      final position = _controller!.value.position;
+      final duration = _controller!.value.duration;
+
+      if (duration.inMilliseconds > 0) {
+        final progress =
+            position.inMilliseconds / duration.inMilliseconds;
+        widget.onProgress?.call(progress);
+
+        if (position >= duration && !_controller!.value.isPlaying) {
+          widget.onCompleted?.call();
+        }
+      }
     }
   }
 
@@ -122,7 +143,7 @@ class _FlutterFlowVideoLayerState extends State<FlutterFlowVideoLayer> {
         }
       },
       child: Container(
-        color: Colors.black.withOpacity(0.01), // Capture taps smoothly
+        color: Colors.black.withValues(alpha: 0.01), // Capture taps smoothly
         child: Center(
           child: AnimatedOpacity(
             opacity: _isPlaying ? 0.0 : 1.0,

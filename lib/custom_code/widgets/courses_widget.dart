@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
-import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import 'index.dart'; // Imports other custom widgets
@@ -98,6 +97,7 @@ class _CoursesWidgetState extends State<CoursesWidget> {
         });
       }
     } catch (e) {
+      if (!mounted) return;
       safeSetState(() {
         error = 'Error fetching courses: $e';
         isLoading = false;
@@ -483,7 +483,7 @@ class _FavoriteButtonState extends State<FavoriteButton> {
 
       if (mounted) {
         safeSetState(() {
-          isFavorite = response != null;
+          isFavorite = response.isNotEmpty;
         });
       }
     } catch (e) {
@@ -559,7 +559,12 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
   String currentVideoUrl = '';
   bool isLoading = true;
   bool hasPaidAccess = false;
+  Map<String, double> lessonProgress = {};
+  List<Map<String, dynamic>> lessonMaterials = [];
+  List<Map<String, dynamic>> lessonNotes = [];
+  bool isContentLoading = false;
   String? name;
+  int activeTab = 0;
 
   final supabase = SupaFlow.client;
 
@@ -567,9 +572,102 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
   void initState() {
     super.initState();
     _fetchLessons();
+    _loadCourseProgress();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _checkPaidAccess(); // If this includes setState or overlay/dialog
+      _checkPaidAccess();
     });
+  }
+
+  Future<void> _loadCourseProgress() async {
+    final userId = supabase.auth.currentUser?.id;
+    if (userId == null) return;
+
+    try {
+      final progressData = await supabase
+          .from('user_progress')
+          .select('content_id, progress')
+          .eq('user_id', userId);
+
+      if (progressData.isNotEmpty) {
+        final Map<String, double> progressMap = {};
+        for (var item in progressData as List) {
+          progressMap[item['content_id'].toString()] =
+              (item['progress'] as num).toDouble();
+        }
+        safeSetState(() {
+          lessonProgress = progressMap;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading progress: $e');
+    }
+  }
+
+  Future<void> _updateProgress(String lessonId, double progress) async {
+    final userId = supabase.auth.currentUser?.id;
+    if (userId == null) return;
+
+    // Only update if progress is significantly more than stored
+    final currentStored = lessonProgress[lessonId] ?? 0.0;
+    if (progress <= currentStored + 0.05 && progress < 1.0) return;
+
+    try {
+      await supabase.from('user_progress').upsert({
+        'user_id': userId,
+        'content_type': 'video',
+        'content_id': lessonId,
+        'progress': progress,
+        'batch_id': null, // Explicitly null for regular courses as decided
+        'last_accessed': DateTime.now().toIso8601String(),
+        if (progress >= 0.95) 'completed_at': DateTime.now().toIso8601String(),
+      });
+
+      safeSetState(() {
+        lessonProgress[lessonId] = progress;
+      });
+    } catch (e) {
+      // Silently fail or log
+    }
+  }
+
+  Future<void> _loadLessonResources(String lessonId) async {
+    safeSetState(() {
+      isContentLoading = true;
+    });
+
+    try {
+      final materialsTask =
+          supabase.from('materials').select().eq('lesson_id', lessonId);
+      final notesTask =
+          supabase.from('notes').select().eq('lesson_id', lessonId);
+
+      final results = await Future.wait([materialsTask, notesTask]);
+
+      safeSetState(() {
+        lessonMaterials = List<Map<String, dynamic>>.from(results[0] as List);
+        lessonNotes = List<Map<String, dynamic>>.from(results[1] as List);
+        isContentLoading = false;
+      });
+    } catch (e) {
+      debugPrint('Error loading resources: $e');
+      safeSetState(() {
+        isContentLoading = false;
+      });
+    }
+  }
+
+  void _selectLesson(Map<String, dynamic> lesson, int index) {
+    if (index > 0 && !hasPaidAccess) {
+      _showWhatsAppPaymentSheet1();
+      return;
+    }
+
+    safeSetState(() {
+      currentLessonIndex = index;
+      currentVideoUrl = lesson['video_url'] ?? '';
+    });
+
+    _loadLessonResources(lesson['id'].toString());
   }
 
   Future<void> _checkPaidAccess() async {
@@ -627,11 +725,12 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
         lessons = lessonsList;
         isLoading = false;
         if (lessons.isNotEmpty) {
-          currentVideoUrl = lessons[0]['video_url'] ?? '';
+          _selectLesson(lessons[0], 0);
         }
       });
     } catch (e) {
       debugPrint('Error fetching lessons: $e');
+      if (!mounted) return;
       safeSetState(() {
         isLoading = false;
       });
@@ -682,11 +781,9 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
 
         return {
           'isValid': true,
-          'message': 'Coupon applied! â‚¹50 off',
+          'message': 'Coupon applied! ₹50 off',
           'couponOwnerId': couponOwnerId
         };
-
-        return {'isValid': false, 'message': 'Invalid coupon code'};
       } catch (e) {
         debugPrint('Error validating coupon: $e');
         return {'isValid': false, 'message': 'Error validating coupon'};
@@ -928,7 +1025,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
               final message =
                   'Check out this amazing course: ${widget.courseData['title']}!\n\n'
                   'The first lesson is FREE!\n\n'
-                  'Use my coupon code $userCoupon to get â‚¹50 off when you purchase the full course.\n\n'
+                  'Use my coupon code $userCoupon to get ₹50 off when you purchase the full course.\n\n'
                   'name : $name\n\n'
                   '$courseLink';
 
@@ -1075,6 +1172,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                           });
 
                           // Show success message
+                          if (!mounted) return;
                           if (mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
@@ -1244,74 +1342,6 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
   }
 
 // Add a function to add a share button to the course page
-  Widget _buildShareCourseButton() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: ElevatedButton.icon(
-        onPressed: () async {
-          final userId = supabase.auth.currentUser?.id;
-
-          // Get or generate coupon code
-          String couponCode = 'FREELESSON';
-          if (userId != null) {
-            try {
-              final existingCoupon = await supabase
-                  .from('user_coupons')
-                  .select('coupon_code')
-                  .eq('user_id', userId)
-                  .maybeSingle();
-
-              if (existingCoupon != null) {
-                couponCode = existingCoupon['coupon_code'];
-              } else {
-                // Generate code logic (simplified here)
-                final random = Random();
-                final randomStr =
-                    List.generate(4, (_) => random.nextInt(10)).join('');
-                couponCode = 'USER$randomStr';
-
-                // Store in database
-                await supabase.from('user_coupons').insert({
-                  'user_id': userId,
-                  'coupon_code': couponCode,
-                  'is_active': true,
-                  'created_at': DateTime.now().toIso8601String(),
-                });
-              }
-            } catch (e) {
-              debugPrint('Error getting/generating coupon: $e');
-            }
-          }
-
-          // Create share message
-          final courseTitle = widget.courseData['course_title'];
-          final courseId = widget.courseData['course_id'];
-          final courseLink = 'https://yourappdomain.com/course/$courseId';
-          final message =
-              'Check out this amazing course: $courseTitle!\n\nThe first lesson is FREE!\n\nUse my coupon code $couponCode to get â‚¹50 off when you decide to purchase.\n\n$courseLink';
-
-          // Share course
-          Share.share(message);
-        },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.blue.shade700,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-        icon: const Icon(Icons.share, color: Colors.white),
-        label: const Text(
-          'Share Course (First lesson FREE)',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildCouponCodeSection() {
     final userId = supabase.auth.currentUser?.id;
     if (userId == null) {
@@ -1333,38 +1363,6 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
         },
       ),
     );
-  }
-
-  Future<void> _openWhatsApp1(String? userId, String courseTitle) async {
-    // First create access request in database
-    if (userId != null) {
-      try {
-        // Create access request record
-        await createUserCourseAccessRecord(
-            userId, widget.courseData['course_id']);
-
-        // Show confirmation to user
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Access request sent to admin!'),
-              backgroundColor: Colors.green,
-            ),
-          );
-        }
-      } catch (e) {
-        debugPrint('Error creating access request: $e');
-      }
-    }
-
-    // Then open WhatsApp
-    final message =
-        "Hello, I want to purchase access to '$courseTitle'. My User ID is: ${userId ?? 'Not logged in'}";
-    final encodedMessage = Uri.encodeComponent(message);
-    final whatsappUrl = "https://wa.me/919746358192?text=$encodedMessage";
-
-    // Launch WhatsApp with Uri.parse
-    launchUrl(Uri.parse(whatsappUrl), mode: LaunchMode.externalApplication);
   }
 
 
@@ -1509,30 +1507,160 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                 overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 4),
-              LinearProgressIndicator(
-                value: 0.0,
-                backgroundColor: Colors.black54,
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  isCurrentLesson ? Colors.green : Colors.yellow.shade700,
+              ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: LinearProgressIndicator(
+                  value: lessonProgress[lesson['id'].toString()] ?? 0.0,
+                  minHeight: 4,
+                  backgroundColor: Colors.white.withValues(alpha: 0.1),
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    isCurrentLesson ? Colors.green : Colors.yellow.shade700,
+                  ),
                 ),
               ),
             ],
           ),
           onTap: () {
             if (index == 0 || hasPaidAccess) {
-              // Free first lesson or paid user can access any lesson
-              safeSetState(() {
-                currentLessonIndex = index;
-                currentVideoUrl = lesson['video_url'] ?? '';
-              });
+              _selectLesson(lesson, index);
             } else {
-              // Show payment bottom sheet for premium lessons
               _showWhatsAppPaymentSheet1();
             }
           },
         ),
       ),
     ).animate().fadeIn().slideX();
+  }
+
+  Widget _buildLessonList() {
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: lessons.length,
+      itemBuilder: (context, index) {
+        return _buildLessonItem(lessons[index], index);
+      },
+    );
+  }
+
+  Widget _buildMaterialsList() {
+    if (isContentLoading) {
+      return const Center(
+          child: CircularProgressIndicator(color: Colors.yellow));
+    }
+    if (lessonMaterials.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32.0),
+          child: Column(
+            children: [
+              Icon(Icons.picture_as_pdf_outlined,
+                  size: 48, color: Colors.yellow.withValues(alpha: 0.3)),
+              const SizedBox(height: 16),
+              Text('No PDFs for this lesson',
+                  style: TextStyle(color: Colors.yellow.shade100)),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: lessonMaterials.length,
+      itemBuilder: (context, index) {
+        final material = lessonMaterials[index];
+        return Card(
+          color: Colors.white.withValues(alpha: 0.05),
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          child: ListTile(
+            leading: const Icon(Icons.picture_as_pdf, color: Colors.redAccent),
+            title: Text(material['title'] ?? 'Material',
+                style: const TextStyle(color: Colors.white)),
+            subtitle: Text(material['description'] ?? '',
+                style: TextStyle(color: Colors.white.withValues(alpha: 0.6))),
+            trailing: IconButton(
+              icon: const Icon(Icons.download, color: Colors.yellow),
+              onPressed: () => launchUrl(Uri.parse(material['pdf_url'] ?? ''),
+                  mode: LaunchMode.externalApplication),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildNotesList() {
+    if (isContentLoading) {
+      return const Center(
+          child: CircularProgressIndicator(color: Colors.yellow));
+    }
+    if (lessonNotes.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32.0),
+          child: Column(
+            children: [
+              Icon(Icons.note_alt_outlined,
+                  size: 48, color: Colors.yellow.withValues(alpha: 0.3)),
+              const SizedBox(height: 16),
+              Text('No notes for this lesson',
+                  style: TextStyle(color: Colors.yellow.shade100)),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: lessonNotes.length,
+      itemBuilder: (context, index) {
+        final note = lessonNotes[index];
+        return Card(
+          color: Colors.white.withValues(alpha: 0.05),
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          child: Theme(
+            data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+            child: ExpansionTile(
+              leading: const Icon(Icons.notes, color: Colors.yellow),
+              title: Text(note['title'] ?? 'Note',
+                  style: const TextStyle(color: Colors.white)),
+              iconColor: Colors.yellow,
+              collapsedIconColor: Colors.yellow,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text(
+                    note['content'] ?? '',
+                    style: const TextStyle(color: Colors.white70, height: 1.5),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildSelectedTabContent() {
+    switch (activeTab) {
+      case 0:
+        return _buildLessonList();
+      case 1:
+        return _buildMaterialsList();
+      case 2:
+        return _buildNotesList();
+      default:
+        return _buildLessonList();
+    }
   }
 
   @override
@@ -1633,11 +1761,32 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                         child: FlutterFlowVideoLayer(
                           path: currentVideoUrl,
                           videoType: VideoType.network,
-                          autoPlay: false,
+                          autoPlay: true,
                           looping: false,
                           showControls: true,
                           allowFullScreen: true,
-                          allowPlaybackSpeedMenu: false,
+                          allowPlaybackSpeedMenu: true,
+                          onProgress: (progress) {
+                            if (lessons.isNotEmpty) {
+                              _updateProgress(
+                                  lessons[currentLessonIndex]['id'].toString(),
+                                  progress);
+                            }
+                          },
+                          onCompleted: () {
+                            // Auto-advance or show completion
+                            if (currentLessonIndex < lessons.length - 1) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: const Text('Lesson Completed! Next starting...'),
+                                  backgroundColor: Colors.green.shade800,
+                                  duration: const Duration(seconds: 2),
+                                ),
+                              );
+                              _selectLesson(lessons[currentLessonIndex + 1],
+                                  currentLessonIndex + 1);
+                            }
+                          },
                         ),
                       ),
                     ),
@@ -2020,71 +2169,62 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                           ),
                         ).animate().fadeIn(),
                       const SizedBox(height: 8),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Course Content',
-                            style: TextStyle(
-                              color: Colors.yellow.shade200,
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
+                DefaultTabController(
+                  length: 3,
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: TabBar(
+                          onTap: (index) {
+                            setState(() {
+                              activeTab = index;
+                            });
+                          },
+                          indicatorColor: Colors.yellow.shade700,
+                          labelColor: Colors.yellow.shade700,
+                          unselectedLabelColor: Colors.grey,
+                          tabs: const [
+                            Tab(text: 'Lessons'),
+                            Tab(text: 'PDFs'),
+                            Tab(text: 'Notes'),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      if (isLoading)
+                        Center(
+                          child: CircularProgressIndicator(
+                            color: Colors.yellow.shade700,
+                          ),
+                        )
+                      else if (lessons.isEmpty)
+                        Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(24.0),
+                            child: Text(
+                              'No content available for this course yet.',
+                              style: TextStyle(color: Colors.yellow.shade100),
                             ),
                           ),
-                          if (!hasPaidAccess)
-                            TextButton.icon(
-                              onPressed: () {
-                                _showWhatsAppPaymentSheet1();
-                              },
-                              icon: Icon(
-                                Icons.lock_open,
-                                color: Colors.yellow.shade700,
-                                size: 16,
-                              ),
-                              label: Text(
-                                'Get Full Access',
-                                style: TextStyle(
-                                  color: Colors.yellow.shade700,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
+                        )
+                      else
+                        const SizedBox.shrink(),
+                      
+                      // Custom Tab Content Logic to stay within SliverToBoxAdapter easily
+                      _buildSelectedTabContent(),
                     ],
                   ),
                 ),
-                if (isLoading)
-                  Center(
-                    child: CircularProgressIndicator(
-                      color: Colors.yellow.shade700,
-                    ),
-                  )
-                else if (lessons.isEmpty)
-                  Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(24.0),
-                      child: Text(
-                        'No lessons available for this course yet.',
-                        style: TextStyle(color: Colors.yellow.shade100),
-                      ),
-                    ),
-                  )
-                else
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: lessons.length,
-                    itemBuilder: (context, index) {
-                      return _buildLessonItem(lessons[index], index);
-                    },
-                  ),
               ],
             ),
           ),
         ],
       ),
-    );
+    ),
+  ],
+),
+);
   }
 }
 

@@ -11,7 +11,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:image_picker/image_picker.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:ed_screen_recorder/ed_screen_recorder.dart';
+// import 'package:ed_screen_recorder/ed_screen_recorder.dart';
 import 'drawing_page_models.dart';
 import 'drawing_page_painters.dart';
 
@@ -32,7 +32,7 @@ class DrawingPage extends StatefulWidget {
 
 class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin {
   final GlobalKey _canvasKey = GlobalKey();
-  final EdScreenRecorder _screenRecorder = EdScreenRecorder();
+  // final EdScreenRecorder _screenRecorder = EdScreenRecorder();
 
   // Layers
   final List<DrawingLayer> _layers = [];
@@ -458,6 +458,10 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
   }
 
   Future<void> _toggleRecording() async {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Screen recording is temporarily disabled in this build.')),
+    );
+    /* 
     try {
       if (_isRecording) {
         final RecordOutput result = await _screenRecorder.stopRecord();
@@ -480,6 +484,7 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
     } catch (e) {
       debugPrint("Recording error: $e");
     }
+    */
   }
 
   Future<void> _replayDrawing() async {
