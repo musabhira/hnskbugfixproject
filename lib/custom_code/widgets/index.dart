@@ -41,6 +41,8 @@ export 'diagram_ai_page.dart';
 export 'password_generator_page.dart';
 export 'event_create_page.dart' show EventCreatePage;
 export 'event_display_home_page.dart';
+export 'dual_video_recorder.dart' show DualVideoRecorderWidget;
+
 
 // Chat & Communication
 export 'chat/whatsapp_group_chat.dart' show WhatsAppGroupChat;
@@ -79,3 +81,4 @@ export 'notifications_list_page.dart';
 export 'report_dailoge.dart';
 export 'legal_policy_widget.dart';
 export 'eula_compliance_dialog.dart';
+export 'dual_video_recorder.dart';

@@ -19,6 +19,8 @@ import 'dart:convert';
 import 'dart:math';
 import '/custom_code/widgets/drawing_academy_home_page.dart';
 import '/custom_code/widgets/ai_prompt_service.dart';
+import '/custom_code/widgets/dual_video_recorder.dart';
+
 
 class ToolsPage extends StatefulWidget {
   final double? width;
@@ -74,6 +76,9 @@ class _TaskManagerScreenState extends State<ToolsPage> {
   String _toolsSearchQuery = '';
   List<String> _favoritedTools = [];
   List<String> _restrictedTools = [];
+  List<String> _allowedTools = [];
+  Map<String, bool> _globalToolPublicity = {};
+  bool _isLoadingTools = false;
 
   @override
   void initState() {
@@ -88,21 +93,42 @@ class _TaskManagerScreenState extends State<ToolsPage> {
   }
 
   Future<void> _loadToolPermissions() async {
+    setState(() => _isLoadingTools = true);
     try {
       final userId = SupaFlow.client.auth.currentUser?.id;
-      if (userId == null) return;
+      
+      // Fetch global configs
+      final configRes = await SupaFlow.client.from('app_tool_configs').select('tool_name, is_public');
+      final publicityMap = {
+        for (var c in (configRes as List)) c['tool_name'] as String: c['is_public'] as bool
+      };
 
-      final response = await SupaFlow.client
-          .from('user_tool_permissions')
-          .select('tool_name')
-          .eq('user_id', userId)
-          .eq('is_blocked', true);
+      List<String> restricted = [];
+      List<String> allowed = [];
+      if (userId != null) {
+        final accessRes = await SupaFlow.client
+            .from('user_tool_permissions')
+            .select('tool_name, is_blocked')
+            .eq('user_id', userId);
+        
+        for (var row in (accessRes as List)) {
+          if (row['is_blocked'] == true) {
+            restricted.add(row['tool_name'] as String);
+          } else {
+            allowed.add(row['tool_name'] as String);
+          }
+        }
+      }
 
       setState(() {
-        _restrictedTools = (response as List).map((e) => e['tool_name'] as String).toList();
+        _globalToolPublicity = publicityMap;
+        _restrictedTools = restricted;
+        _allowedTools = allowed;
+        _isLoadingTools = false;
       });
     } catch (e) {
       debugPrint('Error loading tool permissions: $e');
+      setState(() => _isLoadingTools = false);
     }
   }
 
@@ -714,6 +740,14 @@ class _TaskManagerScreenState extends State<ToolsPage> {
             MaterialPageRoute(builder: (context) => const DrawingAppHome())),
       },
       {
+        'title': 'Dual Recorder',
+        'subtitle': 'YouTube & Reels',
+        'icon': Icons.duo_rounded,
+        'color': Colors.yellow,
+        'onTap': () => Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const DualVideoRecorderWidget())),
+      },
+      {
         'title': 'Schedule',
         'icon': Icons.calendar_today_rounded,
         'color': Colors.blueAccent,
@@ -882,13 +916,26 @@ class _TaskManagerScreenState extends State<ToolsPage> {
       },
     ];
 
-    final filteredTools = allTools
-        .where((tool) =>
-            !_restrictedTools.contains(tool['title']) &&
-            (tool['title'] as String)
-                .toLowerCase()
-                .contains(_toolsSearchQuery.toLowerCase()))
-        .toList();
+    final filteredTools = allTools.where((tool) {
+      final title = tool['title'] as String;
+      
+      // Check search match
+      final matchesSearch = title.toLowerCase().contains(_toolsSearchQuery.toLowerCase()) || 
+          (tool['subtitle']?.toString().toLowerCase().contains(_toolsSearchQuery.toLowerCase()) ?? false);
+      if (!matchesSearch) return false;
+
+      // Check visibility logic
+      final isPublic = _globalToolPublicity[title] ?? true;
+      final isBlocked = _restrictedTools.contains(title);
+
+      if (isPublic) {
+        // Public tool: visible unless explicitly blocked
+        return !isBlocked;
+      } else {
+        // Private tool: ONLY visible if explicitly allowed
+        return _allowedTools.contains(title);
+      }
+    }).toList();
 
     return Scaffold(
       backgroundColor: const Color(0xFF161618),

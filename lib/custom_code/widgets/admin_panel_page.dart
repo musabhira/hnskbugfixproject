@@ -40,6 +40,11 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
   Map<String, dynamic>? appUpdateData;
   bool isLoadingUpdate = false;
 
+  // Tools Visibility
+  List<Map<String, dynamic>> allToolConfigs = [];
+  bool isLoadingToolConfigs = false;
+  String toolUserSearchQuery = "";
+
   @override
   void initState() {
     super.initState();
@@ -131,6 +136,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
       _loadReports(),
       _loadUsersAuth(),
       _loadAppUpdateData(),
+      _loadGlobalToolConfigs(),
     ]);
   }
 
@@ -431,7 +437,36 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
     'Web Search',
     'Courses',
     'Test Feature',
+    'Dual Recorder',
   ];
+
+  Future<void> _loadGlobalToolConfigs() async {
+    setState(() => isLoadingToolConfigs = true);
+    try {
+      final res = await supabase.from('app_tool_configs').select('*');
+      if (mounted) {
+        setState(() {
+          allToolConfigs = List<Map<String, dynamic>>.from(res);
+          isLoadingToolConfigs = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading tool configs: $e');
+      if (mounted) setState(() => isLoadingToolConfigs = false);
+    }
+  }
+
+  Future<void> _toggleGlobalToolVisibility(String toolName, bool isPublic) async {
+    try {
+      await supabase.from('app_tool_configs').upsert({
+        'tool_name': toolName,
+        'is_public': isPublic,
+      });
+      _loadGlobalToolConfigs();
+    } catch (e) {
+      debugPrint('Error toggling global tool visibility: $e');
+    }
+  }
 
   Future<void> _loadUserPermissions(String userId) async {
     setState(() {
@@ -463,30 +498,22 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
     if (selectedUserIdForTools == null) return;
 
     try {
-      if (block) {
-        await supabase.from('user_tool_permissions').upsert({
-          'user_id': selectedUserIdForTools,
-          'tool_name': toolName,
-          'is_blocked': true,
-        }, onConflict: 'user_id, tool_name');
-        if (mounted) {
-          setState(() {
+      await supabase.from('user_tool_permissions').upsert({
+        'user_id': selectedUserIdForTools,
+        'tool_name': toolName,
+        'is_blocked': block,
+      }, onConflict: 'user_id, tool_name');
+
+      if (mounted) {
+        setState(() {
+          if (block) {
             if (!restrictedToolsForSelectedUser.contains(toolName)) {
               restrictedToolsForSelectedUser.add(toolName);
             }
-          });
-        }
-      } else {
-        await supabase
-            .from('user_tool_permissions')
-            .delete()
-            .eq('user_id', selectedUserIdForTools!)
-            .eq('tool_name', toolName);
-        if (mounted) {
-          setState(() {
+          } else {
             restrictedToolsForSelectedUser.remove(toolName);
-          });
-        }
+          }
+        });
       }
     } catch (e) {
       debugPrint('Error toggling tool permission: $e');
@@ -499,6 +526,81 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
   }
 
   Widget _buildToolsTab() {
+    return DefaultTabController(
+      length: 2,
+      child: Column(
+        children: [
+          TabBar(
+            labelColor: Colors.amber,
+            unselectedLabelColor: Colors.grey,
+            indicatorColor: Colors.amber,
+            tabs: [
+              Tab(text: "Global Status"),
+              Tab(text: "User Access"),
+            ],
+          ),
+          Expanded(
+            child: TabBarView(
+              children: [
+                _buildGlobalToolsTab(),
+                _buildUserToolsTab(),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGlobalToolsTab() {
+    return isLoadingToolConfigs 
+      ? const Center(child: CircularProgressIndicator())
+      : ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: allToolNames.length,
+          itemBuilder: (context, index) {
+            final toolName = allToolNames[index];
+            final config = allToolConfigs.firstWhere(
+              (c) => c['tool_name'] == toolName, 
+              orElse: () => {'tool_name': toolName, 'is_public': true}
+            );
+            final isPublic = config['is_public'] ?? true;
+
+            return Container(
+              margin: const EdgeInsets.only(bottom: 8),
+              decoration: BoxDecoration(
+                color: Colors.grey[900],
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.white10),
+              ),
+              child: ListTile(
+                title: Text(toolName, style: const TextStyle(color: Colors.white)),
+                subtitle: Text(
+                  isPublic ? 'Public: Everyone can see' : 'Private: Only allowed users can see',
+                  style: TextStyle(color: isPublic ? Colors.green : Colors.orange, fontSize: 12),
+                ),
+                trailing: Switch(
+                  activeColor: Colors.green,
+                  activeTrackColor: Colors.green.withValues(alpha: 0.3),
+                  inactiveThumbColor: Colors.orange,
+                  inactiveTrackColor: Colors.orange.withValues(alpha: 0.3),
+                  value: isPublic,
+                  onChanged: (val) => _toggleGlobalToolVisibility(toolName, val),
+                ),
+              ),
+            );
+          },
+        );
+  }
+
+  Widget _buildUserToolsTab() {
+    final filteredProfiles = allProfiles.where((p) {
+      final name = p['name']?.toString().toLowerCase() ?? "";
+      final shop = p['shop_name']?.toString().toLowerCase() ?? "";
+      return name.contains(toolUserSearchQuery.toLowerCase()) || 
+             shop.contains(toolUserSearchQuery.toLowerCase());
+    }).toList();
+
     return Column(
       children: [
         Padding(
@@ -506,14 +608,29 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Select User to Manage Tools', 
+              const Text('Search & Select User', 
                 style: TextStyle(color: Colors.white70, fontSize: 14)),
+              const SizedBox(height: 12),
+              TextField(
+                onChanged: (v) => setState(() => toolUserSearchQuery = v),
+                style: const TextStyle(color: Colors.white, fontSize: 14),
+                decoration: InputDecoration(
+                  hintText: 'Search by name or shop...',
+                  hintStyle: const TextStyle(color: Colors.grey),
+                  prefixIcon: const Icon(Icons.person_search, color: Colors.grey, size: 20),
+                  filled: true,
+                  fillColor: Colors.grey[900],
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                ),
+              ),
               const SizedBox(height: 12),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 decoration: BoxDecoration(
                   color: Colors.grey[900],
                   borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.white10),
                 ),
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<String>(
@@ -522,7 +639,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                     value: selectedUserIdForTools,
                     isExpanded: true,
                     style: const TextStyle(color: Colors.white),
-                    items: allProfiles.map((p) {
+                    items: filteredProfiles.map((p) {
                       return DropdownMenuItem<String>(
                         value: p['id'],
                         child: Text(p['name'] ?? 'Unknown User'),
@@ -547,6 +664,14 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                   itemBuilder: (context, index) {
                     final toolName = allToolNames[index];
                     final isBlocked = restrictedToolsForSelectedUser.contains(toolName);
+                    
+                    // Check if tool is public or private
+                    final config = allToolConfigs.firstWhere(
+                      (c) => c['tool_name'] == toolName, 
+                      orElse: () => {'tool_name': toolName, 'is_public': true}
+                    );
+                    final isPublic = config['is_public'] ?? true;
+                    
                     return Container(
                       margin: const EdgeInsets.only(bottom: 8),
                       decoration: BoxDecoration(
@@ -559,16 +684,21 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                       child: ListTile(
                         title: Text(toolName, style: const TextStyle(color: Colors.white)),
                         trailing: Switch(
-                          activeColor: Colors.red,
-                          activeTrackColor: Colors.redAccent.withValues(alpha: 0.3),
-                          inactiveThumbColor: Colors.green,
-                          inactiveTrackColor: Colors.green.withValues(alpha: 0.3),
-                          value: isBlocked,
-                          onChanged: (val) => _toggleToolPermission(toolName, val),
+                          activeColor: isPublic ? Colors.red : Colors.green,
+                          activeTrackColor: (isPublic ? Colors.red : Colors.green).withValues(alpha: 0.3),
+                          value: isPublic ? isBlocked : !isBlocked,
+                          onChanged: (val) => _toggleToolPermission(toolName, isPublic ? val : !val),
                         ),
                         subtitle: Text(
-                          isBlocked ? 'Blocked Access' : 'Access Allowed',
-                          style: TextStyle(color: isBlocked ? Colors.red : Colors.green, fontSize: 12),
+                          isPublic 
+                            ? (isBlocked ? 'Blocked Access' : 'Default Access')
+                            : (!isBlocked ? 'Granted Access' : 'No Access'),
+                          style: TextStyle(
+                            color: isPublic 
+                              ? (isBlocked ? Colors.red : Colors.green)
+                              : (!isBlocked ? Colors.green : Colors.grey),
+                            fontSize: 12
+                          ),
                         ),
                       ),
                     );
