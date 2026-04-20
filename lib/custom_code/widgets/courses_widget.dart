@@ -22,6 +22,10 @@ import 'package:share_plus/share_plus.dart';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import '/services/iap_service.dart';
+import '/services/coupon_service.dart';
+import '/services/google_pay_service.dart';
+import 'package:in_app_purchase/in_app_purchase.dart';
 
 final supabase = SupaFlow.client;
 
@@ -56,6 +60,11 @@ class _CoursesWidgetState extends State<CoursesWidget> {
   void initState() {
     super.initState();
     loadCourses();
+    _initializeIAP();
+  }
+
+  Future<void> _initializeIAP() async {
+    await IAPService().initialize();
   }
 
   void _navigateToCourseDetail(
@@ -98,6 +107,23 @@ class _CoursesWidgetState extends State<CoursesWidget> {
           courses = uniqueCourses;
           isLoading = false;
         });
+
+        // Extract all product IDs and fetch them
+        final androidIds = allCourses
+            .map((c) => c['product_id_android'] as String?)
+            .where((id) => id != null && id.isNotEmpty)
+            .cast<String>()
+            .toList();
+        final iosIds = allCourses
+            .map((c) => c['product_id_ios'] as String?)
+            .where((id) => id != null && id.isNotEmpty)
+            .cast<String>()
+            .toList();
+
+        final productIds = Platform.isAndroid ? androidIds : iosIds;
+        if (productIds.isNotEmpty) {
+          await IAPService().fetchProducts(productIds);
+        }
       }
     } catch (e) {
       if (!mounted) return;
@@ -655,7 +681,9 @@ class CourseDetailPage extends StatefulWidget {
   State<CourseDetailPage> createState() => _CourseDetailPageState();
 }
 
-class _CourseDetailPageState extends State<CourseDetailPage> {
+class _CourseDetailPageState extends State<CourseDetailPage> with WidgetsBindingObserver {
+  String? _lastTransactionId;
+  bool _isCheckingPayment = false;
   void safeSetState(VoidCallback fn) {
     if (mounted) setState(fn);
   }
@@ -677,11 +705,122 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _fetchLessons();
     _loadCourseProgress();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkPaidAccess();
     });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && _lastTransactionId != null) {
+      _verifyPaymentAutomated();
+    }
+  }
+
+  Future<void> _verifyPaymentAutomated() async {
+    if (_isCheckingPayment) return;
+    
+    setState(() {
+      _isCheckingPayment = true;
+    });
+
+    // Show a sleek "Verifying your payment..." loading state
+    _showVerificationOverlay();
+
+    // In a real scenario with a gateway, this would poll for 10-20 seconds
+    // Since this is direct PI, we check if the status changed (e.g. by a webhook or admin)
+    // For the demo/feel, we poll for 5 seconds
+    bool success = false;
+    for (int i = 0; i < 5; i++) {
+       await Future.delayed(const Duration(seconds: 2));
+       success = await GooglePayService().checkPaymentStatus(_lastTransactionId!);
+       if (success) break;
+    }
+
+    setState(() {
+      _isCheckingPayment = false;
+      _isCheckingPayment = false;
+    });
+
+    if (success) {
+      // SUCCESS! Automated redirect to course
+      _lastTransactionId = null;
+      if (mounted) {
+        Navigator.of(context).pop(); // Close overlay
+        _checkPaidAccess(); // Refresh access status
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Payment Confirmed! Enrollment Successful.'), backgroundColor: Colors.green),
+        );
+      }
+    } else {
+       // Still pending - allow manual verification or WhatsApp fallback
+       if (mounted) {
+         Navigator.of(context).pop(); // Close overlay
+         _showManualVerificationOption();
+       }
+    }
+  }
+
+  void _showVerificationOverlay() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF121212),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const CircularProgressIndicator(color: Colors.white),
+            const SizedBox(height: 24),
+            const Text(
+              'Verifying Payment...',
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Please do not close the app.',
+              style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 12),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showManualVerificationOption() {
+     showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF121212),
+        title: const Text('Payment Pending', style: TextStyle(color: Colors.white)),
+        content: const Text(
+          'Your payment is being processed. It will be activated automatically within a few minutes once confirmed by the bank.',
+          style: TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+               Navigator.pop(context);
+               _showWhatsAppPaymentSheet1(); // Re-open or offer WhatsApp
+            },
+            child: const Text('Enroll via WhatsApp'),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _loadCourseProgress() async {
@@ -845,314 +984,119 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
 
   void _showWhatsAppPaymentSheet1() {
     final userId = supabase.auth.currentUser?.id;
-
     final courseTitle = widget.courseData['course_title'] ?? 'Course';
+    
+    // Find matching IAP product if available
+    final productId = Platform.isAndroid 
+        ? widget.courseData['product_id_android'] 
+        : widget.courseData['product_id_ios'];
+    
+    ProductDetails? iapProduct;
+    for (var p in IAPService().products) {
+      if (p.id == productId) {
+        iapProduct = p;
+        break;
+      }
+    }
 
-    final courseId = widget.courseData['course_id'];
     final TextEditingController couponController = TextEditingController();
     String? appliedCoupon;
     bool isApplyingCoupon = false;
     bool isCouponValid = false;
     String couponMessage = '';
+    double discountValue = 0;
+    String discountType = 'amount';
 
-    // Function to validate coupon
     Future<Map<String, dynamic>> validateCoupon(String couponCode) async {
-      // if (couponCode.isEmpty) ;
-
       try {
-        // Check if coupon exists in database
+        final result = await CouponService.validatePromoCode(couponCode);
+        if (result != null) {
+          return {
+            'isValid': true,
+            'message': result['discount_type'] == 'percentage' 
+                ? 'Success! ${result['discount_amount']}% OFF' 
+                : 'Success! ₹${result['discount_amount']} OFF',
+            'discount_amount': result['discount_amount'],
+            'discount_type': result['discount_type']
+          };
+        }
+
+        // Fallback for sharing coupons
         final response = await supabase
             .from('user_coupons')
             .select('user_id, is_active')
             .eq('coupon_code', couponCode)
-            .single();
+            .maybeSingle();
 
-        final couponOwnerId = response['user_id'];
-        final isActive = response['is_active'] ?? true;
-
-        // Don't allow users to use their own coupon
-        if (couponOwnerId == userId) {
+        if (response != null) {
+          if (response['user_id'] == userId) {
+            return {'isValid': false, 'message': 'You cannot use your own code'};
+          }
+          if (!(response['is_active'] ?? true)) {
+            return {'isValid': false, 'message': 'Coupon is deactivated'};
+          }
           return {
-            'isValid': false,
-            'message': 'You cannot use your own coupon code'
+            'isValid': true, 
+            'message': 'Coupon applied! ₹50 OFF',
+            'discount_amount': 50,
+            'discount_type': 'amount'
           };
         }
-
-        if (!isActive) {
-          return {
-            'isValid': false,
-            'message': 'This coupon has been deactivated'
-          };
-        }
-
-        return {
-          'isValid': true,
-          'message': 'Coupon applied! ₹50 off',
-          'couponOwnerId': couponOwnerId
-        };
+        return {'isValid': false, 'message': 'Invalid coupon code'};
       } catch (e) {
-        debugPrint('Error validating coupon: $e');
         return {'isValid': false, 'message': 'Error validating coupon'};
       }
     }
 
-    // This function will generate a unique coupon code for the user
-    Future<String> generateCouponCode() async {
-      try {
-        // Check if user already has a coupon code
-        final existingCoupon = await supabase
-            .from('user_coupons')
-            .select('coupon_code')
-            .eq('user_id', userId as Object)
-            .maybeSingle();
 
-        if (existingCoupon != null) {
-          return existingCoupon['coupon_code'];
-        }
-
-        // Generate a new coupon code - user's initials + random alphanumeric
-        final userResponse = await supabase
-            .from('profile')
-            .select('name')
-            .eq('user_id', userId as Object)
-            .single();
-
-        String initials = 'USER';
-        if (userResponse['name'] != null) {
-          final fullName = userResponse['name'].toString();
-          initials = fullName
-              .split(' ')
-              .map((e) => e.isNotEmpty ? e[0] : '')
-              .join('')
-              .toUpperCase();
-        }
-
-        // Add random characters to make it unique
-        final random = Random();
-        final randomStr = List.generate(4, (_) => random.nextInt(10)).join('');
-        final couponCode = '$initials$randomStr';
-
-        // Store in database
-        await supabase.from('user_coupons').insert({
-          'user_id': userId,
-          'coupon_code': couponCode,
-          'is_active': true,
-          'created_at': DateTime.now().toIso8601String(),
-        });
-
-        return couponCode;
-      } catch (e) {
-        debugPrint('Error generating coupon: $e');
-        return 'ERROR';
-      }
-    }
-
-    // This builds the coupon application section
     Widget buildCouponSection(StateSetter safeSetState) {
       return Column(
         children: [
-          Divider(color: Colors.yellow.shade600, height: 32),
+          Divider(color: Colors.yellow.shade600.withValues(alpha: 0.3), height: 32),
           Row(
             children: [
               Expanded(
                 child: TextField(
                   controller: couponController,
-                  style: TextStyle(color: Colors.yellow.shade100),
+                  style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
-                    hintText: 'Have a coupon code?',
-                    hintStyle: TextStyle(
-                        color: Colors.yellow.shade100.withValues(alpha: 0.5)),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide(color: Colors.yellow.shade700),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide(color: Colors.yellow.shade500),
-                    ),
+                    hintText: 'Enter coupon code',
+                    hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.3)),
                     filled: true,
-                    fillColor: Colors.black45,
-                    contentPadding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    fillColor: Colors.white.withValues(alpha: 0.05),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                   ),
                 ),
               ),
               const SizedBox(width: 8),
               ElevatedButton(
-                onPressed: isApplyingCoupon
-                    ? null
-                    : () async {
-                        safeSetState(() {
-                          isApplyingCoupon = true;
-                        });
-
-                        final result =
-                            await validateCoupon(couponController.text);
-
-                        safeSetState(() {
-                          isCouponValid = result['isValid'] ?? false;
-                          couponMessage = result['message'] ?? 'Invalid coupon';
-                          if (isCouponValid) {
-                            appliedCoupon = couponController.text;
-                          }
-                          isApplyingCoupon = false;
-                        });
-                      },
+                onPressed: isApplyingCoupon ? null : () async {
+                  safeSetState(() => isApplyingCoupon = true);
+                  final res = await validateCoupon(couponController.text);
+                  safeSetState(() {
+                    isCouponValid = res['isValid'];
+                    couponMessage = res['message'];
+                    if (isCouponValid) {
+                      appliedCoupon = couponController.text;
+                      discountValue = (res['discount_amount'] as num).toDouble();
+                      discountType = res['discount_type'];
+                    }
+                    isApplyingCoupon = false;
+                  });
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.yellow.shade700,
-                  disabledBackgroundColor:
-                      Colors.yellow.shade900.withValues(alpha: 0.3),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
-                child: Text(
-                  isApplyingCoupon ? 'Applying...' : 'Apply',
-                  style: const TextStyle(
-                    color: Colors.black87,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                child: Text(isApplyingCoupon ? '...' : 'Apply', style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
               ),
             ],
           ),
           if (couponMessage.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(top: 8),
-              child: Text(
-                couponMessage,
-                style: TextStyle(
-                  color: isCouponValid
-                      ? Colors.green.shade300
-                      : Colors.red.shade300,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              child: Text(couponMessage, style: TextStyle(color: isCouponValid ? Colors.green : Colors.red, fontWeight: FontWeight.bold)),
             ),
-          if (isCouponValid)
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                decoration: BoxDecoration(
-                  // ignore: deprecated_member_use
-                  color: Colors.green.shade900.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.green.shade300),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.check_circle,
-                        color: Colors.green.shade300, size: 20),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Discount: â‚¹50 off',
-                      style: TextStyle(
-                        color: Colors.green.shade100,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-        ],
-      );
-    }
-
-    // This builds the share course with coupon section
-    Widget buildShareSection(String userCoupon) {
-      return Column(
-        children: [
-          Divider(color: Colors.yellow.shade600, height: 32),
-          Text(
-            'Share & Earn â‚¹300',
-            style: TextStyle(
-              color: Colors.yellow.shade200,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Share your coupon code with friends. They get â‚¹50 off and you earn â‚¹300 when they purchase!',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.yellow.shade100),
-          ),
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-            decoration: BoxDecoration(
-              color: Colors.black45,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.yellow.shade700),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    userCoupon,
-                    style: TextStyle(
-                      color: Colors.yellow.shade100,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1.5,
-                    ),
-                  ),
-                ),
-                IconButton(
-                  onPressed: () {
-                    Clipboard.setData(ClipboardData(text: userCoupon));
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Coupon copied to clipboard!'),
-                          backgroundColor: Colors.green,
-                        ),
-                      );
-                    }
-                  },
-                  icon: Icon(
-                    Icons.copy,
-                    color: Colors.yellow.shade500,
-                  ),
-                  tooltip: 'Copy to clipboard',
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton.icon(
-            onPressed: () {
-              final courseLink =
-                  'https://handskilllearn.web.app/elearningPage/${widget.courseData['course_id']}';
-              final message =
-                  'Check out this amazing course: ${widget.courseData['course_title'] ?? 'this workshop'}!\n\n'
-                  'The first lesson is FREE!\n\n'
-                  'Use my coupon code $userCoupon to get ₹50 off when you purchase the full course.\n\n'
-                  'name : $name\n\n'
-                  '$courseLink';
-
-              SharePlus.instance.share(ShareParams(text: message));
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.yellow,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            icon: const Icon(Icons.share, color: Colors.black),
-            label: const Text(
-              'Share Course with Friends',
-              style: TextStyle(
-                color: Colors.black,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
         ],
       );
     }
@@ -1160,188 +1104,116 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
     showModalBottomSheet(
       isScrollControlled: true,
       context: context,
-      backgroundColor: Colors.black87,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
+      backgroundColor: Colors.transparent,
       builder: (context) {
-        // This StatefulBuilder allows us to update state within the bottom sheet
         return StatefulBuilder(
           builder: (context, setState) {
-            // Get or generate user's coupon code for sharing
-            Future<String> userCouponFuture = userId != null
-                ? generateCouponCode()
-                : Future.value('Login to get a coupon');
-
             return Container(
               padding: const EdgeInsets.all(28),
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    const Color(0xFF1A1A1A),
-                    Colors.yellow.shade900.withValues(alpha: 0.2),
-                    const Color(0xFF0D0D0D),
-                  ],
-                ),
-                borderRadius:
-                    const BorderRadius.vertical(top: Radius.circular(32)),
-                border: Border.all(
-                    color: Colors.yellow.shade700.withValues(alpha: 0.5),
-                    width: 1),
+                color: const Color(0xFF121212),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
               ),
               child: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Container(
-                      width: 40,
-                      height: 4,
-                      margin: const EdgeInsets.only(bottom: 24),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.withValues(alpha: 0.3),
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                    Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        Container(
-                          width: 80,
-                          height: 80,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.yellow.shade700.withValues(alpha: 0.1),
-                          ),
-                        ).animate(onPlay: (controller) => controller.repeat())
-                            .scale(begin: const Offset(1.0, 1.0), end: const Offset(1.2, 1.2), duration: 2.seconds, curve: Curves.easeInOut)
-                            .fade(begin: 0.2, end: 0.0, duration: 2.seconds),
-                        Icon(
-                          Icons.workspace_premium_rounded,
-                          color: Colors.yellow.shade400,
-                          size: 56,
-                        ),
-                      ],
-                    ),
+                    Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2))),
                     const SizedBox(height: 24),
-                    const Text(
-                      'Unlock Full Access',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 28,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: -0.5,
+                    const Text('Unlock Premium Access', style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 32),
+                    _buildPremiumPerk(Icons.hd_rounded, 'Full HD Video Lessons'),
+                    _buildPremiumPerk(Icons.picture_as_pdf_rounded, 'Exclusive Study Materials'),
+                    _buildPremiumPerk(Icons.support_agent_rounded, 'Direct Mentor Support'),
+                    const SizedBox(height: 24),
+                    buildCouponSection(setState),
+                    const SizedBox(height: 32),
+                    
+                    if (iapProduct != null)
+                      SizedBox(
+                        width: double.infinity,
+                        height: 56,
+                        child: ElevatedButton(
+                          onPressed: () => IAPService().buyProduct(iapProduct!),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: Colors.black,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          ),
+                          child: Text('Pay ${iapProduct.price} Now', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                        ),
                       ),
-                    ),
+                    
                     const SizedBox(height: 12),
-                    Text(
-                      'Ready to master drawing? Get lifetime access to "$courseTitle" and take your skills to the next level.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.7),
-                        fontSize: 16,
-                        height: 1.4,
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-
-                    // Perks section
-                    _buildPremiumPerk(Icons.hd_rounded, 'All High-Quality Lessons'),
-                    _buildPremiumPerk(Icons.picture_as_pdf_rounded, 'Downloadable PDFs & Notes'),
-                    _buildPremiumPerk(Icons.support_agent_rounded, 'Personal Support via WhatsApp'),
-                    _buildPremiumPerk(Icons.card_membership_rounded, 'Completion Certificate'),
-
-                    const SizedBox(height: 32),
                     
-                    // Coupon application section
-                    buildCouponSection(safeSetState),
-
-                    const SizedBox(height: 40),
-                    
-                    Container(
+                    // DIRECT GOOGLE PAY BUTTON (UPI Intent for India)
+                    SizedBox(
                       width: double.infinity,
                       height: 56,
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF25D366), Color(0xFF128C7E)],
-                        ),
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF25D366).withValues(alpha: 0.3),
-                            blurRadius: 20,
-                            offset: const Offset(0, 10),
-                          ),
-                        ],
-                      ),
-                      child: ElevatedButton(
+                      child: ElevatedButton.icon(
                         onPressed: () async {
-                          await _openWhatsApp(userId, courseTitle, appliedCoupon);
-                          try {
-                            await supabase.from('user_course_access').upsert({
-                              'user_id': userId,
-                              'course_id': courseId,
-                              'has_paid': false,
-                              'applied_coupon': appliedCoupon,
-                            }, onConflict: 'user_id,course_id');
+                          final double price = (widget.courseData['course_price'] ?? 0).toDouble();
+                          double finalPrice = price;
+                          if (isCouponValid) {
+                            finalPrice = discountType == 'percentage' 
+                              ? price * (1 - (discountValue / 100)) 
+                              : max(0, price - discountValue);
+                          }
 
-                            if (!context.mounted) return;
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Access request sent! Opening WhatsApp...'),
-                                backgroundColor: Colors.green,
-                              ),
+                          try {
+                            final String? transactionId = await GooglePayService().startDirectPayment(
+                              upiId: 'merchant@okaxis', // REPLACE with your actual merchant UPI ID
+                              receiverName: 'HandSkill Academy',
+                              amount: finalPrice.toStringAsFixed(2),
+                              courseId: widget.courseData['course_id'],
+                              couponCode: appliedCoupon,
                             );
-                            if (context.mounted) Navigator.pop(context);
+                            
+                            if (transactionId != null) {
+                               safeSetState(() {
+                                 _lastTransactionId = transactionId;
+                               });
+                               // Close the sheet so the user is ready to be redirected
+                               if (context.mounted) Navigator.pop(context); 
+                            }
                           } catch (e) {
-                            debugPrint('Error: $e');
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
+                              );
+                            }
                           }
                         },
+                        icon: const Icon(Icons.account_balance_wallet_rounded, color: Colors.white),
+                        label: const Text('Direct Google Pay', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.transparent,
+                          backgroundColor: const Color(0xFF1A73E8),
                           foregroundColor: Colors.white,
-                          shadowColor: Colors.transparent,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.message_rounded),
-                            const SizedBox(width: 12),
-                            Text(
-                              isCouponValid
-                                  ? 'Claim Discount & Pay'
-                                  : 'Purchase via WhatsApp',
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                         ),
                       ),
                     ),
-                    
-                    const SizedBox(height: 24),
-                    
-                    // User's coupon code to share
-                    FutureBuilder<String>(
-                      future: userCouponFuture,
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
-                          return const Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)));
-                        }
-                        if (snapshot.hasData && userId != null) {
-                          return buildShareSection(snapshot.data!);
-                        }
-                        return const SizedBox.shrink();
-                      },
+
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 56,
+                      child: OutlinedButton.icon(
+                        onPressed: () async {
+                          await _openWhatsApp(userId, courseTitle, appliedCoupon);
+                          if (context.mounted) Navigator.pop(context);
+                        },
+                        icon: const Icon(Icons.message),
+                        label: const Text('Enroll via WhatsApp', style: TextStyle(fontWeight: FontWeight.bold)),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.green,
+                          side: const BorderSide(color: Colors.green),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        ),
+                      ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 24),
                   ],
                 ),
               ),

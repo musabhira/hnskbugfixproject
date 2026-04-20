@@ -68,16 +68,11 @@ class _TaskManagerScreenState extends State<ToolsPage> {
   bool _isGeneratingSchedule = false;
   String? _editingScheduleId;
 
-  final List<ScheduleItem> _schedules = [];
-
-  final List<String> _completedTasks = [];
-  final List<String> _completedChallenges = [];
-
   String _toolsSearchQuery = '';
   List<String> _favoritedTools = [];
   List<String> _restrictedTools = [];
-  List<String> _allowedTools = [];
-  Map<String, bool> _globalToolPublicity = {};
+  List<String> _allowedPrivateTools = [];
+  Map<String, Map<String, dynamic>> _globalToolConfigs = {};
   bool _isLoadingTools = false;
 
   @override
@@ -98,32 +93,33 @@ class _TaskManagerScreenState extends State<ToolsPage> {
       final userId = SupaFlow.client.auth.currentUser?.id;
       
       // Fetch global configs
-      final configRes = await SupaFlow.client.from('app_tool_configs').select('tool_name, is_public');
-      final publicityMap = {
-        for (var c in (configRes as List)) c['tool_name'] as String: c['is_public'] as bool
+      final configRes = await SupaFlow.client.from('app_tool_configs').select('*');
+      final configsMap = {
+        for (var c in (configRes as List)) c['tool_name'] as String: c as Map<String, dynamic>
       };
 
       List<String> restricted = [];
-      List<String> allowed = [];
+      List<String> allowedPrivate = [];
       if (userId != null) {
         final accessRes = await SupaFlow.client
             .from('user_tool_permissions')
-            .select('tool_name, is_blocked')
+            .select('tool_name, is_blocked, has_private_access')
             .eq('user_id', userId);
         
         for (var row in (accessRes as List)) {
           if (row['is_blocked'] == true) {
             restricted.add(row['tool_name'] as String);
-          } else {
-            allowed.add(row['tool_name'] as String);
+          }
+          if (row['has_private_access'] == true) {
+            allowedPrivate.add(row['tool_name'] as String);
           }
         }
       }
 
       setState(() {
-        _globalToolPublicity = publicityMap;
+        _globalToolConfigs = configsMap;
         _restrictedTools = restricted;
-        _allowedTools = allowed;
+        _allowedPrivateTools = allowedPrivate;
         _isLoadingTools = false;
       });
     } catch (e) {
@@ -919,22 +915,27 @@ class _TaskManagerScreenState extends State<ToolsPage> {
     final filteredTools = allTools.where((tool) {
       final title = tool['title'] as String;
       
-      // Check search match
+      // 1. Search filter
       final matchesSearch = title.toLowerCase().contains(_toolsSearchQuery.toLowerCase()) || 
           (tool['subtitle']?.toString().toLowerCase().contains(_toolsSearchQuery.toLowerCase()) ?? false);
       if (!matchesSearch) return false;
 
-      // Check visibility logic
-      final isPublic = _globalToolPublicity[title] ?? true;
-      final isBlocked = _restrictedTools.contains(title);
+      // 2. Platform Visibility Check
+      final config = _globalToolConfigs[title] ?? {'android_active': true, 'ios_active': true};
+      final androidActive = config['android_active'] ?? true;
+      final iosActive = config['ios_active'] ?? true;
+      
+      final platform = Theme.of(context).platform;
+      bool publicVisible = false;
+      if (platform == TargetPlatform.android && androidActive) publicVisible = true;
+      if (platform == TargetPlatform.iOS && iosActive) publicVisible = true;
 
-      if (isPublic) {
-        // Public tool: visible unless explicitly blocked
-        return !isBlocked;
-      } else {
-        // Private tool: ONLY visible if explicitly allowed
-        return _allowedTools.contains(title);
-      }
+      // 3. Permission Overrides
+      final isBlocked = _restrictedTools.contains(title);
+      final hasPrivateAccess = _allowedPrivateTools.contains(title);
+
+      // Rule: Visible if (Publicly Active on platform OR User has private access) AND NOT blocked
+      return (publicVisible || hasPrivateAccess) && !isBlocked;
     }).toList();
 
     return Scaffold(

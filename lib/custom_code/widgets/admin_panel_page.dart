@@ -456,12 +456,12 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
     }
   }
 
-  Future<void> _toggleGlobalToolVisibility(String toolName, bool isPublic) async {
+  Future<void> _toggleGlobalToolVisibility(String toolName, String column, bool value) async {
     try {
       await supabase.from('app_tool_configs').upsert({
         'tool_name': toolName,
-        'is_public': isPublic,
-      });
+        column: value,
+      }, onConflict: 'tool_name');
       _loadGlobalToolConfigs();
     } catch (e) {
       debugPrint('Error toggling global tool visibility: $e');
@@ -473,18 +473,26 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
       selectedUserIdForTools = userId;
       isLoadingPermissions = true;
       restrictedToolsForSelectedUser = [];
+      grantedPrivateAccessTools = [];
     });
 
     try {
       final res = await supabase
           .from('user_tool_permissions')
-          .select('tool_name')
-          .eq('user_id', userId)
-          .eq('is_blocked', true);
+          .select('tool_name, is_blocked, has_private_access')
+          .eq('user_id', userId);
 
       if (mounted) {
         setState(() {
-          restrictedToolsForSelectedUser = (res as List).map((e) => e['tool_name'] as String).toList();
+          final list = res as List;
+          restrictedToolsForSelectedUser = list
+              .where((e) => e['is_blocked'] == true)
+              .map((e) => e['tool_name'] as String)
+              .toList();
+          grantedPrivateAccessTools = list
+              .where((e) => e['has_private_access'] == true)
+              .map((e) => e['tool_name'] as String)
+              .toList();
           isLoadingPermissions = false;
         });
       }
@@ -494,24 +502,36 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
     }
   }
 
-  Future<void> _toggleToolPermission(String toolName, bool block) async {
+  List<String> grantedPrivateAccessTools = [];
+
+  Future<void> _toggleToolPermission(String toolName, {bool? block, bool? privateAccess}) async {
     if (selectedUserIdForTools == null) return;
 
+    final Map<String, dynamic> update = {
+      'user_id': selectedUserIdForTools,
+      'tool_name': toolName,
+    };
+    if (block != null) update['is_blocked'] = block;
+    if (privateAccess != null) update['has_private_access'] = privateAccess;
+
     try {
-      await supabase.from('user_tool_permissions').upsert({
-        'user_id': selectedUserIdForTools,
-        'tool_name': toolName,
-        'is_blocked': block,
-      }, onConflict: 'user_id, tool_name');
+      await supabase.from('user_tool_permissions').upsert(update, onConflict: 'user_id, tool_name');
 
       if (mounted) {
         setState(() {
-          if (block) {
-            if (!restrictedToolsForSelectedUser.contains(toolName)) {
-              restrictedToolsForSelectedUser.add(toolName);
+          if (block != null) {
+            if (block) {
+              if (!restrictedToolsForSelectedUser.contains(toolName)) restrictedToolsForSelectedUser.add(toolName);
+            } else {
+              restrictedToolsForSelectedUser.remove(toolName);
             }
-          } else {
-            restrictedToolsForSelectedUser.remove(toolName);
+          }
+          if (privateAccess != null) {
+            if (privateAccess) {
+              if (!grantedPrivateAccessTools.contains(toolName)) grantedPrivateAccessTools.add(toolName);
+            } else {
+              grantedPrivateAccessTools.remove(toolName);
+            }
           }
         });
       }
@@ -562,35 +582,59 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
             final toolName = allToolNames[index];
             final config = allToolConfigs.firstWhere(
               (c) => c['tool_name'] == toolName, 
-              orElse: () => {'tool_name': toolName, 'is_public': true}
+              orElse: () => {'tool_name': toolName, 'android_active': true, 'ios_active': true}
             );
-            final isPublic = config['is_public'] ?? true;
+            final androidActive = config['android_active'] ?? true;
+            final iosActive = config['ios_active'] ?? true;
 
             return Container(
-              margin: const EdgeInsets.only(bottom: 8),
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.symmetric(vertical: 8),
               decoration: BoxDecoration(
                 color: Colors.grey[900],
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: Colors.white10),
               ),
-              child: ListTile(
-                title: Text(toolName, style: const TextStyle(color: Colors.white)),
+              child: ExpansionTile(
+                iconColor: Colors.amber,
+                collapsedIconColor: Colors.white54,
+                title: Text(toolName, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                 subtitle: Text(
-                  isPublic ? 'Public: Everyone can see' : 'Private: Only allowed users can see',
-                  style: TextStyle(color: isPublic ? Colors.green : Colors.orange, fontSize: 12),
+                  'Android: ${androidActive ? "ON" : "OFF"} | iOS: ${iosActive ? "ON" : "OFF"}',
+                  style: TextStyle(color: (androidActive || iosActive) ? Colors.green : Colors.red, fontSize: 11),
                 ),
-                trailing: Switch(
-                  activeColor: Colors.green,
-                  activeTrackColor: Colors.green.withValues(alpha: 0.3),
-                  inactiveThumbColor: Colors.orange,
-                  inactiveTrackColor: Colors.orange.withValues(alpha: 0.3),
-                  value: isPublic,
-                  onChanged: (val) => _toggleGlobalToolVisibility(toolName, val),
-                ),
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: Column(
+                      children: [
+                        _buildGlobalToggleRow('Public Android', Icons.android, androidActive, (v) => _toggleGlobalToolVisibility(toolName, 'android_active', v)),
+                        const Divider(color: Colors.white10),
+                        _buildGlobalToggleRow('Public iOS', Icons.apple, iosActive, (v) => _toggleGlobalToolVisibility(toolName, 'ios_active', v)),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             );
           },
         );
+  }
+
+  Widget _buildGlobalToggleRow(String label, IconData icon, bool value, Function(bool) onChanged) {
+    return Row(
+      children: [
+        Icon(icon, size: 18, color: value ? Colors.blue : Colors.grey),
+        const SizedBox(width: 12),
+        Text(label, style: const TextStyle(color: Colors.white70, fontSize: 13)),
+        const Spacer(),
+        Switch(
+          activeColor: Colors.blue,
+          value: value,
+          onChanged: onChanged,
+        ),
+      ],
+    );
   }
 
   void _showUserSearchDialog() {
@@ -707,41 +751,74 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                   itemBuilder: (context, index) {
                     final toolName = allToolNames[index];
                     final isBlocked = restrictedToolsForSelectedUser.contains(toolName);
+                    final hasPrivate = grantedPrivateAccessTools.contains(toolName);
                     
                     final config = allToolConfigs.firstWhere(
                       (c) => c['tool_name'] == toolName, 
-                      orElse: () => {'tool_name': toolName, 'is_public': true}
+                      orElse: () => {'tool_name': toolName, 'android_active': true, 'ios_active': true}
                     );
-                    final isPublic = config['is_public'] ?? true;
+                    final androidActive = config['android_active'] ?? true;
+                    final iosActive = config['ios_active'] ?? true;
+                    final toolIsPublic = androidActive || iosActive;
                     
                     return Container(
                       margin: const EdgeInsets.only(bottom: 8),
                       decoration: BoxDecoration(
                         color: Colors.grey[900],
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(16),
                         border: Border.all(
                           color: isBlocked ? Colors.red.withValues(alpha: 0.3) : Colors.white10,
                         ),
                       ),
-                      child: ListTile(
-                        title: Text(toolName, style: const TextStyle(color: Colors.white)),
-                        trailing: Switch(
-                          activeColor: isPublic ? Colors.red : Colors.green,
-                          activeTrackColor: (isPublic ? Colors.red : Colors.green).withValues(alpha: 0.3),
-                          value: isPublic ? isBlocked : !isBlocked,
-                          onChanged: (val) => _toggleToolPermission(toolName, isPublic ? val : !val),
-                        ),
-                        subtitle: Text(
-                          isPublic 
-                            ? (isBlocked ? 'Blocked Access' : 'Default Access')
-                            : (!isBlocked ? 'Granted Access' : 'No Access'),
-                          style: TextStyle(
-                            color: isPublic 
-                              ? (isBlocked ? Colors.red : Colors.green)
-                              : (!isBlocked ? Colors.green : Colors.grey),
-                            fontSize: 12
+                      child: Column(
+                        children: [
+                          ListTile(
+                            title: Text(toolName, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                            subtitle: Text(
+                              toolIsPublic 
+                                ? (isBlocked ? 'ACCESS BLOCKED' : 'Public Access')
+                                : (hasPrivate ? 'PRIVATE ACCESS GRANTED' : 'Access Restricted'),
+                              style: TextStyle(
+                                color: (toolIsPublic && !isBlocked) || (!toolIsPublic && hasPrivate) 
+                                  ? Colors.green 
+                                  : Colors.red,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold
+                              ),
+                            ),
                           ),
-                        ),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 16, right: 16, bottom: 8),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                // Block Toggle (only useful if public)
+                                Row(
+                                  children: [
+                                    const Text('Block', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                                    Switch(
+                                      activeColor: Colors.red,
+                                      value: isBlocked,
+                                      onChanged: (val) => _toggleToolPermission(toolName, block: val),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(width: 20),
+                                // Private Access Toggle
+                                Row(
+                                  children: [
+                                    const Text('Private', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                                    Switch(
+                                      activeColor: Colors.blue,
+                                      value: hasPrivate,
+                                      onChanged: (val) => _toggleToolPermission(toolName, privateAccess: val),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                     );
                   },
