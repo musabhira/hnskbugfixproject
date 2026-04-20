@@ -54,7 +54,10 @@ jobs:
       - name: Install CocoaPods
         run: |
           gem install cocoapods
-          cd ios && pod install && cd ..
+          cd ios
+          pod repo update
+          pod install --repo-update
+          cd ..
 
       - name: Build and Sign IPA
         run: |
