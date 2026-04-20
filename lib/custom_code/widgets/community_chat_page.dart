@@ -30,7 +30,7 @@ class CommunityChatPage extends StatefulWidget {
   });
 
   @override
-  _CommunityChatPageState createState() => _CommunityChatPageState();
+  State<CommunityChatPage> createState() => _CommunityChatPageState();
 }
 
 class _CommunityChatPageState extends State<CommunityChatPage>
@@ -238,9 +238,11 @@ class _CommunityChatPageState extends State<CommunityChatPage>
       safeSetState(() {
         _isLoading = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error loading group data: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading group data: $e')),
+        );
+      }
     }
   }
 
@@ -263,13 +265,17 @@ class _CommunityChatPageState extends State<CommunityChatPage>
         _isMember = true;
       });
       await _loadData();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Successfully joined the group')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Successfully joined the group')),
+        );
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error joining group: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error joining group: $e')),
+        );
+      }
     }
   }
 
@@ -300,24 +306,7 @@ class _CommunityChatPageState extends State<CommunityChatPage>
     );
   }
 
-// Alternative without shimmer package - using AnimationController
-  Widget _buildShimmerEffectAlternative() {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Colors.grey[300]!,
-            Colors.grey[100]!,
-            Colors.grey[300]!,
-          ],
-          stops: const [0.1, 0.3, 0.4],
-          begin: const Alignment(-1.0, -0.3),
-          end: const Alignment(1.0, 0.3),
-          tileMode: TileMode.clamp,
-        ),
-      ),
-    );
-  }
+
 
   Widget _buildChatsList() {
     if (_isLoading) {
@@ -1136,7 +1125,7 @@ class CreateGroupDialog extends StatefulWidget {
   const CreateGroupDialog({super.key, required this.onGroupCreated});
 
   @override
-  _CreateGroupDialogState createState() => _CreateGroupDialogState();
+  State<CreateGroupDialog> createState() => _CreateGroupDialogState();
 }
 
 class _CreateGroupDialogState extends State<CreateGroupDialog>
@@ -1218,16 +1207,18 @@ class _CreateGroupDialogState extends State<CreateGroupDialog>
               ((1 - (compressedBytes.length / originalBytes.length)) * 100)
                   .round();
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'Image compressed: ${originalSize}KB → ${compressedSize}KB ($compressionRatio% reduction)',
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'Image compressed: ${originalSize}KB → ${compressedSize}KB ($compressionRatio% reduction)',
+                ),
+                backgroundColor: Colors.green,
+                behavior: SnackBarBehavior.floating,
+                duration: const Duration(seconds: 3),
               ),
-              backgroundColor: Colors.green,
-              behavior: SnackBarBehavior.floating,
-              duration: const Duration(seconds: 3),
-            ),
-          );
+            );
+          }
         } else {
           safeSetState(() {
             _isImageUploading = false;
@@ -1476,12 +1467,13 @@ class _CreateGroupDialogState extends State<CreateGroupDialog>
       await supabase.from('group_members').insert(membersToAdd);
 
       widget.onGroupCreated();
-      // ignore: use_build_context_synchronously
-      Navigator.of(context).pop();
+      if (mounted) {
+        Navigator.of(context).pop();
 
-      _showSuccessSnackBar(
-        'Group "${_nameController.text.trim()}" created with ${_selectedMembers.length + 1} members!',
-      );
+        _showSuccessSnackBar(
+          'Group "${_nameController.text.trim()}" created with ${_selectedMembers.length + 1} members!',
+        );
+      }
     } catch (e) {
       print('Error creating group: $e');
       _showErrorSnackBar('Error creating group: $e');

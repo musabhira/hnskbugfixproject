@@ -6,7 +6,7 @@ import '/backend/supabase/supabase.dart';
 // Imports other custom widgets
 // Imports custom actions
 import 'package:fluent_ui/fluent_ui.dart' hide Colors;
-import 'package:flutter/material.dart' as material show Colors, Icons, Theme;
+import 'package:flutter/material.dart' as material show Colors;
 
 class VerfiedSwitchPage extends StatefulWidget {
   const VerfiedSwitchPage({
@@ -27,14 +27,14 @@ class VerfiedSwitchPage extends StatefulWidget {
 }
 
 class _VerfiedSwitchPageState extends State<VerfiedSwitchPage> {
-  Color? _selectedColor;
-  String? _colorCode;
-  Color? _selectedColor1;
-  String? _colorCode1;
-  Color? _selectedColor2;
-  String? _colorCode2;
-  Color? _selectedColor3;
-  String? _colorCode3;
+  // Color? _selectedColor;
+  // String? _colorCode;
+  // Color? _selectedColor1;
+  // String? _colorCode1;
+  // Color? _selectedColor2;
+  // String? _colorCode2;
+  // Color? _selectedColor3;
+  // String? _colorCode3;
 
   String? selectedCountry;
   String? selectedState;
@@ -45,12 +45,12 @@ class _VerfiedSwitchPageState extends State<VerfiedSwitchPage> {
 
   bool _isLoading = false;
   int? selectedContainer;
-  String? _imageUrl;
+  // String? _imageUrl;
   bool _isVerified = false;
 
   // Premium features variables
   int? _selectedHomeDesign;
-  bool _hasPremiumFeatures = false;
+  // bool _hasPremiumFeatures = false;
 
   @override
   void initState() {
@@ -72,13 +72,13 @@ class _VerfiedSwitchPageState extends State<VerfiedSwitchPage> {
       if (premiumResponse != null && mounted) {
         setState(() {
           _selectedHomeDesign = premiumResponse['selected_home_design'] ?? 1;
-          _hasPremiumFeatures = true;
+          // _hasPremiumFeatures = true;
         });
       } else {
         // User doesn't have premium features, use default
         setState(() {
           _selectedHomeDesign = 1; // Default design
-          _hasPremiumFeatures = false;
+          // _hasPremiumFeatures = false;
         });
       }
     } catch (error) {
@@ -87,7 +87,7 @@ class _VerfiedSwitchPageState extends State<VerfiedSwitchPage> {
       if (mounted) {
         setState(() {
           _selectedHomeDesign = 1;
-          _hasPremiumFeatures = false;
+          // _hasPremiumFeatures = false;
         });
       }
     }
@@ -110,10 +110,10 @@ class _VerfiedSwitchPageState extends State<VerfiedSwitchPage> {
       if (profileResponse != null && mounted) {
         setState(() {
           _shopNameController.text = profileResponse['shop_name'] ?? '';
-          _colorCode = profileResponse['bg_color_code'] ?? '';
-          _colorCode1 = profileResponse['bg_text_color'] ?? '';
-          _colorCode2 = profileResponse['button_color_code'] ?? '';
-          _colorCode3 = profileResponse['button_text_color'] ?? '';
+          // _colorCode = profileResponse['bg_color_code'] ?? '';
+          // _colorCode1 = profileResponse['bg_text_color'] ?? '';
+          // _colorCode2 = profileResponse['button_color_code'] ?? '';
+          // _colorCode3 = profileResponse['button_text_color'] ?? '';
           _isVerified = profileResponse['verified']; // Get verification status
         });
       }

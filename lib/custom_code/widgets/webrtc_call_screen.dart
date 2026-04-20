@@ -7,7 +7,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import 'package:flutter_animate/flutter_animate.dart';
-import '../../flutter_flow/flutter_flow_theme.dart';
+// import '../../flutter_flow/flutter_flow_theme.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:ui' as ui;
 import 'package:pocket_mates_app/custom_code/widgets/message_screen.dart';
@@ -19,7 +19,7 @@ class WebRTCCallScreen extends StatefulWidget {
   const WebRTCCallScreen({super.key, required this.mode, this.targetUserId});
 
   @override
-  _WebRTCCallScreenState createState() => _WebRTCCallScreenState();
+  State<WebRTCCallScreen> createState() => _WebRTCCallScreenState();
 }
 
 class _WebRTCCallScreenState extends State<WebRTCCallScreen> {
@@ -386,7 +386,7 @@ class _WebRTCCallScreenState extends State<WebRTCCallScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = FlutterFlowTheme.of(context);
+    // final theme = FlutterFlowTheme.of(context);
 
     // Dynamic background for different states
     final backgroundGradient = isConnected

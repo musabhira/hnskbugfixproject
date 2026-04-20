@@ -45,23 +45,23 @@ class _VerfiedSearchProfileDetailPageState
   Map<String, dynamic>? _profileData;
   List<Map<String, dynamic>> _galleryItems = [];
   List<Map<String, dynamic>> _serviceItems = [];
-  List<Map<String, dynamic>> _commentItems = [];
+  // List<Map<String, dynamic>> _commentItems = [];
   bool _isLoading = true;
   final _supabase = SupaFlow.client;
   final ScrollController _scrollController = ScrollController();
   late TabController _tabController;
   int _followersCount = 0;
-  int _followingCount = 0;
+  // int _followingCount = 0;
   String _followersCountFormatted = '0';
   String _followingCountFormatted = '0';
   bool _isFollowing = false;
-  bool _isCurrentUser = false;
+  // bool _isCurrentUser = false;
   String? _currentUserId;
   List<Map<String, dynamic>> userThreads = [];
   bool isLoading = true;
   Map<String, dynamic>? hideData;
-  final List<Map<String, dynamic>> _comments = [];
-  String? _errorMessage;
+  // final List<Map<String, dynamic>> _comments = [];
+  // String? _errorMessage;
   bool _isBlocked = false;
   bool _isBlockedByOther = false;
   bool _checkingBlockStatus = true;
@@ -96,74 +96,7 @@ class _VerfiedSearchProfileDetailPageState
     await _fetchUserBanners();
   }
 
-  void _showWebsiteTemplatePicker() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: const Color(0xFF1A1A1A),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Select Business Website Template',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 20),
-            _buildTemplateOption('Template 1 - Minimalist', 'template_1'),
-            _buildTemplateOption('Template 2 - Business Dark', 'template_2'),
-            _buildTemplateOption('Template 3 - Portfolio', 'template_3'),
-            const SizedBox(height: 10),
-          ],
-        ),
-      ),
-    );
-  }
 
-  Widget _buildTemplateOption(String title, String templateId) {
-    bool isSelected = _profileData?['selected_website_template'] == templateId;
-    return ListTile(
-      onTap: () async {
-        await _supabase.from('profile').update({
-          'selected_website_template': templateId,
-        }).eq('user_id', _currentUserId!);
-
-        Navigator.pop(context);
-        _fetchProfileData();
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('$title selected successfully!')),
-        );
-      },
-      leading: Icon(
-        isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
-        color: isSelected ? Colors.yellow : Colors.white54,
-      ),
-      title: Text(
-        title,
-        style: const TextStyle(color: Colors.white),
-      ),
-      trailing:
-          isSelected ? const Icon(Icons.check, color: Colors.green) : null,
-    );
-  }
-
-  void _openBusinessWebsite() async {
-    final template = _profileData?['selected_website_template'] ?? 'template_1';
-    final url = Uri.parse(
-        'https://handskill-business.web.app/${_profileData?['id']}?template=$template');
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url);
-    }
-  }
 
   Future<void> _checkEventsTable() async {
     try {
@@ -238,77 +171,11 @@ class _VerfiedSearchProfileDetailPageState
   }
 
   void _checkIfCurrentUser() {
-    final currentUserId = _supabase.auth.currentUser?.id;
-    safeSetState(() {
-      _isCurrentUser = currentUserId == widget.userId;
-    });
+    // final currentUserId = _supabase.auth.currentUser?.id;
+    // _isCurrentUser = currentUserId == widget.userId;
   }
 
-  // Business Website Helper Methods
-  Widget _buildBusinessSiteButton() {
-    return Padding(
-      padding: const EdgeInsets.only(top: 10, bottom: 10),
-      child: Row(
-        children: [
-          Expanded(
-            child: ElevatedButton.icon(
-              onPressed: _isCurrentUser
-                  ? _showWebsiteTemplatePicker
-                  : _openBusinessWebsite,
-              icon: Icon(
-                _isCurrentUser ? Icons.settings_applications : Icons.language,
-                size: 18,
-                color: _isCurrentUser ? Colors.yellow : Colors.black87,
-              ),
-              label: Text(
-                _isCurrentUser ? 'Setup Business Site' : 'Visit Business Site',
-                style: TextStyle(
-                  color: _isCurrentUser ? Colors.yellow : Colors.black87,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
-                ),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor:
-                    _isCurrentUser ? Colors.black87 : Colors.yellow,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: BorderSide(
-                    color: Colors.yellow.withValues(alpha: 0.5),
-                    width: 1,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          if (_isCurrentUser &&
-              _profileData?['selected_website_template'] != null)
-            Padding(
-              padding: const EdgeInsets.only(left: 8.0),
-              child: IconButton(
-                style: IconButton.styleFrom(
-                  backgroundColor: Colors.yellow.withValues(alpha: 0.1),
-                ),
-                onPressed: () {
-                  final template = _profileData?['selected_website_template'];
-                  final url =
-                      'https://handskill-business.web.app/${_profileData?['id']}?template=$template';
-                  flutter.Clipboard.setData(flutter.ClipboardData(text: url));
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Website link copied!'),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                },
-                icon: const Icon(Icons.copy, color: Colors.yellow, size: 20),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
+
 
   String formatCount(int count) {
     if (count >= 1000000) {
@@ -404,7 +271,7 @@ class _VerfiedSearchProfileDetailPageState
 
       safeSetState(() {
         _followersCount = followersCountRaw;
-        _followingCount = followingCountRaw;
+        // _followingCount = followingCountRaw;
         _followersCountFormatted = formatCount(followersCountRaw);
         _followingCountFormatted = formatCount(followingCountRaw);
         debugPrint('Followers count: $_followersCountFormatted');
@@ -552,7 +419,7 @@ class _VerfiedSearchProfileDetailPageState
         _categories = categorySet.toList();
         _filteredGalleryItems = _galleryItems; // Initially show all
         _serviceItems = uniqueServiceItems.values.toList();
-        _commentItems = uniquecommentItems.values.toList();
+        // _commentItems = uniquecommentItems.values.toList();
         _isLoading = false;
       });
     } catch (e) {
@@ -631,6 +498,7 @@ class _VerfiedSearchProfileDetailPageState
       });
     } catch (e) {
       debugPrint('Error fetching profile data: $e');
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error updating follow status: $e')),
       );
@@ -663,6 +531,7 @@ class _VerfiedSearchProfileDetailPageState
   }
 
 // Share gallery item
+  /*
   void _shareGalleryItem(Map<String, dynamic> item) async {
     try {
       // This is a simple implementation - you might want to use a share package
@@ -677,11 +546,13 @@ class _VerfiedSearchProfileDetailPageState
         subject: title,
       );
     } catch (e) {
+      if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error sharing: $e')),
       );
     }
   }
+  */
 
   Future<void> fetchHideStatus() async {
     try {
@@ -860,6 +731,7 @@ class _VerfiedSearchProfileDetailPageState
   }
 
 // Alternative version with custom message parameter
+  /*
   void _sendWhatsAppMessageWithText(String messageText) async {
     try {
       String phoneNumber = _profileData?['phone_no'];
@@ -885,6 +757,7 @@ class _VerfiedSearchProfileDetailPageState
       _showErrorSnackBar('Error opening WhatsApp: ${e.toString()}');
     }
   }
+  */
 
 // Helper method to show error messages
   void _showErrorSnackBar(String message) {
@@ -1020,6 +893,7 @@ class _VerfiedSearchProfileDetailPageState
   void _shareToAnywhere() {
     String profileUrl =
         '${WhatsAppShareHelper.baseAppUrl}/verifiedProfile?userid=${widget.userId}';
+    // ignore: deprecated_member_use
     Share.share('Check out this profile: $profileUrl');
   }
 
@@ -1571,17 +1445,13 @@ class _VerfiedSearchProfileDetailPageState
                                                             ),
                                                           ),
                                                         ),
-
-                                                        Container(
-                                                          child:
-                                                              GestureDetector(
-                                                            child: _buildStatWidget(
-                                                                context,
-                                                                _followersCountFormatted
-                                                                    .toString(),
-                                                                'Followers',
-                                                                bgTextColor),
-                                                          ),
+                                                        GestureDetector(
+                                                          child: _buildStatWidget(
+                                                              context,
+                                                              _followersCountFormatted
+                                                                  .toString(),
+                                                              'Followers',
+                                                              bgTextColor),
                                                         ),
                                                         const SizedBox(
                                                             width: 5),
@@ -1657,9 +1527,7 @@ class _VerfiedSearchProfileDetailPageState
                                                                   ),
                                                                 const SizedBox(
                                                                     height: 10),
-                                                                _buildBusinessSiteButton(),
-                                                                const SizedBox(
-                                                                    height: 10),
+
                                                                 if (_profileData![
                                                                             'slug'] !=
                                                                         null &&
@@ -1930,10 +1798,10 @@ class _VerfiedSearchProfileDetailPageState
                                                   builder:
                                                       (context, constraints) {
                                                     // Dynamically calculate number of columns based on width
-                                                    int crossAxisCount =
-                                                        _calculateColumnCount(
-                                                            constraints
-                                                                .maxWidth);
+                                                    // int crossAxisCount =
+                                                    //     _calculateColumnCount(
+                                                    //         constraints
+                                                    //             .maxWidth);
 
                                                     return Column(
                                                       children: [
@@ -2667,6 +2535,7 @@ class _VerfiedSearchProfileDetailPageState
                                                             "Please login to view your profile",
                                                       );
                                                       if (isAuthenticated) {
+                                                        if (!context.mounted) return;
                                                         Navigator.push(
                                                           context,
                                                           PageRouteBuilder(
@@ -2772,6 +2641,7 @@ class _VerfiedSearchProfileDetailPageState
                                                           "Please login to view your Message",
                                                     );
                                                     if (isAuthenticated) {
+                                                      if (!context.mounted) return;
                                                       Navigator.push(
                                                         context,
                                                         MaterialPageRoute(
@@ -3224,7 +3094,7 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
   final ScrollController _scrollController = ScrollController();
 
   final List<ChatMessage> _messages = [];
-  final bool _isLoading = false;
+  // final bool _isLoading = false;
   bool _isTyping = false;
   bool _showSuggestedQuestions = true;
   Map<String, dynamic>? _profileData;
@@ -4595,7 +4465,7 @@ class PopularGalleryBanner extends StatefulWidget {
   });
 
   @override
-  _PopularGalleryBannerState createState() => _PopularGalleryBannerState();
+  State<PopularGalleryBanner> createState() => _PopularGalleryBannerState();
 }
 
 class _PopularGalleryBannerState extends State<PopularGalleryBanner> {
@@ -5002,14 +4872,14 @@ class PopularPageViewBanner extends StatefulWidget {
   });
 
   @override
-  _PopularPageViewBannerState createState() => _PopularPageViewBannerState();
+  State<PopularPageViewBanner> createState() => _PopularPageViewBannerState();
 }
 
 class _PopularPageViewBannerState extends State<PopularPageViewBanner>
     with TickerProviderStateMixin {
   List<Map<String, dynamic>> _userBanners = [];
   final PageController _pageController = PageController();
-  final SupabaseClient _supabase = Supabase.instance.client;
+  // final SupabaseClient _supabase = Supabase.instance.client;
   int _currentIndex = 0;
   Timer? _autoScrollTimer;
   bool _isUserScrolling = false;
@@ -5424,9 +5294,8 @@ class _PopularPageViewBannerState extends State<PopularPageViewBanner>
               children: [
                 // Background image with parallax effect
                 Positioned.fill(
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    transform: Matrix4.identity()..scale(isActive ? 1.05 : 1.0, isActive ? 1.05 : 1.0, 1.0),
+                  child: Transform(
+                    transform: Matrix4.diagonal3Values(isActive ? 1.05 : 1.0, isActive ? 1.05 : 1.0, 1.0),
                     child: Image.network(
                       item['image_url'],
                       fit: BoxFit.cover,

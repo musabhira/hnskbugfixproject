@@ -38,6 +38,7 @@ import 'package:pocket_mates_app/custom_code/widgets/nearby_users_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chess_game_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/teams/user_search_dialog.dart';
 import 'package:pocket_mates_app/custom_code/widgets/teams/teams_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/courses_widget.dart';
 
 import 'package:pocket_mates_app/flutter_flow/flutter_flow_theme.dart';
 import 'package:pocket_mates_app/auth/auth_helper.dart';
@@ -977,6 +978,9 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                                 _buildToolMessage(message.metadata!, isMe),
                               if (message.messageType == 'document')
                                 _buildDocumentMessage(message, isMe),
+                              if (message.messageType == 'course' &&
+                                  message.metadata != null)
+                                _buildCourseMessage(message.metadata!, isMe),
                                 Padding(
                                   padding: const EdgeInsets.only(
                                       left: 8, right: 8, top: 4, bottom: 4),
@@ -1807,6 +1811,110 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
       default:
         return Icons.apps;
     }
+  }
+
+  Widget _buildCourseMessage(Map<String, dynamic> metadata, bool isMe) {
+    final String title = metadata['course_title'] ?? 'Course';
+    final String? description = metadata['course_description'];
+    final String? thumbnail = metadata['course_thumbnail'];
+
+    final titleColor = isMe ? Colors.black87 : Colors.white;
+    final subColor =
+        isMe ? Colors.black54 : Colors.white.withValues(alpha: 0.6);
+    final bgColor = isMe
+        ? Colors.black.withValues(alpha: 0.05)
+        : Colors.black.withValues(alpha: 0.4);
+    final borderColor = isMe
+        ? Colors.black.withValues(alpha: 0.1)
+        : Colors.indigo.withValues(alpha: 0.3);
+
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => CourseDetailPage(
+              courseData: Map<String, dynamic>.from(metadata),
+            ),
+          ),
+        );
+      },
+      child: Container(
+        width: 250,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          color: bgColor,
+          border: Border.all(color: borderColor, width: 1),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (thumbnail != null)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: CachedNetworkImage(
+                  imageUrl: thumbnail,
+                  height: 120,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                ),
+              )
+            else
+              Container(
+                height: 120,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: Colors.indigo.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.school, color: Colors.indigo, size: 48),
+              ),
+            const SizedBox(height: 12),
+            Text(
+              title,
+              style: TextStyle(
+                color: titleColor,
+                fontWeight: FontWeight.bold,
+                fontSize: 15,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            if (description != null) ...[
+              const SizedBox(height: 4),
+              Text(
+                description,
+                style: TextStyle(
+                  color: subColor,
+                  fontSize: 12,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: isMe ? Colors.black87 : Colors.indigo,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              alignment: Alignment.center,
+              child: const Text(
+                'View Course',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   void _navigateToTool(String title) {

@@ -25,6 +25,9 @@ import 'package:flutter_animate/flutter_animate.dart';
 
 final supabase = SupaFlow.client;
 
+const String kDummyVideoUrl =
+    'https://assets.mixkit.co/videos/preview/mixkit-set-of-paints-and-brushes-on-a-table-4833-large.mp4';
+
 class CoursesWidget extends StatefulWidget {
   const CoursesWidget({
     super.key,
@@ -229,221 +232,324 @@ class _CoursesWidgetState extends State<CoursesWidget> {
     final courseId = course['course_id'];
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 20),
+      margin: const EdgeInsets.only(bottom: 24),
       child: InkWell(
         onTap: () => _navigateToCourseDetail(context, course),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(28),
         child: Container(
           decoration: BoxDecoration(
             color: theme.secondaryBackground,
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: theme.alternate.withValues(alpha: 0.1)),
+            borderRadius: BorderRadius.circular(28),
+            border: Border.all(color: theme.alternate.withValues(alpha: 0.15)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.1),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
+                color: Colors.black.withValues(alpha: 0.12),
+                blurRadius: 24,
+                offset: const Offset(0, 12),
               ),
             ],
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Top Section: Image & Header Info
-              Stack(
-                children: [
-                  Hero(
-                    tag: 'course-$courseId',
-                    child: ClipRRect(
-                      borderRadius:
-                          const BorderRadius.vertical(top: Radius.circular(24)),
-                      child: CachedNetworkImage(
-                        imageUrl: course['course_thumbnail'] ?? '',
-                        width: double.infinity,
-                        height: 220,
-                        fit: BoxFit.cover,
-                        errorWidget: (context, url, error) => Container(
-                          height: 220,
-                          color: theme.accent1.withValues(alpha: 0.2),
-                          child: Icon(Icons.broken_image_outlined,
-                              color: theme.accent1, size: 48),
-                        ),
-                      ),
-                    ),
-                  ),
-                  // Glassmorphic Overlays
-                  Positioned(
-                    top: 12,
-                    right: 12,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.4),
-                        shape: BoxShape.circle,
-                      ),
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-                        child: FavoriteButton(
-                            courseId: courseId?.toString() ?? ''),
-                      ),
-                    ),
-                  ),
-                  if (course['course_language'] != null)
-                    Positioned(
-                      bottom: 12,
-                      left: 12,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 4),
-                            color: Colors.black.withValues(alpha: 0.4),
-                            child: Row(
-                              children: [
-                                Icon(Icons.language,
-                                    color: theme.primary, size: 14),
-                                const SizedBox(width: 6),
-                                Text(
-                                  course['course_language'].toString(),
-                                  style: theme.bodySmall.override(
-                                    fontFamily: theme.bodySmallFamily,
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-
-              // Content Section
-              Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(28),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Top Section: Image & Header Info
+                Stack(
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            course['course_title'] ??
-                                'Full Drawing Masterclass',
-                            style: theme.titleLarge.override(
-                              fontFamily: theme.titleLargeFamily,
-                              fontWeight: FontWeight.bold,
+                    Hero(
+                      tag: 'course-$courseId',
+                      child: Stack(
+                        children: [
+                          CachedNetworkImage(
+                            imageUrl: course['course_thumbnail'] ?? '',
+                            width: double.infinity,
+                            height: 240,
+                            fit: BoxFit.cover,
+                            errorWidget: (context, url, error) => Container(
+                              height: 240,
+                              color: theme.accent1.withValues(alpha: 0.2),
+                              child: Icon(Icons.broken_image_outlined,
+                                  color: theme.accent1, size: 48),
                             ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        Container(
+                          Container(
+                            height: 240,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  Colors.transparent,
+                                  Colors.black.withValues(alpha: 0.4),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Premium Tag
+                    if (course['course_price'] != null &&
+                        (course['course_price'] as String) != '0')
+                      Positioned(
+                        top: 16,
+                        left: 16,
+                        child: Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 4),
+                              horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
-                            color: theme.primary.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(8),
+                            color: theme.primary,
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: theme.primary.withValues(alpha: 0.4),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
                           ),
                           child: Row(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.star_rounded,
-                                  color: theme.primary, size: 16),
+                              const Icon(Icons.workspace_premium,
+                                  color: Colors.black, size: 14),
                               const SizedBox(width: 4),
                               Text(
-                                '4.9',
+                                'PREMIUM',
                                 style: theme.bodySmall.override(
                                   fontFamily: theme.bodySmallFamily,
-                                  color: theme.primary,
-                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 10,
                                 ),
                               ),
                             ],
                           ),
                         ),
-                      ],
+                      ).animate().shimmer(duration: 2.seconds),
+                    // Glassmorphic Overlays
+                    Positioned(
+                      top: 16,
+                      right: 16,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                          child: Container(
+                            color: Colors.black.withValues(alpha: 0.3),
+                            child: FavoriteButton(
+                                courseId: courseId?.toString() ?? ''),
+                          ),
+                        ),
+                      ),
                     ),
-                    const SizedBox(height: 12),
-                    Text(
-                      course['course_description'] ??
-                          'Master the art of sketching with this comprehensive guide.',
-                      style: theme.labelMedium,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 20),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Investment',
-                              style: theme.labelSmall,
+                    if (course['course_language'] != null)
+                      Positioned(
+                        bottom: 16,
+                        left: 16,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: BackdropFilter(
+                            filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 6),
+                              color: Colors.black.withValues(alpha: 0.4),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.language_rounded,
+                                      color: theme.primary, size: 16),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    course['course_language'].toString(),
+                                    style: theme.bodySmall.override(
+                                      fontFamily: theme.bodySmallFamily,
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                            const SizedBox(height: 4),
-                            Row(
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+
+                // Content Section
+                Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'â‚¹${course['course_price'] ?? '0'}',
+                                  'HANDSKILL ACADEMY',
+                                  style: theme.bodySmall.override(
+                                    fontFamily: theme.bodySmallFamily,
+                                    color: theme.primary,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 1.2,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  course['course_title'] ??
+                                      'Full Drawing Masterclass',
                                   style: theme.titleLarge.override(
                                     fontFamily: theme.titleLargeFamily,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 22,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: theme.primary.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(Icons.star_rounded,
+                                    color: theme.primary, size: 18),
+                                const SizedBox(width: 4),
+                                Text(
+                                  '4.9',
+                                  style: theme.bodyMedium.override(
+                                    fontFamily: theme.bodyMediumFamily,
                                     color: theme.primary,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                                if (course['course_retail_price'] != null) ...[
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    'â‚¹${course['course_retail_price']}',
-                                    style: theme.labelSmall.override(
-                                      fontFamily: theme.labelSmallFamily,
-                                      decoration: TextDecoration.lineThrough,
-                                    ),
-                                  ),
-                                ],
                               ],
                             ),
-                          ],
-                        ),
-                        ElevatedButton.icon(
-                          onPressed: () {
-                            if (mounted) {
-                              _navigateToCourseDetail(context, course);
-                            }
-                          },
-                          icon: const Icon(Icons.play_circle_filled, size: 20),
-                          label: const Text('Start Now'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: theme.primary,
-                            foregroundColor: Colors.black,
-                            elevation: 0,
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 20, vertical: 12),
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16)),
                           ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        course['course_description'] ??
+                            'Master the art of sketching with this comprehensive guide.',
+                        style: theme.labelLarge.override(
+                          fontFamily: theme.labelLargeFamily,
+                          color: theme.secondaryText,
+                          lineHeight: 1.5,
                         ),
-                      ],
-                    ),
-                  ],
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 24),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Price',
+                                style: theme.labelSmall,
+                              ),
+                              const SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  Text(
+                                    'â‚¹${course['course_price'] ?? '0'}',
+                                    style: theme.headlineSmall.override(
+                                      fontFamily: theme.headlineSmallFamily,
+                                      color: theme.primary,
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
+                                  if (course['course_retail_price'] != null) ...[
+                                    const SizedBox(width: 12),
+                                    Text(
+                                      'â‚¹${course['course_retail_price']}',
+                                      style: theme.labelMedium.override(
+                                        fontFamily: theme.labelMediumFamily,
+                                        decoration: TextDecoration.lineThrough,
+                                        color: theme.secondaryText
+                                            .withValues(alpha: 0.5),
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ],
+                          ),
+                          Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  theme.primary,
+                                  theme.primary.withValues(alpha: 0.8),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: theme.primary.withValues(alpha: 0.3),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 6),
+                                ),
+                              ],
+                            ),
+                            child: ElevatedButton(
+                              onPressed: () =>
+                                  _navigateToCourseDetail(context, course),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.transparent,
+                                foregroundColor: Colors.black,
+                                shadowColor: Colors.transparent,
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 24, vertical: 14),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16)),
+                              ),
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    'Enroll Now',
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16),
+                                  ),
+                                  SizedBox(width: 8),
+                                  Icon(Icons.arrow_forward_rounded,
+                                      size: 18),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
-    )
-        .animate()
-        .fadeIn(duration: 400.ms, delay: (index * 100).ms)
-        .slideY(begin: 0.1, end: 0);
+    ).animate()
+     .fadeIn(duration: 400.ms, delay: (index * 100).ms)
+     .slideY(begin: 0.1, end: 0);
   }
 }
 
@@ -546,7 +652,7 @@ class CourseDetailPage extends StatefulWidget {
   const CourseDetailPage({super.key, required this.courseData});
 
   @override
-  _CourseDetailPageState createState() => _CourseDetailPageState();
+  State<CourseDetailPage> createState() => _CourseDetailPageState();
 }
 
 class _CourseDetailPageState extends State<CourseDetailPage> {
@@ -664,7 +770,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
 
     safeSetState(() {
       currentLessonIndex = index;
-      currentVideoUrl = lesson['video_url'] ?? '';
+      currentVideoUrl = lesson['video_url'] ?? kDummyVideoUrl;
     });
 
     _loadLessonResources(lesson['id'].toString());
@@ -1021,15 +1127,15 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
           ElevatedButton.icon(
             onPressed: () {
               final courseLink =
-                  '${WhatsAppShareHelper.baseAppUrl}/elearningPage/${widget.courseData['course_id']}';
+                  'https://handskilllearn.web.app/elearningPage/${widget.courseData['course_id']}';
               final message =
-                  'Check out this amazing course: ${widget.courseData['title']}!\n\n'
+                  'Check out this amazing course: ${widget.courseData['course_title'] ?? 'this workshop'}!\n\n'
                   'The first lesson is FREE!\n\n'
                   'Use my coupon code $userCoupon to get ₹50 off when you purchase the full course.\n\n'
                   'name : $name\n\n'
                   '$courseLink';
 
-              Share.share(message);
+              SharePlus.instance.share(ShareParams(text: message));
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.yellow,
@@ -1068,177 +1174,174 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                 : Future.value('Login to get a coupon');
 
             return Container(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(28),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    Colors.black87,
-                    Colors.yellow.shade900.withValues(alpha: 0.7),
-                    Colors.black87,
+                    const Color(0xFF1A1A1A),
+                    Colors.yellow.shade900.withValues(alpha: 0.2),
+                    const Color(0xFF0D0D0D),
                   ],
                 ),
                 borderRadius:
-                    const BorderRadius.vertical(top: Radius.circular(20)),
-                border: Border.all(color: Colors.yellow.shade700, width: 1.5),
+                    const BorderRadius.vertical(top: Radius.circular(32)),
+                border: Border.all(
+                    color: Colors.yellow.shade700.withValues(alpha: 0.5),
+                    width: 1),
               ),
               child: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      Icons.lock,
-                      color: Colors.yellow.shade200,
-                      size: 48,
+                    Container(
+                      width: 40,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 24),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.withValues(alpha: 0.3),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
                     ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Premium Content',
+                    Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.yellow.shade700.withValues(alpha: 0.1),
+                          ),
+                        ).animate(onPlay: (controller) => controller.repeat())
+                            .scale(begin: const Offset(1.0, 1.0), end: const Offset(1.2, 1.2), duration: 2.seconds, curve: Curves.easeInOut)
+                            .fade(begin: 0.2, end: 0.0, duration: 2.seconds),
+                        Icon(
+                          Icons.workspace_premium_rounded,
+                          color: Colors.yellow.shade400,
+                          size: 56,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    const Text(
+                      'Unlock Full Access',
+                      textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: Colors.yellow.shade200,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        fontSize: 28,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -0.5,
                       ),
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      'To access all lessons in "$courseTitle", you need to purchase this course.',
+                      'Ready to master drawing? Get lifetime access to "$courseTitle" and take your skills to the next level.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: Colors.yellow.shade100,
+                        color: Colors.white.withValues(alpha: 0.7),
                         fontSize: 16,
+                        height: 1.4,
                       ),
                     ),
+                    const SizedBox(height: 32),
 
+                    // Perks section
+                    _buildPremiumPerk(Icons.hd_rounded, 'All High-Quality Lessons'),
+                    _buildPremiumPerk(Icons.picture_as_pdf_rounded, 'Downloadable PDFs & Notes'),
+                    _buildPremiumPerk(Icons.support_agent_rounded, 'Personal Support via WhatsApp'),
+                    _buildPremiumPerk(Icons.card_membership_rounded, 'Completion Certificate'),
+
+                    const SizedBox(height: 32),
+                    
                     // Coupon application section
                     buildCouponSection(safeSetState),
 
-                    const SizedBox(height: 16),
-                    Text(
-                      'Steps:',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.yellow.shade100,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '1. Click the button below to send your request',
-                            style: TextStyle(color: Colors.yellow.shade100),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            '2. Chat with us on WhatsApp to discuss payment',
-                            style: TextStyle(color: Colors.yellow.shade100),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            '3. After payment, admin will grant you access',
-                            style: TextStyle(color: Colors.yellow.shade100),
+                    const SizedBox(height: 40),
+                    
+                    Container(
+                      width: double.infinity,
+                      height: 56,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF25D366), Color(0xFF128C7E)],
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF25D366).withValues(alpha: 0.3),
+                            blurRadius: 20,
+                            offset: const Offset(0, 10),
                           ),
                         ],
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Your User ID: ${userId ?? "Not logged in"}',
-                      style: TextStyle(
-                        color: Colors.yellow.shade100,
-                        fontSize: 12,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    ElevatedButton.icon(
-                      onPressed: () async {
-                        // If coupon is applied, we pass this information to WhatsApp
-                        await _openWhatsApp(userId, courseTitle, appliedCoupon);
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          await _openWhatsApp(userId, courseTitle, appliedCoupon);
+                          try {
+                            await supabase.from('user_course_access').upsert({
+                              'user_id': userId,
+                              'course_id': courseId,
+                              'has_paid': false,
+                              'applied_coupon': appliedCoupon,
+                            }, onConflict: 'user_id,course_id');
 
-                        try {
-                          // Insert record into user_course_access table
-                          await supabase.from('user_course_access').insert({
-                            'user_id': userId,
-                            'course_id': courseId,
-                            'has_paid': false,
-                            'applied_coupon':
-                                appliedCoupon, // Store which coupon was used
-                          });
-
-                          // Show success message
-                          if (!mounted) return;
-                          if (mounted) {
+                            if (!context.mounted) return;
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content: Text(
-                                    'Access request submitted successfully'),
+                                content: Text('Access request sent! Opening WhatsApp...'),
                                 backgroundColor: Colors.green,
                               ),
                             );
-
-                            // Close dialog
-                            if (Navigator.canPop(context)) {
-                              WidgetsBinding.instance.addPostFrameCallback((_) {
-                                Navigator.pop(context);
-                              });
-                            }
+                            if (context.mounted) Navigator.pop(context);
+                          } catch (e) {
+                            debugPrint('Error: $e');
                           }
-                        } catch (e) {
-                          // Show error message
-                          debugPrint('Error submitting request: $e');
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            const Color(0xFF25D366), // WhatsApp green
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 24, vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          foregroundColor: Colors.white,
+                          shadowColor: Colors.transparent,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
                         ),
-                      ),
-                      icon: const Icon(Icons.message, color: Colors.white),
-                      label: Text(
-                        isCouponValid
-                            ? 'Request Access & Pay via WhatsApp (₹50 off)'
-                            : 'Request Access & Pay via WhatsApp',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.message_rounded),
+                            const SizedBox(width: 12),
+                            Text(
+                              isCouponValid
+                                  ? 'Claim Discount & Pay'
+                                  : 'Purchase via WhatsApp',
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
-
-                    // User's coupon code to share with others
+                    
+                    const SizedBox(height: 24),
+                    
+                    // User's coupon code to share
                     FutureBuilder<String>(
                       future: userCouponFuture,
                       builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 20),
-                            child: CircularProgressIndicator(
-                              color: Colors.yellow.shade200,
-                            ),
-                          );
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return const Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)));
                         }
-
                         if (snapshot.hasData && userId != null) {
                           return buildShareSection(snapshot.data!);
                         }
-
                         return const SizedBox.shrink();
                       },
                     ),
-
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 20),
                   ],
                 ),
               ),
@@ -1340,6 +1443,38 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
       rethrow;
     }
   }
+
+  Widget _buildPremiumPerk(IconData icon, String title) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.yellow.shade700.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: Colors.yellow.shade400, size: 20),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Text(
+              title,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          Icon(Icons.check_circle_rounded,
+              color: Colors.green.shade400, size: 18),
+        ],
+      ),
+    );
+  }
+
 
 // Add a function to add a share button to the course page
   Widget _buildCouponCodeSection() {
@@ -1566,26 +1701,65 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
     }
 
     return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: lessonMaterials.length,
       itemBuilder: (context, index) {
         final material = lessonMaterials[index];
-        return Card(
-          color: Colors.white.withValues(alpha: 0.05),
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1E1E1E),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.2),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
           child: ListTile(
-            leading: const Icon(Icons.picture_as_pdf, color: Colors.redAccent),
-            title: Text(material['title'] ?? 'Material',
-                style: const TextStyle(color: Colors.white)),
-            subtitle: Text(material['description'] ?? '',
-                style: TextStyle(color: Colors.white.withValues(alpha: 0.6))),
-            trailing: IconButton(
-              icon: const Icon(Icons.download, color: Colors.yellow),
-              onPressed: () => launchUrl(Uri.parse(material['pdf_url'] ?? ''),
-                  mode: LaunchMode.externalApplication),
+            contentPadding: const EdgeInsets.all(12),
+            leading: Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.red.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(Icons.picture_as_pdf_rounded,
+                  color: Colors.redAccent, size: 24),
+            ),
+            title: Text(
+              material['title'] ?? 'Downloadable PDF',
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 15,
+              ),
+            ),
+            subtitle: Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                material['description'] ?? 'Course material for this lesson',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.5),
+                  fontSize: 13,
+                ),
+              ),
+            ),
+            trailing: Container(
+              decoration: BoxDecoration(
+                color: Colors.yellow.shade700,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: IconButton(
+                icon: const Icon(Icons.download_rounded, color: Colors.black, size: 20),
+                onPressed: () => launchUrl(Uri.parse(material['pdf_url'] ?? ''),
+                    mode: LaunchMode.externalApplication),
+              ),
             ),
           ),
         );
@@ -1616,30 +1790,51 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
     }
 
     return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: lessonNotes.length,
       itemBuilder: (context, index) {
         final note = lessonNotes[index];
-        return Card(
-          color: Colors.white.withValues(alpha: 0.05),
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1E1E1E),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+          ),
           child: Theme(
             data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
             child: ExpansionTile(
-              leading: const Icon(Icons.notes, color: Colors.yellow),
-              title: Text(note['title'] ?? 'Note',
-                  style: const TextStyle(color: Colors.white)),
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.yellow.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.note_alt_rounded, color: Colors.yellow, size: 20),
+              ),
+              title: Text(
+                note['title'] ?? 'Lesson Note',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
+                ),
+              ),
               iconColor: Colors.yellow,
-              collapsedIconColor: Colors.yellow,
+              collapsedIconColor: Colors.yellow.withValues(alpha: 0.5),
               children: [
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                   child: Text(
                     note['content'] ?? '',
-                    style: const TextStyle(color: Colors.white70, height: 1.5),
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.7),
+                      height: 1.6,
+                      fontSize: 14,
+                    ),
                   ),
                 ),
               ],
@@ -2035,7 +2230,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                                                   .externalApplication,
                                             );
                                           } catch (e2) {
-                                            if (mounted) {
+                                            if (context.mounted) {
                                               ScaffoldMessenger.of(context)
                                                   .showSnackBar(
                                                 const SnackBar(
@@ -2093,7 +2288,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                                           customMessage:
                                               "Please login to send message",
                                         );
-                                        if (isAuthenticated) {
+                                        if (isAuthenticated && context.mounted) {
                                           Navigator.of(context).push(
                                             MaterialPageRoute(
                                               builder: (context) =>
@@ -2181,13 +2376,57 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                               activeTab = index;
                             });
                           },
-                          indicatorColor: Colors.yellow.shade700,
+                          isScrollable: false,
+                          indicatorSize: TabBarIndicatorSize.label,
+                          indicator: UnderlineTabIndicator(
+                            borderSide:
+                                BorderSide(width: 4, color: Colors.yellow.shade700),
+                            borderRadius: BorderRadius.circular(2),
+                            insets: const EdgeInsets.symmetric(horizontal: 16.0),
+                          ),
                           labelColor: Colors.yellow.shade700,
-                          unselectedLabelColor: Colors.grey,
+                          unselectedLabelColor: Colors.white.withValues(alpha: 0.5),
+                          labelStyle: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.5,
+                          ),
+                          unselectedLabelStyle: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          dividerColor: Colors.transparent,
                           tabs: const [
-                            Tab(text: 'Lessons'),
-                            Tab(text: 'PDFs'),
-                            Tab(text: 'Notes'),
+                            Tab(
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.video_library_rounded, size: 16),
+                                  SizedBox(width: 8),
+                                  Text('Lessons'),
+                                ],
+                              ),
+                            ),
+                            Tab(
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.description_rounded, size: 16),
+                                  SizedBox(width: 8),
+                                  Text('PDFs'),
+                                ],
+                              ),
+                            ),
+                            Tab(
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.edit_note_rounded, size: 16),
+                                  SizedBox(width: 8),
+                                  Text('Notes'),
+                                ],
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -2403,7 +2642,7 @@ class _CouponCodeWidgetState extends State<CouponCodeWidget> {
         'name : $name\n\n'
         '$courseLink';
 
-    Share.share(message);
+    SharePlus.instance.share(ShareParams(text: message));
   }
 
   @override
@@ -2879,7 +3118,9 @@ class WhatsAppShareHelper {
 
       await _launchWhatsApp(context, whatsappUrl);
     } catch (e) {
-      _showError(context, 'Error sharing to WhatsApp: $e');
+      if (context.mounted) {
+        _showError(context, 'Error sharing to WhatsApp: $e');
+      }
     }
   }
 
@@ -2908,7 +3149,9 @@ class WhatsAppShareHelper {
 
       await _launchWhatsApp(context, whatsappUrl);
     } catch (e) {
-      _showError(context, 'Error sharing to WhatsApp: $e');
+      if (context.mounted) {
+        _showError(context, 'Error sharing to WhatsApp: $e');
+      }
     }
   }
 
@@ -2924,7 +3167,9 @@ class WhatsAppShareHelper {
 
       await _launchWhatsApp(context, whatsappUrl);
     } catch (e) {
-      _showError(context, 'Error sharing link to WhatsApp: $e');
+      if (context.mounted) {
+        _showError(context, 'Error sharing link to WhatsApp: $e');
+      }
     }
   }
 
@@ -2961,7 +3206,7 @@ class WhatsAppShareHelper {
       }
     }
 
-    if (!launched) {
+    if (!launched && context.mounted) {
       _showError(context, 'Error launching WhatsApp');
     }
   }
@@ -3062,7 +3307,7 @@ class WhatsAppShareHelper {
         final uri = Uri.parse(whatsappUrl);
         if (await canLaunchUrl(uri)) {
           await launchUrl(uri, mode: LaunchMode.platformDefault);
-        } else {
+        } else if (context.mounted) {
           _showError(context, 'Could not open WhatsApp Web');
         }
       } else {
@@ -3070,7 +3315,9 @@ class WhatsAppShareHelper {
         await _launchWhatsAppMobile(context, whatsappUrl);
       }
     } catch (e) {
-      _showError(context, 'Could not launch WhatsApp: $e');
+      if (context.mounted) {
+        _showError(context, 'Could not launch WhatsApp: $e');
+      }
     }
   }
 
@@ -3120,7 +3367,9 @@ class WhatsAppShareHelper {
     }
 
     // If all methods fail, show installation dialog
-    _showWhatsAppNotInstalledDialog(context);
+    if (context.mounted) {
+      _showWhatsAppNotInstalledDialog(context);
+    }
   }
 
   static Future<bool> _tryLaunchUrl(String url) async {

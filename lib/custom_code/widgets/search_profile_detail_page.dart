@@ -396,9 +396,11 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
       });
     } catch (e) {
       print('Error fetching profile data: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error updating follow status: $e')),
-      );
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error updating follow status: $e')),
+        );
+      }
     }
   }
 
@@ -640,10 +642,11 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                 item['like_count'] =
                     math.max<int>(0, ((item['like_count'] ?? 0) as int) - 1);
 
-                if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Removed from likes')),
-                );
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Removed from likes')),
+                  );
+                }
               }
               // If not liked, add a like
               else {
@@ -680,16 +683,18 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                 item['like_created_at'] = response['created_at'];
                 item['like_count'] = (item['like_count'] ?? 0) + 1;
 
-                if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Added to likes')),
-                );
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Added to likes')),
+                  );
+                }
               }
             } catch (e) {
-              if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Error toggling like: $e')),
-              );
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Error toggling like: $e')),
+                );
+              }
             }
           }
 
@@ -700,11 +705,12 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
             try {
               final userId = _supabase.auth.currentUser?.id;
               if (userId == null) {
-                if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                      content: Text('You need to be logged in to comment')),
-                );
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content: Text('You need to be logged in to comment')),
+                  );
+                }
                 return;
               }
 
@@ -718,10 +724,11 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
 
               final profileId = profileResponse['id'];
               if (profileId == null) {
-                if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Profile not found')),
-                );
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Profile not found')),
+                  );
+                }
                 return;
               }
 
@@ -744,15 +751,17 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
               // Re-fetch all comments to update the list
               await fetchComments(setModalState);
 
-              if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Comment added successfully')),
-              );
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Comment added successfully')),
+                );
+              }
             } catch (e) {
-              if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Error adding comment: $e')),
-              );
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Error adding comment: $e')),
+                );
+              }
               debugPrint(e.toString());
             }
           }
@@ -1486,14 +1495,16 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
       final description = item['gallery_description'] ?? '';
 
       // You would implement actual sharing functionality here with your preferred share plugin
-      await Share.share(
-        '$title\n\n$description\n\n$imageUrl',
+      await SharePlus.instance.share(ShareParams(
+        text: '$title\n\n$description\n\n$imageUrl',
         subject: title,
-      );
+      ));
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error sharing: $e')),
-      );
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error sharing: $e')),
+        );
+      }
     }
   }
 
@@ -1771,7 +1782,7 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
   void _shareToAnywhere() {
     String profileUrl =
         '${WhatsAppShareHelper.baseAppUrl}/searchprofileuser?userid=${widget.userId}';
-    Share.share('Check out this profile: $profileUrl');
+    SharePlus.instance.share(ShareParams(text: 'Check out this profile: $profileUrl'));
   }
 
 
@@ -2236,6 +2247,7 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                               _profileData!['banner_image_url'],
                                             ),
                                             fit: BoxFit.cover,
+                                            filterQuality: FilterQuality.high,
                                           )
                                         : null,
                                     color: _profileData!['banner_image_url'] ==

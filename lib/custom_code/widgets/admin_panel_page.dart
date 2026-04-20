@@ -593,65 +593,108 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
         );
   }
 
+  void _showUserSearchDialog() {
+    String searchQuery = "";
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          final filtered = allProfiles.where((p) {
+            final name = p['name']?.toString().toLowerCase() ?? "";
+            final shop = p['shop_name']?.toString().toLowerCase() ?? "";
+            return name.contains(searchQuery.toLowerCase()) || 
+                   shop.contains(searchQuery.toLowerCase());
+          }).toList();
+
+          return AlertDialog(
+            backgroundColor: Colors.grey[900],
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: const Text('Find User', style: TextStyle(color: Colors.white)),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    autofocus: true,
+                    onChanged: (v) => setDialogState(() => searchQuery = v),
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      hintText: 'Search by name...',
+                      hintStyle: const TextStyle(color: Colors.grey),
+                      prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                      filled: true,
+                      fillColor: Colors.grey[850],
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  ConstrainedBox(
+                    constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.4),
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: filtered.length,
+                      itemBuilder: (context, index) {
+                        final p = filtered[index];
+                        return ListTile(
+                          title: Text(p['name'] ?? 'Unknown', style: const TextStyle(color: Colors.white)),
+                          subtitle: Text(p['shop_name'] ?? '', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                          onTap: () {
+                            Navigator.pop(context);
+                            _loadUserPermissions(p['id']);
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+      ),
+    );
+  }
+
   Widget _buildUserToolsTab() {
-    final filteredProfiles = allProfiles.where((p) {
-      final name = p['name']?.toString().toLowerCase() ?? "";
-      final shop = p['shop_name']?.toString().toLowerCase() ?? "";
-      return name.contains(toolUserSearchQuery.toLowerCase()) || 
-             shop.contains(toolUserSearchQuery.toLowerCase());
-    }).toList();
+    final selectedUser = selectedUserIdForTools == null 
+        ? null 
+        : allProfiles.firstWhere((p) => p['id'] == selectedUserIdForTools, orElse: () => {});
 
     return Column(
       children: [
         Padding(
           padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('Search & Select User', 
-                style: TextStyle(color: Colors.white70, fontSize: 14)),
-              const SizedBox(height: 12),
-              TextField(
-                onChanged: (v) => setState(() => toolUserSearchQuery = v),
-                style: const TextStyle(color: Colors.white, fontSize: 14),
-                decoration: InputDecoration(
-                  hintText: 'Search by name or shop...',
-                  hintStyle: const TextStyle(color: Colors.grey),
-                  prefixIcon: const Icon(Icons.person_search, color: Colors.grey, size: 20),
-                  filled: true,
-                  fillColor: Colors.grey[900],
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                ),
+          child: InkWell(
+            onTap: _showUserSearchDialog,
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.grey[900],
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
               ),
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                decoration: BoxDecoration(
-                  color: Colors.grey[900],
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.white10),
-                ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    dropdownColor: Colors.grey[900],
-                    hint: const Text('Choose a user', style: TextStyle(color: Colors.grey)),
-                    value: selectedUserIdForTools,
-                    isExpanded: true,
-                    style: const TextStyle(color: Colors.white),
-                    items: filteredProfiles.map((p) {
-                      return DropdownMenuItem<String>(
-                        value: p['id'],
-                        child: Text(p['name'] ?? 'Unknown User'),
-                      );
-                    }).toList(),
-                    onChanged: (val) {
-                      if (val != null) _loadUserPermissions(val);
-                    },
+              child: Row(
+                children: [
+                  const Icon(Icons.person_search, color: Colors.amber),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          selectedUser?['name'] ?? 'Select User to Manage',
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                        ),
+                        if (selectedUser != null)
+                          Text(selectedUser['shop_name'] ?? 'No shop info', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                      ],
+                    ),
                   ),
-                ),
+                  const Icon(Icons.arrow_drop_down, color: Colors.white54),
+                ],
               ),
-            ],
+            ),
           ),
         ),
         if (selectedUserIdForTools != null)
@@ -665,7 +708,6 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                     final toolName = allToolNames[index];
                     final isBlocked = restrictedToolsForSelectedUser.contains(toolName);
                     
-                    // Check if tool is public or private
                     final config = allToolConfigs.firstWhere(
                       (c) => c['tool_name'] == toolName, 
                       orElse: () => {'tool_name': toolName, 'is_public': true}
@@ -708,7 +750,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
         else
           const Expanded(
             child: Center(
-              child: Text('Select a user to manage their tool permissions.', 
+              child: Text('Click the search button above to find a user.', 
                 style: TextStyle(color: Colors.grey)),
             ),
           ),

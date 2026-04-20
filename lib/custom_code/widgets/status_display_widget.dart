@@ -3382,9 +3382,11 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
     super.initState();
     if (widget.sharedContent != null) {
       _isSharingMode = true;
-      // Pre-fill caption if text mode, specifically if it's strictly text content
+      // Pre-fill caption if text mode, thought, tool, or course
       if (widget.sharedContentType == 'text' ||
-          widget.sharedContentType == 'thought') {
+          widget.sharedContentType == 'thought' ||
+          widget.sharedContentType == 'tool' ||
+          widget.sharedContentType == 'course') {
         _captionController.text = widget.sharedContent!;
       }
     }

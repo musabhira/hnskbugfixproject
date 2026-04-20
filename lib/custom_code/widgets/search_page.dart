@@ -1197,6 +1197,7 @@ class _ProfileDetailPageState extends State<ProfileDetailPage>
                                         _profileData!['banner_image_url'],
                                       ),
                                       fit: BoxFit.cover,
+                                      filterQuality: FilterQuality.high,
                                     ),
                                   ),
                                 ),

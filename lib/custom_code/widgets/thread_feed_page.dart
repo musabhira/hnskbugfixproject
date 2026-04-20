@@ -632,7 +632,7 @@ class _ThreadFeedPageState extends State<ThreadFeedPage> {
             context: context,
             customMessage: "Please login to create a thought",
           );
-          if (isAuthenticated) {
+          if (isAuthenticated && context.mounted) {
             Navigator.push(
               context,
               MaterialPageRoute(
@@ -715,8 +715,8 @@ class ModernCard extends StatelessWidget {
     const Color accentColor = Color(0xFFFFA000); // Deep Yellow/Amber
     const Color backgroundColor = Color(0xFF000000); // True Black
     const Color textColor = Colors.white; // White text for good contrast
-    const Color lightGrey =
-        Color(0xFF1A1A1A); // Dark Grey for subtle backgrounds
+    // const Color lightGrey =
+    //     Color(0xFF1A1A1A); // Dark Grey for subtle backgrounds
 
     // Format date
     final DateTime createdDate =
@@ -1167,7 +1167,9 @@ class _CreateThreadPageState extends State<CreateThreadPage>
       if (mounted) {
         _showSnackBar('Thread created successfully!', Colors.green.shade600);
         await Future.delayed(const Duration(milliseconds: 1000));
-        Navigator.pop(context);
+        if (mounted) {
+          Navigator.pop(context);
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -1290,48 +1292,6 @@ class _CreateThreadPageState extends State<CreateThreadPage>
     }
 
     return false;
-  }
-
-// Alternative: More permissive approach - only filter the worst content
-  bool _containsObjectionableContentLight(String text) {
-    String lowerText = text.toLowerCase();
-
-    // Only the most serious violations
-    List<String> severeViolations = [
-      'fuck',
-      'shit',
-      'motherfucker',
-      'cunt',
-      'asshole',
-      'nigger',
-      'faggot',
-      'retard',
-      'kill you',
-      'murder you',
-      'die bitch',
-      'suicide',
-      'kill myself',
-      'cocaine',
-      'heroin',
-      'buy drugs',
-      'porn',
-      'xxx',
-      'masturbat',
-    ];
-
-    for (String word in severeViolations) {
-      if (lowerText.contains(word)) {
-        return true;
-      }
-    }
-
-    return false;
-  }
-
-// For real-time validation as user types (optional)
-  bool _shouldShowWarning(String text) {
-    // Only show warning for severe violations, not minor ones
-    return _containsObjectionableContentLight(text);
   }
 
   void _showSnackBar(String message, Color color) {
@@ -1769,61 +1729,7 @@ class _CreateThreadPageState extends State<CreateThreadPage>
     );
   }
 
-  Widget _buildMediaButton(
-    IconData icon,
-    String label,
-    Color color,
-    VoidCallback onPressed,
-  ) {
-    return InkWell(
-      onTap: onPressed,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              color.withValues(alpha: 0.1),
-              color.withValues(alpha: 0.05),
-            ],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: color.withValues(alpha: 0.3),
-            width: 1,
-          ),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                icon,
-                color: color,
-                size: 20,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              label,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+
 }
 
 class ThreadCommentsPage extends StatefulWidget {

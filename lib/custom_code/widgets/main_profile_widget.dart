@@ -636,9 +636,16 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     }
     return CachedNetworkImage(
       imageUrl: bannerUrl,
-      fit: BoxFit.cover,
+      imageBuilder: (context, imageProvider) => Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: imageProvider,
+            fit: BoxFit.cover,
+            filterQuality: FilterQuality.high,
+          ),
+        ),
+      ),
       width: double.infinity,
-      memCacheHeight: 600,
       placeholder: (context, url) => Container(color: const Color(0xFF1A1A1A)),
     );
   }

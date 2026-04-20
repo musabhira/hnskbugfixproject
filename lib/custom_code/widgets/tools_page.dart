@@ -3788,9 +3788,8 @@ class _FlowCanvasScreenState extends State<FlowCanvasScreen> {
                   child: SingleChildScrollView(
                     physics: const NeverScrollableScrollPhysics(),
                     child: Transform(
-                      transform: Matrix4.identity()
-                        ..translate(canvasOffset.dx, canvasOffset.dy)
-                        ..scale(zoomLevel),
+                      transform: Matrix4.diagonal3Values(zoomLevel, zoomLevel, 1.0)
+                        ..translate(canvasOffset.dx, canvasOffset.dy),
                       child: SizedBox(
                         width: canvasWidth,
                         height: canvasHeight,

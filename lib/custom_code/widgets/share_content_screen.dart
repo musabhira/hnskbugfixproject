@@ -82,6 +82,13 @@ class _ShareContentScreenState extends State<ShareContentScreen> {
                     color: Colors.pink,
                     onTap: () => _shareToStatus(),
                   ),
+                  const SizedBox(height: 16),
+                  _ShareActionButton(
+                    icon: Icons.ios_share_rounded,
+                    label: 'External Platforms',
+                    color: Colors.green,
+                    onTap: () => _shareExternal(),
+                  ),
                 ],
               ),
             ),
@@ -333,7 +340,7 @@ class _ShareContentScreenState extends State<ShareContentScreen> {
           Navigator.pop(context);
           final text =
               "Check out this ${widget.contentType}: ${widget.contentToShare}";
-          Share.share(text);
+          SharePlus.instance.share(ShareParams(text: text));
         },
       ),
     );
@@ -360,7 +367,11 @@ class _ShareContentScreenState extends State<ShareContentScreen> {
         'is_read': false,
         'message_type': widget.contentType == 'gallery'
             ? 'gallery'
-            : (widget.contentType == 'thought' ? 'thought' : 'text'),
+            : (widget.contentType == 'thought'
+                ? 'thought'
+                : (widget.contentType == 'tool'
+                    ? 'tool'
+                    : (widget.contentType == 'course' ? 'course' : 'text'))),
       };
 
       if (widget.contentType == 'gallery' && widget.contentId != null) {
@@ -369,6 +380,11 @@ class _ShareContentScreenState extends State<ShareContentScreen> {
 
       if (widget.contentType == 'thought' && widget.contentId != null) {
         messageData['thought_id'] = widget.contentId;
+      }
+
+      if ((widget.contentType == 'tool' || widget.contentType == 'course') &&
+          widget.metadata != null) {
+        messageData['metadata'] = widget.metadata;
       }
 
       await supabase.from('messages').insert(messageData);
@@ -404,21 +420,25 @@ class _ShareContentScreenState extends State<ShareContentScreen> {
         Navigator.pop(context, true); // Return success to caller
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Shared to $userName successfully!'),
-          backgroundColor: Colors.green,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Shared to $userName successfully!'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
     } catch (e) {
       if (mounted) Navigator.pop(context); // Close loading
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error sharing: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error sharing: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -441,7 +461,9 @@ class _ShareContentScreenState extends State<ShareContentScreen> {
             ? 'gallery'
             : (widget.contentType == 'thought'
                 ? 'thought'
-                : (widget.contentType == 'tool' ? 'tool' : 'text')),
+                : (widget.contentType == 'tool'
+                    ? 'tool'
+                    : (widget.contentType == 'course' ? 'course' : 'text'))),
         'metadata': widget.metadata,
       };
 
@@ -466,21 +488,25 @@ class _ShareContentScreenState extends State<ShareContentScreen> {
         Navigator.pop(context, true); // Return success to caller
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Shared to $groupName successfully!'),
-          backgroundColor: Colors.green,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Shared to $groupName successfully!'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
     } catch (e) {
       if (mounted) Navigator.pop(context); // Close loading
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error sharing: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error sharing: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -522,6 +548,11 @@ class _ShareContentScreenState extends State<ShareContentScreen> {
         );
       }
     }
+  }
+
+  Future<void> _shareExternal() async {
+    final content = '${widget.contentToShare}\n\nShared via FindCreators';
+    await SharePlus.instance.share(ShareParams(text: content));
   }
 }
 
@@ -749,8 +780,8 @@ class _GroupSelectionBottomSheetState extends State<GroupSelectionBottomSheet> {
                               widget.onWhatsAppShare!();
                             } else {
                               final text =
-                                  "Check out this thought: ${widget.contentToShare}";
-                              Share.share(text);
+                                  "Check out this ${widget.contentToShare}";
+                              SharePlus.instance.share(ShareParams(text: text));
                             }
                           },
                         ),
