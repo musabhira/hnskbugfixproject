@@ -1230,7 +1230,7 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
           const SizedBox(height: 20),
           Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
             _optBtn(Icons.file_upload_outlined, 'Import', () { Navigator.pop(ctx); _importImage(); }),
-            _optBtn(_isRecording ? Icons.stop_circle : Icons.fiber_manual_record, 'Record', () { Navigator.pop(ctx); _toggleRecording(); }, highlight: _isRecording),
+
             _optBtn(Icons.ios_share_rounded, 'Export', () { Navigator.pop(ctx); _exportImage(); }),
           ]),
           const SizedBox(height: 20),
