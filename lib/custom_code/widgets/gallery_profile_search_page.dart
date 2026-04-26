@@ -296,8 +296,8 @@ class _GalleryProfileSearchPageState extends State<GalleryProfileSearchPage> {
                         },
                         style: ButtonStyle(
                           backgroundColor: isSelected
-                              ? ButtonState.all(buttoncolorcode)
-                              : ButtonState.all(bgcolorcode),
+                              ? WidgetStateProperty.all(buttoncolorcode)
+                              : WidgetStateProperty.all(bgcolorcode),
                         ),
                         child: Text(
                           category,
@@ -1246,7 +1246,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
       menuItems: [
         MenuFlyoutItem(
           leading:
-              Icon(FontAwesomeIcons.whatsapp, size: 16, color: Colors.green),
+              FaIcon(FontAwesomeIcons.whatsapp, size: 16, color: Colors.green),
           text: const Text('WhatsApp'),
           onPressed: () => WhatsAppShareHelper.shareToWhatsApp(
             context: context,
@@ -1830,10 +1830,10 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                             },
                             style: ButtonStyle(
                               backgroundColor:
-                                  ButtonState.all(widget.buttoncolorcode),
-                              padding: ButtonState.all(
+                                  WidgetStateProperty.all(widget.buttoncolorcode),
+                              padding: WidgetStateProperty.all(
                                   const EdgeInsets.symmetric(vertical: 16)),
-                              shape: ButtonState.all(RoundedRectangleBorder(
+                              shape: WidgetStateProperty.all(RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                               )),
                             ),
@@ -1889,7 +1889,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                               },
                               style: ButtonStyle(
                                 foregroundColor:
-                                    ButtonState.all(widget.buttoncolorcode),
+                                    WidgetStateProperty.all(widget.buttoncolorcode),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
@@ -2767,7 +2767,7 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
                             FlutterFlowTheme.of(context).bodySmall.copyWith(
                                   color: Colors.grey,
                                 ),
-                        decoration: ButtonState.all(BoxDecoration(
+                        decoration: WidgetStateProperty.all(BoxDecoration(
                           border: Border.all(style: BorderStyle.none),
                         )),
                         minLines: 1,

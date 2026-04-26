@@ -153,8 +153,9 @@ class _FFButtonWidgetState extends State<FFButtonWidget> {
         : null;
 
     final ButtonStyle style = ButtonStyle(
-      shape: ButtonState.resolveWith<OutlinedBorder>((states) {
-        if (states.isHovering && widget.options.hoverBorderSide != null) {
+      shape: WidgetStateProperty.resolveWith<OutlinedBorder>((states) {
+        if (states.contains(WidgetState.hovered) &&
+            widget.options.hoverBorderSide != null) {
           return RoundedRectangleBorder(
             borderRadius:
                 widget.options.borderRadius ?? BorderRadius.circular(8),
@@ -166,25 +167,29 @@ class _FFButtonWidgetState extends State<FFButtonWidget> {
           side: widget.options.borderSide ?? BorderSide.none,
         );
       }),
-      backgroundColor: ButtonState.resolveWith<Color?>((states) {
-        if (states.isDisabled && widget.options.disabledColor != null) {
+      backgroundColor: WidgetStateProperty.resolveWith<Color?>((states) {
+        if (states.contains(WidgetState.disabled) &&
+            widget.options.disabledColor != null) {
           return widget.options.disabledColor;
         }
-        if (states.isHovering && widget.options.hoverColor != null) {
+        if (states.contains(WidgetState.hovered) &&
+            widget.options.hoverColor != null) {
           return widget.options.hoverColor;
         }
         return widget.options.color;
       }),
-      foregroundColor: ButtonState.resolveWith<Color?>((states) {
-        if (states.isDisabled && widget.options.disabledTextColor != null) {
+      foregroundColor: WidgetStateProperty.resolveWith<Color?>((states) {
+        if (states.contains(WidgetState.disabled) &&
+            widget.options.disabledTextColor != null) {
           return widget.options.disabledTextColor;
         }
-        if (states.isHovering && widget.options.hoverTextColor != null) {
+        if (states.contains(WidgetState.hovered) &&
+            widget.options.hoverTextColor != null) {
           return widget.options.hoverTextColor;
         }
         return widget.options.textStyle?.color ?? Colors.white;
       }),
-      padding: ButtonState.all(
+      padding: WidgetStateProperty.all(
         widget.options.padding ??
             const EdgeInsets.symmetric(horizontal: 12.0, vertical: 4.0),
       ),
@@ -194,7 +199,7 @@ class _FFButtonWidgetState extends State<FFButtonWidget> {
     Widget content;
     if ((widget.icon != null || widget.iconData != null) && !loading) {
       Widget icon = widget.icon ??
-          FaIcon(
+          Icon(
             widget.iconData!,
             size: widget.options.iconSize,
             color: widget.options.iconColor,

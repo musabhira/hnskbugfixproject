@@ -36,7 +36,12 @@ class PushNotificationService {
         iOS: initializationSettingsIOS,
       );
 
-      await _localNotificationsPlugin.initialize(initializationSettings);
+      await _localNotificationsPlugin.initialize(
+        settings: initializationSettings,
+        onDidReceiveNotificationResponse: (NotificationResponse response) {
+          // Handle notification tap
+        },
+      );
 
       // Access FCM only after potential Firebase initialization
       final FirebaseMessaging fcm = FirebaseMessaging.instance;
@@ -71,20 +76,19 @@ class PushNotificationService {
 
         if (notification != null && !kIsWeb) {
           _localNotificationsPlugin.show(
-            notification.hashCode,
-            notification.title,
-            notification.body,
-            NotificationDetails(
+            id: notification.hashCode,
+            title: notification.title,
+            body: notification.body,
+            notificationDetails: const NotificationDetails(
               android: AndroidNotificationDetails(
-                channel.id,
-                channel.name,
-                channelDescription: channel.description,
-                icon: android?.smallIcon ?? '@mipmap/ic_launcher',
+                'high_importance_channel',
+                'High Importance Notifications',
+                channelDescription: 'This channel is used for important notifications.',
+                icon: '@mipmap/ic_launcher',
                 importance: Importance.max,
                 priority: Priority.high,
-                ticker: 'ticker',
               ),
-              iOS: const DarwinNotificationDetails(
+              iOS: DarwinNotificationDetails(
                 presentAlert: true,
                 presentBadge: true,
                 presentSound: true,

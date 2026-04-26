@@ -2561,7 +2561,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
 
   Future<void> _pickAndStageDocument() async {
     try {
-      FilePickerResult? result = await FilePicker.platform.pickFiles();
+      FilePickerResult? result = await FilePicker.pickFiles();
       if (result != null && result.files.single.path != null) {
         safeSetState(() {
           _stagedDocumentPath = result.files.single.path;
@@ -2574,7 +2574,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
 
   Future<void> _pickAndStageAudio() async {
     try {
-      FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.audio);
+      FilePickerResult? result = await FilePicker.pickFiles(type: FileType.audio);
       if (result != null && result.files.single.path != null) {
         safeSetState(() {
           _stagedAudioPath = result.files.single.path;

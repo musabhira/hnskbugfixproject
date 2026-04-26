@@ -173,12 +173,12 @@ class NotificationsListPage extends ConsumerWidget {
                               _handleAccept(context, ref, notification),
                           style: ButtonStyle(
                             backgroundColor:
-                                ButtonState.all(material.Colors.yellow),
+                                WidgetStateProperty.all(material.Colors.yellow),
                             foregroundColor:
-                                ButtonState.all(material.Colors.black),
-                            padding: ButtonState.all(
+                                WidgetStateProperty.all(material.Colors.black),
+                            padding: WidgetStateProperty.all(
                                 const EdgeInsets.symmetric(vertical: 8)),
-                            shape: ButtonState.all(RoundedRectangleBorder(
+                            shape: WidgetStateProperty.all(RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8))),
                           ),
                           child: Text(
@@ -194,9 +194,9 @@ class NotificationsListPage extends ConsumerWidget {
                             onPressed: () =>
                                 _handleReject(context, ref, notification),
                             style: ButtonStyle(
-                              padding: ButtonState.all(
+                              padding: WidgetStateProperty.all(
                                   const EdgeInsets.symmetric(vertical: 8)),
-                              shape: ButtonState.all(RoundedRectangleBorder(
+                              shape: WidgetStateProperty.all(RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(8))),
                             ),
                             child: const Text('Decline'),

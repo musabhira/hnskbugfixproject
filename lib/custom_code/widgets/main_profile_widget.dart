@@ -549,12 +549,12 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                         child: Button(
                           onPressed: () => _filterGalleryByCategory(cat),
                           style: ButtonStyle(
-                            backgroundColor: ButtonState.all(
+                            backgroundColor: WidgetStateProperty.all(
                               isSelected
                                   ? btnColor
                                   : material.Colors.transparent,
                             ),
-                            shape: ButtonState.all(RoundedRectangleBorder(
+                            shape: WidgetStateProperty.all(RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(20),
                               side: BorderSide(
                                 color: isSelected

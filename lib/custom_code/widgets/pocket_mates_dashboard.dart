@@ -51,7 +51,7 @@ class _PocketMatesDashboardState extends State<PocketMatesDashboard> {
                         ),
                       ],
                     ),
-                    child: const Icon(
+                    child: const FaIcon(
                       FontAwesomeIcons.userGroup,
                       color: Colors.yellow,
                       size: 40,
@@ -201,7 +201,7 @@ class _PocketMatesDashboardState extends State<PocketMatesDashboard> {
   }
 
   Widget _buildModeCard(
-      String title, IconData icon, Color color, String subtitle,
+      String title, dynamic icon, Color color, String subtitle,
       {bool isWide = false}) {
     bool isSelected = _selectedMode == title;
 

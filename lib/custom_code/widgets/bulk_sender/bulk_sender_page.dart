@@ -64,8 +64,9 @@ class _BulkSenderPageState extends State<BulkSenderPage>
   }
 
   Future<void> _pickContacts() async {
-    if (await FlutterContacts.requestPermission()) {
-      final contacts = await FlutterContacts.getContacts(withProperties: true);
+    if (await FlutterContacts.permissions.request(PermissionType.read) == PermissionStatus.granted) {
+      final contacts = await FlutterContacts.getAll(
+          properties: {ContactProperty.name, ContactProperty.phone});
       if (mounted) {
         material
             .showDialog<List<Contact>>(
@@ -305,8 +306,8 @@ class _BulkSenderPageState extends State<BulkSenderPage>
               child: FilledButton(
                 onPressed: _startAutoSend,
                 style: ButtonStyle(
-                  backgroundColor: ButtonState.all(material.Colors.yellow),
-                  padding: ButtonState.all(const EdgeInsets.all(16)),
+                  backgroundColor: WidgetStateProperty.all(material.Colors.yellow),
+                  padding: WidgetStateProperty.all(const EdgeInsets.all(16)),
                 ),
                 child: Text('Start Bulk Sending',
                     style: GoogleFonts.inter(
@@ -516,7 +517,7 @@ class _MultiContactPickerDialogState extends State<MultiContactPickerDialog> {
       } else {
         _filteredContacts = widget.contacts
             .where((c) =>
-                c.displayName.toLowerCase().contains(query.toLowerCase()) ||
+                (c.displayName ?? '').toLowerCase().contains(query.toLowerCase()) ||
                 c.phones.any((p) => p.number.contains(query)))
             .toList();
       }
@@ -620,8 +621,8 @@ class _MultiContactPickerDialogState extends State<MultiContactPickerDialog> {
                       ),
                       child: Center(
                         child: Text(
-                          contact.displayName.isNotEmpty
-                              ? contact.displayName[0].toUpperCase()
+                          (contact.displayName ?? '').isNotEmpty
+                              ? (contact.displayName ?? '')[0].toUpperCase()
                               : '?',
                           style: GoogleFonts.outfit(
                             fontWeight: FontWeight.bold,
@@ -632,7 +633,7 @@ class _MultiContactPickerDialogState extends State<MultiContactPickerDialog> {
                         ),
                       ),
                     ),
-                    title: material.Text(contact.displayName,
+                    title: material.Text(contact.displayName ?? 'Unknown',
                         style: GoogleFonts.inter(
                             color: material.Colors.white,
                             fontWeight: FontWeight.w500)),
@@ -666,7 +667,7 @@ class _MultiContactPickerDialogState extends State<MultiContactPickerDialog> {
                     ? null
                     : () => Navigator.pop(context, _selected),
                 style: ButtonStyle(
-                  backgroundColor: ButtonState.all(
+                  backgroundColor: WidgetStateProperty.all(
                       _selected.isEmpty ? Colors.grey : material.Colors.yellow),
                 ),
                 child: Text('Add to Queue (${_selected.length})',
