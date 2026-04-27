@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/gestures.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluent_ui/fluent_ui.dart';
@@ -23,25 +24,24 @@ void main() async {
     usePathUrlStrategy();
   }
 
-  // Attempt optional services like Firebase but don't let them block startup
+  // Initialize core application services with a timeout to prevent hanging
   try {
-    if (!kIsWeb) {
-      // On iOS, native initialization is handled safely in AppDelegate.swift
-      await Firebase.initializeApp();
-      await PushNotificationService.initialize();
-    }
-  } catch (firebaseErr) {
-    debugPrint('Optional service initialization skipped: $firebaseErr');
-  }
-
-  // Initialize core application services
-  try {
-    await SupaFlow.initialize();
-    await LocalSyncServer().initialize();
-    await FlutterFlowTheme.initialize();
+    await Future.wait([
+      SupaFlow.initialize(),
+      LocalSyncServer().initialize(),
+      FlutterFlowTheme.initialize(),
+    ]).timeout(const Duration(seconds: 5), onTimeout: () {
+      debugPrint('Core service initialization timed out. Proceeding anyway...');
+      return [];
+    });
   } catch (e) {
     debugPrint('Core service initialization error: $e');
   }
+
+  // Start optional services in the background without blocking the UI
+  unawaited(Firebase.initializeApp().then((_) {
+    PushNotificationService.initialize();
+  }).catchError((e) => debugPrint('Optional service error: $e')));
 
   runApp(const ProviderScope(child: MyApp()));
 }

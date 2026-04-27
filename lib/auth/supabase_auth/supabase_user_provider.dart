@@ -63,18 +63,17 @@ class PocketMatesAppSupabaseUser extends BaseAuthUser {
   }
 }
 
-/// Generates a stream of the authenticated user.
-/// [SupaFlow.client.auth.onAuthStateChange] does not yield any values until the
-/// user is already authenticated. So we add a default null user to the stream,
-/// if we need to interact with the [currentUser] before logging in.
 Stream<BaseAuthUser> pocketMatesAppSupabaseUserStream() {
+  // Always start with the current session state to avoid hangs
+  final initialAuthState = AuthState(SupaFlow.client.auth.currentSession, null);
+  
   final supabaseAuthStream = SupaFlow.client.auth.onAuthStateChange.debounce(
       (authState) => authState.event == AuthChangeEvent.tokenRefreshed
           ? TimerStream(authState, const Duration(seconds: 1))
           : Stream.value(authState));
-  return (!loggedIn
-          ? Stream<AuthState?>.value(null).concatWith([supabaseAuthStream])
-          : supabaseAuthStream)
+          
+  return supabaseAuthStream
+      .startWith(initialAuthState)
       .map<BaseAuthUser>(
     (authState) {
       currentUser = PocketMatesAppSupabaseUser(authState?.session?.user);

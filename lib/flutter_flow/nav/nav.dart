@@ -19,7 +19,15 @@ const kTransitionInfoKey = '__transition_info__';
 GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
 
 class AppStateNotifier extends ChangeNotifier {
-  AppStateNotifier._();
+  AppStateNotifier._() {
+    // Safety fallback to ensure the app never hangs on the loading screen indefinitely.
+    // Guideline 2.1(a) fix for "App kept loading indefinitely".
+    Future.delayed(const Duration(seconds: 5), () {
+      if (showSplashImage) {
+        stopShowingSplashImage();
+      }
+    });
+  }
 
   static AppStateNotifier? _instance;
   static AppStateNotifier get instance => _instance ??= AppStateNotifier._();
