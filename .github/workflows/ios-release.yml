@@ -14,6 +14,12 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: List Available Xcodes (Debug)
+        run: |
+          ls /Applications | grep Xcode
+          xcode-select -p
+          xcodebuild -version
+
       - name: Set up Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
