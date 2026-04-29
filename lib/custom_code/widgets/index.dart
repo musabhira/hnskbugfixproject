@@ -50,8 +50,7 @@ export 'chat/chat_screen.dart';
 export 'chat/create_group_dialog.dart';
 export 'message_screen.dart' show MessageScreen;
 export 'message_list_page.dart' show MessageListPage;
-export 'webrtc_call_screen.dart' show WebRTCCallScreen;
-export 'native_webrtc_call_screen.dart';
+export 'native_webrtc_call_screen.dart' show NativeWebRTCCallScreen;
 
 // Drawing Module
 export 'drawing_page.dart' show DrawingPage;
