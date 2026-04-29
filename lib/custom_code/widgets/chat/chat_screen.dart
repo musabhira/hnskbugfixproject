@@ -16,7 +16,7 @@ import 'package:timeago/timeago.dart' as timeago;
 import 'package:pocket_mates_app/custom_code/widgets/chat/chat_models.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/chat_provider.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/voice_player.dart';
-import 'package:pocket_mates_app/custom_code/widgets/webrtc_call_screen.dart';
+import 'package:pocket_mates_app/custom_code/widgets/native_webrtc_call_screen.dart';
 import 'package:pocket_mates_app/custom_code/widgets/image_viewer.dart';
 import 'package:pocket_mates_app/custom_code/widgets/gallery_search_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
@@ -277,7 +277,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 Navigator.push(
                   context,
                   FluentPageRoute(
-                    builder: (context) => const WebRTCCallScreen(
+                    builder: (context) => const NativeWebRTCCallScreen(
                       mode: 'Video',
                     ),
                   ),
@@ -290,7 +290,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 Navigator.push(
                   context,
                   FluentPageRoute(
-                    builder: (context) => const WebRTCCallScreen(
+                    builder: (context) => const NativeWebRTCCallScreen(
                       mode: 'Voice',
                     ),
                   ),

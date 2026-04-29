@@ -17,7 +17,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:video_player/video_player.dart';
 import 'package:video_compress/video_compress.dart';
 import '/backend/supabase/supabase.dart';
-import 'package:pocket_mates_app/custom_code/widgets/webrtc_call_screen.dart';
+import 'package:pocket_mates_app/custom_code/widgets/native_webrtc_call_screen.dart';
 import 'package:pocket_mates_app/custom_code/widgets/gallery_search_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/image_viewer.dart';
@@ -2064,7 +2064,7 @@ class _MessageScreenState extends State<MessageScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => WebRTCCallScreen(
+                            builder: (context) => NativeWebRTCCallScreen(
                               mode:
                                   content.contains('Video') ? 'Video' : 'Voice',
                               targetUserId: widget.receiverId,
