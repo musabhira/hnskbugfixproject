@@ -77,6 +77,11 @@ jobs:
           pod install --repo-update
           cd ..
 
+      - name: Download iOS 26 Platform
+        run: |
+          sudo xcodebuild -runFirstLaunch
+          sudo xcodebuild -downloadPlatform iOS
+          
       - name: Build and Sign IPA
         env:
           DEVELOPER_DIR: /Applications/Xcode_26.0.app/Contents/Developer
