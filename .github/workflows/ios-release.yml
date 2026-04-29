@@ -43,6 +43,8 @@ jobs:
           security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
           security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
           security list-keychains -d user -s $KEYCHAIN_PATH $(security list-keychains -d user | xargs)
+          security default-keychain -s $KEYCHAIN_PATH
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
 
       - name: Install Provisioning Profile
         env:
@@ -65,6 +67,8 @@ jobs:
           cd ..
 
       - name: Build and Sign IPA
+        env:
+          DEVELOPER_DIR: /Applications/Xcode_26.0.app/Contents/Developer
         run: |
           # Get version and build number from pubspec.yaml
           VERSION_NAME=$(grep 'version:' pubspec.yaml | sed 's/version: //; s/+.*//' | xargs)
