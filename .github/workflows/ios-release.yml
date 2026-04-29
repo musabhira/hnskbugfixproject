@@ -51,6 +51,8 @@ jobs:
           security list-keychains -d user -s $KEYCHAIN_PATH $(security list-keychains -d user | xargs)
           security default-keychain -s $KEYCHAIN_PATH
           security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          echo "Listing identities in keychain:"
+          security find-identity -v -p codesigning
 
       - name: Install Provisioning Profile
         env:

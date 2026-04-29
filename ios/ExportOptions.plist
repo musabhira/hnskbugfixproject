@@ -12,7 +12,7 @@
 		<string>handskillfirends</string>
 	</dict>
 	<key>signingCertificate</key>
-	<string>iOS Distribution</string>
+	<string>Apple Distribution</string>
 
 	<key>signingStyle</key>
 	<string>manual</string>
