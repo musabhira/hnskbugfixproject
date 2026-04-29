@@ -61,6 +61,9 @@ jobs:
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/
 
+      - name: Clean Build Environment
+        run: flutter clean
+
       - name: Get Dependencies
         run: flutter pub get
 
