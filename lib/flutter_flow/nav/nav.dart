@@ -22,9 +22,9 @@ class AppStateNotifier extends ChangeNotifier {
   AppStateNotifier._() {
     // Safety fallback to ensure the app never hangs on the loading screen indefinitely.
     // Guideline 2.1(a) fix for "App kept loading indefinitely".
-    Future.delayed(const Duration(seconds: 3), () {
+    Future.delayed(const Duration(seconds: 4), () {
       if (showSplashImage) {
-        debugPrint('AppStateNotifier: Safety fallback forcing splash dismissal.');
+        debugPrint('AppStateNotifier: Safety fallback forcing splash dismissal after 4s.');
         stopShowingSplashImage();
       }
     });
@@ -297,16 +297,50 @@ class FFRoute {
                 )
               : builder(context, ffParams);
           final child = appStateNotifier.loading
-              ? Container(
-                  color: const Color(0xFF000000),
-                  child: Center(
-                    child: SizedBox(
-                      width: 50.0,
-                      height: 50.0,
-                      child: ProgressRing(
-                        activeColor: FlutterFlowTheme.of(context).primary,
+              ? Material(
+                  color: Colors.black,
+                  child: Stack(
+                    children: [
+                      Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const SizedBox(
+                              width: 50.0,
+                              height: 50.0,
+                              child: CircularProgressIndicator(
+                                color: Colors.blue,
+                                strokeWidth: 3,
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                            const Text(
+                              'Initializing...',
+                              style: TextStyle(color: Colors.white70, fontSize: 14),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
+                      // Hidden "Force Continue" button that appears after a delay
+                      Align(
+                        alignment: Alignment.bottomCenter,
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 40.0),
+                          child: FutureBuilder(
+                            future: Future.delayed(const Duration(seconds: 8)),
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState == ConnectionState.done) {
+                                return TextButton(
+                                  onPressed: () => appStateNotifier.stopShowingSplashImage(),
+                                  child: const Text('Force Continue', style: TextStyle(color: Colors.blue)),
+                                );
+                              }
+                              return const SizedBox.shrink();
+                            },
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 )
               : page;

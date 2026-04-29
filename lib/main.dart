@@ -91,10 +91,10 @@ class _MyAppState extends State<MyApp> {
 
     _appStateNotifier = AppStateNotifier.instance;
     _router = createRouter(_appStateNotifier);
-    // Safety fallback: Ensure splash is dismissed after 2 seconds regardless of other events
-    Future.delayed(const Duration(seconds: 2), () {
+    // Safety fallback: Ensure splash is dismissed after 5 seconds regardless of other events
+    Future.delayed(const Duration(seconds: 5), () {
       if (_appStateNotifier.showSplashImage) {
-        debugPrint('Main: Forcing splash dismissal after 2s safety timeout.');
+        debugPrint('Main: Forcing splash dismissal after 5s safety timeout.');
         _appStateNotifier.stopShowingSplashImage();
       }
     });
