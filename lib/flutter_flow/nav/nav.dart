@@ -22,8 +22,9 @@ class AppStateNotifier extends ChangeNotifier {
   AppStateNotifier._() {
     // Safety fallback to ensure the app never hangs on the loading screen indefinitely.
     // Guideline 2.1(a) fix for "App kept loading indefinitely".
-    Future.delayed(const Duration(seconds: 5), () {
+    Future.delayed(const Duration(seconds: 3), () {
       if (showSplashImage) {
+        debugPrint('AppStateNotifier: Safety fallback forcing splash dismissal.');
         stopShowingSplashImage();
       }
     });
@@ -44,7 +45,9 @@ class AppStateNotifier extends ChangeNotifier {
   /// Otherwise, this will trigger a refresh and interrupt the action(s).
   bool notifyOnAuthChange = true;
 
-  bool get loading => user == null || showSplashImage;
+  // Loading should strictly follow showSplashImage to prevent indefinite hangs
+  // if the user object never resolves to a non-null state (e.g. first install).
+  bool get loading => showSplashImage;
   bool get loggedIn => user?.loggedIn ?? false;
   bool get initiallyLoggedIn => initialUser?.loggedIn ?? false;
   bool get shouldRedirect => loggedIn && _redirectLocation != null;

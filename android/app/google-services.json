@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "747496156468",
+    "project_id": "pocketmates",
+    "storage_bucket": "pocketmates.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:747496156468:android:1debfffea56294725f0961",
+        "android_client_info": {
+          "package_name": "com.mycompany.pocketmatesapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD8unMJsccCLk9LSlzQdiNqO7arRrstCLg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

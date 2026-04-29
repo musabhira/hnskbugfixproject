@@ -91,18 +91,26 @@ class _MyAppState extends State<MyApp> {
 
     _appStateNotifier = AppStateNotifier.instance;
     _router = createRouter(_appStateNotifier);
+    // Safety fallback: Ensure splash is dismissed after 2 seconds regardless of other events
+    Future.delayed(const Duration(seconds: 2), () {
+      if (_appStateNotifier.showSplashImage) {
+        debugPrint('Main: Forcing splash dismissal after 2s safety timeout.');
+        _appStateNotifier.stopShowingSplashImage();
+      }
+    });
+
     userStream = pocketMatesAppSupabaseUserStream()
       ..listen((user) {
         _appStateNotifier.update(user);
         if (user.loggedIn) {
           PushNotificationService.initialize();
         }
+        // Dismiss splash as soon as we have a user state
+        if (_appStateNotifier.showSplashImage) {
+          _appStateNotifier.stopShowingSplashImage();
+        }
       });
     jwtTokenStream.listen((_) {});
-    Future.delayed(
-      const Duration(milliseconds: 1000),
-      () => _appStateNotifier.stopShowingSplashImage(),
-    );
   }
 
   void setThemeMode(ThemeMode mode) => safeSetState(() {

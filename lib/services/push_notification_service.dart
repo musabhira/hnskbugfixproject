@@ -10,6 +10,10 @@ class PushNotificationService {
 
   static Future<void> initialize() async {
     try {
+      // Ensure Firebase is initialized before proceeding
+      if (Firebase.apps.isEmpty) {
+        await Firebase.initializeApp();
+      }
       // 1. Android Notification Channel setup
       const AndroidNotificationChannel channel = AndroidNotificationChannel(
         'high_importance_channel',

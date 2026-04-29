@@ -65,7 +65,7 @@ class PocketMatesAppSupabaseUser extends BaseAuthUser {
 
 Stream<BaseAuthUser> pocketMatesAppSupabaseUserStream() {
   // Always start with the current session state to avoid hangs
-  final initialAuthState = AuthState(SupaFlow.client.auth.currentSession, null);
+  final initialAuthState = AuthState(AuthChangeEvent.initialSession, SupaFlow.client.auth.currentSession);
   
   final supabaseAuthStream = SupaFlow.client.auth.onAuthStateChange.debounce(
       (authState) => authState.event == AuthChangeEvent.tokenRefreshed
@@ -76,7 +76,7 @@ Stream<BaseAuthUser> pocketMatesAppSupabaseUserStream() {
       .startWith(initialAuthState)
       .map<BaseAuthUser>(
     (authState) {
-      currentUser = PocketMatesAppSupabaseUser(authState?.session?.user);
+      currentUser = PocketMatesAppSupabaseUser(authState.session?.user);
       return currentUser!;
     },
   );
