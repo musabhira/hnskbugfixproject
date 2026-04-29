@@ -95,11 +95,17 @@ jobs:
             --dart-define=FLUTTER_BUILD_NUMBER=$BUILD_NUMBER \
             --no-codesign 2>/dev/null || true
           
-          # Use xcodebuild directly for archive with explicit signing
+          # Re-unlock keychain and set as default for the archive phase
+          security unlock-keychain -p "${{ secrets.KEYCHAIN_PASSWORD }}" $RUNNER_TEMP/app-signing.keychain-db
+          security default-keychain -s $RUNNER_TEMP/app-signing.keychain-db
+          
+          # Use xcodebuild directly for archive with explicit signing and destination
           xcodebuild -workspace ios/Runner.xcworkspace \
             -scheme Runner \
             -configuration Release \
             -archivePath build/ios/Runner.xcarchive \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
             archive \
             CODE_SIGN_STYLE=Manual \
             CODE_SIGN_IDENTITY="Apple Distribution" \
