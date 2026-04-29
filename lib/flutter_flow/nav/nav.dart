@@ -1,12 +1,12 @@
 import 'dart:async';
 
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter/material.dart' as m;
 import 'package:provider/provider.dart';
 
 
 import '/auth/base_auth_user_provider.dart';
 
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 
 import '/index.dart';
@@ -297,8 +297,8 @@ class FFRoute {
                 )
               : builder(context, ffParams);
           final child = appStateNotifier.loading
-              ? Material(
-                  color: Colors.black,
+              ? m.Material(
+                  color: m.Colors.black,
                   child: Stack(
                     children: [
                       Center(
@@ -308,15 +308,15 @@ class FFRoute {
                             const SizedBox(
                               width: 50.0,
                               height: 50.0,
-                              child: CircularProgressIndicator(
-                                color: Colors.blue,
+                              child: m.CircularProgressIndicator(
+                                color: m.Colors.blue,
                                 strokeWidth: 3,
                               ),
                             ),
                             const SizedBox(height: 24),
                             const Text(
                               'Initializing...',
-                              style: TextStyle(color: Colors.white70, fontSize: 14),
+                              style: TextStyle(color: m.Colors.white70, fontSize: 14),
                             ),
                           ],
                         ),
@@ -330,9 +330,9 @@ class FFRoute {
                             future: Future.delayed(const Duration(seconds: 8)),
                             builder: (context, snapshot) {
                               if (snapshot.connectionState == ConnectionState.done) {
-                                return TextButton(
+                                return m.TextButton(
                                   onPressed: () => appStateNotifier.stopShowingSplashImage(),
-                                  child: const Text('Force Continue', style: TextStyle(color: Colors.blue)),
+                                  child: const Text('Force Continue', style: TextStyle(color: m.Colors.blue)),
                                 );
                               }
                               return const SizedBox.shrink();
