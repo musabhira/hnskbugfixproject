@@ -14,27 +14,39 @@ class RunningTasksWidget extends StatefulWidget {
 
 class _RunningTasksWidgetState extends State<RunningTasksWidget> {
   List<Map<String, dynamic>> _activeTasks = [];
-  Timer? _timer;
+  Timer? _uiRefreshTimer;
+  StreamSubscription? _activeTasksSubscription;
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
     _loadActiveTasks();
-    // Refresh task list every 30 seconds
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (mounted) setState(() {});
-    });
+    _setupStream();
     
-    // Poll for new tasks every 10 seconds (or use stream if available)
-    Timer.periodic(const Duration(seconds: 10), (timer) {
-       if (mounted) _loadActiveTasks();
+    // UI refresh for the timer display (every second)
+    _uiRefreshTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (mounted && _activeTasks.isNotEmpty) {
+        setState(() {});
+      }
+    });
+  }
+
+  void _setupStream() {
+    _activeTasksSubscription = widget.service.getActiveTasksStream().listen((tasks) {
+      if (mounted) {
+        setState(() {
+          _activeTasks = tasks;
+          _isLoading = false;
+        });
+      }
     });
   }
 
   @override
   void dispose() {
-    _timer?.cancel();
+    _uiRefreshTimer?.cancel();
+    _activeTasksSubscription?.cancel();
     super.dispose();
   }
 

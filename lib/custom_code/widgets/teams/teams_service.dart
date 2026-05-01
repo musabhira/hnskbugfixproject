@@ -494,4 +494,29 @@ class TeamsService {
 
     return List<Map<String, dynamic>>.from(response as List);
   }
+
+  Stream<List<Map<String, dynamic>>> getActiveTasksStream() {
+    final userId = _client.auth.currentUser?.id;
+    if (userId == null) return Stream.value([]);
+
+    return _client
+        .from('team_tasks')
+        .stream(primaryKey: ['id'])
+        .eq('assigned_to', userId)
+        .map((event) => event.where((t) => t['timer_started_at'] != null).toList())
+        .asyncMap((activeList) async {
+          if (activeList.isEmpty) return [];
+          return await getActiveTimers();
+        });
+  }
+
+  Stream<List<TeamTask>> getTeamTasksStream(String teamId) {
+    return _client
+        .from('team_tasks')
+        .stream(primaryKey: ['id'])
+        .eq('team_id', teamId)
+        .asyncMap((event) async {
+          return await getTeamTasks(teamId);
+        });
+  }
 }

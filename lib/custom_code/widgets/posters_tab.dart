@@ -41,8 +41,12 @@ class _PostersTabState extends State<PostersTab> {
       final file = await File('${tempDir.path}/poster_$index.png').create();
       await file.writeAsBytes(pngBytes);
 
-      await Share.shareXFiles([XFile(file.path)],
-          text: 'Check out my profile on Handskill App!');
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(file.path)],
+          text: 'Check out my profile on Handskill App!',
+        ),
+      );
     } catch (e) {
       debugPrint('Error sharing poster: $e');
     }

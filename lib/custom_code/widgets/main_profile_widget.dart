@@ -7,8 +7,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:pocket_mates_app/custom_code/widgets/profile_custom_widget.dart';
-import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/flutter_flow/flutter_flow_theme.dart';
 import 'index.dart';
@@ -83,6 +81,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
   @override
   void initState() {
+    super.initState();
     // Initialize controller with correct length if preloaded
     final initialLength = (widget.preloadedProfile?['verified'] == true) ? 4 : 3;
     _tabController = material.TabController(length: initialLength, vsync: this);
@@ -470,8 +469,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 material.IconButton(
                   icon: Icon(FluentIcons.share,
                       color: textColor, size: 22),
-                  onPressed: () => Share.share(
-                      'Check out ${_profileData?['name']}\'s profile on Handskill Friends!'),
+                  onPressed: () => SharePlus.instance.share(
+                      ShareParams(text: 'Check out ${_profileData?['name']}\'s profile on Handskill Friends!')),
                 ),
                 material.Padding(
                   padding: const EdgeInsets.only(right: 8.0),

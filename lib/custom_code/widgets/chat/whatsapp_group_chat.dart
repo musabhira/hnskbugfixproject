@@ -38,6 +38,7 @@ import 'package:pocket_mates_app/custom_code/widgets/nearby_users_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chess_game_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/teams/user_search_dialog.dart';
 import 'package:pocket_mates_app/custom_code/widgets/teams/teams_service.dart';
+import 'live_task_tile.dart';
 import 'package:pocket_mates_app/custom_code/widgets/courses_widget.dart';
 
 import 'package:pocket_mates_app/flutter_flow/flutter_flow_theme.dart';
@@ -66,6 +67,7 @@ class WhatsAppGroupChat extends ConsumerStatefulWidget {
 class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     with TickerProviderStateMixin {
   final _supabase = Supabase.instance.client;
+  final _teamsService = TeamsService();
   final _messageController = TextEditingController();
   final _scrollController = ScrollController();
   final _focusNode = FocusNode();
@@ -633,6 +635,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
             children: [
               Column(
                 children: [
+                  LiveTaskTile(service: _teamsService),
                   Expanded(
                     child: Builder(
                       builder: (context) {

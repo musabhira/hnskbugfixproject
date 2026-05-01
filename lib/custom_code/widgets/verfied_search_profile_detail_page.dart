@@ -530,29 +530,6 @@ class _VerfiedSearchProfileDetailPageState
     );
   }
 
-// Share gallery item
-  /*
-  void _shareGalleryItem(Map<String, dynamic> item) async {
-    try {
-      // This is a simple implementation - you might want to use a share package
-      // like 'share_plus' for more features
-      final title = item['gallery_title'] ?? 'Check out this item';
-      final imageUrl = item['gallery_image_url'] ?? '';
-      final description = item['gallery_description'] ?? '';
-
-      // You would implement actual sharing functionality here with your preferred share plugin
-      await Share.share(
-        '$title\n\n$description\n\n$imageUrl',
-        subject: title,
-      );
-    } catch (e) {
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error sharing: $e')),
-      );
-    }
-  }
-  */
 
   Future<void> fetchHideStatus() async {
     try {
@@ -894,7 +871,7 @@ class _VerfiedSearchProfileDetailPageState
     String profileUrl =
         '${WhatsAppShareHelper.baseAppUrl}/verifiedProfile?userid=${widget.userId}';
     // ignore: deprecated_member_use
-    Share.share('Check out this profile: $profileUrl');
+    SharePlus.instance.share(ShareParams(text: 'Check out this profile: $profileUrl'));
   }
 
   // https://handskillapp.web.app/verifiedProfile?userid=67f21fa3-3cc9-4bad-9554-be88b8c4b740

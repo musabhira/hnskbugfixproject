@@ -1,25 +1,12 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
-import 'package:pocket_mates_app/custom_code/widgets/conversation_tile.dart';
-import 'package:pocket_mates_app/custom_code/widgets/profile_switch_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/native_webrtc_call_screen.dart';
-import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
-import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
 import 'package:pocket_mates_app/flutter_flow/flutter_flow_util.dart';
 import 'package:pocket_mates_app/flutter_flow/flutter_flow_theme.dart';
 import '/custom_code/widgets/index.dart';
-import '/custom_code/widgets/tools_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/drawing_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/poster_designer/template_gallery_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/bulk_sender/bulk_sender_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/poki_games_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/nearby_users_page.dart';
 import 'dart:ui' as ui;
 import 'dart:convert';
 import 'dart:async' as async;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:pocket_mates_app/custom_code/widgets/verfied_search_profile_detail_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/chat_list_shimmer.dart';
 import 'package:pocket_mates_app/custom_code/widgets/settings_page.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/material.dart' as material;
@@ -27,19 +14,17 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/whats_app_groups_provider.dart'
     as groups_provider;
-import 'package:pocket_mates_app/custom_code/widgets/chat/create_group_dialog.dart';
 import 'package:pocket_mates_app/custom_code/widgets/active_users_provider.dart';
 import 'package:pocket_mates_app/custom_code/widgets/teams/teams_service.dart';
-import 'package:pocket_mates_app/custom_code/widgets/notifications_list_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/share_content_screen.dart';
 import 'package:pocket_mates_app/custom_code/widgets/status_display_widget.dart';
-import 'package:pocket_mates_app/custom_code/widgets/drawing_academy_home_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/thoughts_feed_section.dart';
-import 'package:pocket_mates_app/custom_code/widgets/teams/team_detail_page.dart';
 import 'dart:io' as io;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:math' as math;
-import 'package:pocket_mates_app/custom_code/widgets/eula_compliance_dialog.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.dart';
+import 'package:pocket_mates_app/custom_code/widgets/native_webrtc_call_screen.dart';
+import 'package:pocket_mates_app/custom_code/widgets/conversation_tile.dart';
 
 // Aliases for WhatsApp Groups Provider to avoid naming conflicts
 typedef ChatConversation = groups_provider.ChatConversation;
@@ -228,7 +213,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         _isSearchingProducts = false;
       });
     } catch (e) {
-      debugPrint('Error performing search: $e');
+      debugPrint('Search error: $e');
       safeSetState(() {
         _isSearchingPeople = false;
         _isSearchingProducts = false;
@@ -293,7 +278,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         });
       }
     } catch (e) {
-      debugPrint('Error loading cached home data: $e');
+      debugPrint('Cache error: $e');
     }
   }
 
@@ -356,7 +341,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       };
       await prefs.setString('cached_stats_$userId', jsonEncode(statsMap));
     } catch (e) {
-      debugPrint('Error loading all user data: $e');
+      debugPrint('User data load error: $e');
       safeSetState(() => _isLoading = false);
     }
   }
@@ -405,7 +390,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         }
       }
     } catch (e) {
-      debugPrint('Error checking for updates: $e');
+      debugPrint('Update check error: $e');
     }
   }
 
@@ -575,7 +560,10 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                               await launchUrl(url, mode: LaunchMode.externalApplication);
                             }
                           }
-                          if (mounted && !isMandatory) Navigator.pop(context);
+                          if (!mounted) return;
+                          if (!isMandatory) {
+                            Navigator.pop(context);
+                          }
                         },
                         child: const Text(
                           'Update Now',
@@ -795,7 +783,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         ref.refresh(activeUsersProvider(profileId.toString()).future),
       ]);
     } catch (e) {
-      debugPrint('Error refreshing home page: $e');
+      debugPrint('Refresh error: $e');
     }
   }
 
@@ -973,7 +961,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                 ),
                               );
                             } catch (e) {
-                              debugPrint('Error parsing team from timer: $e');
+                              debugPrint('Team error: $e');
                             }
                           }
                         } else if (conversation.isGroup) {
@@ -1081,7 +1069,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
           padding: const EdgeInsets.all(20),
           child: Center(
             child: Text(
-              'Error loading chats: $error',
+              'Chat error: $error',
               style: const material.TextStyle(color: material.Colors.red),
             ),
           ),
@@ -1094,10 +1082,10 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   Widget _buildBottomNavigationBar(BuildContext context) {
     final bottomPadding = material.MediaQuery.of(context).padding.bottom;
     return Container(
-      height: 95 + bottomPadding, // Increased height for premium feel
+      height: 95 + bottomPadding,
       padding: EdgeInsets.only(bottom: bottomPadding),
       decoration: BoxDecoration(
-        color: material.Colors.black, // Pure black background
+        color: material.Colors.black,
         border: Border(
           top: BorderSide(
             color: material.Colors.white.withValues(alpha: 0.08),
@@ -1247,7 +1235,6 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       ),
     );
   }
-  // Methods being added here
 
   void _showAddBottomSheet(BuildContext context) {
     showDialog(
@@ -1259,7 +1246,6 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // TOP ROW: ADD GALLERY (Full Width)
               Row(
                 children: [
                   Expanded(
@@ -1319,12 +1305,10 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
               ),
               const SizedBox(height: 12),
 
-              // BOTTOM ROW: SERVICE, THOUGHT, EVENT
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // ADD SERVICE
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 4.0),
@@ -1336,7 +1320,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                             context: context,
                             customMessage: "Please login to add Service",
                           );
-                          if (isAuthenticated) {
+                          if (isAuthenticated && mounted) {
                             Navigator.push(
                                 context,
                                 material.MaterialPageRoute(
@@ -1378,7 +1362,6 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                     ),
                   ),
 
-                  // ADD THOUGHT
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 4.0),
@@ -1431,7 +1414,6 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                     ),
                   ),
 
-                  // ADD EVENT (Verified Only)
                   if (_isVerified)
                     Expanded(
                       child: Padding(
@@ -1504,16 +1486,16 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     String mode,
     String currentProfileId,
   ) async {
-    // 1. Get Active Users
     final activeUsersState = ref.read(activeUsersProvider(currentProfileId));
 
     if (!activeUsersState.hasValue) {
-      if (mounted) {
-        material.ScaffoldMessenger.of(context).showSnackBar(
-          const material.SnackBar(
+      if (!mounted) return;
+      Navigator.pop(context); // Close loading
+
+      material.ScaffoldMessenger.of(context).showSnackBar(
+        const material.SnackBar(
               content: Text('Connecting to active network...')),
-        );
-      }
+      );
       return;
     }
 
@@ -1522,10 +1504,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     // 2. Filter out self (already done in provider, but double check)
     // and potentially filter by interests if we had that data.
     // 3. Match Logic
-    Map<String, dynamic> randomUser;
-    if (activeFriends.isNotEmpty) {
-      randomUser = (activeFriends..shuffle()).first;
-    } else {
+    if (activeFriends.isEmpty) {
       final List<dynamic> allUsersData = await ref
           .read(groups_provider.supabaseClientProvider)
           .from('profile')
@@ -1535,15 +1514,13 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 
       if (allUsersData.isEmpty) {
         if (mounted) {
+          material.debugPrint('No users found in system.');
           material.ScaffoldMessenger.of(context).showSnackBar(
             const material.SnackBar(content: Text('No users found in system.')),
           );
         }
         return;
       }
-      final users = List.from(allUsersData);
-      users.shuffle();
-      // randomUser = users.first as Map<String, dynamic>; // Unused
     }
 
     // 4. Initiate Call Directly
@@ -2194,7 +2171,7 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                             final auth =
                                 await AuthAlertBox.checkAuthAndShowAlert(
                                     context: context);
-                            if (auth) {
+                            if (auth && context.mounted) {
                               showDialog(
                                   context: context,
                                   builder: (context) => CreateGroupDialog(

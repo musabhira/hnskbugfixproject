@@ -5,13 +5,13 @@ import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/widgets/gallery_profile_search_page.dart';
 import 'index.dart';
 
-import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
-import 'package:pocket_mates_app/custom_code/widgets/search_profile_detail_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/share_content_screen.dart';
-import 'package:pocket_mates_app/custom_code/widgets/status_display_widget.dart';
-import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
 import 'package:pocket_mates_app/flutter_flow/flutter_flow_theme.dart';
 import 'package:pocket_mates_app/flutter_flow/flutter_flow_util.dart';
+import 'package:pocket_mates_app/custom_code/widgets/search_profile_detail_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/status_display_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
+import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/share_content_screen.dart';
 import 'package:fluent_ui/fluent_ui.dart' as fluent;
 
 import 'package:pocket_mates_app/auth/auth_helper.dart';
@@ -777,6 +777,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
         'updated_at': DateTime.now().toIso8601String(),
       }).eq('id', groupId);
 
+      if (!mounted) return;
       Navigator.pop(context); // Close loading
 
       // Show success message
@@ -791,6 +792,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
         ),
       );
     } catch (e) {
+      if (!mounted) return;
       Navigator.pop(context); // Close loading
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

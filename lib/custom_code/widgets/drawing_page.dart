@@ -72,7 +72,6 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
   bool _isLoadingSession = false;
   bool _showSavedIndicator = false;
   bool _isInteractingWithOverlay = false;
-  SymmetryMode _symmetryMode = SymmetryMode.none;
   List<String> _recentDrawingsPaths = [];
   Offset _sidebarOffset = const Offset(8, 0);
   String? _selectedOverlayId;
@@ -160,8 +159,12 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
 
   void _clearLayer() {
     setState(() {
-      _layers[_activeLayerIndex].strokes.clear();
-      _layers[_activeLayerIndex].redoStack.clear();
+    for (var layer in _layers) {
+      layer.strokes.clear();
+    }
+    for (var layer in _layers) {
+      layer.redoStack.clear();
+    }
     });
     _autoSave();
   }
@@ -441,52 +444,6 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
     }
   }
 
-  void _undo() {
-    setState(() {
-      final layer = _layers[_activeLayerIndex];
-      if (layer.strokes.isNotEmpty) layer.redoStack.add(layer.strokes.removeLast());
-    });
-    _autoSave();
-  }
-
-  void _redo() {
-    setState(() {
-      final layer = _layers[_activeLayerIndex];
-      if (layer.redoStack.isNotEmpty) layer.strokes.add(layer.redoStack.removeLast());
-    });
-    _autoSave();
-  }
-
-  Future<void> _toggleRecording() async {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Screen recording is temporarily disabled in this build.')),
-    );
-    /* 
-    try {
-      if (_isRecording) {
-        final RecordOutput result = await _screenRecorder.stopRecord();
-        setState(() => _isRecording = false);
-        if (result.success == true && mounted) {
-           Share.shareXFiles([XFile(result.file.path)]);
-        }
-      } else {
-        final size = MediaQuery.of(context).size;
-        final dir = await getTemporaryDirectory();
-        final result = await _screenRecorder.startRecordScreen(
-          fileName: "Drawing_${DateTime.now().millisecondsSinceEpoch}",
-          dirPathToSave: dir.path,
-          width: size.width.toInt(),
-          height: size.height.toInt(),
-          audioEnable: false,
-        );
-        if (result.success == true) setState(() => _isRecording = true);
-      }
-    } catch (e) {
-      debugPrint("Recording error: $e");
-    }
-    */
-  }
-
   Future<void> _replayDrawing() async {
     if (_isReplaying || _layers[_activeLayerIndex].strokes.isEmpty) return;
     final allStrokes = List<DrawingStroke>.from(_layers[_activeLayerIndex].strokes);
@@ -553,8 +510,12 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
        if (byteData != null) {
          final dir = await getTemporaryDirectory();
          final path = '${dir.path}/export_${DateTime.now().millisecondsSinceEpoch}.png';
-         await File(path).writeAsBytes(byteData.buffer.asUint8List());
-         await Share.shareXFiles([XFile(path)]);
+         final file = await File(path).writeAsBytes(byteData.buffer.asUint8List());
+         final xFile = XFile(file.path);
+         await SharePlus.instance.share(ShareParams(
+          files: [xFile],
+          text: 'My drawing from Handskill Friends',
+        ));
        }
      } catch (e) {
        debugPrint("Export error: $e");
@@ -580,16 +541,6 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
     } catch (e) {
       debugPrint("Import error: $e");
     }
-  }
-
-  void _newCanvas() {
-    setState(() {
-      _layers.clear();
-      _textOverlays.clear();
-      _imageOverlays.clear();
-      _addLayer();
-    });
-    _autoSave();
   }
 
   void _addText() {
@@ -679,7 +630,9 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
                           ..._imageOverlays.map((img) => Positioned(
                             left: img.position.dx, top: img.position.dy,
                             child: GestureDetector(
-                              onTap: () => setState(() => _selectedOverlayId = img.id),
+                              onTap: () {
+                                setState(() => _selectedOverlayId = img.id);
+                              },
                               child: Transform.rotate(
                                 angle: img.rotation,
                                 child: Transform.scale(
@@ -808,7 +761,26 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
               _handle(Alignment.topLeft, (d) => setState(() { if(isImage) overlay.scale = (overlay.scale - d.delta.dx/300).clamp(0.1, 5.0); else overlay.fontSize = (overlay.fontSize - d.delta.dx).clamp(10, 200); })),
               _handle(Alignment.topRight, (d) => setState(() => overlay.rotation += d.delta.dx/100)),
               _handle(Alignment.bottomRight, (d) => setState(() { if(isImage) overlay.scale = (overlay.scale + d.delta.dx/300).clamp(0.1, 5.0); else overlay.fontSize = (overlay.fontSize + d.delta.dx).clamp(10, 200); })),
-              Positioned(right:-10, top:-10, child: GestureDetector(onTap: () => setState(() { if(isImage)_imageOverlays.remove(overlay); else _textOverlays.remove(overlay); _selectedOverlayId=null; _autoSave(); }), child: Container(padding:const EdgeInsets.all(4), decoration:const BoxDecoration(color:Colors.red, shape:BoxShape.circle), child:const Icon(Icons.close, color:Colors.white, size:12)))),
+              Positioned(
+                right: -10,
+                top: -10,
+                child: GestureDetector(
+                  onTap: () => setState(() {
+                    if (isImage) {
+                      _imageOverlays.remove(overlay);
+                    } else {
+                      _textOverlays.remove(overlay);
+                    }
+                    _selectedOverlayId = null;
+                    _autoSave();
+                  }),
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+                    child: const Icon(Icons.close, color: Colors.white, size: 12),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -1037,7 +1009,7 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
         Row(children: [
           const Text('Grid', style: TextStyle(color: Colors.white54, fontSize: 12)),
           const Spacer(),
-          Switch(value: _showGrid, activeColor: Colors.amber, onChanged: (v) => setState(() => _showGrid = v)),
+          Switch(value: _showGrid, activeThumbColor: Colors.amber, onChanged: (v) => setState(() => _showGrid = v)),
         ]),
       ]),
     ).animate().fadeIn().slideX(begin: -0.1);
@@ -1079,9 +1051,18 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
         ClipRRect(borderRadius: BorderRadius.circular(16), child: Image.file(File(path))),
         const SizedBox(height: 16),
         Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-          _headerBtn(Icons.share_rounded, () async { await Share.shareXFiles([XFile(path)], text: 'PocketMates Sketch'); }),
+          _headerBtn(Icons.share_rounded, () async {
+            await SharePlus.instance.share(ShareParams(
+              files: [XFile(path)],
+              text: 'PocketMates Sketch',
+            ));
+          }),
           const SizedBox(width: 16),
-          _headerBtn(Icons.delete_outline_rounded, () async { await File(path).delete(); _loadRecentDrawings(); Navigator.pop(ctx); }),
+          _headerBtn(Icons.delete_outline_rounded, () async { 
+            await File(path).delete(); 
+            _loadRecentDrawings(); 
+            if (ctx.mounted) Navigator.pop(ctx); 
+          }),
         ]),
       ]),
     ));
@@ -1194,7 +1175,7 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
           Row(children: [
             Text('Fill Shape', style: GoogleFonts.outfit(color: Colors.white54)),
             const Spacer(),
-            Switch(value: _shapeFilled, activeColor: Colors.amber, onChanged: (v) => setState(() => _shapeFilled = v)),
+            Switch(value: _shapeFilled, activeThumbColor: Colors.amber, onChanged: (v) => setState(() => _shapeFilled = v)),
           ]),
           const SizedBox(height: 16),
         ]),
@@ -1239,10 +1220,19 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
             _optBtn(Icons.school_outlined, 'Learn', () => Navigator.pop(ctx)),
             _optBtn(Icons.settings_outlined, 'App Settings', () { Navigator.pop(ctx); _showSettingsSheet(); }),
           ]),
-          const SizedBox(height: 16),
         ]),
       ),
     );
+  }
+
+  void _newCanvas() {
+    setState(() {
+      _layers.clear();
+      _layers.add(DrawingLayer(id: 'bg', name: 'Background'));
+      _activeLayerIndex = 0;
+      _canvasBgColor = Colors.white;
+      _projectId = DateTime.now().millisecondsSinceEpoch.toString();
+    });
   }
 
   Widget _optBtn(IconData icon, String label, VoidCallback onTap, {bool highlight = false}) {
@@ -1265,7 +1255,7 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           Text('Preferences', style: GoogleFonts.outfit(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 20),
-          ListTile(leading: const Icon(Icons.grid_3x3, color: Colors.white54), title: Text('Canvas Grid', style: GoogleFonts.outfit(color: Colors.white70)), trailing: Switch(value: _showGrid, activeColor: Colors.amber, onChanged: (v) => setState(() => _showGrid = v))),
+          ListTile(leading: const Icon(Icons.grid_3x3, color: Colors.white54), title: Text('Canvas Grid', style: GoogleFonts.outfit(color: Colors.white70)), trailing: Switch(value: _showGrid, activeThumbColor: Colors.amber, onChanged: (v) => setState(() => _showGrid = v))),
           ListTile(leading: const Icon(Icons.format_paint, color: Colors.white54), title: Text('Paper Texture', style: GoogleFonts.outfit(color: Colors.white70)), trailing: Container(width: 28, height: 28, decoration: BoxDecoration(color: _canvasBgColor, shape: BoxShape.circle, border: Border.all(color: Colors.white24))), onTap: () { Navigator.pop(ctx); _showCanvasBgPicker(); }),
           const SizedBox(height: 16),
         ]),

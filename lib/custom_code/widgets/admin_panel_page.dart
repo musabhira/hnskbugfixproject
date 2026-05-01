@@ -628,11 +628,11 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
         const SizedBox(width: 12),
         Text(label, style: const TextStyle(color: Colors.white70, fontSize: 13)),
         const Spacer(),
-        Switch(
-          activeColor: Colors.blue,
-          value: value,
-          onChanged: onChanged,
-        ),
+          Switch(
+            activeThumbColor: Colors.blue,
+            value: value,
+            onChanged: onChanged,
+          ),
       ],
     );
   }
@@ -797,7 +797,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                                   children: [
                                     const Text('Block', style: TextStyle(color: Colors.grey, fontSize: 12)),
                                     Switch(
-                                      activeColor: Colors.red,
+                                      activeThumbColor: Colors.red,
                                       value: isBlocked,
                                       onChanged: (val) => _toggleToolPermission(toolName, block: val),
                                     ),
@@ -809,7 +809,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                                   children: [
                                     const Text('Private', style: TextStyle(color: Colors.grey, fontSize: 12)),
                                     Switch(
-                                      activeColor: Colors.blue,
+                                      activeThumbColor: Colors.blue,
                                       value: hasPrivate,
                                       onChanged: (val) => _toggleToolPermission(toolName, privateAccess: val),
                                     ),

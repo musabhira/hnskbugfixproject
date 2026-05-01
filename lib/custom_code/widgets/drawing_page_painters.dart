@@ -15,12 +15,16 @@ class LayerPainter extends CustomPainter {
     for (final stroke in strokes) {
       _drawStroke(canvas, stroke);
     }
-    if (activeStroke != null) _drawStroke(canvas, activeStroke!);
+    if (activeStroke != null) {
+      _drawStroke(canvas, activeStroke!);
+    }
     canvas.restore();
   }
 
   void _drawStroke(Canvas canvas, DrawingStroke stroke) {
-    if (stroke.points.isEmpty) return;
+    if (stroke.points.isEmpty) {
+      return;
+    }
 
     final paint = Paint()
       ..color = stroke.color.withValues(alpha: stroke.opacity)
@@ -162,9 +166,13 @@ class LayerPainter extends CustomPainter {
         final cx = (start.dx + end.dx) / 2;
         final cy = (start.dy + end.dy) / 2;
         final r = (end - start).distance / 2;
-        if (shape == ShapeTool.star) _drawStar(canvas, cx, cy, r, paint);
-        else if (shape == ShapeTool.pentagon) _drawPolygon(canvas, cx, cy, r, 5, paint);
-        else _drawPolygon(canvas, cx, cy, r, 6, paint);
+        if (shape == ShapeTool.star) {
+          _drawStar(canvas, cx, cy, r, paint);
+        } else if (shape == ShapeTool.pentagon) {
+          _drawPolygon(canvas, cx, cy, r, 5, paint);
+        } else {
+          _drawPolygon(canvas, cx, cy, r, 6, paint);
+        }
         break;
     }
   }
@@ -177,7 +185,11 @@ class LayerPainter extends CustomPainter {
       final radius = i.isEven ? r : ir;
       final x = cx + radius * math.cos(angle);
       final y = cy + radius * math.sin(angle);
-      if (i == 0) path.moveTo(x, y); else path.lineTo(x, y);
+      if (i == 0) {
+        path.moveTo(x, y);
+      } else {
+        path.lineTo(x, y);
+      }
     }
     path.close();
     canvas.drawPath(path, paint);
@@ -189,7 +201,11 @@ class LayerPainter extends CustomPainter {
       final angle = (i * 2 * math.pi / sides) - math.pi / 2;
       final x = cx + r * math.cos(angle);
       final y = cy + r * math.sin(angle);
-      if (i == 0) path.moveTo(x, y); else path.lineTo(x, y);
+      if (i == 0) {
+        path.moveTo(x, y);
+      } else {
+        path.lineTo(x, y);
+      }
     }
     path.close();
     canvas.drawPath(path, paint);
@@ -303,7 +319,11 @@ class ShapePreviewPainter extends CustomPainter {
       final radius = i.isEven ? r : ir;
       final x = cx + radius * math.cos(angle);
       final y = cy + radius * math.sin(angle);
-      if (i == 0) path.moveTo(x, y); else path.lineTo(x, y);
+      if (i == 0) {
+        path.moveTo(x, y);
+      } else {
+        path.lineTo(x, y);
+      }
     }
     path.close();
     canvas.drawPath(path, paint);
@@ -315,7 +335,11 @@ class ShapePreviewPainter extends CustomPainter {
       final angle = (i * 2 * math.pi / sides) - math.pi / 2;
       final x = cx + r * math.cos(angle);
       final y = cy + r * math.sin(angle);
-      if (i == 0) path.moveTo(x, y); else path.lineTo(x, y);
+      if (i == 0) {
+        path.moveTo(x, y);
+      } else {
+        path.lineTo(x, y);
+      }
     }
     path.close();
     canvas.drawPath(path, paint);
@@ -351,7 +375,9 @@ class LassoPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (points.length < 2) return;
+    if (points.length < 2) {
+      return;
+    }
     final paint = Paint()
       ..color = Colors.amber.withValues(alpha: 0.5)
       ..strokeWidth = 2.0

@@ -41,7 +41,10 @@ void main() async {
   // Start optional services in the background without blocking the UI
   unawaited(Firebase.initializeApp().then((_) {
     PushNotificationService.initialize();
-  }).catchError((e) => debugPrint('Optional service error: $e')));
+  }).catchError((e) {
+    debugPrint('Optional service error: $e');
+    return null;
+  }));
 
   runApp(const ProviderScope(child: MyApp()));
 }

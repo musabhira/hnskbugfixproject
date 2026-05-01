@@ -133,12 +133,14 @@ class _PosterEditorPageState extends State<PosterEditorPage> {
       if (byteData != null) {
         final Uint8List pngBytes = byteData.buffer.asUint8List();
 
-        await Share.shareXFiles(
-          [
-            XFile.fromData(pngBytes,
-                mimeType: 'image/png', name: 'poster_design.png')
-          ],
-          text: 'Check out my new poster design!',
+        await SharePlus.instance.share(
+          ShareParams(
+            files: [
+              XFile.fromData(pngBytes,
+                  mimeType: 'image/png', name: 'poster_design.png')
+            ],
+            text: 'Check out my new poster design!',
+          ),
         );
 
         if (mounted) {

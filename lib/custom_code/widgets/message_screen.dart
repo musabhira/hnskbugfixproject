@@ -27,9 +27,8 @@ import 'package:dio/dio.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/voice_recorder.dart';
 import 'package:pocket_mates_app/custom_code/services/local_sync_server.dart';
 import 'package:pocket_mates_app/custom_code/widgets/thread_feed_page.dart';
-
-
-import 'package:pocket_mates_app/auth/auth_helper.dart';
+import '/auth/auth_helper.dart';
+import 'index.dart';
 
 class MessageScreen extends StatefulWidget {
   final String receiverId;

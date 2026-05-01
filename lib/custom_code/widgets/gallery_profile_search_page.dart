@@ -1241,7 +1241,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
         final String itemLink =
             '${WhatsAppShareHelper.baseAppUrl}/item/${widget.item['gallery_id']?.toString() ?? widget.item['id']?.toString() ?? ''}';
 
-        Share.share('$title\n\n$desc\n\n$itemLink');
+        SharePlus.instance.share(ShareParams(text: '$title\n\n$desc\n\n$itemLink'));
       },
       menuItems: [
         MenuFlyoutItem(

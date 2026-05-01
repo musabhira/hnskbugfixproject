@@ -20,7 +20,8 @@ class _TeamDetailPageState extends State<TeamDetailPage>
   List<TeamTask> _tasks = [];
   List<TeamMember> _members = [];
   bool _isLoading = true;
-  Timer? _uiTimer;
+  Timer? _uiRefreshTimer;
+  StreamSubscription? _tasksSubscription;
   String _taskFilter = 'all'; // all, mine, pending
 
   @override
@@ -28,15 +29,27 @@ class _TeamDetailPageState extends State<TeamDetailPage>
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     _loadData();
-    // Refresh UI every minute to update active timers
-    _uiTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
+    _setupStream();
+    // UI refresh for timers (every second or every 10 seconds for performance)
+    _uiRefreshTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (mounted) setState(() {});
+    });
+  }
+
+  void _setupStream() {
+    _tasksSubscription = _service.getTeamTasksStream(widget.team.id).listen((tasks) {
+      if (mounted) {
+        setState(() {
+          _tasks = tasks;
+        });
+      }
     });
   }
 
   @override
   void dispose() {
-    _uiTimer?.cancel();
+    _uiRefreshTimer?.cancel();
+    _tasksSubscription?.cancel();
     _tabController.dispose();
     super.dispose();
   }

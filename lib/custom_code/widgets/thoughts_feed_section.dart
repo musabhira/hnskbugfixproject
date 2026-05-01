@@ -626,7 +626,7 @@ class _TwitterThreadCardState extends State<TwitterThreadCard> {
           Navigator.pop(context);
           final text =
               "Check out this thought: ${widget.thread['content'] ?? ''}";
-          Share.share(text);
+          SharePlus.instance.share(ShareParams(text: text));
         },
       ),
     );

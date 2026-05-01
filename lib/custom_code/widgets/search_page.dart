@@ -1,6 +1,5 @@
 // Automatic FlutterFlow imports
-import 'package:pocket_mates_app/custom_code/widgets/search_profile_detail_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
+import 'package:flutter/material.dart';
 
 import '/backend/supabase/supabase.dart';
 import 'index.dart'; // Imports other custom widgets
@@ -83,7 +82,7 @@ class _SearchPageState extends State<SearchPage> {
 
   void _logSearchAnalytics(String query, int resultCount) {
     // Example: Send to analytics service like Firebase Analytics, Mixpanel, etc.
-    print(
+    debugPrint(
         'Search Analytics: Query="$query", Results=$resultCount, Timestamp=${DateTime.now()}');
 
     // You can implement actual analytics here:
@@ -102,7 +101,7 @@ class _SearchPageState extends State<SearchPage> {
     // SharedPreferences.getInstance().then((prefs) {
     //   prefs.setStringList('search_history', _searchHistory);
     // });
-    print('Search History Updated: $_searchHistory');
+    debugPrint('Search History Updated: $_searchHistory');
   }
 
   void _updatePopularSearches() {
@@ -111,7 +110,7 @@ class _SearchPageState extends State<SearchPage> {
       ..sort((a, b) => b.value.compareTo(a.value));
 
     var popularSearches = sortedSearches.take(5).map((e) => e.key).toList();
-    print('Popular Searches: $popularSearches');
+    debugPrint('Popular Searches: $popularSearches');
 
     // You can use this data to show suggestions or trending searches
   }
@@ -452,7 +451,7 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
       safeSetState(() {
         _isLoading = false;
       });
-      print('Error fetching profiles: $e');
+      debugPrint('Error fetching profiles: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error fetching profiles: $e')),
@@ -498,7 +497,7 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
       safeSetState(() {
         _isLoading = false;
       });
-      print('Error searching profiles: $e');
+      debugPrint('Error searching profiles: $e');
     }
   }
 
@@ -545,7 +544,7 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
       safeSetState(() {
         _isLoadingMore = false;
       });
-      print('Error loading more profiles: $e');
+      debugPrint('Error loading more profiles: $e');
     }
   }
 
@@ -750,13 +749,14 @@ class _FollowButtonState extends State<FollowButton> {
         });
       }
     } catch (e) {
-      print("Error checking follow status: $e");
+      debugPrint("Error checking follow status: $e");
     }
   }
 
   Future<void> _toggleFollow() async {
     final currentUserId = _supabase.auth.currentUser?.id;
     if (currentUserId == null) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please log in to follow users')),
       );
@@ -813,7 +813,8 @@ class _FollowButtonState extends State<FollowButton> {
       safeSetState(() {
         _isLoading = false;
       });
-      print("$e");
+      debugPrint("$e");
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error updating follow status: $e')),
       );
@@ -836,7 +837,7 @@ class _FollowButtonState extends State<FollowButton> {
         // _serviceCount = followResponse['service_count'] ?? 0;
       });
     } catch (e) {
-      print('Error fetching follow counts: $e');
+      debugPrint('Error fetching follow counts: $e');
     }
   }
 
@@ -865,6 +866,7 @@ class _FollowButtonState extends State<FollowButton> {
       safeSetState(() {
         _isLoading = false;
       });
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error fetching profile data: $e')),
       );
@@ -874,8 +876,8 @@ class _FollowButtonState extends State<FollowButton> {
   Map<String, dynamic>? _profileData;
   Color _getButtonColor() {
     // Debug print to check if button_color_code exists
-    print('Profile data: $_profileData');
-    print('Button color code: ${_profileData?['button_color_code']}');
+    debugPrint('Profile data: $_profileData');
+    debugPrint('Button color code: ${_profileData?['button_color_code']}');
 
     if (_profileData != null && _profileData!['button_color_code'] != null) {
       try {
@@ -886,7 +888,7 @@ class _FollowButtonState extends State<FollowButton> {
         }
         return Color(int.parse('FF$colorCode', radix: 16));
       } catch (e) {
-        print('Error parsing color code: $e');
+        debugPrint('Error parsing color code: $e');
         return Theme.of(context).primaryColor;
       }
     }
@@ -975,7 +977,7 @@ class _ProfileDetailPageState extends State<ProfileDetailPage>
       });
     } catch (e) {
       // Handle error quietly
-      print('Error fetching follow counts: $e');
+      debugPrint('Error fetching follow counts: $e');
     }
   }
 
@@ -1044,6 +1046,7 @@ class _ProfileDetailPageState extends State<ProfileDetailPage>
       safeSetState(() {
         _isLoading = false;
       });
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error fetching profile data: $e')),
       );
