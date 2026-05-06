@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'package:flutter/gestures.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_web_plugins/url_strategy.dart';
 
 import 'auth/supabase_auth/supabase_user_provider.dart';
@@ -26,25 +26,36 @@ void main() async {
 
   // Initialize core application services with a timeout to prevent hanging
   try {
+    debugPrint('Main: Starting core service initialization...');
     await Future.wait([
-      SupaFlow.initialize(),
-      LocalSyncServer().initialize(),
-      FlutterFlowTheme.initialize(),
+      SupaFlow.initialize().then((_) => debugPrint('Main: SupaFlow initialized.')),
+      LocalSyncServer().initialize().then((_) => debugPrint('Main: LocalSyncServer initialized.')),
+      FlutterFlowTheme.initialize().then((_) => debugPrint('Main: FlutterFlowTheme initialized.')),
     ]).timeout(const Duration(seconds: 5), onTimeout: () {
       debugPrint('Core service initialization timed out. Proceeding anyway...');
       return [];
     });
+    debugPrint('Main: Core service initialization complete or timed out.');
   } catch (e) {
     debugPrint('Core service initialization error: $e');
   }
 
   // Start optional services in the background without blocking the UI
-  unawaited(Firebase.initializeApp().then((_) {
-    PushNotificationService.initialize();
-  }).catchError((e) {
-    debugPrint('Optional service error: $e');
-    return null;
-  }));
+  final isFirebaseSupported = kIsWeb || 
+      (defaultTargetPlatform == TargetPlatform.android || 
+       defaultTargetPlatform == TargetPlatform.iOS || 
+       defaultTargetPlatform == TargetPlatform.macOS);
+
+  if (isFirebaseSupported) {
+    unawaited(Firebase.initializeApp().then((_) {
+      PushNotificationService.initialize();
+    }).catchError((e) {
+      debugPrint('Optional service error: $e');
+      return null;
+    }));
+  } else {
+    debugPrint('Firebase is not supported on this platform ($defaultTargetPlatform). Skipping initialization.');
+  }
 
   runApp(const ProviderScope(child: MyApp()));
 }
@@ -104,14 +115,19 @@ class _MyAppState extends State<MyApp> {
 
     userStream = pocketMatesAppSupabaseUserStream()
       ..listen((user) {
+        debugPrint('Main: User stream event received. Logged in: ${user.loggedIn}');
         _appStateNotifier.update(user);
         if (user.loggedIn) {
+          // PushNotificationService.initialize() handles its own platform checks and Firebase status
           PushNotificationService.initialize();
         }
         // Dismiss splash as soon as we have a user state
         if (_appStateNotifier.showSplashImage) {
+          debugPrint('Main: Dismissing splash image from user stream event.');
           _appStateNotifier.stopShowingSplashImage();
         }
+      }, onError: (e) {
+        debugPrint('Main: User stream error: $e');
       });
     jwtTokenStream.listen((_) {});
   }

@@ -9,6 +9,15 @@ class PushNotificationService {
       FlutterLocalNotificationsPlugin();
 
   static Future<void> initialize() async {
+    // Firebase Messaging does not support Windows/Linux
+    if (kIsWeb) {
+      // Web is supported
+    } else if (defaultTargetPlatform == TargetPlatform.windows || 
+               defaultTargetPlatform == TargetPlatform.linux) {
+      debugPrint('PushNotificationService: Skipping initialization on unsupported platform: $defaultTargetPlatform');
+      return;
+    }
+
     try {
       // Ensure Firebase is initialized before proceeding
       if (Firebase.apps.isEmpty) {

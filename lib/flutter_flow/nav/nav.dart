@@ -77,6 +77,7 @@ class AppStateNotifier extends ChangeNotifier {
   }
 
   void stopShowingSplashImage() {
+    debugPrint('AppStateNotifier: Stopping splash image. Previous state: $showSplashImage');
     showSplashImage = false;
     notifyListeners();
   }
@@ -296,8 +297,11 @@ class FFRoute {
                   builder: (context, _) => builder(context, ffParams),
                 )
               : builder(context, ffParams);
-          final child = appStateNotifier.loading
-              ? m.Material(
+          final child = ListenableBuilder(
+            listenable: appStateNotifier,
+            builder: (context, _) {
+              if (appStateNotifier.loading) {
+                return m.Material(
                   color: m.Colors.black,
                   child: Stack(
                     children: [
@@ -321,13 +325,13 @@ class FFRoute {
                           ],
                         ),
                       ),
-                      // Hidden "Force Continue" button that appears after a delay
+                      // Hidden "Force Continue" button that appears after a shorter delay
                       Align(
                         alignment: Alignment.bottomCenter,
                         child: Padding(
                           padding: const EdgeInsets.only(bottom: 40.0),
                           child: FutureBuilder(
-                            future: Future.delayed(const Duration(seconds: 8)),
+                            future: Future.delayed(const Duration(seconds: 5)),
                             builder: (context, snapshot) {
                               if (snapshot.connectionState == ConnectionState.done) {
                                 return m.TextButton(
@@ -342,8 +346,11 @@ class FFRoute {
                       ),
                     ],
                   ),
-                )
-              : page;
+                );
+              }
+              return page;
+            },
+          );
 
           final transitionInfo = state.transitionInfo;
           return transitionInfo.hasTransition
