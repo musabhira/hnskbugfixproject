@@ -8,6 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:ui' as ui;
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter/services.dart';
 
 class NativeWebRTCCallScreen extends StatefulWidget {
   final String mode; // 'Video', 'Voice', or 'Text'
@@ -50,6 +51,8 @@ class _NativeWebRTCCallScreenState extends State<NativeWebRTCCallScreen> {
   // Text Chat State
   final List<Map<String, dynamic>> _chatMessages = [];
   final TextEditingController _chatController = TextEditingController();
+  final TextEditingController _roomController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
   final ScrollController _chatScrollController = ScrollController();
 
   final Map<String, dynamic> _configuration = {
@@ -109,7 +112,8 @@ class _NativeWebRTCCallScreenState extends State<NativeWebRTCCallScreen> {
     }
   }
 
-  Future<void> findRoom() async {
+  // Lobby/Broadcast logic (No database needed)
+  Future<void> findRoom({String? specificRoomId}) async {
     if (!mounted) return;
     _matchingLoopTimer?.cancel();
     _roomSubscription?.unsubscribe();
@@ -123,99 +127,60 @@ class _NativeWebRTCCallScreenState extends State<NativeWebRTCCallScreen> {
       isSearching = true;
       isConnected = false;
       remoteUserId = null;
+      currentRoomId = specificRoomId;
       _chatMessages.clear();
-      _statusText = 'Searching for a match...';
+      _statusText = specificRoomId != null 
+          ? 'Joining room: $specificRoomId...' 
+          : 'Searching for a match...';
     });
 
     try {
-      // 1. Try to join an existing waiting room
-      final matchRes = await supabase
-          .from('rooms')
-          .select('id, user1_id')
-          .eq('status', 'waiting')
-          .eq('mode', widget.mode)
-          .neq('user1_id', myUserId!)
-          .order('created_at', ascending: true)
-          .limit(1)
-          .maybeSingle();
-
-      if (matchRes != null) {
-        final roomId = matchRes['id'].toString();
-        final foundUserId = matchRes['user1_id'].toString();
-
-        await supabase.from('rooms').update({
-          'user2_id': myUserId, 
-          'status': 'active'
-        }).eq('id', roomId);
-
-        setState(() {
-          currentRoomId = roomId;
-          remoteUserId = foundUserId;
-          _isCaller = false; 
-          _statusText = 'Stranger found! Connecting...';
-          if (widget.mode == 'Text') {
-            isConnected = true;
-            isSearching = false;
+      // If we have a specific room ID, join that directly
+      final channelName = specificRoomId != null 
+          ? 'room_$specificRoomId' 
+          : 'lobby_${widget.mode}';
+      
+      _roomSubscription = supabase.channel(channelName);
+      
+      _roomSubscription!
+        .onBroadcast(event: 'ping', callback: (payload) {
+          if (payload['senderId'] != myUserId && isSearching && !isConnected) {
+            _handleLobbyPing(payload);
+          }
+        })
+        .onBroadcast(event: 'pong', callback: (payload) {
+          if (payload['targetId'] == myUserId && isSearching && !isConnected) {
+            _handleLobbyPong(payload);
+          }
+        })
+        .onBroadcast(event: 'webrtc', callback: _handleSignalingMessage)
+        .onBroadcast(event: 'chat', callback: _handleChatMessage)
+        .subscribe((status, [error]) {
+          if (status == 'SUBSCRIBED') {
+            // Broadcast our presence
+            _roomSubscription?.sendBroadcastMessage(
+              event: 'ping',
+              payload: {'senderId': myUserId, 'mode': widget.mode},
+            );
           }
         });
 
-        _fetchRemoteUserInfo(foundUserId);
-        await _setupWebRTCAndSubscribe(roomId);
-        
-        if (widget.mode != 'Text') {
-           _startConnectionTimeout();
-        }
-        return;
-      }
-
-      // 2. Create a room and wait
-      final newRoomId = 'room_${Random().nextInt(9999999)}';
-      await supabase.from('rooms').insert({
-        'id': newRoomId, 
-        'user1_id': myUserId, 
-        'status': 'waiting', 
-        'mode': widget.mode
-      });
-
-      setState(() {
-        currentRoomId = newRoomId;
-        _isCaller = true; 
-        _statusText = 'Waiting for a stranger...';
-      });
-
-      _roomSubscription = supabase.channel('room_$newRoomId');
-      
-      _roomSubscription!.onPostgresChanges(
-          event: PostgresChangeEvent.update,
-          schema: 'public',
-          table: 'rooms',
-          filter: PostgresChangeFilter(type: PostgresChangeFilterType.eq, column: 'id', value: newRoomId),
-          callback: (payload) async {
-            final status = payload.newRecord['status'];
-            final u2 = payload.newRecord['user2_id'];
-            if (status == 'active' && u2 != null) {
-              setState(() {
-                remoteUserId = u2.toString();
-                _statusText = 'Stranger joined! Handshaking...';
-                if (widget.mode == 'Text') {
-                  isConnected = true;
-                  isSearching = false;
-                }
-              });
-              
-              _fetchRemoteUserInfo(u2.toString());
-              
-              if (widget.mode != 'Text') {
-                await _createOffer();
-              }
-            }
-          }).onBroadcast(event: 'webrtc', callback: _handleSignalingMessage)
-          .onBroadcast(event: 'chat', callback: _handleChatMessage)
-          .subscribe();
-          
       if (widget.mode != 'Text') {
         await _setupWebRTCConnection();
       }
+
+      // Periodically ping the lobby if searching
+      _matchingLoopTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
+        if (isSearching && !isConnected) {
+          _roomSubscription?.sendBroadcastMessage(
+            event: 'ping',
+            payload: {'senderId': myUserId, 'mode': widget.mode},
+          );
+        } else {
+          timer.cancel();
+        }
+      });
+
     } catch (e) {
       debugPrint('Matching Error: $e');
       setState(() => _statusText = 'Connection error. Retrying...');
@@ -223,23 +188,54 @@ class _NativeWebRTCCallScreenState extends State<NativeWebRTCCallScreen> {
     }
   }
 
-  Future<void> _fetchRemoteUserInfo(String userId) async {
-    try {
-      final res = await supabase
-          .from('profile')
-          .select('name, profile_image_url, verified')
-          .eq('user_id', userId)
-          .maybeSingle();
+  void _handleLobbyPing(Map<String, dynamic> payload) {
+    // Someone else is in the lobby, respond with a pong to initiate session
+    _roomSubscription?.sendBroadcastMessage(
+      event: 'pong',
+      payload: {
+        'senderId': myUserId,
+        'targetId': payload['senderId'],
+      },
+    );
+    
+    _initiateConnection(payload['senderId']);
+  }
 
-      if (res != null && mounted) {
-        setState(() {
-          _remoteUserName = res['name'];
-          _remoteUserImage = res['profile_image_url'];
-          _isRemoteVerified = res['verified'] ?? false;
-        });
-      }
-    } catch (e) {
-      debugPrint("Error fetching remote info: $e");
+  void _handleLobbyPong(Map<String, dynamic> payload) {
+    // Someone responded to our ping
+    _initiateConnection(payload['senderId']);
+  }
+
+  void _initiateConnection(String foundUserId) {
+    if (isConnected || !isSearching) return;
+
+    setState(() {
+      remoteUserId = foundUserId;
+      _isCaller = myUserId!.hashCode > foundUserId.hashCode; // Deterministic caller
+      _statusText = 'Peer found! Connecting...';
+    });
+
+    _fetchRemoteUserInfo(foundUserId);
+    
+    if (_isCaller && widget.mode != 'Text') {
+      Future.delayed(const Duration(milliseconds: 500), () => _createOffer());
+    } else if (widget.mode == 'Text') {
+      setState(() {
+        isConnected = true;
+        isSearching = false;
+      });
+    }
+  }
+
+  Future<void> _fetchRemoteUserInfo(String userId) async {
+    // We stay anonymous! Only fetching verification status if needed, 
+    // but we won't show real names to fulfill the "Stranger" requirement.
+    if (mounted) {
+      setState(() {
+        _remoteUserName = 'Stranger';
+        _remoteUserImage = null; // Don't show real profile pictures
+        _isRemoteVerified = false; 
+      });
     }
   }
 
@@ -434,14 +430,6 @@ class _NativeWebRTCCallScreenState extends State<NativeWebRTCCallScreen> {
     _connectionTimeoutTimer?.cancel();
     _matchingLoopTimer?.cancel();
     
-    if (currentRoomId != null) {
-      try {
-        await supabase.from('rooms').delete().eq('id', currentRoomId!);
-      } catch (e) {
-        debugPrint('Cleanup error: $e');
-      }
-    }
-    
     _roomSubscription?.unsubscribe();
     _roomSubscription = null;
     currentRoomId = null;
@@ -495,6 +483,8 @@ class _NativeWebRTCCallScreenState extends State<NativeWebRTCCallScreen> {
     _localRenderer.dispose();
     _remoteRenderer.dispose();
     _chatController.dispose();
+    _roomController.dispose();
+    _scrollController.dispose();
     _chatScrollController.dispose();
     super.dispose();
   }
@@ -589,35 +579,35 @@ class _NativeWebRTCCallScreenState extends State<NativeWebRTCCallScreen> {
         decoration: BoxDecoration(
           gradient: isMe 
               ? const LinearGradient(
-                  colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                )
-              : null,
-          color: isMe ? null : Colors.white.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.only(
-            topLeft: const Radius.circular(20),
-            topRight: const Radius.circular(20),
-            bottomLeft: Radius.circular(isMe ? 20 : 4),
-            bottomRight: Radius.circular(isMe ? 4 : 20),
-          ),
-          border: isMe ? null : Border.all(color: Colors.white10),
-          boxShadow: isMe ? [
-            BoxShadow(
-              color: Colors.yellow.withValues(alpha: 0.2),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            )
-          ] : null,
-        ),
-        child: Text(
-          text,
-          style: GoogleFonts.inter(
-            color: isMe ? Colors.black : Colors.white,
-            fontSize: 16,
-            fontWeight: isMe ? FontWeight.w600 : FontWeight.w400,
-            letterSpacing: 0.2,
-          ),
+        child: Column(
+          crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          children: [
+            Text(
+              isMe ? 'You' : 'Stranger',
+              style: GoogleFonts.inter(color: Colors.white38, fontSize: 10, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 4),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: isMe ? Colors.yellow.withValues(alpha: 0.9) : Colors.white.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.only(
+                  topLeft: const Radius.circular(20),
+                  topRight: const Radius.circular(20),
+                  bottomLeft: Radius.circular(isMe ? 20 : 0),
+                  bottomRight: Radius.circular(isMe ? 0 : 20),
+                ),
+                border: isMe ? null : Border.all(color: Colors.white10),
+              ),
+              child: Text(
+                text,
+                style: GoogleFonts.inter(
+                  color: isMe ? Colors.black : Colors.white,
+                  fontSize: 15,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -695,37 +685,116 @@ class _NativeWebRTCCallScreenState extends State<NativeWebRTCCallScreen> {
       width: double.infinity,
       height: double.infinity,
       decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.6),
+        color: Colors.black.withValues(alpha: 0.85),
       ),
       child: ClipRRect(
         child: BackdropFilter(
-          filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          filter: ui.ImageFilter.blur(sigmaX: 15, sigmaY: 15),
           child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _buildRadarIcon(),
-                const SizedBox(height: 40),
-                Text(
-                  _statusText,
-                  style: GoogleFonts.outfit(
-                    color: Colors.white,
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.2,
-                  ),
-                ).animate().fadeIn(duration: 500.ms),
-                if (widget.mode != 'Text') ...[
-                  const SizedBox(height: 10),
-                  Text('Ensure your camera and mic are on',
-                    style: GoogleFonts.inter(color: Colors.white54, fontSize: 14)),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _buildRadarIcon(),
+                  const SizedBox(height: 40),
+                  if (isSearching) ...[
+                    Text(
+                      _statusText,
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.2,
+                      ),
+                    ).animate().fadeIn(duration: 500.ms),
+                    const SizedBox(height: 20),
+                    _buildGlassButton(
+                      onTap: disconnectCall, 
+                      icon: Icons.stop_rounded, 
+                      color: Colors.redAccent,
+                      label: 'Cancel'
+                    ),
+                  ] else ...[
+                    Text(
+                      'Ready to start?',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 30),
+                    Container(
+                      width: 300,
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.05),
+                        borderRadius: BorderRadius.circular(15),
+                        border: Border.all(color: Colors.white10),
+                      ),
+                      child: TextField(
+                        controller: _roomController,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: const InputDecoration(
+                          hintText: 'Enter Room ID (Optional)',
+                          hintStyle: TextStyle(color: Colors.white38),
+                          border: InputBorder.none,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    _buildActionButton(
+                      onTap: () => findRoom(specificRoomId: _roomController.text.isNotEmpty ? _roomController.text : null),
+                      label: _roomController.text.isNotEmpty ? 'Join Meeting' : 'Quick Match',
+                      icon: _roomController.text.isNotEmpty ? Icons.meeting_room : Icons.flash_on,
+                      isPrimary: true,
+                    ),
+                  ],
+                  if (widget.mode != 'Text') ...[
+                    const SizedBox(height: 20),
+                    Text('Ensure your camera and mic are on',
+                      style: GoogleFonts.inter(color: Colors.white54, fontSize: 14)),
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
         ),
       ),
     );
+  }
+
+  Widget _buildActionButton({required VoidCallback onTap, required String label, required IconData icon, bool isPrimary = false}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 250,
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        decoration: BoxDecoration(
+          gradient: isPrimary 
+              ? const LinearGradient(colors: [Color(0xFFFFD700), Color(0xFFFFA500)])
+              : null,
+          color: isPrimary ? null : Colors.white.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(30),
+          boxShadow: isPrimary ? [BoxShadow(color: Colors.orange.withValues(alpha: 0.3), blurRadius: 15, offset: const Offset(0, 5))] : null,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: isPrimary ? Colors.black : Colors.white, size: 20),
+            const SizedBox(width: 10),
+            Text(
+              label,
+              style: TextStyle(
+                color: isPrimary ? Colors.black : Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
+          ],
+        ),
+      ),
+    ).animate().scale(duration: 200.ms);
   }
 
   Widget _buildRadarIcon() {
@@ -771,25 +840,31 @@ class _NativeWebRTCCallScreenState extends State<NativeWebRTCCallScreen> {
                         Row(
                           children: [
                             Text(
-                              _remoteUserName ?? 'Stranger',
+                              'Stranger',
                               style: GoogleFonts.outfit(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,
                               ),
                             ),
-                            if (_isRemoteVerified) ...[
-                              const SizedBox(width: 4),
-                              const Icon(Icons.verified, color: Colors.blue, size: 14),
-                            ],
                           ],
                         ),
-                        Text(
-                          'Online',
-                          style: GoogleFonts.inter(
-                            color: Colors.greenAccent,
-                            fontSize: 12,
-                          ),
+                        Row(
+                          children: [
+                            Container(
+                              width: 8,
+                              height: 8,
+                              decoration: const BoxDecoration(color: Colors.greenAccent, shape: BoxShape.circle),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Secure Session',
+                              style: GoogleFonts.inter(
+                                color: Colors.white54,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -800,7 +875,38 @@ class _NativeWebRTCCallScreenState extends State<NativeWebRTCCallScreen> {
           ),
           if (isConnected)
             _buildNextButton(),
+          if (!isConnected && currentRoomId != null)
+            _buildRoomBadge(),
         ],
+      ),
+    );
+  }
+
+  Widget _buildRoomBadge() {
+    return GestureDetector(
+      onTap: () {
+        Clipboard.setData(ClipboardData(text: currentRoomId!));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Room ID copied to clipboard!')),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.white10,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.white24),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.copy, color: Colors.white70, size: 14),
+            const SizedBox(width: 8),
+            Text(
+              'ID: $currentRoomId',
+              style: GoogleFonts.inter(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -891,22 +997,32 @@ class _NativeWebRTCCallScreenState extends State<NativeWebRTCCallScreen> {
     ).animate().scale(begin: const Offset(0.8, 0.8), curve: Curves.elasticOut);
   }
 
-  Widget _buildGlassButton({required VoidCallback onTap, required IconData icon, required Color color}) {
+  Widget _buildGlassButton({required VoidCallback onTap, required IconData icon, required Color color, String? label}) {
     return GestureDetector(
       onTap: onTap,
-      child: ClipRRect(
-        child: BackdropFilter(
-          filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(30),
+            child: BackdropFilter(
+              filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+                ),
+                child: Icon(icon, color: color, size: 24),
+              ),
             ),
-            child: Icon(icon, color: color, size: 24),
           ),
-        ),
+          if (label != null) ...[
+            const SizedBox(height: 8),
+            Text(label, style: const TextStyle(color: Colors.white70, fontSize: 12)),
+          ],
+        ],
       ),
     );
   }

@@ -115,19 +115,28 @@ class _MyAppState extends State<MyApp> {
 
     userStream = pocketMatesAppSupabaseUserStream()
       ..listen((user) {
-        debugPrint('Main: User stream event received. Logged in: ${user.loggedIn}');
+        debugPrint('Main: Auth state update. Logged in: ${user.loggedIn}');
         _appStateNotifier.update(user);
+        
+        // Only stop showing splash if we are logged in, 
+        // OR if we've waited long enough to be sure the user is actually logged out.
         if (user.loggedIn) {
-          // PushNotificationService.initialize() handles its own platform checks and Firebase status
-          PushNotificationService.initialize();
-        }
-        // Dismiss splash as soon as we have a user state
-        if (_appStateNotifier.showSplashImage) {
-          debugPrint('Main: Dismissing splash image from user stream event.');
+          debugPrint('Main: User is logged in. Dismissing splash.');
           _appStateNotifier.stopShowingSplashImage();
+          PushNotificationService.initialize();
+        } else {
+          // If not logged in, we give Supabase a tiny bit more time (500ms) 
+          // to ensure it wasn't just a slow initial storage read.
+          Future.delayed(const Duration(milliseconds: 500), () {
+            if (!_appStateNotifier.loggedIn && _appStateNotifier.showSplashImage) {
+              debugPrint('Main: User is confirmed logged out. Dismissing splash.');
+              _appStateNotifier.stopShowingSplashImage();
+            }
+          });
         }
       }, onError: (e) {
         debugPrint('Main: User stream error: $e');
+        _appStateNotifier.stopShowingSplashImage();
       });
     jwtTokenStream.listen((_) {});
   }

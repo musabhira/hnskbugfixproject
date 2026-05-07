@@ -116,7 +116,13 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
       ),
     });
 
-    WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (loggedIn) {
+        debugPrint('AuthPage: User is already logged in. Redirecting to HomePage.');
+        context.goNamed(HomePageWidget.routeName);
+      }
+      safeSetState(() {});
+    });
   }
 
   @override
