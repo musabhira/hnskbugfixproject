@@ -20,6 +20,10 @@
 # is commented out by default.
 #.vscode/
 
+# Supabase MCP
+/supabase_mcp/.env
+/supabase_mcp/node_modules
+
 # Flutter/Dart/Pub related
 **/doc/api/
 **/ios/Flutter/.last_build_id

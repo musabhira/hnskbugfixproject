@@ -649,12 +649,78 @@ class _VerfiedSearchProfileDetailPageState
                     elevation: 0,
                   ),
                 ),
+                const SizedBox(height: 12),
+                // Voice Call Option
+                ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    _makePhoneCall();
+                  },
+                  icon: const Icon(Icons.call, size: 20, color: Colors.blueAccent),
+                  label: const Text('Voice Call'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white10,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    elevation: 0,
+                  ),
+                ),
               ],
             ),
           ],
         );
       },
     );
+  }
+
+  Future<void> _makePhoneCall() async {
+    try {
+      final phoneNumber = _profileData?['phone_no']?.toString();
+
+      if (phoneNumber == null || phoneNumber.trim().isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Phone number not available'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return;
+      }
+
+      final cleanNumber = _cleanPhoneNumber(phoneNumber);
+      final Uri launchUri = Uri(
+        scheme: 'tel',
+        path: cleanNumber,
+      );
+
+      if (await canLaunchUrl(launchUri)) {
+        await launchUrl(launchUri);
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Could not launch phone app'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error making phone call: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   void _sendWhatsAppMessage() async {
@@ -1660,7 +1726,7 @@ class _VerfiedSearchProfileDetailPageState
                                                                             foregroundColor:
                                                                                 buttonTextColor,
                                                                             padding:
-                                                                                const EdgeInsets.symmetric(vertical: 17),
+                                                                                const EdgeInsets.symmetric(vertical: 12),
                                                                             shape:
                                                                                 RoundedRectangleBorder(
                                                                               borderRadius: BorderRadius.circular(12),
@@ -1672,7 +1738,31 @@ class _VerfiedSearchProfileDetailPageState
                                                                       ),
                                                                       const SizedBox(
                                                                           width:
-                                                                              10),
+                                                                              8),
+                                                                      // Call Button
+                                                                      Expanded(
+                                                                        child: ElevatedButton
+                                                                            .icon(
+                                                                          onPressed:
+                                                                              _makePhoneCall,
+                                                                          icon: const Icon(
+                                                                              Icons.call,
+                                                                              size: 18),
+                                                                          label: const Text('Call'),
+                                                                          style: ElevatedButton.styleFrom(
+                                                                            backgroundColor: buttonColor,
+                                                                            foregroundColor: buttonTextColor,
+                                                                            padding: const EdgeInsets.symmetric(vertical: 12),
+                                                                            shape: RoundedRectangleBorder(
+                                                                              borderRadius: BorderRadius.circular(12),
+                                                                            ),
+                                                                            elevation: 0,
+                                                                          ),
+                                                                        ),
+                                                                      ),
+                                                                      const SizedBox(
+                                                                          width:
+                                                                              8),
                                                                       // Follow Button
                                                                       Expanded(
                                                                         child:
@@ -2189,26 +2279,81 @@ class _VerfiedSearchProfileDetailPageState
                                                                         'Message'),
                                                                     style: ElevatedButton
                                                                         .styleFrom(
-                                                                      backgroundColor:
-                                                                          buttonTextColor,
-                                                                      foregroundColor:
-                                                                          buttonColor,
-                                                                      padding: const EdgeInsets
-                                                                          .symmetric(
-                                                                          vertical:
-                                                                              17),
-                                                                      shape:
-                                                                          RoundedRectangleBorder(
-                                                                        borderRadius:
-                                                                            BorderRadius.circular(12),
+                                                              Row(
+                                                                children: [
+                                                                  Expanded(
+                                                                    child:
+                                                                        ElevatedButton
+                                                                            .icon(
+                                                                      onPressed:
+                                                                          _navigateToMessages,
+                                                                      icon: const Icon(
+                                                                          Icons
+                                                                              .message,
+                                                                          size:
+                                                                              18),
+                                                                      label: const Text(
+                                                                          'Message'),
+                                                                      style: ElevatedButton
+                                                                          .styleFrom(
+                                                                        backgroundColor:
+                                                                            buttonTextColor,
+                                                                        foregroundColor:
+                                                                            buttonColor,
+                                                                        padding: const EdgeInsets
+                                                                            .symmetric(
+                                                                            vertical:
+                                                                                12),
+                                                                        shape:
+                                                                            RoundedRectangleBorder(
+                                                                          borderRadius:
+                                                                              BorderRadius.circular(
+                                                                                  8),
+                                                                        ),
+                                                                        elevation:
+                                                                            0,
                                                                       ),
-                                                                      elevation:
-                                                                          0,
                                                                     ),
                                                                   ),
-                                                                ),
-                                                              ],
-                                                            ),
+                                                                  const SizedBox(
+                                                                      width:
+                                                                          8),
+                                                                  Expanded(
+                                                                    child:
+                                                                        ElevatedButton
+                                                                            .icon(
+                                                                      onPressed:
+                                                                          _makePhoneCall,
+                                                                      icon: const Icon(
+                                                                          Icons
+                                                                              .call,
+                                                                          size:
+                                                                              18),
+                                                                      label: const Text(
+                                                                          'Call'),
+                                                                      style: ElevatedButton
+                                                                          .styleFrom(
+                                                                        backgroundColor:
+                                                                            buttonTextColor,
+                                                                        foregroundColor:
+                                                                            buttonColor,
+                                                                        padding: const EdgeInsets
+                                                                            .symmetric(
+                                                                            vertical:
+                                                                                12),
+                                                                        shape:
+                                                                            RoundedRectangleBorder(
+                                                                          borderRadius:
+                                                                              BorderRadius.circular(
+                                                                                  8),
+                                                                        ),
+                                                                        elevation:
+                                                                            0,
+                                                                      ),
+                                                                    ),
+                                                                  ),
+                                                                ],
+                                                              ),
                                                           ],
                                                         ),
                                                       ),
