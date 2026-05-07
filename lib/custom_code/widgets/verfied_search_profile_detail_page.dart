@@ -2262,23 +2262,7 @@ class _VerfiedSearchProfileDetailPageState
                                                               ),
                                                             const SizedBox(
                                                                 height: 16),
-                                                            Row(
-                                                              children: [
-                                                                Expanded(
-                                                                  child:
-                                                                      ElevatedButton
-                                                                          .icon(
-                                                                    onPressed:
-                                                                        _navigateToMessages,
-                                                                    icon: const Icon(
-                                                                        Icons
-                                                                            .message,
-                                                                        size:
-                                                                            18),
-                                                                    label: const Text(
-                                                                        'Message'),
-                                                                    style: ElevatedButton
-                                                                        .styleFrom(
+
                                                               Row(
                                                                 children: [
                                                                   Expanded(

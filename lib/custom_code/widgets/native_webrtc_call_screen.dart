@@ -577,8 +577,8 @@ class _NativeWebRTCCallScreenState extends State<NativeWebRTCCallScreen> {
           maxWidth: MediaQuery.of(context).size.width * 0.75,
         ),
         decoration: BoxDecoration(
-          gradient: isMe 
-              ? const LinearGradient(
+          color: Colors.transparent,
+        ),
         child: Column(
           crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
           children: [
