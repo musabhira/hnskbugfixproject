@@ -81,3 +81,8 @@ export 'report_dailoge.dart';
 export 'legal_policy_widget.dart';
 export 'eula_compliance_dialog.dart';
 export 'dual_video_recorder.dart';
+
+// Print-on-Demand
+export 'pod_3d_preview_widget.dart';
+export 'pod_creator_studio.dart';
+export 'pod_marketplace_view.dart';

@@ -6,6 +6,7 @@ import 'package:shimmer/shimmer.dart';
 import 'main_market_logic.dart';
 import 'gallery_profile_search_page.dart';
 import 'gallery_search_page.dart';
+import 'pod_marketplace_view.dart';
 
 class MainMarketPage extends ConsumerStatefulWidget {
   const MainMarketPage({super.key});
@@ -21,7 +22,7 @@ class _MainMarketPageState extends ConsumerState<MainMarketPage>
   @override
   void initState() {
     super.initState();
-    _mainTabController = TabController(length: 2, vsync: this);
+    _mainTabController = TabController(length: 3, vsync: this);
     // Initialize market data
     Future.microtask(() => ref.read(marketProvider.notifier).initialize());
   }
@@ -65,6 +66,7 @@ class _MainMarketPageState extends ConsumerState<MainMarketPage>
                 tabs: const [
                   Tab(text: 'EXPLORE'),
                   Tab(text: 'FOLLOWING'),
+                  Tab(text: 'PRINT SHOP'),
                 ],
               ),
               actions: [
@@ -101,6 +103,7 @@ class _MainMarketPageState extends ConsumerState<MainMarketPage>
           children: const [
             MarketExploreTabView(),
             MarketFollowingTabView(),
+            PodMarketplaceView(),
           ],
         ),
       ),
