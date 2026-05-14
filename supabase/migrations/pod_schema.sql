@@ -77,12 +77,12 @@ create policy "Artist sees design orders"
   using (design_id in (select id from pod_designs where artist_id = auth.uid()));
 
 -- 4. Seed product catalog
-insert into public.pod_products (name, slug, category, base_cost, is_active, coming_soon, sort_order)
+insert into public.pod_products (name, slug, category, base_cost, is_active, coming_soon, sort_order, glb_url)
 values
-  ('Classic T-Shirt', 'tshirt-classic', 'tshirt', 250, true,  false, 1),
-  ('Coffee Mug',      'mug-classic',    'mug',    150, true,  true,  2),
-  ('Tote Bag',        'bag-tote',       'bag',    180, true,  true,  3),
-  ('Hoodie',          'hoodie-classic', 'hoodie', 450, true,  true,  4)
+  ('Classic T-Shirt', 'tshirt-classic', 'tshirt', 250, true,  false, 1, 'https://gswhynuabdspnwudltth.supabase.co/storage/v1/object/public/pod-glb-models/tshirt/model.gltf'),
+  ('Coffee Mug',      'mug-classic',    'mug',    150, true,  true,  2, ''),
+  ('Tote Bag',        'bag-tote',       'bag',    180, true,  true,  3, ''),
+  ('Hoodie',          'hoodie-classic', 'hoodie', 450, true,  true,  4, '')
 on conflict (slug) do nothing;
 
 -- 5. Storage buckets (run separately if auto-creation fails)
