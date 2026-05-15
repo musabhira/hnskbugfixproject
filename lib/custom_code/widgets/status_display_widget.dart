@@ -3234,6 +3234,7 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                     String contentToShare = '';
                     String contentType = 'gallery';
                     String? contentId;
+                    Map<String, dynamic>? metadataToShare;
 
                     if (isThought) {
                       contentToShare = status['caption'] ?? '';
@@ -3247,9 +3248,20 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                       contentToShare = status['media_url'] ?? '';
                       contentType = 'tool';
                     } else {
-                      contentToShare = status['media_url'] ?? '';
-                      contentType = 'gallery';
-                      contentId = status['gallery_id']?.toString();
+                      if (status['gallery_id'] != null) {
+                        contentToShare = status['media_url'] ?? '';
+                        contentType = 'gallery';
+                        contentId = status['gallery_id']?.toString();
+                      } else {
+                        contentToShare = status['caption'] ?? '';
+                        contentType = 'status_mention';
+                        contentId = status['id']?.toString();
+                        metadataToShare = {
+                           'status_media_url': status['media_url'],
+                           'media_type': status['media_type'],
+                           'sender_name': status['profile']?['name'] ?? 'Someone',
+                        };
+                      }
                     }
 
                     Navigator.push(
@@ -3260,6 +3272,7 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                           contentId: contentId,
                           contentType: contentType,
                           currentUserId: widget.currentUserId,
+                          metadata: metadataToShare,
                         ),
                       ),
                     ).then((_) {

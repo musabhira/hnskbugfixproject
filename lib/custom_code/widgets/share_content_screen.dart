@@ -374,13 +374,9 @@ class _ShareContentScreenState extends State<ShareContentScreen> {
         'message_text': widget.contentToShare,
         'updated_at': DateTime.now().toIso8601String(),
         'is_read': false,
-        'message_type': widget.contentType == 'gallery'
-            ? 'gallery'
-            : (widget.contentType == 'thought'
-                ? 'thought'
-                : (widget.contentType == 'tool'
-                    ? 'tool'
-                    : (widget.contentType == 'course' ? 'course' : 'text'))),
+        'message_type': ['gallery', 'thought', 'tool', 'course', 'status_mention'].contains(widget.contentType)
+            ? widget.contentType
+            : 'text',
       };
 
       if (widget.contentType == 'gallery' && widget.contentId != null) {
@@ -466,13 +462,9 @@ class _ShareContentScreenState extends State<ShareContentScreen> {
         'group_id': groupId,
         'sender_id': widget.currentUserId,
         'message_text': widget.contentToShare,
-        'message_type': widget.contentType == 'gallery'
-            ? 'gallery'
-            : (widget.contentType == 'thought'
-                ? 'thought'
-                : (widget.contentType == 'tool'
-                    ? 'tool'
-                    : (widget.contentType == 'course' ? 'course' : 'text'))),
+        'message_type': ['gallery', 'thought', 'tool', 'course', 'status_mention'].contains(widget.contentType)
+            ? widget.contentType
+            : 'text',
         'metadata': widget.metadata,
       };
 

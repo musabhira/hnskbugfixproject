@@ -2119,7 +2119,7 @@ class _MessageScreenState extends State<MessageScreen> {
                   ),
                   const SizedBox(width: 8),
                   const Text(
-                    'Group Mention',
+                    'Shared Vibe',
                     style: TextStyle(
                       color: Colors.yellow,
                       fontSize: 12,
@@ -2130,7 +2130,7 @@ class _MessageScreenState extends State<MessageScreen> {
               ),
               const SizedBox(height: 12),
               Text(
-                '$senderName mentioned this group in their Vibe:',
+                '$senderName shared a Vibe:',
                 style: const TextStyle(
                   color: Colors.yellow,
                   fontSize: 12,

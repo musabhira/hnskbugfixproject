@@ -172,6 +172,7 @@ flutter:
     - assets/jsons/
     - assets/models/
     - assets/js/
+    - shorebird.yaml
 
 
 
