@@ -18,7 +18,6 @@ create table if not exists public.pod_products (
   created_at  timestamptz default now()
 );
 
--- 2. Artist designs
 create table if not exists public.pod_designs (
   id                uuid primary key default gen_random_uuid(),
   artist_id         uuid references auth.users(id) on delete cascade,
@@ -56,8 +55,7 @@ create table if not exists public.pod_orders (
   size            text default 'M',
   color           text default 'White',
   total_amount    numeric(10,2) not null,
-  artist_payout   numeric(10,2) generated always as
-                  (total_amount * (select royalty_pct/100 from pod_designs where id = design_id)) stored,
+  artist_payout   numeric(10,2) default 0,
   buyer_name      text,
   buyer_phone     text,
   buyer_email     text,
@@ -69,6 +67,26 @@ create table if not exists public.pod_orders (
   created_at      timestamptz default now(),
   updated_at      timestamptz default now()
 );
+
+-- 3.1 Payout Calculation Trigger
+create or replace function public.calculate_pod_payout()
+returns trigger as $$
+begin
+  -- Look up royalty percentage from the associated design
+  NEW.artist_payout := NEW.total_amount * (
+    select royalty_pct / 100 
+    from public.pod_designs 
+    where id = NEW.design_id
+  );
+  return NEW;
+end;
+$$ language plpgsql;
+
+create trigger tr_calculate_pod_payout
+  before insert or update of total_amount, design_id
+  on public.pod_orders
+  for each row
+  execute function public.calculate_pod_payout();
 
 alter table public.pod_orders enable row level security;
 create policy "Buyer sees own orders" on public.pod_orders for select using (buyer_id = auth.uid());
