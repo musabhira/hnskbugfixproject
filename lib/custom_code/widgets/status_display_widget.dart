@@ -2263,6 +2263,7 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                     ),
                   
                   if (!isOwnStatus) const SizedBox(width: 12),
+                  if (isOwnStatus) const Spacer(),
 
                   // Like Icon
                   GestureDetector(
@@ -2366,26 +2367,34 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                         ),
                       ),
                     ),
+                  if (isOwnStatus)
+                    Padding(
+                      padding: const EdgeInsets.only(left: 20),
+                      child: GestureDetector(
+                        onTap: () => _showDeleteConfirmation(
+                          currentStatus['id'],
+                          currentStatus['media_url'],
+                        ),
+                        child: Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.black.withValues(alpha: 0.4),
+                          ),
+                          child: const Center(
+                            child: Icon(
+                              Icons.delete,
+                              color: Colors.red,
+                              size: 22,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),
-            if (isOwnStatus)
-              Positioned(
-                bottom: 8, // distance from bottom
-                right: 8, // distance from right
-                child: IconButton(
-                  onPressed: () => _showDeleteConfirmation(
-                    currentStatus['id'],
-                    currentStatus['media_url'],
-                  ),
-                  icon: const Icon(
-                    Icons.delete,
-                    color: Colors.red,
-                    size: 22,
-                  ),
-                  padding: EdgeInsets.zero,
-                ),
-              ),
             // Pause Overlay
             if (_isPaused)
               Center(
