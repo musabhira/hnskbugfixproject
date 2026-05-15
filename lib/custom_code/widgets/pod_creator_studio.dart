@@ -63,7 +63,9 @@ class PodCreatorNotifier extends Notifier<PodCreatorState> {
           .eq('is_active', true)
           .order('sort_order');
       state = state.copyWith(products: List<Map<String, dynamic>>.from(res));
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[POD-CREATOR] Error loading products: $e');
+    }
   }
 
   void selectProduct(Map<String, dynamic> product) =>

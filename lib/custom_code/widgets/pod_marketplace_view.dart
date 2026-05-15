@@ -54,7 +54,7 @@ class PodMarketNotifier extends Notifier<PodMarketState> {
     try {
       final res = await Supabase.instance.client
           .from('pod_designs')
-          .select('*, pod_products(name, slug, category), profiles(display_name, profile_image_url)')
+          .select('*, pod_products(name, slug, category), profile(display_name, profile_image_url)')
           .eq('status', 'published')
           .order('created_at', ascending: false)
           .range(offset, offset + _pageSize - 1);
@@ -84,6 +84,9 @@ class PodMarketplaceView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final s = ref.watch(podMarketProvider);
+
+    // Debug print to see if we have data
+    debugPrint('[POD-MARKET] Designs: ${s.designs.length}, Loading: ${s.isLoading}');
 
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),

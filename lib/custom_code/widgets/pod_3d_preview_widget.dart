@@ -217,9 +217,17 @@ function buildFallbackMesh() {
 
 function loadGLB() {
   if (!glbUrl) { buildFallbackMesh(); return; }
+  
+  // Set a safety timeout - if it doesn't load in 15s, show fallback
+  const timeout = setTimeout(() => {
+    console.warn('GLB load timeout');
+    buildFallbackMesh();
+  }, 15000);
+
   const loader = new THREE.GLTFLoader();
   loader.load(glbUrl,
     gltf => {
+      clearTimeout(timeout);
       fitModel(gltf.scene);
       collectPrintMeshes(gltf.scene);
       scene.add(gltf.scene);
@@ -227,17 +235,27 @@ function loadGLB() {
       hideLoading(); hideBadge();
     },
     undefined,
-    () => buildFallbackMesh()
+    err => {
+      clearTimeout(timeout);
+      console.error('GLB load error:', err);
+      buildFallbackMesh();
+    }
   );
 }
 
-function animate() {
+window.onerror = function(msg, url, line) {
+  if (window.FlutterBridge) {
+    window.FlutterBridge.postMessage('JS-ERROR: ' + msg + ' at ' + line);
+  }
+  return false;
+};
+
+loadGLB();function animate() {
   requestAnimationFrame(animate);
   controls.update();
   renderer.render(scene, camera);
 }
 
-loadGLB();
 animate();
 
 window.addEventListener('resize', () => {
