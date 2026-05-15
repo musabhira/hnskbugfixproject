@@ -13,6 +13,11 @@ class PodCreatorState {
   final Map<String, dynamic>? selectedProduct;
   final String? designLocalPath;
   final String? designUploadedUrl;
+  final double posX;
+  final double posY;
+  final double posZ;
+  final double scale;
+  final double rot;
   final bool isUploading;
   final bool isPublishing;
   final String? errorMessage;
@@ -22,6 +27,11 @@ class PodCreatorState {
     this.selectedProduct,
     this.designLocalPath,
     this.designUploadedUrl,
+    this.posX = 0,
+    this.posY = 0.1,
+    this.posZ = 0.5,
+    this.scale = 0.4,
+    this.rot = 0,
     this.isUploading = false,
     this.isPublishing = false,
     this.errorMessage,
@@ -32,6 +42,11 @@ class PodCreatorState {
     Map<String, dynamic>? selectedProduct,
     String? designLocalPath,
     String? designUploadedUrl,
+    double? posX,
+    double? posY,
+    double? posZ,
+    double? scale,
+    double? rot,
     bool? isUploading,
     bool? isPublishing,
     String? errorMessage,
@@ -40,6 +55,11 @@ class PodCreatorState {
     selectedProduct: selectedProduct ?? this.selectedProduct,
     designLocalPath: designLocalPath ?? this.designLocalPath,
     designUploadedUrl: designUploadedUrl ?? this.designUploadedUrl,
+    posX: posX ?? this.posX,
+    posY: posY ?? this.posY,
+    posZ: posZ ?? this.posZ,
+    scale: scale ?? this.scale,
+    rot: rot ?? this.rot,
     isUploading: isUploading ?? this.isUploading,
     isPublishing: isPublishing ?? this.isPublishing,
     errorMessage: errorMessage,
@@ -70,6 +90,10 @@ class PodCreatorNotifier extends Notifier<PodCreatorState> {
 
   void selectProduct(Map<String, dynamic> product) =>
       state = state.copyWith(selectedProduct: product);
+
+  void updateCoordinates(double x, double y, double z, double s, double r) {
+    state = state.copyWith(posX: x, posY: y, posZ: z, scale: s, rot: r);
+  }
 
   Future<String?> uploadDesign(String localPath, String userId) async {
     state = state.copyWith(isUploading: true, errorMessage: null);
@@ -121,6 +145,11 @@ class PodCreatorNotifier extends Notifier<PodCreatorState> {
         'royalty_pct':      royaltyPct,
         'tags':             tags,
         'status':           'published',
+        'design_pos_x':     state.posX,
+        'design_pos_y':     state.posY,
+        'design_pos_z':     state.posZ,
+        'design_scale':     state.scale,
+        'design_rot':       state.rot,
       });
       state = state.copyWith(isPublishing: false);
       return true;
@@ -229,10 +258,13 @@ class _PodCreatorStudioState extends ConsumerState<PodCreatorStudio> {
             child: Pod3DPreviewWidget(
               key: _previewKey,
               glbUrl: glbUrl,
+              localGlbPath: product['local_glb_path'] as String?,
               designImageUrl: s.designUploadedUrl,
               productSlug: product['slug'] as String? ?? '',
               width: double.infinity,
               height: 320,
+              onCoordinatesChanged: (x, y, z, s, r) =>
+                  ref.read(podCreatorProvider.notifier).updateCoordinates(x, y, z, s, r),
             ),
           ),
           Padding(
@@ -279,6 +311,22 @@ class _PodCreatorStudioState extends ConsumerState<PodCreatorStudio> {
               const SizedBox(height: 10),
               _field(_tagsCtrl, 'Tags', 'abstract, nature, minimal'),
               const SizedBox(height: 20),
+              _label('Design Scaling'), const SizedBox(height: 8),
+              SliderTheme(
+                data: SliderThemeData(
+                  activeTrackColor: _amber, thumbColor: _amber,
+                  overlayColor: _amber.withValues(alpha: 0.15),
+                  inactiveTrackColor: _border, trackHeight: 3,
+                ),
+                child: Slider(
+                  value: s.scale, min: 0.1, max: 1.0, divisions: 18,
+                  onChanged: (v) {
+                    ref.read(podCreatorProvider.notifier).updateCoordinates(s.posX, s.posY, s.posZ, v, s.rot);
+                    _previewKey.currentState?.updateScale(v);
+                  },
+                ),
+              ),
+              const SizedBox(height: 12),
               _label('Pricing'), const SizedBox(height: 10),
               _field(_priceCtrl, 'Sale Price (₹)', '499', keyboardType: TextInputType.number),
               const SizedBox(height: 16),
