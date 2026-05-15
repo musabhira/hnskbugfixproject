@@ -37,12 +37,16 @@ class Pod3DPreviewWidgetState extends State<Pod3DPreviewWidget> {
   late final WebViewController _controller;
   bool _isLoading = true;
   String? _glbBase64;
+  String _threeJs = '';
+  String _gltfLoaderJs = '';
+  String _orbitControlsJs = '';
+  String _decalGeometryJs = '';
 
   @override
   void initState() {
     super.initState();
     _initController();
-    _loadGlb();
+    _loadAssets();
   }
 
   void _initController() {
@@ -71,15 +75,20 @@ class Pod3DPreviewWidgetState extends State<Pod3DPreviewWidget> {
       ));
   }
 
-  Future<void> _loadGlb() async {
-    if (widget.localGlbPath != null) {
-      try {
+  Future<void> _loadAssets() async {
+    try {
+      _threeJs = await rootBundle.loadString('assets/js/three.min.js');
+      _gltfLoaderJs = await rootBundle.loadString('assets/js/GLTFLoader.js');
+      _orbitControlsJs = await rootBundle.loadString('assets/js/OrbitControls.js');
+      _decalGeometryJs = await rootBundle.loadString('assets/js/DecalGeometry.js');
+
+      if (widget.localGlbPath != null) {
         final data = await rootBundle.load(widget.localGlbPath!);
         final bytes = data.buffer.asUint8List();
         _glbBase64 = base64Encode(bytes);
-      } catch (e) {
-        debugPrint('[POD-3D] Error loading local GLB: $e');
       }
+    } catch (e) {
+      debugPrint('[POD-3D] Error loading assets: $e');
     }
     _controller.loadHtmlString(_buildHtml());
   }
@@ -125,10 +134,10 @@ class Pod3DPreviewWidgetState extends State<Pod3DPreviewWidget> {
 <div id="loading"><div id="loadRing"></div><div id="loadLabel">PREPARING 3D</div></div>
 <div id="controls-hint">DRAG TO POSITION • PINCH TO SCALE</div>
 
-<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/loaders/GLTFLoader.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/geometries/DecalGeometry.js"></script>
+<script>$_threeJs</script>
+<script>$_gltfLoaderJs</script>
+<script>$_orbitControlsJs</script>
+<script>$_decalGeometryJs</script>
 
 <script>
 const W = window.innerWidth, H = window.innerHeight;

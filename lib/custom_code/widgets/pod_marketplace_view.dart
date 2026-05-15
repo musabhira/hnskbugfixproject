@@ -136,7 +136,7 @@ class PodMarketplaceView extends ConsumerWidget {
     padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
     child: Row(children: [
       Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text('Print Shop', style: GoogleFonts.inter(
+        Text('Print', style: GoogleFonts.inter(
           color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
         const SizedBox(height: 2),
         Text('Custom designs on demand', style: GoogleFonts.inter(

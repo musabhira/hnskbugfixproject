@@ -110,6 +110,8 @@ dependencies:
   video_player: ^2.10.1
   flutter_riverpod: ^3.1.0
   riverpod_annotation: ^4.0.0
+  shorebird_code_push: ^1.1.2
+  model_viewer_plus: ^1.8.0
 
   just_audio: ^0.10.5
   record: ^6.1.2
@@ -169,7 +171,7 @@ flutter:
     - assets/pdfs/
     - assets/jsons/
     - assets/models/
-    - shorebird.yaml
+    - assets/js/
 
 
 

@@ -16,6 +16,7 @@ import 'flutter_flow/flutter_flow_util.dart';
 import 'custom_code/services/local_sync_server.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'services/push_notification_service.dart';
+import 'services/shorebird_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,7 +32,8 @@ void main() async {
       SupaFlow.initialize().then((_) => debugPrint('Main: SupaFlow initialized.')),
       LocalSyncServer().initialize().then((_) => debugPrint('Main: LocalSyncServer initialized.')),
       FlutterFlowTheme.initialize().then((_) => debugPrint('Main: FlutterFlowTheme initialized.')),
-    ]).timeout(const Duration(seconds: 5), onTimeout: () {
+      ShorebirdService().initialize().then((_) => debugPrint('Main: ShorebirdService initialized.')),
+    ]).timeout(const Duration(seconds: 10), onTimeout: () {
       debugPrint('Core service initialization timed out. Proceeding anyway...');
       return [];
     });
