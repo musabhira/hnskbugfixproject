@@ -66,7 +66,8 @@ class PodMarketNotifier extends Notifier<PodMarketState> {
         hasMore: fetched.length == _pageSize,
         offset: offset + fetched.length,
       );
-    } catch (_) {
+    } catch (e) {
+      debugPrint('[POD-MARKET] Error loading designs: $e');
       state = state.copyWith(isLoading: false);
     }
   }
@@ -216,7 +217,7 @@ class _PodDesignCard extends StatelessWidget {
     final imgUrl      = (design['preview_image_url'] as String?)?.isNotEmpty == true
                           ? design['preview_image_url'] as String
                           : design['design_image_url'] as String? ?? '';
-    final profile     = design['profiles'] as Map<String, dynamic>?;
+    final profile     = design['profile'] as Map<String, dynamic>?;
     final artistName  = profile?['display_name'] as String? ?? 'Artist';
     final artistImg   = profile?['profile_image_url'] as String?;
     final product     = design['pod_products'] as Map<String, dynamic>?;
@@ -428,7 +429,7 @@ class _PodProductDetailPageState extends State<PodProductDetailPage> {
                         : design['design_image_url'] as String? ?? '';
     final glbUrl    = (design['pod_products'] as Map?)?['glb_url'] as String? ?? '';
     final slug      = (design['pod_products'] as Map?)?['slug'] as String? ?? '';
-    final profile   = design['profiles'] as Map<String, dynamic>?;
+    final profile   = design['profile'] as Map<String, dynamic>?;
 
     return Scaffold(
       backgroundColor: _bg,
