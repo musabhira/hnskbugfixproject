@@ -4,6 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:share_plus/share_plus.dart';
+import 'dart:ui' as ui;
+import 'dart:typed_data';
+import 'package:flutter/rendering.dart';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
 
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
@@ -34,7 +39,9 @@ class ShareContentScreen extends StatefulWidget {
 
 class _ShareContentScreenState extends State<ShareContentScreen> {
   final GlobalKey<ScaffoldMessengerState> _scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
+  final GlobalKey _previewKey = GlobalKey();
   final supabase = Supabase.instance.client;
+  bool _isCapturing = false;
 
   @override
   Widget build(BuildContext context) {
@@ -56,12 +63,14 @@ class _ShareContentScreenState extends State<ShareContentScreen> {
           children: [
             const SizedBox(height: 20),
             // Preview Section
-            if (widget.contentType == 'thought' && widget.metadata != null)
-              _buildThoughtPreview()
-            else if (widget.contentType == 'tool' && widget.metadata != null)
-              _buildToolPreview()
-            else
-              _buildDefaultPreview(),
+            RepaintBoundary(
+              key: _previewKey,
+              child: widget.contentType == 'thought' && widget.metadata != null
+                  ? _buildThoughtPreview()
+                  : widget.contentType == 'tool' && widget.metadata != null
+                      ? _buildToolPreview()
+                      : _buildDefaultPreview(),
+            ),
 
             const SizedBox(height: 40),
 
@@ -85,9 +94,9 @@ class _ShareContentScreenState extends State<ShareContentScreen> {
                   const SizedBox(height: 16),
                   _ShareActionButton(
                     icon: Icons.ios_share_rounded,
-                    label: 'External Platforms',
+                    label: _isCapturing ? 'Generating...' : 'Share as Card',
                     color: Colors.green,
-                    onTap: () => _shareExternal(),
+                    onTap: _isCapturing ? () {} : () => _shareExternalImage(),
                   ),
                 ],
               ),
@@ -550,8 +559,59 @@ class _ShareContentScreenState extends State<ShareContentScreen> {
     }
   }
 
+  Future<void> _shareExternalImage() async {
+    setState(() => _isCapturing = true);
+    
+    try {
+      // Small delay to ensure any UI updates are settled
+      await Future.delayed(const Duration(milliseconds: 200));
+      
+      final RenderRepaintBoundary? boundary = 
+          _previewKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+      
+      if (boundary == null) throw Exception("Could not find preview boundary");
+      
+      // Capture the image with high quality
+      final ui.Image image = await boundary.toImage(pixelRatio: 3.0);
+      final ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      
+      if (byteData == null) throw Exception("Failed to generate image bytes");
+      
+      final Uint8List pngBytes = byteData.buffer.asUint8List();
+      
+      // Save to a temporary file
+      final tempDir = await getTemporaryDirectory();
+      final file = await File('${tempDir.path}/share_card_${DateTime.now().millisecondsSinceEpoch}.png').create();
+      await file.writeAsBytes(pngBytes);
+      
+      final text = widget.contentType == 'thought' 
+          ? "Check out this thought on PocketMates!" 
+          : "Check out this tool on PocketMates!";
+      
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(file.path)],
+          text: text,
+        ),
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error generating share card: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isCapturing = false);
+      }
+    }
+  }
+
   Future<void> _shareExternal() async {
-    final content = '${widget.contentToShare}\n\nShared via FindCreators';
+    final content = '${widget.contentToShare}\n\nShared via PocketMates';
     await SharePlus.instance.share(ShareParams(text: content));
   }
 }
