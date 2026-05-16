@@ -4,7 +4,7 @@ import 'package:pocket_mates_app/flutter_flow/flutter_flow_widgets.dart';
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import 'index.dart'; // Imports other custom widgets
+import '/index.dart'; // Imports other custom widgets
 // Imports custom actions
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';

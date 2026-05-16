@@ -2,6 +2,7 @@
 export 'modern_bottom_nav_bar.dart' show ModernBottomNavBar, AddButton;
 export 'pocket_mates_dashboard.dart' show PocketMatesDashboard;
 export 'home_page_widget_tree.dart' show HomePageWidgetTree;
+export '/pages/home_page/home_page_widget.dart' show HomePageWidget;
 export 'status_display_widget.dart' show StatusDisplayWidget;
 
 // Profile & Feed
