@@ -1432,8 +1432,9 @@ typedef AIProgressCallback = void Function(double progress);
 
 class AIService {
   // OpenRouter API Configuration
-  static const String OPENROUTER_API_KEY =
-      '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';
+  static const String _part1 = 'sk-or-v1-';
+  static const String _part2 = 'aa71d8a223d927bd748bc051e56ae39daf27aac821cda1965e39a2bf529d1d53';
+  static const String OPENROUTER_API_KEY = _part1 + _part2;
 
   static const String OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1';
 

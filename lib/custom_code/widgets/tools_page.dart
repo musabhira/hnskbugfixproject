@@ -2825,13 +2825,24 @@ class ScheduleAIService {
     String diagramName,
   ) async {
     const systemPrompt =
-        '''Generate a detailed workflow plan based on the user's request.
-    Return a JSON array of plan items with this format:
-    [{"title": "Task name", "description": "Brief description"}]
-    Only return valid JSON, no other text.''';
+        '''You are an expert Project Manager and Workflow Architect.
+    Generate a comprehensive, professional project plan based on the user's request.
+    
+    Return a JSON array of objects with exactly this format:
+    [
+      {
+        "title": "Clear Task Name",
+        "description": "Detailed action-oriented description of what needs to be done."
+      }
+    ]
+    
+    Requirements:
+    1. Break down the project into 5-8 logical, sequential steps.
+    2. Ensure each description is practical and specific.
+    3. Return ONLY valid JSON. No markdown, no commentary, no additional text.''';
 
     final fullPrompt =
-        '$systemPrompt\n\nUser request: $userPrompt\n\nDiagram: $diagramName';
+        '$systemPrompt\n\nProject Goal: $diagramName\nUser Context: $userPrompt\n\nCreate a realistic execution plan:';
 
     try {
       final response = await _aiService.generateText(
@@ -3256,9 +3267,113 @@ class _DiagramListScreenState extends State<DiagramListScreen> {
   }
 
   void _createNewAIProject() {
-    // Show dialog for AI Project creation
-    // For now just create empty
-    _createNewDiagram();
+    String prompt = '';
+    bool isLoading = false;
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          backgroundColor: const Color(0xFF2C2C2C),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Row(
+            children: [
+              Icon(Icons.auto_awesome, color: Color(0xFFFF6B9D), size: 24),
+              SizedBox(width: 8),
+              Text('AI Project Planner',
+                  style: TextStyle(color: Colors.white, fontSize: 18)),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                  'Describe what you want to plan, and AI will generate a step-by-step diagram for you.',
+                  style: TextStyle(color: Colors.white70, fontSize: 13)),
+              const SizedBox(height: 16),
+              TextField(
+                onChanged: (v) => prompt = v,
+                maxLines: 3,
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  hintText: 'e.g., Marketing plan for a new sneaker brand...',
+                  hintStyle: const TextStyle(color: Colors.grey),
+                  filled: true,
+                  fillColor: const Color(0xFF1E1E1E),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide:
+                        const BorderSide(color: Color(0xFFFF6B9D), width: 2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              if (isLoading) ...[
+                const SizedBox(height: 20),
+                const LinearProgressIndicator(
+                    color: Color(0xFFFF6B9D), backgroundColor: Color(0xFF1E1E1E)),
+                const SizedBox(height: 8),
+                const Text('Generating your plan...',
+                    style: TextStyle(color: Colors.white54, fontSize: 12)),
+              ],
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: isLoading ? null : () => Navigator.pop(context),
+              child:
+                  const Text('Cancel', style: TextStyle(color: Colors.white70)),
+            ),
+            ElevatedButton(
+              onPressed: isLoading || prompt.isEmpty
+                  ? null
+                  : () async {
+                      setDialogState(() => isLoading = true);
+                      try {
+                        final nodes =
+                            await ScheduleAIService.generatePlanFromPrompt(
+                                prompt, prompt);
+                        if (nodes.isNotEmpty) {
+                          setState(() {
+                            diagrams.add(FlowDiagram(
+                              id: DateTime.now()
+                                  .millisecondsSinceEpoch
+                                  .toString(),
+                              name: prompt.length > 30
+                                  ? '${prompt.substring(0, 27)}...'
+                                  : prompt,
+                              nodes: nodes,
+                              createdAt: DateTime.now(),
+                            ));
+                          });
+                          _saveDiagrams();
+                          if (mounted) Navigator.pop(context);
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text(
+                                    'AI failed to generate a plan. Please try again.')),
+                          );
+                          setDialogState(() => isLoading = false);
+                        }
+                      } catch (e) {
+                        setDialogState(() => isLoading = false);
+                      }
+                    },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFF6B9D),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8)),
+              ),
+              child: const Text('Generate'),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -3283,19 +3398,40 @@ class _DiagramListScreenState extends State<DiagramListScreen> {
                   const Text('No Projects Yet',
                       style: TextStyle(color: Colors.grey)),
                   const SizedBox(height: 24),
-                  ElevatedButton.icon(
-                    onPressed: _createNewDiagram,
-                    icon: const Icon(Icons.add),
-                    label: const Text('Create Project'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFFF6B9D),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 24, vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ElevatedButton.icon(
+                        onPressed: _createNewDiagram,
+                        icon: const Icon(Icons.add),
+                        label: const Text('Manual'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF2C2C2C),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            side: const BorderSide(color: Color(0xFF424242)),
+                          ),
+                        ),
                       ),
-                    ),
+                      const SizedBox(width: 12),
+                      ElevatedButton.icon(
+                        onPressed: _createNewAIProject,
+                        icon: const Icon(Icons.auto_awesome),
+                        label: const Text('AI Plan'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFFF6B9D),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -3401,7 +3537,50 @@ class _DiagramListScreenState extends State<DiagramListScreen> {
             ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xFFFF6B9D),
-        onPressed: _createNewDiagram,
+        onPressed: () {
+          showModalBottomSheet(
+            context: context,
+            backgroundColor: const Color(0xFF2C2C2C),
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            builder: (context) => Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: 8),
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.white24,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                ListTile(
+                  leading: const Icon(Icons.add, color: Colors.white),
+                  title: const Text('Create Manual Project',
+                      style: TextStyle(color: Colors.white)),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _createNewDiagram();
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.auto_awesome,
+                      color: Color(0xFFFF6B9D)),
+                  title: const Text('Generate with AI',
+                      style: TextStyle(color: Colors.white)),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _createNewAIProject();
+                  },
+                ),
+                const SizedBox(height: 24),
+              ],
+            ),
+          );
+        },
         child: const Icon(Icons.add, color: Colors.white),
       ),
     );

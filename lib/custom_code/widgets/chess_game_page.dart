@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_chess_board/flutter_chess_board.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '/backend/supabase/supabase.dart';
+import 'ai_prompt_service.dart';
 
 class ChessMatchmakingPage extends StatefulWidget {
   const ChessMatchmakingPage({super.key});
@@ -423,24 +424,78 @@ class _ChessPlayPageState extends State<ChessPlayPage> {
 
     setState(() => _isAiThinking = true);
 
-    // Artificial delay for "thinking"
-    await Future.delayed(const Duration(milliseconds: 1000));
-
     try {
-      final moves = _controller.game.moves();
-      if (moves.isNotEmpty) {
-        // Simple AI: Pick a random move
-        // In a real app, you might want to use a better algorithm
-        moves.shuffle();
-        final randomMove = moves.first;
-        _controller.makeMove(from: randomMove.from, to: randomMove.to);
+      final fen = _controller.getFen();
+      final history = _controller.game.history();
+      final lastMoves = history.length > 10 
+          ? history.sublist(history.length - 10).join(', ') 
+          : history.join(', ');
+      
+      final prompt = '''
+      You are a Grandmaster level chess engine.
+      Current Position (FEN): $fen
+      Last few moves: $lastMoves
+      
+      Task: Analyze the position and provide the absolute best move.
+      Requirements:
+      1. Return the move ONLY in UCI format (e.g., "e2e4", "g1f3", "e7e8q" for promotion).
+      2. Return ONLY the move string. No explanations, no commentary, no additional text.
+      3. If a pawn is moving to the last rank, remember to include the promotion piece (q, r, b, or n).
+      
+      UCI Move:''';
+
+      final aiService = AIService();
+      final response = await aiService.generateText(
+        prompt: prompt,
+      );
+
+      if (response.isSuccess && response.data != null) {
+        String moveStr = response.data!.trim().toLowerCase();
+        
+        // Clean the response - sometimes AI includes quotes or "UCI Move: " prefix
+        if (moveStr.contains(':')) {
+          moveStr = moveStr.split(':').last.trim();
+        }
+        moveStr = moveStr.replaceAll(RegExp(r'[^a-h1-8qrbn]'), '');
+
+        debugPrint('AI Suggestion: $moveStr');
+
+        if (moveStr.length >= 4) {
+          final from = moveStr.substring(0, 2);
+          final to = moveStr.substring(2, 4);
+          String? promotion;
+          if (moveStr.length > 4) {
+            promotion = moveStr.substring(4, 5);
+          }
+          
+          try {
+            _controller.makeMove(from: from, to: to, promotion: promotion);
+          } catch (e) {
+            debugPrint('Invalid AI move attempted: $moveStr - Error: $e');
+            _fallbackRandomMove();
+          }
+        } else {
+          _fallbackRandomMove();
+        }
+      } else {
+        _fallbackRandomMove();
       }
     } catch (e) {
       debugPrint('AI Move Error: $e');
+      _fallbackRandomMove();
     }
 
     if (mounted) {
       setState(() => _isAiThinking = false);
+    }
+  }
+
+  void _fallbackRandomMove() {
+    final moves = _controller.game.moves();
+    if (moves.isNotEmpty) {
+      moves.shuffle();
+      final randomMove = moves.first;
+      _controller.makeMove(from: randomMove.from, to: randomMove.to);
     }
   }
 

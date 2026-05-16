@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
 import 'package:timeago/timeago.dart' as timeago;
+import 'ai_prompt_service.dart';
 
 class ThreadFeedPage extends StatefulWidget {
   final double? width;
@@ -1085,6 +1086,7 @@ class _CreateThreadPageState extends State<CreateThreadPage>
   final TextEditingController _contentController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   bool _isSubmitting = false;
+  bool _isPolishing = false;
   Map<String, dynamic>? profileData;
   List<Map<String, dynamic>> userThreads = [];
   bool isLoading = true;
@@ -1179,6 +1181,53 @@ class _CreateThreadPageState extends State<CreateThreadPage>
         _showSnackBar(
             'Error creating thread: ${e.toString()}', Colors.red.shade600);
       }
+    }
+  }
+
+  Future<void> _polishThought() async {
+    if (_contentController.text.trim().isEmpty) {
+      _showSnackBar('Nothing to polish! Please write something first.', Colors.orange);
+      return;
+    }
+
+    setState(() => _isPolishing = true);
+
+    try {
+      final prompt = '''
+      You are a creative writing assistant.
+      User's thought: "${_contentController.text.trim()}"
+      
+      Task: Refine this thought to make it more engaging, clear, and impactful while preserving its original meaning and tone.
+      Requirements:
+      1. Keep it concise (max 2-3 sentences).
+      2. Use a natural, human tone.
+      3. Return ONLY the polished text. No conversational filler.
+      
+      Polished Thought:''';
+
+      final aiService = AIService();
+      final response = await aiService.generateText(prompt: prompt);
+
+      if (response.isSuccess && response.data != null) {
+        final polished = response.data!.trim();
+        // Remove quotes if the AI added them
+        String cleaned = polished;
+        if (cleaned.startsWith('"') && cleaned.endsWith('"')) {
+          cleaned = cleaned.substring(1, cleaned.length - 1);
+        }
+        
+        setState(() {
+          _contentController.text = cleaned;
+          _isPolishing = false;
+        });
+        _showSnackBar('Thought polished by AI!', Colors.blueAccent);
+      } else {
+        setState(() => _isPolishing = false);
+        _showSnackBar('AI Polish failed: ${response.error}', Colors.red);
+      }
+    } catch (e) {
+      setState(() => _isPolishing = false);
+      _showSnackBar('Error: $e', Colors.red);
     }
   }
 
@@ -1568,6 +1617,37 @@ class _CreateThreadPageState extends State<CreateThreadPage>
                                       fontSize: 16,
                                     ),
                                   ),
+                                  const Spacer(),
+                                  if (_isPolishing)
+                                    const SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Colors.amber,
+                                      ),
+                                    )
+                                  else
+                                    TextButton.icon(
+                                      onPressed: _isSubmitting ? null : _polishThought,
+                                      icon: const Icon(Icons.auto_awesome,
+                                          size: 16, color: Colors.amber),
+                                      label: const Text(
+                                        'AI Polish',
+                                        style: TextStyle(
+                                          color: Colors.amber,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      style: TextButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 8),
+                                        minimumSize: Size.zero,
+                                        tapTargetSize:
+                                            MaterialTapTargetSize.shrinkWrap,
+                                      ),
+                                    ),
                                 ],
                               ),
                               const SizedBox(height: 8),

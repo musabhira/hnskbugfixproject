@@ -255,7 +255,10 @@ class _CreateGalleryWidgetState extends State<CreateGalleryWidget> {
           ),
         );
 
-        Navigator.pop(context);
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomePageWidget()),
+        );
       }
     } catch (error) {
       if (mounted) {
