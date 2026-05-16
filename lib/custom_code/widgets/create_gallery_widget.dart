@@ -257,7 +257,7 @@ class _CreateGalleryWidgetState extends State<CreateGalleryWidget> {
 
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const HomePageWidget()),
+          MaterialPageRoute(builder: (context) => HomePageWidget()),
         );
       }
     } catch (error) {

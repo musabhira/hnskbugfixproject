@@ -426,10 +426,12 @@ class _ChessPlayPageState extends State<ChessPlayPage> {
 
     try {
       final fen = _controller.getFen();
-      final history = _controller.game.history();
-      final lastMoves = history.length > 10 
-          ? history.sublist(history.length - 10).join(', ') 
-          : history.join(', ');
+      final history = _controller.game.history;
+      final lastMoves = (history is List && history.isNotEmpty)
+          ? (history.length > 10 
+              ? history.sublist(history.length - 10).join(', ') 
+              : history.join(', '))
+          : "";
       
       final prompt = '''
       You are a Grandmaster level chess engine.
@@ -469,7 +471,7 @@ class _ChessPlayPageState extends State<ChessPlayPage> {
           }
           
           try {
-            _controller.makeMove(from: from, to: to, promotion: promotion);
+            _controller.makeMove(from: from, to: to);
           } catch (e) {
             debugPrint('Invalid AI move attempted: $moveStr - Error: $e');
             _fallbackRandomMove();
