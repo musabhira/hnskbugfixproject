@@ -83,8 +83,11 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   void initState() {
     super.initState();
     // Initialize controller with correct length if preloaded
-    _tabController = material.TabController(length: 1, vsync: this);
+    final initialLength = (widget.preloadedProfile?['verified'] == true) ? 4 : 3;
+    _tabController = material.TabController(length: initialLength, vsync: this);
+    _tabController.addListener(() { if (mounted) setState(() {}); });
     _loadInitialData(); // Instant load strategy
+    _fetchThreads();
   }
 
   @override
@@ -138,15 +141,17 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     _btnTextColor = _parseColor(data['button_text_color']);
 
     // Sync TabController
-    const newLength = 1;
+    final isVerified = data['verified'] == true;
+    final newLength = isVerified ? 4 : 3;
     if (_tabController.length != newLength) {
       final oldIndex = _tabController.index;
       _tabController.dispose();
       _tabController = material.TabController(
         length: newLength,
         vsync: this,
-        initialIndex: 0,
+        initialIndex: oldIndex < newLength ? oldIndex : 0,
       );
+      _tabController.addListener(() { if (mounted) setState(() {}); });
     }
   }
 
@@ -160,6 +165,13 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             .select()
             .eq('user_id', userId)
             .limit(1), // Profile
+        _supabase
+            .from('profile_gallery_service_likes_comments_view')
+            .select()
+            .eq('user_id', userId)
+            .not('gallery_id', 'is', null)
+            .order('gallery_created_at', ascending: false)
+            .limit(20), // Recent Gallery (Limit for perf)
         _fetchFollowCountsMap(), // Counts Map
         _checkFollowStatusBool(),
         _checkBlockStatusBool(),
@@ -168,7 +180,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       if (!mounted) return;
 
       final profileRes = responses[0] as List;
-      final counts = responses[1] as Map<String, int>;
+      final galleryRes = responses[1] as List;
+      final counts = responses[2] as Map<String, int>;
 
       if (profileRes.isNotEmpty) {
         final data = profileRes.first as Map<String, dynamic>;
@@ -181,15 +194,33 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         prefs.setString('profile_cache_$userId', json.encode(data));
       }
 
+      // Process Gallery
+      final Map<String, Map<String, dynamic>> uniqueGallery = {};
+      Set<String> categorySet = {'All'};
+
+      for (var item in galleryRes) {
+        if (item['gallery_id'] != null) {
+          uniqueGallery[item['gallery_id'].toString()] = item;
+          if (item['gallery_category'] != null &&
+              item['gallery_category'].toString().trim().isNotEmpty) {
+            categorySet.add(item['gallery_category'].toString().trim());
+          }
+        }
+      }
+
       setState(() {
+        _galleryItems = uniqueGallery.values.toList();
+        _categories = categorySet.toList();
+        _filteredGalleryItems = _galleryItems;
         _followersCount = counts['followers'] ?? 0;
         _followingCount = counts['following'] ?? 0;
-        _isFollowing = responses[2] as bool;
-        _isBlocked = responses[3] as bool;
+        _isFollowing = responses[3] as bool;
+        _isBlocked = responses[4] as bool;
       });
 
       // Lazy load full lists in background
       _fetchFullLists();
+      _fetchThreads();
     } catch (e) {
       debugPrint('Error fetching fresh data: $e');
       if (mounted) setState(() => _isLoading = false);
@@ -199,15 +230,38 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   Future<void> _fetchFullLists() async {
     // Fetch remaining gallery and services
     try {
-      final serviceRes = await _supabase
-          .from('services') // Query services table directly for better perf
-          .select()
-          .eq('user_id', userId)
-          .order('created_at', ascending: false);
+      final results = await Future.wait([
+        _supabase
+            .from('gallery')
+            .select()
+            .eq('user_id', userId)
+            .order('created_at', ascending: false),
+        _supabase
+            .from('services')
+            .select()
+            .eq('user_id', userId)
+            .order('created_at', ascending: false),
+      ]);
 
       if (mounted) {
+        final allGallery = results[0] as List;
+        final Map<String, Map<String, dynamic>> uniqueGallery = {};
+        Set<String> categorySet = {'All'};
+        for (var item in allGallery) {
+          final id = item['id']?.toString() ?? item['gallery_id']?.toString();
+          if (id != null) {
+            uniqueGallery[id] = item;
+            final cat = item['category']?.toString().trim() ?? item['gallery_category']?.toString().trim();
+            if (cat != null && cat.isNotEmpty) categorySet.add(cat);
+          }
+        }
         setState(() {
-          _serviceItems = List<Map<String, dynamic>>.from(serviceRes);
+          _galleryItems = uniqueGallery.values.toList();
+          _categories = categorySet.toList();
+          if (_selectedCategory == 'All') {
+            _filteredGalleryItems = _galleryItems;
+          }
+          _serviceItems = List<Map<String, dynamic>>.from(results[1]);
         });
       }
     } catch (e) {
@@ -486,7 +540,11 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   indicatorWeight: 3,
                   labelStyle: GoogleFonts.outfit(fontWeight: FontWeight.bold),
                   tabs: [
+                    const material.Tab(text: "Gallery"),
                     const material.Tab(text: "Services"),
+                    const material.Tab(text: "Thoughts"),
+                    if (_profileData?['verified'] == true)
+                      const material.Tab(text: "Posters"),
                   ],
                 ),
                 bgColor,
@@ -498,12 +556,64 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
           color: bgColor,
           child: Column(
             children: [
-              // Category Selector
-              const SizedBox(height: 0),
+              // Category Selector — only shown on Gallery tab (index 0)
+              if (_categories.length > 1 && _tabController.index == 0)
+                Container(
+                  height: 50,
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: _categories.length,
+                    itemBuilder: (context, index) {
+                      final cat = _categories[index];
+                      final isSelected = _selectedCategory == cat;
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: Button(
+                          onPressed: () => _filterGalleryByCategory(cat),
+                          style: ButtonStyle(
+                            backgroundColor: WidgetStateProperty.all(
+                              isSelected
+                                  ? btnColor
+                                  : material.Colors.transparent,
+                            ),
+                            shape: WidgetStateProperty.all(RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                              side: BorderSide(
+                                color: isSelected
+                                    ? btnColor
+                                    : textColor.withValues(alpha: 0.2),
+                              ),
+                            )),
+                          ),
+                          child: Text(
+                            cat,
+                            style: TextStyle(
+                              color: isSelected ? btnTextColor : textColor,
+                              fontSize: 12,
+                              fontWeight: isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
               Expanded(
                 child: material.TabBarView(
                   controller: _tabController,
                   children: [
+                    _GalleryTab(
+                      userId: userId,
+                      items: _filteredGalleryItems,
+                      textColor: textColor,
+                      bgColor: bgColor,
+                      btnColor: btnColor,
+                      btnTextColor: btnTextColor,
+                    ),
                     _ServicesTab(
                       items: _serviceItems,
                       textColor: textColor,
@@ -511,6 +621,17 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       btnTextColor: btnTextColor,
                       userId: userId,
                     ),
+                    _ThreadsTab(
+                      items: _threadItems,
+                      textColor: textColor,
+                      btnColor: btnColor,
+                      btnTextColor: btnTextColor,
+                    ),
+                    if (_profileData?['verified'] == true)
+                      PostersTab(
+                        profileData: _profileData,
+                        galleryItems: _galleryItems,
+                      ),
                   ],
                 ),
               ),
@@ -615,7 +736,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                     children: [
                       _buildStatItem("Followers", _followersCount, textColor),
                       _buildStatItem("Following", _followingCount, textColor),
-                      _buildStatItem("Services", _serviceItems.length, textColor),
+                      _buildStatItem("Posts", _galleryItems.length, textColor),
                     ],
                   ),
                 ),
