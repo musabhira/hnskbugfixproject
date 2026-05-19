@@ -111,11 +111,7 @@ jobs:
             -archivePath build/ios/Runner.xcarchive \
             -sdk iphoneos \
             -destination 'generic/platform=iOS' \
-            archive \
-            CODE_SIGN_STYLE=Manual \
-            CODE_SIGN_IDENTITY="Apple Distribution" \
-            PROVISIONING_PROFILE_SPECIFIER="handskillfirends" \
-            DEVELOPMENT_TEAM=H47S9SN8N3
+            archive
           
           # Export the archive
           xcodebuild -exportArchive \
