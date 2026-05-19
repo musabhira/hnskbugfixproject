@@ -1567,17 +1567,16 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
     }
   }
 
-  // Upload helper using FilePicker.platform.pickFiles
+  // Upload helper using FilePicker.pickFiles
   Future<String?> _uploadFile({required String bucketName, required FileType fileType}) async {
     try {
-      final result = await FilePicker.platform.pickFiles(type: fileType);
+      final result = await FilePicker.pickFiles(type: fileType);
       if (result == null || result.files.isEmpty || result.files.single.path == null) {
         return null;
       }
       
       final path = result.files.single.path!;
       final file = File(path);
-      final ext = path.split('.').last.toLowerCase();
       final name = '${DateTime.now().millisecondsSinceEpoch}_${result.files.single.name.replaceAll(RegExp(r'[^a-zA-Z0-9.]'), '_')}';
       
       if (!mounted) return null;
@@ -1853,6 +1852,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                       } else {
                         await supabase.from('courses').insert(data);
                       }
+                      if (!ctx.mounted || !context.mounted) return;
                       Navigator.pop(ctx);
                       _loadCourses();
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -1862,6 +1862,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                         ),
                       );
                     } catch (e) {
+                      if (!context.mounted) return;
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text('Failed to save course: $e'), backgroundColor: Colors.red),
                       );
@@ -2006,6 +2007,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                       } else {
                         await supabase.from('lessons').insert(data);
                       }
+                      if (!ctx.mounted || !context.mounted) return;
                       Navigator.pop(ctx);
                       _loadLessons(courseId);
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -2015,6 +2017,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                         ),
                       );
                     } catch (e) {
+                      if (!context.mounted) return;
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text('Failed to save lesson: $e'), backgroundColor: Colors.red),
                       );
