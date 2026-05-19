@@ -13,6 +13,7 @@ class FlutterFlowVideoLayer extends StatefulWidget {
     this.showControls = true,
     this.allowFullScreen = false,
     this.allowPlaybackSpeedMenu = false,
+    this.initialProgress,
     this.onProgress,
     this.onCompleted,
   });
@@ -24,6 +25,7 @@ class FlutterFlowVideoLayer extends StatefulWidget {
   final bool showControls;
   final bool allowFullScreen;
   final bool allowPlaybackSpeedMenu;
+  final double? initialProgress;
   final Function(double)? onProgress;
   final VoidCallback? onCompleted;
 
@@ -60,6 +62,14 @@ class _FlutterFlowVideoLayerState extends State<FlutterFlowVideoLayer> {
         setState(() {});
         if (widget.looping) {
           _controller?.setLooping(true);
+        }
+        if (widget.initialProgress != null &&
+            widget.initialProgress! > 0.0 &&
+            widget.initialProgress! < 0.95) {
+          final duration = _controller!.value.duration;
+          final seekToMs =
+              (duration.inMilliseconds * widget.initialProgress!).toInt();
+          _controller?.seekTo(Duration(milliseconds: seekToMs));
         }
         if (widget.autoPlay) {
           _controller?.play();

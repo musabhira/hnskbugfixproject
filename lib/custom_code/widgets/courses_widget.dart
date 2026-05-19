@@ -706,11 +706,18 @@ class _CourseDetailPageState extends State<CourseDetailPage> with WidgetsBinding
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _fetchLessons();
-    _loadCourseProgress();
+    _initCourseData();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkPaidAccess();
     });
+  }
+
+  Future<void> _initCourseData() async {
+    await _fetchLessons();
+    await _loadCourseProgress();
+    if (lessons.isNotEmpty && currentVideoUrl.isEmpty) {
+      _selectLesson(lessons[0], 0);
+    }
   }
 
   @override
@@ -830,18 +837,40 @@ class _CourseDetailPageState extends State<CourseDetailPage> with WidgetsBinding
     try {
       final progressData = await supabase
           .from('user_progress')
-          .select('content_id, progress')
+          .select('content_id, progress, last_accessed')
           .eq('user_id', userId);
 
       if (progressData.isNotEmpty) {
         final Map<String, double> progressMap = {};
+        String? latestLessonId;
+        DateTime? latestAccessTime;
+
         for (var item in progressData as List) {
-          progressMap[item['content_id'].toString()] =
-              (item['progress'] as num).toDouble();
+          final String lessonId = item['content_id'].toString();
+          final double progressVal = (item['progress'] as num).toDouble();
+          progressMap[lessonId] = progressVal;
+
+          if (item['last_accessed'] != null) {
+            final accessed = DateTime.tryParse(item['last_accessed'].toString());
+            if (accessed != null) {
+              if (latestAccessTime == null || accessed.isAfter(latestAccessTime)) {
+                latestAccessTime = accessed;
+                latestLessonId = lessonId;
+              }
+            }
+          }
         }
         safeSetState(() {
           lessonProgress = progressMap;
         });
+
+        // Auto-select the last accessed lesson if available and valid in the current lessons list
+        if (latestLessonId != null && lessons.isNotEmpty) {
+          final index = lessons.indexWhere((l) => l['id'].toString() == latestLessonId);
+          if (index != -1) {
+            _selectLesson(lessons[index], index);
+          }
+        }
       }
     } catch (e) {
       debugPrint('Error loading progress: $e');
@@ -969,9 +998,6 @@ class _CourseDetailPageState extends State<CourseDetailPage> with WidgetsBinding
       setState(() {
         lessons = lessonsList;
         isLoading = false;
-        if (lessons.isNotEmpty) {
-          _selectLesson(lessons[0], 0);
-        }
       });
     } catch (e) {
       debugPrint('Error fetching lessons: $e');
@@ -1376,6 +1402,8 @@ class _CourseDetailPageState extends State<CourseDetailPage> with WidgetsBinding
   Widget _buildLessonItem(Map<String, dynamic> lesson, int index) {
     final isCurrentLesson = currentLessonIndex == index;
     final isLocked = index > 0 && !hasPaidAccess;
+    final double progressVal = lessonProgress[lesson['id'].toString()] ?? 0.0;
+    final bool isCompleted = progressVal >= 0.95;
 
     return Card(
       color: Colors.black87,
@@ -1386,13 +1414,11 @@ class _CourseDetailPageState extends State<CourseDetailPage> with WidgetsBinding
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(
-          // Change border color based on selection
-          color: isCurrentLesson ? Colors.green : Colors.yellow.shade700,
-          width: isCurrentLesson ? 2.0 : 1.5,
+          color: isCurrentLesson ? Colors.green : Colors.yellow.shade700.withValues(alpha: 0.3),
+          width: isCurrentLesson ? 2.0 : 1.0,
         ),
       ),
       child: Container(
-        // Add a subtle background color change for selected item
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
           color: isCurrentLesson
@@ -1437,8 +1463,24 @@ class _CourseDetailPageState extends State<CourseDetailPage> with WidgetsBinding
                     ),
                   ),
                 ),
-              // Add green checkmark for selected lesson
-              if (isCurrentLesson && !isLocked)
+              if (!isLocked && !isCompleted)
+                Positioned.fill(
+                  child: Center(
+                    child: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: const BoxDecoration(
+                        color: Colors.black38,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.play_arrow,
+                        color: Colors.white70,
+                        size: 20,
+                      ),
+                    ),
+                  ),
+                ),
+              if (isCompleted && !isLocked)
                 Positioned(
                   top: 4,
                   right: 4,
@@ -1458,7 +1500,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> with WidgetsBinding
                     child: const Icon(
                       Icons.check,
                       color: Colors.white,
-                      size: 16,
+                      size: 14,
                     ),
                   ),
                 ),
@@ -1487,14 +1529,13 @@ class _CourseDetailPageState extends State<CourseDetailPage> with WidgetsBinding
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-              // Alternative: Add checkmark in title area
-              if (isCurrentLesson && !isLocked)
+              if (isCompleted && !isLocked)
                 const Padding(
                   padding: EdgeInsets.only(left: 8),
                   child: Icon(
-                    Icons.check_circle,
+                    Icons.check_circle_rounded,
                     color: Colors.green,
-                    size: 20,
+                    size: 18,
                   ),
                 ),
             ],
@@ -1513,17 +1554,32 @@ class _CourseDetailPageState extends State<CourseDetailPage> with WidgetsBinding
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(height: 4),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(4),
-                child: LinearProgressIndicator(
-                  value: lessonProgress[lesson['id'].toString()] ?? 0.0,
-                  minHeight: 4,
-                  backgroundColor: Colors.white.withValues(alpha: 0.1),
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    isCurrentLesson ? Colors.green : Colors.yellow.shade700,
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: LinearProgressIndicator(
+                        value: progressVal,
+                        minHeight: 5,
+                        backgroundColor: Colors.white.withValues(alpha: 0.1),
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          isCompleted ? Colors.green : Colors.yellow.shade700,
+                        ),
+                      ),
+                    ),
                   ),
-                ),
+                  const SizedBox(width: 8),
+                  Text(
+                    '${(progressVal * 100).toInt()}%',
+                    style: TextStyle(
+                      color: isCompleted ? Colors.green : Colors.yellow.shade200,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -1826,6 +1882,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> with WidgetsBinding
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(16),
                         child: FlutterFlowVideoLayer(
+                          key: ValueKey(currentVideoUrl),
                           path: currentVideoUrl,
                           videoType: VideoType.network,
                           autoPlay: true,
@@ -1833,6 +1890,9 @@ class _CourseDetailPageState extends State<CourseDetailPage> with WidgetsBinding
                           showControls: true,
                           allowFullScreen: true,
                           allowPlaybackSpeedMenu: true,
+                          initialProgress: lessons.isNotEmpty
+                              ? (lessonProgress[lessons[currentLessonIndex]['id'].toString()] ?? 0.0)
+                              : 0.0,
                           onProgress: (progress) {
                             if (lessons.isNotEmpty) {
                               _updateProgress(

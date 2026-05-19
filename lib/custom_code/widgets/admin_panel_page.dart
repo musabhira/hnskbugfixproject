@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 // import 'package:pocket_mates_app/flutter_flow/flutter_flow_theme.dart';
 // import 'package:pocket_mates_app/flutter_flow/flutter_flow_util.dart';
 // import 'index.dart'; 
@@ -45,10 +47,17 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
   bool isLoadingToolConfigs = false;
   String toolUserSearchQuery = "";
 
+  // E-Learning State
+  List<Map<String, dynamic>> allCourses = [];
+  bool isLoadingCourses = false;
+  Map<String, dynamic>? selectedCourseForCurriculum;
+  List<Map<String, dynamic>> courseLessons = [];
+  bool isLoadingLessons = false;
+
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 7, vsync: this);
+    _tabController = TabController(length: 8, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _showPasswordDialog();
     });
@@ -137,6 +146,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
       _loadUsersAuth(),
       _loadAppUpdateData(),
       _loadGlobalToolConfigs(),
+      _loadCourses(),
     ]);
   }
 
@@ -393,6 +403,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
             Tab(icon: Icon(Icons.security_outlined), text: 'Auth'),
             Tab(icon: Icon(Icons.system_update_outlined), text: 'Update'),
             Tab(icon: Icon(Icons.build_circle_outlined), text: 'Tools'),
+            Tab(icon: Icon(Icons.collections_bookmark_outlined), text: 'E-Learning'),
           ],
         ),
       ),
@@ -406,6 +417,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
           _buildAuthTab(),
           _buildUpdateTab(),
           _buildToolsTab(),
+          _buildELearningTab(),
         ],
       ),
     );
@@ -1517,6 +1529,939 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
       }
       if (mounted) setState(() => isLoadingUpdate = false);
     }
+  }
+
+  // E-Learning Course and Lesson management helper methods
+
+  Future<void> _loadCourses() async {
+    if (!mounted) return;
+    setState(() => isLoadingCourses = true);
+    try {
+      final res = await supabase.from('courses').select().order('created_at', ascending: false);
+      if (mounted) {
+        setState(() {
+          allCourses = List<Map<String, dynamic>>.from(res);
+          isLoadingCourses = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading courses: $e');
+      if (mounted) setState(() => isLoadingCourses = false);
+    }
+  }
+
+  Future<void> _loadLessons(String courseId) async {
+    if (!mounted) return;
+    setState(() => isLoadingLessons = true);
+    try {
+      final res = await supabase.from('lessons').select().eq('course_id', courseId).order('created_at', ascending: true);
+      if (mounted) {
+        setState(() {
+          courseLessons = List<Map<String, dynamic>>.from(res);
+          isLoadingLessons = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading lessons: $e');
+      if (mounted) setState(() => isLoadingLessons = false);
+    }
+  }
+
+  // Upload helper using FilePicker.platform.pickFiles
+  Future<String?> _uploadFile({required String bucketName, required FileType fileType}) async {
+    try {
+      final result = await FilePicker.platform.pickFiles(type: fileType);
+      if (result == null || result.files.isEmpty || result.files.single.path == null) {
+        return null;
+      }
+      
+      final path = result.files.single.path!;
+      final file = File(path);
+      final ext = path.split('.').last.toLowerCase();
+      final name = '${DateTime.now().millisecondsSinceEpoch}_${result.files.single.name.replaceAll(RegExp(r'[^a-zA-Z0-9.]'), '_')}';
+      
+      if (!mounted) return null;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(color: Colors.amber, strokeWidth: 2),
+              ),
+              const SizedBox(width: 15),
+              Expanded(
+                child: Text(
+                  'Uploading file to $bucketName...',
+                  style: const TextStyle(color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: Colors.black87,
+          duration: const Duration(minutes: 5), // Keep open during upload
+        ),
+      );
+
+      // Perform upload
+      await supabase.storage.from(bucketName).upload(name, file);
+      
+      // Get URL
+      final url = supabase.storage.from(bucketName).getPublicUrl(name);
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).clearSnackBars();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Upload successful!'), backgroundColor: Colors.green),
+        );
+      }
+      return url;
+    } catch (e) {
+      debugPrint('File upload error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).clearSnackBars();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Upload failed: $e'), backgroundColor: Colors.red),
+        );
+      }
+      return null;
+    }
+  }
+
+  // Delete Course
+  Future<void> _deleteCourse(String courseId) async {
+    try {
+      // Show confirmation dialog first
+      bool confirm = await showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          backgroundColor: Colors.grey[900],
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Text('Delete Course?', style: TextStyle(color: Colors.white)),
+          content: const Text('This will delete the course permanently. Lessons associated with this course might also fail or remain orphaned. Are you sure?',
+              style: TextStyle(color: Colors.white70)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        ),
+      ) ?? false;
+
+      if (!confirm) return;
+
+      setState(() => isLoadingCourses = true);
+      await supabase.from('courses').delete().eq('id', courseId);
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Course deleted successfully!'), backgroundColor: Colors.green),
+        );
+      }
+      _loadCourses();
+    } catch (e) {
+      debugPrint('Error deleting course: $e');
+      if (mounted) {
+        setState(() => isLoadingCourses = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to delete course: $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
+  // Delete Lesson
+  Future<void> _deleteLesson(String lessonId, String courseId) async {
+    try {
+      bool confirm = await showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          backgroundColor: Colors.grey[900],
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Text('Delete Lesson?', style: TextStyle(color: Colors.white)),
+          content: const Text('This will delete the lesson permanently. Are you sure?', style: TextStyle(color: Colors.white70)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        ),
+      ) ?? false;
+
+      if (!confirm) return;
+
+      setState(() => isLoadingLessons = true);
+      await supabase.from('lessons').delete().eq('id', lessonId);
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Lesson deleted successfully!'), backgroundColor: Colors.green),
+        );
+      }
+      _loadLessons(courseId);
+    } catch (e) {
+      debugPrint('Error deleting lesson: $e');
+      if (mounted) {
+        setState(() => isLoadingLessons = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to delete lesson: $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
+  // Dialog to Create or Edit Course
+  void _showCourseDialog({Map<String, dynamic>? course}) {
+    final isEdit = course != null;
+    final titleController = TextEditingController(text: course?['title'] ?? '');
+    final descController = TextEditingController(text: course?['description'] ?? '');
+    final thumbController = TextEditingController(text: course?['thumbnail'] ?? '');
+    final priceController = TextEditingController(text: course?['price']?.toString() ?? '0');
+    final retailPriceController = TextEditingController(text: course?['retail_price']?.toString() ?? '0');
+    final languageController = TextEditingController(text: course?['language'] ?? 'Malayalam');
+    final androidIdController = TextEditingController(text: course?['product_id_android'] ?? '');
+    final iosIdController = TextEditingController(text: course?['product_id_ios'] ?? '');
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: const Color(0xFF121B22),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setModalState) => Padding(
+          padding: EdgeInsets.only(
+            top: 24,
+            left: 20,
+            right: 20,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      isEdit ? 'Edit Course' : 'Create New Course',
+                      style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close, color: Colors.grey),
+                      onPressed: () => Navigator.pop(ctx),
+                    )
+                  ],
+                ),
+                const SizedBox(height: 16),
+                _buildModalTextField('Course Title', titleController, icon: Icons.title),
+                const SizedBox(height: 12),
+                _buildModalTextField('Description', descController, maxLines: 3, icon: Icons.description),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildModalTextField('Thumbnail URL', thumbController, icon: Icons.image),
+                    ),
+                    const SizedBox(width: 8),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.amber,
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      onPressed: () async {
+                        final url = await _uploadFile(bucketName: 'course-thumbnails', fileType: FileType.image);
+                        if (url != null) {
+                          setModalState(() {
+                            thumbController.text = url;
+                          });
+                        }
+                      },
+                      child: const Icon(Icons.upload_file, color: Colors.black),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildModalTextField('Selling Price (INR)', priceController, keyboardType: TextInputType.number, icon: Icons.currency_rupee),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _buildModalTextField('Retail Price (INR)', retailPriceController, keyboardType: TextInputType.number, icon: Icons.money_off),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                _buildModalTextField('Language', languageController, icon: Icons.language),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildModalTextField('Android Product ID', androidIdController, icon: Icons.android),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _buildModalTextField('iOS Product ID', iosIdController, icon: Icons.apple),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.amber,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  onPressed: () async {
+                    if (titleController.text.trim().isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Course title cannot be empty'), backgroundColor: Colors.red),
+                      );
+                      return;
+                    }
+                    
+                    final data = {
+                      'title': titleController.text.trim(),
+                      'description': descController.text.trim(),
+                      'thumbnail': thumbController.text.trim(),
+                      'price': priceController.text.trim(),
+                      'retail_price': retailPriceController.text.trim(),
+                      'language': languageController.text.trim(),
+                      'product_id_android': androidIdController.text.trim(),
+                      'product_id_ios': iosIdController.text.trim(),
+                    };
+
+                    try {
+                      if (isEdit) {
+                        await supabase.from('courses').update(data).eq('id', course['id']);
+                      } else {
+                        await supabase.from('courses').insert(data);
+                      }
+                      Navigator.pop(ctx);
+                      _loadCourses();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(isEdit ? 'Course updated successfully!' : 'Course created successfully!'),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Failed to save course: $e'), backgroundColor: Colors.red),
+                      );
+                    }
+                  },
+                  child: Text(
+                    isEdit ? 'Save Changes' : 'Create Course',
+                    style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Dialog to Create or Edit Lesson
+  void _showLessonDialog(String courseId, {Map<String, dynamic>? lesson}) {
+    final isEdit = lesson != null;
+    final titleController = TextEditingController(text: lesson?['title'] ?? '');
+    final contentController = TextEditingController(text: lesson?['content'] ?? '');
+    final videoUrlController = TextEditingController(text: lesson?['video_url'] ?? '');
+    final thumbUrlController = TextEditingController(text: lesson?['thamnail_url'] ?? ''); // Note spelling thamnail_url
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: const Color(0xFF121B22),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setModalState) => Padding(
+          padding: EdgeInsets.only(
+            top: 24,
+            left: 20,
+            right: 20,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      isEdit ? 'Edit Lesson' : 'Add New Lesson',
+                      style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close, color: Colors.grey),
+                      onPressed: () => Navigator.pop(ctx),
+                    )
+                  ],
+                ),
+                const SizedBox(height: 16),
+                _buildModalTextField('Lesson Title', titleController, icon: Icons.title),
+                const SizedBox(height: 12),
+                _buildModalTextField('Content / Subtext', contentController, maxLines: 3, icon: Icons.description),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildModalTextField('Video URL (MP4)', videoUrlController, icon: Icons.video_library),
+                    ),
+                    const SizedBox(width: 8),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.amber,
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      onPressed: () async {
+                        // Upload to lesson_vedios
+                        final url = await _uploadFile(bucketName: 'lesson_vedios', fileType: FileType.video);
+                        if (url != null) {
+                          setModalState(() {
+                            videoUrlController.text = url;
+                          });
+                        }
+                      },
+                      child: const Icon(Icons.upload_file, color: Colors.black),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildModalTextField('Lesson Thumbnail URL', thumbUrlController, icon: Icons.image),
+                    ),
+                    const SizedBox(width: 8),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.amber,
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      onPressed: () async {
+                        // Upload to thumbnails or course-thumbnails
+                        final url = await _uploadFile(bucketName: 'thumbnails', fileType: FileType.image);
+                        if (url != null) {
+                          setModalState(() {
+                            thumbUrlController.text = url;
+                          });
+                        }
+                      },
+                      child: const Icon(Icons.upload_file, color: Colors.black),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.amber,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  onPressed: () async {
+                    if (titleController.text.trim().isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Lesson title cannot be empty'), backgroundColor: Colors.red),
+                      );
+                      return;
+                    }
+                    
+                    final data = {
+                      'course_id': courseId,
+                      'title': titleController.text.trim(),
+                      'content': contentController.text.trim(),
+                      'video_url': videoUrlController.text.trim(),
+                      'thamnail_url': thumbUrlController.text.trim(), // Note spelling
+                    };
+
+                    try {
+                      if (isEdit) {
+                        await supabase.from('lessons').update(data).eq('id', lesson['id']);
+                      } else {
+                        await supabase.from('lessons').insert(data);
+                      }
+                      Navigator.pop(ctx);
+                      _loadLessons(courseId);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(isEdit ? 'Lesson updated successfully!' : 'Lesson added successfully!'),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Failed to save lesson: $e'), backgroundColor: Colors.red),
+                      );
+                    }
+                  },
+                  child: Text(
+                    isEdit ? 'Save Changes' : 'Add Lesson',
+                    style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildModalTextField(String label, TextEditingController controller, {int maxLines = 1, TextInputType? keyboardType, IconData? icon}) {
+    return TextField(
+      controller: controller,
+      maxLines: maxLines,
+      keyboardType: keyboardType,
+      style: const TextStyle(color: Colors.white),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(color: Colors.grey),
+        prefixIcon: icon != null ? Icon(icon, color: Colors.amber, size: 20) : null,
+        filled: true,
+        fillColor: Colors.grey[900],
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+      ),
+    );
+  }
+
+  // --- E-Learning Tab UI ---
+  Widget _buildELearningTab() {
+    if (selectedCourseForCurriculum != null) {
+      return _buildCurriculumView();
+    }
+    return _buildCourseListView();
+  }
+
+  // Course List View
+  Widget _buildCourseListView() {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Course Catalog',
+                    style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${allCourses.length} Courses available',
+                    style: const TextStyle(color: Colors.grey, fontSize: 12),
+                  ),
+                ],
+              ),
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.amber,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                icon: const Icon(Icons.add, color: Colors.black, size: 20),
+                label: const Text(
+                  'Add Course',
+                  style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+                ),
+                onPressed: () => _showCourseDialog(),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: isLoadingCourses
+              ? const Center(child: CircularProgressIndicator(color: Colors.amber))
+              : allCourses.isEmpty
+                  ? _buildEmptyState(
+                      icon: Icons.school_outlined,
+                      title: 'No Courses Found',
+                      subtitle: 'Get started by creating your very first e-learning course.',
+                      actionText: 'Create Course',
+                      onAction: () => _showCourseDialog(),
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: allCourses.length,
+                      itemBuilder: (context, index) {
+                        final course = allCourses[index];
+                        final thumbnail = course['thumbnail'] ?? '';
+                        final price = course['price'] ?? '0';
+                        final retail = course['retail_price'] ?? '0';
+                        final language = course['language'] ?? 'Malayalam';
+
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 16),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[900],
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: Colors.white10),
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
+                                child: thumbnail.isNotEmpty
+                                    ? CachedNetworkImage(
+                                        imageUrl: thumbnail,
+                                        width: 90,
+                                        height: 90,
+                                        fit: BoxFit.cover,
+                                        placeholder: (context, url) => Container(
+                                          color: Colors.grey[800],
+                                          child: const Center(child: CircularProgressIndicator(color: Colors.amber)),
+                                        ),
+                                        errorWidget: (context, url, error) => Container(
+                                          color: Colors.grey[800],
+                                          child: const Icon(Icons.image_not_supported, color: Colors.grey),
+                                        ),
+                                      )
+                                    : Container(
+                                        color: Colors.grey[800],
+                                        width: 90,
+                                        height: 90,
+                                        child: const Icon(Icons.image, color: Colors.grey),
+                                      ),
+                              ),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      course['title'] ?? 'Untitled Course',
+                                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      course['description'] ?? 'No description provided.',
+                                      style: const TextStyle(color: Colors.white70, fontSize: 12),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Wrap(
+                                      spacing: 8,
+                                      runSpacing: 4,
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                          decoration: BoxDecoration(
+                                            color: Colors.amber.withOpacity(0.1),
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          child: Text(
+                                            '₹$price',
+                                            style: const TextStyle(color: Colors.amber, fontSize: 11, fontWeight: FontWeight.bold),
+                                          ),
+                                        ),
+                                        if (retail != '0' && retail != price)
+                                          Text(
+                                            '₹$retail',
+                                            style: const TextStyle(
+                                              color: Colors.grey,
+                                              fontSize: 11,
+                                              decoration: TextDecoration.lineThrough,
+                                            ),
+                                          ),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                          decoration: BoxDecoration(
+                                            color: Colors.blue.withOpacity(0.1),
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          child: Text(
+                                            language,
+                                            style: const TextStyle(color: Colors.blue, fontSize: 11),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 12),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        TextButton.icon(
+                                          icon: const Icon(Icons.list_alt, size: 16, color: Colors.amber),
+                                          label: const Text('Curriculum', style: TextStyle(color: Colors.amber, fontSize: 12)),
+                                          onPressed: () {
+                                            setState(() {
+                                              selectedCourseForCurriculum = course;
+                                            });
+                                            _loadLessons(course['id']);
+                                          },
+                                        ),
+                                        TextButton.icon(
+                                          icon: const Icon(Icons.edit, size: 16, color: Colors.blue),
+                                          label: const Text('Edit', style: TextStyle(color: Colors.blue, fontSize: 12)),
+                                          onPressed: () => _showCourseDialog(course: course),
+                                        ),
+                                        TextButton.icon(
+                                          icon: const Icon(Icons.delete_outline, size: 16, color: Colors.red),
+                                          label: const Text('Delete', style: TextStyle(color: Colors.red, fontSize: 12)),
+                                          onPressed: () => _deleteCourse(course['id']),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+        ),
+      ],
+    );
+  }
+
+  // Curriculum View (Lesson list inside a course)
+  Widget _buildCurriculumView() {
+    final course = selectedCourseForCurriculum!;
+    final courseId = course['id'];
+
+    return Column(
+      children: [
+        // Back Header
+        Container(
+          padding: const EdgeInsets.all(16),
+          color: Colors.grey[900]?.withOpacity(0.5),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextButton.icon(
+                icon: const Icon(Icons.arrow_back, color: Colors.amber),
+                label: const Text('Back to Courses', style: TextStyle(color: Colors.amber)),
+                onPressed: () {
+                  setState(() {
+                    selectedCourseForCurriculum = null;
+                  });
+                },
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          course['title'] ?? 'Course Curriculum',
+                          style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 2),
+                        const Text(
+                          'Drag, add, edit, or delete video lessons below.',
+                          style: TextStyle(color: Colors.grey, fontSize: 11),
+                        ),
+                      ],
+                    ),
+                  ),
+                  ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.amber,
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    icon: const Icon(Icons.add, color: Colors.black, size: 18),
+                    label: const Text('Add Lesson', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 13)),
+                    onPressed: () => _showLessonDialog(courseId),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: isLoadingLessons
+              ? const Center(child: CircularProgressIndicator(color: Colors.amber))
+              : courseLessons.isEmpty
+                  ? _buildEmptyState(
+                      icon: Icons.video_library_outlined,
+                      title: 'No Lessons Added',
+                      subtitle: 'Add educational video lessons to complete your curriculum.',
+                      actionText: 'Add Lesson',
+                      onAction: () => _showLessonDialog(courseId),
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.all(16),
+                      itemCount: courseLessons.length,
+                      itemBuilder: (context, index) {
+                        final lesson = courseLessons[index];
+                        final thumb = lesson['thamnail_url'] ?? ''; // Note database spelling
+                        final video = lesson['video_url'] ?? '';
+
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[900],
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.white10),
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                width: 32,
+                                height: 32,
+                                decoration: BoxDecoration(
+                                  color: Colors.amber.withOpacity(0.1),
+                                  shape: BoxShape.circle,
+                                ),
+                                alignment: Alignment.center,
+                                child: Text(
+                                  '${index + 1}',
+                                  style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      lesson['title'] ?? 'Untitled Lesson',
+                                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                                    ),
+                                    if (lesson['content'] != null && lesson['content'].toString().isNotEmpty) ...[
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        lesson['content'],
+                                        style: const TextStyle(color: Colors.white70, fontSize: 12),
+                                      ),
+                                    ],
+                                    const SizedBox(height: 8),
+                                    Row(
+                                      children: [
+                                        const Icon(Icons.videocam, color: Colors.grey, size: 14),
+                                        const SizedBox(width: 6),
+                                        Expanded(
+                                          child: Text(
+                                            video.isNotEmpty ? 'Video linked' : 'No video link',
+                                            style: TextStyle(color: video.isNotEmpty ? Colors.green : Colors.red, fontSize: 11),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        TextButton.icon(
+                                          icon: const Icon(Icons.edit, size: 14, color: Colors.blue),
+                                          label: const Text('Edit', style: TextStyle(color: Colors.blue, fontSize: 11)),
+                                          onPressed: () => _showLessonDialog(courseId, lesson: lesson),
+                                        ),
+                                        TextButton.icon(
+                                          icon: const Icon(Icons.delete_outline, size: 14, color: Colors.red),
+                                          label: const Text('Delete', style: TextStyle(color: Colors.red, fontSize: 11)),
+                                          onPressed: () => _deleteLesson(lesson['id'], courseId),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              if (thumb.isNotEmpty) ...[
+                                const SizedBox(width: 12),
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: CachedNetworkImage(
+                                    imageUrl: thumb,
+                                    width: 60,
+                                    height: 60,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEmptyState({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required String actionText,
+    required VoidCallback onAction,
+  }) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 64, color: Colors.grey[700]),
+            const SizedBox(height: 16),
+            Text(
+              title,
+              style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              subtitle,
+              style: const TextStyle(color: Colors.grey, fontSize: 13),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.amber,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              onPressed: onAction,
+              child: Text(actionText, style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
