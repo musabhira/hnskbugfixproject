@@ -3660,7 +3660,7 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
           future: supabase
               .from('allcourses_tech')
               .select()
-              .order('created_at', ascending: false)
+              .order('course_created_at', ascending: false)
               .limit(20),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {

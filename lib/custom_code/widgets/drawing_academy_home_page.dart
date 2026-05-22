@@ -72,7 +72,7 @@ class _DrawingAcademyHomePageState extends State<DrawingAcademyHomePage> {
         final uniqueCourses = <Map<String, dynamic>>[];
 
         for (final course in allCourses) {
-          final title = course['course_title'] as String;
+          final title = course['course_title']?.toString() ?? '';
           if (!uniqueTitles.contains(title)) {
             uniqueTitles.add(title);
             uniqueCourses.add(course);

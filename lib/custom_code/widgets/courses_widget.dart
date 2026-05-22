@@ -1179,7 +1179,13 @@ class _CourseDetailPageState extends State<CourseDetailPage> with WidgetsBinding
                       height: 56,
                       child: ElevatedButton.icon(
                         onPressed: () async {
-                          final double price = (widget.courseData['course_price'] ?? 0).toDouble();
+                          final double price = () {
+                            final val = widget.courseData['course_price'];
+                            if (val == null) return 0.0;
+                            if (val is num) return val.toDouble();
+                            if (val is String) return double.tryParse(val) ?? 0.0;
+                            return 0.0;
+                          }();
                           double finalPrice = price;
                           if (isCouponValid) {
                             finalPrice = discountType == 'percentage' 
