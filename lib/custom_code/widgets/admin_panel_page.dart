@@ -452,19 +452,82 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
     'Dual Recorder',
   ];
 
+  bool _elearningUnlocked = false;
+  bool _printingUnlocked = false;
+
   Future<void> _loadGlobalToolConfigs() async {
     setState(() => isLoadingToolConfigs = true);
     try {
       final res = await supabase.from('app_tool_configs').select('*');
+      final elearningConfig = res.firstWhere(
+        (c) => c['tool_name'] == 'elearning_unlocked',
+        orElse: () => {'tool_name': 'elearning_unlocked', 'android_active': false, 'ios_active': false}
+      );
+      final printingConfig = res.firstWhere(
+        (c) => c['tool_name'] == 'printing_unlocked',
+        orElse: () => {'tool_name': 'printing_unlocked', 'android_active': false, 'ios_active': false}
+      );
       if (mounted) {
         setState(() {
           allToolConfigs = List<Map<String, dynamic>>.from(res);
+          _elearningUnlocked = elearningConfig['android_active'] == true;
+          _printingUnlocked = printingConfig['android_active'] == true;
           isLoadingToolConfigs = false;
         });
       }
     } catch (e) {
       debugPrint('Error loading tool configs: $e');
       if (mounted) setState(() => isLoadingToolConfigs = false);
+    }
+  }
+
+  Future<void> _toggleElearningUnlock(bool val) async {
+    setState(() => _elearningUnlocked = val);
+    try {
+      await supabase.from('app_tool_configs').upsert({
+        'tool_name': 'elearning_unlocked',
+        'android_active': val,
+        'ios_active': val,
+      }, onConflict: 'tool_name');
+      
+      _loadGlobalToolConfigs();
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(val ? 'E-Learning Academy Unlocked!' : 'E-Learning set to Coming Soon'),
+            backgroundColor: val ? Colors.green : Colors.orange,
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Error toggling elearning unlock: $e');
+      setState(() => _elearningUnlocked = !val); // Revert
+    }
+  }
+
+  Future<void> _togglePrintingUnlock(bool val) async {
+    setState(() => _printingUnlocked = val);
+    try {
+      await supabase.from('app_tool_configs').upsert({
+        'tool_name': 'printing_unlocked',
+        'android_active': val,
+        'ios_active': val,
+      }, onConflict: 'tool_name');
+      
+      _loadGlobalToolConfigs();
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(val ? 'T-Shirt Printing Shop Unlocked!' : 'Printing Shop set to Coming Soon'),
+            backgroundColor: val ? Colors.green : Colors.orange,
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Error toggling printing unlock: $e');
+      setState(() => _printingUnlocked = !val); // Revert
     }
   }
 
@@ -2065,6 +2128,86 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
   Widget _buildCourseListView() {
     return Column(
       children: [
+        // E-Learning Unlock Toggle Card
+        Container(
+          margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.grey[900],
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.amber.withOpacity(0.3)),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.school, color: Colors.amber),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Unlock E-Learning Academy',
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      _elearningUnlocked 
+                        ? 'Unlocked (Academy is publicly available)' 
+                        : 'Locked (Shows "Coming Soon" alert to users)',
+                      style: const TextStyle(color: Colors.grey, fontSize: 11),
+                    ),
+                  ],
+                ),
+              ),
+              Switch(
+                value: _elearningUnlocked,
+                activeTrackColor: Colors.amber.withOpacity(0.3),
+                activeColor: Colors.amber,
+                onChanged: (val) => _toggleElearningUnlock(val),
+              ),
+            ],
+          ),
+        ),
+        // T-Shirt Printing Unlock Toggle Card
+        Container(
+          margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.grey[900],
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.amber.withOpacity(0.3)),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.checkroom, color: Colors.amber),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Unlock T-Shirt Printing Shop',
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      _printingUnlocked 
+                        ? 'Unlocked (Print Shop is publicly available)' 
+                        : 'Locked (Shows "Coming Soon" alert to users)',
+                      style: const TextStyle(color: Colors.grey, fontSize: 11),
+                    ),
+                  ],
+                ),
+              ),
+              Switch(
+                value: _printingUnlocked,
+                activeTrackColor: Colors.amber.withOpacity(0.3),
+                activeColor: Colors.amber,
+                onChanged: (val) => _togglePrintingUnlock(val),
+              ),
+            ],
+          ),
+        ),
         Padding(
           padding: const EdgeInsets.all(16.0),
           child: Row(

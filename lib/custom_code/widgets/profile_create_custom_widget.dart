@@ -12,6 +12,13 @@ import 'package:pocket_mates_app/pages/home_page/home_page_widget.dart';
 
 // Begin custom action code
 
+class _CompressParams {
+  final Uint8List imageBytes;
+  final int quality;
+
+  _CompressParams(this.imageBytes, this.quality);
+}
+
 class ProfileCreateCustomWidget extends StatefulWidget {
   final double width;
   final double height;
@@ -144,12 +151,25 @@ class _ProfileCreateCustomWidgetState extends State<ProfileCreateCustomWidget> {
     }
   }
 
-  Future<Uint8List> compressImage(Uint8List bytes) async {
-    img.Image? image = img.decodeImage(bytes);
-    if (image == null) return bytes;
+  static Uint8List _compressImageStatic(_CompressParams params) {
+    try {
+      img.Image? image = img.decodeImage(params.imageBytes);
+      if (image == null) return params.imageBytes;
 
-    img.Image resized = img.copyResize(image, width: 800);
-    return Uint8List.fromList(img.encodeJpg(resized, quality: 70));
+      img.Image resized = img.copyResize(image, width: 800);
+      return Uint8List.fromList(img.encodeJpg(resized, quality: params.quality));
+    } catch (e) {
+      debugPrint('Error in background image compression: $e');
+      return params.imageBytes;
+    }
+  }
+
+  Future<Uint8List> compressImage(Uint8List bytes) async {
+    // Run compression in a background Isolate to keep UI fluid and responsive!
+    return await compute(
+      _compressImageStatic,
+      _CompressParams(bytes, 70),
+    );
   }
 
   Future<void> _selectImage() async {
@@ -258,6 +278,7 @@ class _ProfileCreateCustomWidgetState extends State<ProfileCreateCustomWidget> {
       }
 
       final profileData = {
+        'id': user.id,
         'user_id': user.id,
         'name': filterContent(_nameController.text),
         'shop_name': filterContent(_shopNameController.text),

@@ -166,12 +166,10 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             .eq('user_id', userId)
             .limit(1), // Profile
         _supabase
-            .from('profile_gallery_service_likes_comments_view')
+            .from('gallery')
             .select()
             .eq('user_id', userId)
-            .not('gallery_id', 'is', null)
-            .order('gallery_created_at', ascending: false)
-            .limit(20), // Recent Gallery (Limit for perf)
+            .order('created_at', ascending: false), // Recent Gallery directly from gallery table
         _fetchFollowCountsMap(), // Counts Map
         _checkFollowStatusBool(),
         _checkBlockStatusBool(),
@@ -199,11 +197,21 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       Set<String> categorySet = {'All'};
 
       for (var item in galleryRes) {
-        if (item['gallery_id'] != null) {
-          uniqueGallery[item['gallery_id'].toString()] = item;
-          if (item['gallery_category'] != null &&
-              item['gallery_category'].toString().trim().isNotEmpty) {
-            categorySet.add(item['gallery_category'].toString().trim());
+        final id = item['id']?.toString() ?? item['gallery_id']?.toString();
+        if (id != null) {
+          // Normalize view & table keys for legacy support
+          final Map<String, dynamic> normalizedItem = Map<String, dynamic>.from(item);
+          normalizedItem['gallery_id'] = item['id'] ?? item['gallery_id'];
+          normalizedItem['gallery_image_url'] = item['image_url'] ?? item['gallery_image_url'];
+          normalizedItem['gallery_title'] = item['title'] ?? item['gallery_title'];
+          normalizedItem['gallery_price'] = item['price'] ?? item['gallery_price'];
+          normalizedItem['gallery_description'] = item['description'] ?? item['gallery_description'];
+          normalizedItem['gallery_category'] = item['category'] ?? item['gallery_category'];
+
+          uniqueGallery[id] = normalizedItem;
+          final category = normalizedItem['category']?.toString().trim() ?? normalizedItem['gallery_category']?.toString().trim();
+          if (category != null && category.isNotEmpty) {
+            categorySet.add(category);
           }
         }
       }
@@ -250,8 +258,17 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         for (var item in allGallery) {
           final id = item['id']?.toString() ?? item['gallery_id']?.toString();
           if (id != null) {
-            uniqueGallery[id] = item;
-            final cat = item['category']?.toString().trim() ?? item['gallery_category']?.toString().trim();
+            // Normalize view & table keys for legacy support
+            final Map<String, dynamic> normalizedItem = Map<String, dynamic>.from(item);
+            normalizedItem['gallery_id'] = item['id'] ?? item['gallery_id'];
+            normalizedItem['gallery_image_url'] = item['image_url'] ?? item['gallery_image_url'];
+            normalizedItem['gallery_title'] = item['title'] ?? item['gallery_title'];
+            normalizedItem['gallery_price'] = item['price'] ?? item['gallery_price'];
+            normalizedItem['gallery_description'] = item['description'] ?? item['gallery_description'];
+            normalizedItem['gallery_category'] = item['category'] ?? item['gallery_category'];
+
+            uniqueGallery[id] = normalizedItem;
+            final cat = normalizedItem['category']?.toString().trim() ?? normalizedItem['gallery_category']?.toString().trim();
             if (cat != null && cat.isNotEmpty) categorySet.add(cat);
           }
         }
@@ -354,7 +371,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         _filteredGalleryItems = _galleryItems;
       } else {
         _filteredGalleryItems = _galleryItems.where((item) {
-          return item['gallery_category']?.toString().trim() == category;
+          final cat = item['category']?.toString().trim() ?? item['gallery_category']?.toString().trim();
+          return cat == category;
         }).toList();
       }
     });

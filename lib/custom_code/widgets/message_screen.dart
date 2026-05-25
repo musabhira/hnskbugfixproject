@@ -29,6 +29,7 @@ import 'package:pocket_mates_app/custom_code/services/local_sync_server.dart';
 import 'package:pocket_mates_app/custom_code/widgets/thread_feed_page.dart';
 import '/auth/auth_helper.dart';
 import 'index.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.dart';
 
 class MessageScreen extends StatefulWidget {
   final String receiverId;
@@ -1559,13 +1560,13 @@ class _MessageScreenState extends State<MessageScreen> {
               Expanded(
                 child: _checkingBlockStatus
                     ? const Center(child: CircularProgressIndicator())
-                    : _isBlockedByOther
-                        ? _buildBlockedByOtherView()
-                        : _isBlocked
-                            ? _buildBlockedView()
-                            : _buildMessagesView(),
+                    : _buildMessagesView(),
               ),
-              if (!_isBlocked && !_isBlockedByOther)
+              if (_isBlocked)
+                _buildBlockedBottomBar()
+              else if (_isBlockedByOther)
+                _buildBlockedByOtherBottomBar()
+              else
                 Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -1650,120 +1651,53 @@ class _MessageScreenState extends State<MessageScreen> {
   );
 }
 
-  Widget _buildBlockedView() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(
-            Icons.block,
-            size: 80,
-            color: Colors.red,
-          ),
-          const SizedBox(height: 16),
-          const Text(
-            'Blocked Profile',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'You have blocked ${widget.receiverName}',
-            style: const TextStyle(
-              fontSize: 16,
-              color: Colors.white70,
-            ),
-          ),
-          if (_blockTime != null) ...[
-            const SizedBox(height: 8),
-            Text(
-              'Blocked ${_formatBlockTime(_blockTime!)}',
-              style: const TextStyle(
-                fontSize: 14,
-                color: Colors.white54,
+
+
+  Widget _buildBlockedBottomBar() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      color: Colors.red.withValues(alpha: 0.1),
+      child: SafeArea(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Expanded(
+              child: Text(
+                'You have blocked this user. Unblock to resume chat.',
+                style: TextStyle(color: Colors.white70, fontSize: 14),
               ),
+            ),
+            TextButton(
+              onPressed: _unblockUser,
+              style: TextButton.styleFrom(
+                backgroundColor: Colors.redAccent,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              ),
+              child: const Text('Unblock', style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ],
-          const SizedBox(height: 8),
-          const Text(
-            'Messages and calls are disabled',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.white54,
-            ),
-          ),
-          const SizedBox(height: 24),
-          ElevatedButton(
-            onPressed: _unblockUser,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(24),
-              ),
-            ),
-            child: const Text(
-              'Unblock User',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
 
-  Widget _buildBlockedByOtherView() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(
-            Icons.block,
-            size: 80,
-            color: Colors.red,
+  Widget _buildBlockedByOtherBottomBar() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      color: Colors.grey[900],
+      child: const SafeArea(
+        child: Center(
+          child: Text(
+            'You cannot send messages to this user.',
+            style: TextStyle(color: Colors.white54, fontSize: 14, fontWeight: FontWeight.w500),
           ),
-          const SizedBox(height: 16),
-          const Text(
-            'Blocked Profile',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'This user has blocked you',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.white70,
-            ),
-          ),
-          if (_blockedByOtherTime != null) ...[
-            const SizedBox(height: 8),
-            Text(
-              'Blocked ${_formatBlockTime(_blockedByOtherTime!)}',
-              style: const TextStyle(
-                fontSize: 14,
-                color: Colors.white54,
-              ),
-            ),
-          ],
-          const SizedBox(height: 8),
-          const Text(
-            'You cannot send or receive messages',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.white54,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -2181,7 +2115,29 @@ class _MessageScreenState extends State<MessageScreen> {
                 width: double.infinity,
                 child: OutlinedButton(
                   onPressed: () {
-                    // Logic to open status viewer for this group
+                    if (mediaUrl != null && mediaUrl.isNotEmpty) {
+                      if (mediaType == 'video') {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => VideoPlayerPage(
+                              videoUrl: mediaUrl,
+                              title: '$senderName\'s Vibe',
+                            ),
+                          ),
+                        );
+                      } else if (mediaType == 'image') {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ImageViewer(
+                              imageUrl: mediaUrl,
+                              title: '$senderName\'s Vibe',
+                            ),
+                          ),
+                        );
+                      }
+                    }
                   },
                   style: OutlinedButton.styleFrom(
                     side: const BorderSide(color: Colors.yellow, width: 1),
@@ -2232,6 +2188,66 @@ class _MessageScreenState extends State<MessageScreen> {
                 width: 200,
                 height: 200,
                 child: const Icon(Icons.error, color: Colors.white),
+              ),
+            ),
+          ),
+        );
+      case 'video':
+        final url = message['file_url'] ?? message['content'] ?? '';
+        final localPath = message['metadata']?['local_path'];
+
+        return GestureDetector(
+          onTap: () {
+            if (url.isNotEmpty) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => VideoPlayerPage(
+                    videoUrl: url,
+                    title: widget.receiverName,
+                  ),
+                ),
+              );
+            }
+          },
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 4),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxHeight: 300, minHeight: 150, maxWidth: 200, minWidth: 200),
+                    child: localPath != null && File(localPath).existsSync()
+                      ? FutureBuilder<String?>(
+                          future: VideoCompress.getFileThumbnail(localPath).then((f) => f.path),
+                          builder: (context, snapshot) {
+                            return snapshot.hasData 
+                                ? Image.file(File(snapshot.data!), fit: BoxFit.cover, width: 200, height: 200) 
+                                : Container(color: Colors.black26, width: 200, height: 200);
+                          })
+                      : (url.isNotEmpty ? FutureBuilder<String?>(
+                          future: VideoCompress.getFileThumbnail(url).then((f) => f.path),
+                          builder: (context, snapshot) {
+                            if (snapshot.hasData && snapshot.data != null) {
+                              return Image.file(File(snapshot.data!), fit: BoxFit.cover, width: 200, height: 200);
+                            }
+                            return Container(
+                              height: 200, 
+                              width: 200, 
+                              color: Colors.black12, 
+                              child: const Icon(Icons.videocam, color: Colors.white24, size: 40)
+                            );
+                          },
+                        ) : Container(color: Colors.black26, width: 200, height: 200)),
+                  ),
+                  const CircleAvatar(
+                    backgroundColor: Colors.black45,
+                    radius: 24,
+                    child: Icon(Icons.play_arrow, color: Colors.white, size: 30),
+                  ),
+                ],
               ),
             ),
           ),

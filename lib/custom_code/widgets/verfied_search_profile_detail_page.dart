@@ -5,7 +5,6 @@ import 'package:pocket_mates_app/custom_code/widgets/profile_switch_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
 import 'package:pocket_mates_app/custom_code/widgets/search_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/search_profile_detail_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/posters_tab.dart';
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -78,7 +77,7 @@ class _VerfiedSearchProfileDetailPageState
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
     _fetchProfileData();
     _checkFollowStatus();
     fetchFollowCounts();
@@ -1842,9 +1841,6 @@ class _VerfiedSearchProfileDetailPageState
                                             Tab(
                                                 icon: Icon(
                                                     Icons.chat_bubble_outline)),
-                                            Tab(
-                                                icon:
-                                                    Icon(Icons.style_outlined)),
                                           ],
                                         ),
                                         color: bgColor,
@@ -2487,11 +2483,6 @@ class _VerfiedSearchProfileDetailPageState
                                                     );
                                                   },
                                                 ),
-                                          // Posters Tab
-                                          PostersTab(
-                                            profileData: _profileData,
-                                            galleryItems: _galleryItems,
-                                          ),
                                         ],
                                       ),
                                     ),

@@ -2337,12 +2337,11 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                                     ? 'thought'
                                     : (currentStatus['gallery_id'] != null
                                         ? 'gallery'
-                                        : (currentStatus['media_type'] ==
-                                                    'image' ||
-                                                currentStatus['media_type'] ==
-                                                    'video'
-                                            ? 'gallery'
-                                            : 'text')),
+                                        : (currentStatus['media_type'] == 'image'
+                                            ? 'image'
+                                            : (currentStatus['media_type'] == 'video'
+                                                ? 'video'
+                                                : 'text'))),
                                 currentUserId: widget.currentUserId,
                               ),
                             ),

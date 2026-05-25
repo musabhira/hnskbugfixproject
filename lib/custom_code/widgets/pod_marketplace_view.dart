@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:ui';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -84,51 +85,171 @@ class PodMarketplaceView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final s = ref.watch(podMarketProvider);
+    return FutureBuilder<Map<String, dynamic>?>(
+      future: Supabase.instance.client
+          .from('app_tool_configs')
+          .select('*')
+          .eq('tool_name', 'printing_unlocked')
+          .maybeSingle(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            backgroundColor: Color(0xFF0A0A0A),
+            body: Center(
+              child: CircularProgressIndicator(color: Color(0xFFFFA000)),
+            ),
+          );
+        }
 
-    // Debug print to see if we have data
-    debugPrint('[POD-MARKET] Designs: ${s.designs.length}, Loading: ${s.isLoading}');
-
-    return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
-      floatingActionButton: _fab(context),
-      body: RefreshIndicator(
-        color: const Color(0xFFFFA000),
-        backgroundColor: const Color(0xFF161616),
-        onRefresh: () => ref.read(podMarketProvider.notifier).load(refresh: true),
-        child: s.isLoading && s.designs.isEmpty
-          ? _skeleton()
-          : s.designs.isEmpty
-            ? _empty(context)
-            : NotificationListener<ScrollNotification>(
-                onNotification: (n) {
-                  if (n is ScrollEndNotification && n.metrics.extentAfter < 400) {
-                    ref.read(podMarketProvider.notifier).load();
-                  }
-                  return false;
-                },
-                child: CustomScrollView(slivers: [
-                  SliverToBoxAdapter(child: _header()),
-                  SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(14, 0, 14, 100),
-                    sliver: SliverGrid(
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2, childAspectRatio: 0.72,
-                        crossAxisSpacing: 10, mainAxisSpacing: 10,
+        final isUnlocked = snapshot.data?['android_active'] == true;
+        if (!isUnlocked) {
+          return Scaffold(
+            backgroundColor: const Color(0xFF0A0A0A),
+            body: Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(28),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+                    child: Container(
+                      padding: const EdgeInsets.all(32),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.5),
+                        borderRadius: BorderRadius.circular(28),
+                        border: Border.all(
+                            color: const Color(0xFFFFA000).withOpacity(0.2),
+                            width: 1.5),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.4),
+                            blurRadius: 30,
+                            offset: const Offset(0, 15),
+                          ),
+                        ],
                       ),
-                      delegate: SliverChildBuilderDelegate(
-                        (_, i) {
-                          if (i >= s.designs.length) return const _ShimmerCard();
-                          return _PodDesignCard(design: s.designs[i]);
-                        },
-                        childCount: s.designs.length +
-                            (s.isLoading && s.designs.isNotEmpty ? 2 : 0),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(18),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  const Color(0xFFFFA000).withOpacity(0.15),
+                                  const Color(0xFFFFB300).withOpacity(0.05),
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                  color: const Color(0xFFFFA000).withOpacity(0.3),
+                                  width: 1.5),
+                            ),
+                            child: const Icon(
+                              Icons.checkroom_rounded,
+                              color: Color(0xFFFFA000),
+                              size: 44,
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFFA000).withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                  color: const Color(0xFFFFA000).withOpacity(0.25)),
+                            ),
+                            child: Text(
+                              'COMING SOON',
+                              style: GoogleFonts.inter(
+                                color: const Color(0xFFFFA000),
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1.5,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          Text(
+                            'Custom Print Shop',
+                            style: GoogleFonts.outfit(
+                              fontSize: 26,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.white,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            'Handskill Custom Print Shop is coming soon! You will be able to customize and print T-shirts, hoodies, and accessories on demand. Fully unlocking in the 2nd or 3rd build. Stay tuned!',
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.inter(
+                              fontSize: 14,
+                              color: Colors.white.withOpacity(0.7),
+                              height: 1.6,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
-                ]),
+                ),
               ),
-      ),
+            ),
+          );
+        }
+
+        final s = ref.watch(podMarketProvider);
+
+        // Debug print to see if we have data
+        debugPrint('[POD-MARKET] Designs: ${s.designs.length}, Loading: ${s.isLoading}');
+
+        return Scaffold(
+          backgroundColor: const Color(0xFF0A0A0A),
+          floatingActionButton: _fab(context),
+          body: RefreshIndicator(
+            color: const Color(0xFFFFA000),
+            backgroundColor: const Color(0xFF161616),
+            onRefresh: () => ref.read(podMarketProvider.notifier).load(refresh: true),
+            child: s.isLoading && s.designs.isEmpty
+              ? _skeleton()
+              : s.designs.isEmpty
+                ? _empty(context)
+                : NotificationListener<ScrollNotification>(
+                    onNotification: (n) {
+                      if (n is ScrollEndNotification && n.metrics.extentAfter < 400) {
+                        ref.read(podMarketProvider.notifier).load();
+                      }
+                      return false;
+                    },
+                    child: CustomScrollView(slivers: [
+                      SliverToBoxAdapter(child: _header()),
+                      SliverPadding(
+                        padding: const EdgeInsets.fromLTRB(14, 0, 14, 100),
+                        sliver: SliverGrid(
+                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2, childAspectRatio: 0.72,
+                            crossAxisSpacing: 10, mainAxisSpacing: 10,
+                          ),
+                          delegate: SliverChildBuilderDelegate(
+                            (_, i) {
+                              if (i >= s.designs.length) return const _ShimmerCard();
+                              return _PodDesignCard(design: s.designs[i]);
+                            },
+                            childCount: s.designs.length +
+                                (s.isLoading && s.designs.isNotEmpty ? 2 : 0),
+                          ),
+                        ),
+                      ),
+                    ]),
+                  ),
+          ),
+        );
+      },
     );
   }
 

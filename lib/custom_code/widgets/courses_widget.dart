@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
 import 'dart:ui';
+import 'package:google_fonts/google_fonts.dart';
 
 // Set your widget name, define your parameter, and then add the
 // boilerplate code using the green button on the right!
@@ -68,11 +69,157 @@ class _CoursesWidgetState extends State<CoursesWidget> {
   }
 
   void _navigateToCourseDetail(
-      BuildContext context, Map<String, dynamic> course) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => CourseDetailPage(courseData: course),
+      BuildContext context, Map<String, dynamic> course) async {
+    try {
+      final configRes = await supabase.from('app_tool_configs').select('*').eq('tool_name', 'elearning_unlocked').maybeSingle();
+      final isUnlocked = configRes?['android_active'] == true;
+      
+      if (isUnlocked) {
+        if (context.mounted) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => CourseDetailPage(courseData: course),
+            ),
+          );
+        }
+      } else {
+        if (context.mounted) {
+          _showComingSoonDialog(context);
+        }
+      }
+    } catch (e) {
+      // Fallback to direct navigation if config check fails
+      if (context.mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => CourseDetailPage(courseData: course),
+          ),
+        );
+      }
+    }
+  }
+
+  void _showComingSoonDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(28),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+            child: Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.75),
+                borderRadius: BorderRadius.circular(28),
+                border: Border.all(color: Colors.amber.withOpacity(0.25), width: 1.5),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.6),
+                    blurRadius: 40,
+                    offset: const Offset(0, 20),
+                  ),
+                  BoxShadow(
+                    color: Colors.amber.withOpacity(0.08),
+                    blurRadius: 45,
+                    spreadRadius: -5,
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.amber.shade400.withOpacity(0.15),
+                          Colors.orange.shade400.withOpacity(0.05),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.amber.withOpacity(0.3), width: 1.5),
+                    ),
+                    child: const Icon(
+                      Icons.school_rounded,
+                      color: Colors.amber,
+                      size: 44,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    'Coming Soon!',
+                    style: GoogleFonts.outfit(
+                      fontSize: 26,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Handskill E-Learning Academy will be fully unlocked in the 2nd or 3rd build. Stay tuned for expert masterclasses, video tutorials, and interactive learning modules!',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      color: Colors.white.withOpacity(0.8),
+                      height: 1.6,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Container(
+                    width: double.infinity,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.amber.shade600,
+                          Colors.orange.shade600,
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(18),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.amber.shade600.withOpacity(0.3),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.transparent,
+                        foregroundColor: Colors.black,
+                        shadowColor: Colors.transparent,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                        elevation: 0,
+                      ),
+                      onPressed: () => Navigator.pop(context),
+                      child: Text(
+                        'Got It',
+                        style: GoogleFonts.outfit(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

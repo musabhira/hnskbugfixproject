@@ -9,6 +9,8 @@ import 'dart:typed_data';
 import 'package:flutter/rendering.dart';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.dart';
+import 'package:video_compress/video_compress.dart';
 
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
@@ -69,7 +71,11 @@ class _ShareContentScreenState extends State<ShareContentScreen> {
                   ? _buildThoughtPreview()
                   : widget.contentType == 'tool' && widget.metadata != null
                       ? _buildToolPreview()
-                      : _buildDefaultPreview(),
+                      : (widget.contentType == 'gallery' || widget.contentType == 'image')
+                          ? _buildGalleryPreview()
+                          : widget.contentType == 'video'
+                              ? _buildVideoPreview()
+                              : _buildDefaultPreview(),
             ),
 
             const SizedBox(height: 40),
@@ -297,18 +303,20 @@ class _ShareContentScreenState extends State<ShareContentScreen> {
       padding: const EdgeInsets.all(24),
       margin: const EdgeInsets.symmetric(horizontal: 24),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: const Color(0xFF1E1E1E),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         children: [
           Icon(
-            widget.contentType == 'gallery'
+            widget.contentType == 'gallery' || widget.contentType == 'image'
                 ? Icons.image
-                : (widget.contentType == 'thought'
-                    ? Icons.lightbulb
-                    : Icons.text_fields),
+                : (widget.contentType == 'video'
+                    ? Icons.videocam
+                    : (widget.contentType == 'thought'
+                        ? Icons.lightbulb
+                        : Icons.text_fields)),
             size: 48,
             color: Colors.yellow,
           ),
@@ -321,6 +329,178 @@ class _ShareContentScreenState extends State<ShareContentScreen> {
             overflow: TextOverflow.ellipsis,
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildGalleryPreview() {
+    final title = widget.metadata?['title'] ?? 'Gallery Item';
+    final description = widget.metadata?['description'] ?? '';
+    final imageUrl = widget.contentType == 'gallery' || widget.contentType == 'image'
+        ? widget.contentToShare
+        : (widget.metadata?['image_url'] ?? '');
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 24),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E1E1E),
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1), width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.3),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(28),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            CachedNetworkImage(
+              imageUrl: imageUrl,
+              height: 240,
+              width: double.infinity,
+              fit: BoxFit.cover,
+              placeholder: (context, url) => Container(
+                height: 240,
+                color: Colors.grey[900],
+                child: const Center(child: CircularProgressIndicator(color: Colors.yellow)),
+              ),
+              errorWidget: (context, url, error) => Container(
+                height: 240,
+                color: Colors.grey[900],
+                child: const Icon(Icons.image_not_supported, color: Colors.white24, size: 48),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
+                  ),
+                  if (description.isNotEmpty) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      description,
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.6),
+                        fontSize: 14,
+                        height: 1.4,
+                      ),
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildVideoPreview() {
+    final title = widget.metadata?['title'] ?? 'Video Vibe';
+    final description = widget.metadata?['description'] ?? '';
+    final videoUrl = widget.contentToShare;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 24),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E1E1E),
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1), width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.3),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(28),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                FutureBuilder<String?>(
+                  future: VideoCompress.getFileThumbnail(videoUrl).then((f) => f.path),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData && snapshot.data != null) {
+                      return Image.file(
+                        File(snapshot.data!),
+                        height: 240,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                      );
+                    }
+                    return Container(
+                      height: 240,
+                      width: double.infinity,
+                      color: Colors.black26,
+                      child: const Icon(Icons.videocam, color: Colors.white24, size: 48),
+                    );
+                  },
+                ),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: const BoxDecoration(
+                    color: Colors.black54,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.play_arrow_rounded,
+                    color: Colors.yellow,
+                    size: 40,
+                  ),
+                ),
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
+                  ),
+                  if (description.isNotEmpty) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      description,
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.6),
+                        fontSize: 14,
+                        height: 1.4,
+                      ),
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -374,7 +554,7 @@ class _ShareContentScreenState extends State<ShareContentScreen> {
         'message_text': widget.contentToShare,
         'updated_at': DateTime.now().toIso8601String(),
         'is_read': false,
-        'message_type': ['gallery', 'thought', 'tool', 'course', 'status_mention'].contains(widget.contentType)
+        'message_type': ['gallery', 'thought', 'tool', 'course', 'status_mention', 'video', 'image'].contains(widget.contentType)
             ? widget.contentType
             : 'text',
       };
@@ -387,9 +567,12 @@ class _ShareContentScreenState extends State<ShareContentScreen> {
         messageData['thought_id'] = widget.contentId;
       }
 
-      if ((widget.contentType == 'tool' || widget.contentType == 'course') &&
-          widget.metadata != null) {
+      if (widget.metadata != null) {
         messageData['metadata'] = widget.metadata;
+      }
+
+      if (['image', 'video'].contains(widget.contentType)) {
+        messageData['file_url'] = widget.contentToShare;
       }
 
       await supabase.from('messages').insert(messageData);
@@ -462,7 +645,7 @@ class _ShareContentScreenState extends State<ShareContentScreen> {
         'group_id': groupId,
         'sender_id': widget.currentUserId,
         'message_text': widget.contentToShare,
-        'message_type': ['gallery', 'thought', 'tool', 'course', 'status_mention'].contains(widget.contentType)
+        'message_type': ['gallery', 'thought', 'tool', 'course', 'status_mention', 'video', 'image'].contains(widget.contentType)
             ? widget.contentType
             : 'text',
         'metadata': widget.metadata,
@@ -474,6 +657,10 @@ class _ShareContentScreenState extends State<ShareContentScreen> {
 
       if (widget.contentType == 'thought' && widget.contentId != null) {
         messageData['thought_id'] = widget.contentId;
+      }
+
+      if (['image', 'video'].contains(widget.contentType)) {
+        messageData['file_url'] = widget.contentToShare;
       }
 
       await supabase.from('group_messages').insert(messageData);

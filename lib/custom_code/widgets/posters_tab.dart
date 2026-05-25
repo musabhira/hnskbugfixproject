@@ -393,55 +393,116 @@ class _PostersTabState extends State<PostersTab> {
     return Container(
       width: 400,
       height: 400,
-      color: material.Colors.white,
+      decoration: BoxDecoration(
+        color: const Color(0xFF0D0D0D),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      clipBehavior: Clip.antiAlias,
       child: Row(
         children: [
           Expanded(
-            flex: 6,
+            flex: 55,
             child: CachedNetworkImage(
               imageUrl: mainImage ?? '',
               fit: BoxFit.cover,
+              height: 400,
             ),
           ),
           Expanded(
-            flex: 4,
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
+            flex: 45,
+            child: Container(
+              color: const Color(0xFF131313),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'MODERN',
-                    style: GoogleFonts.inter(
-                        fontSize: 10,
-                        letterSpacing: 4,
-                        color: material.Colors.black54),
-                  ),
-                  Text(
-                    'STYLE',
-                    style: GoogleFonts.inter(
-                        fontSize: 32,
-                        fontWeight: FontWeight.w900,
-                        color: material.Colors.black,
-                        height: 1),
-                  ),
-                  const SizedBox(height: 20),
                   Container(
-                      width: 40, height: 2, color: material.Colors.yellow),
-                  const SizedBox(height: 20),
-                  Text(
-                    widget.profileData?['shop_name'] ?? 'Craftsmanship',
-                    style: GoogleFonts.inter(
-                        fontSize: 16,
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: material.Colors.yellow.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(4),
+                      border: Border.all(color: material.Colors.yellow.withValues(alpha: 0.3)),
+                    ),
+                    child: Text(
+                      'MODERN ARTISAN',
+                      style: GoogleFonts.outfit(
+                        fontSize: 9,
+                        letterSpacing: 1.5,
                         fontWeight: FontWeight.bold,
-                        color: material.Colors.black),
+                        color: material.Colors.yellow,
+                      ),
+                    ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 16),
                   Text(
-                    widget.profileData?['phone_no'] ?? '',
+                    'CREATIVE',
+                    style: GoogleFonts.outfit(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w300,
+                      color: material.Colors.white,
+                      letterSpacing: 1,
+                      height: 1.1,
+                    ),
+                  ),
+                  Text(
+                    'STUDIO',
+                    style: GoogleFonts.outfit(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w900,
+                      color: material.Colors.white,
+                      letterSpacing: 0.5,
+                      height: 1.1,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    width: 30,
+                    height: 3,
+                    decoration: BoxDecoration(
+                      color: material.Colors.yellow,
+                      borderRadius: BorderRadius.circular(1.5),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    widget.profileData?['shop_name'] ??
+                        widget.profileData?['name'] ??
+                        'Craftsmanship',
+                    style: GoogleFonts.outfit(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: material.Colors.white,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Unique Handcrafted Designs',
                     style: GoogleFonts.inter(
-                        fontSize: 12, color: material.Colors.black87),
+                      fontSize: 11,
+                      color: material.Colors.grey[400],
+                    ),
+                  ),
+                  const Spacer(),
+                  Row(
+                    children: [
+                      const Icon(material.Icons.language, size: 12, color: material.Colors.yellow),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          'handskillapp.web.app/${widget.profileData?['slug'] ?? ''}',
+                          style: GoogleFonts.inter(
+                            fontSize: 10,
+                            color: material.Colors.grey[500],
+                            fontWeight: FontWeight.w500,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),

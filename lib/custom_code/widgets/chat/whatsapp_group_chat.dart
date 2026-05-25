@@ -1176,7 +1176,31 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
             width: double.infinity,
             child: OutlinedButton(
               onPressed: () {
-                _showSnackBar('Opening Vibe...');
+                if (mediaUrl != null && mediaUrl.isNotEmpty) {
+                  if (mediaType == 'video') {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => VideoPlayerPage(
+                          videoUrl: mediaUrl,
+                          title: '$senderName\'s Vibe',
+                        ),
+                      ),
+                    );
+                  } else if (mediaType == 'image') {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ImageViewer(
+                          imageUrl: mediaUrl,
+                          title: '$senderName\'s Vibe',
+                        ),
+                      ),
+                    );
+                  }
+                } else {
+                  _showSnackBar('Opening Vibe...');
+                }
               },
               style: OutlinedButton.styleFrom(
                 side: const BorderSide(color: Colors.yellow, width: 1),

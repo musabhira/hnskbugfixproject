@@ -20,6 +20,13 @@ import 'package:flutter/services.dart';
 
 // Begin custom action code
 
+class _CompressParams {
+  final Uint8List imageBytes;
+  final int quality;
+
+  _CompressParams(this.imageBytes, this.quality);
+}
+
 class ProfileCustomWidget extends StatefulWidget {
   final double width;
   final double height;
@@ -163,12 +170,11 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
     }
   }
 
-  Future<Uint8List> _compressImage(Uint8List imageBytes,
-      {int quality = 85}) async {
+  static Uint8List _compressImageStatic(_CompressParams params) {
     try {
       // Decode the image
-      img.Image? image = img.decodeImage(imageBytes);
-      if (image == null) return imageBytes;
+      img.Image? image = img.decodeImage(params.imageBytes);
+      if (image == null) return params.imageBytes;
 
       // Resize image if it's too large (optional - keeps clarity but reduces file size)
       // Max width/height of 1920px for good quality while reducing size
@@ -177,18 +183,26 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
           image,
           width: image.width > image.height ? 1920 : null,
           height: image.height > image.width ? 1920 : null,
-          interpolation:
-              img.Interpolation.cubic, // Better quality interpolation
+          interpolation: img.Interpolation.cubic, // Better quality interpolation
         );
       }
 
       // Compress as JPEG with specified quality (85 = good balance of quality/size)
-      List<int> compressedBytes = img.encodeJpg(image, quality: quality);
+      List<int> compressedBytes = img.encodeJpg(image, quality: params.quality);
       return Uint8List.fromList(compressedBytes);
     } catch (e) {
-      debugPrint('Error compressing image: $e');
-      return imageBytes; // Return original if compression fails
+      debugPrint('Error in background image compression: $e');
+      return params.imageBytes; // Return original if compression fails
     }
+  }
+
+  Future<Uint8List> _compressImage(Uint8List imageBytes,
+      {int quality = 85}) async {
+    // Run compression in a background Isolate to keep UI fluid and responsive!
+    return await compute(
+      _compressImageStatic,
+      _CompressParams(imageBytes, quality),
+    );
   }
 
   Future<void> _selectImage() async {
@@ -469,6 +483,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
       } else {
         await _supabase.from('profile').insert(
           {
+            'id': _currentUserId,
             'user_id': _currentUserId,
             'name': sanitizedName,
             'profile_image_url': _imageUrl,
@@ -975,6 +990,39 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                                 ),
                         ),
                       ),
+                      if (_isCompressingBanner)
+                        Positioned.fill(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(20.0),
+                              child: Container(
+                                color: Colors.black.withValues(alpha: 0.6),
+                                child: Center(
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      CircularProgressIndicator(
+                                        strokeWidth: 3,
+                                        valueColor: AlwaysStoppedAnimation<Color>(theme.primary),
+                                      ),
+                                      const SizedBox(height: 12),
+                                      const Text(
+                                        'Compressing banner image...',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.bold,
+                                          letterSpacing: 0.5,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
                       Column(
                         mainAxisSize: MainAxisSize.max,
                         children: [
@@ -1007,12 +1055,19 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                                                     ? NetworkImage(_imageUrl!)
                                                     : null) as ImageProvider?,
                                             child: _isCompressingProfile
-                                                ? CircularProgressIndicator(
-                                                    strokeWidth: 2,
-                                                    valueColor:
-                                                        AlwaysStoppedAnimation<
-                                                            Color>(
-                                                      theme.primary,
+                                                ? Container(
+                                                    decoration: const BoxDecoration(
+                                                      color: Colors.black54,
+                                                      shape: BoxShape.circle,
+                                                    ),
+                                                    alignment: Alignment.center,
+                                                    child: CircularProgressIndicator(
+                                                      strokeWidth: 3,
+                                                      valueColor:
+                                                          AlwaysStoppedAnimation<
+                                                              Color>(
+                                                        theme.primary,
+                                                      ),
                                                     ),
                                                   )
                                                 : (_selectedImageBytes ==
