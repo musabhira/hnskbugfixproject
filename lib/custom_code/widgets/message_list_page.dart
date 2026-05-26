@@ -81,6 +81,44 @@ class _MessageListPageState extends State<MessageListPage> {
           'user2_profile': profileMap[conv['user2_id']],
         };
       }).toList();
+
+      if (conversations.isEmpty) {
+        String mussabUserId = 'e63c01c0-9999-4444-8888-000000000000';
+        String mussabName = "Muss'ab 'Ab Hira";
+        String? mussabAvatar;
+
+        try {
+          final profileQuery = await _supabase
+              .from('profile')
+              .select('user_id, name, profile_image_url')
+              .ilike('name', '%mussab%')
+              .limit(1);
+          if (profileQuery != null && profileQuery.isNotEmpty) {
+            mussabUserId = profileQuery[0]['user_id'] ?? mussabUserId;
+            mussabName = profileQuery[0]['name'] ?? mussabName;
+            mussabAvatar = profileQuery[0]['profile_image_url'];
+          }
+        } catch (_) {}
+
+        conversations.add({
+          'id': 'mock_mussab_conv',
+          'user1_id': user.id,
+          'user2_id': mussabUserId,
+          'last_message': 'Hi! Welcome to Pocket Mates. Tap here to chat with me instantly!',
+          'last_message_time': DateTime.now().toIso8601String(),
+          'unread_count': 0,
+          'user1_profile': {
+            'user_id': user.id,
+            'name': _currentUserName ?? 'You',
+          },
+          'user2_profile': {
+            'user_id': mussabUserId,
+            'name': mussabName,
+            'profile_image_url': mussabAvatar,
+          }
+        });
+      }
+
       print(_conversations);
       if (mounted) {
         safeSetState(() {
@@ -123,6 +161,16 @@ class _MessageListPageState extends State<MessageListPage> {
   }
 
   Future<void> _deleteConversation(String conversationId) async {
+    if (conversationId == 'mock_mussab_conv') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Cannot delete default welcoming chat'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
     try {
       // Delete conversation and related notifications
       await _supabase.from('conversations').delete().eq('id', conversationId);

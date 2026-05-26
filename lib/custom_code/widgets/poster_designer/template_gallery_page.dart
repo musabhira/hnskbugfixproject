@@ -711,42 +711,118 @@ class TemplateGalleryPage extends StatelessWidget {
         decoration: BoxDecoration(
           color: template.backgroundColor,
           borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: material.Colors.white.withValues(alpha: 0.08),
+            width: 1.5,
+          ),
           boxShadow: [
             BoxShadow(
-                color: material.Colors.black.withValues(alpha: 0.3),
-                blurRadius: 10,
-                spreadRadius: 2),
+                color: material.Colors.black.withValues(alpha: 0.4),
+                blurRadius: 12,
+                offset: const Offset(0, 4)),
           ],
         ),
+        clipBehavior: Clip.antiAlias,
         child: Stack(
           children: [
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Text(
-                  template.title,
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(
-                    color: template.backgroundColor.computeLuminance() > 0.5
-                        ? material.Colors.black
-                        : material.Colors.white,
-                    fontWeight: FontWeight.bold,
+            // Mini Elements Preview Stack
+            ...template.elements.map((element) {
+              // Approximate preview card aspect ratio: width=160, height=200
+              // Original coordinate system is based on 400x400 canvas.
+              // So scale factor is 160 / 400 = 0.4
+              const double scale = 0.40;
+              final left = element.position.dx * scale;
+              final top = element.position.dy * scale;
+              final double width = element.size.width * scale;
+              final double height = element.size.height * scale;
+
+              if (element.type == ElementType.text) {
+                final fontSize = (element.textStyle?.fontSize ?? 36.0) * scale * 1.35;
+                return Positioned(
+                  left: left,
+                  top: top,
+                  child: SizedBox(
+                    width: width * 1.5,
+                    height: height * 1.5,
+                    child: Text(
+                      element.text ?? '',
+                      style: element.textStyle?.copyWith(
+                        fontSize: fontSize.clamp(8.0, 20.0),
+                        color: element.color,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                );
+              } else if (element.type == ElementType.shape) {
+                return Positioned(
+                  left: left,
+                  top: top,
+                  child: Container(
+                    width: width,
+                    height: height,
+                    decoration: BoxDecoration(
+                      color: element.color,
+                      borderRadius: BorderRadius.circular((element.borderRadius ?? 0.0) * scale),
+                    ),
+                  ),
+                );
+              }
+              return const SizedBox.shrink();
+            }).toList(),
+
+            // Gradient Title Banner Overlay
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      material.Colors.black.withValues(alpha: 0.0),
+                      material.Colors.black.withValues(alpha: 0.9),
+                    ],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
                   ),
                 ),
-              ),
-            ),
-            Positioned(
-              right: 8,
-              bottom: 8,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: material.Colors.black.withValues(alpha: 0.6),
-                  borderRadius: BorderRadius.circular(8),
+                padding: const EdgeInsets.fromLTRB(10, 24, 10, 10),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        template.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.outfit(
+                          color: material.Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.2,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: material.Colors.yellow,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        'EDIT',
+                        style: GoogleFonts.inter(
+                          fontSize: 8,
+                          fontWeight: FontWeight.bold,
+                          color: material.Colors.black,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                child: Text('EDIT',
-                    style: GoogleFonts.inter(
-                        fontSize: 10, color: material.Colors.white)),
               ),
             ),
           ],

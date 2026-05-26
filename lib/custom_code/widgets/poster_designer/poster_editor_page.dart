@@ -350,8 +350,9 @@ class _PosterEditorPageState extends State<PosterEditorPage> {
   }
 
   Widget _buildBottomToolbar() {
+    final bottomPadding = material.MediaQuery.of(context).padding.bottom;
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+      padding: EdgeInsets.fromLTRB(16, 20, 16, 20 + bottomPadding),
       decoration: BoxDecoration(
         color: const Color(0xFF1E1E1E),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),

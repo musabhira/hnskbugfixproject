@@ -4303,8 +4303,14 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
                 const Spacer(),
               const SizedBox(width: 12),
               InkWell(
-                onTap: () {
+                onTap: () async {
                   if (_localPickedFile != null || file != null) {
+                    if (_videoPreviewController != null) {
+                      try {
+                        await _videoPreviewController!.setVolume(0.0);
+                        await _videoPreviewController!.pause();
+                      } catch (_) {}
+                    }
                     Navigator.pop(context);
                     _uploadStatus(_localPickedFile ?? file!,
                         _localPickedMediaType ?? mediaType!);
@@ -4627,8 +4633,7 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
 
       final MediaInfo? mediaInfo = await VideoCompress.compressVideo(
         filePath,
-        quality: VideoQuality
-            .HighestQuality, // Increased quality for clearer status videos
+        quality: VideoQuality.DefaultQuality,
         deleteOrigin: false,
         includeAudio: true,
       );
@@ -4661,6 +4666,13 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
   }
 
   Future<void> _uploadStatus(XFile file, String mediaType) async {
+    if (_videoPreviewController != null) {
+      try {
+        await _videoPreviewController!.setVolume(0.0);
+        await _videoPreviewController!.pause();
+      } catch (_) {}
+    }
+
     setState(() {
       _isUploading = true;
       _uploadProgress = 0.0;

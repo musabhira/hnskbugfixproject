@@ -478,6 +478,36 @@ class Conversations extends _$Conversations {
         ...updatedPersonal,
         ...toolChats
       ];
+
+      // Inject default welcoming chat item for Muss'ab 'Ab Hira if combined is empty
+      if (combined.isEmpty) {
+        String mussabUserId = 'e63c01c0-9999-4444-8888-000000000000';
+        String mussabName = "Muss'ab 'Ab Hira";
+        String? mussabAvatar;
+
+        try {
+          final profileQuery = await _supabase
+              .from('profile')
+              .select('user_id, name, profile_image_url')
+              .ilike('name', '%mussab%')
+              .limit(1);
+          if (profileQuery != null && profileQuery.isNotEmpty) {
+            mussabUserId = profileQuery[0]['user_id'] ?? mussabUserId;
+            mussabName = profileQuery[0]['name'] ?? mussabName;
+            mussabAvatar = profileQuery[0]['profile_image_url'];
+          }
+        } catch (_) {}
+
+        combined.add(ChatConversation(
+          id: mussabUserId,
+          name: mussabName,
+          imageUrl: mussabAvatar,
+          lastMessage: 'Hi! Welcome to Pocket Mates. Tap here to chat with me instantly!',
+          lastMessageTime: DateTime.now(),
+          unreadCount: 0,
+          isGroup: false,
+        ));
+      }
       combined.sort((a, b) {
         // Pinned status always on top
         if (a.isPinned && !b.isPinned) return -1;

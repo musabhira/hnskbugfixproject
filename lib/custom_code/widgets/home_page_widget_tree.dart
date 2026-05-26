@@ -863,27 +863,246 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
               ),
 
               if (_searchTabIndex == 0) ...[
-                // People Search Results
-                if (_personSearchResults.isEmpty && !_isSearchingPeople)
-                  const SliverToBoxAdapter(
+                // People: Filtered Active Conversations first
+                if (filteredConversations.isNotEmpty) ...[
+                  SliverToBoxAdapter(
                     child: Padding(
-                      padding: EdgeInsets.all(40),
-                      child: Center(
-                          child: Text('No people found',
-                              style:
-                                  TextStyle(color: material.Colors.white70))),
+                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+                      child: Text(
+                        'Active Chats',
+                        style: GoogleFonts.outfit(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: material.Colors.white.withValues(alpha: 0.4),
+                          letterSpacing: 0.5,
+                        ),
+                      ),
                     ),
-                  )
-                else
+                  ),
                   SliverList(
                     delegate: SliverChildBuilderDelegate(
                       (context, index) {
-                        final person = _personSearchResults[index];
-                        return _buildPersonResultTile(person);
+                        final conversation = filteredConversations[index];
+                        if (conversation.id == 'notifications_aggregator') {
+                          return _buildNotificationsTile(allNotifications.length);
+                        }
+                        return ConversationTile(
+                          key: ValueKey(conversation.id),
+                          conversation: conversation,
+                          currentUserId: _currentUserId ?? '',
+                          onTap: () {
+                            if (conversation.isTool) {
+                              _navigateToTool(conversation.toolTitle ?? '');
+                              return;
+                            }
+
+                            if (conversation.isNotification) {
+                              _showNotificationDetails(context, conversation);
+                            } else if (conversation.isActiveTimer) {
+                              if (conversation.teamData != null) {
+                                try {
+                                  final team = Team.fromJson(conversation.teamData!);
+                                  Navigator.push(
+                                    context,
+                                    material.MaterialPageRoute(
+                                      builder: (context) => TeamDetailPage(team: team),
+                                    ),
+                                  );
+                                } catch (e) {
+                                  debugPrint('Team error: $e');
+                                }
+                              }
+                            } else if (conversation.isGroup) {
+                              Navigator.push(
+                                context,
+                                material.MaterialPageRoute(
+                                  builder: (context) => WhatsAppGroupChat(
+                                    groupId: conversation.id,
+                                    groupName: conversation.name,
+                                    groupImage: conversation.imageUrl,
+                                  ),
+                                ),
+                              );
+                            } else {
+                              // Mark as read
+                              ref
+                                  .read(conversationsProvider.notifier)
+                                  .markAsRead(conversation.id, false);
+
+                              Navigator.push(
+                                context,
+                                material.MaterialPageRoute(
+                                  builder: (context) => WhatsAppGroupChat(
+                                    groupId: 'p:${conversation.id}',
+                                    groupName: conversation.name,
+                                    groupImage: conversation.imageUrl,
+                                  ),
+                                ),
+                              );
+                            }
+                          },
+                          onStatusTap: () {
+                            if (conversation.hasStatus &&
+                                conversation.statusData != null) {
+                              Navigator.push(
+                                context,
+                                material.MaterialPageRoute(
+                                  builder: (context) => StatusViewerWrapper(
+                                    allStatusGroups: [
+                                      {
+                                        'profile': {
+                                          'id': conversation.id,
+                                          'name': conversation.name,
+                                          'profile_image_url':
+                                              conversation.imageUrl,
+                                        },
+                                        'statuses': conversation.statusData,
+                                        'is_own': false,
+                                      }
+                                    ],
+                                    initialGroupIndex: 0,
+                                    currentUserId: _currentUserId ?? '',
+                                    currentProfileId: profileId ?? '',
+                                    isFromGroup: true,
+                                  ),
+                                ),
+                              );
+                            }
+                          },
+                        );
                       },
-                      childCount: _personSearchResults.length,
+                      childCount: filteredConversations.length,
                     ),
                   ),
+                ],
+
+                // Recommended registered user profiles horizontally at the bottom
+                SliverToBoxAdapter(
+                  child: _personSearchResults.isEmpty && !_isSearchingPeople
+                      ? (filteredConversations.isEmpty
+                          ? Padding(
+                              padding: const EdgeInsets.only(top: 80),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    FluentIcons.search,
+                                    size: 64,
+                                    color: material.Colors.white.withValues(alpha: 0.1),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    'No results for "$_searchQuery"',
+                                    style: GoogleFonts.outfit(
+                                      fontSize: 16,
+                                      color: material.Colors.white.withValues(alpha: 0.3),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : const SizedBox.shrink())
+                      : Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(20, 24, 20, 12),
+                              child: Row(
+                                children: [
+                                  const Icon(FluentIcons.people,
+                                      size: 18, color: material.Colors.yellow),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'SUGGESTED PEOPLE',
+                                    style: GoogleFonts.outfit(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
+                                      color: material.Colors.yellow,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            SizedBox(
+                              height: 120,
+                              child: ListView.builder(
+                                scrollDirection: Axis.horizontal,
+                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                itemCount: _personSearchResults.length,
+                                itemBuilder: (context, index) {
+                                  final person = _personSearchResults[index];
+                                  final name = person['name'] ?? 'Unknown';
+                                  final avatarUrl = person['profile_image_url'];
+
+                                  return GestureDetector(
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        material.MaterialPageRoute(
+                                          builder: (context) => WhatsAppGroupChat(
+                                            groupId: 'p:${person['user_id']}',
+                                            groupName: name,
+                                            groupImage: avatarUrl,
+                                          ),
+                                        ),
+                                      ).then((_) {
+                                        ref.refresh(conversationsProvider.future);
+                                      });
+                                    },
+                                    child: Container(
+                                      width: 80,
+                                      margin: const EdgeInsets.symmetric(horizontal: 6),
+                                      child: Column(
+                                        children: [
+                                          Container(
+                                            padding: const EdgeInsets.all(2),
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              border: Border.all(
+                                                color: material.Colors.yellow.withValues(alpha: 0.5),
+                                                width: 1.5,
+                                              ),
+                                            ),
+                                            child: CircleAvatar(
+                                              radius: 26,
+                                              backgroundImage: avatarUrl != null
+                                                  ? NetworkImage(avatarUrl)
+                                                  : null,
+                                              backgroundColor: material.Colors.yellow.shade700,
+                                              child: avatarUrl == null
+                                                  ? Text(
+                                                      name.isNotEmpty ? name[0].toUpperCase() : '?',
+                                                      style: const TextStyle(
+                                                        color: material.Colors.black,
+                                                        fontSize: 16,
+                                                        fontWeight: FontWeight.bold,
+                                                      ),
+                                                    )
+                                                  : null,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 6),
+                                          Text(
+                                            name,
+                                            style: GoogleFonts.outfit(
+                                              color: material.Colors.white.withValues(alpha: 0.8),
+                                              fontSize: 11,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                ),
               ] else ...[
                 // Products Search Results
                 if (_productSearchResults.isEmpty && !_isSearchingProducts)
@@ -907,159 +1126,129 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                     ),
                   ),
               ],
-            ],
-            if (_searchQuery.isNotEmpty && filteredConversations.isNotEmpty)
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 24, 20, 12),
-                  child: Row(
-                    children: [
-                      const Icon(FluentIcons.chat,
-                          size: 18, color: material.Colors.yellow),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Conversations',
-                        style: GoogleFonts.outfit(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: material.Colors.yellow,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            if (filteredConversations.isNotEmpty)
-              SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final conversation = filteredConversations[index];
-                    if (conversation.id == 'notifications_aggregator') {
-                      return _buildNotificationsTile(allNotifications.length);
-                    }
-                    return ConversationTile(
-                      key: ValueKey(conversation.id),
-                      conversation: conversation,
-                      currentUserId: _currentUserId ?? '',
-                      onTap: () {
-                        if (conversation.isTool) {
-                          _navigateToTool(conversation.toolTitle ?? '');
-                          return;
-                        }
-
-                        if (conversation.isNotification) {
-                          _showNotificationDetails(context, conversation);
-                        } else if (conversation.isActiveTimer) {
-                          if (conversation.teamData != null) {
-                            try {
-                              final team = Team.fromJson(conversation.teamData!);
-                              Navigator.push(
-                                context,
-                                material.MaterialPageRoute(
-                                  builder: (context) => TeamDetailPage(team: team),
-                                ),
-                              );
-                            } catch (e) {
-                              debugPrint('Team error: $e');
-                            }
+            ] else ...[
+              // Standard View (No Search Query)
+              if (filteredConversations.isNotEmpty)
+                SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final conversation = filteredConversations[index];
+                      if (conversation.id == 'notifications_aggregator') {
+                        return _buildNotificationsTile(allNotifications.length);
+                      }
+                      return ConversationTile(
+                        key: ValueKey(conversation.id),
+                        conversation: conversation,
+                        currentUserId: _currentUserId ?? '',
+                        onTap: () {
+                          if (conversation.isTool) {
+                            _navigateToTool(conversation.toolTitle ?? '');
+                            return;
                           }
-                        } else if (conversation.isGroup) {
-                          Navigator.push(
-                            context,
-                            material.MaterialPageRoute(
-                              builder: (context) => WhatsAppGroupChat(
-                                groupId: conversation.id,
-                                groupName: conversation.name,
-                                groupImage: conversation.imageUrl,
-                              ),
-                            ),
-                          );
-                        } else {
-                          // Mark as read
-                          ref
-                              .read(conversationsProvider.notifier)
-                              .markAsRead(conversation.id, false);
 
-                          Navigator.push(
-                            context,
-                            material.MaterialPageRoute(
-                              builder: (context) => WhatsAppGroupChat(
-                                groupId: 'p:${conversation.id}',
-                                groupName: conversation.name,
-                                groupImage: conversation.imageUrl,
+                          if (conversation.isNotification) {
+                            _showNotificationDetails(context, conversation);
+                          } else if (conversation.isActiveTimer) {
+                            if (conversation.teamData != null) {
+                              try {
+                                final team = Team.fromJson(conversation.teamData!);
+                                Navigator.push(
+                                  context,
+                                  material.MaterialPageRoute(
+                                    builder: (context) => TeamDetailPage(team: team),
+                                  ),
+                                );
+                              } catch (e) {
+                                debugPrint('Team error: $e');
+                              }
+                            }
+                          } else if (conversation.isGroup) {
+                            Navigator.push(
+                              context,
+                              material.MaterialPageRoute(
+                                builder: (context) => WhatsAppGroupChat(
+                                  groupId: conversation.id,
+                                  groupName: conversation.name,
+                                  groupImage: conversation.imageUrl,
+                                ),
                               ),
-                            ),
-                          );
-                        }
-                      },
-                      onStatusTap: () {
-                        if (conversation.hasStatus &&
-                            conversation.statusData != null) {
-                          Navigator.push(
-                            context,
-                            material.MaterialPageRoute(
-                              builder: (context) => StatusViewerWrapper(
-                                allStatusGroups: [
-                                  {
-                                    'profile': {
-                                      'id': conversation.id,
-                                      'name': conversation.name,
-                                      'profile_image_url':
-                                          conversation.imageUrl,
-                                    },
-                                    'statuses': conversation.statusData,
-                                    'is_own': false,
-                                  }
-                                ],
-                                initialGroupIndex: 0,
-                                currentUserId: _currentUserId ?? '',
-                                currentProfileId: profileId ?? '',
-                                isFromGroup: true,
+                            );
+                          } else {
+                            // Mark as read
+                            ref
+                                .read(conversationsProvider.notifier)
+                                .markAsRead(conversation.id, false);
+
+                            Navigator.push(
+                              context,
+                              material.MaterialPageRoute(
+                                builder: (context) => WhatsAppGroupChat(
+                                  groupId: 'p:${conversation.id}',
+                                  groupName: conversation.name,
+                                  groupImage: conversation.imageUrl,
+                                ),
                               ),
-                            ),
-                          );
-                        }
-                      },
-                      onLongPress: () {
-                        // Optional: Show options
-                      },
-                    );
-                  },
-                  childCount: filteredConversations.length,
-                ),
-              ),
-            if (combined.isEmpty ||
-                (_searchQuery.isNotEmpty &&
-                    filteredConversations.isEmpty &&
-                    _personSearchResults.isEmpty))
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 80),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        _searchQuery.isEmpty
-                            ? FluentIcons.chat
-                            : FluentIcons.search,
-                        size: 64,
-                        color: material.Colors.white.withValues(alpha: 0.1),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        _searchQuery.isEmpty
-                            ? 'No conversations yet'
-                            : 'No results for "$_searchQuery"',
-                        style: GoogleFonts.outfit(
-                          fontSize: 16,
-                          color: material.Colors.white.withValues(alpha: 0.3),
+                            );
+                          }
+                        },
+                        onStatusTap: () {
+                          if (conversation.hasStatus &&
+                              conversation.statusData != null) {
+                            Navigator.push(
+                              context,
+                              material.MaterialPageRoute(
+                                builder: (context) => StatusViewerWrapper(
+                                  allStatusGroups: [
+                                    {
+                                      'profile': {
+                                        'id': conversation.id,
+                                        'name': conversation.name,
+                                        'profile_image_url':
+                                            conversation.imageUrl,
+                                      },
+                                      'statuses': conversation.statusData,
+                                      'is_own': false,
+                                    }
+                                  ],
+                                  initialGroupIndex: 0,
+                                  currentUserId: _currentUserId ?? '',
+                                  currentProfileId: profileId ?? '',
+                                  isFromGroup: true,
+                                ),
+                              ),
+                            );
+                          }
+                        },
+                      );
+                    },
+                    childCount: filteredConversations.length,
+                  ),
+                )
+              else
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 80),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          FluentIcons.chat,
+                          size: 64,
+                          color: material.Colors.white.withValues(alpha: 0.1),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 16),
+                        Text(
+                          'No conversations yet',
+                          style: GoogleFonts.outfit(
+                            fontSize: 16,
+                            color: material.Colors.white.withValues(alpha: 0.3),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
+            ],
           ],
         );
       },
