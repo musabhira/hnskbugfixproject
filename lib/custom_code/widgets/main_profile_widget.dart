@@ -161,7 +161,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
       final responses = await Future.wait<dynamic>([
         _supabase
-            .from('profile_gallery_service_likes_comments_view')
+            .from('profile')
             .select()
             .eq('user_id', userId)
             .limit(1), // Profile

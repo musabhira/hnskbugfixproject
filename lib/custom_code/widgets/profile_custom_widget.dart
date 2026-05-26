@@ -42,14 +42,14 @@ class ProfileCustomWidget extends StatefulWidget {
 }
 
 class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
-  Color? _selectedColor;
-  String? _colorCode;
-  Color? _selectedColor1;
-  String? _colorCode1;
-  Color? _selectedColor2;
-  String? _colorCode2;
-  Color? _selectedColor3;
-  String? _colorCode3;
+  Color? _selectedColor = Colors.black;
+  String? _colorCode = '#000000';
+  Color? _selectedColor1 = Colors.white;
+  String? _colorCode1 = '#FFFFFF';
+  Color? _selectedColor2 = const Color(0xFFFFD700); // Luxury Gold
+  String? _colorCode2 = '#FFD700';
+  Color? _selectedColor3 = Colors.black;
+  String? _colorCode3 = '#000000';
 
   String? selectedCountry;
   String? selectedState;
@@ -141,10 +141,17 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
           selectedCountry = profileResponse['country'] ?? '';
           selectedState = profileResponse['state'] ?? '';
           selectedCity = profileResponse['city'] ?? '';
-          _colorCode = profileResponse['bg_color_code'] ?? '';
-          _colorCode1 = profileResponse['bg_text_color'] ?? '';
-          _colorCode2 = profileResponse['button_color_code'] ?? '';
-          _colorCode3 = profileResponse['button_text_color'] ?? '';
+          
+          _colorCode = (profileResponse['bg_color_code'] != null && profileResponse['bg_color_code'].toString().isNotEmpty) ? profileResponse['bg_color_code'] : '#000000';
+          _colorCode1 = (profileResponse['bg_text_color'] != null && profileResponse['bg_text_color'].toString().isNotEmpty) ? profileResponse['bg_text_color'] : '#FFFFFF';
+          _colorCode2 = (profileResponse['button_color_code'] != null && profileResponse['button_color_code'].toString().isNotEmpty) ? profileResponse['button_color_code'] : '#FFD700';
+          _colorCode3 = (profileResponse['button_text_color'] != null && profileResponse['button_text_color'].toString().isNotEmpty) ? profileResponse['button_text_color'] : '#000000';
+          
+          _selectedColor = _convertStringToColor(_colorCode!);
+          _selectedColor1 = _convertStringToColor(_colorCode1!);
+          _selectedColor2 = _convertStringToColor(_colorCode2!);
+          _selectedColor3 = _convertStringToColor(_colorCode3!);
+
           _imageUrlBanner = profileResponse['banner_image_url'] ?? '';
           _dayController.text = profileResponse['day']?.toString() ?? '';
           _monthController.text = profileResponse['month']?.toString() ?? '';
@@ -223,8 +230,26 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
         fileBytes = await file.readAsBytes();
       }
 
+      // Show beautiful interactive crop dialog
+      if (!mounted) return;
+      final croppedBytes = await showDialog<Uint8List>(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => ImageCropDialog(
+          imageBytes: fileBytes,
+          isCircle: true,
+        ),
+      );
+
+      if (croppedBytes == null) {
+        safeSetState(() {
+          _isCompressingProfile = false;
+        });
+        return;
+      }
+
       // Compress the image
-      final compressedBytes = await _compressImage(fileBytes);
+      final compressedBytes = await _compressImage(croppedBytes);
 
       safeSetState(() {
         _selectedImageBytes = compressedBytes;
@@ -265,8 +290,26 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
         fileBytes = await file.readAsBytes();
       }
 
+      // Show beautiful interactive crop dialog
+      if (!mounted) return;
+      final croppedBytes = await showDialog<Uint8List>(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => ImageCropDialog(
+          imageBytes: fileBytes,
+          isCircle: false,
+        ),
+      );
+
+      if (croppedBytes == null) {
+        safeSetState(() {
+          _isCompressingBanner = false;
+        });
+        return;
+      }
+
       // Compress the banner image
-      final compressedBytes = await _compressImage(fileBytes, quality: 90);
+      final compressedBytes = await _compressImage(croppedBytes, quality: 90);
 
       safeSetState(() {
         _selectedImageBytesBanner = compressedBytes;
@@ -386,16 +429,20 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
       _currentUserId = _supabase.auth.currentUser!.id;
 
       if (_selectedImageBytes != null) {
-        if (_imageUrl != null && _imageUrl!.isNotEmpty) {
-          final oldFilePath = Uri.parse(_imageUrl!).pathSegments.last;
-          await _supabase.storage
-              .from('profile')
-              .remove(['profile/$oldFilePath']);
+        try {
+          if (_imageUrl != null && _imageUrl!.isNotEmpty && !_imageUrl!.contains('picsum.photos')) {
+            final oldFilePath = Uri.parse(_imageUrl!).pathSegments.last;
+            await _supabase.storage
+                .from('profile')
+                .remove(['$_currentUserId/$oldFilePath']);
+          }
+        } catch (e) {
+          debugPrint('Error removing old profile image: $e');
         }
 
         final fileName =
-            '${DateTime.now().millisecondsSinceEpoch}_$_currentUserId.jpg';
-        final storagePath = 'profile/$fileName';
+            '${DateTime.now().millisecondsSinceEpoch}.jpg';
+        final storagePath = '$_currentUserId/$fileName';
 
         // Upload to nested path
         await _supabase.storage
@@ -410,18 +457,22 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
         _selectedImageBytes = null;
       }
       if (_selectedImageBytesBanner != null) {
-        // Remove old image if exists
-        if (_imageUrlBanner != null && _imageUrlBanner!.isNotEmpty) {
-          final oldFilePath = Uri.parse(_imageUrlBanner!).pathSegments.last;
-          await _supabase.storage
-              .from('profile_banner')
-              .remove(['profile_banner/$oldFilePath']);
+        try {
+          // Remove old image if exists
+          if (_imageUrlBanner != null && _imageUrlBanner!.isNotEmpty && !_imageUrlBanner!.contains('picsum.photos')) {
+            final oldFilePath = Uri.parse(_imageUrlBanner!).pathSegments.last;
+            await _supabase.storage
+                .from('profile_banner')
+                .remove(['$_currentUserId/$oldFilePath']);
+          }
+        } catch (e) {
+          debugPrint('Error removing old banner image: $e');
         }
 
         // Create filename with nested folder structure
         final fileName =
-            '${DateTime.now().millisecondsSinceEpoch}_$_currentUserId.jpg';
-        final storagePath = 'profile_banner/$fileName';
+            '${DateTime.now().millisecondsSinceEpoch}.jpg';
+        final storagePath = '$_currentUserId/$fileName';
 
         // Upload to nested path
         await _supabase.storage
@@ -478,6 +529,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
             'insta_id': instaIdController.text,
             'insta_link': instaLinkController.text,
             'web_template_id': _selectedTemplateId,
+            'updated_at': DateTime.now().toIso8601String(),
           },
         ).eq('user_id', _currentUserId!);
       } else {
@@ -511,6 +563,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
             'insta_id': instaIdController.text,
             'insta_link': instaLinkController.text,
             'web_template_id': _selectedTemplateId,
+            'updated_at': DateTime.now().toIso8601String(),
           },
         );
       }
@@ -1742,3 +1795,382 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
     );
   }
 }
+
+// -------------------------------------------------------------
+// Interactive Image Crop Dialog & Custom Painters (Pure Dart)
+// -------------------------------------------------------------
+
+class ImageCropDialog extends StatefulWidget {
+  final Uint8List imageBytes;
+  final bool isCircle;
+
+  const ImageCropDialog({
+    super.key,
+    required this.imageBytes,
+    required this.isCircle,
+  });
+
+  @override
+  State<ImageCropDialog> createState() => _ImageCropDialogState();
+}
+
+class _ImageCropDialogState extends State<ImageCropDialog> {
+  final TransformationController _transformationController = TransformationController();
+  bool _isProcessing = false;
+  img.Image? _decodedImage;
+  bool _isDecoding = true;
+  double? _childWidth;
+  double? _childHeight;
+  bool _initMatrix = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _decodeImage();
+  }
+
+  Future<void> _decodeImage() async {
+    try {
+      final decoded = await compute(img.decodeImage, widget.imageBytes);
+      if (mounted) {
+        setState(() {
+          _decodedImage = decoded;
+          _isDecoding = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error decoding image for crop: $e');
+      if (mounted) {
+        Navigator.pop(context);
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _transformationController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _applyCrop(double screenWidth, double screenHeight) async {
+    setState(() {
+      _isProcessing = true;
+    });
+
+    try {
+      final matrix = _transformationController.value;
+      final double scale = matrix.getMaxScaleOnAxis();
+      final double tx = matrix.entry(0, 3);
+      final double ty = matrix.entry(1, 3);
+
+      double viewportWidth = widget.isCircle ? 260.0 : 320.0;
+      double viewportHeight = widget.isCircle ? 260.0 : 160.0;
+
+      double left = (screenWidth - viewportWidth) / 2;
+      double top = (screenHeight - viewportHeight) / 2;
+
+      double cropLeftRendered = (left - tx) / scale;
+      double cropTopRendered = (top - ty) / scale;
+      double cropWidthRendered = viewportWidth / scale;
+      double cropHeightRendered = viewportHeight / scale;
+
+      double childWidth = _childWidth!;
+      double childHeight = _childHeight!;
+      int originalWidth = _decodedImage!.width;
+      int originalHeight = _decodedImage!.height;
+
+      double cropLeftOrig = cropLeftRendered * (originalWidth / childWidth);
+      double cropTopOrig = cropTopRendered * (originalHeight / childHeight);
+      double cropWidthOrig = cropWidthRendered * (originalWidth / childWidth);
+      double cropHeightOrig = cropHeightRendered * (originalHeight / childHeight);
+
+      int x = cropLeftOrig.round().clamp(0, originalWidth - 1);
+      int y = cropTopOrig.round().clamp(0, originalHeight - 1);
+      int w = cropWidthOrig.round().clamp(1, originalWidth - x);
+      int h = cropHeightOrig.round().clamp(1, originalHeight - y);
+
+      final croppedImage = await compute(_cropImageIsolate, _CropParams(_decodedImage!, x, y, w, h));
+      final croppedBytes = await compute(_encodeImageIsolate, croppedImage);
+
+      if (mounted) {
+        Navigator.pop(context, croppedBytes);
+      }
+    } catch (e) {
+      debugPrint('Error applying crop: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Error cropping image. Please try again.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        setState(() {
+          _isProcessing = false;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog.fullscreen(
+      backgroundColor: Colors.black,
+      child: Scaffold(
+        backgroundColor: Colors.black,
+        body: _isDecoding
+            ? const Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircularProgressIndicator(
+                      color: Color(0xFFFFD700),
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      'Loading Image...',
+                      style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              )
+            : LayoutBuilder(
+                builder: (context, constraints) {
+                  final screenWidth = constraints.maxWidth;
+                  final screenHeight = constraints.maxHeight;
+
+                  double viewportWidth = widget.isCircle ? 260.0 : 320.0;
+                  double viewportHeight = widget.isCircle ? 260.0 : 160.0;
+
+                  double imageWidth = _decodedImage!.width.toDouble();
+                  double imageHeight = _decodedImage!.height.toDouble();
+                  double imageAspect = imageWidth / imageHeight;
+                  double viewportAspect = viewportWidth / viewportHeight;
+
+                  double childWidth;
+                  double childHeight;
+
+                  if (imageAspect > viewportAspect) {
+                    childHeight = viewportHeight;
+                    childWidth = viewportHeight * imageAspect;
+                  } else {
+                    childWidth = viewportWidth;
+                    childHeight = viewportWidth / imageAspect;
+                  }
+
+                  _childWidth = childWidth;
+                  _childHeight = childHeight;
+
+                  double left = (screenWidth - viewportWidth) / 2;
+                  double top = (screenHeight - viewportHeight) / 2;
+
+                  if (!_initMatrix) {
+                    double xInitial = left + (viewportWidth - childWidth) / 2;
+                    double yInitial = top + (viewportHeight - childHeight) / 2;
+
+                    final matrix = Matrix4.identity()
+                      ..setTranslationRaw(xInitial, yInitial, 0);
+                    _transformationController.value = matrix;
+                    _initMatrix = true;
+                  }
+
+                  return Stack(
+                    children: [
+                      // The Image view that is pannable and zoomable
+                      Positioned.fill(
+                        child: InteractiveViewer(
+                          transformationController: _transformationController,
+                          minScale: 1.0,
+                          maxScale: 5.0,
+                          panEnabled: true,
+                          scaleEnabled: true,
+                          boundaryMargin: const EdgeInsets.all(double.infinity),
+                          child: SizedBox(
+                            width: childWidth,
+                            height: childHeight,
+                            child: Image.memory(
+                              widget.imageBytes,
+                              fit: BoxFit.fill,
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      // Overlay Mask with hole and gold frame
+                      Positioned.fill(
+                        child: IgnorePointer(
+                          child: CustomPaint(
+                            painter: CropMaskPainter(isCircle: widget.isCircle),
+                          ),
+                        ),
+                      ),
+
+                      // Top Bar
+                      Positioned(
+                        top: MediaQuery.of(context).padding.top + 16,
+                        left: 16,
+                        right: 16,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+                              onPressed: () => Navigator.pop(context),
+                            ),
+                            Text(
+                              widget.isCircle ? 'Crop Profile Photo' : 'Crop Banner Photo',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(width: 48), // To balance the back button
+                          ],
+                        ),
+                      ),
+
+                      // Bottom controls
+                      Positioned(
+                        bottom: MediaQuery.of(context).padding.bottom + 24,
+                        left: 20,
+                        right: 20,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text(
+                              'Pinch to zoom • Drag to position',
+                              style: TextStyle(
+                                color: Colors.white60,
+                                fontSize: 13,
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: OutlinedButton(
+                                    onPressed: _isProcessing ? null : () => Navigator.pop(context),
+                                    style: OutlinedButton.styleFrom(
+                                      side: const BorderSide(color: Colors.white54),
+                                      padding: const EdgeInsets.symmetric(vertical: 14),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                    child: const Text(
+                                      'Cancel',
+                                      style: TextStyle(color: Colors.white, fontSize: 16),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: ElevatedButton(
+                                    onPressed: _isProcessing ? null : () => _applyCrop(screenWidth, screenHeight),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFFFFD700), // Luxury Gold
+                                      foregroundColor: Colors.black,
+                                      padding: const EdgeInsets.symmetric(vertical: 14),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      elevation: 2,
+                                    ),
+                                    child: _isProcessing
+                                        ? const SizedBox(
+                                            height: 20,
+                                            width: 20,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
+                                            ),
+                                          )
+                                        : const Text(
+                                            'Save Crop',
+                                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                          ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+      ),
+    );
+  }
+}
+
+class CropMaskPainter extends CustomPainter {
+  final bool isCircle;
+
+  CropMaskPainter({required this.isCircle});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.black.withValues(alpha: 0.7)
+      ..style = PaintingStyle.fill;
+
+    double viewportWidth = isCircle ? 260.0 : 320.0;
+    double viewportHeight = isCircle ? 260.0 : 160.0;
+
+    double left = (size.width - viewportWidth) / 2;
+    double top = (size.height - viewportHeight) / 2;
+    final viewportRect = Rect.fromLTWH(left, top, viewportWidth, viewportHeight);
+
+    final holePath = Path();
+    if (isCircle) {
+      holePath.addOval(viewportRect);
+    } else {
+      holePath.addRRect(RRect.fromRectAndRadius(viewportRect, const Radius.circular(16)));
+    }
+
+    final outerPath = Path()..addRect(Rect.fromLTWH(0, 0, size.width, size.height));
+    final maskPath = Path.combine(PathOperation.difference, outerPath, holePath);
+    canvas.drawPath(maskPath, paint);
+
+    final framePaint = Paint()
+      ..color = const Color(0xFFFFD700) // Luxury Gold
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3.0;
+
+    if (isCircle) {
+      canvas.drawOval(viewportRect, framePaint);
+    } else {
+      canvas.drawRRect(RRect.fromRectAndRadius(viewportRect, const Radius.circular(16)), framePaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+class _CropParams {
+  final img.Image image;
+  final int x;
+  final int y;
+  final int w;
+  final int h;
+
+  _CropParams(this.image, this.x, this.y, this.w, this.h);
+}
+
+img.Image _cropImageIsolate(_CropParams params) {
+  return img.copyCrop(
+    params.image,
+    x: params.x,
+    y: params.y,
+    width: params.w,
+    height: params.h,
+  );
+}
+
+Uint8List _encodeImageIsolate(img.Image image) {
+  return Uint8List.fromList(img.encodeJpg(image, quality: 90));
+}
+

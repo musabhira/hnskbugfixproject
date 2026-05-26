@@ -256,17 +256,18 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
 
     try {
       final profileResponse = await _supabase
-          .from('profile_gallery_service_likes_comments_view')
-          .select('''
-          profile_id, profile_created_at, user_id, name, phone_no, country, bio, 
-          shop_name, profile_image_url, banner_image_url, button_color_code, 
-          bg_color_code, bg_text_color, state, city, button_text_color, verified,insta_id,insta_link
-        ''')
+          .from('profile')
+          .select()
           .eq('user_id', widget.userId)
           .limit(1);
 
-      Map<String, dynamic>? profile =
-          profileResponse.isNotEmpty ? profileResponse.first : null;
+      Map<String, dynamic>? profile;
+      if (profileResponse.isNotEmpty) {
+        profile = Map<String, dynamic>.from(profileResponse.first);
+        // Normalize fields for legacy compatibility
+        profile['profile_id'] = profile['id'];
+        profile['profile_created_at'] = profile['created_at'];
+      }
 
       final galleryResponse = await _supabase
           .from('profile_gallery_service_likes_comments_view')
