@@ -83,20 +83,20 @@ class _MessageListPageState extends State<MessageListPage> {
       }).toList();
 
       if (conversations.isEmpty) {
-        String mussabUserId = 'e63c01c0-9999-4444-8888-000000000000';
-        String mussabName = "Muss'ab 'Ab Hira";
-        String? mussabAvatar;
+        String mussabUserId = '188d1b93-1d15-436e-b6ed-455d91ec8bd6';
+        String mussabName = "Mus'ab hira";
+        String? mussabAvatar = 'https://gswhynuabdspnwudltth.supabase.co/storage/v1/object/public/profile/profile/1758693565848_188d1b93-1d15-436e-b6ed-455d91ec8bd6.jpg';
 
         try {
           final profileQuery = await _supabase
               .from('profile')
               .select('user_id, name, profile_image_url')
-              .ilike('name', '%mussab%')
-              .limit(1);
-          if (profileQuery != null && profileQuery.isNotEmpty) {
-            mussabUserId = profileQuery[0]['user_id'] ?? mussabUserId;
-            mussabName = profileQuery[0]['name'] ?? mussabName;
-            mussabAvatar = profileQuery[0]['profile_image_url'];
+              .eq('user_id', '188d1b93-1d15-436e-b6ed-455d91ec8bd6')
+              .maybeSingle();
+          if (profileQuery != null) {
+            mussabUserId = profileQuery['user_id'] ?? mussabUserId;
+            mussabName = profileQuery['name'] ?? mussabName;
+            mussabAvatar = profileQuery['profile_image_url'] ?? mussabAvatar;
           }
         } catch (_) {}
 
