@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fluent_ui/fluent_ui.dart' as fluent;
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pocket_mates_app/main.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
@@ -313,11 +314,15 @@ class _ProfileCreateCustomWidgetState extends State<ProfileCreateCustomWidget> {
             backgroundColor: Colors.green,
           ),
         );
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (context) => const HomePageWidget(),
-          ),
-        );
+        try {
+          MyApp.of(context).restartApp();
+        } catch (_) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (context) => const HomePageWidget(),
+            ),
+          );
+        }
       }
     } catch (e) {
       if (mounted) {

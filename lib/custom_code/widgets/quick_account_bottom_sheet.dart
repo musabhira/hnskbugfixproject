@@ -7,6 +7,8 @@ import '/auth_page/auth_page_widget.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
+import 'package:pocket_mates_app/main.dart';
+
 // Set your widget name, define your parameter, and then add the
 // boilerplate code using the green button on the right!
 
@@ -104,10 +106,14 @@ class _AutoLoginBottomSheetState extends State<AutoLoginBottomSheet> {
       if (!mounted) return;
       Navigator.of(context).pop(); // Close bottom sheet
       Navigator.of(context).pop();
-      // Navigate to home page
-      context.pushReplacementNamed(
-        HomePageWidget.routeName,
-      );
+      // Navigate and restart the app cleanly
+      try {
+        MyApp.of(context).restartApp();
+      } catch (_) {
+        context.pushReplacementNamed(
+          HomePageWidget.routeName,
+        );
+      }
     } catch (e) {
       print(e);
       _showError('Login failed: $e');
@@ -170,10 +176,14 @@ class _AutoLoginBottomSheetState extends State<AutoLoginBottomSheet> {
         passwordController.clear();
         Navigator.of(context).pop(); // Close bottom sheet
         Navigator.of(context).pop();
-        // Navigate to home page
-        context.pushReplacementNamed(
-          HomePageWidget.routeName,
-        );
+        // Navigate and restart app cleanly
+        try {
+          MyApp.of(context).restartApp();
+        } catch (_) {
+          context.pushReplacementNamed(
+            HomePageWidget.routeName,
+          );
+        }
         safeSetState(() {
           showAuth = false;
           isCreatingAccount = false;
@@ -240,10 +250,14 @@ class _AutoLoginBottomSheetState extends State<AutoLoginBottomSheet> {
         if (!mounted) return;
         Navigator.of(context).pop(); // Close bottom sheet
         Navigator.of(context).pop();
-        // Navigate to home page
-        context.pushReplacementNamed(
-          HomePageWidget.routeName,
-        );
+        // Navigate and restart app cleanly
+        try {
+          MyApp.of(context).restartApp();
+        } catch (_) {
+          context.pushReplacementNamed(
+            HomePageWidget.routeName,
+          );
+        }
         _showSuccess('Sub-account linked successfully!');
       }
     } catch (e) {

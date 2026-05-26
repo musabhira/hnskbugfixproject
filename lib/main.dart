@@ -83,6 +83,13 @@ class MyAppScrollBehavior extends ScrollBehavior {
 
 class _MyAppState extends State<MyApp> {
   ThemeMode _themeMode = FlutterFlowTheme.themeMode;
+  Key _key = UniqueKey();
+
+  void restartApp() {
+    safeSetState(() {
+      _key = UniqueKey();
+    });
+  }
 
   late AppStateNotifier _appStateNotifier;
   late GoRouter _router;
@@ -150,28 +157,31 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return FluentApp.router(
-      debugShowCheckedModeBanner: false,
-      title: 'Handskill Friends',
-      scrollBehavior: MyAppScrollBehavior(),
-      localizationsDelegates: const [
-        FluentLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: const [Locale('en', '')],
-      theme: FluentThemeData(
-        brightness: Brightness.light,
-        accentColor: Colors.blue,
+    return KeyedSubtree(
+      key: _key,
+      child: FluentApp.router(
+        debugShowCheckedModeBanner: false,
+        title: 'Handskill Friends',
+        scrollBehavior: MyAppScrollBehavior(),
+        localizationsDelegates: const [
+          FluentLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [Locale('en', '')],
+        theme: FluentThemeData(
+          brightness: Brightness.light,
+          accentColor: Colors.blue,
+        ),
+        darkTheme: FluentThemeData(
+          brightness: Brightness.dark,
+          accentColor: Colors.blue,
+          scaffoldBackgroundColor: Colors.black,
+        ),
+        themeMode: _themeMode,
+        routerConfig: _router,
       ),
-      darkTheme: FluentThemeData(
-        brightness: Brightness.dark,
-        accentColor: Colors.blue,
-        scaffoldBackgroundColor: Colors.black,
-      ),
-      themeMode: _themeMode,
-      routerConfig: _router,
     );
   }
 }

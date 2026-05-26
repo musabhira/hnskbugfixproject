@@ -10,6 +10,8 @@ import 'package:flutter/material.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
+import 'package:pocket_mates_app/main.dart';
+
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io' as io;
@@ -585,10 +587,14 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
           ),
         );
 
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const HomePageWidget()),
-        );
+        try {
+          MyApp.of(context).restartApp();
+        } catch (_) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const HomePageWidget()),
+          );
+        }
       }
     } catch (error) {
       if (mounted) {
