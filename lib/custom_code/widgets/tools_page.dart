@@ -468,6 +468,32 @@ class _TaskManagerScreenState extends State<ToolsPage> {
     _saveData();
   }
 
+  void _toggleChallengeDayIndex(String challengeId, String dayKey) {
+    setState(() {
+      final challengeIndex =
+          challenges.indexWhere((challenge) => challenge.id == challengeId);
+      if (challengeIndex != -1) {
+        final challenge = challenges[challengeIndex];
+        if (challenge.dailyTicks.containsKey(dayKey)) {
+          challenge.dailyTicks[dayKey] = !challenge.dailyTicks[dayKey]!;
+        } else {
+          challenge.dailyTicks[dayKey] = true;
+        }
+
+        // Calculate if completed
+        int completedCount = challenge.dailyTicks.values.where((v) => v == true).length;
+        if (completedCount >= challenge.totalDays) {
+          challenge.isCompleted = true;
+          challenge.completedDate = DateTime.now();
+        } else {
+          challenge.isCompleted = false;
+          challenge.completedDate = null;
+        }
+      }
+    });
+    _saveData();
+  }
+
   void _calculateStats() {
     final today = DateTime.now();
     final todayTasks = tasks
@@ -2336,155 +2362,232 @@ class _TaskManagerScreenState extends State<ToolsPage> {
   }
 
   Widget _buildChallengeCard(Challenge challenge) {
-    final now = DateTime.now();
-    final daysPassed = now.difference(challenge.startDate).inDays + 1;
-    final completedDays = challenge.dailyTicks.length;
+    final completedDays = challenge.dailyTicks.values.where((v) => v == true).length;
     final percentage =
-        (completedDays / challenge.totalDays * 100).clamp(0, 100);
-    final isCompleted =
-        daysPassed >= challenge.totalDays || challenge.isCompleted;
+        (completedDays / challenge.totalDays * 100).clamp(0.0, 100.0);
+    final remainingDays = challenge.totalDays - completedDays;
+    final isCompleted = completedDays >= challenge.totalDays || challenge.isCompleted;
 
-    final today = DateTime.now();
-    final todayKey = "${today.year}-${today.month}-${today.day}";
-    final isTodayCompleted = challenge.dailyTicks.containsKey(todayKey);
+    // Calculate grid height dynamically based on row count (7 columns per row)
+    final int rowsCount = (challenge.totalDays / 7).ceil();
+    final double gridHeight = (rowsCount * 44.0).clamp(60.0, 220.0);
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: const Color(0xFF2C2C2C),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: isCompleted ? const Color(0xFF4CAF50) : const Color(0xFF424242),
+          color: isCompleted ? const Color(0xFFFFD700) : const Color(0xFF424242),
           width: isCompleted ? 2 : 1,
         ),
+        boxShadow: isCompleted
+            ? [
+                BoxShadow(
+                  color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                  blurRadius: 15,
+                  spreadRadius: 1,
+                )
+              ]
+            : null,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: isCompleted
+                      ? const Color(0xFFFFD700).withValues(alpha: 0.1)
+                      : Colors.white.withValues(alpha: 0.05),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.emoji_events_rounded,
+                  color: isCompleted ? const Color(0xFFFFD700) : Colors.amber,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 12),
               Expanded(
-                child: Text(
-                  challenge.title,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-              if (isCompleted)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF4CAF50),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Text(
-                    'COMPLETED',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              const SizedBox(width: 8),
-              GestureDetector(
-                onTap: () => _deleteChallenge(challenge.id),
-                child: const Icon(Icons.close, color: Color(0xFF757575), size: 20),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-
-          // Progress bar
-          Container(
-            width: double.infinity,
-            height: 8,
-            decoration: BoxDecoration(
-              color: const Color(0xFF424242),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: FractionallySizedBox(
-              alignment: Alignment.centerLeft,
-              widthFactor: percentage / 100,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: const Color(0xFF4CAF50),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 8),
-
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                '$completedDays / ${challenge.totalDays} days',
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: Color(0xFF9E9E9E),
-                ),
-              ),
-              Text(
-                '${percentage.toInt()}%',
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-            ],
-          ),
-
-          if (!isCompleted) ...[
-            const SizedBox(height: 12),
-            GestureDetector(
-              onTap: () => _toggleChallengeDay(challenge.id),
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                decoration: BoxDecoration(
-                  color:
-                      isTodayCompleted ? const Color(0xFF4CAF50) : const Color(0xFF424242),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: isTodayCompleted
-                        ? const Color(0xFF4CAF50)
-                        : const Color(0xFF757575),
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(
-                      isTodayCompleted ? Icons.check : Icons.add,
-                      color: Colors.white,
-                      size: 16,
-                    ),
-                    const SizedBox(width: 4),
                     Text(
-                      isTodayCompleted
-                          ? 'Completed Today'
-                          : 'Mark Today Complete',
-                      style: const TextStyle(
+                      challenge.title,
+                      style: GoogleFonts.outfit(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
                         color: Colors.white,
+                      ),
+                    ),
+                    Text(
+                      isCompleted ? 'Goal Completed!' : 'Tap blocks to mark complete',
+                      style: GoogleFonts.outfit(
                         fontSize: 12,
-                        fontWeight: FontWeight.w500,
+                        color: isCompleted ? const Color(0xFFFFD700) : Colors.white60,
                       ),
                     ),
                   ],
                 ),
               ),
+              GestureDetector(
+                onTap: () => _deleteChallenge(challenge.id),
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.05),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.close, color: Colors.white60, size: 18),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // Statistics Row
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _buildChallengeStat('Total Days', '${challenge.totalDays}', Colors.white70),
+              _buildChallengeStat('Completed', '$completedDays', const Color(0xFF4CAF50)),
+              _buildChallengeStat('Remaining', '$remainingDays Left', const Color(0xFFFF6B9D), isBold: true),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // Progress Bar with percentage
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: FractionallySizedBox(
+                    alignment: Alignment.centerLeft,
+                    widthFactor: percentage / 100,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFFFD700), Color(0xFFFF9E00)],
+                        ),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                '${percentage.toInt()}%',
+                style: GoogleFonts.outfit(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFFFFD700),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // Habit Grid View
+          Text(
+            'Daily Checkpoints',
+            style: GoogleFonts.outfit(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: Colors.white70,
             ),
-          ],
+          ),
+          const SizedBox(height: 8),
+          Container(
+            height: gridHeight,
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+            ),
+            child: Scrollbar(
+              thumbVisibility: true,
+              child: GridView.builder(
+                shrinkWrap: true,
+                physics: const BouncingScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 7,
+                  crossAxisSpacing: 6,
+                  mainAxisSpacing: 6,
+                ),
+                itemCount: challenge.totalDays,
+                itemBuilder: (context, index) {
+                  final dayNumber = index + 1;
+                  final dayKey = 'day_$dayNumber';
+                  final isTicked = challenge.dailyTicks[dayKey] ?? false;
+
+                  return GestureDetector(
+                    onTap: () => _toggleChallengeDayIndex(challenge.id, dayKey),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: isTicked
+                            ? const Color(0xFFFFD700) // Gold ticked
+                            : Colors.white.withValues(alpha: 0.03),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: isTicked
+                              ? const Color(0xFFFFD700)
+                              : Colors.white.withValues(alpha: 0.08),
+                          width: 1,
+                        ),
+                      ),
+                      child: Text(
+                        '$dayNumber',
+                        style: GoogleFonts.outfit(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: isTicked ? Colors.black : Colors.white70,
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
         ],
       ),
+    );
+  }
+
+  Widget _buildChallengeStat(String label, String value, Color color, {bool isBold = false}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.outfit(
+            fontSize: 11,
+            color: Colors.white54,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          value,
+          style: GoogleFonts.outfit(
+            fontSize: 14,
+            fontWeight: isBold ? FontWeight.w900 : FontWeight.bold,
+            color: color,
+          ),
+        ),
+      ],
     );
   }
 
