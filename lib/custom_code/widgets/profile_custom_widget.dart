@@ -17,6 +17,7 @@ import 'package:country_state_city_picker/country_state_city_picker.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import 'package:image/image.dart' as img;
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // Begin custom action code
 
@@ -568,6 +569,13 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
         );
       }
 
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.remove('profile_cache_$_currentUserId');
+      } catch (e) {
+        debugPrint('Error clearing cache: $e');
+      }
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -782,6 +790,105 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
       fetchHideStatus();
     } catch (e) {
       debugPrint('Error saving hide status: $e');
+    }
+  }
+
+  Future<void> _deleteProfile() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.black,
+        title: const Text('Delete Profile?', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        content: const Text(
+          'Are you sure you want to delete your online shop profile? This will reset all details, colors, website themes, and delete your shop link. This action cannot be undone.',
+          style: TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel', style: TextStyle(color: Colors.white60)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Delete', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    try {
+      safeSetState(() => _isLoading = true);
+
+      if (_currentUserId != null) {
+        // Delete custom database record
+        await _supabase.from('profile').delete().eq('user_id', _currentUserId!);
+
+        // Clear local storage cache
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.remove('profile_cache_$_currentUserId');
+
+        // Clear controllers locally
+        _nameController.clear();
+        _shopNameController.clear();
+        _phoneNumberController.clear();
+        _bioController.clear();
+        _dayController.clear();
+        _monthController.clear();
+        _yearController.clear();
+        instaIdController.clear();
+        instaLinkController.clear();
+
+        safeSetState(() {
+          _imageUrl = '';
+          _selectedImageBytes = null;
+          _imageUrlBanner = '';
+          _selectedImageBytesBanner = null;
+          _colorCode = '#000000';
+          _colorCode1 = '#FFFFFF';
+          _colorCode2 = '#FFD700';
+          _colorCode3 = '#000000';
+          _selectedColor = Colors.black;
+          _selectedColor1 = Colors.white;
+          _selectedColor2 = const Color(0xFFFFD700);
+          _selectedColor3 = Colors.black;
+          selectedCountry = '';
+          selectedState = '';
+          selectedCity = '';
+          _selectedTemplateId = 'default';
+          _shopNameMessage = null;
+          _isShopNameVerified = false;
+        });
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Profile deleted and reset successfully!'),
+              backgroundColor: FlutterFlowTheme.of(context).success,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const HomePageWidget()),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error deleting profile: $e'),
+            backgroundColor: FlutterFlowTheme.of(context).error,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } finally {
+      safeSetState(() => _isLoading = false);
     }
   }
 
@@ -1146,6 +1253,31 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                                                 size: 20,
                                               ),
                                             ),
+                                          if (_imageUrl != null && _imageUrl!.isNotEmpty || _selectedImageBytes != null)
+                                            Positioned(
+                                              left: 0,
+                                              bottom: 0,
+                                              child: GestureDetector(
+                                                onTap: _isLoading ? null : () {
+                                                  safeSetState(() {
+                                                    _imageUrl = '';
+                                                    _selectedImageBytes = null;
+                                                  });
+                                                },
+                                                child: Container(
+                                                  padding: const EdgeInsets.all(4),
+                                                  decoration: const BoxDecoration(
+                                                    color: Colors.red,
+                                                    shape: BoxShape.circle,
+                                                  ),
+                                                  child: const Icon(
+                                                    Icons.delete,
+                                                    color: Colors.white,
+                                                    size: 20,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
                                         ],
                                       ),
                                     ),
@@ -1160,31 +1292,58 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                       Positioned(
                         right: 32,
                         bottom: 60,
-                        child: GestureDetector(
-                          onTap: (_isLoading || _isCompressingBanner)
-                              ? null
-                              : _selectImageBanner,
-                          child: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: theme.primary,
-                              shape: BoxShape.circle,
-                            ),
-                            child: _isCompressingBanner
-                                ? const SizedBox(
-                                    height: 20,
-                                    width: 20,
-                                    child: CircularProgressIndicator(
-                                      color: Colors.white,
-                                      strokeWidth: 2,
-                                    ),
-                                  )
-                                : const Icon(
-                                    Icons.edit,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (_imageUrlBanner != null && _imageUrlBanner!.isNotEmpty || _selectedImageBytesBanner != null)
+                              GestureDetector(
+                                onTap: _isLoading ? null : () {
+                                  safeSetState(() {
+                                    _imageUrlBanner = '';
+                                    _selectedImageBytesBanner = null;
+                                  });
+                                },
+                                child: Container(
+                                  margin: const EdgeInsets.only(right: 8),
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: const BoxDecoration(
+                                    color: Colors.red,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.delete,
                                     color: Colors.white,
                                     size: 20,
                                   ),
-                          ),
+                                ),
+                              ),
+                            GestureDetector(
+                              onTap: (_isLoading || _isCompressingBanner)
+                                  ? null
+                                  : _selectImageBanner,
+                              child: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: theme.primary,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: _isCompressingBanner
+                                    ? const SizedBox(
+                                        height: 20,
+                                        width: 20,
+                                        child: CircularProgressIndicator(
+                                          color: Colors.white,
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                                    : const Icon(
+                                        Icons.edit,
+                                        color: Colors.white,
+                                        size: 20,
+                                      ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
@@ -1681,6 +1840,59 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                   ),
 
                   buildBeautifulLocationPicker(),
+
+                  // Danger Zone (Delete Profile)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.red.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.red.withValues(alpha: 0.3), width: 1),
+                      ),
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Danger Zone',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: theme.error,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  'Delete your shop profile and reset all settings to defaults.',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: theme.secondaryText,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              ElevatedButton(
+                                onPressed: _isLoading ? null : _deleteProfile,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.red,
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                child: const Text('Delete Profile'),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
 
                   // Save Button
                   Padding(
