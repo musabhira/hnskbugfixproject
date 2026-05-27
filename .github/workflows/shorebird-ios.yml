@@ -77,12 +77,18 @@ jobs:
             shorebird patch ios --export-options-plist=ios/ExportOptions.plist
           fi
 
+      - name: Rename IPA to remove invalid characters
+        if: inputs.action == 'release'
+        run: |
+          cd build/ios/ipa
+          mv *.ipa pocket_mates_app.ipa || true
+
       - name: Upload IPA (If Release)
         if: inputs.action == 'release'
         uses: actions/upload-artifact@v4
         with:
           name: ios-ipa
-          path: build/ios/ipa/*.ipa
+          path: build/ios/ipa/pocket_mates_app.ipa
 
       - name: Upload to App Store Connect
         if: inputs.action == 'release'
