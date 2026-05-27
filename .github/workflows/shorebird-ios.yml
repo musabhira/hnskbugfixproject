@@ -50,13 +50,16 @@ jobs:
 
           # Import Certificate
           CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
-          echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o $CERTIFICATE_PATH
+          echo "$BUILD_CERTIFICATE_BASE64" | tr -d '\n ' | base64 --decode -o $CERTIFICATE_PATH
           security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
           security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security list-keychains -d user -s $KEYCHAIN_PATH $(security list-keychains -d user | xargs)
+          security default-keychain -s $KEYCHAIN_PATH
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
 
           # Import Provisioning Profile
           PP_PATH=$RUNNER_TEMP/build_pp.mobileprovision
-          echo -n "$BUILD_PROVISION_PROFILE_BASE64" | base64 --decode -o $PP_PATH
+          echo "$BUILD_PROVISION_PROFILE_BASE64" | tr -d '\n ' | base64 --decode -o $PP_PATH
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/
 
@@ -64,6 +67,10 @@ jobs:
         env:
           SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
         run: |
+          # Re-unlock keychain and set default for building
+          security unlock-keychain -p "${{ secrets.KEYCHAIN_PASSWORD }}" $RUNNER_TEMP/app-signing.keychain-db
+          security default-keychain -s $RUNNER_TEMP/app-signing.keychain-db
+
           if [ "${{ inputs.action }}" == "release" ]; then
             shorebird release ios --export-options-plist=ios/ExportOptions.plist
           else
