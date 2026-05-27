@@ -2378,16 +2378,16 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
 
   @override
   double get maxExtent =>
-      452.0; // 160 (Stranger Match) + 170 (Status) + 50 (Tabs) + 72 (Search)
+      464.0; // 160 (Stranger Match) + 182 (Status) + 50 (Tabs) + 72 (Search)
 
   @override
-  double get minExtent => 282.0;
+  double get minExtent => 294.0;
 
   @override
   Widget build(
       BuildContext context, double shrinkOffset, bool overlapsContent) {
     const double strangerMatchHeight = 160.0;
-    const double statusSectionHeight = 170.0;
+    const double statusSectionHeight = 182.0;
 
     final double progress =
         (shrinkOffset / strangerMatchHeight).clamp(0.0, 1.0);
