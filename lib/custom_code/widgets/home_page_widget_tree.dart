@@ -1327,7 +1327,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                   }
                 } catch (_) {
                   if (mounted) {
-                    setState(() => _currentIndex = 3);
+                    _showElearningComingSoonDialog(context);
                   }
                 }
               },

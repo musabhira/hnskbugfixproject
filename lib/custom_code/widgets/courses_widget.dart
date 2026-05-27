@@ -89,14 +89,9 @@ class _CoursesWidgetState extends State<CoursesWidget> {
         }
       }
     } catch (e) {
-      // Fallback to direct navigation if config check fails
+      // Fallback to coming soon if config check fails
       if (context.mounted) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => CourseDetailPage(courseData: course),
-          ),
-        );
+        _showComingSoonDialog(context);
       }
     }
   }
