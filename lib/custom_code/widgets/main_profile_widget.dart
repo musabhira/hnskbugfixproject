@@ -236,23 +236,15 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   }
 
   Future<void> _fetchFullLists() async {
-    // Fetch remaining gallery and services
+    // Fetch remaining gallery
     try {
-      final results = await Future.wait([
-        _supabase
-            .from('gallery')
-            .select()
-            .eq('user_id', userId)
-            .order('created_at', ascending: false),
-        _supabase
-            .from('services')
-            .select()
-            .eq('user_id', userId)
-            .order('created_at', ascending: false),
-      ]);
+      final allGallery = await _supabase
+          .from('gallery')
+          .select()
+          .eq('user_id', userId)
+          .order('created_at', ascending: false);
 
       if (mounted) {
-        final allGallery = results[0] as List;
         final Map<String, Map<String, dynamic>> uniqueGallery = {};
         Set<String> categorySet = {'All'};
         for (var item in allGallery) {
@@ -278,11 +270,32 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
           if (_selectedCategory == 'All') {
             _filteredGalleryItems = _galleryItems;
           }
-          _serviceItems = List<Map<String, dynamic>>.from(results[1]);
         });
       }
     } catch (e) {
-      debugPrint('Error fetching full lists: $e');
+      debugPrint('Error fetching gallery list: $e');
+    }
+
+    // Fetch remaining services
+    try {
+      final servicesRes = await _supabase
+          .from('services')
+          .select()
+          .eq('user_id', userId)
+          .order('created_at', ascending: false);
+
+      if (mounted) {
+        setState(() {
+          _serviceItems = List<Map<String, dynamic>>.from(servicesRes);
+        });
+      }
+    } catch (e) {
+      debugPrint('Error fetching services list: $e');
+      if (mounted) {
+        setState(() {
+          _serviceItems = [];
+        });
+      }
     }
   }
 
