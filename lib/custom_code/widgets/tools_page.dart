@@ -912,7 +912,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
             }),
       },
       {
-        'title': 'Challenges',
+        'title': 'Habit Tracker',
         'icon': Icons.emoji_events_outlined,
         'color': Colors.orangeAccent,
         'onTap': () => setState(() {

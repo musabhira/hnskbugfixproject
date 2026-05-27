@@ -1312,10 +1312,151 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
             _buildNavItem(
               icon: FluentIcons.education,
               isSelected: _currentIndex == 3,
-              onTap: () => setState(() => _currentIndex = 3),
+              onTap: () async {
+                try {
+                  final configRes = await supabase.from('app_tool_configs').select('*').eq('tool_name', 'elearning_unlocked').maybeSingle();
+                  final isUnlocked = configRes?['android_active'] == true;
+                  if (isUnlocked) {
+                    if (mounted) {
+                      setState(() => _currentIndex = 3);
+                    }
+                  } else {
+                    if (mounted) {
+                      _showElearningComingSoonDialog(context);
+                    }
+                  }
+                } catch (_) {
+                  if (mounted) {
+                    setState(() => _currentIndex = 3);
+                  }
+                }
+              },
             ),
             _buildProfileNavItem(),
           ],
+        ),
+      ),
+    );
+  }
+
+  void _showElearningComingSoonDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => material.Dialog(
+        backgroundColor: material.Colors.transparent,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(28),
+          child: BackdropFilter(
+            filter: ui.ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+            child: Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: material.Colors.black.withOpacity(0.75),
+                borderRadius: BorderRadius.circular(28),
+                border: Border.all(color: material.Colors.amber.withOpacity(0.25), width: 1.5),
+                boxShadow: [
+                  BoxShadow(
+                    color: material.Colors.black.withOpacity(0.6),
+                    blurRadius: 40,
+                    offset: const Offset(0, 20),
+                  ),
+                  BoxShadow(
+                    color: material.Colors.amber.withOpacity(0.08),
+                    blurRadius: 45,
+                    spreadRadius: -5,
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          material.Colors.amber.shade400.withOpacity(0.15),
+                          material.Colors.orange.shade400.withOpacity(0.05),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: material.Colors.amber.withOpacity(0.3), width: 1.5),
+                    ),
+                    child: const Icon(
+                      Icons.school_rounded,
+                      color: material.Colors.amber,
+                      size: 44,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    'Coming Soon!',
+                    style: GoogleFonts.outfit(
+                      fontSize: 26,
+                      fontWeight: FontWeight.w900,
+                      color: material.Colors.white,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Handskill E-Learning Academy will be fully unlocked in the 2nd or 3rd build. Stay tuned for expert masterclasses, video tutorials, and interactive learning modules!',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      color: material.Colors.white.withOpacity(0.8),
+                      height: 1.6,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Container(
+                    width: double.infinity,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          material.Colors.amber.shade600,
+                          material.Colors.orange.shade600,
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(18),
+                      boxShadow: [
+                        BoxShadow(
+                          color: material.Colors.amber.shade600.withOpacity(0.3),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: material.ElevatedButton(
+                      style: material.ElevatedButton.styleFrom(
+                        backgroundColor: material.Colors.transparent,
+                        foregroundColor: material.Colors.black,
+                        shadowColor: material.Colors.transparent,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                        elevation: 0,
+                      ),
+                      onPressed: () => Navigator.pop(context),
+                      child: Text(
+                        'Got It',
+                        style: GoogleFonts.outfit(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );
