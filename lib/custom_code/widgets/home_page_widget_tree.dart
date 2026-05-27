@@ -1385,7 +1385,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                       border: Border.all(color: material.Colors.amber.withOpacity(0.3), width: 1.5),
                     ),
                     child: const Icon(
-                      Icons.school_rounded,
+                      material.Icons.school_rounded,
                       color: material.Colors.amber,
                       size: 44,
                     ),
