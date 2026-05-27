@@ -137,7 +137,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
       if (profileResponse != null && mounted) {
         safeSetState(() {
           _nameController.text = profileResponse['name'] ?? '';
-          _imageUrl = profileResponse['profile_image_url'] ?? '';
+          _imageUrl = (profileResponse['profile_image_url']?.toString().isEmpty ?? true) ? null : profileResponse['profile_image_url'];
           _shopNameController.text = profileResponse['shop_name'] ?? '';
           _phoneNumberController.text = profileResponse['phone_no'] ?? '';
           _bioController.text = profileResponse['bio'] ?? '';
@@ -155,7 +155,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
           _selectedColor2 = _convertStringToColor(_colorCode2!);
           _selectedColor3 = _convertStringToColor(_colorCode3!);
 
-          _imageUrlBanner = profileResponse['banner_image_url'] ?? '';
+          _imageUrlBanner = (profileResponse['banner_image_url']?.toString().isEmpty ?? true) ? null : profileResponse['banner_image_url'];
           _dayController.text = profileResponse['day']?.toString() ?? '';
           _monthController.text = profileResponse['month']?.toString() ?? '';
           _yearController.text = profileResponse['year']?.toString() ?? '';
@@ -495,81 +495,40 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
       final sanitizedShopName = _sanitizeContent(_shopNameController.text);
       final sanitizedBio = _sanitizeContent(_bioController.text);
 
-      // Update profile data
-      final existingProfile = await _supabase
-          .from('profile')
-          .select()
-          .eq('user_id', _currentUserId!)
-          .maybeSingle();
-
-      if (existingProfile != null) {
-        // Update profile record
-        await _supabase.from('profile').update(
-          {
-            'name': sanitizedName,
-            'profile_image_url': _imageUrl,
-            'shop_name': sanitizedShopName,
-            'slug': _sanitizeSlug(sanitizedShopName),
-            'phone_no': _phoneNumberController.text,
-            'bio': sanitizedBio,
-            'country': selectedCountry,
-            'state': selectedState,
-            'city': selectedCity,
-            'bg_color_code': _colorCode,
-            'bg_text_color': _colorCode1,
-            'button_color_code': _colorCode2,
-            'button_text_color': _colorCode3,
-            'banner_image_url': _imageUrlBanner,
-            'day': _dayController.text.isEmpty
-                ? null
-                : int.tryParse(_dayController.text),
-            'month': _monthController.text.isEmpty
-                ? null
-                : int.tryParse(_monthController.text),
-            'year': _yearController.text.isEmpty
-                ? null
-                : int.tryParse(_yearController.text),
-            'insta_id': instaIdController.text,
-            'insta_link': instaLinkController.text,
-            'web_template_id': _selectedTemplateId,
-            'updated_at': DateTime.now().toIso8601String(),
-          },
-        ).eq('user_id', _currentUserId!);
-      } else {
-        await _supabase.from('profile').insert(
-          {
-            'id': _currentUserId,
-            'user_id': _currentUserId,
-            'name': sanitizedName,
-            'profile_image_url': _imageUrl,
-            'shop_name': sanitizedShopName,
-            'slug': _sanitizeSlug(sanitizedShopName),
-            'phone_no': _phoneNumberController.text,
-            'bio': sanitizedBio,
-            'country': selectedCountry,
-            'state': selectedState,
-            'city': selectedCity,
-            'bg_color_code': _colorCode,
-            'bg_text_color': _colorCode1,
-            'button_color_code': _colorCode2,
-            'button_text_color': _colorCode3,
-            'banner_image_url': _imageUrlBanner,
-            'day': _dayController.text.isEmpty
-                ? null
-                : int.tryParse(_dayController.text),
-            'month': _monthController.text.isEmpty
-                ? null
-                : int.tryParse(_monthController.text),
-            'year': _yearController.text.isEmpty
-                ? null
-                : int.tryParse(_yearController.text),
-            'insta_id': instaIdController.text,
-            'insta_link': instaLinkController.text,
-            'web_template_id': _selectedTemplateId,
-            'updated_at': DateTime.now().toIso8601String(),
-          },
-        );
-      }
+      // Update/Insert profile data via atomic upsert
+      await _supabase.from('profile').upsert(
+        {
+          'id': _currentUserId,
+          'user_id': _currentUserId,
+          'name': sanitizedName,
+          'profile_image_url': _imageUrl,
+          'shop_name': sanitizedShopName,
+          'slug': _sanitizeSlug(sanitizedShopName),
+          'phone_no': _phoneNumberController.text,
+          'bio': sanitizedBio,
+          'country': selectedCountry,
+          'state': selectedState,
+          'city': selectedCity,
+          'bg_color_code': _colorCode,
+          'bg_text_color': _colorCode1,
+          'button_color_code': _colorCode2,
+          'button_text_color': _colorCode3,
+          'banner_image_url': _imageUrlBanner,
+          'day': _dayController.text.isEmpty
+              ? null
+              : int.tryParse(_dayController.text),
+          'month': _monthController.text.isEmpty
+              ? null
+              : int.tryParse(_monthController.text),
+          'year': _yearController.text.isEmpty
+              ? null
+              : int.tryParse(_yearController.text),
+          'insta_id': instaIdController.text,
+          'insta_link': instaLinkController.text,
+          'web_template_id': _selectedTemplateId,
+          'updated_at': DateTime.now().toIso8601String(),
+        },
+      );
 
       try {
         final prefs = await SharedPreferences.getInstance();
@@ -848,9 +807,9 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
         instaLinkController.clear();
 
         safeSetState(() {
-          _imageUrl = '';
+          _imageUrl = null;
           _selectedImageBytes = null;
-          _imageUrlBanner = '';
+          _imageUrlBanner = null;
           _selectedImageBytesBanner = null;
           _colorCode = '#000000';
           _colorCode1 = '#FFFFFF';
@@ -1266,7 +1225,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                                               child: GestureDetector(
                                                 onTap: _isLoading ? null : () {
                                                   safeSetState(() {
-                                                    _imageUrl = '';
+                                                    _imageUrl = null;
                                                     _selectedImageBytes = null;
                                                   });
                                                 },
@@ -1305,7 +1264,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                               GestureDetector(
                                 onTap: _isLoading ? null : () {
                                   safeSetState(() {
-                                    _imageUrlBanner = '';
+                                    _imageUrlBanner = null;
                                     _selectedImageBytesBanner = null;
                                   });
                                 },
