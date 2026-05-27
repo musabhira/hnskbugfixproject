@@ -279,7 +279,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     // Fetch remaining services
     try {
       final servicesRes = await _supabase
-          .from('services')
+          .from('service')
           .select()
           .eq('user_id', userId)
           .order('created_at', ascending: false);
@@ -433,6 +433,55 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         _isFollowing = !_isFollowing;
         _followersCount += _isFollowing ? 1 : -1;
       });
+    }
+  }
+
+  Future<void> _deleteService(String itemId) async {
+    final confirm = await material.showDialog<bool>(
+      context: context,
+      builder: (context) => ContentDialog(
+        title: const Text('Delete Service?'),
+        content: const Text('Are you sure you want to delete this service? This action cannot be undone.'),
+        actions: [
+          Button(
+            child: const Text('Cancel'),
+            onPressed: () => Navigator.pop(context, false),
+          ),
+          FilledButton(
+            style: ButtonStyle(
+              backgroundColor: WidgetStateProperty.all(material.Colors.red),
+            ),
+            child: const Text('Delete', style: TextStyle(color: material.Colors.white, fontWeight: FontWeight.bold)),
+            onPressed: () => Navigator.pop(context, true),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    try {
+      await _supabase.from('service').delete().match({'id': itemId});
+      if (mounted) {
+        material.ScaffoldMessenger.of(context).showSnackBar(
+          material.SnackBar(
+            content: const Text('Service deleted successfully!'),
+            backgroundColor: FlutterFlowTheme.of(context).success,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+        _fetchFullLists(); // Reload services tab list
+      }
+    } catch (e) {
+      if (mounted) {
+        material.ScaffoldMessenger.of(context).showSnackBar(
+          material.SnackBar(
+            content: Text('Error deleting service: $e'),
+            backgroundColor: FlutterFlowTheme.of(context).error,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
     }
   }
 
@@ -651,6 +700,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       btnColor: btnColor,
                       btnTextColor: btnTextColor,
                       userId: userId,
+                      onDelete: isMe ? _deleteService : null,
                     ),
                     _ThreadsTab(
                       items: _threadItems,
@@ -1366,6 +1416,7 @@ class _ServicesTab extends StatelessWidget {
   final Color btnColor;
   final Color btnTextColor;
   final String userId;
+  final Function(String itemId)? onDelete;
 
   const _ServicesTab({
     required this.items,
@@ -1373,6 +1424,7 @@ class _ServicesTab extends StatelessWidget {
     required this.btnColor,
     required this.btnTextColor,
     required this.userId,
+    this.onDelete,
   });
 
   @override
@@ -1396,6 +1448,7 @@ class _ServicesTab extends StatelessWidget {
       itemCount: items.length,
       itemBuilder: (ctx, idx) {
         final service = items[idx];
+        final id = service['id']?.toString() ?? '';
         final title =
             service['service_title'] ?? service['service_name'] ?? 'Service';
         final price = service['service_price'] ?? service['price'];
@@ -1439,13 +1492,27 @@ class _ServicesTab extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          title,
-                          style: GoogleFonts.outfit(
-                            color: textColor,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                          ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                title,
+                                style: GoogleFonts.outfit(
+                                  color: textColor,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18,
+                                ),
+                              ),
+                            ),
+                            if (onDelete != null && id.isNotEmpty)
+                              material.IconButton(
+                                icon: const Icon(material.Icons.delete_outline, color: material.Colors.red, size: 20),
+                                onPressed: () => onDelete!(id),
+                                padding: material.EdgeInsets.zero,
+                                constraints: const material.BoxConstraints(),
+                              ),
+                          ],
                         ),
                         if (desc != null && desc.toString().isNotEmpty)
                           Padding(

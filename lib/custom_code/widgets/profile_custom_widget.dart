@@ -373,15 +373,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
       }
     }
 
-    // Check for images
-    if (isValid && (_imageUrl == null && _selectedImageBytes == null)) {
-      isValid = false;
-      errorMessage = 'Please select a profile image';
-    } else if (isValid &&
-        (_imageUrlBanner == null && _selectedImageBytesBanner == null)) {
-      isValid = false;
-      errorMessage = 'Please select a banner image';
-    }
+
 
     // Check for location
     if (isValid && (selectedCountry == null || selectedCountry!.isEmpty)) {

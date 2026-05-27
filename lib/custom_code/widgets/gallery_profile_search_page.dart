@@ -1481,6 +1481,74 @@ class BuildDetailContentState extends State<BuildDetailContent> {
               commandBar: CommandBar(
                 mainAxisAlignment: MainAxisAlignment.end,
                 primaryItems: [
+                  if (_supabase.auth.currentUser?.id == widget.userid)
+                    CommandBarButton(
+                      icon: Icon(FluentIcons.delete, color: Colors.red),
+                      label: Text('Delete Showcase', style: TextStyle(color: Colors.red)),
+                      onPressed: () async {
+                        final confirm = await showDialog<bool>(
+                          context: context,
+                          builder: (context) => ContentDialog(
+                            title: const Text('Delete Showcase?'),
+                            content: const Text('Are you sure you want to delete this showcase post? This action cannot be undone.'),
+                            actions: [
+                              Button(
+                                child: const Text('Cancel'),
+                                onPressed: () => Navigator.pop(context, false),
+                              ),
+                              FilledButton(
+                                style: ButtonStyle(
+                                  backgroundColor: WidgetStateProperty.all(Colors.red),
+                                ),
+                                child: const Text('Delete', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                                onPressed: () => Navigator.pop(context, true),
+                              ),
+                            ],
+                          ),
+                        );
+
+                        if (confirm != true) return;
+
+                        try {
+                          final String itemId = widget.item['id']?.toString() ?? widget.item['gallery_id']?.toString() ?? '';
+                          final String? imageUrl = widget.item['gallery_image_url'] ?? widget.item['image_url'];
+
+                          if (imageUrl != null && imageUrl.isNotEmpty) {
+                            final storagePathMatch = RegExp(r'gallery_photos/(.+)').firstMatch(imageUrl);
+                            if (storagePathMatch != null) {
+                              final storagePath = storagePathMatch.group(1);
+                              if (storagePath != null) {
+                                await _supabase.storage.from('gallery_photos').remove([storagePath]);
+                              }
+                            }
+                          }
+                          await _supabase.from('gallery').delete().match({'id': itemId});
+
+                          if (mounted) {
+                            displayInfoBar(
+                              context,
+                              builder: (context, close) => const InfoBar(
+                                title: Text('Success'),
+                                content: Text('Showcase deleted successfully!'),
+                                severity: InfoBarSeverity.success,
+                              ),
+                            );
+                            Navigator.pop(context); // Close detail dialog/screen
+                          }
+                        } catch (e) {
+                          if (mounted) {
+                            displayInfoBar(
+                              context,
+                              builder: (context, close) => InfoBar(
+                                title: const Text('Error'),
+                                content: Text('Error deleting showcase: $e'),
+                                severity: InfoBarSeverity.error,
+                              ),
+                            );
+                          }
+                        }
+                      },
+                    ),
                   CommandBarButton(
                     icon: Icon(FluentIcons.warning, color: widget.bgtextcolor),
                     label: const Text('Report'),

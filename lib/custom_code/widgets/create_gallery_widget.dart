@@ -12,6 +12,13 @@ import 'package:image_picker/image_picker.dart';
 import 'package:image/image.dart' as img;
 import 'dart:io' as io;
 
+class _CompressParams {
+  final Uint8List imageBytes;
+  final int quality;
+
+  _CompressParams(this.imageBytes, this.quality);
+}
+
 class CreateGalleryWidget extends StatefulWidget {
   final double width;
   final double height;
@@ -57,15 +64,13 @@ class _CreateGalleryWidgetState extends State<CreateGalleryWidget> {
     }
   }
 
-  Future<Uint8List> _compressImage(Uint8List imageBytes) async {
+  static Uint8List _compressImageStatic(_CompressParams params) {
     try {
-      // Decode the image
-      img.Image? originalImage = img.decodeImage(imageBytes);
+      img.Image? originalImage = img.decodeImage(params.imageBytes);
       if (originalImage == null) {
-        throw Exception('Unable to decode image');
+        return params.imageBytes;
       }
 
-      // Calculate new dimensions while maintaining aspect ratio
       int maxWidth = 1200;
       int maxHeight = 1200;
 
@@ -84,7 +89,6 @@ class _CreateGalleryWidgetState extends State<CreateGalleryWidget> {
         }
       }
 
-      // Resize image if needed
       img.Image resizedImage;
       if (newWidth != originalImage.width ||
           newHeight != originalImage.height) {
@@ -92,24 +96,29 @@ class _CreateGalleryWidgetState extends State<CreateGalleryWidget> {
           originalImage,
           width: newWidth,
           height: newHeight,
-          interpolation: img.Interpolation.linear, // Good quality interpolation
+          interpolation: img.Interpolation.linear,
         );
       } else {
         resizedImage = originalImage;
       }
 
-      // Encode with high quality JPEG (85-90 maintains good clarity)
       List<int> compressedBytes = img.encodeJpg(
         resizedImage,
-        quality: 85, // Adjust between 80-95 for quality vs size balance
+        quality: params.quality,
       );
 
       return Uint8List.fromList(compressedBytes);
     } catch (e) {
       debugPrint('Error compressing image: $e');
-      // Return original bytes if compression fails
-      return imageBytes;
+      return params.imageBytes;
     }
+  }
+
+  Future<Uint8List> _compressImage(Uint8List imageBytes) async {
+    return await compute(
+      _compressImageStatic,
+      _CompressParams(imageBytes, 85),
+    );
   }
 
   Future<void> _selectImageBanner() async {

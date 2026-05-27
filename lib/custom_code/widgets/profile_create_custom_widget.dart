@@ -129,8 +129,8 @@ class _ProfileCreateCustomWidgetState extends State<ProfileCreateCustomWidget> {
         safeSetState(() {
           _nameController.text = profileResponse['name'] ?? '';
           _shopNameController.text = profileResponse['shop_name'] ?? '';
-          _imageUrlBanner = profileResponse['banner_image_url'] ?? '';
-          _imageUrl = profileResponse['profile_image_url'] ?? '';
+          _imageUrlBanner = (profileResponse['banner_image_url']?.toString().isEmpty ?? true) ? null : profileResponse['banner_image_url'];
+          _imageUrl = (profileResponse['profile_image_url']?.toString().isEmpty ?? true) ? null : profileResponse['profile_image_url'];
           _phoneNumberController.text = profileResponse['phone_no'] ?? '';
           _bioController.text = profileResponse['bio'] ?? '';
           selectedCountry = profileResponse['country'] ?? '';
