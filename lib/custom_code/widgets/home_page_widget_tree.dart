@@ -1495,7 +1495,11 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                 );
               },
             ),
-          );
+          ).then((_) {
+            if (mounted) {
+              _loadAllUserData();
+            }
+          });
         }
       },
       onLongPress: () async {

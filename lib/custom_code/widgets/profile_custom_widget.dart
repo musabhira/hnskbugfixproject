@@ -69,8 +69,8 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
   Map<String, dynamic>? hideData;
   bool isLoading = true;
   bool _isCompressingProfile = false;
-  bool _isCompressingBanner = false;
   String? _selectedTemplateId = 'default';
+  String? _loadedProfileId;
 
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _shopNameController = TextEditingController();
@@ -136,6 +136,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
 
       if (profileResponse != null && mounted) {
         safeSetState(() {
+          _loadedProfileId = profileResponse['id']?.toString();
           _nameController.text = profileResponse['name'] ?? '';
           _imageUrl = (profileResponse['profile_image_url']?.toString().isEmpty ?? true) ? null : profileResponse['profile_image_url'];
           _shopNameController.text = profileResponse['shop_name'] ?? '';
@@ -490,7 +491,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
       // Update/Insert profile data via atomic upsert
       await _supabase.from('profile').upsert(
         {
-          'id': _currentUserId,
+          'id': _loadedProfileId ?? _currentUserId,
           'user_id': _currentUserId,
           'name': sanitizedName,
           'profile_image_url': _imageUrl,
@@ -540,14 +541,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
           ),
         );
 
-        try {
-          MyApp.of(context).restartApp();
-        } catch (_) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const HomePageWidget()),
-          );
-        }
+        Navigator.of(context).pop(true);
       }
     } catch (error) {
       if (mounted) {
