@@ -307,6 +307,15 @@ class _ProfileCreateCustomWidgetState extends State<ProfileCreateCustomWidget> {
 
       await SupaFlow.client.from('profile').upsert(profileData);
 
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.remove('profile_cache_${user.id}');
+        await prefs.remove('cached_profile_${user.id}');
+        await prefs.remove('cached_stats_${user.id}');
+      } catch (e) {
+        debugPrint('Error clearing cache: $e');
+      }
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(

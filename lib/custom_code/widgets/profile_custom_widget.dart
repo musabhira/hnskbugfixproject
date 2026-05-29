@@ -525,6 +525,8 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
       try {
         final prefs = await SharedPreferences.getInstance();
         await prefs.remove('profile_cache_$_currentUserId');
+        await prefs.remove('cached_profile_$_currentUserId');
+        await prefs.remove('cached_stats_$_currentUserId');
       } catch (e) {
         debugPrint('Error clearing cache: $e');
       }
@@ -786,6 +788,8 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
         // Clear local storage cache
         final prefs = await SharedPreferences.getInstance();
         await prefs.remove('profile_cache_$_currentUserId');
+        await prefs.remove('cached_profile_$_currentUserId');
+        await prefs.remove('cached_stats_$_currentUserId');
 
         // Clear controllers locally
         _nameController.clear();
