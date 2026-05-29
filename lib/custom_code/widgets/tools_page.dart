@@ -51,6 +51,18 @@ class _TaskManagerScreenState extends State<ToolsPage> {
   final TextEditingController challengeController = TextEditingController();
   final TextEditingController scheduleController = TextEditingController();
   final TextEditingController aiScheduleController = TextEditingController();
+  final TextEditingController challengeDurationController = TextEditingController(text: '21');
+
+  @override
+  void dispose() {
+    taskController.dispose();
+    taskNotesController.dispose();
+    challengeController.dispose();
+    scheduleController.dispose();
+    aiScheduleController.dispose();
+    challengeDurationController.dispose();
+    super.dispose();
+  }
 
   TaskPriority selectedPriority = TaskPriority.medium;
   ChallengeType selectedChallengeType = ChallengeType.days;
@@ -170,18 +182,19 @@ class _TaskManagerScreenState extends State<ToolsPage> {
 
   Future<void> _loadData() async {
     final prefs = await SharedPreferences.getInstance();
+    final userId = SupaFlow.client.auth.currentUser?.id ?? 'guest';
 
-    final tasksJson = prefs.getString('tasks') ?? '[]';
+    final tasksJson = prefs.getString('tasks_$userId') ?? '[]';
     final tasksList = jsonDecode(tasksJson) as List;
     tasks = tasksList.map((task) => Task.fromJson(task)).toList();
 
-    final challengesJson = prefs.getString('challenges') ?? '[]';
+    final challengesJson = prefs.getString('challenges_$userId') ?? '[]';
     final challengesList = jsonDecode(challengesJson) as List;
     challenges = challengesList
         .map((challenge) => Challenge.fromJson(challenge))
         .toList();
 
-    final scheduleJson = prefs.getString('schedule') ?? '[]';
+    final scheduleJson = prefs.getString('schedule_$userId') ?? '[]';
     final scheduleList = jsonDecode(scheduleJson) as List;
     final todaySchedule = scheduleList
         .map((item) => ScheduleItem.fromJson(item))
@@ -200,15 +213,16 @@ class _TaskManagerScreenState extends State<ToolsPage> {
 
   Future<void> _saveData() async {
     final prefs = await SharedPreferences.getInstance();
+    final userId = SupaFlow.client.auth.currentUser?.id ?? 'guest';
     final tasksJson = jsonEncode(tasks.map((task) => task.toJson()).toList());
     final challengesJson =
         jsonEncode(challenges.map((challenge) => challenge.toJson()).toList());
     final scheduleJson =
         jsonEncode(dailySchedule.map((item) => item.toJson()).toList());
 
-    await prefs.setString('tasks', tasksJson);
-    await prefs.setString('challenges', challengesJson);
-    await prefs.setString('schedule', scheduleJson);
+    await prefs.setString('tasks_$userId', tasksJson);
+    await prefs.setString('challenges_$userId', challengesJson);
+    await prefs.setString('schedule_$userId', scheduleJson);
   }
 
   void _updateChallengeStatus() {
@@ -427,6 +441,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
         challengeController.clear();
         _showAddChallenge = false;
         challengeDuration = 21;
+        challengeDurationController.text = '21';
       });
 
       _saveData();
@@ -1947,11 +1962,20 @@ class _TaskManagerScreenState extends State<ToolsPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Text(
+            'Create New Habit / Target',
+            style: GoogleFonts.outfit(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 12),
           TextField(
             controller: challengeController,
             style: const TextStyle(color: Colors.white),
             decoration: InputDecoration(
-              hintText: 'Challenge name',
+              hintText: 'e.g., Chess Match Practice, Gym, Study',
               hintStyle: const TextStyle(color: Color(0xFF757575)),
               filled: true,
               fillColor: const Color(0xFF1E1E1E),
@@ -1962,11 +1986,21 @@ class _TaskManagerScreenState extends State<ToolsPage> {
             ),
           ),
           const SizedBox(height: 16),
+          Text(
+            'Target Duration',
+            style: GoogleFonts.outfit(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: Colors.white70,
+            ),
+          ),
+          const SizedBox(height: 8),
           Row(
             children: [
               Expanded(
                 flex: 2,
                 child: TextField(
+                  controller: challengeDurationController,
                   keyboardType: TextInputType.number,
                   style: const TextStyle(color: Colors.white),
                   onChanged: (value) =>
@@ -1993,17 +2027,17 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       decoration: BoxDecoration(
                         color: selectedChallengeType == type
-                            ? const Color(0xFF4CAF50)
+                            ? const Color(0xFFFFD700)
                             : const Color(0xFF424242),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
                         _getChallengeTypeText(type),
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: selectedChallengeType == type ? Colors.black : Colors.white,
                           fontSize: 12,
-                          fontWeight: FontWeight.w500,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
@@ -2013,23 +2047,86 @@ class _TaskManagerScreenState extends State<ToolsPage> {
             ],
           ),
           const SizedBox(height: 16),
+          Text(
+            'Target Presets',
+            style: GoogleFonts.outfit(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Colors.white54,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              _buildPresetButton(21),
+              const SizedBox(width: 8),
+              _buildPresetButton(75),
+              const SizedBox(width: 8),
+              _buildPresetButton(100),
+            ],
+          ),
+          const SizedBox(height: 20),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
               onPressed: _addChallenge,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF4CAF50),
-                foregroundColor: Colors.white,
+                backgroundColor: const Color(0xFFFFD700),
+                foregroundColor: Colors.black,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
                 elevation: 0,
               ),
-              child: const Text('Create Challenge'),
+              child: Text(
+                'Start Tracker',
+                style: GoogleFonts.outfit(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
+                ),
+              ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildPresetButton(int days) {
+    final isSelected = challengeDuration == days && selectedChallengeType == ChallengeType.days;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          setState(() {
+            challengeDuration = days;
+            selectedChallengeType = ChallengeType.days;
+            challengeDurationController.text = '$days';
+          });
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? const Color(0xFFFFD700)
+                : const Color(0xFF1E1E1E),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: isSelected ? const Color(0xFFFFD700) : const Color(0xFF424242),
+              width: 1,
+            ),
+          ),
+          child: Text(
+            '$days Days',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.outfit(
+              color: isSelected ? Colors.black : Colors.white70,
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -2075,8 +2172,8 @@ class _TaskManagerScreenState extends State<ToolsPage> {
   Widget _buildChallengesList() {
     if (challenges.isEmpty) {
       return _buildEmptyState(
-        'No challenges yet',
-        'Create your first challenge',
+        'No habits tracked yet',
+        'Create your first habit or 100-day target',
         Icons.emoji_events_outlined,
       );
     }
@@ -2370,7 +2467,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
 
     // Calculate grid height dynamically based on row count (7 columns per row)
     final int rowsCount = (challenge.totalDays / 7).ceil();
-    final double gridHeight = (rowsCount * 44.0).clamp(60.0, 220.0);
+    final double gridHeight = (rowsCount * 44.0).clamp(60.0, 320.0);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -3429,7 +3526,8 @@ class _DiagramListScreenState extends State<DiagramListScreen> {
 
   Future<void> _loadDiagrams() async {
     final prefs = await SharedPreferences.getInstance();
-    final data = prefs.getString('flow_diagrams');
+    final userId = SupaFlow.client.auth.currentUser?.id ?? 'guest';
+    final data = prefs.getString('flow_diagrams_$userId');
     if (data != null) {
       final List<dynamic> jsonList = jsonDecode(data);
       setState(() {
@@ -3440,8 +3538,9 @@ class _DiagramListScreenState extends State<DiagramListScreen> {
 
   Future<void> _saveDiagrams() async {
     final prefs = await SharedPreferences.getInstance();
+    final userId = SupaFlow.client.auth.currentUser?.id ?? 'guest';
     await prefs.setString(
-      'flow_diagrams',
+      'flow_diagrams_$userId',
       jsonEncode(diagrams.map((d) => d.toJson()).toList()),
     );
   }

@@ -59,7 +59,7 @@ void main() async {
     debugPrint('Firebase is not supported on this platform ($defaultTargetPlatform). Skipping initialization.');
   }
 
-  runApp(const ProviderScope(child: MyApp()));
+  runApp(const MyApp());
 }
 
 class MyApp extends StatefulWidget {
@@ -159,28 +159,30 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return KeyedSubtree(
       key: _key,
-      child: FluentApp.router(
-        debugShowCheckedModeBanner: false,
-        title: 'Handskill Friends',
-        scrollBehavior: MyAppScrollBehavior(),
-        localizationsDelegates: const [
-          FluentLocalizations.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        supportedLocales: const [Locale('en', '')],
-        theme: FluentThemeData(
-          brightness: Brightness.light,
-          accentColor: Colors.blue,
+      child: ProviderScope(
+        child: FluentApp.router(
+          debugShowCheckedModeBanner: false,
+          title: 'Handskill Friends',
+          scrollBehavior: MyAppScrollBehavior(),
+          localizationsDelegates: const [
+            FluentLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: const [Locale('en', '')],
+          theme: FluentThemeData(
+            brightness: Brightness.light,
+            accentColor: Colors.blue,
+          ),
+          darkTheme: FluentThemeData(
+            brightness: Brightness.dark,
+            accentColor: Colors.blue,
+            scaffoldBackgroundColor: Colors.black,
+          ),
+          themeMode: _themeMode,
+          routerConfig: _router,
         ),
-        darkTheme: FluentThemeData(
-          brightness: Brightness.dark,
-          accentColor: Colors.blue,
-          scaffoldBackgroundColor: Colors.black,
-        ),
-        themeMode: _themeMode,
-        routerConfig: _router,
       ),
     );
   }
