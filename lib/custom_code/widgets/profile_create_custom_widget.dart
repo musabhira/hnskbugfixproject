@@ -10,6 +10,7 @@ import 'package:image/image.dart' as img;
 import 'package:flutter/services.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/pages/home_page/home_page_widget.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // Begin custom action code
 

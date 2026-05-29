@@ -69,6 +69,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
   Map<String, dynamic>? hideData;
   bool isLoading = true;
   bool _isCompressingProfile = false;
+  bool _isCompressingBanner = false;
   String? _selectedTemplateId = 'default';
   String? _loadedProfileId;
 
