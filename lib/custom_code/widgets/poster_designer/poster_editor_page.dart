@@ -1,7 +1,7 @@
 import 'dart:ui' as ui;
 import 'dart:typed_data';
 import 'package:flutter/material.dart' as material;
-import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/rendering.dart';
@@ -67,7 +67,7 @@ class _PosterEditorPageState extends State<PosterEditorPage> {
     final controller = TextEditingController(text: element.text);
     showDialog(
       context: context,
-      builder: (context) => ContentDialog(
+      builder: (context) => AlertDialog(
         title: const Text('Edit Text'),
         content: material.TextField(
           controller: controller,
@@ -80,7 +80,7 @@ class _PosterEditorPageState extends State<PosterEditorPage> {
           ),
         ),
         actions: [
-          Button(
+          TextButton(
             child: const Text('Cancel'),
             onPressed: () => Navigator.pop(context),
           ),
@@ -144,24 +144,22 @@ class _PosterEditorPageState extends State<PosterEditorPage> {
         );
 
         if (mounted) {
-          displayInfoBar(context, builder: (context, close) {
-            return const InfoBar(
-              title: Text('Success'),
-              content: Text('Design saved securely.'),
-              severity: InfoBarSeverity.success,
-            );
-          });
+          ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Success' + ': ' + 'Design saved securely.'),
+            backgroundColor: material.Colors.green,
+          ),
+        );
         }
       }
     } catch (e) {
       if (mounted) {
-        displayInfoBar(context, builder: (context, close) {
-          return InfoBar(
-            title: const Text('Error'),
-            content: Text(e.toString()),
-            severity: InfoBarSeverity.error,
-          );
-        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error'),
+            backgroundColor: material.Colors.red,
+          ),
+        );
       }
     } finally {
       if (mounted) {
@@ -180,12 +178,12 @@ class _PosterEditorPageState extends State<PosterEditorPage> {
         title: Text(_design.title,
             style: GoogleFonts.inter(fontWeight: FontWeight.bold)),
         leading: material.IconButton(
-          icon: const Icon(FluentIcons.back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
           material.IconButton(
-            icon: const Icon(FluentIcons.save),
+            icon: const Icon(Icons.save),
             onPressed: _isSaving ? null : _saveDesign,
           ),
           const SizedBox(width: 8),
@@ -335,7 +333,7 @@ class _PosterEditorPageState extends State<PosterEditorPage> {
           element.imageUrl ?? '',
           fit: material.BoxFit.cover,
           errorBuilder: (context, error, stackTrace) =>
-              const Icon(FluentIcons.photo_error),
+              const Icon(Icons.broken_image),
         );
       case ElementType.shape:
         return Container(
@@ -345,7 +343,7 @@ class _PosterEditorPageState extends State<PosterEditorPage> {
           ),
         );
       case ElementType.sticker:
-        return const Icon(FluentIcons.emoji2);
+        return const Icon(Icons.emoji_emotions);
     }
   }
 
@@ -378,12 +376,12 @@ class _PosterEditorPageState extends State<PosterEditorPage> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        _toolButton(FluentIcons.text_field, 'Text',
+        _toolButton(Icons.text_fields, 'Text',
             () => _addElement(ElementType.text)),
-        _toolButton(FluentIcons.photo2, 'Image', _pickImage),
+        _toolButton(Icons.image, 'Image', _pickImage),
         _toolButton(
-            FluentIcons.shapes, 'Shape', () => _addElement(ElementType.shape)),
-        _toolButton(FluentIcons.color, 'Background', _showBgColorPicker),
+            Icons.category, 'Shape', () => _addElement(ElementType.shape)),
+        _toolButton(Icons.color_lens, 'Background', _showBgColorPicker),
       ],
     );
   }
@@ -394,13 +392,13 @@ class _PosterEditorPageState extends State<PosterEditorPage> {
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         if (element.type == ElementType.text)
-          _toolButton(FluentIcons.edit, 'Edit', () => _showTextEditor(element)),
+          _toolButton(Icons.edit, 'Edit', () => _showTextEditor(element)),
         _toolButton(
-            FluentIcons.color, 'Color', () => _showElementColorPicker(element)),
+            Icons.color_lens, 'Color', () => _showElementColorPicker(element)),
         if (element.type == ElementType.text)
           _toolButton(material.Icons.format_size, 'Size',
               () {}), // Implement slider later
-        _toolButton(FluentIcons.delete, 'Delete', () {
+        _toolButton(Icons.delete, 'Delete', () {
           setState(() {
             _design.elements.remove(element);
             _selectedElement = null;
@@ -435,7 +433,7 @@ class _PosterEditorPageState extends State<PosterEditorPage> {
   void _showBgColorPicker() {
     showDialog(
       context: context,
-      builder: (context) => ContentDialog(
+      builder: (context) => AlertDialog(
         title: const Text('Background Color'),
         content: material.SingleChildScrollView(
           child: cp.ColorPicker(
@@ -461,7 +459,7 @@ class _PosterEditorPageState extends State<PosterEditorPage> {
   void _showElementColorPicker(DesignElement element) {
     showDialog(
       context: context,
-      builder: (context) => ContentDialog(
+      builder: (context) => AlertDialog(
         title: const Text('Pick a Color'),
         content: material.SingleChildScrollView(
           child: cp.ColorPicker(

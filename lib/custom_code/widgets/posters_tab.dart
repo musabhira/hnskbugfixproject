@@ -2,7 +2,7 @@ import 'dart:ui' as ui;
 import 'dart:typed_data';
 import 'package:flutter/material.dart' as material;
 import 'package:flutter/rendering.dart';
-import 'package:fluent_ui/fluent_ui.dart' hide Colors;
+import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:share_plus/share_plus.dart';

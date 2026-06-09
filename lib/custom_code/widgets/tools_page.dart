@@ -1,6 +1,7 @@
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'package:flutter/material.dart';
+import '/flutter_flow/flutter_flow_theme.dart';
 import 'dart:ui';
 import 'package:google_fonts/google_fonts.dart';
 import '/custom_code/widgets/drawing_app_home.dart';
@@ -585,7 +586,8 @@ class _TaskManagerScreenState extends State<ToolsPage> {
       case 6:
         return 'Mini Apps';
       case 7:
-        return 'Courses';
+        // Courses commented out
+        return 'Tools';
       default:
         return 'Tools';
     }
@@ -756,6 +758,8 @@ class _TaskManagerScreenState extends State<ToolsPage> {
   }
 
   void _showComingSoonDialog() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final themeYellow = isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300);
     showDialog(
       context: context,
       builder: (context) => Dialog(
@@ -767,17 +771,17 @@ class _TaskManagerScreenState extends State<ToolsPage> {
             child: Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.75),
+                color: isDark ? Colors.black.withOpacity(0.75) : Colors.white.withOpacity(0.95),
                 borderRadius: BorderRadius.circular(28),
-                border: Border.all(color: Colors.amber.withOpacity(0.25), width: 1.5),
+                border: Border.all(color: themeYellow.withOpacity(0.25), width: 1.5),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.6),
+                    color: isDark ? Colors.black.withOpacity(0.6) : Colors.grey.withOpacity(0.3),
                     blurRadius: 40,
                     offset: const Offset(0, 20),
                   ),
                   BoxShadow(
-                    color: Colors.amber.withOpacity(0.08),
+                    color: themeYellow.withOpacity(0.08),
                     blurRadius: 45,
                     spreadRadius: -5,
                   ),
@@ -791,18 +795,18 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          Colors.amber.shade400.withOpacity(0.15),
-                          Colors.orange.shade400.withOpacity(0.05),
+                          themeYellow.withOpacity(0.15),
+                          themeYellow.withOpacity(0.05),
                         ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                       shape: BoxShape.circle,
-                      border: Border.all(color: Colors.amber.withOpacity(0.3), width: 1.5),
+                      border: Border.all(color: themeYellow.withOpacity(0.3), width: 1.5),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.school_rounded,
-                      color: Colors.amber,
+                      color: themeYellow,
                       size: 44,
                     ),
                   ),
@@ -812,7 +816,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                     style: GoogleFonts.outfit(
                       fontSize: 26,
                       fontWeight: FontWeight.w900,
-                      color: Colors.white,
+                      color: isDark ? Colors.white : Colors.black87,
                       letterSpacing: 0.5,
                     ),
                   ),
@@ -822,7 +826,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                     textAlign: TextAlign.center,
                     style: GoogleFonts.inter(
                       fontSize: 14,
-                      color: Colors.white.withOpacity(0.8),
+                      color: isDark ? Colors.white.withOpacity(0.8) : Colors.black.withOpacity(0.8),
                       height: 1.6,
                     ),
                   ),
@@ -833,8 +837,8 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          Colors.amber.shade600,
-                          Colors.orange.shade600,
+                          themeYellow,
+                          themeYellow.withOpacity(0.8),
                         ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
@@ -842,7 +846,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                       borderRadius: BorderRadius.circular(18),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.amber.shade600.withOpacity(0.3),
+                          color: themeYellow.withOpacity(0.3),
                           blurRadius: 12,
                           offset: const Offset(0, 4),
                         ),
@@ -896,7 +900,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
       {
         'title': 'Drawing Tool',
         'icon': Icons.brush,
-        'color': Colors.purpleAccent,
+        'color': const Color(0xFFFFD700),
         'onTap': () => Navigator.push(context,
             MaterialPageRoute(builder: (context) => const DrawingAppHome())),
       },
@@ -904,14 +908,14 @@ class _TaskManagerScreenState extends State<ToolsPage> {
         'title': 'Dual Recorder',
         'subtitle': 'YouTube & Reels',
         'icon': Icons.duo_rounded,
-        'color': Colors.yellow,
+        'color': const Color(0xFFFFB700),
         'onTap': () => Navigator.push(context,
             MaterialPageRoute(builder: (context) => const DualVideoRecorderWidget())),
       },
       {
         'title': 'Schedule',
         'icon': Icons.calendar_today_rounded,
-        'color': Colors.blueAccent,
+        'color': const Color(0xFFE8D3A7),
         'onTap': () => setState(() {
               _selectedTab = 0;
               _showToolsList = false;
@@ -920,7 +924,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
       {
         'title': 'Tasks',
         'icon': Icons.check_circle_outline_rounded,
-        'color': Colors.greenAccent,
+        'color': const Color(0xFFCD7F32),
         'onTap': () => setState(() {
               _selectedTab = 1;
               _showToolsList = false;
@@ -929,7 +933,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
       {
         'title': 'Habit Tracker',
         'icon': Icons.emoji_events_outlined,
-        'color': Colors.orangeAccent,
+        'color': const Color(0xFFFFD700),
         'onTap': () => setState(() {
               _selectedTab = 2;
               _showToolsList = false;
@@ -938,7 +942,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
       {
         'title': 'Diagrams',
         'icon': Icons.schema_rounded,
-        'color': Colors.tealAccent,
+        'color': const Color(0xFFFFB700),
         'onTap': () => setState(() {
               _selectedTab = 3;
               _showToolsList = false;
@@ -947,7 +951,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
       {
         'title': 'Teams',
         'icon': Icons.groups_rounded,
-        'color': Colors.pinkAccent,
+        'color': const Color(0xFFE8D3A7),
         'onTap': () => setState(() {
               _selectedTab = 4;
               _showToolsList = false;
@@ -957,7 +961,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
       {
         'title': 'Poster Maker',
         'icon': Icons.photo_library_rounded,
-        'color': Colors.orangeAccent,
+        'color': const Color(0xFFCD7F32),
         'onTap': () => Navigator.push(
             context,
             MaterialPageRoute(
@@ -966,7 +970,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
       {
         'title': 'Bulk Sender',
         'icon': Icons.send_rounded,
-        'color': Colors.greenAccent,
+        'color': const Color(0xFFFFD700),
         'onTap': () => Navigator.push(context,
             MaterialPageRoute(builder: (context) => const BulkSenderPage())),
       },
@@ -974,7 +978,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
         'title': 'Poki Games',
         'subtitle': 'poki.com',
         'icon': Icons.videogame_asset_rounded,
-        'color': Colors.redAccent,
+        'color': const Color(0xFFFFB700),
         'onTap': () => Navigator.push(context,
             MaterialPageRoute(builder: (context) => const PokiGamesPage())),
       },
@@ -982,7 +986,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
         'title': 'Crazy Games',
         'subtitle': 'crazygames.com',
         'icon': Icons.sports_esports_rounded,
-        'color': Colors.indigoAccent,
+        'color': const Color(0xFFE8D3A7),
         'onTap': () => Navigator.push(context,
             MaterialPageRoute(builder: (context) => const CrazyGamesPage())),
       },
@@ -990,13 +994,13 @@ class _TaskManagerScreenState extends State<ToolsPage> {
         'title': 'Dynamic Web App',
         'subtitle': 'Any URL',
         'icon': Icons.public_rounded,
-        'color': Colors.lightBlueAccent,
+        'color': const Color(0xFFCD7F32),
         'onTap': () => _showDynamicWebAppDialog(),
       },
       {
         'title': 'Chess Match',
         'icon': Icons.casino_rounded,
-        'color': Colors.amberAccent,
+        'color': const Color(0xFFFFD700),
         'onTap': () => Navigator.push(
             context,
             MaterialPageRoute(
@@ -1005,7 +1009,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
       {
         'title': 'Travel Radar',
         'icon': Icons.radar,
-        'color': Colors.cyanAccent,
+        'color': const Color(0xFFFFB700),
         'onTap': () => Navigator.push(context,
             MaterialPageRoute(builder: (context) => const NearbyUsersPage())),
       },
@@ -1014,7 +1018,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
         'title': 'Password Pro',
         'subtitle': 'Secure Generator',
         'icon': Icons.password_rounded,
-        'color': Colors.greenAccent,
+        'color': const Color(0xFFE8D3A7),
         'onTap': () => Navigator.push(
             context,
             MaterialPageRoute(
@@ -1025,21 +1029,21 @@ class _TaskManagerScreenState extends State<ToolsPage> {
         'title': 'QR & Barcode',
         'subtitle': 'Scan & Generate',
         'icon': Icons.qr_code_scanner_rounded,
-        'color': Colors.orangeAccent,
+        'color': const Color(0xFFCD7F32),
         'onTap': () => _showQRCodeSimulation(),
       },
       {
         'title': 'World Clock',
         'subtitle': 'Global Times',
         'icon': Icons.public_rounded,
-        'color': Colors.lightBlueAccent,
+        'color': const Color(0xFFFFD700),
         'onTap': () => _showWorldClockSimulation(),
       },
       {
         'title': 'WhatsApp Web',
         'subtitle': 'Chat on Desktop',
         'icon': Icons.chat_rounded,
-        'color': Colors.greenAccent,
+        'color': const Color(0xFFFFB700),
         'onTap': () => Navigator.push(
             context,
             MaterialPageRoute(
@@ -1052,31 +1056,31 @@ class _TaskManagerScreenState extends State<ToolsPage> {
         'title': 'Web Search',
         'subtitle': 'Search the Internet',
         'icon': Icons.travel_explore_rounded,
-        'color': Colors.orangeAccent,
+        'color': const Color(0xFFE8D3A7),
         'onTap': () => _showWebSearchDialog(),
       },
-      {
-        'title': 'Courses',
-        'subtitle': 'Learning Academy',
-        'icon': Icons.school_rounded,
-        'color': Colors.blue,
-        'onTap': () {
-          final isUnlocked = _globalToolConfigs['elearning_unlocked']?['android_active'] == true;
-          if (isUnlocked) {
-            setState(() {
-              _selectedTab = 7;
-              _showToolsList = false;
-            });
-          } else {
-            _showComingSoonDialog();
-          }
-        },
-      },
+      // {
+      //   'title': 'Courses',
+      //   'subtitle': 'Learning Academy',
+      //   'icon': Icons.school_rounded,
+      //   'color': const Color(0xFFCD7F32),
+      //   'onTap': () {
+      //     final isUnlocked = _globalToolConfigs['elearning_unlocked']?['android_active'] == true;
+      //     if (isUnlocked) {
+      //       setState(() {
+      //         _selectedTab = 7;
+      //         _showToolsList = false;
+      //       });
+      //     } else {
+      //       _showComingSoonDialog();
+      //     }
+      //   },
+      // },
       {
         'title': 'Test Feature',
         'subtitle': 'System Diagnostic',
         'icon': Icons.bug_report_rounded,
-        'color': Colors.redAccent,
+        'color': const Color(0xFFFFD700),
         'onTap': () => Navigator.push(
             context,
             MaterialPageRoute(
@@ -1111,7 +1115,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
     }).toList();
 
     return Scaffold(
-      backgroundColor: const Color(0xFF161618),
+      backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
       resizeToAvoidBottomInset: false,
       body: SafeArea(
         bottom: false,
@@ -1144,7 +1148,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                                 style: GoogleFonts.outfit(
                                     fontSize: 26,
                                     fontWeight: FontWeight.w400,
-                                    color: Colors.white70,
+                                    color: FlutterFlowTheme.of(context).secondaryText,
                                     letterSpacing: 1.2)),
                             Text('Browser',
                                 style: GoogleFonts.outfit(
@@ -1156,7 +1160,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.05),
+                            color: FlutterFlowTheme.of(context).primaryText.withValues(alpha: 0.05),
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(Icons.dashboard_rounded,
@@ -1167,13 +1171,13 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                     const SizedBox(height: 24),
                     Container(
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.05),
+                        color: FlutterFlowTheme.of(context).secondaryBackground,
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.1)),
+                            color: FlutterFlowTheme.of(context).alternate),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.2),
+                            color: Colors.black.withValues(alpha: 0.15),
                             blurRadius: 10,
                             offset: const Offset(0, 4),
                           ),
@@ -1198,18 +1202,18 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                             );
                           }
                         },
-                        style: GoogleFonts.outfit(color: Colors.white),
+                        style: GoogleFonts.outfit(color: FlutterFlowTheme.of(context).primaryText),
                         decoration: InputDecoration(
                           hintText: _isWebSearchMode ? 'Search Google...' : 'Search tools or features...',
-                          hintStyle: GoogleFonts.outfit(color: _isWebSearchMode ? Colors.yellow.withValues(alpha: 0.5) : Colors.white38),
+                          hintStyle: GoogleFonts.outfit(color: _isWebSearchMode ? Colors.yellow.withValues(alpha: 0.5) : FlutterFlowTheme.of(context).secondaryText),
                           prefixIcon: Icon(
                             _isWebSearchMode ? Icons.travel_explore_rounded : Icons.search, 
-                            color: _isWebSearchMode ? Colors.yellow : Colors.white54,
+                            color: _isWebSearchMode ? Colors.yellow : FlutterFlowTheme.of(context).secondaryText,
                           ),
                           suffixIcon: IconButton(
                             icon: Icon(
                               Icons.public_rounded,
-                              color: _isWebSearchMode ? Colors.yellow : Colors.white38,
+                              color: _isWebSearchMode ? Colors.yellow : FlutterFlowTheme.of(context).secondaryText,
                             ),
                             tooltip: 'Web Mode',
                             onPressed: () {
@@ -1244,12 +1248,12 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                     return Container(
                       margin: const EdgeInsets.only(bottom: 16),
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.03),
+                        color: FlutterFlowTheme.of(context).secondaryBackground,
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
                           color: isFav
                               ? (tool['color'] as Color).withValues(alpha: 0.5)
-                              : Colors.white.withValues(alpha: 0.05),
+                              : FlutterFlowTheme.of(context).alternate,
                           width: 1.5,
                         ),
                       ),
@@ -1285,7 +1289,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                                       Text(
                                         tool['title'] as String,
                                         style: GoogleFonts.outfit(
-                                          color: Colors.white,
+                                          color: FlutterFlowTheme.of(context).primaryText,
                                           fontSize: 18,
                                           fontWeight: FontWeight.w600,
                                         ),
@@ -1297,7 +1301,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                                           child: Text(
                                             tool['subtitle'] as String,
                                             style: GoogleFonts.outfit(
-                                              color: Colors.white54,
+                                              color: FlutterFlowTheme.of(context).secondaryText,
                                               fontSize: 13,
                                             ),
                                           ),
@@ -1379,7 +1383,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
 
   Widget _buildToolDetailView() {
     return Scaffold(
-      backgroundColor: const Color(0xFF121212),
+      backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
       body: SafeArea(
         child: Column(
           children: [
@@ -1390,8 +1394,8 @@ class _TaskManagerScreenState extends State<ToolsPage> {
               child: Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                        color: Colors.white, size: 20),
+                    icon: Icon(Icons.arrow_back_ios_new_rounded,
+                        color: FlutterFlowTheme.of(context).primaryText, size: 20),
                     onPressed: () {
                       if (widget.initialTab != null) {
                         Navigator.pop(context);
@@ -1407,7 +1411,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                       style: GoogleFonts.outfit(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: FlutterFlowTheme.of(context).primaryText,
                       ),
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -2459,6 +2463,8 @@ class _TaskManagerScreenState extends State<ToolsPage> {
   }
 
   Widget _buildChallengeCard(Challenge challenge) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final themeYellow = isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300);
     final completedDays = challenge.dailyTicks.values.where((v) => v == true).length;
     final percentage =
         (completedDays / challenge.totalDays * 100).clamp(0.0, 100.0);
@@ -2504,7 +2510,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                 ),
                 child: Icon(
                   Icons.emoji_events_rounded,
-                  color: isCompleted ? const Color(0xFFFFD700) : Colors.amber,
+                  color: isCompleted ? const Color(0xFFFFD700) : themeYellow,
                   size: 24,
                 ),
               ),
@@ -2752,7 +2758,8 @@ class _TaskManagerScreenState extends State<ToolsPage> {
       case 6:
         return _buildMiniAppsTab();
       case 7:
-        return const DrawingAcademyHomePage();
+        // DrawingAcademyHomePage commented out
+        return Container();
       default:
         return _buildScheduleTab();
     }

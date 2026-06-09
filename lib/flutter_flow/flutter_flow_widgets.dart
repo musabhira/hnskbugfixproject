@@ -1,5 +1,5 @@
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter/material.dart';
 // For kDebugMode if needed? No.
 import 'package:auto_size_text/auto_size_text.dart';
 export 'flutter_flow_icon_button.dart';
@@ -118,8 +118,8 @@ class _FFButtonWidgetState extends State<FFButtonWidget> {
               child: SizedBox(
                 width: 23,
                 height: 23,
-                child: ProgressRing(
-                  activeColor: widget.options.textStyle?.color ?? Colors.white,
+                child: CircularProgressIndicator(
+                  color: widget.options.textStyle?.color ?? Colors.white,
                   strokeWidth: 2.5,
                 ),
               ),

@@ -519,4 +519,13 @@ class TeamsService {
           return await getTeamTasks(teamId);
         });
   }
+
+  Future<void> updateTaskDetails(String taskId, {String? title, String? description, String? priority, DateTime? dueDate}) async {
+    final Map<String, dynamic> updates = {};
+    if (title != null) updates['title'] = title;
+    if (description != null) updates['description'] = description;
+    if (priority != null) updates['priority'] = priority;
+    if (dueDate != null) updates['due_date'] = dueDate.toIso8601String();
+    await _client.from('team_tasks').update(updates).eq('id', taskId);
+  }
 }

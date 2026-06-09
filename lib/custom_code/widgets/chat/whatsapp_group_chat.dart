@@ -66,6 +66,7 @@ class WhatsAppGroupChat extends ConsumerStatefulWidget {
 
 class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     with TickerProviderStateMixin {
+  static const Color accentColor = Color(0xFFFFA000);
   final _supabase = Supabase.instance.client;
   final _teamsService = TeamsService();
   final _messageController = TextEditingController();
@@ -482,7 +483,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   Widget build(BuildContext context) {
     const backgroundColor = Color(0xFF070B0D);
     const appBarColor = Color(0xFF121B22);
-    const accentColor = Colors.yellow;
+    const accentColor = Color(0xFFFFD600);
 
     final chatMessagesAsync = ref.watch(chatMessagesProvider(widget.groupId));
 
@@ -1402,7 +1403,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                     Container(
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        border: Border.all(color: Colors.amber, width: 1),
+                        border: Border.all(color: accentColor, width: 1),
                       ),
                       child: CircleAvatar(
                         radius: 14,
@@ -1477,7 +1478,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                       child: const Center(
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: Colors.amber,
+                          color: accentColor,
                         ),
                       ),
                     ),
@@ -1499,12 +1500,12 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                       decoration: BoxDecoration(
                         color: Colors.black.withValues(alpha: 0.7),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.amber, width: 0.5),
+                        border: Border.all(color: accentColor, width: 0.5),
                       ),
                       child: Text(
                         '\$${galleryData['price']}',
                         style: const TextStyle(
-                          color: Colors.amber,
+                          color: accentColor,
                           fontWeight: FontWeight.bold,
                           fontSize: 12,
                         ),
@@ -1956,9 +1957,9 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
       case 'Poki Games':
         page = const PokiGamesPage();
         break;
-      case 'Drawing Academy':
-        page = const DrawingAcademyHomePage();
-        break;
+      // case 'Drawing Academy':
+      //   page = const DrawingAcademyHomePage();
+      //   break;
       case 'Travel Radar':
         page = const NearbyUsersPage();
         break;
@@ -2710,7 +2711,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
       {'title': 'Poster Designer', 'description': 'Create amazing posters'},
       {'title': 'Bulk Sender', 'description': 'Send messages in bulk'},
       {'title': 'Poki Games', 'description': 'Play games with mates'},
-      {'title': 'Drawing Academy', 'description': 'Learn to draw'},
+      // {'title': 'Drawing Academy', 'description': 'Learn to draw'},
       {'title': 'Travel Radar', 'description': 'Explore nearby places'},
     ];
 

@@ -1,4 +1,4 @@
-import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter/material.dart';
 
 class FlutterFlowIconButton extends StatefulWidget {
   const FlutterFlowIconButton({
@@ -43,8 +43,8 @@ class _FlutterFlowIconButtonState extends State<FlutterFlowIconButton> {
           child: SizedBox(
             width: (widget.buttonSize ?? 40) * 0.5,
             height: (widget.buttonSize ?? 40) * 0.5,
-            child: ProgressRing(
-              activeColor: widget.borderColor ?? Colors.blue,
+            child: CircularProgressIndicator(
+              color: widget.borderColor ?? Colors.blue,
               strokeWidth: 2,
             ),
           ),

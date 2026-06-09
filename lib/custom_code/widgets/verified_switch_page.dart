@@ -3,10 +3,7 @@ import 'package:pocket_mates_app/custom_code/widgets/search_profile_detail_page.
 import 'package:pocket_mates_app/custom_code/widgets/verfied_search_profile_detail_page.dart';
 
 import '/backend/supabase/supabase.dart';
-// Imports other custom widgets
-// Imports custom actions
-import 'package:fluent_ui/fluent_ui.dart' hide Colors;
-import 'package:flutter/material.dart' as material show Colors;
+import 'package:flutter/material.dart';
 
 class VerfiedSwitchPage extends StatefulWidget {
   const VerfiedSwitchPage({
@@ -121,11 +118,11 @@ class _VerfiedSwitchPageState extends State<VerfiedSwitchPage> {
       if (mounted) {
         showDialog(
           context: context,
-          builder: (context) => ContentDialog(
+          builder: (context) => AlertDialog(
             title: const Text('Error'),
             content: Text('Error loading profile: $error'),
             actions: [
-              Button(
+              TextButton(
                 child: const Text('OK'),
                 onPressed: () => Navigator.pop(context),
               ),
@@ -144,7 +141,7 @@ class _VerfiedSwitchPageState extends State<VerfiedSwitchPage> {
   Widget _getSelectedDesignWidget() {
     if (_isLoading) {
       return const Center(
-        child: ProgressRing(),
+        child: CircularProgressIndicator(),
       );
     }
 
@@ -189,7 +186,7 @@ class _VerfiedSwitchPageState extends State<VerfiedSwitchPage> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: material.Colors.black,
+      color: Colors.black,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

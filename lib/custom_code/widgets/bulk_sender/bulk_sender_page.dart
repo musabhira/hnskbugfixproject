@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart' as material;
-import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
@@ -96,13 +96,10 @@ class _BulkSenderPageState extends State<BulkSenderPage>
   }
 
   void _showError(String msg) {
-    displayInfoBar(
-      context,
-      builder: (context, close) => InfoBar(
-        title: const Text('Error'),
+    material.ScaffoldMessenger.of(context).showSnackBar(
+      material.SnackBar(
         content: Text(msg),
-        severity: InfoBarSeverity.error,
-        onClose: close,
+        backgroundColor: material.Colors.red,
       ),
     );
   }
@@ -235,7 +232,7 @@ class _BulkSenderPageState extends State<BulkSenderPage>
             style: GoogleFonts.outfit(
                 fontWeight: FontWeight.bold, color: material.Colors.white)),
         leading: material.IconButton(
-          icon: const Icon(FluentIcons.back, size: 16),
+          icon: const Icon(material.Icons.arrow_back, size: 16),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -257,7 +254,7 @@ class _BulkSenderPageState extends State<BulkSenderPage>
                         fontWeight: FontWeight.w600,
                         color: material.Colors.grey[400])),
                 material.IconButton(
-                  icon: const Icon(FluentIcons.contact_list,
+                  icon: const Icon(material.Icons.contact_page,
                       color: material.Colors.yellow, size: 20),
                   onPressed: _pickContacts,
                 ),
@@ -332,7 +329,7 @@ class _BulkSenderPageState extends State<BulkSenderPage>
       ),
       child: Row(
         children: [
-          const Icon(FluentIcons.info, color: material.Colors.blue),
+          const Icon(material.Icons.info_outline, color: material.Colors.blue),
           const SizedBox(width: 16),
           Expanded(
             child: Text(
@@ -353,16 +350,22 @@ class _BulkSenderPageState extends State<BulkSenderPage>
         color: material.Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
       ),
-      child: ToggleSwitch(
-        checked: _useApiMode,
-        onChanged: (v) => setState(() => _useApiMode = v),
-        content: Text(
-          _useApiMode
-              ? 'API Mode (Automated Background)'
-              : 'Manual Mode (via WhatsApp App)',
-          style: GoogleFonts.inter(
-              fontWeight: FontWeight.w600, color: material.Colors.white),
-        ),
+      child: Row(
+        children: [
+          Switch(
+            value: _useApiMode,
+            onChanged: (v) => setState(() => _useApiMode = v),
+            activeColor: material.Colors.yellow,
+          ),
+          const SizedBox(width: 12),
+          Text(
+            _useApiMode
+                ? 'API Mode (Automated Background)'
+                : 'Manual Mode (via WhatsApp App)',
+            style: GoogleFonts.inter(
+                fontWeight: FontWeight.w600, color: material.Colors.white),
+          ),
+        ],
       ),
     );
   }
@@ -435,15 +438,19 @@ class _BulkSenderPageState extends State<BulkSenderPage>
                 ],
               ),
               const SizedBox(height: 16),
-              ProgressBar(value: progress * 100),
+              LinearProgressIndicator(value: progress, color: material.Colors.yellow, backgroundColor: material.Colors.grey[800]),
               const SizedBox(height: 24),
               if (!_isAutoSending)
                 Row(
                   children: [
                     Expanded(
-                      child: Button(
-                        child: const Text('Reset'),
+                      child: OutlinedButton(
                         onPressed: () => setState(() => _showProgress = false),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: material.Colors.white,
+                          side: const BorderSide(color: material.Colors.white38),
+                        ),
+                        child: const Text('Reset'),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -544,7 +551,7 @@ class _MultiContactPickerDialogState extends State<MultiContactPickerDialog> {
                         fontWeight: FontWeight.bold,
                         color: material.Colors.white)),
                 material.IconButton(
-                  icon: const Icon(FluentIcons.chrome_close, size: 12),
+                  icon: const Icon(material.Icons.close, size: 12),
                   onPressed: () => Navigator.pop(context),
                 ),
               ],
@@ -556,7 +563,7 @@ class _MultiContactPickerDialogState extends State<MultiContactPickerDialog> {
               decoration: material.InputDecoration(
                 hintText: 'Search contacts...',
                 hintStyle: material.TextStyle(color: material.Colors.grey[600]),
-                prefixIcon: const Icon(FluentIcons.search,
+                prefixIcon: const Icon(material.Icons.search,
                     color: material.Colors.grey, size: 16),
                 filled: true,
                 fillColor: material.Colors.white.withValues(alpha: 0.05),
@@ -644,7 +651,9 @@ class _MultiContactPickerDialogState extends State<MultiContactPickerDialog> {
                         style: GoogleFonts.inter(
                             color: material.Colors.grey[500], fontSize: 12)),
                     trailing: Checkbox(
-                      checked: isSelected,
+                      value: isSelected,
+                      activeColor: material.Colors.yellow,
+                      checkColor: material.Colors.black,
                       onChanged: (val) {
                         setState(() {
                           if (isSelected) {

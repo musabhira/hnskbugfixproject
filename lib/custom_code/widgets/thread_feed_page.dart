@@ -4,6 +4,7 @@ import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
 
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_util.dart';
+import '/flutter_flow/flutter_flow_theme.dart';
 import 'package:pocket_mates_app/custom_code/widgets/share_content_screen.dart';
 import 'package:flutter/material.dart';
 // Begin custom widget code
@@ -34,11 +35,11 @@ class _ThreadFeedPageState extends State<ThreadFeedPage> {
   final ScrollController _scrollController = ScrollController();
 
   // Define our color scheme
-  final Color primaryYellow = const Color(0xFFFFD700);
-  final Color darkBlack = const Color(0xFFFFFFFF);
-  final Color pureWhite = const Color(0xFF121212);
-  final Color lightYellow = const Color(0xFF121212);
-  final Color mediumYellow = const Color(0xFFFFE666);
+  Color get primaryYellow => const Color(0xFFFFD700);
+  Color get darkBlack => FlutterFlowTheme.of(context).primaryText;
+  Color get pureWhite => FlutterFlowTheme.of(context).secondaryBackground;
+  Color get lightYellow => FlutterFlowTheme.of(context).primaryBackground;
+  Color get mediumYellow => const Color(0xFFFFE666);
 
   @override
   void initState() {
@@ -714,8 +715,8 @@ class ModernCard extends StatelessWidget {
     // Define colors
     const Color primaryColor = Color(0xFFFFD700); // Bright Yellow (Gold tone)
     const Color accentColor = Color(0xFFFFA000); // Deep Yellow/Amber
-    const Color backgroundColor = Color(0xFF000000); // True Black
-    const Color textColor = Colors.white; // White text for good contrast
+    final Color backgroundColor = FlutterFlowTheme.of(context).secondaryBackground;
+    final Color textColor = FlutterFlowTheme.of(context).primaryText;
     // const Color lightGrey =
     //     Color(0xFF1A1A1A); // Dark Grey for subtle backgrounds
 
@@ -800,7 +801,7 @@ class ModernCard extends StatelessWidget {
                           ),
                           child: Text(
                             '"${cardData['content'] ?? 'No content available'}"',
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: textColor,
                               fontSize: 16,
                               height: 1.5,
@@ -1032,7 +1033,7 @@ class ModernCard extends StatelessWidget {
                         Text(
                           formattedDate,
                           style: const TextStyle(
-                            color: Colors.black,
+                            color: Colors.black54,
                             fontSize: 10,
                           ),
                         ),
@@ -1942,21 +1943,21 @@ class _ThreadCommentsPageState extends State<ThreadCommentsPage>
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: Colors.grey[900],
-          title: const Text(
+          backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+          title: Text(
             'Delete Comment',
-            style: TextStyle(color: Colors.white),
+            style: TextStyle(color: FlutterFlowTheme.of(context).primaryText),
           ),
-          content: const Text(
+          content: Text(
             'Are you sure you want to delete this comment?',
-            style: TextStyle(color: Colors.white70),
+            style: TextStyle(color: FlutterFlowTheme.of(context).secondaryText),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text(
+              child: Text(
                 'Cancel',
-                style: TextStyle(color: Colors.white70),
+                style: TextStyle(color: FlutterFlowTheme.of(context).secondaryText),
               ),
             ),
             TextButton(
@@ -2017,9 +2018,9 @@ class _ThreadCommentsPageState extends State<ThreadCommentsPage>
       duration: const Duration(milliseconds: 300),
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.grey[900]?.withValues(alpha: 0.7),
+        color: FlutterFlowTheme.of(context).secondaryBackground,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[800]!, width: 0.5),
+        border: Border.all(color: FlutterFlowTheme.of(context).alternate, width: 0.5),
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -2050,9 +2051,9 @@ class _ThreadCommentsPageState extends State<ThreadCommentsPage>
                 Expanded(
                   child: Text(
                     comment['name'] ?? 'Anonymous',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: FlutterFlowTheme.of(context).primaryText,
                       fontSize: 16,
                     ),
                   ),
@@ -2081,8 +2082,8 @@ class _ThreadCommentsPageState extends State<ThreadCommentsPage>
                   Expanded(
                     child: Text(
                       comment['content'],
-                      style: const TextStyle(
-                        color: Colors.white70,
+                      style: TextStyle(
+                        color: FlutterFlowTheme.of(context).secondaryText,
                         fontSize: 15,
                         height: 1.4,
                       ),
@@ -2097,7 +2098,7 @@ class _ThreadCommentsPageState extends State<ThreadCommentsPage>
                 Text(
                   timeago.format(DateTime.parse(comment['created_at'])),
                   style: TextStyle(
-                    color: Colors.grey[500],
+                    color: FlutterFlowTheme.of(context).secondaryText,
                     fontSize: 12,
                   ),
                 ),
@@ -2130,18 +2131,18 @@ class _ThreadCommentsPageState extends State<ThreadCommentsPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
       appBar: AppBar(
         elevation: 0,
-        title: const Text(
+        title: Text(
           'Comments',
           style: TextStyle(
-            color: Colors.white,
+            color: FlutterFlowTheme.of(context).primaryText,
             fontWeight: FontWeight.bold,
             fontSize: 20,
           ),
         ),
-        backgroundColor: Colors.black,
+        backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
         iconTheme: const IconThemeData(color: Colors.yellow),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
@@ -2167,7 +2168,7 @@ class _ThreadCommentsPageState extends State<ThreadCommentsPage>
             height: 200, // Fixed height for the container
             margin: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.grey[900],
+              color: FlutterFlowTheme.of(context).secondaryBackground,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
                   color: Colors.yellow.withValues(alpha: 0.3), width: 1),
@@ -2193,12 +2194,12 @@ class _ThreadCommentsPageState extends State<ThreadCommentsPage>
                         size: 20,
                       ),
                       const SizedBox(width: 8),
-                      const Text(
+                      Text(
                         'Original Thread',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 18,
-                          color: Colors.white,
+                          color: FlutterFlowTheme.of(context).primaryText,
                         ),
                       ),
                     ],
@@ -2216,8 +2217,8 @@ class _ThreadCommentsPageState extends State<ThreadCommentsPage>
                       physics: const BouncingScrollPhysics(),
                       child: Text(
                         widget.threadContent,
-                        style: const TextStyle(
-                          color: Colors.white70,
+                        style: TextStyle(
+                          color: FlutterFlowTheme.of(context).secondaryText,
                           fontSize: 16,
                           height: 1.5,
                         ),
@@ -2285,7 +2286,7 @@ class _ThreadCommentsPageState extends State<ThreadCommentsPage>
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.grey[900],
+              color: FlutterFlowTheme.of(context).secondaryBackground,
               border: Border(
                 top: BorderSide(
                   color: Colors.yellow.withValues(alpha: 0.2),
@@ -2294,7 +2295,7 @@ class _ThreadCommentsPageState extends State<ThreadCommentsPage>
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.4),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 8,
                   offset: const Offset(0, -2),
                 ),
@@ -2307,22 +2308,22 @@ class _ThreadCommentsPageState extends State<ThreadCommentsPage>
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.6),
+                        color: FlutterFlowTheme.of(context).primaryBackground,
                         borderRadius: BorderRadius.circular(24),
                         border: Border.all(
-                          color: Colors.grey[700]!,
+                          color: FlutterFlowTheme.of(context).alternate,
                           width: 1,
                         ),
                       ),
                       child: TextField(
                         controller: _commentController,
                         style:
-                            const TextStyle(color: Colors.white, fontSize: 16),
-                        decoration: const InputDecoration(
+                            TextStyle(color: FlutterFlowTheme.of(context).primaryText, fontSize: 16),
+                        decoration: InputDecoration(
                           hintText: 'Add a thoughtful comment...',
-                          hintStyle: TextStyle(color: Colors.white60),
+                          hintStyle: TextStyle(color: FlutterFlowTheme.of(context).secondaryText),
                           border: InputBorder.none,
-                          contentPadding: EdgeInsets.symmetric(vertical: 12),
+                          contentPadding: const EdgeInsets.symmetric(vertical: 12),
                         ),
                         maxLines: null,
                         textCapitalization: TextCapitalization.sentences,

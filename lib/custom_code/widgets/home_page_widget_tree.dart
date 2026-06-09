@@ -8,7 +8,7 @@ import 'dart:convert';
 import 'dart:async' as async;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/custom_code/widgets/settings_page.dart';
-import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/material.dart' as material;
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -41,9 +41,9 @@ class HomePageWidgetTree extends ConsumerStatefulWidget {
   final double? height;
 
   // Hardcoded Color Palette
-  static Color primaryColor = material.Colors.yellow;
-  static Color secondaryColor = material.Colors.yellow;
-  static Color accentColor = material.Colors.yellow;
+  static Color primaryColor = const Color(0xFFFFD600);
+  static Color secondaryColor = const Color(0xFFFFD600);
+  static Color accentColor = const Color(0xFFFFD600);
   static const Color backgroundColor = material.Colors.black;
   static const Color textPrimary = Color(0xFFFFFFFF);
   static const Color textSecondary = Color(0xFF94A3B8);
@@ -430,10 +430,10 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
             decoration: BoxDecoration(
               color: const Color(0xFF1E293B),
               borderRadius: BorderRadius.circular(28),
-              border: Border.all(color: material.Colors.yellow.withValues(alpha: 0.2), width: 1.5),
+              border: Border.all(color: const Color(0xFFFFD600).withValues(alpha: 0.2), width: 1.5),
               boxShadow: [
                 BoxShadow(
-                  color: material.Colors.yellow.withValues(alpha: 0.1),
+                  color: const Color(0xFFFFD600).withValues(alpha: 0.1),
                   blurRadius: 40,
                   offset: const Offset(0, 10),
                 )
@@ -448,16 +448,16 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: material.Colors.yellow.withValues(alpha: 0.1),
+                        color: const Color(0xFFFFD600).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(16),
                       ),
-                      child: const Icon(material.Icons.system_update_rounded, color: material.Colors.yellow, size: 28),
+                      child: const Icon(material.Icons.system_update_rounded, color: const Color(0xFFFFD600), size: 28),
                     ),
                     const Spacer(),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
-                        color: material.Colors.yellow,
+                        color: const Color(0xFFFFD600),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
@@ -494,7 +494,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                   const Text(
                     "What's New:",
                     style: TextStyle(
-                      color: material.Colors.yellow,
+                      color: const Color(0xFFF59E0B),
                       fontWeight: FontWeight.bold,
                       fontSize: 14,
                     ),
@@ -510,7 +510,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text("•", style: TextStyle(color: material.Colors.yellow)),
+                            const Text("•", style: TextStyle(color: const Color(0xFFFFD600))),
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
@@ -545,7 +545,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                       flex: 2,
                       child: material.ElevatedButton(
                         style: material.ElevatedButton.styleFrom(
-                          backgroundColor: material.Colors.yellow,
+                          backgroundColor: const Color(0xFFFFD600),
                           foregroundColor: material.Colors.black,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           elevation: 0,
@@ -645,6 +645,10 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   @override
   Widget build(BuildContext context) {
     final conversationsAsync = ref.watch(conversationsProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final gradientColors = isDark
+        ? [const Color(0xFF111B21), const Color(0xFF0B141A)]
+        : [const Color(0xFFF4F4F9), const Color(0xFFFFFFFF)];
 
     return GestureDetector(
       onTap: () {
@@ -652,24 +656,32 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         FocusManager.instance.primaryFocus?.unfocus();
       },
       child: Container(
-        color: material.Colors.black,
-        child: ScaffoldPage(
-          padding: EdgeInsets.zero,
-          bottomBar: _buildBottomNavigationBar(context),
-          content: material.ColoredBox(
-            color: material.Colors.black,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: gradientColors,
+          ),
+        ),
+        child: material.Scaffold(
+          backgroundColor: material.Colors.transparent,
+          bottomNavigationBar: _buildBottomNavigationBar(context),
+          body: material.ColoredBox(
+            color: material.Colors.transparent,
             child: _isLoading
-                ? const Center(child: ProgressRing())
+                ? Center(
+                    child: material.CircularProgressIndicator(
+                      color: isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300),
+                    ),
+                  )
                 : _currentIndex == 1
                     ? const MainMarketPage()
                     : _currentIndex == 2
                         ? ToolsPage(onFavoriteToggled: _handleRefresh)
-                        : _currentIndex == 3
-                            ? const DrawingAcademyHomePage()
-                            : material.RefreshIndicator(
+                        : material.RefreshIndicator(
                                 onRefresh: _handleRefresh,
-                                color: material.Colors.yellow,
-                                backgroundColor: material.Colors.black,
+                                color: isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300),
+                                backgroundColor: isDark ? const Color(0xFF121218) : const Color(0xFFF4F4F9),
                                 child: material.NestedScrollView(
                                   physics: const BouncingScrollPhysics(
                                       parent: AlwaysScrollableScrollPhysics()),
@@ -696,16 +708,13 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                             profileId ?? '',
                                           ),
                                           onTapFriends: () {
-                                            displayInfoBar(context,
-                                                builder: (context, close) {
-                                              return const InfoBar(
-                                                title:
-                                                    Text('Friends Match'),
-                                                content: Text(
+                                            material.ScaffoldMessenger.of(context).showSnackBar(
+                                              material.SnackBar(
+                                                content: const Text(
                                                     'Strangers Match feature is calibrating for your region.'),
-                                                severity: InfoBarSeverity.info,
-                                              );
-                                            });
+                                                backgroundColor: isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300),
+                                              ),
+                                            );
                                           },
                                           onTapCall: () => _handleStrangerMatch(
                                             context,
@@ -737,7 +746,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                   },
                                   body: material.Builder(
                                     builder: (context) => material.Material(
-                                      color: material.Colors.black,
+                                      color: material.Colors.transparent,
                                       child: PageView(
                                         controller: _pageController,
                                         onPageChanged: _onPageChanged,
@@ -800,6 +809,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 
   Widget _buildChatListSliver(
       AsyncValue<List<ChatConversation>> conversationsAsync) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return conversationsAsync.when(
       data: (conversations) {
         final allNotifications =
@@ -986,7 +996,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Icon(
-                                    FluentIcons.search,
+                                    material.Icons.search_rounded,
                                     size: 64,
                                     color: material.Colors.white.withValues(alpha: 0.1),
                                   ),
@@ -1009,15 +1019,15 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                               padding: const EdgeInsets.fromLTRB(20, 24, 20, 12),
                               child: Row(
                                 children: [
-                                  const Icon(FluentIcons.people,
-                                      size: 18, color: material.Colors.yellow),
+                                  Icon(material.Icons.people_rounded,
+                                      size: 18, color: isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300)),
                                   const SizedBox(width: 8),
                                   Text(
                                     'SUGGESTED PEOPLE',
                                     style: GoogleFonts.outfit(
                                       fontSize: 13,
                                       fontWeight: FontWeight.bold,
-                                      color: material.Colors.yellow,
+                                      color: isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300),
                                       letterSpacing: 0.5,
                                     ),
                                   ),
@@ -1060,7 +1070,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                             decoration: BoxDecoration(
                                               shape: BoxShape.circle,
                                               border: Border.all(
-                                                color: material.Colors.yellow.withValues(alpha: 0.5),
+                                                color: (isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300)).withValues(alpha: 0.5),
                                                 width: 1.5,
                                               ),
                                             ),
@@ -1069,7 +1079,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                               backgroundImage: avatarUrl != null
                                                   ? NetworkImage(avatarUrl)
                                                   : null,
-                                              backgroundColor: material.Colors.yellow.shade700,
+                                              backgroundColor: isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300),
                                               child: avatarUrl == null
                                                   ? Text(
                                                       name.isNotEmpty ? name[0].toUpperCase() : '?',
@@ -1232,7 +1242,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
-                          FluentIcons.chat,
+                          material.Icons.chat_bubble_rounded,
                           size: 64,
                           color: material.Colors.white.withValues(alpha: 0.1),
                         ),
@@ -1270,20 +1280,29 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 
   Widget _buildBottomNavigationBar(BuildContext context) {
     final bottomPadding = material.MediaQuery.of(context).padding.bottom;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final navBgColor = isDark ? const Color(0xFF111B21) : const Color(0xFFFFFFFF);
+    final borderColor = isDark 
+        ? material.Colors.white.withValues(alpha: 0.08)
+        : material.Colors.black.withValues(alpha: 0.08);
+    final shadowColor = isDark 
+        ? material.Colors.black.withValues(alpha: 0.4)
+        : material.Colors.grey.withValues(alpha: 0.1);
+
     return Container(
-      height: 95 + bottomPadding,
+      height: 65 + bottomPadding,
       padding: EdgeInsets.only(bottom: bottomPadding),
       decoration: BoxDecoration(
-        color: material.Colors.black,
+        color: navBgColor,
         border: Border(
           top: BorderSide(
-            color: material.Colors.white.withValues(alpha: 0.08),
+            color: borderColor,
             width: 1.5,
           ),
         ),
         boxShadow: [
           BoxShadow(
-            color: material.Colors.black.withValues(alpha: 0.4),
+            color: shadowColor,
             blurRadius: 20,
             offset: const Offset(0, -4),
           ),
@@ -1295,42 +1314,19 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             _buildNavItem(
-              icon: FluentIcons.view_dashboard,
+              icon: material.Icons.home_rounded,
               isSelected: _currentIndex == 0,
               onTap: () => setState(() => _currentIndex = 0),
             ),
             _buildNavItem(
-              icon: FluentIcons.market,
+              icon: material.Icons.storefront_rounded,
               isSelected: _currentIndex == 1,
               onTap: () => setState(() => _currentIndex = 1),
             ),
             _buildNavItem(
-              icon: FluentIcons.toolbox,
+              icon: material.Icons.handyman_rounded,
               isSelected: _currentIndex == 2,
               onTap: () => setState(() => _currentIndex = 2),
-            ),
-            _buildNavItem(
-              icon: FluentIcons.education,
-              isSelected: _currentIndex == 3,
-              onTap: () async {
-                try {
-                  final configRes = await supabase.from('app_tool_configs').select('*').eq('tool_name', 'elearning_unlocked').maybeSingle();
-                  final isUnlocked = configRes?['android_active'] == true;
-                  if (isUnlocked) {
-                    if (mounted) {
-                      setState(() => _currentIndex = 3);
-                    }
-                  } else {
-                    if (mounted) {
-                      _showElearningComingSoonDialog(context);
-                    }
-                  }
-                } catch (_) {
-                  if (mounted) {
-                    _showElearningComingSoonDialog(context);
-                  }
-                }
-              },
             ),
             _buildProfileNavItem(),
           ],
@@ -1340,6 +1336,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   }
 
   void _showElearningComingSoonDialog(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final themeYellow = isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300);
     showDialog(
       context: context,
       builder: (context) => material.Dialog(
@@ -1351,17 +1349,17 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
             child: Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: material.Colors.black.withOpacity(0.75),
+                color: isDark ? material.Colors.black.withOpacity(0.75) : material.Colors.white.withOpacity(0.95),
                 borderRadius: BorderRadius.circular(28),
-                border: Border.all(color: material.Colors.amber.withOpacity(0.25), width: 1.5),
+                border: Border.all(color: themeYellow.withOpacity(0.25), width: 1.5),
                 boxShadow: [
                   BoxShadow(
-                    color: material.Colors.black.withOpacity(0.6),
+                    color: isDark ? material.Colors.black.withOpacity(0.6) : material.Colors.grey.withOpacity(0.3),
                     blurRadius: 40,
                     offset: const Offset(0, 20),
                   ),
                   BoxShadow(
-                    color: material.Colors.amber.withOpacity(0.08),
+                    color: themeYellow.withOpacity(0.08),
                     blurRadius: 45,
                     spreadRadius: -5,
                   ),
@@ -1375,18 +1373,18 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          material.Colors.amber.shade400.withOpacity(0.15),
-                          material.Colors.orange.shade400.withOpacity(0.05),
+                          themeYellow.withOpacity(0.15),
+                          themeYellow.withOpacity(0.05),
                         ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                       shape: BoxShape.circle,
-                      border: Border.all(color: material.Colors.amber.withOpacity(0.3), width: 1.5),
+                      border: Border.all(color: themeYellow.withOpacity(0.3), width: 1.5),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       material.Icons.school_rounded,
-                      color: material.Colors.amber,
+                      color: themeYellow,
                       size: 44,
                     ),
                   ),
@@ -1396,7 +1394,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                     style: GoogleFonts.outfit(
                       fontSize: 26,
                       fontWeight: FontWeight.w900,
-                      color: material.Colors.white,
+                      color: isDark ? material.Colors.white : material.Colors.black87,
                       letterSpacing: 0.5,
                     ),
                   ),
@@ -1406,7 +1404,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                     textAlign: TextAlign.center,
                     style: GoogleFonts.inter(
                       fontSize: 14,
-                      color: material.Colors.white.withOpacity(0.8),
+                      color: isDark ? material.Colors.white.withOpacity(0.8) : material.Colors.black.withOpacity(0.8),
                       height: 1.6,
                     ),
                   ),
@@ -1417,8 +1415,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          material.Colors.amber.shade600,
-                          material.Colors.orange.shade600,
+                          themeYellow,
+                          themeYellow.withOpacity(0.8),
                         ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
@@ -1426,7 +1424,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                       borderRadius: BorderRadius.circular(18),
                       boxShadow: [
                         BoxShadow(
-                          color: material.Colors.amber.shade600.withOpacity(0.3),
+                          color: themeYellow.withOpacity(0.3),
                           blurRadius: 12,
                           offset: const Offset(0, 4),
                         ),
@@ -1463,6 +1461,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   }
 
   Widget _buildProfileNavItem() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return GestureDetector(
       onTap: () async {
         final isAuthenticated = await AuthAlertBox.checkAuthAndShowAlert(
@@ -1526,7 +1525,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
           child: CircularProfileImage(
             profileImageUrl: _profileImageUrl,
             radius: 22.0,
-            borderColor: FlutterFlowTheme.of(context).primary,
+            borderColor: isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300),
           ),
         ),
       ),
@@ -1538,29 +1537,32 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     required bool isSelected,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final themeYellow = isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300);
+    return material.InkWell(
       onTap: onTap,
-      behavior: HitTestBehavior.opaque,
+      borderRadius: BorderRadius.circular(16),
       child: SizedBox(
-        height: 70,
+        height: 55,
+        width: 60,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             AnimatedContainer(
               duration: const Duration(milliseconds: 200),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? FlutterFlowTheme.of(context).primary.withValues(alpha: 0.15)
+                    ? themeYellow.withValues(alpha: 0.15)
                     : material.Colors.transparent,
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Icon(
                 icon,
                 color: isSelected
-                    ? FlutterFlowTheme.of(context).primary
-                    : FlutterFlowTheme.of(context).secondaryText,
+                    ? themeYellow
+                    : (isDark ? material.Colors.white.withValues(alpha: 0.5) : material.Colors.black.withValues(alpha: 0.45)),
                 size: 24,
               ),
             ),
@@ -1571,15 +1573,31 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   }
 
   void _showAddBottomSheet(BuildContext context) {
-    showDialog(
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    material.showModalBottomSheet(
       context: context,
-      builder: (context) => ContentDialog(
-        title: const Text('Add New Content'),
-        content: material.Material(
-          color: Colors.transparent,
+      backgroundColor: isDark ? const Color(0xFF121218) : const Color(0xFFF4F4F9),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+        ),
+      ),
+      builder: (context) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              Text(
+                'Add New Content',
+                style: GoogleFonts.outfit(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? material.Colors.white : material.Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 20),
               Row(
                 children: [
                   Expanded(
@@ -1623,7 +1641,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const Icon(FluentIcons.shopping_cart,
+                                const Icon(material.Icons.shopping_cart_rounded,
                                     color: Colors.white, size: 30),
                                 const SizedBox(height: 8),
                                 Text('Add\nGallery',
@@ -1635,14 +1653,6 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                       ),
                     ),
                   ),
-                ],
-              ),
-              const SizedBox(height: 12),
-
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 4.0),
@@ -1683,7 +1693,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const Icon(FluentIcons.repair,
+                                const Icon(material.Icons.build_rounded,
                                     color: Colors.white, size: 30),
                                 const SizedBox(height: 8),
                                 Text('Add\nService',
@@ -1695,7 +1705,13 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                       ),
                     ),
                   ),
-
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 4.0),
@@ -1735,7 +1751,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const Icon(FluentIcons.lightbulb,
+                                const Icon(material.Icons.lightbulb_rounded,
                                     color: Colors.white, size: 30),
                                 const SizedBox(height: 8),
                                 Text('Add\nThought',
@@ -1747,7 +1763,6 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                       ),
                     ),
                   ),
-
                   if (_isVerified)
                     Expanded(
                       child: Padding(
@@ -1787,7 +1802,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const Icon(FluentIcons.calendar_reply,
+                                  const Icon(material.Icons.calendar_month_rounded,
                                       color: Colors.white, size: 30),
                                   const SizedBox(height: 8),
                                   Text('Add\nEvent',
@@ -1798,18 +1813,29 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                               )),
                         ),
                       ),
-                    ),
+                    )
+                  else
+                    const Expanded(child: SizedBox.shrink()),
                 ],
+              ),
+              const SizedBox(height: 20),
+              material.SizedBox(
+                width: double.infinity,
+                child: material.OutlinedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: material.OutlinedButton.styleFrom(
+                    side: BorderSide(color: isDark ? material.Colors.white.withValues(alpha: 0.2) : material.Colors.black.withValues(alpha: 0.2)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                  child: Text('Cancel', style: TextStyle(color: isDark ? material.Colors.white70 : material.Colors.black87)),
+                ),
               ),
             ],
           ),
         ),
-        actions: [
-          Button(
-            child: const Text('Cancel'),
-            onPressed: () => Navigator.pop(context),
-          ),
-        ],
       ),
     );
   }
@@ -1893,6 +1919,15 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   }
 
   Widget _buildNotificationsTile(int count) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final borderColor = isDark 
+        ? Colors.white.withValues(alpha: 0.05) 
+        : Colors.black.withValues(alpha: 0.05);
+    final primaryTextColor = isDark ? Colors.white : Colors.black87;
+    final secondaryTextColor = isDark 
+        ? Colors.white.withValues(alpha: 0.4) 
+        : Colors.black.withValues(alpha: 0.45);
+
     return material.Material(
       color: material.Colors.transparent,
       child: material.InkWell(
@@ -1905,10 +1940,10 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: material.Colors.black,
+            color: material.Colors.transparent,
             border: Border(
               bottom: BorderSide(
-                color: material.Colors.white.withValues(alpha: 0.08),
+                color: borderColor,
                 width: 1,
               ),
             ),
@@ -1919,46 +1954,46 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                 clipBehavior: Clip.none,
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          material.Colors.yellow,
-                          Color(0xFFFFA000),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
+                    width: 58,
+                    height: 58,
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF262626) : const Color(0xFFE2E8F0),
                       shape: BoxShape.circle,
+                      border: Border.all(
+                        color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.1),
+                        width: 1.5,
+                      ),
                     ),
-                    child: const Icon(
-                      FluentIcons.ringer,
-                      color: material.Colors.black,
-                      size: 20,
+                    child: Center(
+                      child: Icon(
+                        material.Icons.notifications_rounded,
+                        color: isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300),
+                        size: 26,
+                      ),
                     ),
                   ),
                   Positioned(
                     right: -4,
                     top: -4,
                     child: Container(
-                      padding: const EdgeInsets.all(4),
+                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
                       decoration: BoxDecoration(
-                        color: material.Colors.red,
-                        shape: BoxShape.circle,
+                        color: material.Colors.redAccent,
+                        borderRadius: BorderRadius.circular(10),
                         border: Border.all(
-                          color: material.Colors.black,
+                          color: isDark ? const Color(0xFF111B21) : const Color(0xFFFFFFFF),
                           width: 2,
                         ),
                       ),
                       constraints: const BoxConstraints(
-                        minWidth: 20,
-                        minHeight: 20,
+                        minWidth: 18,
+                        minHeight: 18,
                       ),
                       child: Text(
                         count.toString(),
                         style: const TextStyle(
                           color: material.Colors.white,
-                          fontSize: 10,
+                          fontSize: 9,
                           fontWeight: FontWeight.bold,
                         ),
                         textAlign: TextAlign.center,
@@ -1967,7 +2002,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                   ),
                 ],
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: material.CrossAxisAlignment.start,
@@ -1975,26 +2010,26 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                     Text(
                       'Notifications',
                       style: GoogleFonts.outfit(
-                        color: material.Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 0.3,
+                        color: primaryTextColor,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.2,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 6),
                     Text(
                       'You have $count new notification${count > 1 ? 's' : ''}',
-                      style: GoogleFonts.inter(
-                        color: material.Colors.white.withValues(alpha: 0.5),
-                        fontSize: 13,
+                      style: GoogleFonts.outfit(
+                        color: secondaryTextColor,
+                        fontSize: 14,
                       ),
                     ),
                   ],
                 ),
               ),
               Icon(
-                FluentIcons.chevron_right,
-                color: material.Colors.white.withValues(alpha: 0.2),
+                Icons.chevron_right,
+                color: secondaryTextColor.withValues(alpha: 0.5),
                 size: 16,
               ),
             ],
@@ -2006,6 +2041,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 
   Widget _buildSearchTabItem(String label, int index) {
     final isSelected = _searchTabIndex == index;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return material.InkWell(
       onTap: () => safeSetState(() => _searchTabIndex = index),
       borderRadius: BorderRadius.circular(25),
@@ -2014,13 +2050,13 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
         decoration: BoxDecoration(
           color: isSelected
-              ? material.Colors.yellow
+              ? (isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300))
               : material.Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(25),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: material.Colors.yellow.withValues(alpha: 0.3),
+                    color: (isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300)).withValues(alpha: 0.3),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   )
@@ -2102,7 +2138,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                 ),
               ),
               Icon(
-                FluentIcons.chevron_right,
+                Icons.chevron_right,
                 size: 12,
                 color: material.Colors.white.withValues(alpha: 0.2),
               ),
@@ -2116,6 +2152,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   Widget _buildProductResultTile(Map<String, dynamic> product) {
     final profile = product['profile'] as Map<String, dynamic>?;
     final bool isService = product['type'] == 'service';
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return material.Material(
       color: material.Colors.transparent,
@@ -2134,10 +2171,14 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
           decoration: BoxDecoration(
-            color: material.Colors.black,
+            color: isDark 
+                ? material.Colors.white.withValues(alpha: 0.02)
+                : material.Colors.black.withValues(alpha: 0.02),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: material.Colors.white.withValues(alpha: 0.05),
+              color: isDark 
+                  ? material.Colors.white.withValues(alpha: 0.05)
+                  : material.Colors.black.withValues(alpha: 0.05),
               width: 1,
             ),
           ),
@@ -2227,7 +2268,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                       style: GoogleFonts.outfit(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: material.Colors.yellow,
+                        color: isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300),
                       ),
                     ),
                     Text(
@@ -2250,11 +2291,12 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       BuildContext context, ChatConversation notification) {
     showDialog(
       context: context,
-      builder: (context) => ContentDialog(
+      builder: (context) => material.AlertDialog(
+        backgroundColor: const Color(0xFF1E293B),
         title: Row(
           children: [
             const Icon(material.Icons.notifications_active,
-                color: material.Colors.yellow, size: 28),
+                color: const Color(0xFFFFD600), size: 28),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
@@ -2286,7 +2328,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         actions: [
           if (notification.notificationType == 'project_invite' &&
               notification.sourceId != null) ...[
-            Button(
+            material.TextButton(
               onPressed: () async {
                 Navigator.pop(context);
                 await TeamsService().declineInvite(notification.sourceId!);
@@ -2297,7 +2339,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
               child: const Text('Decline',
                   style: material.TextStyle(color: material.Colors.red)),
             ),
-            FilledButton(
+            material.ElevatedButton(
               onPressed: () async {
                 Navigator.pop(context);
                 await TeamsService().acceptInvite(notification.sourceId!);
@@ -2310,25 +2352,27 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                   );
                 }
               },
-              style: ButtonStyle(
-                backgroundColor: WidgetStateProperty.all(material.Colors.yellow),
+              style: material.ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFFD600),
+                foregroundColor: material.Colors.black,
               ),
               child: const Text('Accept',
-                  style: material.TextStyle(color: material.Colors.black)),
+                  style: material.TextStyle(fontWeight: FontWeight.bold)),
             ),
           ] else ...[
-            FilledButton(
+            material.ElevatedButton(
               onPressed: () async {
                 Navigator.pop(context);
                 await ref
                     .read(conversationsProvider.notifier)
                     .dismissNotification(notification.id);
               },
-              style: ButtonStyle(
-                backgroundColor: WidgetStateProperty.all(material.Colors.yellow),
+              style: material.ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFFD600),
+                foregroundColor: material.Colors.black,
               ),
               child: const Text('Dismiss',
-                  style: material.TextStyle(color: material.Colors.black)),
+                  style: material.TextStyle(fontWeight: FontWeight.bold)),
             ),
           ],
         ],
@@ -2382,23 +2426,26 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
 
   @override
   double get maxExtent =>
-      464.0; // 160 (Stranger Match) + 182 (Status) + 50 (Tabs) + 72 (Search)
+      417.0; // 135 (Stranger Match) + 160 (Status) + 50 (Tabs) + 72 (Search)
 
   @override
-  double get minExtent => 294.0;
+  double get minExtent => 282.0;
 
   @override
   Widget build(
       BuildContext context, double shrinkOffset, bool overlapsContent) {
-    const double strangerMatchHeight = 160.0;
-    const double statusSectionHeight = 182.0;
+    const double strangerMatchHeight = 135.0;
+    const double statusSectionHeight = 160.0;
 
     final double progress =
         (shrinkOffset / strangerMatchHeight).clamp(0.0, 1.0);
     final double topPadding = MediaQuery.of(context).padding.top;
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final headerColor = isDark ? const Color(0xFF111B21) : const Color(0xFFF4F4F9);
+
     return material.Material(
-      color: material.Colors.black,
+      color: headerColor,
       child: Stack(
         clipBehavior: Clip.none,
         children: [
@@ -2415,15 +2462,8 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                   // Gradient Background
                   Positioned.fill(
                     child: Container(
-                      decoration: const BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            material.Colors.black,
-                            material.Colors.black
-                          ],
-                        ),
+                      decoration: BoxDecoration(
+                        color: headerColor,
                       ),
                     ),
                   ),
@@ -2438,7 +2478,7 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                         Text(
                           'Handskill',
                           style: GoogleFonts.outfit(
-                            color: material.Colors.white,
+                            color: isDark ? material.Colors.white : material.Colors.black87,
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
                           ),
@@ -2447,23 +2487,26 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                         Row(
                           children: [
                             _buildMatchCard(
+                              context,
                               label: 'Video',
-                              icon: FluentIcons.video,
+                              icon: material.Icons.videocam_rounded,
                               color: material.Colors.blue,
                               onTap: onTapVideo,
                             ),
                             const SizedBox(width: 8),
                             _buildMatchCard(
+                              context,
                               label: 'Voice',
-                              icon: FluentIcons.phone,
+                              icon: material.Icons.phone_rounded,
                               color: material.Colors.green,
                               onTap: onTapCall,
                             ),
                             const SizedBox(width: 8),
                             _buildMatchCard(
+                              context,
                               label: 'Chat',
-                              icon: FluentIcons.chat,
-                              color: material.Colors.yellow,
+                              icon: material.Icons.chat_bubble_rounded,
+                              color: isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300),
                               onTap: onTapText,
                             ),
                           ],
@@ -2478,7 +2521,8 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                     child: Row(
                       children: [
                         _buildHeaderIconButton(
-                          icon: FluentIcons.search,
+                          context,
+                          icon: material.Icons.search_rounded,
                           onTap: () {
                             Navigator.push(
                               context,
@@ -2490,17 +2534,20 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                         ),
                         const SizedBox(width: 10),
                         _buildHeaderIconButton(
-                          icon: FluentIcons.settings,
+                          context,
+                          icon: material.Icons.settings_rounded,
                           onTap: onTapSettings,
                         ),
                         const SizedBox(width: 10),
                         _buildHeaderIconButton(
-                          icon: FluentIcons.refresh,
+                          context,
+                          icon: material.Icons.refresh_rounded,
                           onTap: onRefresh,
                         ),
                         const SizedBox(width: 10),
                         _buildHeaderIconButton(
-                          icon: FluentIcons.add_friend,
+                          context,
+                          icon: material.Icons.person_add_rounded,
                           onTap: () async {
                             final auth =
                                 await AuthAlertBox.checkAuthAndShowAlert(
@@ -2532,14 +2579,16 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                 Container(
                   height: statusSectionHeight,
                   decoration: BoxDecoration(
-                    color: material.Colors.black,
+                    color: headerColor,
                     borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(32),
                       topRight: Radius.circular(32),
                     ),
                     border: Border(
                       top: BorderSide(
-                          color: material.Colors.white.withValues(alpha: 0.12),
+                          color: isDark 
+                              ? material.Colors.white.withValues(alpha: 0.12)
+                              : material.Colors.black.withValues(alpha: 0.08),
                           width: 1),
                     ),
                   ),
@@ -2558,15 +2607,15 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                                 decoration: BoxDecoration(
                                   gradient: LinearGradient(
                                     colors: [
-                                      material.Colors.yellow,
-                                      material.Colors.yellow
+                                      isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300),
+                                      (isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300))
                                           .withValues(alpha: 0.8),
                                     ],
                                   ),
                                   borderRadius: BorderRadius.circular(12),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: material.Colors.yellow
+                                      color: (isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300))
                                           .withValues(alpha: 0.2),
                                       blurRadius: 8,
                                       offset: const Offset(0, 2),
@@ -2576,7 +2625,7 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    const Icon(FluentIcons.add,
+                                    const Icon(material.Icons.add_rounded,
                                         size: 14, color: material.Colors.black),
                                     const SizedBox(width: 6),
                                     Text(
@@ -2599,10 +2648,13 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                                   _buildActiveCounter(data.activeFriends.length),
                                 ],
                               ),
-                              loading: () => const SizedBox(
+                              loading: () => SizedBox(
                                 width: 14,
                                 height: 14,
-                                child: ProgressRing(),
+                                child: material.CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300),
+                                ),
                               ),
                               error: (_, __) => const SizedBox(),
                             ),
@@ -2622,80 +2674,93 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                 // Tab Bar
                 Container(
                   height: 50,
-                  color: material.Colors.black,
+                  color: headerColor,
                   child: Row(
                     children: [
-                      _buildTabItem('Chats', 0),
-                      _buildTabItem('Vibes', 1),
-                      _buildTabItem('Thoughts', 2),
+                      _buildTabItem(context, 'Chats', 0),
+                      _buildTabItem(context, 'Vibes', 1),
+                      _buildTabItem(context, 'Thoughts', 2),
                     ],
                   ),
                 ),
                 // Search Bar
                 Container(
                   height: 72,
-                  color: material.Colors.black,
+                  color: headerColor,
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
                   child: Container(
                     decoration: BoxDecoration(
-                      color: material.Colors.black,
+                      color: isDark ? const Color(0xFF202C33) : const Color(0xFFF0F2F5),
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: material.Colors.white.withValues(alpha: 0.08),
+                        color: isDark 
+                            ? material.Colors.white.withValues(alpha: 0.08)
+                            : material.Colors.black.withValues(alpha: 0.08),
                         width: 1,
                       ),
                     ),
-                    child: TextBox(
+                    child: material.TextField(
                       controller: searchController,
-                      placeholder: 'Search for people or conversations...',
-                      placeholderStyle: GoogleFonts.outfit(
-                        color: material.Colors.white.withValues(alpha: 0.35),
-                        fontSize: 14,
-                      ),
-                      prefix: Padding(
-                        padding: const EdgeInsets.only(left: 14.0),
-                        child: Icon(
-                          FluentIcons.search,
-                          color: material.Colors.yellow.withValues(alpha: 0.6),
-                          size: 18,
-                        ),
-                      ),
-                      suffix: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (isSearching)
-                            const Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 12.0),
-                              child: SizedBox(
-                                width: 16,
-                                height: 16,
-                                child: ProgressRing(),
-                              ),
-                            ),
-                          if (searchQuery.isNotEmpty)
-                            material.Material(
-                              color: material.Colors.transparent,
-                              child: material.IconButton(
-                                icon: Icon(
-                                  FluentIcons.clear,
-                                  color: material.Colors.white
-                                      .withValues(alpha: 0.3),
-                                  size: 16,
-                                ),
-                                onPressed: () => searchController.clear(),
-                              ),
-                            ),
-                        ],
-                      ),
-                      decoration: WidgetStateProperty.all(BoxDecoration(
-                        color: material.Colors.transparent,
-                        border: Border.all(style: BorderStyle.none),
-                      )),
                       style: GoogleFonts.outfit(
-                        color: material.Colors.white,
+                        color: isDark ? material.Colors.white : material.Colors.black87,
                         fontSize: 14,
                       ),
-                      cursorColor: material.Colors.yellow,
+                      cursorColor: isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300),
+                      decoration: material.InputDecoration(
+                        hintText: 'Search for people or conversations...',
+                        hintStyle: GoogleFonts.outfit(
+                          color: isDark 
+                              ? material.Colors.white.withValues(alpha: 0.35)
+                              : material.Colors.black.withValues(alpha: 0.35),
+                          fontSize: 14,
+                        ),
+                        prefixIcon: Padding(
+                          padding: const EdgeInsets.only(left: 14.0, right: 10.0),
+                          child: Icon(
+                            material.Icons.search_rounded,
+                            color: isDark 
+                                ? const Color(0xFFFFD600).withValues(alpha: 0.6)
+                                : const Color(0xFFFFB300).withValues(alpha: 0.7),
+                            size: 20,
+                          ),
+                        ),
+                        prefixIconConstraints: const BoxConstraints(
+                          minWidth: 40,
+                          minHeight: 40,
+                        ),
+                        suffixIcon: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            if (isSearching)
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                                child: SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: material.CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300),
+                                  ),
+                                ),
+                              ),
+                            if (searchQuery.isNotEmpty)
+                              material.Material(
+                                color: material.Colors.transparent,
+                                child: material.IconButton(
+                                  icon: Icon(
+                                    material.Icons.clear_rounded,
+                                    color: isDark ? material.Colors.white30 : material.Colors.black38,
+                                    size: 18,
+                                  ),
+                                  onPressed: () => searchController.clear(),
+                                ),
+                              ),
+                          ],
+                        ),
+                        border: material.InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
                     ),
                   ),
                 ),
@@ -2707,8 +2772,14 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
     );
   }
 
-  Widget _buildTabItem(String label, int index) {
+  Widget _buildTabItem(BuildContext context, String label, int index) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final isSelected = selectedIndex == index;
+    final themeYellow = isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300);
+    final textUnselected = isDark 
+        ? material.Colors.white.withValues(alpha: 0.5) 
+        : material.Colors.black.withValues(alpha: 0.5);
+
     return Expanded(
       child: material.Material(
         color: material.Colors.transparent,
@@ -2718,9 +2789,9 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
             duration: const Duration(milliseconds: 200),
             decoration: BoxDecoration(
               border: isSelected
-                  ? const Border(
+                  ? Border(
                       bottom: BorderSide(
-                        color: material.Colors.yellow,
+                        color: themeYellow,
                         width: 2.5,
                       ),
                     )
@@ -2731,8 +2802,8 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
               label,
               style: GoogleFonts.outfit(
                 color: isSelected
-                    ? material.Colors.yellow
-                    : material.Colors.white.withValues(alpha: 0.5),
+                    ? themeYellow
+                    : textUnselected,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
                 fontSize: 16,
               ),
@@ -2743,12 +2814,22 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
     );
   }
 
-  Widget _buildMatchCard({
+  Widget _buildMatchCard(
+    BuildContext context, {
     required String label,
     required IconData icon,
     required Color color,
     required VoidCallback onTap,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardBgColor = isDark 
+        ? material.Colors.white.withValues(alpha: 0.05)
+        : material.Colors.black.withValues(alpha: 0.03);
+    final borderColor = isDark
+        ? material.Colors.white.withValues(alpha: 0.08)
+        : material.Colors.black.withValues(alpha: 0.06);
+    final textColor = isDark ? material.Colors.white : material.Colors.black87;
+
     return Expanded(
       child: material.Material(
         color: material.Colors.transparent,
@@ -2759,10 +2840,10 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
             height: 56,
             padding: const EdgeInsets.symmetric(horizontal: 4),
             decoration: BoxDecoration(
-              color: material.Colors.white.withValues(alpha: 0.05),
+              color: cardBgColor,
               borderRadius: BorderRadius.circular(30),
               border: Border.all(
-                  color: material.Colors.white.withValues(alpha: 0.08)),
+                  color: borderColor),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -2771,7 +2852,7 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                 const SizedBox(width: 8),
                 Text(label,
                     style: GoogleFonts.outfit(
-                        color: material.Colors.white,
+                        color: textColor,
                         fontSize: 14,
                         fontWeight: FontWeight.w600)),
               ],
@@ -2823,7 +2904,16 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
   }
 
   Widget _buildHeaderIconButton(
-      {required IconData icon, required VoidCallback onTap}) {
+      BuildContext context, {required IconData icon, required VoidCallback onTap}) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bgColor = isDark 
+        ? material.Colors.white.withValues(alpha: 0.08)
+        : material.Colors.black.withValues(alpha: 0.05);
+    final borderColor = isDark 
+        ? material.Colors.white.withValues(alpha: 0.05)
+        : material.Colors.black.withValues(alpha: 0.05);
+    final iconColor = isDark ? material.Colors.white : material.Colors.black87;
+
     return material.Material(
       color: material.Colors.transparent,
       child: material.InkWell(
@@ -2832,14 +2922,14 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
         child: Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: material.Colors.white.withValues(alpha: 0.08),
+            color: bgColor,
             shape: BoxShape.circle,
             border: Border.all(
-              color: material.Colors.white.withValues(alpha: 0.05),
+              color: borderColor,
               width: 1,
             ),
           ),
-          child: Icon(icon, color: material.Colors.white, size: 20),
+          child: Icon(icon, color: iconColor, size: 20),
         ),
       ),
     );
@@ -2867,7 +2957,7 @@ class CircularProfileImage extends StatelessWidget {
     super.key,
     required this.profileImageUrl,
     this.radius = 16.0,
-    this.borderColor = material.Colors.yellow,
+    this.borderColor = const Color(0xFFFFD600),
     this.borderWidth = 1.0,
     this.isVerified = false,
   });
@@ -2901,11 +2991,11 @@ class CircularProfileImage extends StatelessWidget {
                   color: material.Colors.grey.withValues(alpha: 0.1),
                 ),
                 errorWidget: (context, url, error) => Icon(
-                    FluentIcons.contact,
+                    material.Icons.person_rounded,
                     color: material.Colors.grey,
                     size: radius),
               )
-            : Icon(FluentIcons.contact,
+            : Icon(material.Icons.person_rounded,
                 color: material.Colors.grey, size: radius),
       ),
     );

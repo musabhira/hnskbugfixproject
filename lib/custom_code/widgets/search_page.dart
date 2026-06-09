@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 
 import 'dart:async';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'dart:math' as math;
 
 class SearchPage extends StatefulWidget {
   const SearchPage({
@@ -1135,13 +1136,31 @@ class _ProfileDetailPageState extends State<ProfileDetailPage>
 
   @override
   Widget build(BuildContext context) {
-    // Use profile's button and background colors if available
-    Color buttonColor =
-        _profileData != null && _profileData!['button_color_code'] != null
-            ? Color(int.parse(
-                'FF${_profileData!['button_color_code'].substring(1)}',
-                radix: 16))
-            : Theme.of(context).primaryColor;
+    Color ensureContrast(Color fg, Color bg, {bool isButton = true}) {
+      double getLuminance(Color color) {
+        double r = color.r;
+        double g = color.g;
+        double b = color.b;
+        r = r <= 0.03928 ? r / 12.92 : math.pow((r + 0.055) / 1.055, 2.4).toDouble();
+        g = g <= 0.03928 ? g / 12.92 : math.pow((g + 0.055) / 1.055, 2.4).toDouble();
+        b = b <= 0.03928 ? b / 12.92 : math.pow((b + 0.055) / 1.055, 2.4).toDouble();
+        return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+      }
+
+      double l1 = getLuminance(fg);
+      double l2 = getLuminance(bg);
+      double ratio = (math.max(l1, l2) + 0.05) / (math.min(l1, l2) + 0.05);
+
+      if (ratio < 2.0) {
+        bool bgIsDark = l2 < 0.2;
+        if (bgIsDark) {
+          return isButton ? const Color(0xFFFFD600) : Colors.white;
+        } else {
+          return isButton ? const Color(0xFF1E293B) : Colors.black87;
+        }
+      }
+      return fg;
+    }
 
     Color bgColor = _profileData != null &&
             _profileData!['bg_color_code'] != null
@@ -1149,18 +1168,28 @@ class _ProfileDetailPageState extends State<ProfileDetailPage>
             radix: 16))
         : Colors.white;
 
-    Color buttonTextColor =
+    Color rawButtonColor =
+        _profileData != null && _profileData!['button_color_code'] != null
+            ? Color(int.parse(
+                'FF${_profileData!['button_color_code'].substring(1)}',
+                radix: 16))
+            : Theme.of(context).primaryColor;
+    Color buttonColor = ensureContrast(rawButtonColor, bgColor, isButton: true);
+
+    Color rawButtonTextColor =
         _profileData != null && _profileData!['button_text_color'] != null
             ? Color(int.parse(
                 'FF${_profileData!['button_text_color'].substring(1)}',
                 radix: 16))
             : Colors.white;
+    Color buttonTextColor = ensureContrast(rawButtonTextColor, buttonColor, isButton: false);
 
-    Color bgTextColor = _profileData != null &&
+    Color rawBgTextColor = _profileData != null &&
             _profileData!['bg_text_color'] != null
         ? Color(int.parse('FF${_profileData!['bg_text_color'].substring(1)}',
             radix: 16))
         : Colors.black;
+    Color bgTextColor = ensureContrast(rawBgTextColor, bgColor, isButton: false);
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -1359,39 +1388,48 @@ class _ProfileDetailPageState extends State<ProfileDetailPage>
                                   ? Center(
                                       child: Text('No gallery items',
                                           style: TextStyle(color: bgTextColor)))
-                                  : GridView.builder(
-                                      padding: const EdgeInsets.all(8),
-                                      gridDelegate:
-                                          const SliverGridDelegateWithFixedCrossAxisCount(
-                                        crossAxisCount: 3,
-                                        crossAxisSpacing: 4,
-                                        mainAxisSpacing: 4,
-                                      ),
-                                      itemCount: _galleryItems.length,
-                                      itemBuilder: (context, index) {
-                                        final item = _galleryItems[index];
-                                        return GestureDetector(
-                                          onTap: () {
-                                            // Show gallery item details
-                                            // _showGalleryItemDetails(item);
-                                          },
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                              image: DecorationImage(
-                                                image:
-                                                    CachedNetworkImageProvider(
-                                                  item['gallery_image_url'] ??
-                                                      '',
+                                  : LayoutBuilder(builder: (context, constraints) {
+                                      int getCrossAxisCount(double width) {
+                                        if (width > 1200) return 6;
+                                        if (width > 900) return 5;
+                                        if (width > 600) return 4;
+                                        return 3;
+                                      }
+                                      final crossAxisCount = getCrossAxisCount(constraints.maxWidth);
+                                      return GridView.builder(
+                                        padding: const EdgeInsets.all(8),
+                                        gridDelegate:
+                                            SliverGridDelegateWithFixedCrossAxisCount(
+                                          crossAxisCount: crossAxisCount,
+                                          crossAxisSpacing: 4,
+                                          mainAxisSpacing: 4,
+                                        ),
+                                        itemCount: _galleryItems.length,
+                                        itemBuilder: (context, index) {
+                                          final item = _galleryItems[index];
+                                          return GestureDetector(
+                                            onTap: () {
+                                              // Show gallery item details
+                                              // _showGalleryItemDetails(item);
+                                            },
+                                            child: Container(
+                                              decoration: BoxDecoration(
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
+                                                image: DecorationImage(
+                                                  image:
+                                                      CachedNetworkImageProvider(
+                                                    item['gallery_image_url'] ??
+                                                        '',
+                                                  ),
+                                                  fit: BoxFit.cover,
                                                 ),
-                                                fit: BoxFit.cover,
                                               ),
                                             ),
-                                          ),
-                                        );
-                                      },
-                                    ),
+                                          );
+                                        },
+                                      );
+                                    }),
 
                               // Services Tab
                               _serviceItems.isEmpty

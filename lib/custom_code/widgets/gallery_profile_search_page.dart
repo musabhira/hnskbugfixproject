@@ -9,7 +9,7 @@ import 'package:flutter/material.dart' as material;
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter/material.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
@@ -101,13 +101,12 @@ class _GalleryProfileSearchPageState extends State<GalleryProfileSearchPage> {
       }
     } catch (error) {
       if (mounted) {
-        displayInfoBar(context, builder: (context, close) {
-          return InfoBar(
-            title: const Text('Error'),
-            content: Text('Error loading profile: $error'),
-            severity: InfoBarSeverity.error,
-          );
-        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error' + ': ' + 'Error loading profile: $error'),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
     } finally {
       if (mounted) {
@@ -222,8 +221,7 @@ class _GalleryProfileSearchPageState extends State<GalleryProfileSearchPage> {
         _convertStringToColor(_colorCode2 ?? '#FFFF00');
     final Color buttontextcolor =
         _convertStringToColor(_colorCode3 ?? '#000000');
-    return ScaffoldPage(
-      content: ColoredBox(
+    return Scaffold(body: ColoredBox(
         color: bgcolorcode,
         child: SafeArea(
           child: Column(
@@ -239,35 +237,35 @@ class _GalleryProfileSearchPageState extends State<GalleryProfileSearchPage> {
                       GestureDetector(
                         onTap: () => Navigator.of(context).pop(),
                         child: Icon(
-                          FluentIcons.back,
+                          Icons.arrow_back,
                           color: bgtextcolor,
                           size: 20,
                         ),
                       ),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: TextBox(
+                      child: TextField(
                         controller: _searchController,
                         style: TextStyle(color: bgtextcolor),
-                        placeholder: 'Search gallery...',
-                        prefix: Padding(
-                          padding: const EdgeInsets.only(left: 8.0),
-                          child: Icon(FluentIcons.search, color: bgtextcolor),
+                        decoration: InputDecoration(
+                          hintText: 'Search gallery...',
+                          hintStyle: TextStyle(color: bgtextcolor.withOpacity(0.5)),
+                          prefixIcon: Padding(
+                            padding: const EdgeInsets.only(left: 8.0),
+                            child: Icon(Icons.search, color: bgtextcolor),
+                          ),
+                          suffixIcon: _searchController.text.isNotEmpty
+                              ? IconButton(
+                                  icon: Icon(Icons.close, color: bgtextcolor),
+                                  onPressed: () {
+                                    _searchController.clear();
+                                    _onSearchChanged();
+                                  },
+                                )
+                              : null,
+                          border: InputBorder.none,
                         ),
-                        suffix: _searchController.text.isNotEmpty
-                            ? IconButton(
-                                icon:
-                                    Icon(FluentIcons.clear, color: bgtextcolor),
-                                onPressed: () {
-                                  _searchController.clear();
-                                },
-                              )
-                            : null,
                         onChanged: (text) => _onSearchChanged(),
-                        decoration: WidgetStateProperty.all(const BoxDecoration(
-                          color: Colors.transparent,
-                          border: Border.fromBorderSide(BorderSide.none),
-                        )),
                       ),
                     ),
                   ],
@@ -287,25 +285,27 @@ class _GalleryProfileSearchPageState extends State<GalleryProfileSearchPage> {
 
                     return Padding(
                       padding: const EdgeInsets.only(right: 12),
-                      child: Button(
-                        onPressed: () {
+                      child: GestureDetector(
+                        onTap: () {
                           safeSetState(() {
                             selectedCategory = category;
                             _filterItems();
                           });
                         },
-                        style: ButtonStyle(
-                          backgroundColor: isSelected
-                              ? WidgetStateProperty.all(buttoncolorcode)
-                              : WidgetStateProperty.all(bgcolorcode),
-                        ),
-                        child: Text(
-                          category,
-                          style: TextStyle(
-                            color: isSelected ? buttontextcolor : bgtextcolor,
-                            fontWeight: isSelected
-                                ? FontWeight.bold
-                                : FontWeight.normal,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: isSelected ? buttoncolorcode : bgcolorcode,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: buttoncolorcode, width: 1),
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            category,
+                            style: TextStyle(
+                              color: isSelected ? buttontextcolor : bgtextcolor,
+                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                            ),
                           ),
                         ),
                       ),
@@ -323,14 +323,14 @@ class _GalleryProfileSearchPageState extends State<GalleryProfileSearchPage> {
                       Text(
                         '${filteredItems.length} results',
                         style: TextStyle(
-                          color: bgtextcolor.withValues(alpha: 0.6),
+                          color: bgtextcolor.withOpacity(0.6),
                           fontSize: 14,
                         ),
                       ),
                       const Spacer(),
                       if (_searchController.text.isNotEmpty ||
                           selectedCategory != 'All')
-                        Button(
+                        TextButton(
                           onPressed: () {
                             safeSetState(() {
                               _searchController.clear();
@@ -341,7 +341,7 @@ class _GalleryProfileSearchPageState extends State<GalleryProfileSearchPage> {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(FluentIcons.clear_filter,
+                              Icon(Icons.filter_alt_off,
                                   color: bgtextcolor, size: 16),
                               const SizedBox(width: 4),
                               Text(
@@ -362,7 +362,7 @@ class _GalleryProfileSearchPageState extends State<GalleryProfileSearchPage> {
               Expanded(
                 child: isLoading
                     ? const Center(
-                        child: ProgressRing(),
+                        child: CircularProgressIndicator(),
                       )
                     : filteredItems.isEmpty
                         ? Center(
@@ -370,17 +370,17 @@ class _GalleryProfileSearchPageState extends State<GalleryProfileSearchPage> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Icon(
-                                  FluentIcons.search,
+                                  Icons.search,
                                   size: 64,
                                   // ignore: deprecated_member_use
-                                  color: bgtextcolor.withValues(alpha: 0.5),
+                                  color: bgtextcolor.withOpacity(0.5),
                                 ),
                                 const SizedBox(height: 16),
                                 Text(
                                   'No results found',
                                   style: TextStyle(
                                     // ignore: deprecated_member_use
-                                    color: bgtextcolor.withValues(alpha: 0.8),
+                                    color: bgtextcolor.withOpacity(0.8),
                                     fontSize: 18,
                                     fontWeight: FontWeight.w500,
                                   ),
@@ -389,7 +389,7 @@ class _GalleryProfileSearchPageState extends State<GalleryProfileSearchPage> {
                                 Text(
                                   'Try adjusting your search or filters',
                                   style: TextStyle(
-                                    color: bgtextcolor.withValues(alpha: 0.6),
+                                    color: bgtextcolor.withOpacity(0.6),
                                     fontSize: 14,
                                   ),
                                 ),
@@ -453,7 +453,7 @@ class GallerySearchCard extends StatelessWidget {
       List<Map<String, dynamic>> allItems, int index) {
     Navigator.push(
       context,
-      FluentPageRoute(
+      MaterialPageRoute(
         builder: (context) => GalleryDetailsprofilePage(
           userid: userId,
           item: item,
@@ -481,10 +481,10 @@ class GallerySearchCard extends StatelessWidget {
       },
       child: Container(
         decoration: BoxDecoration(
-          color: bgtextcolor.withValues(alpha: 0.1),
+          color: bgtextcolor.withOpacity(0.1),
           borderRadius: BorderRadius.circular(16),
           border:
-              Border.all(color: bgtextcolor.withValues(alpha: 0.3), width: 1),
+              Border.all(color: bgtextcolor.withOpacity(0.3), width: 1),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -501,9 +501,9 @@ class GallerySearchCard extends StatelessWidget {
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) {
                           return Container(
-                            color: bgColor.withValues(alpha: 0.8),
+                            color: bgColor.withOpacity(0.8),
                             child: Icon(
-                              FluentIcons.error_badge,
+                              Icons.error,
                               color: bgtextcolor,
                               size: 48,
                             ),
@@ -511,9 +511,9 @@ class GallerySearchCard extends StatelessWidget {
                         },
                       )
                     : Container(
-                        color: bgColor.withValues(alpha: 0.8),
+                        color: bgColor.withOpacity(0.8),
                         child: Icon(
-                          FluentIcons.photo2,
+                          Icons.image,
                           color: bgtextcolor,
                           size: 48,
                         ),
@@ -547,7 +547,7 @@ class GallerySearchCard extends StatelessWidget {
                     Text(
                       item['gallery_description'],
                       style: TextStyle(
-                        color: bgtextcolor.withValues(alpha: 0.8),
+                        color: bgtextcolor.withOpacity(0.8),
                         fontSize: 12,
                       ),
                       maxLines: 2,
@@ -561,7 +561,7 @@ class GallerySearchCard extends StatelessWidget {
                     onTap: () {
                       Navigator.push(
                         context,
-                        FluentPageRoute(
+                        MaterialPageRoute(
                           builder: (context) => VerfiedSwitchPage(
                             userId: item['user_id'],
                           ),
@@ -583,7 +583,7 @@ class GallerySearchCard extends StatelessWidget {
                                 ? Image.network(item['profile_image_url'],
                                     fit: BoxFit.cover)
                                 : const Icon(
-                                    FluentIcons.contact,
+                                    Icons.person,
                                     size: 14,
                                     color: Colors.white,
                                   ),
@@ -642,7 +642,7 @@ class GallerySearchCard extends StatelessWidget {
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: bgColor.withValues(alpha: 0.4),
+                            color: bgColor.withOpacity(0.4),
                             borderRadius: BorderRadius.circular(8),
                             border:
                                 Border.all(color: Colors.yellow, width: 0.5),
@@ -720,8 +720,7 @@ class _GalleryDetailsprofilePageState extends State<GalleryDetailsprofilePage> {
 
   @override
   Widget build(BuildContext context) {
-    return ScaffoldPage(
-        content: ColoredBox(
+    return Scaffold(body: ColoredBox(
       color: Colors.black,
       child: SafeArea(
         child: PageView.builder(
@@ -830,23 +829,26 @@ class BuildDetailContentState extends State<BuildDetailContent> {
 
   Future<void> fetchHideStatus() async {
     try {
-      final user = _supabase.auth.currentUser;
-      if (user == null) return;
+      final targetUserId = widget.userid ?? widget.item['user_id'];
+      if (targetUserId == null || targetUserId.toString().isEmpty) {
+        safeSetState(() {
+          isLoading = false;
+        });
+        return;
+      }
 
       final response = await _supabase
           .from('hide')
           .select()
-          .eq('user_id', user.id)
+          .eq('user_id', targetUserId)
           .order('created_at', ascending: false)
           .limit(1);
 
       safeSetState(() {
-        // print(response);
         hideData = response.isNotEmpty ? response.first : null;
         isLoading = false;
       });
     } catch (e) {
-      // print('Error fetching hide status: $e');
       safeSetState(() {
         isLoading = false;
       });
@@ -1014,7 +1016,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setModalState) {
-            return ContentDialog(
+            return AlertDialog(
               constraints: const BoxConstraints(
                   maxWidth: 600), // Limit width for better desktop look
               title: Text(
@@ -1039,7 +1041,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                       height: 4,
                       decoration: BoxDecoration(
                         // ignore: deprecated_member_use
-                        color: widget.bgtextcolor.withValues(alpha: 0.3),
+                        color: widget.bgtextcolor.withOpacity(0.3),
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
@@ -1057,7 +1059,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                             ),
                           ),
                           IconButton(
-                            icon: Icon(FluentIcons.clear,
+                            icon: Icon(Icons.close,
                                 color: widget.bgtextcolor),
                             onPressed: () => Navigator.pop(context),
                           ),
@@ -1067,14 +1069,17 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                     // Search bar
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: TextBox(
-                        placeholder: 'Search comments...',
-                        prefix: Padding(
-                          padding: const EdgeInsets.only(left: 8.0),
-                          child: Icon(
-                            FluentIcons.search,
-                            color: widget.buttoncolorcode,
+                      child: TextField(
+                        decoration: InputDecoration(
+                          hintText: 'Search comments...',
+                          prefixIcon: Padding(
+                            padding: const EdgeInsets.only(left: 8.0),
+                            child: Icon(
+                              Icons.search,
+                              color: widget.buttoncolorcode,
+                            ),
                           ),
+                          border: InputBorder.none,
                         ),
                         onChanged: (value) {
                           if (value.length >= 2 || value.isEmpty) {
@@ -1094,7 +1099,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                     Expanded(
                       child: _isLoading
                           ? const Center(
-                              child: ProgressRing(),
+                              child: CircularProgressIndicator(),
                             )
                           : _comments.isEmpty
                               ? Center(
@@ -1102,10 +1107,10 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       Icon(
-                                        FluentIcons.comment,
+                                        Icons.comment,
                                         size: 80,
                                         color: widget.bgtextcolor
-                                            .withValues(alpha: 0.3),
+                                            .withOpacity(0.3),
                                       ),
                                       const SizedBox(height: 16),
                                       Text(
@@ -1153,7 +1158,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                         boxShadow: [
                           BoxShadow(
                             // ignore: deprecated_member_use
-                            color: Colors.black.withValues(alpha: 0.05),
+                            color: Colors.black.withOpacity(0.05),
                             blurRadius: 10,
                             offset: const Offset(0, -3),
                           ),
@@ -1164,10 +1169,13 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                           children: [
                             const SizedBox(width: 10),
                             Expanded(
-                              child: TextBox(
+                              child: TextField(
                                 controller: _commentController,
                                 maxLines: null,
-                                placeholder: 'Add a comment...',
+                                decoration: InputDecoration(
+                                  hintText: 'Add a comment...',
+                                  border: InputBorder.none,
+                                ),
                                 onSubmitted: (value) async {
                                   await _addComment();
                                   if (mounted) fetchComments(setModalState);
@@ -1191,7 +1199,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                                 padding: const EdgeInsets.all(8),
                                 alignment: Alignment.center,
                                 child: Icon(
-                                  FluentIcons.send,
+                                  Icons.send,
                                   size: 14,
                                   color: widget.buttontextcolor,
                                 ),
@@ -1231,7 +1239,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
 
   Widget buildAnimatedShareButton(BuildContext context) {
     return AnimatedButtonWithMenu(
-      mainIcon: FluentIcons.share,
+      mainIcon: Icons.share,
       mainLabel: 'Share',
       mainColor: Colors.blue,
       onMainTap: () {
@@ -1256,7 +1264,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
         MenuFlyoutItem(
           text: const Row(
             children: [
-              Icon(FluentIcons.copy, size: 16),
+              Icon(Icons.copy, size: 16),
               SizedBox(width: 8),
               Text('Copy Link'),
             ],
@@ -1265,14 +1273,12 @@ class BuildDetailContentState extends State<BuildDetailContent> {
             final String itemLink =
                 '${WhatsAppShareHelper.baseAppUrl}/item/${widget.item['gallery_id']?.toString() ?? widget.item['id']?.toString() ?? ''}';
             Clipboard.setData(ClipboardData(text: itemLink));
-            displayInfoBar(
-              context,
-              builder: (context, close) => const InfoBar(
-                title: Text('Copied'),
-                content: Text('Link copied to clipboard!'),
-                severity: InfoBarSeverity.success,
-              ),
-            );
+            ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Copied' + ': ' + 'Link copied to clipboard!'),
+            backgroundColor: Colors.green,
+          ),
+        );
           },
         ),
       ],
@@ -1289,7 +1295,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
           Text(
             '$label:',
             style: TextStyle(
-              color: widget.bgtextcolor.withValues(alpha: 0.8),
+              color: widget.bgtextcolor.withOpacity(0.8),
               fontSize: 14,
             ),
           ),
@@ -1298,7 +1304,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
             child: Text(
               value,
               style: TextStyle(
-                color: widget.bgtextcolor.withValues(alpha: 0.8),
+                color: widget.bgtextcolor.withOpacity(0.8),
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
@@ -1322,7 +1328,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
     return widget.item['phone_no'] != null &&
             widget.item['phone_no'].toString().isNotEmpty
         ? AnimatedButtonWithMenu(
-            mainIcon: FluentIcons.message,
+            mainIcon: Icons.message,
             mainLabel: 'Message on WhatsApp',
             mainColor: Colors.green,
             onMainTap: () => WhatsAppShareHelper.shareToSpecificWhatsAppNumber(
@@ -1335,7 +1341,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
               MenuFlyoutItem(
                 text: const Row(
                   children: [
-                    Icon(FluentIcons.chat, size: 16),
+                    Icon(Icons.chat, size: 16),
                     SizedBox(width: 8),
                     Text('Send simple message'),
                   ],
@@ -1351,7 +1357,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
               MenuFlyoutItem(
                 text: const Row(
                   children: [
-                    Icon(FluentIcons.chat, size: 16),
+                    Icon(Icons.chat, size: 16),
                     SizedBox(width: 8),
                     Text('Send with full details'),
                   ],
@@ -1375,12 +1381,10 @@ class BuildDetailContentState extends State<BuildDetailContent> {
     try {
       final userId = _supabase.auth.currentUser?.id;
       if (userId == null) {
-        displayInfoBar(
-          context,
-          builder: (context, close) => const InfoBar(
-            title: Text('Error'),
-            content: Text('You need to be logged in to comment'),
-            severity: InfoBarSeverity.error,
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error' + ': ' + 'You need to be logged in to comment'),
+            backgroundColor: Colors.red,
           ),
         );
         return;
@@ -1398,12 +1402,10 @@ class BuildDetailContentState extends State<BuildDetailContent> {
       final profileId = profileResponse['id'];
       if (profileId == null) {
         if (!context.mounted) return;
-        displayInfoBar(
-          context,
-          builder: (context, close) => const InfoBar(
-            title: Text('Error'),
-            content: Text('Profile not found'),
-            severity: InfoBarSeverity.error,
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error' + ': ' + 'Profile not found'),
+            backgroundColor: Colors.red,
           ),
         );
         return;
@@ -1429,24 +1431,20 @@ class BuildDetailContentState extends State<BuildDetailContent> {
       await fetchComments(null);
 
       if (!context.mounted) return;
-      displayInfoBar(
-        context,
-        builder: (context, close) => const InfoBar(
-          title: Text('Success'),
-          content: Text('Comment added successfully'),
-          severity: InfoBarSeverity.success,
-        ),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Success' + ': ' + 'Comment added successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
     } catch (e) {
       if (!context.mounted) return;
-      displayInfoBar(
-        context,
-        builder: (context, close) => InfoBar(
-          title: const Text('Error'),
-          content: Text('Error adding comment: $e'),
-          severity: InfoBarSeverity.error,
-        ),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error' + ': ' + 'Error adding comment: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
     }
   }
 
@@ -1471,7 +1469,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
             color: widget.bgColor,
             child: PageHeader(
               leading: IconButton(
-                icon: Icon(FluentIcons.back, color: widget.bgtextcolor),
+                icon: Icon(Icons.arrow_back, color: widget.bgtextcolor),
                 onPressed: () => Navigator.of(context).pop(),
               ),
               title: Text(
@@ -1483,24 +1481,23 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                 primaryItems: [
                   if (_supabase.auth.currentUser?.id == widget.userid)
                     CommandBarButton(
-                      icon: Icon(FluentIcons.delete, color: Colors.red),
+                      icon: Icon(Icons.delete, color: Colors.red),
                       label: Text('Delete Showcase', style: TextStyle(color: Colors.red)),
                       onPressed: () async {
                         final confirm = await showDialog<bool>(
                           context: context,
-                          builder: (context) => ContentDialog(
+                          builder: (context) => AlertDialog(
                             title: const Text('Delete Showcase?'),
                             content: const Text('Are you sure you want to delete this showcase post? This action cannot be undone.'),
                             actions: [
-                              Button(
-                                child: const Text('Cancel'),
+                              TextButton(child: const Text('Cancel'),
                                 onPressed: () => Navigator.pop(context, false),
                               ),
                               FilledButton(
-                                style: ButtonStyle(
-                                  backgroundColor: WidgetStateProperty.all(Colors.red),
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: Colors.red,
                                 ),
-                                child: const Text('Delete', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                                child: const Text('Delete', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                                 onPressed: () => Navigator.pop(context, true),
                               ),
                             ],
@@ -1525,32 +1522,28 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                           await _supabase.from('gallery').delete().match({'id': itemId});
 
                           if (mounted) {
-                            displayInfoBar(
-                              context,
-                              builder: (context, close) => const InfoBar(
-                                title: Text('Success'),
-                                content: Text('Showcase deleted successfully!'),
-                                severity: InfoBarSeverity.success,
-                              ),
-                            );
+                            ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Success' + ': ' + 'Showcase deleted successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
                             Navigator.pop(context); // Close detail dialog/screen
                           }
                         } catch (e) {
                           if (mounted) {
-                            displayInfoBar(
-                              context,
-                              builder: (context, close) => InfoBar(
-                                title: const Text('Error'),
-                                content: Text('Error deleting showcase: $e'),
-                                severity: InfoBarSeverity.error,
-                              ),
-                            );
+                            ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error' + ': ' + 'Error deleting showcase: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
                           }
                         }
                       },
                     ),
                   CommandBarButton(
-                    icon: Icon(FluentIcons.warning, color: widget.bgtextcolor),
+                    icon: Icon(Icons.warning, color: widget.bgtextcolor),
                     label: const Text('Report'),
                     onPressed: () {
                       // Implement report logic
@@ -1586,9 +1579,9 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                                   errorBuilder: (context, error, stackTrace) {
                                     return Container(
                                       color:
-                                          widget.bgColor.withValues(alpha: 0.5),
+                                          widget.bgColor.withOpacity(0.5),
                                       child: Icon(
-                                        FluentIcons.photo2,
+                                        Icons.image,
                                         color: widget.bgtextcolor,
                                         size: 64,
                                       ),
@@ -1596,9 +1589,9 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                                   },
                                 )
                               : Container(
-                                  color: widget.bgColor.withValues(alpha: 0.5),
+                                  color: widget.bgColor.withOpacity(0.5),
                                   child: Icon(
-                                    FluentIcons.photo2,
+                                    Icons.image,
                                     color: widget.bgtextcolor,
                                     size: 64,
                                   ),
@@ -1628,7 +1621,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                                     ),
                                   ),
                                 ),
-                              // Button(
+                              // TextButton(
                               //   onPressed: () async {
                               //     final isAuthenticated =
                               //         await AuthAlertBox.checkAuthAndShowAlert(
@@ -1664,7 +1657,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                               item['gallery_description'],
                               style: TextStyle(
                                 color:
-                                    widget.bgtextcolor.withValues(alpha: 0.8),
+                                    widget.bgtextcolor.withOpacity(0.8),
                                 fontSize: 16,
                                 height: 1.5,
                               ),
@@ -1694,17 +1687,15 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                                   ClipboardData(text: link));
                               if (!context.mounted) return;
                               // ignore: use_build_context_synchronously
-                              displayInfoBar(
-                                context,
-                                builder: (context, close) => const InfoBar(
-                                  title: Text('Copied'),
-                                  content: Text('Link copied to clipboard'),
-                                  severity: InfoBarSeverity.success,
-                                ),
-                              );
+                              ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Copied' + ': ' + 'Link copied to clipboard'),
+            backgroundColor: Colors.green,
+          ),
+        );
                             },
                             icon: Icon(
-                              FluentIcons.link,
+                              Icons.link,
                               size: 16,
                               color: widget.buttontextcolor,
                             ),
@@ -1722,7 +1713,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                           onTap: () {
                             Navigator.push(
                               context,
-                              FluentPageRoute(
+                              MaterialPageRoute(
                                 builder: (context) => VerfiedSwitchPage(
                                   userId: item['user_id'] ?? widget.userid,
                                 ),
@@ -1733,7 +1724,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                             margin: const EdgeInsets.symmetric(horizontal: 16),
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: widget.bgtextcolor.withValues(alpha: 0.1),
+                              color: widget.bgtextcolor.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(
                                   color: material.Colors.grey[800]!, width: 1),
@@ -1749,7 +1740,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                                       : null,
                                   child: item['profile_image_url'] == null
                                       ? Icon(
-                                          FluentIcons.contact,
+                                          Icons.person,
                                           size: 30,
                                           color: widget.buttontextcolor,
                                         )
@@ -1774,7 +1765,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                                         'Creator',
                                         style: TextStyle(
                                           color: widget.bgtextcolor
-                                              .withValues(alpha: 0.8),
+                                              .withOpacity(0.8),
                                           fontSize: 14,
                                         ),
                                       ),
@@ -1793,7 +1784,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                     margin: const EdgeInsets.symmetric(horizontal: 16),
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: widget.bgtextcolor.withValues(alpha: 0.1),
+                      color: widget.bgtextcolor.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
                           color: material.Colors.grey[800]!, width: 1),
@@ -1814,7 +1805,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                         // Price
                         if (item['gallery_price'] != null)
                           _buildDetailRow(
-                            FluentIcons.money,
+                            Icons.attach_money,
                             'Price',
                             '₹${item['gallery_price']}',
                           ),
@@ -1822,7 +1813,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                         // Category
                         if (item['gallery_category'] != null)
                           _buildDetailRow(
-                            FluentIcons.list,
+                            Icons.list,
                             'Category',
                             item['gallery_category'],
                           ),
@@ -1830,7 +1821,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                         // Created Date
                         if (item['gallery_created_at'] != null)
                           _buildDetailRow(
-                            FluentIcons.calendar,
+                            Icons.calendar_month,
                             'Created',
                             _formatDate(item['gallery_created_at']),
                           ),
@@ -1846,7 +1837,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        hideData != null && hideData?['is_hidden'] == true
+                        _supabase.auth.currentUser == null || hideData == null || hideData?['is_hidden'] == true
                             ? const SizedBox()
                             : Expanded(
                                 child: buildAnimatedShareButton(context)),
@@ -1859,7 +1850,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        hideData != null && hideData?['is_hidden'] == true
+                        _supabase.auth.currentUser == null || hideData == null || hideData?['is_hidden'] == true
                             ? const SizedBox()
                             : Expanded(
                                 child:
@@ -1873,7 +1864,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                     child: Row(
                       children: [
                         Expanded(
-                          child: Button(
+                          child: TextButton(
                             onPressed: () async {
                               final isAuthenticated =
                                   await AuthAlertBox.checkAuthAndShowAlert(
@@ -1885,7 +1876,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                               if (isAuthenticated) {
                                 Navigator.push(
                                   context,
-                                  FluentPageRoute(
+                                  MaterialPageRoute(
                                     builder: (context) => WhatsAppGroupChat(
                                       groupId:
                                           'p:${widget.userid ?? item['user_id']}',
@@ -1896,19 +1887,17 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                                 );
                               }
                             },
-                            style: ButtonStyle(
-                              backgroundColor:
-                                  WidgetStateProperty.all(widget.buttoncolorcode),
-                              padding: WidgetStateProperty.all(
-                                  const EdgeInsets.symmetric(vertical: 16)),
-                              shape: WidgetStateProperty.all(RoundedRectangleBorder(
+                            style: TextButton.styleFrom(
+                              backgroundColor: widget.buttoncolorcode,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
-                              )),
+                              ),
                             ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(FluentIcons.chat,
+                                Icon(Icons.chat,
                                     color: widget.buttontextcolor),
                                 const SizedBox(width: 8),
                                 Text(
@@ -1942,7 +1931,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            Button(
+                            TextButton(
                               onPressed: () async {
                                 final isAuthenticated =
                                     await AuthAlertBox.checkAuthAndShowAlert(
@@ -1955,14 +1944,13 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                                   _showCommentsModal();
                                 }
                               },
-                              style: ButtonStyle(
-                                foregroundColor:
-                                    WidgetStateProperty.all(widget.buttoncolorcode),
+                              style: TextButton.styleFrom(
+                                foregroundColor: widget.buttoncolorcode,
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(FluentIcons.chat,
+                                  Icon(Icons.chat,
                                       size: 18, color: widget.buttoncolorcode),
                                   const SizedBox(width: 8),
                                   Text(
@@ -2017,14 +2005,14 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                                     style: TextStyle(
                                       // ignore: deprecated_member_use
                                       color: widget.bgtextcolor
-                                          .withValues(alpha: 0.8),
+                                          .withOpacity(0.8),
                                     ),
                                   ),
                                 ),
                                 Icon(
-                                  FluentIcons.send,
+                                  Icons.send,
                                   color:
-                                      widget.bgtextcolor.withValues(alpha: 0.8),
+                                      widget.bgtextcolor.withOpacity(0.8),
                                   size: 18,
                                 ),
                               ],
@@ -2037,7 +2025,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                         // Comments preview (3 most recent)
                         _isLoading
                             ? const Center(
-                                child: ProgressRing(
+                                child: CircularProgressIndicator(
                                 value: 0.5,
                                 strokeWidth: 2,
                               ))
@@ -2048,11 +2036,11 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                                       child: Column(
                                         children: [
                                           Icon(
-                                            FluentIcons.chat,
+                                            Icons.chat,
                                             size: 48,
                                             // ignore: deprecated_member_use
                                             color: widget.bgtextcolor
-                                                .withValues(alpha: 0.8),
+                                                .withOpacity(0.8),
                                           ),
                                           const SizedBox(height: 8),
                                           Text(
@@ -2063,7 +2051,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                                               color:
                                                   // ignore: deprecated_member_use
                                                   widget.bgtextcolor
-                                                      .withValues(alpha: 0.9),
+                                                      .withOpacity(0.9),
                                             ),
                                           ),
                                         ],
@@ -2081,7 +2069,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                                         Padding(
                                           padding:
                                               const EdgeInsets.only(top: 8.0),
-                                          child: Button(
+                                          child: TextButton(
                                             onPressed: _showCommentsModal,
                                             child: Text(
                                               'View ${_comments.length - 3} more comments',
@@ -2192,12 +2180,10 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
       });
 
       if (mounted) {
-        displayInfoBar(
-          context,
-          builder: (context, close) => InfoBar(
-            title: const Text('Error'),
-            content: Text('Failed to update like: $e'),
-            severity: InfoBarSeverity.error,
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error' + ': ' + 'Failed to update like: $e'),
+            backgroundColor: Colors.red,
           ),
         );
       }
@@ -2228,12 +2214,10 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
           _isLoadingReplies = false;
         });
         // print(e);
-        displayInfoBar(
-          context,
-          builder: (context, close) => InfoBar(
-            title: const Text('Error'),
-            content: Text('Failed to load replies: $e'),
-            severity: InfoBarSeverity.error,
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error' + ': ' + 'Failed to load replies: $e'),
+            backgroundColor: Colors.red,
           ),
         );
         // print(e);
@@ -2265,12 +2249,10 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
       }
     } catch (e) {
       if (mounted) {
-        displayInfoBar(
-          context,
-          builder: (context, close) => InfoBar(
-            content: Text('Failed to add reply: $e'),
-            title: const Text('Error'),
-            severity: InfoBarSeverity.error,
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error' + ': ' + 'Failed to add reply: $e'),
+            backgroundColor: Colors.red,
           ),
         );
         // print(e);
@@ -2293,7 +2275,7 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
         boxShadow: [
           BoxShadow(
             // ignore: deprecated_member_use
-            color: Colors.black.withValues(alpha: 0.03),
+            color: Colors.black.withOpacity(0.03),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -2322,7 +2304,7 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
                         width: 32,
                         height: 32,
                         color: material.Colors.grey[800],
-                        child: Icon(FluentIcons.contact,
+                        child: Icon(Icons.person,
                             size: 18, color: material.Colors.grey[400]),
                       );
                     },
@@ -2350,7 +2332,7 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
                 ),
               ),
               IconButton(
-                icon: const Icon(FluentIcons.more,
+                icon: const Icon(Icons.more_vert,
                     color: material.Colors.grey, size: 20),
                 onPressed: () {
                   final currentUserId = _supabase.auth.currentUser?.id;
@@ -2366,7 +2348,7 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
                         children: [
                           if (isCommentOwner)
                             material.ListTile(
-                              leading: const Icon(FluentIcons.delete,
+                              leading: const Icon(Icons.delete,
                                   color: material.Colors.red),
                               title: const Text('Delete comment'),
                               onTap: () async {
@@ -2374,20 +2356,19 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
 
                                 final shouldDelete = await showDialog<bool>(
                                   context: context,
-                                  builder: (context) => ContentDialog(
+                                  builder: (context) => AlertDialog(
                                     title: const Text('Delete Comment'),
                                     content: const Text(
                                         'Are you sure you want to delete this comment? This action cannot be undone.'),
                                     actions: [
-                                      Button(
-                                        child: const Text('Cancel'),
+                                      TextButton(child: const Text('Cancel'),
                                         onPressed: () =>
                                             Navigator.of(context).pop(false),
                                       ),
-                                      Button(
+                                      TextButton(
                                         child: const Text('Delete',
                                             style: TextStyle(
-                                                color: material.Colors.red)),
+                                                color: Colors.red)),
                                         onPressed: () =>
                                             Navigator.of(context).pop(true),
                                       ),
@@ -2403,16 +2384,12 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
                                         .eq('id', widget.comment['comment_id']);
 
                                     if (context.mounted) {
-                                      displayInfoBar(
-                                        context,
-                                        builder: (context, close) =>
-                                            const InfoBar(
-                                          title: Text('Success'),
-                                          content: Text(
-                                              'Comment deleted successfully'),
-                                          severity: InfoBarSeverity.success,
-                                        ),
-                                      );
+                                      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Success'),
+            backgroundColor: Colors.green,
+          ),
+        );
 
                                       if (widget.onCommentDeleted != null) {
                                         widget.onCommentDeleted!();
@@ -2420,15 +2397,12 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
                                     }
                                   } catch (e) {
                                     if (context.mounted) {
-                                      displayInfoBar(
-                                        context,
-                                        builder: (context, close) => InfoBar(
-                                          title: const Text('Error'),
-                                          content: Text(
-                                              'Failed to delete comment: $e'),
-                                          severity: InfoBarSeverity.error,
-                                        ),
-                                      );
+                                      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error'),
+            backgroundColor: Colors.red,
+          ),
+        );
                                     }
                                     // print(e);
                                   }
@@ -2436,7 +2410,7 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
                               },
                             ),
                           material.ListTile(
-                            leading: const Icon(FluentIcons.flag),
+                            leading: const Icon(Icons.flag),
                             title: const Text('Report comment'),
                             onTap: () {
                               Navigator.pop(context);
@@ -2451,40 +2425,36 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
                                         'Comment',
                                 onReportSubmitted: () {
                                   // Optional: Show feedback to user
-                                  displayInfoBar(
-                                    context,
-                                    builder: (context, close) => const InfoBar(
-                                      content: Text(
-                                          'Thank you for your report. We\'ll review it soon.'),
-                                      title: Text('Reported'),
-                                    ),
-                                  );
+                                  ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Reported'),
+            backgroundColor: Colors.red,
+          ),
+        );
                                 },
                               );
-                              displayInfoBar(
-                                context,
-                                builder: (context, close) => const InfoBar(
-                                  title: Text('Reported'),
-                                  severity: InfoBarSeverity.success,
-                                ),
-                              );
+                              ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Reported'),
+            backgroundColor: Colors.green,
+          ),
+        );
                             },
                           ),
                           material.ListTile(
-                            leading: const Icon(FluentIcons.copy),
+                            leading: const Icon(Icons.copy),
                             title: const Text('Copy text'),
                             onTap: () {
                               Navigator.pop(context);
                               Clipboard.setData(ClipboardData(
                                   text:
                                       widget.comment['comment_content'] ?? ''));
-                              displayInfoBar(
-                                context,
-                                builder: (context, close) => const InfoBar(
-                                  content: Text('Comment copied to clipboard'),
-                                  title: Text('Copied'),
-                                ),
-                              );
+                              ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Copied' + ': ' + 'Comment copied to clipboard'),
+            backgroundColor: Colors.red,
+          ),
+        );
                             },
                           ),
                         ],
@@ -2503,19 +2473,19 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
           const SizedBox(height: 12),
           Row(
             children: [
-              Button(
+              TextButton(
                 onPressed: _toggleLike,
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
                       _isLiked
-                          ? material.Icons.thumb_up
-                          : material.Icons.thumb_up_outlined,
+                          ? Icons.thumb_up
+                          : Icons.thumb_up_outlined,
                       size: 16,
                       color: _isLiked
                           ? FlutterFlowTheme.of(context).primary
-                          : material.Colors.grey,
+                          : Colors.grey,
                     ),
                     const SizedBox(width: 8),
                     Text(
@@ -2523,14 +2493,14 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
                       style: TextStyle(
                         color: _isLiked
                             ? FlutterFlowTheme.of(context).primary
-                            : material.Colors.grey,
+                            : Colors.grey,
                       ),
                     ),
                   ],
                 ),
               ),
               const SizedBox(width: 16),
-              Button(
+              TextButton(
                 onPressed: () {
                   if (_showReplies) {
                     safeSetState(() {
@@ -2549,7 +2519,7 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(FluentIcons.reply, size: 16),
+                    const Icon(Icons.reply, size: 16),
                     const SizedBox(width: 8),
                     Text(_replies.isNotEmpty
                         ? 'Replies (${_replies.length})'
@@ -2562,14 +2532,14 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
           if (_showReplies) ...[
             Container(
               height: 0.5,
-              color: material.Colors.grey.withValues(alpha: 0.5),
+              color: material.Colors.grey.withOpacity(0.5),
               margin: const EdgeInsets.symmetric(vertical: 12),
             ),
             if (_isLoadingReplies)
               const Center(
                 child: Padding(
                   padding: EdgeInsets.all(8.0),
-                  child: ProgressRing(strokeWidth: 2),
+                  child: CircularProgressIndicator(strokeWidth: 2),
                 ),
               )
             else if (_replies.isEmpty)
@@ -2616,7 +2586,7 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
                                   width: 24,
                                   height: 24,
                                   color: Colors.grey[800],
-                                  child: Icon(FluentIcons.contact,
+                                  child: Icon(Icons.person,
                                       size: 14, color: Colors.grey[400]),
                                 );
                               },
@@ -2661,7 +2631,7 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
                         if (reply['user_id'] ==
                             SupaFlow.client.auth.currentUser?.id)
                           IconButton(
-                            icon: const Icon(FluentIcons.more,
+                            icon: const Icon(Icons.more_vert,
                                 size: 16, color: Colors.grey),
                             onPressed: () {
                               showDialog(
@@ -2673,7 +2643,7 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       material.ListTile(
-                                        leading: const Icon(FluentIcons.delete,
+                                        leading: const Icon(Icons.delete,
                                             color: material.Colors.red),
                                         title: const Text('Delete reply'),
                                         onTap: () async {
@@ -2682,18 +2652,17 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
                                           final shouldDelete =
                                               await showDialog<bool>(
                                             context: context,
-                                            builder: (context) => ContentDialog(
+                                            builder: (context) => AlertDialog(
                                               title: const Text('Delete Reply'),
                                               content: const Text(
                                                   'Are you sure you want to delete this reply?'),
                                               actions: [
-                                                Button(
-                                                  child: const Text('Cancel'),
+                                                TextButton(child: const Text('Cancel'),
                                                   onPressed: () =>
                                                       Navigator.of(context)
                                                           .pop(false),
                                                 ),
-                                                Button(
+                                                TextButton(
                                                   child: const Text('Delete',
                                                       style: TextStyle(
                                                           color: material
@@ -2717,55 +2686,40 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
                                                 });
 
                                                 // ignore: use_build_context_synchronously
-                                                displayInfoBar(
-                                                  context,
-                                                  builder: (context, close) =>
-                                                      const InfoBar(
-                                                    title:
-                                                        Text('Success'),
-                                                    content: Text(
-                                                        'Reply deleted successfully'),
-                                                    severity:
-                                                        InfoBarSeverity.success,
-                                                  ),
-                                                );
+                                                ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Success'),
+            backgroundColor: Colors.green,
+          ),
+        );
                                               }
                                             } catch (e) {
                                               if (mounted) {
                                                 // ignore: use_build_context_synchronously
-                                                displayInfoBar(
-                                                  context,
-                                                  builder: (context, close) =>
-                                                      InfoBar(
-                                                    title: const Text('Error'),
-                                                    content: Text(
-                                                        'Failed to delete reply: $e'),
-                                                    severity:
-                                                        InfoBarSeverity.error,
-                                                  ),
-                                                );
+                                                ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error'),
+            backgroundColor: Colors.red,
+          ),
+        );
                                               }
                                             }
                                           }
                                         },
                                       ),
                                       material.ListTile(
-                                        leading: const Icon(FluentIcons.copy),
+                                        leading: const Icon(Icons.copy),
                                         title: const Text('Copy text'),
                                         onTap: () {
                                           Navigator.pop(context);
                                           Clipboard.setData(ClipboardData(
                                               text: reply['content'] ?? ''));
-                                          displayInfoBar(
-                                            context,
-                                            builder: (context, close) =>
-                                                const InfoBar(
-                                              title: Text('Copied'),
-                                              content: Text(
-                                                  'Reply copied to clipboard'),
-                                              severity: InfoBarSeverity.success,
-                                            ),
-                                          );
+                                          ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Copied'),
+            backgroundColor: Colors.green,
+          ),
+        );
                                         },
                                       ),
                                     ],
@@ -2814,7 +2768,7 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
                               width: 24,
                               height: 24,
                               color: Colors.grey[800],
-                              child: Icon(FluentIcons.contact,
+                              child: Icon(Icons.person,
                                   size: 14, color: Colors.grey[400]),
                             );
                           },
@@ -2823,21 +2777,20 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
                     ),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: TextBox(
+                      child: TextField(
                         controller: _replyController,
                         onChanged: (value) {
                           safeSetState(() {
                             _isReplying = value.trim().isNotEmpty;
                           });
                         },
-                        placeholder: 'Write a reply...',
-                        placeholderStyle:
-                            FlutterFlowTheme.of(context).bodySmall.copyWith(
-                                  color: Colors.grey,
-                                ),
-                        decoration: WidgetStateProperty.all(BoxDecoration(
-                          border: Border.all(style: BorderStyle.none),
-                        )),
+                        decoration: InputDecoration(
+                          hintText: 'Write a reply...',
+                          hintStyle: FlutterFlowTheme.of(context).bodySmall.copyWith(
+                                color: Colors.grey,
+                              ),
+                          border: InputBorder.none,
+                        ),
                         minLines: 1,
                         maxLines: 5,
                         style: FlutterFlowTheme.of(context).bodySmall,
@@ -2846,7 +2799,7 @@ class _EnhancedCommentTileState extends State<EnhancedCommentTile> {
                     if (_isReplying)
                       IconButton(
                         icon: const Icon(
-                          FluentIcons.send,
+                          Icons.send,
                           color: material.Colors.blue,
                           size: 20,
                         ),
@@ -3070,7 +3023,7 @@ class _AnimatedButtonWithMenuState extends State<AnimatedButtonWithMenu>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
-  final FlyoutController _flyoutController = FlyoutController();
+  Offset _tapPosition = Offset.zero;
   bool _isPressed = false;
 
   void safeSetState(VoidCallback fn) {
@@ -3095,15 +3048,33 @@ class _AnimatedButtonWithMenuState extends State<AnimatedButtonWithMenu>
   @override
   void dispose() {
     _controller.dispose();
-    _flyoutController.dispose();
     super.dispose();
   }
 
   void _showMenu() async {
-    await _flyoutController.showFlyout(
-      builder: (context) {
-        return MenuFlyout(items: widget.menuItems);
-      },
+    final RenderBox? overlay = Navigator.of(context).overlay?.context.findRenderObject() as RenderBox?;
+    if (overlay == null) return;
+    
+    final MenuFlyoutItem? selected = await showMenu<MenuFlyoutItem>(
+      context: context,
+      position: RelativeRect.fromRect(
+        _tapPosition & const Size(40, 40),
+        Offset.zero & overlay.size,
+      ),
+      items: widget.menuItems.map((item) {
+        return PopupMenuItem<MenuFlyoutItem>(
+          value: item,
+          child: Row(
+            children: [
+              if (item.leading != null) ...[
+                item.leading!,
+                const SizedBox(width: 8),
+              ],
+              item.text,
+            ],
+          ),
+        );
+      }).toList(),
     );
 
     if (mounted) {
@@ -3112,78 +3083,165 @@ class _AnimatedButtonWithMenuState extends State<AnimatedButtonWithMenu>
       });
       _controller.reverse();
     }
+
+    if (selected != null && selected.onPressed != null) {
+      selected.onPressed!();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return FlyoutTarget(
-      controller: _flyoutController,
-      child: GestureDetector(
-        onTapDown: (_) {
-          safeSetState(() {
-            _isPressed = true;
-          });
-          _controller.forward();
-        },
-        onTapUp: (_) {
-          // Small delay to show animation
-          Timer(const Duration(milliseconds: 100), () {
-            if (mounted) {
-              safeSetState(() {
-                _isPressed = false;
-              });
-              _controller.reverse();
-            }
-          });
-        },
-        onTapCancel: () {
-          safeSetState(() {
-            _isPressed = false;
-          });
-          _controller.reverse();
-        },
-        onLongPress: _showMenu,
-        onTap: widget.onMainTap,
-        child: ScaleTransition(
-          scale: _scaleAnimation,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: _isPressed
-                  ? widget.mainColor.withValues(alpha: 0.8)
-                  : widget.mainColor,
-              borderRadius: BorderRadius.circular(8),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.2),
-                  offset: Offset(0, _isPressed ? 1 : 2),
-                  blurRadius: _isPressed ? 3 : 5,
+    return GestureDetector(
+      onTapDown: (details) {
+        _tapPosition = details.globalPosition;
+        safeSetState(() {
+          _isPressed = true;
+        });
+        _controller.forward();
+      },
+      onTapUp: (_) {
+        Timer(const Duration(milliseconds: 100), () {
+          if (mounted) {
+            safeSetState(() {
+              _isPressed = false;
+            });
+            _controller.reverse();
+          }
+        });
+      },
+      onTapCancel: () {
+        safeSetState(() {
+          _isPressed = false;
+        });
+        _controller.reverse();
+      },
+      onLongPress: _showMenu,
+      onTap: widget.onMainTap,
+      child: ScaleTransition(
+        scale: _scaleAnimation,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: _isPressed
+                ? widget.mainColor.withOpacity(0.8)
+                : widget.mainColor,
+            borderRadius: BorderRadius.circular(8),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                offset: Offset(0, _isPressed ? 1 : 2),
+                blurRadius: _isPressed ? 3 : 5,
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(widget.mainIcon, color: Colors.white),
+              const SizedBox(width: 8),
+              Text(
+                widget.mainLabel,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
                 ),
-              ],
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(widget.mainIcon, color: Colors.white),
-                const SizedBox(width: 8),
-                Text(
-                  widget.mainLabel,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(width: 4),
-                const Icon(
-                  FluentIcons.chevron_down,
-                  color: Colors.grey,
-                  size: 10,
-                ),
-              ],
-            ),
+              ),
+              const SizedBox(width: 4),
+              const Icon(
+                Icons.keyboard_arrow_down,
+                color: Colors.grey,
+                size: 10,
+              ),
+            ],
           ),
         ),
       ),
+    );
+  }
+}
+
+
+class MenuFlyoutItem {
+  final Widget text;
+  final Widget? leading;
+  final VoidCallback? onPressed;
+
+  const MenuFlyoutItem({
+    required this.text,
+    this.leading,
+    this.onPressed,
+  });
+}
+
+
+class PageHeader extends StatelessWidget {
+  final Widget? leading;
+  final Widget title;
+  final Widget? commandBar;
+
+  const PageHeader({
+    super.key,
+    this.leading,
+    required this.title,
+    this.commandBar,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+      child: Row(
+        children: [
+          if (leading != null) ...[
+            leading!,
+            const SizedBox(width: 8),
+          ],
+          Expanded(child: title),
+          if (commandBar != null) commandBar!,
+        ],
+      ),
+    );
+  }
+}
+
+class CommandBar extends StatelessWidget {
+  final MainAxisAlignment mainAxisAlignment;
+  final List<CommandBarButton> primaryItems;
+
+  const CommandBar({
+    super.key,
+    this.mainAxisAlignment = MainAxisAlignment.start,
+    required this.primaryItems,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: mainAxisAlignment,
+      mainAxisSize: MainAxisSize.min,
+      children: primaryItems,
+    );
+  }
+}
+
+class CommandBarButton extends StatelessWidget {
+  final Widget icon;
+  final Widget? label;
+  final VoidCallback? onPressed;
+
+  const CommandBarButton({
+    super.key,
+    required this.icon,
+    this.label,
+    this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return TextButton.icon(
+      onPressed: onPressed,
+      icon: icon,
+      label: label ?? const SizedBox.shrink(),
     );
   }
 }

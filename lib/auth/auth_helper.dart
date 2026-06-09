@@ -1,4 +1,4 @@
-import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '/auth/supabase_auth/auth_util.dart';
 import '/index.dart';
@@ -16,13 +16,13 @@ class AuthHelper {
   static void showLoginAlert(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => ContentDialog(
+      builder: (context) => AlertDialog(
         title: const Text('Login Required'),
         content: const Text(
           'You need to be logged in to access this feature. Would you like to login or sign up now?',
         ),
         actions: [
-          Button(
+          TextButton(
             child: const Text('Cancel'),
             onPressed: () => Navigator.pop(context),
           ),

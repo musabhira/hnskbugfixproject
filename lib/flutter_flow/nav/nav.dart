@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/material.dart' as m;
 import 'package:provider/provider.dart';
 
@@ -115,7 +115,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: ProfileCreateCustomWidget.routeName,
           path: ProfileCreateCustomWidget.routePath,
-          builder: (context, params) => const ProfileCreateCustomWidget(),
+          builder: (context, params) => const m.ScaffoldMessenger(child: ProfileCreateCustomWidget()),
         ),
       ].map((r) => r.toRoute(appStateNotifier)).toList(),
     );

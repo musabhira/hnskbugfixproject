@@ -12,7 +12,6 @@ import 'package:pocket_mates_app/custom_code/widgets/status_display_widget.dart'
 import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
 import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/share_content_screen.dart';
-import 'package:fluent_ui/fluent_ui.dart' as fluent;
 
 import 'package:pocket_mates_app/auth/auth_helper.dart';
 
@@ -966,7 +965,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
         item: widget.item,
       ),
       menuItems: [
-        fluent.MenuFlyoutItem(
+        MenuFlyoutItem(
           leading: const Icon(Icons.description, size: 16),
           text: const Text('Share all details'),
           onPressed: () => WhatsAppShareHelper.shareToWhatsApp(
@@ -974,7 +973,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
             item: widget.item,
           ),
         ),
-        fluent.MenuFlyoutItem(
+        MenuFlyoutItem(
           leading: const Icon(Icons.link, size: 16),
           text: const Text('Share link only'),
           onPressed: () => WhatsAppShareHelper.shareOnlyLink(
@@ -1039,7 +1038,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
               includeFullDetails: false, // Simple message for direct contact
             ),
             menuItems: [
-              fluent.MenuFlyoutItem(
+              MenuFlyoutItem(
                 leading: const Icon(Icons.chat_bubble_outline, size: 16),
                 text: const Text('Send simple message'),
                 onPressed: () =>
@@ -1050,7 +1049,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                   includeFullDetails: false,
                 ),
               ),
-              fluent.MenuFlyoutItem(
+              MenuFlyoutItem(
                 leading: const Icon(Icons.info_outline, size: 16),
                 text: const Text('Send with full details'),
                 onPressed: () =>
@@ -1482,7 +1481,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  hideData != null && hideData?['is_hidden'] == true
+                  (hideData == null || hideData?['is_hidden'] == true || _supabase.auth.currentUser == null)
                       ? const SizedBox()
                       : Expanded(child: buildAnimatedShareButton(context)),
                 ],
@@ -1494,7 +1493,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  hideData != null && hideData?['is_hidden'] == true
+                  (hideData == null || hideData?['is_hidden'] == true || _supabase.auth.currentUser == null)
                       ? const SizedBox()
                       : Expanded(
                           child: buildAnimatedDirectMessageButton(context)),

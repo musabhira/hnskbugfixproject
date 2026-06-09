@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter/material.dart';
 
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
@@ -160,24 +160,23 @@ class _MyAppState extends State<MyApp> {
     return KeyedSubtree(
       key: _key,
       child: ProviderScope(
-        child: FluentApp.router(
+        child: MaterialApp.router(
           debugShowCheckedModeBanner: false,
           title: 'Handskill Friends',
           scrollBehavior: MyAppScrollBehavior(),
           localizationsDelegates: const [
-            FluentLocalizations.delegate,
             GlobalMaterialLocalizations.delegate,
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
           ],
           supportedLocales: const [Locale('en', '')],
-          theme: FluentThemeData(
+          theme: ThemeData(
             brightness: Brightness.light,
-            accentColor: Colors.blue,
+            primarySwatch: Colors.blue,
           ),
-          darkTheme: FluentThemeData(
+          darkTheme: ThemeData(
             brightness: Brightness.dark,
-            accentColor: Colors.blue,
+            primarySwatch: Colors.blue,
             scaffoldBackgroundColor: Colors.black,
           ),
           themeMode: _themeMode,

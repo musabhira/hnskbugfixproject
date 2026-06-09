@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart' as material;
-import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pocket_mates_app/custom_code/widgets/teams/notification_detail_page.dart';
 
@@ -30,7 +30,7 @@ class NotificationTile extends StatelessWidget {
         onTap: () {
           material.Navigator.push(
             context,
-            FluentPageRoute(
+            material.MaterialPageRoute(
               builder: (context) => NotificationDetailPage(
                 notification: notification,
                 onUpdate: onRefresh,
@@ -71,7 +71,7 @@ class NotificationTile extends StatelessWidget {
                   borderRadius: material.BorderRadius.circular(14),
                 ),
                 child: material.Icon(
-                  isTaskAssign ? FluentIcons.assign : (isInvite ? FluentIcons.contact_info : FluentIcons.info),
+                  isTaskAssign ? material.Icons.assignment : (isInvite ? material.Icons.contact_mail : material.Icons.info),
                   color: isUnread ? material.Colors.yellow : material.Colors.grey,
                   size: 20,
                 ),

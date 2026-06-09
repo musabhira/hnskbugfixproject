@@ -3042,9 +3042,9 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
       case 'Poki Games':
         page = const PokiGamesPage();
         break;
-      case 'Drawing Academy':
-        page = const DrawingAcademyHomePage();
-        break;
+      // case 'Drawing Academy':
+      //   page = const DrawingAcademyHomePage();
+      //   break;
       case 'Travel Radar':
         page = const NearbyUsersPage();
         break;
@@ -3609,7 +3609,7 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
       {'title': 'Poster Designer', 'description': 'Create amazing posters'},
       {'title': 'Bulk Sender', 'description': 'Send messages in bulk'},
       {'title': 'Poki Games', 'description': 'Play games with mates'},
-      {'title': 'Drawing Academy', 'description': 'Learn to draw'},
+      // {'title': 'Drawing Academy', 'description': 'Learn to draw'},
       {'title': 'Travel Radar', 'description': 'Explore nearby places'},
     ];
 

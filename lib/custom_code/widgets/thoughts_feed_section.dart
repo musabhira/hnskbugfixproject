@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '/flutter_flow/flutter_flow_theme.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -277,7 +278,7 @@ class _ThoughtsFeedSectionState extends State<ThoughtsFeedSection>
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.black,
+      color: FlutterFlowTheme.of(context).primaryBackground,
       child: Column(
         children: [
         // Tab Switcher
@@ -285,9 +286,9 @@ class _ThoughtsFeedSectionState extends State<ThoughtsFeedSection>
           height: 44,
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
-            color: Colors.black,
+            color: FlutterFlowTheme.of(context).primaryBackground,
             borderRadius: BorderRadius.circular(22),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+            border: Border.all(color: FlutterFlowTheme.of(context).alternate),
           ),
           child: TabBar(
             controller: _tabController,
@@ -304,7 +305,7 @@ class _ThoughtsFeedSectionState extends State<ThoughtsFeedSection>
             ),
             indicatorSize: TabBarIndicatorSize.tab,
             labelColor: Colors.black,
-            unselectedLabelColor: Colors.white54,
+            unselectedLabelColor: FlutterFlowTheme.of(context).secondaryText,
             labelStyle:
                 GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 13),
             dividerColor: Colors.transparent,
@@ -328,7 +329,7 @@ class _ThoughtsFeedSectionState extends State<ThoughtsFeedSection>
                   child: RefreshIndicator(
                     onRefresh: () => _fetchThreads(refresh: true),
                     color: Colors.yellow,
-                    backgroundColor: Colors.black,
+                    backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
                     child: _buildFeedList(),
                   ),
                 ),
@@ -348,7 +349,7 @@ class _ThoughtsFeedSectionState extends State<ThoughtsFeedSection>
           Center(
             child: Column(
               children: [
-                const Icon(Icons.forum_outlined, size: 64, color: Colors.white24),
+                Icon(Icons.forum_outlined, size: 64, color: FlutterFlowTheme.of(context).secondaryText.withValues(alpha: 0.4)),
                 const SizedBox(height: 16),
                 Text(
                   widget.searchQuery.isNotEmpty
@@ -357,7 +358,7 @@ class _ThoughtsFeedSectionState extends State<ThoughtsFeedSection>
                           ? 'No thoughts yet'
                           : 'Not following anyone yet'),
                   style:
-                      GoogleFonts.outfit(color: Colors.white38, fontSize: 16),
+                      GoogleFonts.outfit(color: FlutterFlowTheme.of(context).secondaryText, fontSize: 16),
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -451,9 +452,9 @@ class _TwitterThreadCardState extends State<TwitterThreadCard> {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.black,
+        color: FlutterFlowTheme.of(context).secondaryBackground,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+        border: Border.all(color: FlutterFlowTheme.of(context).alternate),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -485,7 +486,7 @@ class _TwitterThreadCardState extends State<TwitterThreadCard> {
                     ),
                     child: CircleAvatar(
                       radius: 20,
-                      backgroundColor: Colors.white.withValues(alpha: 0.1),
+                      backgroundColor: FlutterFlowTheme.of(context).alternate,
                       backgroundImage: avatar != null
                           ? CachedNetworkImageProvider(avatar)
                           : null,
@@ -507,13 +508,13 @@ class _TwitterThreadCardState extends State<TwitterThreadCard> {
                         style: GoogleFonts.outfit(
                           fontWeight: FontWeight.bold,
                           fontSize: 15,
-                          color: Colors.white,
+                          color: FlutterFlowTheme.of(context).primaryText,
                         ),
                       ),
                       Text(
                         timeago.format(createdAt, locale: 'en_short'),
                         style: GoogleFonts.inter(
-                          color: Colors.white38,
+                          color: FlutterFlowTheme.of(context).secondaryText,
                           fontSize: 12,
                         ),
                       ),
@@ -542,7 +543,7 @@ class _TwitterThreadCardState extends State<TwitterThreadCard> {
                   Text(
                     displayedContent,
                     style: GoogleFonts.inter(
-                      color: Colors.white.withValues(alpha: 0.9),
+                      color: FlutterFlowTheme.of(context).primaryText,
                       fontSize: 14,
                       height: 1.5,
                     ),
@@ -587,7 +588,7 @@ class _TwitterThreadCardState extends State<TwitterThreadCard> {
                 _buildAction(
                   icon: Icons.send_rounded, // Instagram-style share
                   label: '',
-                  activeColor: Colors.white70,
+                  activeColor: FlutterFlowTheme.of(context).secondaryText,
                   isActive: false,
                   onTap: () {
                     _showShareBottomSheet(context);
@@ -775,7 +776,7 @@ class _TwitterThreadCardState extends State<TwitterThreadCard> {
     required bool isActive,
     required VoidCallback onTap,
   }) {
-    final Color color = isActive ? activeColor : Colors.white38;
+    final Color color = isActive ? activeColor : FlutterFlowTheme.of(context).secondaryText;
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,

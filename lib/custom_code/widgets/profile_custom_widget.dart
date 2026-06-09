@@ -20,6 +20,8 @@ import '/flutter_flow/flutter_flow_widgets.dart';
 import 'package:image/image.dart' as img;
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'dart:math' as math;
 
 // Begin custom action code
 
@@ -58,6 +60,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
   String? selectedState;
   String? selectedCity;
   final scaffoldKey = GlobalKey<ScaffoldState>();
+  final GlobalKey<ScaffoldMessengerState> _scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
   Uint8List? _selectedImageBytes;
   final _supabase = SupaFlow.client;
   String? _currentUserId;
@@ -168,7 +171,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
       }
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        _scaffoldMessengerKey.currentState?.showSnackBar(
           SnackBar(
             content: Text('Error loading profile: $error'),
             backgroundColor: FlutterFlowTheme.of(context).error,
@@ -260,16 +263,17 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
         _selectedImageBytes = compressedBytes;
         _isCompressingProfile = false;
       });
-    } catch (e) {
+    } catch (e, stackTrace) {
+      debugPrint('=== IMAGE COMPRESS ERROR ===\n$e\n$stackTrace\n===================');
       safeSetState(() {
         _isCompressingProfile = false;
       });
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        _scaffoldMessengerKey.currentState?.showSnackBar(
           SnackBar(
-            content: Text('Error processing image: $e'),
-            backgroundColor: FlutterFlowTheme.of(context).error,
+            content: Text('Error processing image: $e', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            backgroundColor: Colors.red,
             duration: const Duration(seconds: 3),
           ),
         );
@@ -320,16 +324,17 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
         _selectedImageBytesBanner = compressedBytes;
         _isCompressingBanner = false;
       });
-    } catch (e) {
+    } catch (e, stackTrace) {
+      debugPrint('=== BANNER COMPRESS ERROR ===\n$e\n$stackTrace\n===================');
       safeSetState(() {
         _isCompressingBanner = false;
       });
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        _scaffoldMessengerKey.currentState?.showSnackBar(
           SnackBar(
-            content: Text('Error processing banner image: $e'),
-            backgroundColor: FlutterFlowTheme.of(context).error,
+            content: Text('Error processing banner image: $e', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            backgroundColor: Colors.red,
             duration: const Duration(seconds: 3),
           ),
         );
@@ -407,10 +412,10 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
     // If validation fails, show error and return
     if (!isValid) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        _scaffoldMessengerKey.currentState?.showSnackBar(
           SnackBar(
-            content: Text(errorMessage),
-            backgroundColor: FlutterFlowTheme.of(context).error,
+            content: Text(errorMessage, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            backgroundColor: Colors.red,
             duration: const Duration(seconds: 3),
           ),
         );
@@ -444,7 +449,11 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
         // Upload to nested path
         await _supabase.storage
             .from('profile')
-            .uploadBinary(storagePath, _selectedImageBytes!);
+            .uploadBinary(
+              storagePath,
+              _selectedImageBytes!,
+              fileOptions: const FileOptions(upsert: true),
+            );
 
         // Get public URL with correct path
         final response =
@@ -474,7 +483,11 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
         // Upload to nested path
         await _supabase.storage
             .from('profile_banner')
-            .uploadBinary(storagePath, _selectedImageBytesBanner!);
+            .uploadBinary(
+              storagePath,
+              _selectedImageBytesBanner!,
+              fileOptions: const FileOptions(upsert: true),
+            );
 
         // Get public URL with correct path
         final response =
@@ -534,7 +547,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
       }
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        _scaffoldMessengerKey.currentState?.showSnackBar(
           SnackBar(
             content: const Text('Profile updated successfully!'),
             backgroundColor: FlutterFlowTheme.of(context).success,
@@ -544,16 +557,16 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
 
         Navigator.of(context).pop(true);
       }
-    } catch (error) {
+    } catch (error, stackTrace) {
+      debugPrint('=== PROFILE SAVE ERROR ===\n$error\n$stackTrace\n===================');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        _scaffoldMessengerKey.currentState?.showSnackBar(
           SnackBar(
-            content: Text('Error updating profile: $error'),
-            backgroundColor: FlutterFlowTheme.of(context).error,
+            content: Text('Error updating profile: $error', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            backgroundColor: Colors.red,
             duration: const Duration(seconds: 3),
           ),
         );
-        debugPrint('Error updating profile: $error');
       }
     } finally {
       safeSetState(() => _isLoading = false);
@@ -819,7 +832,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
         });
 
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
+          _scaffoldMessengerKey.currentState?.showSnackBar(
             SnackBar(
               content: const Text('Profile deleted and reset successfully!'),
               backgroundColor: FlutterFlowTheme.of(context).success,
@@ -835,7 +848,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        _scaffoldMessengerKey.currentState?.showSnackBar(
           SnackBar(
             content: Text('Error deleting profile: $e'),
             backgroundColor: FlutterFlowTheme.of(context).error,
@@ -1014,14 +1027,53 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
 
   @override
   Widget build(BuildContext context) {
-    bool isHidden = hideData?['is_hidden'] ?? false;
+    bool isHidden = hideData?['is_hidden'] ?? true;
     final theme = DarkModeTheme();
 
-    return SizedBox(
-      width: widget.width,
-      height: widget.height,
-      child: Scaffold(
-        key: scaffoldKey,
+    Color ensureContrast(Color fg, Color bg, {bool isButton = true}) {
+      double getLuminance(Color color) {
+        double r = color.r;
+        double g = color.g;
+        double b = color.b;
+        r = r <= 0.03928 ? r / 12.92 : math.pow((r + 0.055) / 1.055, 2.4).toDouble();
+        g = g <= 0.03928 ? g / 12.92 : math.pow((g + 0.055) / 1.055, 2.4).toDouble();
+        b = b <= 0.03928 ? b / 12.92 : math.pow((b + 0.055) / 1.055, 2.4).toDouble();
+        return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+      }
+
+      double l1 = getLuminance(fg);
+      double l2 = getLuminance(bg);
+      double ratio = (math.max(l1, l2) + 0.05) / (math.min(l1, l2) + 0.05);
+
+      if (ratio < 2.0) {
+        bool bgIsDark = l2 < 0.2;
+        if (bgIsDark) {
+          return isButton ? const Color(0xFFFFD600) : Colors.white;
+        } else {
+          return isButton ? const Color(0xFF1E293B) : Colors.black87;
+        }
+      }
+      return fg;
+    }
+
+    final Color previewBgColor = _selectedColor ?? _convertStringToColor(_colorCode ?? '#FFFFFF');
+    
+    final Color rawBgTextColor = _selectedColor1 ?? _convertStringToColor(_colorCode1 ?? '#212121');
+    final Color previewBgTextColor = ensureContrast(rawBgTextColor, previewBgColor, isButton: false);
+
+    final Color rawBtnColor = _selectedColor2 ?? _convertStringToColor(_colorCode2 ?? '#2196F3');
+    final Color previewBtnColor = ensureContrast(rawBtnColor, previewBgColor, isButton: true);
+
+    final Color rawBtnTextColor = _selectedColor3 ?? _convertStringToColor(_colorCode3 ?? '#FFFFFF');
+    final Color previewBtnTextColor = ensureContrast(rawBtnTextColor, previewBtnColor, isButton: false);
+
+    return ScaffoldMessenger(
+      key: _scaffoldMessengerKey,
+      child: SizedBox(
+        width: widget.width,
+        height: widget.height,
+        child: Scaffold(
+          key: scaffoldKey,
         appBar: AppBar(
           backgroundColor: theme.primaryBackground,
           automaticallyImplyLeading: false,
@@ -1097,12 +1149,29 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                                   height: 183.0,
                                   fit: BoxFit.cover,
                                 )
-                              : Image.network(
-                                  _imageUrlBanner ??
+                              : CachedNetworkImage(
+                                  imageUrl: _imageUrlBanner ??
                                       'https://picsum.photos/seed/463/600',
                                   width: double.infinity,
                                   height: 183.0,
                                   fit: BoxFit.cover,
+                                  placeholder: (context, url) => Container(
+                                    width: double.infinity,
+                                    height: 183.0,
+                                    color: theme.secondaryBackground,
+                                    child: const Center(
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor: AlwaysStoppedAnimation<Color>(Colors.yellow),
+                                      ),
+                                    ),
+                                  ),
+                                  errorWidget: (context, url, error) => Image.network(
+                                    'https://picsum.photos/seed/463/600',
+                                    width: double.infinity,
+                                    height: 183.0,
+                                    fit: BoxFit.cover,
+                                  ),
                                 ),
                         ),
                       ),
@@ -1159,42 +1228,61 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                                       child: Stack(
                                         alignment: Alignment.bottomRight,
                                         children: [
-                                          CircleAvatar(
-                                            radius: 50,
-                                            backgroundColor: theme.secondaryBackground,
-                                            backgroundImage: _selectedImageBytes !=
-                                                    null
-                                                ? MemoryImage(
-                                                    _selectedImageBytes!)
-                                                : (_imageUrl != null &&
-                                                        _imageUrl!.isNotEmpty
-                                                    ? NetworkImage(_imageUrl!)
-                                                    : null) as ImageProvider?,
-                                            child: _isCompressingProfile
-                                                ? Container(
-                                                    decoration: const BoxDecoration(
-                                                      color: Colors.black54,
-                                                      shape: BoxShape.circle,
-                                                    ),
-                                                    alignment: Alignment.center,
-                                                    child: CircularProgressIndicator(
-                                                      strokeWidth: 3,
-                                                      valueColor:
-                                                          AlwaysStoppedAnimation<
-                                                              Color>(
-                                                        theme.primary,
-                                                      ),
-                                                    ),
-                                                  )
-                                                : (_selectedImageBytes ==
-                                                            null &&
-                                                        (_imageUrl == null ||
-                                                            _imageUrl!.isEmpty)
-                                                    ? Icon(Icons.person,
-                                                        size: 40,
-                                                        color: theme.secondaryText)
-                                                    : null),
-                                          ),
+                                           Container(
+                                             width: 100,
+                                             height: 100,
+                                             decoration: BoxDecoration(
+                                               shape: BoxShape.circle,
+                                               color: theme.secondaryBackground,
+                                             ),
+                                             child: Stack(
+                                               alignment: Alignment.center,
+                                               children: [
+                                                 ClipOval(
+                                                   child: _selectedImageBytes != null
+                                                       ? Image.memory(
+                                                           _selectedImageBytes!,
+                                                           width: 100,
+                                                           height: 100,
+                                                           fit: BoxFit.cover,
+                                                         )
+                                                       : (_imageUrl != null && _imageUrl!.isNotEmpty
+                                                           ? CachedNetworkImage(
+                                                               imageUrl: _imageUrl!,
+                                                               width: 100,
+                                                               height: 100,
+                                                               fit: BoxFit.cover,
+                                                               placeholder: (context, url) => const Center(
+                                                                 child: CircularProgressIndicator(
+                                                                   strokeWidth: 2,
+                                                                   valueColor: AlwaysStoppedAnimation<Color>(Colors.yellow),
+                                                                 ),
+                                                               ),
+                                                               errorWidget: (context, url, error) => Icon(
+                                                                 Icons.person,
+                                                                 size: 40,
+                                                                 color: theme.secondaryText,
+                                                               ),
+                                                             )
+                                                           : Icon(Icons.person,
+                                                               size: 40,
+                                                               color: theme.secondaryText)),
+                                                 ),
+                                                 if (_isCompressingProfile)
+                                                   Container(
+                                                     decoration: const BoxDecoration(
+                                                       color: Colors.black54,
+                                                       shape: BoxShape.circle,
+                                                     ),
+                                                     alignment: Alignment.center,
+                                                     child: CircularProgressIndicator(
+                                                       strokeWidth: 3,
+                                                       valueColor: AlwaysStoppedAnimation<Color>(theme.primary),
+                                                     ),
+                                                   ),
+                                               ],
+                                             ),
+                                           ),
                                           if (!_isLoading &&
                                               !_isCompressingProfile)
                                             Container(
@@ -1444,7 +1532,6 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                     initialCountryCode: 'IN',
                   ),
 
-                  // Privacy Switch
                   Padding(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 20, vertical: 12),
@@ -1461,7 +1548,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(
-                              'Hide WhatsApp & Phone number from public view',
+                              'Show WhatsApp & Phone number in public view',
                               style: theme.bodySmall.override(
                                 fontFamily: 'Montserrat',
                                 color: theme.primaryText,
@@ -1470,8 +1557,8 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                             ),
                           ),
                           Switch(
-                            value: isHidden,
-                            onChanged: (value) => saveHideStatus(value),
+                            value: !isHidden,
+                            onChanged: (value) => saveHideStatus(!value),
                             activeColor: theme.primary,
                             activeTrackColor: theme.primary.withValues(alpha: 0.3),
                             inactiveThumbColor: Colors.white,
@@ -1481,6 +1568,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                       ),
                     ),
                   ),
+
 
                   // Bio Text Field
                   CustomTextField(
@@ -1661,8 +1749,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                         AnimatedContainer(
                           duration: const Duration(milliseconds: 300),
                           decoration: BoxDecoration(
-                            color: _selectedColor ??
-                                _convertStringToColor(_colorCode ?? '#FFFFFF'),
+                            color: previewBgColor,
                             borderRadius: BorderRadius.circular(16.0),
                           ),
                           padding: const EdgeInsets.all(20.0),
@@ -1670,25 +1757,18 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                             children: [
                               CircleAvatar(
                                 radius: 30,
-                                backgroundColor: (_selectedColor1 ??
-                                        _convertStringToColor(
-                                            _colorCode1 ?? '#E0E0E0'))
-                                    .withValues(alpha: 0.2),
+                                backgroundColor: previewBgTextColor.withValues(alpha: 0.2),
                                 child: Icon(
                                   Icons.person,
                                   size: 35,
-                                  color: _selectedColor1 ??
-                                      _convertStringToColor(
-                                          _colorCode1 ?? '#757575'),
+                                  color: previewBgTextColor,
                                 ),
                               ),
                               const SizedBox(height: 12),
                               Text(
                                 _nameController.text.isNotEmpty ? _nameController.text : 'Your Name',
                                 style: TextStyle(
-                                  color: _selectedColor1 ??
-                                      _convertStringToColor(
-                                          _colorCode1 ?? '#212121'),
+                                  color: previewBgTextColor,
                                   fontSize: 18.0,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -1697,9 +1777,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                               AnimatedContainer(
                                 duration: const Duration(milliseconds: 300),
                                 decoration: BoxDecoration(
-                                  color: _selectedColor2 ??
-                                      _convertStringToColor(
-                                          _colorCode2 ?? '#2196F3'),
+                                  color: previewBtnColor,
                                   borderRadius: BorderRadius.circular(12.0),
                                 ),
                                 padding: const EdgeInsets.symmetric(
@@ -1708,9 +1786,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                                   child: Text(
                                     'View Profile',
                                     style: TextStyle(
-                                      color: _selectedColor3 ??
-                                          _convertStringToColor(
-                                              _colorCode3 ?? '#FFFFFF'),
+                                      color: previewBtnTextColor,
                                       fontSize: 14.0,
                                       fontWeight: FontWeight.w600,
                                     ),
@@ -1876,8 +1952,9 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildColorInfo(String label, String colorCode) {
     final theme = DarkModeTheme();
@@ -1984,6 +2061,7 @@ class ImageCropDialog extends StatefulWidget {
 
 class _ImageCropDialogState extends State<ImageCropDialog> {
   final TransformationController _transformationController = TransformationController();
+  final GlobalKey<ScaffoldMessengerState> _dialogScaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
   bool _isProcessing = false;
   img.Image? _decodedImage;
   bool _isDecoding = true;
@@ -2066,7 +2144,7 @@ class _ImageCropDialogState extends State<ImageCropDialog> {
     } catch (e) {
       debugPrint('Error applying crop: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        _dialogScaffoldMessengerKey.currentState?.showSnackBar(
           const SnackBar(
             content: Text('Error cropping image. Please try again.'),
             backgroundColor: Colors.red,
@@ -2081,9 +2159,11 @@ class _ImageCropDialogState extends State<ImageCropDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return Dialog.fullscreen(
-      backgroundColor: Colors.black,
-      child: Scaffold(
+    return ScaffoldMessenger(
+      key: _dialogScaffoldMessengerKey,
+      child: Dialog.fullscreen(
+        backgroundColor: Colors.black,
+        child: Scaffold(
         backgroundColor: Colors.black,
         body: _isDecoding
             ? const Center(
@@ -2151,17 +2231,22 @@ class _ImageCropDialogState extends State<ImageCropDialog> {
                           maxScale: 5.0,
                           panEnabled: true,
                           scaleEnabled: true,
-                          boundaryMargin: const EdgeInsets.all(double.infinity),
-                          child: SizedBox(
-                            width: childWidth,
-                            height: childHeight,
-                            child: Image.memory(
-                              widget.imageBytes,
-                              fit: BoxFit.fill,
+                          constrained: false,
+                          boundaryMargin: const EdgeInsets.all(180.0),
+                          child: Align(
+                            alignment: Alignment.topLeft,
+                            child: SizedBox(
+                              width: childWidth,
+                              height: childHeight,
+                              child: Image.memory(
+                                widget.imageBytes,
+                                fit: BoxFit.cover,
+                              ),
                             ),
                           ),
                         ),
                       ),
+
 
                       // Overlay Mask with hole and gold frame
                       Positioned.fill(
@@ -2268,6 +2353,7 @@ class _ImageCropDialogState extends State<ImageCropDialog> {
                   );
                 },
               ),
+        ),
       ),
     );
   }

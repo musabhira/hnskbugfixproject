@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math' as math;
 import 'package:fluent_ui/fluent_ui.dart' hide Colors, IconButton, Tooltip;
 import 'package:flutter/material.dart' as material;
 import 'package:cached_network_image/cached_network_image.dart';
@@ -11,7 +12,7 @@ import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/flutter_flow/flutter_flow_theme.dart';
 import 'index.dart';
 
-import 'package:pocket_mates_app/custom_code/widgets/gallery_profile_search_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/gallery_profile_search_page.dart' hide MenuFlyoutItem;
 import 'package:pocket_mates_app/custom_code/widgets/posters_tab.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:url_launcher/url_launcher.dart';
@@ -78,6 +79,32 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   }
 
   bool get isMe => userId == _supabase.auth.currentUser?.id;
+
+  Color _ensureContrast(Color fg, Color bg, {bool isButton = true}) {
+    double getLuminance(Color color) {
+      double r = color.r;
+      double g = color.g;
+      double b = color.b;
+      r = r <= 0.03928 ? r / 12.92 : math.pow((r + 0.055) / 1.055, 2.4).toDouble();
+      g = g <= 0.03928 ? g / 12.92 : math.pow((g + 0.055) / 1.055, 2.4).toDouble();
+      b = b <= 0.03928 ? b / 12.92 : math.pow((b + 0.055) / 1.055, 2.4).toDouble();
+      return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    }
+
+    double l1 = getLuminance(fg);
+    double l2 = getLuminance(bg);
+    double ratio = (math.max(l1, l2) + 0.05) / (math.min(l1, l2) + 0.05);
+
+    if (ratio < 2.0) {
+      bool bgIsDark = l2 < 0.2;
+      if (bgIsDark) {
+        return isButton ? const Color(0xFFFFD600) : material.Colors.white;
+      } else {
+        return isButton ? const Color(0xFF1E293B) : material.Colors.black87;
+      }
+    }
+    return fg;
+  }
 
   @override
   void initState() {
@@ -515,10 +542,15 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     }
 
     // Defaults based on Theme if not customized
-    final bgColor = _bgColor ?? FlutterFlowTheme.of(context).primaryBackground;
-    final textColor = _textColor ?? FlutterFlowTheme.of(context).primaryText;
-    final btnColor = _btnColor ?? FlutterFlowTheme.of(context).primary;
-    final btnTextColor = _btnTextColor ?? FlutterFlowTheme.of(context).info;
+    final rawBgColor = _bgColor ?? FlutterFlowTheme.of(context).primaryBackground;
+    final rawTextColor = _textColor ?? FlutterFlowTheme.of(context).primaryText;
+    final rawBtnColor = _btnColor ?? FlutterFlowTheme.of(context).primary;
+    final rawBtnTextColor = _btnTextColor ?? FlutterFlowTheme.of(context).info;
+
+    final bgColor = rawBgColor;
+    final btnColor = _ensureContrast(rawBtnColor, bgColor, isButton: true);
+    final textColor = _ensureContrast(rawTextColor, bgColor, isButton: false);
+    final btnTextColor = _ensureContrast(rawBtnTextColor, btnColor, isButton: false);
 
     return material.Scaffold(
       backgroundColor: bgColor,
@@ -1255,6 +1287,12 @@ class _GalleryTab extends StatelessWidget {
     required this.btnColor,
     required this.btnTextColor,
   });
+  int _getCrossAxisCount(double width) {
+    if (width > 1200) return 5;
+    if (width > 900) return 4;
+    if (width > 600) return 3;
+    return 2;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1272,141 +1310,144 @@ class _GalleryTab extends StatelessWidget {
         ),
       );
     }
-    return MasonryGridView.count(
-      padding: const EdgeInsets.all(12),
-      crossAxisCount: 2,
-      mainAxisSpacing: 12,
-      crossAxisSpacing: 12,
-      itemCount: items.length,
-      itemBuilder: (context, index) {
-        final item = items[index];
-        final imageUrl = item['gallery_image_url'] ?? item['image_url'];
-        final title = item['gallery_title'] ?? item['title'];
-        final price = item['gallery_price'] ?? item['price'];
+    return LayoutBuilder(builder: (context, constraints) {
+      final crossAxisCount = _getCrossAxisCount(constraints.maxWidth);
+      return MasonryGridView.count(
+        padding: const EdgeInsets.all(12),
+        crossAxisCount: crossAxisCount,
+        mainAxisSpacing: 12,
+        crossAxisSpacing: 12,
+        itemCount: items.length,
+        itemBuilder: (context, index) {
+          final item = items[index];
+          final imageUrl = item['gallery_image_url'] ?? item['image_url'];
+          final title = item['gallery_title'] ?? item['title'];
+          final price = item['gallery_price'] ?? item['price'];
 
-        return GestureDetector(
-          onTap: () {
-            Navigator.push(
-              context,
-              material.MaterialPageRoute(
-                builder: (context) => GalleryDetailsprofilePage(
-                  userid: userId,
-                  item: item,
-                  allItems: items,
-                  initialIndex: index,
-                  bgColor: bgColor,
-                  bgtextcolor: textColor,
-                  buttoncolorcode: btnColor,
-                  buttontextcolor: btnTextColor,
+          return GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                material.MaterialPageRoute(
+                  builder: (context) => GalleryDetailsprofilePage(
+                    userid: userId,
+                    item: item,
+                    allItems: items,
+                    initialIndex: index,
+                    bgColor: bgColor,
+                    bgtextcolor: textColor,
+                    buttoncolorcode: btnColor,
+                    buttontextcolor: btnTextColor,
+                  ),
                 ),
+              );
+            },
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                color: textColor.withValues(alpha: 0.04),
+                border: Border.all(
+                    color: textColor.withValues(alpha: 0.08), width: 1.5),
+                boxShadow: [
+                  BoxShadow(
+                    color: btnColor.withValues(alpha: 0.05),
+                    blurRadius: 15,
+                    spreadRadius: -2,
+                    offset: const Offset(0, 8),
+                  )
+                ],
               ),
-            );
-          },
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              color: textColor.withValues(alpha: 0.04),
-              border: Border.all(
-                  color: textColor.withValues(alpha: 0.08), width: 1.5),
-              boxShadow: [
-                BoxShadow(
-                  color: btnColor.withValues(alpha: 0.05),
-                  blurRadius: 15,
-                  spreadRadius: -2,
-                  offset: const Offset(0, 8),
-                )
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Stack(
-                  children: [
-                    ClipRRect(
-                      borderRadius:
-                          const BorderRadius.vertical(top: Radius.circular(20)),
-                      child: imageUrl != null && imageUrl.toString().isNotEmpty
-                          ? CachedNetworkImage(
-                              imageUrl: imageUrl,
-                              memCacheWidth: 400,
-                              fit: BoxFit.cover,
-                              placeholder: (context, url) => Container(
-                                height: 160,
-                                color: textColor.withValues(alpha: 0.03),
-                                child: Center(
-                                  child: material.SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: material.CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      valueColor: material
-                                          .AlwaysStoppedAnimation<Color>(
-                                              btnColor.withValues(alpha: 0.5)),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Stack(
+                    children: [
+                      ClipRRect(
+                        borderRadius:
+                            const BorderRadius.vertical(top: Radius.circular(20)),
+                        child: imageUrl != null && imageUrl.toString().isNotEmpty
+                            ? CachedNetworkImage(
+                                imageUrl: imageUrl,
+                                memCacheWidth: 400,
+                                fit: BoxFit.cover,
+                                placeholder: (context, url) => Container(
+                                  height: 160,
+                                  color: textColor.withValues(alpha: 0.03),
+                                  child: Center(
+                                    child: material.SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: material.CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor: material
+                                            .AlwaysStoppedAnimation<Color>(
+                                                btnColor.withValues(alpha: 0.5)),
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                              errorWidget: (context, url, error) => Container(
+                                errorWidget: (context, url, error) => Container(
+                                  height: 160,
+                                  color: textColor.withValues(alpha: 0.05),
+                                  child: Icon(material.Icons.grid_view_rounded,
+                                      color: textColor.withValues(alpha: 0.3), size: 40),
+                                ),
+                              )
+                            : Container(
                                 height: 160,
-                                color: textColor.withValues(alpha: 0.05),
-                                child: Icon(FluentIcons.error,
-                                    color: textColor.withValues(alpha: 0.3)),
+                                color: textColor.withValues(alpha: 0.05)),
+                      ),
+                      if (price != null)
+                        Positioned(
+                          top: 10,
+                          right: 10,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              color:
+                                  material.Colors.black.withValues(alpha: 0.65),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                  color: material.Colors.white
+                                      .withValues(alpha: 0.15)),
+                            ),
+                            child: Text(
+                              '₹$price',
+                              style: GoogleFonts.outfit(
+                                color: material.Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 0.5,
                               ),
-                            )
-                          : Container(
-                              height: 160,
-                              color: textColor.withValues(alpha: 0.05)),
-                    ),
-                    if (price != null)
-                      Positioned(
-                        top: 10,
-                        right: 10,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 6),
-                          decoration: BoxDecoration(
-                            color:
-                                material.Colors.black.withValues(alpha: 0.65),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                                color: material.Colors.white
-                                    .withValues(alpha: 0.15)),
-                          ),
-                          child: Text(
-                            '₹$price',
-                            style: GoogleFonts.outfit(
-                              color: material.Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 0.5,
                             ),
                           ),
                         ),
-                      ),
-                  ],
-                ),
-                if (title != null && title.toString().isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 14.0, vertical: 12.0),
-                    child: Text(
-                      title,
-                      style: GoogleFonts.outfit(
-                        color: textColor,
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: -0.2,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                    ],
                   ),
-              ],
+                  if (title != null && title.toString().isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14.0, vertical: 12.0),
+                      child: Text(
+                        title,
+                        style: GoogleFonts.outfit(
+                          color: textColor,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: -0.2,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                ],
+              ),
             ),
-          ),
-        );
-      },
-    );
+          );
+        },
+      );
+    });
   }
 }
 

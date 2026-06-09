@@ -6,40 +6,53 @@ class ShorebirdService {
   factory ShorebirdService() => _instance;
   ShorebirdService._internal();
 
-  final _shorebirdCodePush = ShorebirdCodePush();
+  // v2 API: ShorebirdCodePush renamed to ShorebirdUpdater
+  final _updater = ShorebirdUpdater();
 
-  /// Initializes Shorebird and checks for updates
+  /// Initializes Shorebird and checks for updates (non-blocking)
   Future<void> initialize() async {
     if (kIsWeb) return;
 
     debugPrint('Shorebird: Initializing...');
-    
-    // Check if Shorebird is available on this platform
-    final isShorebirdAvailable = await _shorebirdCodePush.isShorebirdAvailable();
-    if (!isShorebirdAvailable) {
-      debugPrint('Shorebird: Not available on this device/platform.');
-      return;
+
+    try {
+      // Check if Shorebird is available on this platform
+      final isAvailable = _updater.isAvailable;
+      if (!isAvailable) {
+        debugPrint('Shorebird: Not available on this device/platform.');
+        return;
+      }
+
+      // Read current patch info
+      final currentPatch = await _updater.readCurrentPatch();
+      debugPrint(
+        'Shorebird: Current patch: ${currentPatch?.number ?? "None (Base Build)"}',
+      );
+
+      // Check for updates without blocking startup
+      checkForUpdates();
+    } catch (e) {
+      debugPrint('Shorebird: Initialization error: $e');
     }
-
-    // Get current patch number
-    final currentPatch = await _shorebirdCodePush.currentPatchNumber();
-    debugPrint('Shorebird: Current patch number: ${currentPatch ?? "None (Base Build)"}');
-
-    // Check for updates
-    await checkForUpdates();
   }
 
-  /// Checks for updates and downloads them if available
+  /// Checks for updates and downloads them if available.
+  /// Non-blocking — does not await in caller.
   Future<void> checkForUpdates() async {
     try {
-      final isUpdateAvailable = await _shorebirdCodePush.isNewPatchAvailableForDownload();
-      
-      if (isUpdateAvailable) {
-        debugPrint('Shorebird: New update found! Downloading...');
-        await _shorebirdCodePush.downloadUpdateIfAvailable();
-        debugPrint('Shorebird: Update downloaded. It will be applied on next restart.');
-      } else {
-        debugPrint('Shorebird: No new updates available.');
+      final status = await _updater.checkForUpdate();
+
+      switch (status) {
+        case UpdateStatus.upToDate:
+          debugPrint('Shorebird: App is up to date.');
+        case UpdateStatus.outdated:
+          debugPrint('Shorebird: New update found! Downloading...');
+          await _updater.update();
+          debugPrint('Shorebird: Update downloaded. Will apply on next restart.');
+        case UpdateStatus.restartRequired:
+          debugPrint('Shorebird: Update already downloaded. Please restart the app.');
+        case UpdateStatus.unavailable:
+          debugPrint('Shorebird: Updates unavailable (not a Shorebird build).');
       }
     } catch (e) {
       debugPrint('Shorebird: Error checking for updates: $e');

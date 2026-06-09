@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart' as material;
-import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -12,69 +12,87 @@ class NotificationsListPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final conversationsAsync = ref.watch(conversationsProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final gradientColors = isDark
+        ? [const Color(0xFF121218), const Color(0xFF000000)]
+        : [const Color(0xFFF4F4F9), const Color(0xFFFFFFFF)];
 
-    return ScaffoldPage(
-      header: PageHeader(
-        title: Text(
-          'Notifications',
-          style: GoogleFonts.outfit(
-            fontWeight: FontWeight.bold,
-            color: material.Colors.white,
-            fontSize: 24,
-          ),
-        ),
-        leading: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12.0),
-          child: material.IconButton(
-            icon: const Icon(FluentIcons.back, size: 20),
-            onPressed: () => Navigator.pop(context),
-            color: material.Colors.white,
-          ),
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: gradientColors,
         ),
       ),
-      content: conversationsAsync.when(
-        data: (conversations) {
-          final notifications =
-              conversations.where((c) => c.isNotification).toList();
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          title: Text(
+            'Notifications',
+            style: GoogleFonts.outfit(
+              fontWeight: FontWeight.bold,
+              color: isDark ? material.Colors.white : material.Colors.black87,
+              fontSize: 24,
+            ),
+          ),
+          leading: material.IconButton(
+            icon: const Icon(Icons.arrow_back, size: 20),
+            onPressed: () => Navigator.pop(context),
+            color: isDark ? material.Colors.white : material.Colors.black87,
+          ),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+        ),
+        body: conversationsAsync.when(
+          data: (conversations) {
+            final notifications =
+                conversations.where((c) => c.isNotification).toList();
 
-          if (notifications.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(32),
-                    decoration: BoxDecoration(
-                      color: material.Colors.white.withValues(alpha: 0.03),
-                      shape: BoxShape.circle,
+            if (notifications.isEmpty) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(32),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? material.Colors.white.withValues(alpha: 0.03)
+                            : material.Colors.black.withValues(alpha: 0.03),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.notifications_active,
+                        size: 64,
+                        color: isDark
+                            ? material.Colors.white.withValues(alpha: 0.1)
+                            : material.Colors.black.withValues(alpha: 0.1),
+                      ),
                     ),
-                    child: Icon(
-                      FluentIcons.ringer,
-                      size: 64,
-                      color: material.Colors.white.withValues(alpha: 0.1),
+                    const SizedBox(height: 24),
+                    Text(
+                      'All caught up!',
+                      style: GoogleFonts.outfit(
+                        color: isDark ? material.Colors.white : material.Colors.black87,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 24),
-                  Text(
-                    'All caught up!',
-                    style: GoogleFonts.outfit(
-                      color: material.Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
+                    const SizedBox(height: 8),
+                    Text(
+                      'No new notifications to show.',
+                      style: GoogleFonts.inter(
+                        color: isDark
+                            ? material.Colors.white.withValues(alpha: 0.4)
+                            : material.Colors.black.withValues(alpha: 0.45),
+                        fontSize: 14,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'No new notifications to show.',
-                    style: GoogleFonts.inter(
-                      color: material.Colors.white.withValues(alpha: 0.4),
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }
+                  ],
+                ),
+              );
+            }
 
           return ListView.builder(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -85,26 +103,28 @@ class NotificationsListPage extends ConsumerWidget {
             },
           );
         },
-        loading: () => const Center(child: ProgressRing()),
+        loading: () => const Center(child: CircularProgressIndicator()),
         error: (err, stack) => Center(
             child: Text('Error: $err',
                 style: const TextStyle(color: material.Colors.red))),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildNotificationItem(
       BuildContext context, WidgetRef ref, ChatConversation notification) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final isInvite = notification.notificationType == 'project_invite';
     final isTask = notification.notificationType == 'task_assign';
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: material.Colors.black,
+        color: isDark ? material.Colors.white.withValues(alpha: 0.02) : material.Colors.black.withValues(alpha: 0.02),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: material.Colors.white.withValues(alpha: 0.05),
+          color: isDark ? material.Colors.white.withValues(alpha: 0.05) : material.Colors.black.withValues(alpha: 0.05),
           width: 1,
         ),
       ),
@@ -124,13 +144,13 @@ class NotificationsListPage extends ConsumerWidget {
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: _getIconColor(notification.notificationType)
+                        color: _getIconColor(isDark, notification.notificationType)
                             .withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
                         _getIconForType(notification.notificationType),
-                        color: _getIconColor(notification.notificationType),
+                        color: _getIconColor(isDark, notification.notificationType),
                         size: 18,
                       ),
                     ),
@@ -142,7 +162,7 @@ class NotificationsListPage extends ConsumerWidget {
                           Text(
                             notification.lastMessage ?? 'New Notification',
                             style: GoogleFonts.outfit(
-                              color: material.Colors.white,
+                              color: isDark ? material.Colors.white : material.Colors.black87,
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
                               height: 1.4,
@@ -153,8 +173,9 @@ class NotificationsListPage extends ConsumerWidget {
                             timeago.format(
                                 notification.lastMessageTime ?? DateTime.now()),
                             style: GoogleFonts.inter(
-                              color:
-                                  material.Colors.white.withValues(alpha: 0.3),
+                              color: isDark
+                                  ? material.Colors.white.withValues(alpha: 0.3)
+                                  : material.Colors.black.withValues(alpha: 0.35),
                               fontSize: 12,
                             ),
                           ),
@@ -171,15 +192,12 @@ class NotificationsListPage extends ConsumerWidget {
                         child: FilledButton(
                           onPressed: () =>
                               _handleAccept(context, ref, notification),
-                          style: ButtonStyle(
-                            backgroundColor:
-                                WidgetStateProperty.all(material.Colors.yellow),
-                            foregroundColor:
-                                WidgetStateProperty.all(material.Colors.black),
-                            padding: WidgetStateProperty.all(
-                                const EdgeInsets.symmetric(vertical: 8)),
-                            shape: WidgetStateProperty.all(RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8))),
+                          style: FilledButton.styleFrom(
+                            backgroundColor: isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300),
+                            foregroundColor: isDark ? material.Colors.black : material.Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8)),
                           ),
                           child: Text(
                             isInvite ? 'Accept Invite' : 'View Task',
@@ -190,26 +208,27 @@ class NotificationsListPage extends ConsumerWidget {
                       const SizedBox(width: 10),
                       if (isInvite)
                         Expanded(
-                          child: Button(
+                          child: OutlinedButton(
                             onPressed: () =>
                                 _handleReject(context, ref, notification),
-                            style: ButtonStyle(
-                              padding: WidgetStateProperty.all(
-                                  const EdgeInsets.symmetric(vertical: 8)),
-                              shape: WidgetStateProperty.all(RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8))),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: isDark ? material.Colors.white : material.Colors.black87,
+                              side: BorderSide(color: isDark ? material.Colors.white24 : material.Colors.black26),
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8)),
                             ),
                             child: const Text('Decline'),
                           ),
                         )
                       else
-                        Button(
+                        material.IconButton(
                           onPressed: () async {
                             await ref
                                 .read(conversationsProvider.notifier)
                                 .dismissNotification(notification.id);
                           },
-                          child: const Icon(FluentIcons.delete, size: 14),
+                          icon: Icon(Icons.delete, size: 14, color: isDark ? material.Colors.white70 : material.Colors.black54),
                         ),
                     ],
                   ),
@@ -218,12 +237,15 @@ class NotificationsListPage extends ConsumerWidget {
                   const SizedBox(height: 12),
                   Align(
                     alignment: Alignment.centerRight,
-                    child: Button(
+                    child: material.TextButton(
                       onPressed: () async {
                         await ref
                             .read(conversationsProvider.notifier)
                             .dismissNotification(notification.id);
                       },
+                      style: material.TextButton.styleFrom(
+                        foregroundColor: isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300),
+                      ),
                       child: const Text('Dismiss'),
                     ),
                   ),
@@ -239,17 +261,17 @@ class NotificationsListPage extends ConsumerWidget {
   IconData _getIconForType(String? type) {
     switch (type) {
       case 'project_invite':
-        return FluentIcons.project_collection;
+        return Icons.folder_shared;
       case 'task_assign':
-        return FluentIcons.task_group;
+        return Icons.assignment;
       case 'group_request':
-        return FluentIcons.group;
+        return Icons.group;
       default:
-        return FluentIcons.info;
+        return Icons.info;
     }
   }
 
-  material.Color _getIconColor(String? type) {
+  Color _getIconColor(bool isDark, String? type) {
     switch (type) {
       case 'project_invite':
         return material.Colors.blue;
@@ -258,7 +280,7 @@ class NotificationsListPage extends ConsumerWidget {
       case 'group_request':
         return material.Colors.orange;
       default:
-        return material.Colors.yellow;
+        return isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300);
     }
   }
 
@@ -276,13 +298,12 @@ class NotificationsListPage extends ConsumerWidget {
             .dismissNotification(notification.id);
 
         if (context.mounted) {
-          displayInfoBar(context, builder: (context, close) {
-            return const InfoBar(
-              title: Text('Accepted'),
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
               content: Text('You have successfully joined the project.'),
-              severity: InfoBarSeverity.success,
-            );
-          });
+              backgroundColor: material.Colors.green,
+            ),
+          );
         }
       } catch (e) {
         _showError(context, e.toString());
@@ -319,13 +340,12 @@ class NotificationsListPage extends ConsumerWidget {
 
   void _showError(BuildContext context, String message) {
     if (context.mounted) {
-      displayInfoBar(context, builder: (context, close) {
-        return InfoBar(
-          title: const Text('Error'),
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
           content: Text(message),
-          severity: InfoBarSeverity.error,
-        );
-      });
+          backgroundColor: material.Colors.red,
+        ),
+      );
     }
   }
 }

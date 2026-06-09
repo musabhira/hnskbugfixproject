@@ -379,13 +379,10 @@ class _MessageScreenState extends State<MessageScreen> {
 
   Future<void> fetchHideStatus() async {
     try {
-      final user = _supabase.auth.currentUser;
-      if (user == null) return;
-
       final response = await _supabase
           .from('hide')
           .select()
-          .eq('user_id', user.id)
+          .eq('user_id', widget.receiverId)
           .order('created_at', ascending: false)
           .limit(1);
 
@@ -1480,7 +1477,9 @@ class _MessageScreenState extends State<MessageScreen> {
           ),
           if (!_isBlocked &&
               !_isBlockedByOther &&
-              !(hideData != null && hideData?['is_hidden'] == true))
+              _supabase.auth.currentUser != null &&
+              hideData != null &&
+              hideData?['is_hidden'] == false)
             IconButton(
               icon: const Icon(Icons.phone, color: Colors.green),
               onPressed: _makePhoneCall,

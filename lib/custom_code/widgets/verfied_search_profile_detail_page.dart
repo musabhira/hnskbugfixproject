@@ -17,6 +17,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/services.dart' as flutter;
 import 'dart:async';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'dart:math' as math;
 
 class VerfiedSearchProfileDetailPage extends StatefulWidget {
   const VerfiedSearchProfileDetailPage({
@@ -595,7 +596,7 @@ class _VerfiedSearchProfileDetailPageState
             Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                hideData != null && hideData?['is_hidden'] == true
+                (hideData == null || hideData?['is_hidden'] == true || _supabase.auth.currentUser == null)
                     ? const SizedBox() // Hide WhatsApp button
                     : TextButton.icon(
                         onPressed: () {
@@ -821,34 +822,61 @@ class _VerfiedSearchProfileDetailPageState
     super.dispose();
   }
 
-  Color _getButtonColor() {
-    return _profileData != null && _profileData!['button_color_code'] != null
-        ? Color(int.parse(
-            'FF${_profileData!['button_color_code'].substring(1)}',
-            radix: 16))
-        : Colors.yellow;
+  Color _ensureContrast(Color fg, Color bg, {bool isButton = true}) {
+    double getLuminance(Color color) {
+      double r = color.r;
+      double g = color.g;
+      double b = color.b;
+      r = r <= 0.03928 ? r / 12.92 : math.pow((r + 0.055) / 1.055, 2.4).toDouble();
+      g = g <= 0.03928 ? g / 12.92 : math.pow((g + 0.055) / 1.055, 2.4).toDouble();
+      b = b <= 0.03928 ? b / 12.92 : math.pow((b + 0.055) / 1.055, 2.4).toDouble();
+      return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    }
+
+    double l1 = getLuminance(fg);
+    double l2 = getLuminance(bg);
+    double ratio = (math.max(l1, l2) + 0.05) / (math.min(l1, l2) + 0.05);
+
+    if (ratio < 2.0) {
+      bool bgIsDark = l2 < 0.2;
+      if (bgIsDark) {
+        return isButton ? const Color(0xFFFFD600) : Colors.white;
+      } else {
+        return isButton ? const Color(0xFF1E293B) : Colors.black87;
+      }
+    }
+    return fg;
   }
 
   Color _getBgColor() {
     return _profileData != null && _profileData!['bg_color_code'] != null
-        ? Color(int.parse('FF${_profileData!['bg_color_code'].substring(1)}',
-            radix: 16))
+        ? Color(int.parse('FF${_profileData!['bg_color_code'].substring(1)}', radix: 16))
         : FlutterFlowTheme.of(context).primaryBackground;
   }
 
+  Color _getButtonColor() {
+    final rawColor = _profileData != null && _profileData!['button_color_code'] != null
+        ? Color(int.parse(
+            'FF${_profileData!['button_color_code'].substring(1)}',
+            radix: 16))
+        : Colors.yellow;
+    return _ensureContrast(rawColor, _getBgColor(), isButton: true);
+  }
+
   Color _getButtonTextColor() {
-    return _profileData != null && _profileData!['button_text_color'] != null
+    final rawColor = _profileData != null && _profileData!['button_text_color'] != null
         ? Color(int.parse(
             'FF${_profileData!['button_text_color'].substring(1)}',
             radix: 16))
         : FlutterFlowTheme.of(context).info;
+    return _ensureContrast(rawColor, _getButtonColor(), isButton: false);
   }
 
   Color _getBgTextColor() {
-    return _profileData != null && _profileData!['bg_text_color'] != null
-        ? Color(int.parse('FF${_profileData!['bg_text_color'].substring(1)}',
-            radix: 16))
+    final rawColor = _profileData != null && _profileData!['bg_text_color'] != null
+        ? Color(int.parse('FF${_profileData!['bg_text_color'].substring(1)}', radix: 16))
         : FlutterFlowTheme.of(context).primaryText;
+    return _ensureContrast(rawColor, _getBgColor(), isButton: false);
   }
 
   Widget _buildStatWidget(
@@ -3675,14 +3703,30 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
             "Try asking: 'Who is this person?', 'Show me their gallery', or 'What services do they offer?'");
   }
 
-  // "📱 Phone: ${_profileData!['phone_no'] ?? 'Not provided'}\n"
-  Color _getButtonColor() {
-    return widget.buttonColor ??
-        (_profileData != null && _profileData!['button_color_code'] != null
-            ? Color(int.parse(
-                'FF${_profileData!['button_color_code'].substring(1)}',
-                radix: 16))
-            : Colors.yellow);
+  Color _ensureContrast(Color fg, Color bg, {bool isButton = true}) {
+    double getLuminance(Color color) {
+      double r = color.r;
+      double g = color.g;
+      double b = color.b;
+      r = r <= 0.03928 ? r / 12.92 : math.pow((r + 0.055) / 1.055, 2.4).toDouble();
+      g = g <= 0.03928 ? g / 12.92 : math.pow((g + 0.055) / 1.055, 2.4).toDouble();
+      b = b <= 0.03928 ? b / 12.92 : math.pow((b + 0.055) / 1.055, 2.4).toDouble();
+      return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    }
+
+    double l1 = getLuminance(fg);
+    double l2 = getLuminance(bg);
+    double ratio = (math.max(l1, l2) + 0.05) / (math.min(l1, l2) + 0.05);
+
+    if (ratio < 2.0) {
+      bool bgIsDark = l2 < 0.2;
+      if (bgIsDark) {
+        return isButton ? const Color(0xFFFFD600) : Colors.white;
+      } else {
+        return isButton ? const Color(0xFF1E293B) : Colors.black87;
+      }
+    }
+    return fg;
   }
 
   Color _getBgColor() {
@@ -3694,22 +3738,34 @@ class _AIAssistantWidgetState extends State<AIAssistantWidget>
             : Colors.black);
   }
 
+  Color _getButtonColor() {
+    final rawColor = widget.buttonColor ??
+        (_profileData != null && _profileData!['button_color_code'] != null
+            ? Color(int.parse(
+                'FF${_profileData!['button_color_code'].substring(1)}',
+                radix: 16))
+            : Colors.yellow);
+    return _ensureContrast(rawColor, _getBgColor(), isButton: true);
+  }
+
   Color _getTextColor() {
-    return widget.textColor ??
+    final rawColor = widget.textColor ??
         (_profileData != null && _profileData!['bg_text_color'] != null
             ? Color(int.parse(
                 'FF${_profileData!['bg_text_color'].substring(1)}',
                 radix: 16))
             : Colors.white);
+    return _ensureContrast(rawColor, _getBgColor(), isButton: false);
   }
 
   Color _getButtonTextColor() {
-    return widget.buttonTextColor ??
+    final rawColor = widget.buttonTextColor ??
         (_profileData != null && _profileData!['button_text_color'] != null
             ? Color(int.parse(
                 'FF${_profileData!['button_text_color'].substring(1)}',
                 radix: 16))
             : Colors.black);
+    return _ensureContrast(rawColor, _getButtonColor(), isButton: false);
   }
 
   @override

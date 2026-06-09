@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pocket_mates_app/custom_code/widgets/teams/teams_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/teams/user_search_dialog.dart';
+import 'package:pocket_mates_app/custom_code/widgets/teams/task_detail_page.dart';
 
 class TeamDetailPage extends StatefulWidget {
   final Team team;
@@ -352,176 +353,192 @@ class _TeamDetailPageState extends State<TeamDetailPage>
         final task = filtered[index];
         bool isMyTask = task.assignedTo == currentUserId;
 
-        return Container(
-          margin: const EdgeInsets.only(bottom: 16),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1E1E1E),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-                color: isMyTask
-                    ? Colors.yellow.withValues(alpha: 0.3)
-                    : const Color(0xFF333333)),
-            boxShadow: [
-              if (task.timerStartedAt != null)
-                BoxShadow(
-                  color: Colors.yellow.withValues(alpha: 0.1),
-                  blurRadius: 10,
-                  spreadRadius: 2,
-                )
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ListTile(
-                contentPadding: const EdgeInsets.fromLTRB(16, 8, 8, 0),
-                title: Text(task.title,
-                    style: GoogleFonts.outfit(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600)),
-                subtitle: task.description != null &&
-                        task.description!.isNotEmpty
-                    ? Padding(
-                        padding: const EdgeInsets.only(top: 4),
-                        child: Text(task.description!,
-                            style: GoogleFonts.outfit(
-                                color: Colors.grey, fontSize: 13)),
-                      )
-                    : null,
-                trailing: PopupMenuButton<String>(
-                  icon: const Icon(Icons.more_vert, color: Colors.grey),
-                  onSelected: (val) async {
-                    if (val == 'delete' && (task.createdBy == _service.authUserId || _isAdmin)) {
-                      await _service.deleteTask(task.id);
-                      _loadData();
-                    } else if (val == 'log_time') {
-                      _showLogTimeDialog(task);
-                    } else if (val == 'assign_me') {
-                      await _service.updateTaskAssignment(
-                          task.id, _service.authUserId);
-                      _loadData();
-                    } else if (val == 'reassign' && _isAdmin) {
-                      _showReassignDialog(task);
-                    } else {
-                      await _service.updateTaskStatus(task.id, val);
-                      _loadData();
-                    }
-                  },
-                  itemBuilder: (context) => [
-                    const PopupMenuItem(value: 'todo', child: Text('Todo')),
-                    const PopupMenuItem(
-                        value: 'in_progress', child: Text('In Progress')),
-                    const PopupMenuItem(
-                        value: 'completed', child: Text('Completed')),
-                    if (task.assignedTo != _service.authUserId)
-                      const PopupMenuItem(
-                          value: 'assign_me', child: Text('Assign to Me')),
-                    if (_isAdmin)
-                      const PopupMenuItem(
-                          value: 'reassign', child: Text('Reassign...')),
-                    const PopupMenuItem(
-                        value: 'log_time', child: Text('Log Time')),
-                    if (task.createdBy == _service.authUserId || _isAdmin)
-                      const PopupMenuItem(
-                          value: 'delete',
-                          child: Text('Delete',
-                              style: TextStyle(color: Colors.red))),
-                  ],
+        return GestureDetector(
+          onTap: () async {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => TaskDetailPage(
+                  task: task,
+                  team: widget.team,
+                  members: _members,
+                  isAdmin: _isAdmin,
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        _tag(task.priority.toUpperCase(),
-                            _getPriorityColor(task.priority)),
-                        const SizedBox(width: 8),
-                        _tag(task.status.toUpperCase().replaceAll('_', ' '),
-                            _getStatusColor(task.status)),
-                        const Spacer(),
-                        if (task.dueDate != null)
-                          Text(
-                            'Due: ${task.dueDate.toString().split(' ')[0]}',
-                            style: const TextStyle(
-                                color: Colors.grey, fontSize: 11),
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    const Divider(color: Color(0xFF333333), height: 1),
-                    const SizedBox(height: 12),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            CircleAvatar(
-                              radius: 12,
-                              backgroundColor: Colors.grey[800],
-                              child: const Icon(Icons.person,
-                                  size: 14, color: Colors.white),
-                            ),
-                            const SizedBox(width: 8),
+            );
+            _loadData();
+          },
+          child: Container(
+            margin: const EdgeInsets.only(bottom: 16),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1E1E1E),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                  color: isMyTask
+                      ? Colors.yellow.withValues(alpha: 0.3)
+                      : const Color(0xFF333333)),
+              boxShadow: [
+                if (task.timerStartedAt != null)
+                  BoxShadow(
+                    color: Colors.yellow.withValues(alpha: 0.1),
+                    blurRadius: 10,
+                    spreadRadius: 2,
+                  )
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ListTile(
+                  contentPadding: const EdgeInsets.fromLTRB(16, 8, 8, 0),
+                  title: Text(task.title,
+                      style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600)),
+                  subtitle: task.description != null &&
+                          task.description!.isNotEmpty
+                      ? Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Text(task.description!,
+                              style: GoogleFonts.outfit(
+                                  color: Colors.grey, fontSize: 13)),
+                        )
+                      : null,
+                  trailing: PopupMenuButton<String>(
+                    icon: const Icon(Icons.more_vert, color: Colors.grey),
+                    onSelected: (val) async {
+                      if (val == 'delete' && (task.createdBy == _service.authUserId || _isAdmin)) {
+                        await _service.deleteTask(task.id);
+                        _loadData();
+                      } else if (val == 'log_time') {
+                        _showLogTimeDialog(task);
+                      } else if (val == 'assign_me') {
+                        await _service.updateTaskAssignment(
+                            task.id, _service.authUserId);
+                        _loadData();
+                      } else if (val == 'reassign' && _isAdmin) {
+                        _showReassignDialog(task);
+                      } else {
+                        await _service.updateTaskStatus(task.id, val);
+                        _loadData();
+                      }
+                    },
+                    itemBuilder: (context) => [
+                      const PopupMenuItem(value: 'todo', child: Text('Todo')),
+                      const PopupMenuItem(
+                          value: 'in_progress', child: Text('In Progress')),
+                      const PopupMenuItem(
+                          value: 'completed', child: Text('Completed')),
+                      if (task.assignedTo != _service.authUserId)
+                        const PopupMenuItem(
+                            value: 'assign_me', child: Text('Assign to Me')),
+                      if (_isAdmin)
+                        const PopupMenuItem(
+                            value: 'reassign', child: Text('Reassign...')),
+                      const PopupMenuItem(
+                          value: 'log_time', child: Text('Log Time')),
+                      if (task.createdBy == _service.authUserId || _isAdmin)
+                        const PopupMenuItem(
+                            value: 'delete',
+                            child: Text('Delete',
+                                style: TextStyle(color: Colors.red))),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          _tag(task.priority.toUpperCase(),
+                              _getPriorityColor(task.priority)),
+                          const SizedBox(width: 8),
+                          _tag(task.status.toUpperCase().replaceAll('_', ' '),
+                              _getStatusColor(task.status)),
+                          const Spacer(),
+                          if (task.dueDate != null)
                             Text(
-                              task.assignedTo != null
-                                  ? _getMemberName(task.assignedTo!)
-                                  : 'Unassigned',
-                              style: TextStyle(
-                                color: task.assignedTo != null
-                                    ? Colors.yellow
-                                    : Colors.grey,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            const Icon(Icons.access_time_rounded,
-                                size: 14, color: Colors.grey),
-                            const SizedBox(width: 4),
-                            Text(
-                              _calculateTotalTime(task),
+                              'Due: ${task.dueDate.toString().split(' ')[0]}',
                               style: const TextStyle(
-                                  color: Colors.grey,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold),
+                                  color: Colors.grey, fontSize: 11),
                             ),
-                            const SizedBox(width: 12),
-                            if (task.timerStartedAt == null)
-                              IconButton(
-                                constraints: const BoxConstraints(),
-                                padding: EdgeInsets.zero,
-                                icon: const Icon(Icons.play_circle_fill,
-                                    color: Colors.green, size: 28),
-                                onPressed: () async {
-                                  await _service.startTimer(task.id);
-                                  _loadData();
-                                },
-                              )
-                            else
-                              IconButton(
-                                constraints: const BoxConstraints(),
-                                padding: EdgeInsets.zero,
-                                icon: const Icon(Icons.stop_circle,
-                                    color: Colors.red, size: 28),
-                                onPressed: () async {
-                                  await _service.stopTimer(task.id);
-                                  _loadData();
-                                },
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      const Divider(color: Color(0xFF333333), height: 1),
+                      const SizedBox(height: 12),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              CircleAvatar(
+                                radius: 12,
+                                backgroundColor: Colors.grey[800],
+                                child: const Icon(Icons.person,
+                                    size: 14, color: Colors.white),
                               ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ],
+                              const SizedBox(width: 8),
+                              Text(
+                                task.assignedTo != null
+                                    ? _getMemberName(task.assignedTo!)
+                                    : 'Unassigned',
+                                style: TextStyle(
+                                  color: task.assignedTo != null
+                                      ? Colors.yellow
+                                      : Colors.grey,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              const Icon(Icons.access_time_rounded,
+                                  size: 14, color: Colors.grey),
+                              const SizedBox(width: 4),
+                              Text(
+                                _calculateTotalTime(task),
+                                style: const TextStyle(
+                                    color: Colors.grey,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              const SizedBox(width: 12),
+                              if (task.timerStartedAt == null)
+                                IconButton(
+                                  constraints: const BoxConstraints(),
+                                  padding: EdgeInsets.zero,
+                                  icon: const Icon(Icons.play_circle_fill,
+                                      color: Colors.green, size: 28),
+                                  onPressed: () async {
+                                    await _service.startTimer(task.id);
+                                    _loadData();
+                                  },
+                                )
+                              else
+                                IconButton(
+                                  constraints: const BoxConstraints(),
+                                  padding: EdgeInsets.zero,
+                                  icon: const Icon(Icons.stop_circle,
+                                      color: Colors.red, size: 28),
+                                  onPressed: () async {
+                                    await _service.stopTimer(task.id);
+                                    _loadData();
+                                  },
+                                ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },

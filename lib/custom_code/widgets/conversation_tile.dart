@@ -1,4 +1,4 @@
-import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter/material.dart';
 import 'dart:async' as async;
 import 'package:flutter/material.dart' as material;
 import 'package:google_fonts/google_fonts.dart';
@@ -95,47 +95,59 @@ class _ConversationTileState extends State<ConversationTile> {
           return material.Icons.build_circle;
       }
     }
-    if (widget.conversation.isNotification) return FluentIcons.info;
-    if (widget.conversation.isGroup) return FluentIcons.group;
-    return FluentIcons.contact;
+    if (widget.conversation.isNotification) return material.Icons.info_outline;
+    if (widget.conversation.isGroup) return material.Icons.group;
+    return material.Icons.person;
   }
 
-  Color _getIconColor() {
+  Color _getIconColor(bool isDark) {
     if (widget.conversation.isActiveTimer) return material.Colors.greenAccent;
     if (widget.conversation.isTool) {
       switch (widget.conversation.toolTitle) {
         case 'Drawing Tool':
-          return material.Colors.purpleAccent;
+          return isDark ? material.Colors.purpleAccent : material.Colors.purple;
         case 'Schedule':
-          return material.Colors.blueAccent;
+          return isDark ? material.Colors.blueAccent : material.Colors.blue;
         case 'Tasks':
-          return material.Colors.greenAccent;
+          return isDark ? material.Colors.greenAccent : material.Colors.green;
         case 'Challenges':
-          return material.Colors.orangeAccent;
+          return isDark ? material.Colors.orangeAccent : material.Colors.orange;
         case 'Diagrams':
-          return material.Colors.tealAccent;
+          return isDark ? material.Colors.tealAccent : material.Colors.teal;
         case 'Teams':
-          return material.Colors.pinkAccent;
+          return isDark ? material.Colors.pinkAccent : material.Colors.pink;
         case 'AI Tools':
-          return material.Colors.cyanAccent;
+          return isDark ? material.Colors.cyanAccent : material.Colors.cyan;
         case 'Poster Maker':
-          return material.Colors.orangeAccent;
+          return isDark ? material.Colors.orangeAccent : material.Colors.orange;
         case 'Bulk Sender':
-          return material.Colors.greenAccent;
+          return isDark ? material.Colors.greenAccent : material.Colors.green;
         case 'Poki Games':
-          return material.Colors.redAccent;
+          return isDark ? material.Colors.redAccent : material.Colors.red;
         case 'Travel Radar':
-          return material.Colors.cyanAccent;
+          return isDark ? material.Colors.cyanAccent : material.Colors.cyan;
         default:
-          return material.Colors.yellow;
+          return isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300);
       }
     }
-    if (widget.conversation.isNotification) return Colors.yellow;
-    return Colors.white.withValues(alpha: 0.5);
+    if (widget.conversation.isNotification) return isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300);
+    return isDark ? Colors.white.withValues(alpha: 0.5) : Colors.black.withValues(alpha: 0.45);
   }
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final borderColor = isDark 
+        ? Colors.white.withValues(alpha: 0.05) 
+        : Colors.black.withValues(alpha: 0.05);
+    final primaryTextColor = isDark ? Colors.white : Colors.black87;
+    final secondaryTextColor = isDark 
+        ? Colors.white.withValues(alpha: 0.4) 
+        : Colors.black.withValues(alpha: 0.45);
+    final unreadTextColor = isDark 
+        ? Colors.white.withValues(alpha: 0.9) 
+        : Colors.black.withValues(alpha: 0.85);
+
     return material.Material(
       color: Colors.transparent,
       child: material.InkWell(
@@ -144,10 +156,10 @@ class _ConversationTileState extends State<ConversationTile> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: Colors.black, // Matching Vibes background color
+            color: Colors.transparent,
             border: Border(
               bottom: BorderSide(
-                color: Colors.white.withValues(alpha: 0.05),
+                color: borderColor,
                 width: 1,
               ),
             ),
@@ -182,12 +194,12 @@ class _ConversationTileState extends State<ConversationTile> {
                       decoration: BoxDecoration(
                         color: widget.conversation.isActiveTimer 
                             ? material.Colors.green.withValues(alpha: 0.1)
-                            : const Color(0xFF262626),
+                            : (isDark ? const Color(0xFF262626) : const Color(0xFFE2E8F0)),
                         shape: BoxShape.circle,
                         border: Border.all(
                           color: widget.conversation.isActiveTimer
                               ? material.Colors.greenAccent.withValues(alpha: 0.3)
-                              : Colors.white.withValues(alpha: 0.1),
+                              : (isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.1)),
                           width: 1.5,
                         ),
                         image: widget.conversation.imageUrl != null
@@ -201,7 +213,7 @@ class _ConversationTileState extends State<ConversationTile> {
                           ? Center(
                               child: Icon(
                                 _getIconData(),
-                                color: _getIconColor(),
+                                color: _getIconColor(isDark),
                                 size: 26,
                               ),
                             )
@@ -218,7 +230,7 @@ class _ConversationTileState extends State<ConversationTile> {
                             color: const Color(0xFF10B981), // Emerald
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: const Color(0xFF1A1A1A),
+                              color: isDark ? const Color(0xFF1A1A1A) : const Color(0xFFFFFFFF),
                               width: 2.5,
                             ),
                           ),
@@ -238,7 +250,7 @@ class _ConversationTileState extends State<ConversationTile> {
                           child: Text(
                             widget.conversation.name,
                             style: GoogleFonts.outfit(
-                              color: Colors.white,
+                              color: primaryTextColor,
                               fontSize: 17,
                               fontWeight: FontWeight.w600,
                               letterSpacing: 0.2,
@@ -293,8 +305,8 @@ class _ConversationTileState extends State<ConversationTile> {
                                         : 'Start chatting')),
                             style: GoogleFonts.outfit(
                               color: widget.conversation.unreadCount > 0 || widget.conversation.isActiveTimer
-                                  ? Colors.white.withValues(alpha: 0.9)
-                                  : Colors.white.withValues(alpha: 0.4),
+                                  ? unreadTextColor
+                                  : secondaryTextColor,
                               fontSize: 14,
                               fontWeight: widget.conversation.unreadCount > 0 || widget.conversation.isActiveTimer
                                   ? FontWeight.w500
@@ -330,8 +342,8 @@ class _ConversationTileState extends State<ConversationTile> {
                           locale: 'en_short'),
                       style: GoogleFonts.outfit(
                         color: widget.conversation.unreadCount > 0
-                            ? Colors.yellow
-                            : Colors.white.withValues(alpha: 0.35),
+                            ? (isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300))
+                            : (isDark ? Colors.white.withValues(alpha: 0.35) : Colors.black.withValues(alpha: 0.35)),
                         fontSize: 12,
                         fontWeight: widget.conversation.unreadCount > 0
                             ? FontWeight.bold
@@ -344,11 +356,11 @@ class _ConversationTileState extends State<ConversationTile> {
                       constraints: const BoxConstraints(minWidth: 20),
                       padding: const EdgeInsets.all(5),
                       decoration: BoxDecoration(
-                        color: Colors.yellow,
+                        color: isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300),
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.yellow.withValues(alpha: 0.5),
+                            color: (isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300)).withValues(alpha: 0.5),
                             blurRadius: 4,
                             spreadRadius: -1,
                           ),
@@ -358,7 +370,7 @@ class _ConversationTileState extends State<ConversationTile> {
                         child: Text(
                           widget.conversation.unreadCount.toString(),
                           style: GoogleFonts.outfit(
-                            color: Colors.black,
+                            color: isDark ? Colors.black : Colors.white,
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
                           ),

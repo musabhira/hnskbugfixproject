@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
-import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -96,13 +96,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       _scrollToBottom();
     } catch (e) {
       if (!mounted) return;
-      displayInfoBar(context, builder: (context, close) {
-        return InfoBar(
-          title: const Text('Error'),
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
           content: Text(e.toString()),
-          severity: InfoBarSeverity.error,
-        );
-      });
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
@@ -232,76 +231,79 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final messagesAsync = ref.watch(chatMessagesProvider(widget.groupId));
     final currentUser = ref.watch(currentUserIdProvider);
 
-    return ScaffoldPage(
-      header: Container(
-        height: 60,
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        color: const Color(0xFF1F2C34),
-        child: Row(
-          children: [
-            IconButton(
-              icon: const Icon(FluentIcons.back),
-              onPressed: () => Navigator.pop(context),
-            ),
-            const SizedBox(width: 4),
-            ClipOval(
-              child: SizedBox(
-                width: 40,
-                height: 40,
-                child: widget.groupImage != null
-                    ? CachedNetworkImage(
-                        imageUrl: widget.groupImage!,
-                        fit: BoxFit.cover,
-                      )
-                    : const Icon(FluentIcons.group, size: 24),
+    return Scaffold(
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(60),
+        child: Container(
+          height: 60,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          color: const Color(0xFF1F2C34),
+          child: Row(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () => Navigator.pop(context),
               ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                widget.groupName,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
+              const SizedBox(width: 4),
+              ClipOval(
+                child: SizedBox(
+                  width: 40,
+                  height: 40,
+                  child: widget.groupImage != null
+                      ? CachedNetworkImage(
+                          imageUrl: widget.groupImage!,
+                          fit: BoxFit.cover,
+                        )
+                      : const Icon(Icons.group, size: 24),
                 ),
-                overflow: TextOverflow.ellipsis,
               ),
-            ),
-            IconButton(
-              icon: const Icon(FluentIcons.video),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  FluentPageRoute(
-                    builder: (context) => const NativeWebRTCCallScreen(
-                      mode: 'Video',
-                    ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  widget.groupName,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
                   ),
-                );
-              },
-            ),
-            IconButton(
-              icon: const Icon(FluentIcons.phone),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  FluentPageRoute(
-                    builder: (context) => const NativeWebRTCCallScreen(
-                      mode: 'Voice',
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.videocam),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const NativeWebRTCCallScreen(
+                        mode: 'Video',
+                      ),
                     ),
-                  ),
-                );
-              },
-            ),
-            IconButton(
-              icon: const Icon(FluentIcons.more),
-              onPressed: () {},
-            ),
-          ],
+                  );
+                },
+              ),
+              IconButton(
+                icon: const Icon(Icons.phone),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const NativeWebRTCCallScreen(
+                        mode: 'Voice',
+                      ),
+                    ),
+                  );
+                },
+              ),
+              IconButton(
+                icon: const Icon(Icons.more_vert),
+                onPressed: () {},
+              ),
+            ],
+          ),
         ),
       ),
-      content: ColoredBox(
+      body: ColoredBox(
         color: const Color(0xFF0D1418),
         child: Column(
           children: [
@@ -330,7 +332,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                             child: SizedBox(
                               width: 20,
                               height: 20,
-                              child: ProgressRing(strokeWidth: 2),
+                              child: CircularProgressIndicator(strokeWidth: 2),
                             ),
                           ),
                         );
@@ -356,12 +358,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(FluentIcons.error, color: Colors.red, size: 48),
+                      const Icon(Icons.error, color: Colors.red, size: 48),
                       const SizedBox(height: 16),
                       const Text("Error loading messages",
                           style: TextStyle(color: Colors.white)),
                       const SizedBox(height: 8),
-                      Button(
+                      ElevatedButton(
                         onPressed: () => ref
                             .invalidate(chatMessagesProvider(widget.groupId)),
                         child: const Text('Retry'),
@@ -369,7 +371,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     ],
                   ),
                 ),
-                loading: () => const Center(child: ProgressRing()),
+                loading: () => const Center(child: CircularProgressIndicator()),
               ),
             ),
             if (_replyingTo != null) _buildReplyPreview(),
@@ -387,7 +389,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       color: const Color(0xFF1F2C34),
       child: Row(
         children: [
-          const Icon(FluentIcons.reply, color: Colors.grey),
+          const Icon(Icons.reply, color: Colors.grey),
           const SizedBox(width: 8),
           Expanded(
             child: Column(
@@ -395,7 +397,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               children: [
                 Text(
                     "Replying to ${_replyingTo?.senderProfile?['name'] ?? 'User'}",
-                    style: TextStyle(
+                    style: const TextStyle(
                         color: Colors.teal, fontWeight: FontWeight.bold)),
                 Text(
                     _replyingTo?.messageText ??
@@ -408,7 +410,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             ),
           ),
           IconButton(
-              icon: const Icon(FluentIcons.clear, color: Colors.white),
+              icon: const Icon(Icons.clear, color: Colors.white),
               onPressed: () => setState(() => _replyingTo = null))
         ],
       ),
@@ -432,8 +434,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   IconButton(
                     icon: Icon(
                         _showEmojiPicker
-                            ? FluentIcons.keyboard_classic
-                            : FluentIcons.emoji,
+                            ? Icons.keyboard
+                            : Icons.emoji_emotions,
                         color: Colors.grey),
                     onPressed: () {
                       setState(() => _showEmojiPicker = !_showEmojiPicker);
@@ -441,15 +443,17 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     },
                   ),
                   Expanded(
-                    child: TextBox(
+                    child: TextField(
                       controller: _textController,
-                      placeholder: "Message",
-                      placeholderStyle: const TextStyle(color: Colors.grey),
                       style: const TextStyle(color: Colors.white),
-                      decoration: WidgetStateProperty.all(const BoxDecoration(
-                        color: Colors.transparent,
-                        border: Border.fromBorderSide(BorderSide.none),
-                      )),
+                      decoration: const InputDecoration(
+                        hintText: "Message",
+                        hintStyle: TextStyle(color: Colors.grey),
+                        border: InputBorder.none,
+                        focusedBorder: InputBorder.none,
+                        enabledBorder: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+                      ),
                       minLines: 1,
                       maxLines: 6,
                       onTap: () {
@@ -460,12 +464,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(FluentIcons.attach, color: Colors.grey),
+                    icon: const Icon(Icons.attach_file, color: Colors.grey),
                     onPressed: _pickImage,
                   ),
                   if (_textController.text.isEmpty && !_isRecording)
                     IconButton(
-                      icon: const Icon(FluentIcons.camera, color: Colors.grey),
+                      icon: const Icon(Icons.camera_alt, color: Colors.grey),
                       onPressed: _pickImage,
                     ),
                 ],
@@ -489,10 +493,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 child: Center(
                   child: Icon(
                     _textController.text.isNotEmpty
-                        ? FluentIcons.send
+                        ? Icons.send
                         : (_isRecording
-                            ? FluentIcons.mic_off
-                            : FluentIcons.microphone),
+                            ? Icons.mic_off
+                            : Icons.mic),
                     color: Colors.white,
                   ),
                 ),
@@ -547,7 +551,7 @@ class _MessageBubble extends StatelessWidget {
       background: Container(
           alignment: Alignment.centerLeft,
           padding: const EdgeInsets.only(left: 20),
-          child: const Icon(FluentIcons.reply, color: Color(0xB2FFFFFF))),
+          child: const Icon(Icons.reply, color: Color(0xB2FFFFFF))),
       child: Align(
         alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
         child: GestureDetector(
@@ -557,13 +561,12 @@ class _MessageBubble extends StatelessWidget {
               await Clipboard.setData(
                   ClipboardData(text: message.messageText!));
               if (context.mounted) {
-                displayInfoBar(context, builder: (context, close) {
-                  return const InfoBar(
-                    title: Text('Copied'),
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
                     content: Text('Message copied to clipboard'),
-                    severity: InfoBarSeverity.success,
-                  );
-                });
+                    backgroundColor: Colors.green,
+                  ),
+                );
               }
             }
           },
@@ -597,7 +600,7 @@ class _MessageBubble extends StatelessWidget {
                     onTap: () {
                       Navigator.push(
                         context,
-                        FluentPageRoute(
+                        MaterialPageRoute(
                           builder: (context) => ImageViewer(
                             imageUrl: message.fileUrl!,
                             title: message.senderProfile?['name'] ?? 'Image',
@@ -613,9 +616,9 @@ class _MessageBubble extends StatelessWidget {
                             height: 150,
                             width: 150,
                             color: const Color(0x1F000000),
-                            child: const Center(child: ProgressRing())),
+                            child: const Center(child: CircularProgressIndicator())),
                         errorWidget: (_, __, ___) =>
-                            const Icon(FluentIcons.error),
+                            const Icon(Icons.error),
                       ),
                     ),
                   ),
@@ -650,17 +653,16 @@ class _MessageBubble extends StatelessWidget {
                             await Clipboard.setData(
                                 ClipboardData(text: message.messageText!));
                             if (context.mounted) {
-                              displayInfoBar(context,
-                                  builder: (context, close) {
-                                return const InfoBar(
-                                  title: Text('Copied'),
-                                  severity: InfoBarSeverity.success,
-                                );
-                              });
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Copied to clipboard'),
+                                  backgroundColor: Colors.green,
+                                ),
+                              );
                             }
                           },
                           child: Icon(
-                            FluentIcons.copy,
+                            Icons.copy,
                             size: 10,
                             color: Colors.white.withValues(alpha: 0.6),
                           ),
@@ -709,7 +711,7 @@ class _MessageBubble extends StatelessWidget {
       onTap: () {
         Navigator.push(
           context,
-          FluentPageRoute(
+          MaterialPageRoute(
             builder: (context) => GalleryDetailsPage(
               item: galleryItem,
               allItems: [galleryItem],
@@ -748,7 +750,7 @@ class _MessageBubble extends StatelessWidget {
                 if (galleryData['user_id'] != null) {
                   Navigator.push(
                     context,
-                    FluentPageRoute(
+                    MaterialPageRoute(
                       builder: (context) => VerfiedSwitchPage(
                         userId: galleryData['user_id'],
                       ),
@@ -784,7 +786,7 @@ class _MessageBubble extends StatelessWidget {
                                 }
                               }
                             } catch (_) {}
-                            return const Icon(FluentIcons.contact,
+                            return const Icon(Icons.person,
                                 size: 12, color: Colors.white);
                           }(),
                         ),
@@ -811,7 +813,7 @@ class _MessageBubble extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    const Icon(FluentIcons.chevron_right,
+                    const Icon(Icons.chevron_right,
                         size: 10, color: Colors.white),
                   ],
                 ),
@@ -831,12 +833,12 @@ class _MessageBubble extends StatelessWidget {
                         height: 160,
                         color: const Color(0xFF262626),
                         child:
-                            const Center(child: ProgressRing(strokeWidth: 2))),
+                            const Center(child: CircularProgressIndicator(strokeWidth: 2))),
                     errorWidget: (_, __, ___) => Container(
                         height: 160,
                         color: const Color(0xFF262626),
                         child:
-                            const Icon(FluentIcons.error, color: Colors.white)),
+                            const Icon(Icons.error, color: Colors.white)),
                   ),
 
                 // Price Tag

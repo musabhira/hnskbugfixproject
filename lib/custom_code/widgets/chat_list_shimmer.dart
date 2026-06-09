@@ -12,8 +12,12 @@ class ChatListShimmer extends StatelessWidget {
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Shimmer.fromColors(
-              baseColor: const Color(0xFF1E1E1E),
-              highlightColor: const Color(0xFF2A2A2A),
+              baseColor: Theme.of(context).brightness == Brightness.dark
+                  ? const Color(0xFF1E1E1E)
+                  : Colors.grey[300]!,
+              highlightColor: Theme.of(context).brightness == Brightness.dark
+                  ? const Color(0xFF2A2A2A)
+                  : Colors.grey[100]!,
               child: Row(
                 children: [
                   // Avatar

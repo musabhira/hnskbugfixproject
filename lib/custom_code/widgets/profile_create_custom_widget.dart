@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:fluent_ui/fluent_ui.dart' as fluent;
+import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pocket_mates_app/main.dart';
 
@@ -11,6 +11,7 @@ import 'package:flutter/services.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/pages/home_page/home_page_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 // Begin custom action code
 
@@ -48,6 +49,7 @@ class _ProfileCreateCustomWidgetState extends State<ProfileCreateCustomWidget> {
   bool _isCompressingBanner = false;
 
   final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
+  final GlobalKey<ScaffoldMessengerState> _scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
 
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _shopNameController = TextEditingController();
@@ -186,8 +188,16 @@ class _ProfileCreateCustomWidgetState extends State<ProfileCreateCustomWidget> {
         safeSetState(() {
           _selectedImageBytes = compressed;
         });
-      } catch (e) {
-        debugPrint('Compression error: $e');
+      } catch (e, stackTrace) {
+        debugPrint('=== IMAGE COMPRESS ERROR ===\n$e\n$stackTrace\n===================');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error processing image: $e', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       } finally {
         safeSetState(() => _isCompressingProfile = false);
       }
@@ -206,8 +216,16 @@ class _ProfileCreateCustomWidgetState extends State<ProfileCreateCustomWidget> {
         safeSetState(() {
           _selectedImageBytesBanner = compressed;
         });
-      } catch (e) {
-        debugPrint('Compression error: $e');
+      } catch (e, stackTrace) {
+        debugPrint('=== BANNER COMPRESS ERROR ===\n$e\n$stackTrace\n===================');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error processing banner image: $e', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       } finally {
         safeSetState(() => _isCompressingBanner = false);
       }
@@ -252,14 +270,20 @@ class _ProfileCreateCustomWidgetState extends State<ProfileCreateCustomWidget> {
 
     if (_nameController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter your name')),
+        const SnackBar(
+          content: Text('Please enter your name', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          backgroundColor: Colors.red,
+        ),
       );
       return;
     }
 
     if (_shopNameController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a shop name')),
+        const SnackBar(
+          content: Text('Please enter a shop name', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          backgroundColor: Colors.red,
+        ),
       );
       return;
     }
@@ -334,11 +358,12 @@ class _ProfileCreateCustomWidgetState extends State<ProfileCreateCustomWidget> {
           );
         }
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      debugPrint('=== PROFILE SAVE ERROR ===\n$e\n$stackTrace\n===================');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error saving profile: $e'),
+            content: Text('Error saving profile: $e', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
             backgroundColor: Colors.red,
           ),
         );
@@ -389,27 +414,31 @@ class _ProfileCreateCustomWidgetState extends State<ProfileCreateCustomWidget> {
   Widget build(BuildContext context) {
     bool isHidden = hideData?['is_hidden'] ?? false;
 
-    return SizedBox(
-      width: widget.width,
-      height: widget.height,
-      child: Material(
-        color: Colors.black,
-        child: fluent.ScaffoldPage(
-          padding: EdgeInsets.zero,
-          header: fluent.PageHeader(
-            leading: fluent.IconButton(
-              icon: const Icon(fluent.FluentIcons.back, color: Colors.yellow),
-              onPressed: () => Navigator.pop(context),
-            ),
-            title: Text(
-              'Complete Your Profile',
-              style: GoogleFonts.outfit(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
+    return ScaffoldMessenger(
+      key: _scaffoldMessengerKey,
+      child: SizedBox(
+        width: widget.width,
+        height: widget.height,
+        child: Material(
+          color: Colors.black,
+          child: Scaffold(
+            backgroundColor: Colors.black,
+            appBar: AppBar(
+              backgroundColor: Colors.black,
+              elevation: 0,
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.yellow),
+                onPressed: () => Navigator.pop(context),
+              ),
+              title: Text(
+                'Complete Your Profile',
+                style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
-          ),
-          content: Container(
+            body: Container(
             color: Colors.black,
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -428,30 +457,36 @@ class _ProfileCreateCustomWidgetState extends State<ProfileCreateCustomWidget> {
                                 height: 160.0,
                                 fit: BoxFit.cover,
                               )
-                            : (_imageUrlBanner != null &&
-                                    _imageUrlBanner!.isNotEmpty
-                                ? Image.network(
-                                    _imageUrlBanner!,
-                                    width: double.infinity,
-                                    height: 160.0,
-                                    fit: BoxFit.cover,
-                                  )
-                                : Container(
-                                    color: Colors.grey[800],
-                                    height: 160,
-                                    width: double.infinity,
-                                    child: const Center(
-                                      child: Icon(
-                                          fluent.FluentIcons.image_pixel,
-                                          color: Colors.white30,
-                                          size: 40),
-                                    ),
-                                  )),
+                            : CachedNetworkImage(
+                                imageUrl: _imageUrlBanner!,
+                                width: double.infinity,
+                                height: 160.0,
+                                fit: BoxFit.cover,
+                                placeholder: (context, url) => Container(
+                                  color: Colors.grey[800],
+                                  height: 160,
+                                  width: double.infinity,
+                                  child: const Center(
+                                    child: CircularProgressIndicator(strokeWidth: 2.0),
+                                  ),
+                                ),
+                                errorWidget: (context, url, error) => Container(
+                                  color: Colors.grey[800],
+                                  height: 160,
+                                  width: double.infinity,
+                                  child: const Center(
+                                    child: Icon(
+                                        Icons.image,
+                                        color: Colors.white30,
+                                        size: 40),
+                                  ),
+                                ),
+                              ),
                       ),
                       Positioned(
                         bottom: 10,
                         right: 10,
-                        child: fluent.Button(
+                        child: ElevatedButton(
                           onPressed: (_isLoading || _isCompressingBanner)
                               ? null
                               : _selectImageBanner,
@@ -459,12 +494,12 @@ class _ProfileCreateCustomWidgetState extends State<ProfileCreateCustomWidget> {
                               ? const SizedBox(
                                   width: 16,
                                   height: 16,
-                                  child: fluent.ProgressRing(strokeWidth: 2.0),
+                                  child: CircularProgressIndicator(strokeWidth: 2.0),
                                 )
                               : const Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Icon(fluent.FluentIcons.edit, size: 14),
+                                    Icon(Icons.edit, size: 14),
                                     SizedBox(width: 8),
                                     Text('Edit Banner'),
                                   ],
@@ -489,24 +524,46 @@ class _ProfileCreateCustomWidgetState extends State<ProfileCreateCustomWidget> {
                                 border: Border.all(
                                     color: Colors.yellow, width: 3),
                               ),
-                              child: CircleAvatar(
-                                radius: 60,
-                                backgroundColor: Colors.grey[900],
-                                backgroundImage: _selectedImageBytes != null
-                                    ? MemoryImage(_selectedImageBytes!)
-                                        as ImageProvider
-                                    : (_imageUrl != null &&
-                                            _imageUrl!.isNotEmpty
-                                        ? NetworkImage(_imageUrl!)
-                                        : null),
-                                child: _isCompressingProfile
-                                    ? const fluent.ProgressRing()
-                                    : (_selectedImageBytes == null &&
-                                            (_imageUrl == null ||
-                                                _imageUrl!.isEmpty)
-                                        ? const Icon(fluent.FluentIcons.contact,
-                                            size: 50, color: Colors.white)
-                                        : null),
+                              child: Container(
+                                width: 120,
+                                height: 120,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.grey[900],
+                                ),
+                                child: Stack(
+                                  alignment: Alignment.center,
+                                  children: [
+                                    ClipOval(
+                                      child: _selectedImageBytes != null
+                                          ? Image.memory(
+                                              _selectedImageBytes!,
+                                              width: 120,
+                                              height: 120,
+                                              fit: BoxFit.cover,
+                                            )
+                                          : (_imageUrl != null && _imageUrl!.isNotEmpty
+                                              ? CachedNetworkImage(
+                                                  imageUrl: _imageUrl!,
+                                                  width: 120,
+                                                  height: 120,
+                                                  fit: BoxFit.cover,
+                                                  placeholder: (context, url) => const Center(
+                                                    child: CircularProgressIndicator(strokeWidth: 2.0),
+                                                  ),
+                                                  errorWidget: (context, url, error) => const Icon(
+                                                    Icons.person,
+                                                    size: 50,
+                                                    color: Colors.white,
+                                                  ),
+                                                )
+                                              : const Icon(Icons.person,
+                                                  size: 50, color: Colors.white)),
+                                    ),
+                                    if (_isCompressingProfile)
+                                      const CircularProgressIndicator(),
+                                  ],
+                                ),
                               ),
                             ),
                             Container(
@@ -515,7 +572,7 @@ class _ProfileCreateCustomWidgetState extends State<ProfileCreateCustomWidget> {
                                 color: Colors.yellow,
                               ),
                               padding: const EdgeInsets.all(8),
-                              child: const Icon(fluent.FluentIcons.camera,
+                              child: const Icon(Icons.camera_alt,
                                   color: Colors.black, size: 20),
                             ),
                           ],
@@ -537,9 +594,9 @@ class _ProfileCreateCustomWidgetState extends State<ProfileCreateCustomWidget> {
                           ),
                         ),
                         const SizedBox(height: 15),
-                        fluent.InfoLabel(
+                        InfoLabel(
                           label: 'Shop Name (Unique)',
-                          child: fluent.TextBox(
+                          child: TextBox(
                             controller: _shopNameController,
                             placeholder: 'e.g. My Awesome Studio',
                             padding: const EdgeInsets.all(12),
@@ -563,9 +620,9 @@ class _ProfileCreateCustomWidgetState extends State<ProfileCreateCustomWidget> {
                           ),
                         ),
                         const SizedBox(height: 15),
-                        fluent.InfoLabel(
+                        InfoLabel(
                           label: 'Display Name',
-                          child: fluent.TextBox(
+                          child: TextBox(
                             controller: _nameController,
                             placeholder: 'How should we call you?',
                             padding: const EdgeInsets.all(12),
@@ -577,9 +634,9 @@ class _ProfileCreateCustomWidgetState extends State<ProfileCreateCustomWidget> {
                           ),
                         ),
                         const SizedBox(height: 15),
-                        fluent.InfoLabel(
+                        InfoLabel(
                           label: 'Phone Number',
-                          child: fluent.TextBox(
+                          child: TextBox(
                             controller: _phoneNumberController,
                             placeholder: '+1 234 567 8900',
                             padding: const EdgeInsets.all(12),
@@ -601,7 +658,7 @@ class _ProfileCreateCustomWidgetState extends State<ProfileCreateCustomWidget> {
                           ),
                           child: Row(
                             children: [
-                              const Icon(fluent.FluentIcons.lock,
+                              const Icon(Icons.lock,
                                   color: Colors.yellow, size: 20),
                               const SizedBox(width: 12),
                               const Expanded(
@@ -611,7 +668,7 @@ class _ProfileCreateCustomWidgetState extends State<ProfileCreateCustomWidget> {
                                       color: Colors.white, fontSize: 13),
                                 ),
                               ),
-                              fluent.ToggleSwitch(
+                              ToggleSwitch(
                                 checked: isHidden,
                                 onChanged: (v) => saveHideStatus(v),
                               ),
@@ -631,7 +688,7 @@ class _ProfileCreateCustomWidgetState extends State<ProfileCreateCustomWidget> {
                         Row(
                           children: [
                             Expanded(
-                              child: fluent.TextBox(
+                              child: TextBox(
                                 controller: _dayController,
                                 placeholder: 'Day',
                                 keyboardType: TextInputType.number,
@@ -644,7 +701,7 @@ class _ProfileCreateCustomWidgetState extends State<ProfileCreateCustomWidget> {
                             ),
                             const SizedBox(width: 8),
                             Expanded(
-                              child: fluent.TextBox(
+                              child: TextBox(
                                 controller: _monthController,
                                 placeholder: 'Month',
                                 keyboardType: TextInputType.number,
@@ -657,7 +714,7 @@ class _ProfileCreateCustomWidgetState extends State<ProfileCreateCustomWidget> {
                             ),
                             const SizedBox(width: 8),
                             Expanded(
-                              child: fluent.TextBox(
+                              child: TextBox(
                                 controller: _yearController,
                                 placeholder: 'Year',
                                 keyboardType: TextInputType.number,
@@ -680,22 +737,22 @@ class _ProfileCreateCustomWidgetState extends State<ProfileCreateCustomWidget> {
                           ),
                         ),
                         const SizedBox(height: 10),
-                        fluent.TextBox(
+                        TextBox(
                           controller: instaIdController,
                           placeholder: 'Instagram ID',
                           prefix: const Padding(
                             padding: EdgeInsets.only(left: 12),
-                            child: Icon(fluent.FluentIcons.profile_search,
+                            child: Icon(Icons.person_search,
                                 size: 16),
                           ),
                         ),
                         const SizedBox(height: 10),
-                        fluent.TextBox(
+                        TextBox(
                           controller: instaLinkController,
                           placeholder: 'Instagram Profile Link',
                           prefix: const Padding(
                             padding: EdgeInsets.only(left: 12),
-                            child: Icon(fluent.FluentIcons.link, size: 16),
+                            child: Icon(Icons.link, size: 16),
                           ),
                         ),
                         const SizedBox(height: 25),
@@ -708,7 +765,7 @@ class _ProfileCreateCustomWidgetState extends State<ProfileCreateCustomWidget> {
                           ),
                         ),
                         const SizedBox(height: 10),
-                        fluent.TextBox(
+                        TextBox(
                           controller: _bioController,
                           placeholder: 'Tell people about yourself...',
                           maxLines: 3,
@@ -719,17 +776,15 @@ class _ProfileCreateCustomWidgetState extends State<ProfileCreateCustomWidget> {
                         const SizedBox(height: 40),
                         SizedBox(
                           width: double.infinity,
-                          child: fluent.FilledButton(
+                          child: FilledButton(
                             onPressed: _isLoading ? null : _saveProfile,
-                            style: fluent.ButtonStyle(
-                              backgroundColor:
-                                  WidgetStateProperty.all(Colors.yellow),
-                              padding: WidgetStateProperty.all(
-                                  const EdgeInsets.symmetric(vertical: 16)),
+                            style: FilledButton.styleFrom(
+                              backgroundColor: Colors.yellow,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
                             ),
                             child: _isLoading
-                                ? const fluent.ProgressRing(
-                                    activeColor: Colors.black)
+                                ? const CircularProgressIndicator(
+                                    color: Colors.black)
                                 : Text(
                                     'GO TO HOME',
                                     style: GoogleFonts.outfit(
@@ -748,6 +803,131 @@ class _ProfileCreateCustomWidgetState extends State<ProfileCreateCustomWidget> {
               ),
             ),
           ),
+        ),
+      ),
+    ),
+  );
+}
+}
+
+
+class InfoLabel extends StatelessWidget {
+  final String label;
+  final Widget child;
+
+  const InfoLabel({
+    super.key,
+    required this.label,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.outfit(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Colors.yellow,
+          ),
+        ),
+        const SizedBox(height: 8),
+        child,
+      ],
+    );
+  }
+}
+
+class ToggleSwitch extends StatelessWidget {
+  final bool checked;
+  final ValueChanged<bool>? onChanged;
+  final Widget? content;
+
+  const ToggleSwitch({
+    super.key,
+    required this.checked,
+    this.onChanged,
+    this.content,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Switch(
+          value: checked,
+          onChanged: onChanged,
+          activeColor: Colors.yellow,
+        ),
+        if (content != null) ...[
+          const SizedBox(width: 8),
+          Expanded(child: content!),
+        ],
+      ],
+    );
+  }
+}
+
+class TextBox extends StatelessWidget {
+  final TextEditingController? controller;
+  final String? placeholder;
+  final EdgeInsetsGeometry padding;
+  final WidgetStateProperty<Decoration>? decoration;
+  final int? maxLines;
+  final TextInputType? keyboardType;
+  final TextAlign textAlign;
+  final List<TextInputFormatter>? inputFormatters;
+  final Widget? prefix;
+  final ValueChanged<String>? onChanged;
+  final TextStyle? placeholderStyle;
+  final TextStyle? style;
+
+  const TextBox({
+    super.key,
+    this.controller,
+    this.placeholder,
+    this.padding = const EdgeInsets.all(12),
+    this.decoration,
+    this.maxLines = 1,
+    this.keyboardType,
+    this.textAlign = TextAlign.start,
+    this.inputFormatters,
+    this.prefix,
+    this.onChanged,
+    this.placeholderStyle,
+    this.style,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    BoxDecoration? boxDec;
+    if (decoration != null) {
+      boxDec = decoration!.resolve({}) as BoxDecoration?;
+    }
+
+    return Container(
+      decoration: boxDec ?? BoxDecoration(
+        color: Colors.grey[900],
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: TextField(
+        controller: controller,
+        maxLines: maxLines,
+        keyboardType: keyboardType,
+        textAlign: textAlign,
+        inputFormatters: inputFormatters,
+        onChanged: onChanged,
+        style: style ?? const TextStyle(color: Colors.white),
+        decoration: InputDecoration(
+          hintText: placeholder,
+          hintStyle: placeholderStyle ?? const TextStyle(color: Colors.grey),
+          prefixIcon: prefix,
+          contentPadding: padding,
+          border: InputBorder.none,
         ),
       ),
     );

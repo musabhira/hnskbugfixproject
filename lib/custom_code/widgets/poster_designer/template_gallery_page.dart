@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart' as material;
-import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'poster_models.dart';
 import 'poster_editor_page.dart';
@@ -650,7 +650,7 @@ class TemplateGalleryPage extends StatelessWidget {
         title: Text('Design Templates',
             style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
         leading: material.IconButton(
-          icon: const Icon(FluentIcons.back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -688,7 +688,7 @@ class TemplateGalleryPage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(FluentIcons.add,
+            const Icon(Icons.add,
                 size: 40, color: material.Colors.yellow),
             const SizedBox(height: 12),
             Text('Create New',
