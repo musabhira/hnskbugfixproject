@@ -4,6 +4,8 @@ import 'package:pocket_mates_app/custom_code/widgets/legal_policy_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/index.dart';
 import 'package:go_router/go_router.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:pocket_mates_app/flutter_flow/flutter_flow_theme.dart';
+import 'package:pocket_mates_app/main.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -129,6 +131,19 @@ class _SettingsPageState extends State<SettingsPage> {
           body: ListView(
             padding: const EdgeInsets.all(16),
             children: [
+              const _SectionHeader(title: 'Appearance'),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Dark Mode', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w500)),
+                secondary: const Icon(Icons.dark_mode_outlined, color: Colors.white),
+                activeColor: const Color(0xFFFFFC00),
+                value: Theme.of(context).brightness == Brightness.dark,
+                onChanged: (newValue) async {
+                  MyApp.of(context).setThemeMode(newValue ? ThemeMode.dark : ThemeMode.light);
+                  setState(() {});
+                },
+              ),
+              const SizedBox(height: 24),
               const _SectionHeader(title: 'Legal'),
               _SettingsTile(
                 icon: Icons.privacy_tip_outlined,
@@ -152,8 +167,8 @@ class _SettingsPageState extends State<SettingsPage> {
                 icon: Icons.logout,
                 title: 'Log Out',
                 onTap: _handleLogout,
-                textColor: Colors.amber,
-                iconColor: Colors.amber,
+                textColor: Color(0xFFFFFC00),
+                iconColor: Color(0xFFFFFC00),
               ),
               _SettingsTile(
                 icon: Icons.delete_forever,
@@ -198,7 +213,7 @@ class _SettingsPageState extends State<SettingsPage> {
           Container(
             color: Colors.black54,
             child: const Center(
-              child: CircularProgressIndicator(color: Colors.amber),
+              child: CircularProgressIndicator(color: Color(0xFFFFFC00)),
             ),
           ),
       ],
@@ -261,3 +276,4 @@ class _SettingsTile extends StatelessWidget {
     );
   }
 }
+

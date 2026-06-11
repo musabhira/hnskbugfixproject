@@ -229,7 +229,7 @@ class _GalleryTabViewPageState extends State<GalleryTabViewPage> {
               ),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                  color: Colors.amber.withValues(alpha: 0.3), width: 1),
+                  color: Color(0xFFFFFC00).withValues(alpha: 0.3), width: 1),
             ),
             child: Column(
               children: [
@@ -239,7 +239,7 @@ class _GalleryTabViewPageState extends State<GalleryTabViewPage> {
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        Colors.amber.withValues(alpha: 0.2),
+                        Color(0xFFFFFC00).withValues(alpha: 0.2),
                         Colors.transparent
                       ],
                     ),
@@ -250,7 +250,7 @@ class _GalleryTabViewPageState extends State<GalleryTabViewPage> {
                     children: [
                       const Icon(
                         Icons.palette,
-                        color: Colors.amber,
+                        color: Color(0xFFFFFC00),
                         size: 40,
                       ),
                       const SizedBox(height: 12),
@@ -277,15 +277,15 @@ class _GalleryTabViewPageState extends State<GalleryTabViewPage> {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
-                            color: Colors.amber.withValues(alpha: 0.2),
+                            color: Color(0xFFFFFC00).withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
-                                color: Colors.amber.withValues(alpha: 0.3)),
+                                color: Color(0xFFFFFC00).withValues(alpha: 0.3)),
                           ),
                           child: Text(
                             '${selectedInterests.length} selected',
                             style: const TextStyle(
-                              color: Colors.amber,
+                              color: Color(0xFFFFFC00),
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
                             ),
@@ -309,12 +309,12 @@ class _GalleryTabViewPageState extends State<GalleryTabViewPage> {
                           margin: const EdgeInsets.symmetric(vertical: 4),
                           decoration: BoxDecoration(
                             color: isSelected
-                                ? Colors.amber.withValues(alpha: 0.1)
+                                ? Color(0xFFFFFC00).withValues(alpha: 0.1)
                                 : Colors.transparent,
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
                               color: isSelected
-                                  ? Colors.amber.withValues(alpha: 0.3)
+                                  ? Color(0xFFFFFC00).withValues(alpha: 0.3)
                                   : Colors.transparent,
                             ),
                           ),
@@ -327,14 +327,14 @@ class _GalleryTabViewPageState extends State<GalleryTabViewPage> {
                                   padding: const EdgeInsets.all(8),
                                   decoration: BoxDecoration(
                                     color: isSelected
-                                        ? Colors.amber.withValues(alpha: 0.2)
+                                        ? Color(0xFFFFFC00).withValues(alpha: 0.2)
                                         : Colors.grey[800],
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Icon(
                                     _getCategoryIcon(category),
                                     color: isSelected
-                                        ? Colors.amber
+                                        ? Color(0xFFFFFC00)
                                         : Colors.grey[400],
                                     size: 18,
                                   ),
@@ -365,7 +365,7 @@ class _GalleryTabViewPageState extends State<GalleryTabViewPage> {
                                 }
                               });
                             },
-                            activeColor: Colors.amber,
+                            activeColor: Color(0xFFFFFC00),
                             checkColor: Colors.black,
                             side: BorderSide.none,
                           ),
@@ -436,7 +436,7 @@ class _GalleryTabViewPageState extends State<GalleryTabViewPage> {
                                     await _loadDynamicCategories();
                                   },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.amber,
+                              backgroundColor: Color(0xFFFFFC00),
                               foregroundColor: Colors.black,
                               disabledBackgroundColor: Colors.grey[700],
                               disabledForegroundColor: Colors.grey[500],
@@ -566,16 +566,16 @@ class _GalleryTabViewPageState extends State<GalleryTabViewPage> {
               onPressed: _loadDynamicCategories,
               icon: const Icon(Icons.refresh, color: Colors.white, size: 24),
               tooltip: 'Refresh Categories',
-              splashColor: Colors.amber.shade200,
-              highlightColor: Colors.amber.shade50,
+              splashColor: const Color(0xFFFFFC00),
+              highlightColor: const Color(0xFFFFFC00).withValues(alpha: 0.1),
             ),
             const SizedBox(width: 8),
             IconButton(
               onPressed: _showInterestSelection,
               icon: const Icon(Icons.tune, color: Colors.white, size: 24),
               tooltip: 'Edit Interests',
-              splashColor: Colors.amber.shade200,
-              highlightColor: Colors.amber.shade50,
+              splashColor: const Color(0xFFFFFC00),
+              highlightColor: const Color(0xFFFFFC00).withValues(alpha: 0.1),
             ),
             const SizedBox(width: 8),
           ],
@@ -590,7 +590,7 @@ class _GalleryTabViewPageState extends State<GalleryTabViewPage> {
       return const Scaffold(
         backgroundColor: Colors.black,
         body: Center(
-          child: CircularProgressIndicator(color: Colors.amber),
+          child: CircularProgressIndicator(color: Color(0xFFFFFC00)),
         ),
       );
     }
@@ -657,7 +657,7 @@ class _PaginatedGalleryTabViewState extends State<PaginatedGalleryTabView>
   List<Map<String, dynamic>> galleryItems = [];
   bool isLoading = true;
   String? error;
-  final Map<String, Set<int?>> _nativeAdsMap = {};
+
 
   // Pagination variables
   final Map<String, int> _currentPageMap = {};
@@ -1200,7 +1200,7 @@ class MasonryGalleryItemCard extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Colors.amber.withValues(alpha: 0.3),
+            Color(0xFFFFFC00).withValues(alpha: 0.3),
             Colors.orange.withValues(alpha: 0.2),
           ],
         ),
@@ -1211,7 +1211,7 @@ class MasonryGalleryItemCard extends StatelessWidget {
           const Icon(
             Icons.group_outlined,
             size: 25,
-            color: Colors.amber,
+            color: Color(0xFFFFFC00),
           ),
           const SizedBox(height: 8),
           const Text(
@@ -1229,7 +1229,7 @@ class MasonryGalleryItemCard extends StatelessWidget {
               _showJoinCommunityAlert(context);
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.amber,
+              backgroundColor: Color(0xFFFFFC00),
               foregroundColor: Colors.black,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               shape: RoundedRectangleBorder(
@@ -1378,3 +1378,4 @@ class MasonryGalleryItemCard extends StatelessWidget {
     );
   }
 }
+

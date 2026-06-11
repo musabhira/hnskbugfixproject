@@ -41,9 +41,9 @@ class HomePageWidgetTree extends ConsumerStatefulWidget {
   final double? height;
 
   // Hardcoded Color Palette
-  static Color primaryColor = const Color(0xFFFFD600);
-  static Color secondaryColor = const Color(0xFFFFD600);
-  static Color accentColor = const Color(0xFFFFD600);
+  static Color primaryColor = const Color(0xFFFFFC00);
+  static Color secondaryColor = const Color(0xFFFFFC00);
+  static Color accentColor = const Color(0xFFFFFC00);
   static const Color backgroundColor = material.Colors.black;
   static const Color textPrimary = Color(0xFFFFFFFF);
   static const Color textSecondary = Color(0xFF94A3B8);
@@ -430,10 +430,10 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
             decoration: BoxDecoration(
               color: const Color(0xFF1E293B),
               borderRadius: BorderRadius.circular(28),
-              border: Border.all(color: const Color(0xFFFFD600).withValues(alpha: 0.2), width: 1.5),
+              border: Border.all(color: const Color(0xFFFFFC00).withValues(alpha: 0.2), width: 1.5),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFFFFD600).withValues(alpha: 0.1),
+                  color: const Color(0xFFFFFC00).withValues(alpha: 0.1),
                   blurRadius: 40,
                   offset: const Offset(0, 10),
                 )
@@ -448,16 +448,16 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFFFD600).withValues(alpha: 0.1),
+                        color: const Color(0xFFFFFC00).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(16),
                       ),
-                      child: const Icon(material.Icons.system_update_rounded, color: const Color(0xFFFFD600), size: 28),
+                      child: const Icon(material.Icons.system_update_rounded, color: const Color(0xFFFFFC00), size: 28),
                     ),
                     const Spacer(),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFFFD600),
+                        color: const Color(0xFFFFFC00),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
@@ -510,7 +510,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text("•", style: TextStyle(color: const Color(0xFFFFD600))),
+                            const Text("•", style: TextStyle(color: const Color(0xFFFFFC00))),
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
@@ -545,7 +545,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                       flex: 2,
                       child: material.ElevatedButton(
                         style: material.ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFFFD600),
+                          backgroundColor: const Color(0xFFFFFC00),
                           foregroundColor: material.Colors.black,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           elevation: 0,
@@ -671,7 +671,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
             child: _isLoading
                 ? Center(
                     child: material.CircularProgressIndicator(
-                      color: isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300),
+                      color: isDark ? const Color(0xFFFFFC00) : const Color(0xFFFFFC00),
                     ),
                   )
                 : _currentIndex == 1
@@ -680,7 +680,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                         ? ToolsPage(onFavoriteToggled: _handleRefresh)
                         : material.RefreshIndicator(
                                 onRefresh: _handleRefresh,
-                                color: isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300),
+                                color: isDark ? const Color(0xFFFFFC00) : const Color(0xFFFFFC00),
                                 backgroundColor: isDark ? const Color(0xFF121218) : const Color(0xFFF4F4F9),
                                 child: material.NestedScrollView(
                                   physics: const BouncingScrollPhysics(
@@ -712,7 +712,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                               material.SnackBar(
                                                 content: const Text(
                                                     'Strangers Match feature is calibrating for your region.'),
-                                                backgroundColor: isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300),
+                                                backgroundColor: isDark ? const Color(0xFFFFFC00) : const Color(0xFFFFFC00),
                                               ),
                                             );
                                           },
@@ -1020,14 +1020,14 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                               child: Row(
                                 children: [
                                   Icon(material.Icons.people_rounded,
-                                      size: 18, color: isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300)),
+                                      size: 18, color: isDark ? const Color(0xFFFFFC00) : const Color(0xFFFFFC00)),
                                   const SizedBox(width: 8),
                                   Text(
                                     'SUGGESTED PEOPLE',
                                     style: GoogleFonts.outfit(
                                       fontSize: 13,
                                       fontWeight: FontWeight.bold,
-                                      color: isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300),
+                                      color: isDark ? const Color(0xFFFFFC00) : const Color(0xFFFFFC00),
                                       letterSpacing: 0.5,
                                     ),
                                   ),
@@ -1070,7 +1070,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                             decoration: BoxDecoration(
                                               shape: BoxShape.circle,
                                               border: Border.all(
-                                                color: (isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300)).withValues(alpha: 0.5),
+                                                color: (isDark ? const Color(0xFFFFFC00) : const Color(0xFFFFFC00)).withValues(alpha: 0.5),
                                                 width: 1.5,
                                               ),
                                             ),
@@ -1079,7 +1079,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                               backgroundImage: avatarUrl != null
                                                   ? NetworkImage(avatarUrl)
                                                   : null,
-                                              backgroundColor: isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300),
+                                              backgroundColor: isDark ? const Color(0xFFFFFC00) : const Color(0xFFFFFC00),
                                               child: avatarUrl == null
                                                   ? Text(
                                                       name.isNotEmpty ? name[0].toUpperCase() : '?',
@@ -1337,7 +1337,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 
   void _showElearningComingSoonDialog(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final themeYellow = isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300);
+    final themeYellow = isDark ? const Color(0xFFFFFC00) : const Color(0xFFFFFC00);
     showDialog(
       context: context,
       builder: (context) => material.Dialog(
@@ -1525,7 +1525,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
           child: CircularProfileImage(
             profileImageUrl: _profileImageUrl,
             radius: 22.0,
-            borderColor: isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300),
+            borderColor: isDark ? const Color(0xFFFFFC00) : const Color(0xFFFFFC00),
           ),
         ),
       ),
@@ -1538,7 +1538,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     required VoidCallback onTap,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final themeYellow = isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300);
+    final themeYellow = isDark ? const Color(0xFFFFFC00) : const Color(0xFFFFFC00);
     return material.InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
@@ -1967,7 +1967,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                     child: Center(
                       child: Icon(
                         material.Icons.notifications_rounded,
-                        color: isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300),
+                        color: isDark ? const Color(0xFFFFFC00) : const Color(0xFFFFFC00),
                         size: 26,
                       ),
                     ),
@@ -2050,13 +2050,13 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
         decoration: BoxDecoration(
           color: isSelected
-              ? (isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300))
+              ? (isDark ? const Color(0xFFFFFC00) : const Color(0xFFFFFC00))
               : material.Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(25),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: (isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300)).withValues(alpha: 0.3),
+                    color: (isDark ? const Color(0xFFFFFC00) : const Color(0xFFFFFC00)).withValues(alpha: 0.3),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   )
@@ -2268,7 +2268,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                       style: GoogleFonts.outfit(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300),
+                        color: isDark ? const Color(0xFFFFFC00) : const Color(0xFFFFFC00),
                       ),
                     ),
                     Text(
@@ -2296,7 +2296,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         title: Row(
           children: [
             const Icon(material.Icons.notifications_active,
-                color: const Color(0xFFFFD600), size: 28),
+                color: const Color(0xFFFFFC00), size: 28),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
@@ -2353,7 +2353,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                 }
               },
               style: material.ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFFFD600),
+                backgroundColor: const Color(0xFFFFFC00),
                 foregroundColor: material.Colors.black,
               ),
               child: const Text('Accept',
@@ -2368,7 +2368,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                     .dismissNotification(notification.id);
               },
               style: material.ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFFFD600),
+                backgroundColor: const Color(0xFFFFFC00),
                 foregroundColor: material.Colors.black,
               ),
               child: const Text('Dismiss',
@@ -2506,7 +2506,7 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                               context,
                               label: 'Chat',
                               icon: material.Icons.chat_bubble_rounded,
-                              color: isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300),
+                              color: isDark ? const Color(0xFFFFFC00) : const Color(0xFFFFFC00),
                               onTap: onTapText,
                             ),
                           ],
@@ -2607,15 +2607,15 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                                 decoration: BoxDecoration(
                                   gradient: LinearGradient(
                                     colors: [
-                                      isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300),
-                                      (isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300))
+                                      isDark ? const Color(0xFFFFFC00) : const Color(0xFFFFFC00),
+                                      (isDark ? const Color(0xFFFFFC00) : const Color(0xFFFFFC00))
                                           .withValues(alpha: 0.8),
                                     ],
                                   ),
                                   borderRadius: BorderRadius.circular(12),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: (isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300))
+                                      color: (isDark ? const Color(0xFFFFFC00) : const Color(0xFFFFFC00))
                                           .withValues(alpha: 0.2),
                                       blurRadius: 8,
                                       offset: const Offset(0, 2),
@@ -2653,7 +2653,7 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                                 height: 14,
                                 child: material.CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  color: isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300),
+                                  color: isDark ? const Color(0xFFFFFC00) : const Color(0xFFFFFC00),
                                 ),
                               ),
                               error: (_, __) => const SizedBox(),
@@ -2705,7 +2705,7 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                         color: isDark ? material.Colors.white : material.Colors.black87,
                         fontSize: 14,
                       ),
-                      cursorColor: isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300),
+                      cursorColor: isDark ? const Color(0xFFFFFC00) : const Color(0xFFFFFC00),
                       decoration: material.InputDecoration(
                         hintText: 'Search for people or conversations...',
                         hintStyle: GoogleFonts.outfit(
@@ -2719,8 +2719,8 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                           child: Icon(
                             material.Icons.search_rounded,
                             color: isDark 
-                                ? const Color(0xFFFFD600).withValues(alpha: 0.6)
-                                : const Color(0xFFFFB300).withValues(alpha: 0.7),
+                                ? const Color(0xFFFFFC00).withValues(alpha: 0.6)
+                                : const Color(0xFFFFFC00).withValues(alpha: 0.7),
                             size: 20,
                           ),
                         ),
@@ -2740,7 +2740,7 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                                   height: 16,
                                   child: material.CircularProgressIndicator(
                                     strokeWidth: 2,
-                                    color: isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300),
+                                    color: isDark ? const Color(0xFFFFFC00) : const Color(0xFFFFFC00),
                                   ),
                                 ),
                               ),
@@ -2775,7 +2775,7 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
   Widget _buildTabItem(BuildContext context, String label, int index) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isSelected = selectedIndex == index;
-    final themeYellow = isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300);
+    final themeYellow = isDark ? const Color(0xFFFFFC00) : const Color(0xFFFFFC00);
     final textUnselected = isDark 
         ? material.Colors.white.withValues(alpha: 0.5) 
         : material.Colors.black.withValues(alpha: 0.5);
@@ -2957,7 +2957,7 @@ class CircularProfileImage extends StatelessWidget {
     super.key,
     required this.profileImageUrl,
     this.radius = 16.0,
-    this.borderColor = const Color(0xFFFFD600),
+    this.borderColor = const Color(0xFFFFFC00),
     this.borderWidth = 1.0,
     this.isVerified = false,
   });
@@ -3003,3 +3003,4 @@ class CircularProfileImage extends StatelessWidget {
 }
 
 // --- Original delegates removed, merged into _HomeMainHeaderDelegate ---
+

@@ -56,7 +56,7 @@ class _EulaComplianceDialogState extends State<EulaComplianceDialog> {
           children: [
             Row(
               children: [
-                const Icon(Icons.security_rounded, color: Colors.amber, size: 28),
+                const Icon(Icons.security_rounded, color: Color(0xFFFFFC00), size: 28),
                 const SizedBox(width: 12),
                 Text(
                   'Community Safety (EULA)',
@@ -92,12 +92,12 @@ class _EulaComplianceDialogState extends State<EulaComplianceDialog> {
                         children: [
                           Text(
                             '• ZERO TOLERANCE for objectionable content (nudity, violence, etc.)',
-                            style: TextStyle(color: Colors.amber, fontSize: 13, fontWeight: FontWeight.bold),
+                            style: TextStyle(color: Color(0xFFFFFC00), fontSize: 13, fontWeight: FontWeight.bold),
                           ),
                           SizedBox(height: 8),
                           Text(
                             '• ZERO TOLERANCE for abusive users, harassment, or hate speech.',
-                            style: TextStyle(color: Colors.amber, fontSize: 13, fontWeight: FontWeight.bold),
+                            style: TextStyle(color: Color(0xFFFFFC00), fontSize: 13, fontWeight: FontWeight.bold),
                           ),
                           SizedBox(height: 8),
                           Text(
@@ -123,7 +123,7 @@ class _EulaComplianceDialogState extends State<EulaComplianceDialog> {
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _handleAccept,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.amber,
+                  backgroundColor: Color(0xFFFFFC00),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
                 child: _isLoading
@@ -151,3 +151,4 @@ class _EulaComplianceDialogState extends State<EulaComplianceDialog> {
     );
   }
 }
+

@@ -73,7 +73,7 @@ class _GalleryFollowingTabViewPageState
       return const Scaffold(
         backgroundColor: Colors.black,
         body: Center(
-          child: CircularProgressIndicator(color: Colors.amber),
+          child: CircularProgressIndicator(color: Color(0xFFFFFC00)),
         ),
       );
     }

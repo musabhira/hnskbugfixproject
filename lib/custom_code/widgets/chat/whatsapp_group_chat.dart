@@ -66,7 +66,7 @@ class WhatsAppGroupChat extends ConsumerStatefulWidget {
 
 class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     with TickerProviderStateMixin {
-  static const Color accentColor = Color(0xFFFFA000);
+  static const Color accentColor = Color(0xFFFFFC00);
   final _supabase = Supabase.instance.client;
   final _teamsService = TeamsService();
   final _messageController = TextEditingController();
@@ -3676,3 +3676,4 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
     );
   }
 }
+

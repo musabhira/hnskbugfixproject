@@ -105,7 +105,7 @@ class _UserSearchDialogState extends State<UserSearchDialog> with SingleTickerPr
                 width: MediaQuery.of(context).size.width * 0.9,
                 constraints: const BoxConstraints(maxWidth: 500, maxHeight: 600),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1E1E1E).withValues(alpha: 0.95),
+                  color: Theme.of(context).dialogBackgroundColor.withValues(alpha: 0.95),
                   borderRadius: BorderRadius.circular(30),
                   border: Border.all(
                     color: Colors.white.withValues(alpha: 0.1),

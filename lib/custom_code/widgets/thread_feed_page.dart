@@ -714,7 +714,7 @@ class ModernCard extends StatelessWidget {
   Widget build(BuildContext context) {
     // Define colors
     const Color primaryColor = Color(0xFFFFD700); // Bright Yellow (Gold tone)
-    const Color accentColor = Color(0xFFFFA000); // Deep Yellow/Amber
+    const Color accentColor = Color(0xFFFFFC00); // Deep Yellow/Amber
     final Color backgroundColor = FlutterFlowTheme.of(context).secondaryBackground;
     final Color textColor = FlutterFlowTheme.of(context).primaryText;
     // const Color lightGrey =
@@ -1377,16 +1377,16 @@ class _CreateThreadPageState extends State<CreateThreadPage>
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                Colors.amber.shade600,
+                Color(0xFFFFFC00),
                 Colors.yellow.shade600,
-                Colors.amber.shade500,
+                Color(0xFFFFFC00),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.amber.withValues(alpha: 0.3),
+                color: Color(0xFFFFFC00).withValues(alpha: 0.3),
                 blurRadius: 20,
                 offset: const Offset(0, 4),
               ),
@@ -1402,14 +1402,14 @@ class _CreateThreadPageState extends State<CreateThreadPage>
                   color: Colors.black.withValues(alpha: 0.7),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: Colors.amber.withValues(alpha: 0.3),
+                    color: Color(0xFFFFFC00).withValues(alpha: 0.3),
                     width: 1,
                   ),
                 ),
                 child: IconButton(
                   icon: Icon(
                     Icons.close_rounded,
-                    color: Colors.amber.shade400,
+                    color: Color(0xFFFFFC00),
                     size: 24,
                   ),
                   onPressed: () => Navigator.pop(context),
@@ -1431,7 +1431,7 @@ class _CreateThreadPageState extends State<CreateThreadPage>
                   child: IconButton(
                     icon: Icon(
                       Icons.lightbulb_outline_rounded,
-                      color: Colors.amber.shade400,
+                      color: Color(0xFFFFFC00),
                       size: 24,
                     ),
                     onPressed: () {
@@ -1485,7 +1485,7 @@ class _CreateThreadPageState extends State<CreateThreadPage>
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               colors: [
-                                Colors.amber.withValues(alpha: 0.1),
+                                Color(0xFFFFFC00).withValues(alpha: 0.1),
                                 Colors.yellow.withValues(alpha: 0.05),
                               ],
                               begin: Alignment.topLeft,
@@ -1493,7 +1493,7 @@ class _CreateThreadPageState extends State<CreateThreadPage>
                             ),
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
-                              color: Colors.amber.withValues(alpha: 0.2),
+                              color: Color(0xFFFFFC00).withValues(alpha: 0.2),
                               width: 1,
                             ),
                           ),
@@ -1505,12 +1505,12 @@ class _CreateThreadPageState extends State<CreateThreadPage>
                                     padding: const EdgeInsets.all(12),
                                     decoration: BoxDecoration(
                                       color:
-                                          Colors.amber.withValues(alpha: 0.2),
+                                          Color(0xFFFFFC00).withValues(alpha: 0.2),
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: Icon(
                                       Icons.auto_awesome_rounded,
-                                      color: Colors.amber.shade400,
+                                      color: Color(0xFFFFFC00),
                                       size: 24,
                                     ),
                                   ),
@@ -1523,7 +1523,7 @@ class _CreateThreadPageState extends State<CreateThreadPage>
                                         Text(
                                           'Share Your Thoughts',
                                           style: TextStyle(
-                                            color: Colors.amber.shade400,
+                                            color: Color(0xFFFFFC00),
                                             fontWeight: FontWeight.bold,
                                             fontSize: 18,
                                           ),
@@ -1588,12 +1588,12 @@ class _CreateThreadPageState extends State<CreateThreadPage>
                             ),
                             borderRadius: BorderRadius.circular(24),
                             border: Border.all(
-                              color: Colors.amber.withValues(alpha: 0.3),
+                              color: Color(0xFFFFFC00).withValues(alpha: 0.3),
                               width: 1,
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.amber.withValues(alpha: 0.1),
+                                color: Color(0xFFFFFC00).withValues(alpha: 0.1),
                                 blurRadius: 20,
                                 offset: const Offset(0, 8),
                               ),
@@ -1606,14 +1606,14 @@ class _CreateThreadPageState extends State<CreateThreadPage>
                                 children: [
                                   Icon(
                                     Icons.edit_note_rounded,
-                                    color: Colors.amber.shade400,
+                                    color: Color(0xFFFFFC00),
                                     size: 24,
                                   ),
                                   const SizedBox(width: 12),
                                   Text(
                                     'Write your thoughts',
                                     style: TextStyle(
-                                      color: Colors.amber.shade400,
+                                      color: Color(0xFFFFFC00),
                                       fontWeight: FontWeight.w600,
                                       fontSize: 16,
                                     ),
@@ -1625,18 +1625,18 @@ class _CreateThreadPageState extends State<CreateThreadPage>
                                       height: 16,
                                       child: CircularProgressIndicator(
                                         strokeWidth: 2,
-                                        color: Colors.amber,
+                                        color: Color(0xFFFFFC00),
                                       ),
                                     )
                                   else
                                     TextButton.icon(
                                       onPressed: _isSubmitting ? null : _polishThought,
                                       icon: const Icon(Icons.auto_awesome,
-                                          size: 16, color: Colors.amber),
+                                          size: 16, color: Color(0xFFFFFC00)),
                                       label: const Text(
                                         'AI Polish',
                                         style: TextStyle(
-                                          color: Colors.amber,
+                                          color: Color(0xFFFFFC00),
                                           fontSize: 12,
                                           fontWeight: FontWeight.bold,
                                         ),
@@ -1685,7 +1685,7 @@ class _CreateThreadPageState extends State<CreateThreadPage>
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(16),
                                       borderSide: BorderSide(
-                                        color: Colors.amber.shade400,
+                                        color: Color(0xFFFFFC00),
                                         width: 2,
                                       ),
                                     ),
@@ -1694,7 +1694,7 @@ class _CreateThreadPageState extends State<CreateThreadPage>
                                         Colors.black.withValues(alpha: 0.3),
                                     contentPadding: const EdgeInsets.all(20),
                                     counterStyle: TextStyle(
-                                      color: Colors.amber.shade400,
+                                      color: Color(0xFFFFFC00),
                                       fontWeight: FontWeight.w500,
                                       fontSize: 12,
                                     ),
@@ -1705,7 +1705,7 @@ class _CreateThreadPageState extends State<CreateThreadPage>
                                     color: Colors.white,
                                   ),
                                   autofocus: true,
-                                  cursorColor: Colors.amber.shade400,
+                                  cursorColor: Color(0xFFFFFC00),
                                 ),
                               ),
                             ],
@@ -1735,9 +1735,9 @@ class _CreateThreadPageState extends State<CreateThreadPage>
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               colors: [
-                                Colors.amber.shade600,
+                                Color(0xFFFFFC00),
                                 Colors.yellow.shade600,
-                                Colors.amber.shade500,
+                                Color(0xFFFFFC00),
                               ],
                               begin: Alignment.centerLeft,
                               end: Alignment.centerRight,
@@ -1745,7 +1745,7 @@ class _CreateThreadPageState extends State<CreateThreadPage>
                             borderRadius: BorderRadius.circular(30),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.amber.withValues(alpha: 0.4),
+                                color: Color(0xFFFFFC00).withValues(alpha: 0.4),
                                 blurRadius: 20,
                                 offset: const Offset(0, 8),
                               ),
@@ -2372,3 +2372,5 @@ class _ThreadCommentsPageState extends State<ThreadCommentsPage>
     );
   }
 }
+
+

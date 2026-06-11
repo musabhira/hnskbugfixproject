@@ -193,7 +193,7 @@ class NotificationsListPage extends ConsumerWidget {
                           onPressed: () =>
                               _handleAccept(context, ref, notification),
                           style: FilledButton.styleFrom(
-                            backgroundColor: isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300),
+                            backgroundColor: isDark ? const Color(0xFFFFD600) : const Color(0xFFFFF500),
                             foregroundColor: isDark ? material.Colors.black : material.Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 8),
                             shape: RoundedRectangleBorder(
@@ -244,7 +244,7 @@ class NotificationsListPage extends ConsumerWidget {
                             .dismissNotification(notification.id);
                       },
                       style: material.TextButton.styleFrom(
-                        foregroundColor: isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300),
+                        foregroundColor: isDark ? const Color(0xFFFFD600) : const Color(0xFFFFF500),
                       ),
                       child: const Text('Dismiss'),
                     ),
@@ -280,7 +280,7 @@ class NotificationsListPage extends ConsumerWidget {
       case 'group_request':
         return material.Colors.orange;
       default:
-        return isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300);
+        return isDark ? const Color(0xFFFFD600) : const Color(0xFFFFF500);
     }
   }
 
@@ -349,3 +349,4 @@ class NotificationsListPage extends ConsumerWidget {
     }
   }
 }
+

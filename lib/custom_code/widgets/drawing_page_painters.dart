@@ -379,14 +379,14 @@ class LassoPainter extends CustomPainter {
       return;
     }
     final paint = Paint()
-      ..color = Colors.amber.withValues(alpha: 0.5)
+      ..color = Color(0xFFFFFC00).withValues(alpha: 0.5)
       ..strokeWidth = 2.0
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
       ..isAntiAlias = true;
       
     final fillPaint = Paint()
-      ..color = Colors.amber.withValues(alpha: 0.1)
+      ..color = Color(0xFFFFFC00).withValues(alpha: 0.1)
       ..style = PaintingStyle.fill;
 
     final path = Path();
@@ -415,3 +415,4 @@ class LassoPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant LassoPainter oldDelegate) => true;
 }
+

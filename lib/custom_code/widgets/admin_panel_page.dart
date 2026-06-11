@@ -110,7 +110,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.amber,
+              backgroundColor: Color(0xFFFFFC00),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
             onPressed: () {
@@ -390,10 +390,10 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
         centerTitle: true,
         bottom: TabBar(
           controller: _tabController,
-          labelColor: Colors.amber,
+          labelColor: Color(0xFFFFFC00),
           unselectedLabelColor: Colors.grey,
           isScrollable: true,
-          indicatorColor: Colors.amber,
+          indicatorColor: Color(0xFFFFFC00),
           indicatorWeight: 3,
           tabs: const [
             Tab(icon: Icon(Icons.dashboard_outlined), text: 'Insight'),
@@ -626,9 +626,9 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
       child: Column(
         children: [
           TabBar(
-            labelColor: Colors.amber,
+            labelColor: Color(0xFFFFFC00),
             unselectedLabelColor: Colors.grey,
-            indicatorColor: Colors.amber,
+            indicatorColor: Color(0xFFFFFC00),
             tabs: [
               Tab(text: "Global Status"),
               Tab(text: "User Access"),
@@ -671,7 +671,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                 border: Border.all(color: Colors.white10),
               ),
               child: ExpansionTile(
-                iconColor: Colors.amber,
+                iconColor: Color(0xFFFFFC00),
                 collapsedIconColor: Colors.white54,
                 title: Text(toolName, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                 subtitle: Text(
@@ -791,11 +791,11 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
               decoration: BoxDecoration(
                 color: Colors.grey[900],
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
+                border: Border.all(color: Color(0xFFFFFC00).withValues(alpha: 0.3)),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.person_search, color: Colors.amber),
+                  const Icon(Icons.person_search, color: Color(0xFFFFFC00)),
                   const SizedBox(width: 16),
                   Expanded(
                     child: Column(
@@ -1064,7 +1064,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                           children: [
                             Text(user['name'] ?? 'Unknown User', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
                             if (isVerified) const SizedBox(width: 4),
-                            if (isVerified) const Icon(Icons.verified, color: Colors.amber, size: 16),
+                            if (isVerified) const Icon(Icons.verified, color: Color(0xFFFFFC00), size: 16),
                           ],
                         ),
                         subtitle: Text(user['shop_name'] ?? 'No shop name', style: const TextStyle(fontSize: 12, color: Colors.grey)),
@@ -1354,7 +1354,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                                       ),
                                       IconButton(
                                         icon: const Icon(Icons.content_copy,
-                                            size: 18, color: Colors.amber),
+                                            size: 18, color: Color(0xFFFFFC00)),
                                         onPressed: () {
                                           Clipboard.setData(
                                               ClipboardData(text: password));
@@ -1373,9 +1373,9 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                                 ],
                               ),
                               leading: CircleAvatar(
-                                backgroundColor: Colors.amber.withValues(alpha: 0.1),
+                                backgroundColor: Color(0xFFFFFC00).withValues(alpha: 0.1),
                                 child: const Icon(Icons.lock_person,
-                                    color: Colors.amber),
+                                    color: Color(0xFFFFFC00)),
                               ),
                             ),
                           );
@@ -1462,7 +1462,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
             height: 50,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.amber,
+                backgroundColor: Color(0xFFFFFC00),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
               onPressed: _updateAppVersion,
@@ -1650,7 +1650,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
               const SizedBox(
                 width: 20,
                 height: 20,
-                child: CircularProgressIndicator(color: Colors.amber, strokeWidth: 2),
+                child: CircularProgressIndicator(color: Color(0xFFFFFC00), strokeWidth: 2),
               ),
               const SizedBox(width: 15),
               Expanded(
@@ -1841,7 +1841,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                     const SizedBox(width: 8),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.amber,
+                        backgroundColor: Color(0xFFFFFC00),
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
@@ -1886,7 +1886,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                 const SizedBox(height: 24),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.amber,
+                    backgroundColor: Color(0xFFFFFC00),
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
@@ -1998,7 +1998,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                     const SizedBox(width: 8),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.amber,
+                        backgroundColor: Color(0xFFFFFC00),
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
@@ -2024,7 +2024,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                     const SizedBox(width: 8),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.amber,
+                        backgroundColor: Color(0xFFFFFC00),
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
@@ -2044,7 +2044,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                 const SizedBox(height: 24),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.amber,
+                    backgroundColor: Color(0xFFFFFC00),
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
@@ -2108,7 +2108,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
       decoration: InputDecoration(
         labelText: label,
         labelStyle: const TextStyle(color: Colors.grey),
-        prefixIcon: icon != null ? Icon(icon, color: Colors.amber, size: 20) : null,
+        prefixIcon: icon != null ? Icon(icon, color: Color(0xFFFFFC00), size: 20) : null,
         filled: true,
         fillColor: Colors.grey[900],
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
@@ -2135,11 +2135,11 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
           decoration: BoxDecoration(
             color: Colors.grey[900],
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.amber.withOpacity(0.3)),
+            border: Border.all(color: Color(0xFFFFFC00).withOpacity(0.3)),
           ),
           child: Row(
             children: [
-              const Icon(Icons.school, color: Colors.amber),
+              const Icon(Icons.school, color: Color(0xFFFFFC00)),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
@@ -2161,8 +2161,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
               ),
               Switch(
                 value: _elearningUnlocked,
-                activeTrackColor: Colors.amber.withOpacity(0.3),
-                activeColor: Colors.amber,
+                activeTrackColor: Color(0xFFFFFC00).withOpacity(0.3),
+                activeColor: Color(0xFFFFFC00),
                 onChanged: (val) => _toggleElearningUnlock(val),
               ),
             ],
@@ -2175,11 +2175,11 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
           decoration: BoxDecoration(
             color: Colors.grey[900],
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.amber.withOpacity(0.3)),
+            border: Border.all(color: Color(0xFFFFFC00).withOpacity(0.3)),
           ),
           child: Row(
             children: [
-              const Icon(Icons.checkroom, color: Colors.amber),
+              const Icon(Icons.checkroom, color: Color(0xFFFFFC00)),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
@@ -2201,8 +2201,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
               ),
               Switch(
                 value: _printingUnlocked,
-                activeTrackColor: Colors.amber.withOpacity(0.3),
-                activeColor: Colors.amber,
+                activeTrackColor: Color(0xFFFFFC00).withOpacity(0.3),
+                activeColor: Color(0xFFFFFC00),
                 onChanged: (val) => _togglePrintingUnlock(val),
               ),
             ],
@@ -2229,7 +2229,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
               ),
               ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.amber,
+                  backgroundColor: Color(0xFFFFFC00),
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
@@ -2245,7 +2245,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
         ),
         Expanded(
           child: isLoadingCourses
-              ? const Center(child: CircularProgressIndicator(color: Colors.amber))
+              ? const Center(child: CircularProgressIndicator(color: Color(0xFFFFFC00)))
               : allCourses.isEmpty
                   ? _buildEmptyState(
                       icon: Icons.school_outlined,
@@ -2285,7 +2285,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                                         fit: BoxFit.cover,
                                         placeholder: (context, url) => Container(
                                           color: Colors.grey[800],
-                                          child: const Center(child: CircularProgressIndicator(color: Colors.amber)),
+                                          child: const Center(child: CircularProgressIndicator(color: Color(0xFFFFFC00))),
                                         ),
                                         errorWidget: (context, url, error) => Container(
                                           color: Colors.grey[800],
@@ -2325,12 +2325,12 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                                         Container(
                                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                           decoration: BoxDecoration(
-                                            color: Colors.amber.withOpacity(0.1),
+                                            color: Color(0xFFFFFC00).withOpacity(0.1),
                                             borderRadius: BorderRadius.circular(8),
                                           ),
                                           child: Text(
                                             '₹$price',
-                                            style: const TextStyle(color: Colors.amber, fontSize: 11, fontWeight: FontWeight.bold),
+                                            style: const TextStyle(color: Color(0xFFFFFC00), fontSize: 11, fontWeight: FontWeight.bold),
                                           ),
                                         ),
                                         if (retail != '0' && retail != price)
@@ -2360,8 +2360,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                                       mainAxisAlignment: MainAxisAlignment.end,
                                       children: [
                                         TextButton.icon(
-                                          icon: const Icon(Icons.list_alt, size: 16, color: Colors.amber),
-                                          label: const Text('Curriculum', style: TextStyle(color: Colors.amber, fontSize: 12)),
+                                          icon: const Icon(Icons.list_alt, size: 16, color: Color(0xFFFFFC00)),
+                                          label: const Text('Curriculum', style: TextStyle(color: Color(0xFFFFFC00), fontSize: 12)),
                                           onPressed: () {
                                             setState(() {
                                               selectedCourseForCurriculum = course;
@@ -2409,8 +2409,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               TextButton.icon(
-                icon: const Icon(Icons.arrow_back, color: Colors.amber),
-                label: const Text('Back to Courses', style: TextStyle(color: Colors.amber)),
+                icon: const Icon(Icons.arrow_back, color: Color(0xFFFFFC00)),
+                label: const Text('Back to Courses', style: TextStyle(color: Color(0xFFFFFC00))),
                 onPressed: () {
                   setState(() {
                     selectedCourseForCurriculum = null;
@@ -2441,7 +2441,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                   ),
                   ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.amber,
+                      backgroundColor: Color(0xFFFFFC00),
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
@@ -2456,7 +2456,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
         ),
         Expanded(
           child: isLoadingLessons
-              ? const Center(child: CircularProgressIndicator(color: Colors.amber))
+              ? const Center(child: CircularProgressIndicator(color: Color(0xFFFFFC00)))
               : courseLessons.isEmpty
                   ? _buildEmptyState(
                       icon: Icons.video_library_outlined,
@@ -2488,13 +2488,13 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                                 width: 32,
                                 height: 32,
                                 decoration: BoxDecoration(
-                                  color: Colors.amber.withOpacity(0.1),
+                                  color: Color(0xFFFFFC00).withOpacity(0.1),
                                   shape: BoxShape.circle,
                                 ),
                                 alignment: Alignment.center,
                                 child: Text(
                                   '${index + 1}',
-                                  style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.bold),
+                                  style: const TextStyle(color: Color(0xFFFFFC00), fontWeight: FontWeight.bold),
                                 ),
                               ),
                               const SizedBox(width: 12),
@@ -2597,7 +2597,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
             const SizedBox(height: 24),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.amber,
+                backgroundColor: Color(0xFFFFFC00),
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
@@ -2618,3 +2618,4 @@ keyPassword=pocket123
 keyAlias=upload
 storeFile=upload-keystore.jks
 */
+

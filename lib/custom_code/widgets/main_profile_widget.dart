@@ -221,7 +221,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
       // Process Gallery
       final Map<String, Map<String, dynamic>> uniqueGallery = {};
-      Set<String> categorySet = {'All'};
+      Set<String> categorySet = {};
 
       for (var item in galleryRes) {
         final id = item['id']?.toString() ?? item['gallery_id']?.toString();
@@ -237,7 +237,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
           uniqueGallery[id] = normalizedItem;
           final category = normalizedItem['category']?.toString().trim() ?? normalizedItem['gallery_category']?.toString().trim();
-          if (category != null && category.isNotEmpty) {
+          if (category != null && category.isNotEmpty && category.toLowerCase() != 'all') {
             categorySet.add(category);
           }
         }
@@ -245,7 +245,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
       setState(() {
         _galleryItems = uniqueGallery.values.toList();
-        _categories = categorySet.toList();
+        List<String> sortedCategories = categorySet.toList()..sort();
+        _categories = ['All', ...sortedCategories];
         _filteredGalleryItems = _galleryItems;
         _followersCount = counts['followers'] ?? 0;
         _followingCount = counts['following'] ?? 0;
@@ -273,7 +274,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
       if (mounted) {
         final Map<String, Map<String, dynamic>> uniqueGallery = {};
-        Set<String> categorySet = {'All'};
+        Set<String> categorySet = {};
         for (var item in allGallery) {
           final id = item['id']?.toString() ?? item['gallery_id']?.toString();
           if (id != null) {
@@ -288,12 +289,15 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
             uniqueGallery[id] = normalizedItem;
             final cat = normalizedItem['category']?.toString().trim() ?? normalizedItem['gallery_category']?.toString().trim();
-            if (cat != null && cat.isNotEmpty) categorySet.add(cat);
+            if (cat != null && cat.isNotEmpty && cat.toLowerCase() != 'all') {
+              categorySet.add(cat);
+            }
           }
         }
         setState(() {
           _galleryItems = uniqueGallery.values.toList();
-          _categories = categorySet.toList();
+          List<String> sortedCategories = categorySet.toList()..sort();
+          _categories = ['All', ...sortedCategories];
           if (_selectedCategory == 'All') {
             _filteredGalleryItems = _galleryItems;
           }

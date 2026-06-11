@@ -132,7 +132,7 @@ class _DrawingAcademyHomePageState extends State<DrawingAcademyHomePage> {
               decoration: BoxDecoration(
                 color: Colors.black.withOpacity(0.75),
                 borderRadius: BorderRadius.circular(28),
-                border: Border.all(color: Colors.amber.withOpacity(0.25), width: 1.5),
+                border: Border.all(color: Color(0xFFFFFC00).withOpacity(0.25), width: 1.5),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withOpacity(0.6),
@@ -140,7 +140,7 @@ class _DrawingAcademyHomePageState extends State<DrawingAcademyHomePage> {
                     offset: const Offset(0, 20),
                   ),
                   BoxShadow(
-                    color: Colors.amber.withOpacity(0.08),
+                    color: Color(0xFFFFFC00).withOpacity(0.08),
                     blurRadius: 45,
                     spreadRadius: -5,
                   ),
@@ -154,18 +154,18 @@ class _DrawingAcademyHomePageState extends State<DrawingAcademyHomePage> {
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          Colors.amber.shade400.withOpacity(0.15),
+                          Color(0xFFFFFC00).withOpacity(0.15),
                           Colors.orange.shade400.withOpacity(0.05),
                         ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                       shape: BoxShape.circle,
-                      border: Border.all(color: Colors.amber.withOpacity(0.3), width: 1.5),
+                      border: Border.all(color: Color(0xFFFFFC00).withOpacity(0.3), width: 1.5),
                     ),
                     child: const Icon(
                       Icons.school_rounded,
-                      color: Colors.amber,
+                      color: Color(0xFFFFFC00),
                       size: 44,
                     ),
                   ),
@@ -196,7 +196,7 @@ class _DrawingAcademyHomePageState extends State<DrawingAcademyHomePage> {
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          Colors.amber.shade600,
+                          Color(0xFFFFFC00),
                           Colors.orange.shade600,
                         ],
                         begin: Alignment.topLeft,
@@ -205,7 +205,7 @@ class _DrawingAcademyHomePageState extends State<DrawingAcademyHomePage> {
                       borderRadius: BorderRadius.circular(18),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.amber.shade600.withOpacity(0.3),
+                          color: Color(0xFFFFFC00).withOpacity(0.3),
                           blurRadius: 12,
                           offset: const Offset(0, 4),
                         ),
@@ -680,3 +680,4 @@ class _DrawingAcademyHomePageState extends State<DrawingAcademyHomePage> {
     );
   }
 }
+

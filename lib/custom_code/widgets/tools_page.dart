@@ -759,7 +759,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
 
   void _showComingSoonDialog() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final themeYellow = isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300);
+    final themeYellow = isDark ? const Color(0xFFFFD600) : const Color(0xFFFFF500);
     showDialog(
       context: context,
       builder: (context) => Dialog(
@@ -1503,14 +1503,34 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                             (_selectedTab == 1 && _showAddTask) ||
                             (_selectedTab == 2 && _showAddChallenge)
                         ? const Color(0xFF2C2C2C)
-                        : Colors.yellow.withValues(alpha: 0.1),
+                        : null,
+                    gradient: (_selectedTab == 0 && _showAddSchedule) ||
+                            (_selectedTab == 1 && _showAddTask) ||
+                            (_selectedTab == 2 && _showAddChallenge)
+                        ? null
+                        : LinearGradient(
+                            colors: [Colors.yellow.shade400, Colors.yellow.shade700],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
                     borderRadius: BorderRadius.circular(16),
+                    boxShadow: (_selectedTab == 0 && _showAddSchedule) ||
+                            (_selectedTab == 1 && _showAddTask) ||
+                            (_selectedTab == 2 && _showAddChallenge)
+                        ? []
+                        : [
+                            BoxShadow(
+                              color: Colors.yellow.withValues(alpha: 0.3),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            )
+                          ],
                     border: Border.all(
                       color: (_selectedTab == 0 && _showAddSchedule) ||
                               (_selectedTab == 1 && _showAddTask) ||
                               (_selectedTab == 2 && _showAddChallenge)
                           ? const Color(0xFF424242)
-                          : Colors.yellow.withValues(alpha: 0.5),
+                          : Colors.transparent,
                     ),
                   ),
                   child: Row(
@@ -1526,8 +1546,8 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                                 (_selectedTab == 1 && _showAddTask) ||
                                 (_selectedTab == 2 && _showAddChallenge)
                             ? Colors.white70
-                            : Colors.yellow,
-                        size: 20,
+                            : Colors.black87,
+                        size: 22,
                       ),
                       const SizedBox(width: 8),
                       Text(
@@ -1547,7 +1567,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                                   (_selectedTab == 1 && _showAddTask) ||
                                   (_selectedTab == 2 && _showAddChallenge)
                               ? Colors.white70
-                              : Colors.yellow,
+                              : Colors.black87,
                         ),
                       ),
                     ],
@@ -2464,7 +2484,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
 
   Widget _buildChallengeCard(Challenge challenge) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final themeYellow = isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300);
+    final themeYellow = isDark ? const Color(0xFFFFD600) : const Color(0xFFFFF500);
     final completedDays = challenge.dailyTicks.values.where((v) => v == true).length;
     final percentage =
         (completedDays / challenge.totalDays * 100).clamp(0.0, 100.0);
@@ -4501,4 +4521,5 @@ class ArrowPainter extends CustomPainter {
 // Removed GrowthDashboard and Content AI features
 
 // Mock AI Service - Replace with your actual implementation
+
 

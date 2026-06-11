@@ -1799,6 +1799,8 @@ class _VerfiedSearchProfileDetailPageState
                                                                               _isFollowing,
                                                                           userId:
                                                                               widget.userId,
+                                                                          buttonColor: _getButtonColor(),
+                                                                          buttonTextColor: _getButtonTextColor(),
                                                                         ),
                                                                       ),
                                                                     ],

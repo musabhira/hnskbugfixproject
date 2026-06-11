@@ -2363,7 +2363,7 @@ class _MessageScreenState extends State<MessageScreen> {
                         Container(
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            border: Border.all(color: Colors.amber, width: 1),
+                            border: Border.all(color: Color(0xFFFFFC00), width: 1),
                           ),
                           child: CircleAvatar(
                             radius: 14,
@@ -2423,7 +2423,7 @@ class _MessageScreenState extends State<MessageScreen> {
                           child: const Center(
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              color: Colors.amber,
+                              color: Color(0xFFFFFC00),
                             ),
                           ),
                         ),
@@ -2445,12 +2445,12 @@ class _MessageScreenState extends State<MessageScreen> {
                           decoration: BoxDecoration(
                             color: Colors.black.withValues(alpha: 0.7),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.amber, width: 0.5),
+                            border: Border.all(color: Color(0xFFFFFC00), width: 0.5),
                           ),
                           child: Text(
                             '\$$price',
                             style: const TextStyle(
-                              color: Colors.amber,
+                              color: Color(0xFFFFFC00),
                               fontWeight: FontWeight.bold,
                               fontSize: 12,
                             ),
@@ -2681,7 +2681,7 @@ class _MessageScreenState extends State<MessageScreen> {
                       child: const Center(
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: Colors.amber,
+                          color: Color(0xFFFFFC00),
                         ),
                       ),
                     ),
@@ -3224,3 +3224,4 @@ class _EphemeralMediaViewerState extends State<EphemeralMediaViewer> {
     }
   }
 }
+

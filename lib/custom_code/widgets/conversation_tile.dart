@@ -127,10 +127,10 @@ class _ConversationTileState extends State<ConversationTile> {
         case 'Travel Radar':
           return isDark ? material.Colors.cyanAccent : material.Colors.cyan;
         default:
-          return isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300);
+          return isDark ? const Color(0xFFFFD600) : const Color(0xFFFFF500);
       }
     }
-    if (widget.conversation.isNotification) return isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300);
+    if (widget.conversation.isNotification) return isDark ? const Color(0xFFFFD600) : const Color(0xFFFFF500);
     return isDark ? Colors.white.withValues(alpha: 0.5) : Colors.black.withValues(alpha: 0.45);
   }
 
@@ -342,7 +342,7 @@ class _ConversationTileState extends State<ConversationTile> {
                           locale: 'en_short'),
                       style: GoogleFonts.outfit(
                         color: widget.conversation.unreadCount > 0
-                            ? (isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300))
+                            ? (isDark ? const Color(0xFFFFD600) : const Color(0xFFFFF500))
                             : (isDark ? Colors.white.withValues(alpha: 0.35) : Colors.black.withValues(alpha: 0.35)),
                         fontSize: 12,
                         fontWeight: widget.conversation.unreadCount > 0
@@ -356,11 +356,11 @@ class _ConversationTileState extends State<ConversationTile> {
                       constraints: const BoxConstraints(minWidth: 20),
                       padding: const EdgeInsets.all(5),
                       decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300),
+                        color: isDark ? const Color(0xFFFFD600) : const Color(0xFFFFF500),
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: (isDark ? const Color(0xFFFFD600) : const Color(0xFFFFB300)).withValues(alpha: 0.5),
+                            color: (isDark ? const Color(0xFFFFD600) : const Color(0xFFFFF500)).withValues(alpha: 0.5),
                             blurRadius: 4,
                             spreadRadius: -1,
                           ),
@@ -387,3 +387,4 @@ class _ConversationTileState extends State<ConversationTile> {
     );
   }
 }
+

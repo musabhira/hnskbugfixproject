@@ -883,7 +883,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
         context: context,
         barrierDismissible: false,
         builder: (context) => const Center(
-          child: CircularProgressIndicator(color: Colors.amber),
+          child: CircularProgressIndicator(color: Color(0xFFFFFC00)),
         ),
       );
 
@@ -990,7 +990,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
         children: [
-          Icon(icon, color: Colors.amber, size: 20),
+          Icon(icon, color: Color(0xFFFFFC00), size: 20),
           const SizedBox(width: 12),
           Text(
             '$label:',
@@ -1190,7 +1190,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
           floating: true,
           pinned: true,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.amber),
+            icon: const Icon(Icons.arrow_back, color: Color(0xFFFFFC00)),
             onPressed: () => Navigator.of(context).pop(),
           ),
           actions: [
@@ -1238,7 +1238,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                                 color: Colors.grey[900],
                                 child: const Icon(
                                   Icons.image_not_supported,
-                                  color: Colors.amber,
+                                  color: Color(0xFFFFFC00),
                                   size: 64,
                                 ),
                               );
@@ -1248,7 +1248,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                             color: Colors.grey[900],
                             child: const Icon(
                               Icons.image,
-                              color: Colors.amber,
+                              color: Color(0xFFFFFC00),
                               size: 64,
                             ),
                           ),
@@ -1381,7 +1381,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                   children: [
                     CircleAvatar(
                       radius: 30,
-                      backgroundColor: Colors.amber,
+                      backgroundColor: Color(0xFFFFFC00),
                       backgroundImage: item['profile_image_url'] != null
                           ? NetworkImage(item['profile_image_url'])
                           : null,
@@ -1536,7 +1536,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                         ),
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.amber,
+                        backgroundColor: Color(0xFFFFFC00),
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -1698,3 +1698,4 @@ class BuildDetailContentState extends State<BuildDetailContent> {
     );
   }
 }
+

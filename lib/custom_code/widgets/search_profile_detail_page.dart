@@ -2739,6 +2739,8 @@ class _SearchProfileDetailPageState extends State<SearchProfileDetailPage>
                                                     initialIsFollowing:
                                                         _isFollowing,
                                                     userId: widget.userId,
+                                                    buttonColor: _getButtonColor(),
+                                                    buttonTextColor: _getButtonTextColor(),
                                                   ),
                                                 ),
                                               ],

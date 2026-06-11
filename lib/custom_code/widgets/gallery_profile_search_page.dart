@@ -194,13 +194,15 @@ class _GalleryProfileSearchPageState extends State<GalleryProfileSearchPage> {
         galleryItems = uniqueItems.values.toList();
 
         // Extract unique categories
-        Set<String> categorySet = {'All'};
+        Set<String> categorySet = {};
         for (var item in galleryItems) {
-          if (item['gallery_category'] != null) {
-            categorySet.add(item['gallery_category'].toString());
+          if (item['gallery_category'] != null && item['gallery_category'].toString().trim().isNotEmpty) {
+            categorySet.add(item['gallery_category'].toString().trim());
           }
         }
-        categories = categorySet.toList();
+        
+        List<String> sortedCategories = categorySet.toList()..sort();
+        categories = ['All', ...sortedCategories];
 
         filteredItems = List.from(galleryItems);
         isLoading = false;
@@ -215,12 +217,40 @@ class _GalleryProfileSearchPageState extends State<GalleryProfileSearchPage> {
 
   @override
   Widget build(BuildContext context) {
+    Color ensureContrast(Color fg, Color bg, {bool isButton = true}) {
+      double getLuminance(Color color) {
+        double r = color.r;
+        double g = color.g;
+        double b = color.b;
+        r = r <= 0.03928 ? r / 12.92 : pow((r + 0.055) / 1.055, 2.4).toDouble();
+        g = g <= 0.03928 ? g / 12.92 : pow((g + 0.055) / 1.055, 2.4).toDouble();
+        b = b <= 0.03928 ? b / 12.92 : pow((b + 0.055) / 1.055, 2.4).toDouble();
+        return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+      }
+
+      double l1 = getLuminance(fg);
+      double l2 = getLuminance(bg);
+      double ratio = (max(l1, l2) + 0.05) / (min(l1, l2) + 0.05);
+
+      if (ratio < 2.0) {
+        bool bgIsDark = l2 < 0.2;
+        if (bgIsDark) {
+          return isButton ? const Color(0xFFFFFC00) : Colors.white;
+        } else {
+          return isButton ? const Color(0xFF1E293B) : Colors.black87;
+        }
+      }
+      return fg;
+    }
+
     final Color bgcolorcode = _convertStringToColor(_colorCode ?? '#000000');
-    final Color bgtextcolor = _convertStringToColor(_colorCode1 ?? '#FFFFFF');
-    final Color buttoncolorcode =
-        _convertStringToColor(_colorCode2 ?? '#FFFF00');
-    final Color buttontextcolor =
-        _convertStringToColor(_colorCode3 ?? '#000000');
+    final Color rawBgTextColor = _convertStringToColor(_colorCode1 ?? '#FFFFFF');
+    final Color rawButtonColor = _convertStringToColor(_colorCode2 ?? '#FFFF00');
+    final Color rawButtonTextColor = _convertStringToColor(_colorCode3 ?? '#000000');
+    
+    final Color bgtextcolor = ensureContrast(rawBgTextColor, bgcolorcode, isButton: false);
+    final Color buttoncolorcode = ensureContrast(rawButtonColor, bgcolorcode, isButton: true);
+    final Color buttontextcolor = ensureContrast(rawButtonTextColor, buttoncolorcode, isButton: false);
     return Scaffold(body: ColoredBox(
         color: bgcolorcode,
         child: SafeArea(

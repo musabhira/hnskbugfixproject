@@ -171,12 +171,12 @@ class _ChessMatchmakingPageState extends State<ChessMatchmakingPage> {
                   decoration: BoxDecoration(
                     color: _isSearching
                         ? Colors.redAccent.withValues(alpha: 0.2)
-                        : Colors.amberAccent.withValues(alpha: 0.2),
+                        : const ui.Color(0xFFFFFC00).withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
                         color: _isSearching
                             ? Colors.redAccent
-                            : Colors.amberAccent),
+                            : const ui.Color(0xFFFFFC00)),
                   ),
                   child: Center(
                     child: Text(
@@ -186,7 +186,7 @@ class _ChessMatchmakingPageState extends State<ChessMatchmakingPage> {
                       style: GoogleFonts.outfit(
                         color: _isSearching
                             ? Colors.redAccent
-                            : Colors.amberAccent,
+                            : const ui.Color(0xFFFFFC00),
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
@@ -270,7 +270,7 @@ class _ChessMatchmakingPageState extends State<ChessMatchmakingPage> {
                             TextStyle(color: Colors.greenAccent, fontSize: 12)),
                     trailing: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.amberAccent),
+                          backgroundColor: const ui.Color(0xFFFFFC00)),
                       onPressed: () => _sendChallenge(user['id']),
                       child: const Text('Challenge',
                           style: TextStyle(color: Colors.black)),
@@ -384,8 +384,6 @@ class _ChessPlayPageState extends State<ChessPlayPage> {
 
     // In online mode, we must enforce turns
     if (!widget.isAi && widget.targetUserId != null) {
-      final isWhiteTurn = turn == 'w';
-
       // If it flipped to the opposite color's turn, it means WE just moved.
       // But we should check if the move we just made was legal for our color.
       // Actually, onMove is called AFTER the move is made on the board.
@@ -427,7 +425,7 @@ class _ChessPlayPageState extends State<ChessPlayPage> {
     try {
       final fen = _controller.getFen();
       final history = _controller.game.history;
-      final lastMoves = (history is List && history.isNotEmpty)
+      final lastMoves = history.isNotEmpty
           ? (history.length > 10 
               ? history.sublist(history.length - 10).join(', ') 
               : history.join(', '))
@@ -465,10 +463,12 @@ class _ChessPlayPageState extends State<ChessPlayPage> {
         if (moveStr.length >= 4) {
           final from = moveStr.substring(0, 2);
           final to = moveStr.substring(2, 4);
+          /*
           String? promotion;
           if (moveStr.length > 4) {
             promotion = moveStr.substring(4, 5);
           }
+          */
           
           try {
             _controller.makeMove(from: from, to: to);
@@ -617,3 +617,4 @@ class _ChessPlayPageState extends State<ChessPlayPage> {
     );
   }
 }
+

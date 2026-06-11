@@ -5,6 +5,7 @@ import '/backend/supabase/supabase.dart';
 import 'index.dart'; // Imports other custom widgets
 // Imports custom actions
 import 'package:flutter/material.dart';
+import '/flutter_flow/flutter_flow_theme.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
@@ -137,7 +138,7 @@ class _SearchPageState extends State<SearchPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A), // Richer black
+      backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
       body: SafeArea(
         child: Column(
           children: [
@@ -150,7 +151,7 @@ class _SearchPageState extends State<SearchPage> {
                   const Text(
                     'Search',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: Colors.yellow,
                       fontSize: 28,
                       fontWeight: FontWeight.w900,
                       letterSpacing: -0.5,
@@ -703,12 +704,16 @@ class FollowButton extends StatefulWidget {
   final String userId;
   final bool initialIsFollowing;
   final DateTime? firstFollowTimestamp;
+  final Color? buttonColor;
+  final Color? buttonTextColor;
 
   const FollowButton({
     super.key,
     required this.userId,
     required this.initialIsFollowing,
     this.firstFollowTimestamp,
+    this.buttonColor,
+    this.buttonTextColor,
   });
 
   @override
@@ -876,6 +881,10 @@ class _FollowButtonState extends State<FollowButton> {
 
   Map<String, dynamic>? _profileData;
   Color _getButtonColor() {
+    if (widget.buttonColor != null) {
+      return widget.buttonColor!;
+    }
+    
     // Debug print to check if button_color_code exists
     debugPrint('Profile data: $_profileData');
     debugPrint('Button color code: ${_profileData?['button_color_code']}');
@@ -895,14 +904,33 @@ class _FollowButtonState extends State<FollowButton> {
     }
     return Theme.of(context).primaryColor;
   }
+  
+  Color _getButtonTextColor() {
+    if (widget.buttonTextColor != null) {
+      return widget.buttonTextColor!;
+    }
+    
+    if (_profileData != null && _profileData!['button_text_color'] != null) {
+      try {
+        String colorCode = _profileData!['button_text_color'].toString();
+        if (colorCode.startsWith('#')) {
+          colorCode = colorCode.substring(1);
+        }
+        return Color(int.parse('FF$colorCode', radix: 16));
+      } catch (e) {
+        return Colors.white; // Or a reasonable default text color
+      }
+    }
+    return Colors.black; // Default if not found
+  }
 
   @override
   Widget build(BuildContext context) {
     //  if (_isFollowing)
     return OutlinedButton.icon(
       onPressed: _isLoading ? null : _toggleFollow,
-      icon: Icon(_isFollowing ? Icons.person_remove : Icons.person_add),
-      label: Text(_isFollowing ? 'Following' : 'Follow'),
+      icon: Icon(_isFollowing ? Icons.person_remove : Icons.person_add, color: _isFollowing ? _getButtonColor() : _getButtonTextColor()),
+      label: Text(_isFollowing ? 'Following' : 'Follow', style: TextStyle(color: _isFollowing ? _getButtonColor() : _getButtonTextColor())),
       style: OutlinedButton.styleFrom(
         foregroundColor: _isFollowing
             ? _getButtonColor().withValues(alpha: 0.5)
@@ -940,7 +968,7 @@ class ProfileDetailPage extends StatefulWidget {
   });
 
   @override
-  _ProfileDetailPageState createState() => _ProfileDetailPageState();
+  State<ProfileDetailPage> createState() => _ProfileDetailPageState();
 }
 
 class _ProfileDetailPageState extends State<ProfileDetailPage>
@@ -1074,7 +1102,7 @@ class _ProfileDetailPageState extends State<ProfileDetailPage>
         _isFollowing = response.isNotEmpty;
       });
     } catch (e) {
-      print('Error checking follow status: $e');
+      debugPrint('Error checking follow status: $e');
     }
   }
 

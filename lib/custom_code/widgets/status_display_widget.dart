@@ -5100,7 +5100,7 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
                         _buildUploadOption(
                           icon: Icons.lightbulb_outline,
                           label: 'Thought',
-                          color: Colors.amber,
+                          color: Color(0xFFFFFC00),
                           onTap: _showThoughtPicker,
                         ),
                         _buildUploadOption(
@@ -5172,3 +5172,4 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
     );
   }
 }
+

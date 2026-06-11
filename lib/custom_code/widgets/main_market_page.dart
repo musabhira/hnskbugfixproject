@@ -58,9 +58,9 @@ class _MainMarketPageState extends ConsumerState<MainMarketPage>
               centerTitle: true,
               bottom: TabBar(
                 controller: _mainTabController,
-                indicatorColor: Colors.amber,
+                indicatorColor: Color(0xFFFFFC00),
                 indicatorWeight: 3,
-                labelColor: Colors.amber,
+                labelColor: Color(0xFFFFFC00),
                 unselectedLabelColor: FlutterFlowTheme.of(context).secondaryText,
                 labelStyle:
                     const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
@@ -139,7 +139,7 @@ class _MainMarketPageState extends ConsumerState<MainMarketPage>
                   colors: [FlutterFlowTheme.of(context).secondaryBackground, FlutterFlowTheme.of(context).primaryBackground],
                 ),
                 borderRadius: BorderRadius.circular(28),
-                border: Border.all(color: Colors.amber.withValues(alpha: 0.15)),
+                border: Border.all(color: Color(0xFFFFFC00).withValues(alpha: 0.15)),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.3),
@@ -157,11 +157,11 @@ class _MainMarketPageState extends ConsumerState<MainMarketPage>
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Colors.amber.withValues(alpha: 0.1),
+                            color: Color(0xFFFFFC00).withValues(alpha: 0.1),
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(Icons.tune,
-                              color: Colors.amber, size: 32),
+                              color: Color(0xFFFFFC00), size: 32),
                         ),
                         const SizedBox(height: 16),
                         Text(
@@ -220,7 +220,7 @@ class _MainMarketPageState extends ConsumerState<MainMarketPage>
                             title: Text(category,
                                 style: TextStyle(
                                     color: isSelected
-                                        ? Colors.amber
+                                        ? Color(0xFFFFFC00)
                                         : FlutterFlowTheme.of(context).primaryText.withValues(alpha: 0.8),
                                     fontSize: 15,
                                     fontWeight: isSelected
@@ -230,18 +230,18 @@ class _MainMarketPageState extends ConsumerState<MainMarketPage>
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
                                 color: isSelected
-                                    ? Colors.amber.withValues(alpha: 0.1)
+                                    ? Color(0xFFFFFC00).withValues(alpha: 0.1)
                                     : FlutterFlowTheme.of(context).primaryText.withValues(alpha: 0.03),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Icon(_getCategoryIcon(category),
                                   size: 18,
                                   color: isSelected
-                                      ? Colors.amber
+                                      ? Color(0xFFFFFC00)
                                       : FlutterFlowTheme.of(context).secondaryText.withValues(alpha: 0.4)),
                             ),
                             value: isSelected,
-                            activeColor: Colors.amber,
+                            activeColor: Color(0xFFFFFC00),
                             checkColor: Colors.black,
                             onChanged: (val) {
                               setDialogState(() {
@@ -279,7 +279,7 @@ class _MainMarketPageState extends ConsumerState<MainMarketPage>
                               boxShadow: [
                                 if (selectedInterests.isNotEmpty)
                                   BoxShadow(
-                                    color: Colors.amber.withValues(alpha: 0.2),
+                                    color: Color(0xFFFFFC00).withValues(alpha: 0.2),
                                     blurRadius: 10,
                                     offset: const Offset(0, 4),
                                   ),
@@ -287,7 +287,7 @@ class _MainMarketPageState extends ConsumerState<MainMarketPage>
                             ),
                             child: ElevatedButton(
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.amber,
+                                backgroundColor: Color(0xFFFFFC00),
                                 foregroundColor: Colors.black,
                                 elevation: 0,
                                 shape: RoundedRectangleBorder(
@@ -365,10 +365,10 @@ class MarketExploreTabView extends ConsumerWidget {
             child: TabBar(
               isScrollable: true,
               indicator: const UnderlineTabIndicator(
-                borderSide: BorderSide(color: Colors.amber, width: 2),
+                borderSide: BorderSide(color: Color(0xFFFFFC00), width: 2),
                 insets: EdgeInsets.symmetric(horizontal: 20),
               ),
-              labelColor: Colors.amber,
+              labelColor: Color(0xFFFFFC00),
               unselectedLabelColor: FlutterFlowTheme.of(context).secondaryText,
               onTap: (index) {
                 final category = state.categories[index];
@@ -431,7 +431,7 @@ class MarketItemsList extends ConsumerWidget {
         onRefresh: () => ref
             .read(marketProvider.notifier)
             .loadItems(category, isRefresh: true),
-        color: Colors.amber,
+        color: Color(0xFFFFFC00),
         backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
         child: NotificationListener<ScrollNotification>(
           onNotification: (notification) {
@@ -518,7 +518,7 @@ class _MarketFollowingTabViewState
         onRefresh: () => ref
             .read(followingMarketProvider.notifier)
             .loadFollowingItems(isRefresh: true),
-        color: Colors.amber,
+        color: Color(0xFFFFFC00),
         backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
         child: NotificationListener<ScrollNotification>(
           onNotification: (notification) {
@@ -602,7 +602,7 @@ class _MarketItemCardState extends State<MarketItemCard> {
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
               color: _isHovered
-                  ? Colors.amber.withValues(alpha: 0.3)
+                  ? Color(0xFFFFFC00).withValues(alpha: 0.3)
                   : FlutterFlowTheme.of(context).alternate,
               width: 1,
             ),
@@ -676,7 +676,7 @@ class _MarketItemCardState extends State<MarketItemCard> {
                           child: Text(
                             '₹$price',
                             style: const TextStyle(
-                              color: Colors.amber,
+                              color: Color(0xFFFFFC00),
                               fontSize: 13,
                               fontWeight: FontWeight.bold,
                               letterSpacing: 0.5,
@@ -709,7 +709,7 @@ class _MarketItemCardState extends State<MarketItemCard> {
                         Container(
                           padding: const EdgeInsets.all(1.5),
                           decoration: BoxDecoration(
-                            color: Colors.amber.withValues(alpha: 0.4),
+                            color: Color(0xFFFFFC00).withValues(alpha: 0.4),
                             shape: BoxShape.circle,
                           ),
                           child: CircleAvatar(
@@ -784,3 +784,4 @@ class ItemSkeleton extends StatelessWidget {
     );
   }
 }
+

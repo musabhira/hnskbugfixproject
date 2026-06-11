@@ -330,7 +330,7 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text('Last session found!', style: GoogleFonts.outfit()),
-          backgroundColor: Colors.amber,
+          backgroundColor: Color(0xFFFFFC00),
           action: SnackBarAction(label: 'RESUME', textColor: Colors.black, onPressed: _loadSession),
           duration: const Duration(seconds: 4),
         ));
@@ -562,7 +562,7 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
                 style: GoogleFonts.outfit(color: Colors.white),
                 decoration: const InputDecoration(hintText: 'Enter text...', hintStyle: TextStyle(color: Colors.white38)),
               ),
-              Slider(value: tempFontSize, min: 10, max: 200, activeColor: Colors.amber, onChanged: (v) => setDialogState(() => tempFontSize = v)),
+              Slider(value: tempFontSize, min: 10, max: 200, activeColor: Color(0xFFFFFC00), onChanged: (v) => setDialogState(() => tempFontSize = v)),
               TextButton(child: Container(width: 40, height: 20, color: tempColor), onPressed: () {
                 showDialog(context: context, builder: (c) => AlertDialog(content: SingleChildScrollView(child: ColorPicker(pickerColor: tempColor, onColorChanged: (c) => setDialogState(() => tempColor = c)))));
               }),
@@ -585,7 +585,7 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
                   Navigator.pop(ctx);
                 }
               },
-              child: const Text('Add', style: TextStyle(color: Colors.amber)),
+              child: const Text('Add', style: TextStyle(color: Color(0xFFFFFC00))),
             ),
           ],
         ),
@@ -638,7 +638,7 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
                                 child: Transform.scale(
                                   scale: img.scale,
                                   child: Container(
-                                    decoration: BoxDecoration(border: _selectedOverlayId == img.id ? Border.all(color: Colors.amber, width: 2) : null),
+                                    decoration: BoxDecoration(border: _selectedOverlayId == img.id ? Border.all(color: Color(0xFFFFFC00), width: 2) : null),
                                     child: Image.memory(img.bytes, width: 300, fit: BoxFit.contain),
                                   ),
                                 ),
@@ -794,7 +794,7 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
       onPanStart: (_) => setState(() => _isInteractingWithOverlay = true),
       onPanUpdate: (d) => onDrag(d), 
       onPanEnd: (_)=> setState(() { _isInteractingWithOverlay = false; _autoSave(); }), 
-      child: Container(width:24, height:24, decoration:BoxDecoration(color:Colors.amber, border:Border.all(color:Colors.white, width:2.0), shape: BoxShape.circle, boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2))]))
+      child: Container(width:24, height:24, decoration:BoxDecoration(color:Color(0xFFFFFC00), border:Border.all(color:Colors.white, width:2.0), shape: BoxShape.circle, boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2))]))
     )
   );
 
@@ -855,7 +855,7 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
     );
   }
 
-  Widget _sideBtn(IconData icon, bool active, VoidCallback onTap) => IconButton(icon: Icon(icon, color: active ? Colors.amber : Colors.white30, size: 22), onPressed: onTap);
+  Widget _sideBtn(IconData icon, bool active, VoidCallback onTap) => IconButton(icon: Icon(icon, color: active ? Color(0xFFFFFC00) : Colors.white30, size: 22), onPressed: onTap);
 
   Widget _buildTopBar(FlutterFlowTheme theme) => Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
     _headerBtn(Icons.home, () => Navigator.pop(context)),
@@ -887,7 +887,7 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
           Text('Layers', style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold)),
-          IconButton(icon: const Icon(Icons.add, color: Colors.amber, size: 20), onPressed: _addLayer),
+          IconButton(icon: const Icon(Icons.add, color: Color(0xFFFFFC00), size: 20), onPressed: _addLayer),
         ]),
       ),
       const Divider(color: Colors.white10, height: 1),
@@ -902,7 +902,7 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
             return GestureDetector(
               onLongPress: () => _showLayerOptions(actualIdx),
               child: Container(
-                color: isActive ? Colors.amber.withValues(alpha: 0.1) : Colors.transparent,
+                color: isActive ? Color(0xFFFFFC00).withValues(alpha: 0.1) : Colors.transparent,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -919,7 +919,7 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
                         children: [
                           Icon(layer.isLocked ? Icons.lock : Icons.lock_open, color: Colors.white38, size: 14),
                           const SizedBox(width: 8),
-                          if (isActive) Container(width: 4, height: 4, decoration: const BoxDecoration(color: Colors.amber, shape: BoxShape.circle)),
+                          if (isActive) Container(width: 4, height: 4, decoration: const BoxDecoration(color: Color(0xFFFFFC00), shape: BoxShape.circle)),
                         ],
                       ),
                     ),
@@ -935,7 +935,7 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
                                 child: Slider(
                                   value: layer.opacity,
                                   min: 0, max: 1,
-                                  activeColor: Colors.amber,
+                                  activeColor: Color(0xFFFFFC00),
                                   onChanged: (v) => setState(() => layer.opacity = v),
                                 ),
                               ),
@@ -965,7 +965,7 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
           Row(children: [
             const Icon(Icons.opacity, color: Colors.white54, size: 16),
             const SizedBox(width: 8),
-            Expanded(child: Slider(value: _layers[index].opacity, min: 0, max: 1, activeColor: Colors.amber, onChanged: (v) => setState(() => _layers[index].opacity = v))),
+            Expanded(child: Slider(value: _layers[index].opacity, min: 0, max: 1, activeColor: Color(0xFFFFFC00), onChanged: (v) => setState(() => _layers[index].opacity = v))),
             Text('${(_layers[index].opacity * 100).toInt()}%', style: const TextStyle(color: Colors.white54, fontSize: 12)),
           ]),
           const Divider(color: Colors.white10),
@@ -998,9 +998,9 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
         ]),
         const SizedBox(height: 16),
         Text('Size: ${_strokeWidth.toStringAsFixed(1)}', style: const TextStyle(color: Colors.white54, fontSize: 12)),
-        Slider(value: _strokeWidth, min: 0.5, max: 100, activeColor: Colors.amber, onChanged: (v) => setState(() => _strokeWidth = v)),
+        Slider(value: _strokeWidth, min: 0.5, max: 100, activeColor: Color(0xFFFFFC00), onChanged: (v) => setState(() => _strokeWidth = v)),
         Text('Opacity: ${(_strokeOpacity * 100).toInt()}%', style: const TextStyle(color: Colors.white54, fontSize: 12)),
-        Slider(value: _strokeOpacity, min: 0.01, max: 1.0, activeColor: Colors.amber, onChanged: (v) => setState(() => _strokeOpacity = v)),
+        Slider(value: _strokeOpacity, min: 0.01, max: 1.0, activeColor: Color(0xFFFFFC00), onChanged: (v) => setState(() => _strokeOpacity = v)),
         if (_isEraser) ...[
           Text('Eraser: ${_eraserWidth.toStringAsFixed(1)}', style: const TextStyle(color: Colors.white54, fontSize: 12)),
           Slider(value: _eraserWidth, min: 5, max: 200, activeColor: Colors.redAccent, onChanged: (v) => setState(() => _eraserWidth = v)),
@@ -1009,7 +1009,7 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
         Row(children: [
           const Text('Grid', style: TextStyle(color: Colors.white54, fontSize: 12)),
           const Spacer(),
-          Switch(value: _showGrid, activeThumbColor: Colors.amber, onChanged: (v) => setState(() => _showGrid = v)),
+          Switch(value: _showGrid, activeThumbColor: Color(0xFFFFFC00), onChanged: (v) => setState(() => _showGrid = v)),
         ]),
       ]),
     ).animate().fadeIn().slideX(begin: -0.1);
@@ -1097,11 +1097,11 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
                       onTap: () { setSheet(() {}); setState(() => _selectedBrushCategory = cat); },
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
-                        color: sel ? Colors.amber.withValues(alpha: 0.1) : Colors.transparent,
+                        color: sel ? Color(0xFFFFFC00).withValues(alpha: 0.1) : Colors.transparent,
                         child: Row(children: [
-                          Icon(icons[cat] ?? Icons.brush, size: 16, color: cat == 'Favorites' ? Colors.pinkAccent : (sel ? Colors.amber : Colors.white38)),
+                          Icon(icons[cat] ?? Icons.brush, size: 16, color: cat == 'Favorites' ? Colors.pinkAccent : (sel ? Color(0xFFFFFC00) : Colors.white38)),
                           const SizedBox(width: 10),
-                          Expanded(child: Text(cat, style: GoogleFonts.outfit(color: sel ? Colors.amber : Colors.white54, fontWeight: sel ? FontWeight.bold : FontWeight.normal, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis)),
+                          Expanded(child: Text(cat, style: GoogleFonts.outfit(color: sel ? Color(0xFFFFFC00) : Colors.white54, fontWeight: sel ? FontWeight.bold : FontWeight.normal, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis)),
                         ]),
                       ),
                     );
@@ -1125,10 +1125,10 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
                             child: Container(
                               margin: const EdgeInsets.only(bottom: 6),
                               padding: const EdgeInsets.all(14),
-                              decoration: BoxDecoration(color: isSel ? Colors.amber.withValues(alpha: 0.1) : Colors.white10, borderRadius: BorderRadius.circular(14), border: Border.all(color: isSel ? Colors.amber : Colors.transparent)),
+                              decoration: BoxDecoration(color: isSel ? Color(0xFFFFFC00).withValues(alpha: 0.1) : Colors.white10, borderRadius: BorderRadius.circular(14), border: Border.all(color: isSel ? Color(0xFFFFFC00) : Colors.transparent)),
                               child: Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
                                 Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                                  Text(b.name, style: GoogleFonts.outfit(color: isSel ? Colors.amber : Colors.white70, fontWeight: isSel ? FontWeight.bold : FontWeight.w500, fontSize: 15)),
+                                  Text(b.name, style: GoogleFonts.outfit(color: isSel ? Color(0xFFFFFC00) : Colors.white70, fontWeight: isSel ? FontWeight.bold : FontWeight.w500, fontSize: 15)),
                                   Icon(Icons.favorite, size: 14, color: b.category == 'Favorites' ? Colors.pinkAccent : Colors.transparent),
                                 ]),
                                 const SizedBox(height: 10),
@@ -1166,7 +1166,7 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
           Wrap(spacing: 16, runSpacing: 16, children: shapes.map((s) => GestureDetector(
             onTap: () { setState(() => _selectedShape = s.$1); Navigator.pop(ctx); },
             child: Column(children: [
-              Container(padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: _selectedShape == s.$1 ? Colors.amber.withValues(alpha: 0.2) : const Color(0xFF1A1A1A), borderRadius: BorderRadius.circular(12), border: Border.all(color: _selectedShape == s.$1 ? Colors.amber : Colors.white12)), child: Icon(s.$2, color: Colors.white70, size: 28)),
+              Container(padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: _selectedShape == s.$1 ? Color(0xFFFFFC00).withValues(alpha: 0.2) : const Color(0xFF1A1A1A), borderRadius: BorderRadius.circular(12), border: Border.all(color: _selectedShape == s.$1 ? Color(0xFFFFFC00) : Colors.white12)), child: Icon(s.$2, color: Colors.white70, size: 28)),
               const SizedBox(height: 6),
               Text(s.$3, style: GoogleFonts.outfit(color: Colors.white54, fontSize: 11)),
             ]),
@@ -1175,7 +1175,7 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
           Row(children: [
             Text('Fill Shape', style: GoogleFonts.outfit(color: Colors.white54)),
             const Spacer(),
-            Switch(value: _shapeFilled, activeThumbColor: Colors.amber, onChanged: (v) => setState(() => _shapeFilled = v)),
+            Switch(value: _shapeFilled, activeThumbColor: Color(0xFFFFFC00), onChanged: (v) => setState(() => _shapeFilled = v)),
           ]),
           const SizedBox(height: 16),
         ]),
@@ -1255,7 +1255,7 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           Text('Preferences', style: GoogleFonts.outfit(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 20),
-          ListTile(leading: const Icon(Icons.grid_3x3, color: Colors.white54), title: Text('Canvas Grid', style: GoogleFonts.outfit(color: Colors.white70)), trailing: Switch(value: _showGrid, activeThumbColor: Colors.amber, onChanged: (v) => setState(() => _showGrid = v))),
+          ListTile(leading: const Icon(Icons.grid_3x3, color: Colors.white54), title: Text('Canvas Grid', style: GoogleFonts.outfit(color: Colors.white70)), trailing: Switch(value: _showGrid, activeThumbColor: Color(0xFFFFFC00), onChanged: (v) => setState(() => _showGrid = v))),
           ListTile(leading: const Icon(Icons.format_paint, color: Colors.white54), title: Text('Paper Texture', style: GoogleFonts.outfit(color: Colors.white70)), trailing: Container(width: 28, height: 28, decoration: BoxDecoration(color: _canvasBgColor, shape: BoxShape.circle, border: Border.all(color: Colors.white24))), onTap: () { Navigator.pop(ctx); _showCanvasBgPicker(); }),
           const SizedBox(height: 16),
         ]),
@@ -1278,10 +1278,11 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
       backgroundColor: Colors.black,
       title: const Text('Save Quality', style: TextStyle(color: Colors.white)),
       content: StatefulBuilder(builder: (c, setS) => Column(mainAxisSize: MainAxisSize.min, children: [
-        Slider(value: ratio, min: 1, max: 5, activeColor: Colors.amber, onChanged: (v) => setS(() => ratio = v)),
+        Slider(value: ratio, min: 1, max: 5, activeColor: Color(0xFFFFFC00), onChanged: (v) => setS(() => ratio = v)),
         Text('${ratio.toStringAsFixed(1)}x', style: const TextStyle(color: Colors.white)),
       ])),
       actions: [TextButton(onPressed: () => Navigator.pop(ctx, {'pixelRatio': ratio}), child: const Text('Save'))],
     ));
   }
 }
+

@@ -329,7 +329,7 @@ class _AutoLoginBottomSheetState extends State<AutoLoginBottomSheet> {
             height: 4,
             width: 40,
             decoration: BoxDecoration(
-              color: Colors.amber,
+              color: Color(0xFFFFFC00),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -341,7 +341,7 @@ class _AutoLoginBottomSheetState extends State<AutoLoginBottomSheet> {
               children: [
                 const Icon(
                   Icons.account_circle,
-                  color: Colors.amber,
+                  color: Color(0xFFFFFC00),
                   size: 28,
                 ),
                 const SizedBox(width: 10),
@@ -410,16 +410,16 @@ class _AutoLoginBottomSheetState extends State<AutoLoginBottomSheet> {
                       style: const TextStyle(color: Colors.white),
                       decoration: InputDecoration(
                         labelText: 'Email',
-                        labelStyle: const TextStyle(color: Colors.amber),
+                        labelStyle: const TextStyle(color: Color(0xFFFFFC00)),
                         prefixIcon:
-                            const Icon(Icons.email, color: Colors.amber),
+                            const Icon(Icons.email, color: Color(0xFFFFFC00)),
                         enabledBorder: OutlineInputBorder(
-                          borderSide: const BorderSide(color: Colors.amber),
+                          borderSide: const BorderSide(color: Color(0xFFFFFC00)),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderSide:
-                              const BorderSide(color: Colors.amber, width: 2),
+                              const BorderSide(color: Color(0xFFFFFC00), width: 2),
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
@@ -433,15 +433,15 @@ class _AutoLoginBottomSheetState extends State<AutoLoginBottomSheet> {
                       style: const TextStyle(color: Colors.white),
                       decoration: InputDecoration(
                         labelText: 'Password',
-                        labelStyle: const TextStyle(color: Colors.amber),
-                        prefixIcon: const Icon(Icons.lock, color: Colors.amber),
+                        labelStyle: const TextStyle(color: Color(0xFFFFFC00)),
+                        prefixIcon: const Icon(Icons.lock, color: Color(0xFFFFFC00)),
                         enabledBorder: OutlineInputBorder(
-                          borderSide: const BorderSide(color: Colors.amber),
+                          borderSide: const BorderSide(color: Color(0xFFFFFC00)),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderSide:
-                              const BorderSide(color: Colors.amber, width: 2),
+                              const BorderSide(color: Color(0xFFFFFC00), width: 2),
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
@@ -455,7 +455,7 @@ class _AutoLoginBottomSheetState extends State<AutoLoginBottomSheet> {
                         onPressed:
                             isCreatingAccount ? _createAccount : _loginAccount,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.amber,
+                          backgroundColor: Color(0xFFFFFC00),
                           padding: const EdgeInsets.symmetric(vertical: 15),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -487,7 +487,7 @@ class _AutoLoginBottomSheetState extends State<AutoLoginBottomSheet> {
                         isCreatingAccount
                             ? 'Already have an account? Link it'
                             : 'Don\'t have an account? Create a new one',
-                        style: const TextStyle(color: Colors.amber),
+                        style: const TextStyle(color: Color(0xFFFFFC00)),
                       ),
                     ),
 
@@ -512,7 +512,7 @@ class _AutoLoginBottomSheetState extends State<AutoLoginBottomSheet> {
             Expanded(
               child: isLoading
                   ? const Center(
-                      child: CircularProgressIndicator(color: Colors.amber),
+                      child: CircularProgressIndicator(color: Color(0xFFFFFC00)),
                     )
                   : autoLoginUsers.isEmpty
                       ? Center(
@@ -578,13 +578,13 @@ class _AutoLoginBottomSheetState extends State<AutoLoginBottomSheet> {
                                 color: Colors.grey[850]?.withValues(alpha: 0.7),
                                 borderRadius: BorderRadius.circular(15),
                                 border: Border.all(
-                                    color: Colors.amber.withValues(alpha: 0.3)),
+                                    color: Color(0xFFFFFC00).withValues(alpha: 0.3)),
                               ),
                               child: ListTile(
                                 contentPadding: const EdgeInsets.all(15),
                                 leading: CircleAvatar(
                                   radius: 25,
-                                  backgroundColor: Colors.amber,
+                                  backgroundColor: Color(0xFFFFFC00),
                                   backgroundImage: (profileImageUrl != null &&
                                           profileImageUrl.isNotEmpty)
                                       ? NetworkImage(profileImageUrl)
@@ -615,14 +615,14 @@ class _AutoLoginBottomSheetState extends State<AutoLoginBottomSheet> {
                                         Icon(
                                           Icons.link,
                                           size: 12,
-                                          color: Colors.amber.withValues(alpha: 0.7),
+                                          color: Color(0xFFFFFC00).withValues(alpha: 0.7),
                                         ),
                                         const SizedBox(width: 4),
                                         Text(
                                           'Sub-account',
                                           style: TextStyle(
                                             color:
-                                                Colors.amber.withValues(alpha: 0.7),
+                                                Color(0xFFFFFC00).withValues(alpha: 0.7),
                                             fontSize: 12,
                                           ),
                                         ),
@@ -632,7 +632,7 @@ class _AutoLoginBottomSheetState extends State<AutoLoginBottomSheet> {
                                 ),
                                 trailing: const Icon(
                                   Icons.login,
-                                  color: Colors.amber,
+                                  color: Color(0xFFFFFC00),
                                 ),
                                 onTap: () => _quickLogin(user),
                                 onLongPress: () {
@@ -705,7 +705,7 @@ class _AutoLoginBottomSheetState extends State<AutoLoginBottomSheet> {
                         ),
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.amber,
+                        backgroundColor: Color(0xFFFFFC00),
                         padding: const EdgeInsets.symmetric(vertical: 15),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -754,3 +754,4 @@ class _AutoLoginBottomSheetState extends State<AutoLoginBottomSheet> {
     super.dispose();
   }
 }
+

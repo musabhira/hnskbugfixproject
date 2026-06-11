@@ -67,7 +67,7 @@ class _DrawingAppHomeState extends State<DrawingAppHome> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showCanvasSelectionDialog(context),
-        backgroundColor: Colors.amber,
+        backgroundColor: Color(0xFFFFFC00),
         icon: const Icon(Icons.add, color: Colors.black),
         label: Text('New Masterpiece', style: GoogleFonts.outfit(color: Colors.black, fontWeight: FontWeight.bold)),
       ).animate().scale(delay: 400.ms),
@@ -90,7 +90,7 @@ class _DrawingAppHomeState extends State<DrawingAppHome> {
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [Colors.amber.withValues(alpha: 0.2), Colors.black],
+              colors: [Color(0xFFFFFC00).withValues(alpha: 0.2), Colors.black],
             ),
           ),
         ),
@@ -108,7 +108,7 @@ class _DrawingAppHomeState extends State<DrawingAppHome> {
               child: _actionCard(
                 'New Canvas', 
                 Icons.add_photo_alternate_rounded, 
-                Colors.amber, 
+                Color(0xFFFFFC00), 
                 () => _showCanvasSelectionDialog(context)
               ),
             ),
@@ -158,7 +158,7 @@ class _DrawingAppHomeState extends State<DrawingAppHome> {
           children: [
             Text('Recent Artworks', style: GoogleFonts.outfit(color: Colors.white70, fontSize: 16, fontWeight: FontWeight.w500)),
             if (_recentDrawings.isNotEmpty)
-              TextButton(onPressed: () {}, child: Text('View Gallery', style: TextStyle(color: Colors.amber.shade200))),
+              TextButton(onPressed: () {}, child: Text('View Gallery', style: TextStyle(color: Color(0xFFFFFC00)))),
           ],
         ),
       ),
@@ -167,7 +167,7 @@ class _DrawingAppHomeState extends State<DrawingAppHome> {
 
   Widget _buildRecentGrid(FlutterFlowTheme theme) {
     if (_isLoading) {
-      return const SliverFillRemaining(child: Center(child: CircularProgressIndicator(color: Colors.amber)));
+      return const SliverFillRemaining(child: Center(child: CircularProgressIndicator(color: Color(0xFFFFFC00))));
     }
     
     if (_recentDrawings.isEmpty) {
@@ -276,7 +276,7 @@ class _DrawingAppHomeState extends State<DrawingAppHome> {
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      const Icon(Icons.access_time, color: Colors.amber, size: 10),
+                      const Icon(Icons.access_time, color: Color(0xFFFFFC00), size: 10),
                       const SizedBox(width: 4),
                       Text(
                         '${file.lastModifiedSync().day}/${file.lastModifiedSync().month} · ${_getTimeAgo(file.lastModifiedSync())}',
@@ -441,10 +441,10 @@ class _CanvasSelectionSheetState extends State<_CanvasSelectionSheet> {
                     duration: 300.ms,
                     width: 100,
                     decoration: BoxDecoration(
-                      color: isSelected ? Colors.amber.withValues(alpha: 0.1) : Colors.white.withValues(alpha: 0.05),
+                      color: isSelected ? Color(0xFFFFFC00).withValues(alpha: 0.1) : Colors.white.withValues(alpha: 0.05),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                        color: isSelected ? Colors.amber : Colors.white10,
+                        color: isSelected ? Color(0xFFFFFC00) : Colors.white10,
                         width: 2,
                       ),
                     ),
@@ -453,13 +453,13 @@ class _CanvasSelectionSheetState extends State<_CanvasSelectionSheet> {
                       children: [
                         Icon(
                           p['icon'],
-                          color: isSelected ? Colors.amber : Colors.white54,
+                          color: isSelected ? Color(0xFFFFFC00) : Colors.white54,
                         ),
                         const SizedBox(height: 8),
                         Text(
                           p['name'],
                           style: GoogleFonts.outfit(
-                            color: isSelected ? Colors.amber : Colors.white70,
+                            color: isSelected ? Color(0xFFFFFC00) : Colors.white70,
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
                           ),
@@ -494,7 +494,7 @@ class _CanvasSelectionSheetState extends State<_CanvasSelectionSheet> {
                 widget.onSelected(w, h);
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.amber,
+                backgroundColor: Color(0xFFFFFC00),
                 foregroundColor: Colors.black,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
@@ -548,3 +548,4 @@ class _CanvasSelectionSheetState extends State<_CanvasSelectionSheet> {
     );
   }
 }
+
