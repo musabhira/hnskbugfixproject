@@ -145,9 +145,14 @@ class _SearchPageState extends State<SearchPage> {
             // Modern Header
             Padding(
               padding: const EdgeInsets.only(
-                  left: 20, right: 12, top: 16, bottom: 8),
+                  left: 16, right: 12, top: 16, bottom: 8),
               child: Row(
                 children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back_rounded, color: Colors.yellow, size: 26),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                  const SizedBox(width: 4),
                   const Text(
                     'Search',
                     style: TextStyle(
@@ -322,7 +327,7 @@ class _CustomSearchWidgetState extends State<CustomSearchWidget> {
       child: Container(
         height: 50,
         decoration: BoxDecoration(
-          color: const Color(0xFF1A1A1A), // Matte dark grey
+          color: FlutterFlowTheme.of(context).secondaryBackground,
           borderRadius: BorderRadius.circular(15),
           border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
           boxShadow: [
@@ -602,7 +607,7 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
           child: Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: const Color(0xFF161616),
+              color: FlutterFlowTheme.of(context).secondaryBackground,
               borderRadius: BorderRadius.circular(20),
               border: Border.all(color: Colors.white.withValues(alpha: 0.04)),
             ),
@@ -623,7 +628,7 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
                   ),
                   child: CircleAvatar(
                     radius: 30,
-                    backgroundColor: const Color(0xFF222222),
+                    backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
                     backgroundImage: profile['profile_image_url'] != null
                         ? CachedNetworkImageProvider(
                             profile['profile_image_url'])
@@ -645,8 +650,8 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
                           Flexible(
                             child: Text(
                               name,
-                              style: const TextStyle(
-                                color: Colors.white,
+                              style: TextStyle(
+                                color: FlutterFlowTheme.of(context).primaryText,
                                 fontSize: 17,
                                 fontWeight: FontWeight.bold,
                               ),

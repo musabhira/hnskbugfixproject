@@ -22,7 +22,7 @@ import 'dart:math';
 import '/custom_code/widgets/drawing_academy_home_page.dart';
 import '/custom_code/widgets/ai_prompt_service.dart';
 import '/custom_code/widgets/dual_video_recorder.dart';
-
+import '/custom_code/widgets/courses_widget.dart';
 
 class ToolsPage extends StatefulWidget {
   final double? width;
@@ -1059,23 +1059,23 @@ class _TaskManagerScreenState extends State<ToolsPage> {
         'color': const Color(0xFFE8D3A7),
         'onTap': () => _showWebSearchDialog(),
       },
-      // {
-      //   'title': 'Courses',
-      //   'subtitle': 'Learning Academy',
-      //   'icon': Icons.school_rounded,
-      //   'color': const Color(0xFFCD7F32),
-      //   'onTap': () {
-      //     final isUnlocked = _globalToolConfigs['elearning_unlocked']?['android_active'] == true;
-      //     if (isUnlocked) {
-      //       setState(() {
-      //         _selectedTab = 7;
-      //         _showToolsList = false;
-      //       });
-      //     } else {
-      //       _showComingSoonDialog();
-      //     }
-      //   },
-      // },
+      {
+        'title': 'Handskill Learn',
+        'subtitle': 'Learning Academy',
+        'icon': Icons.school_rounded,
+        'color': const Color(0xFFCD7F32),
+        'onTap': () {
+          final isUnlocked = _globalToolConfigs['elearning_unlocked']?['android_active'] == true;
+          if (isUnlocked) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const CoursesWidget()),
+            );
+          } else {
+            _showComingSoonDialog();
+          }
+        },
+      },
       {
         'title': 'Test Feature',
         'subtitle': 'System Diagnostic',

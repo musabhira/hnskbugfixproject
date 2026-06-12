@@ -62,6 +62,9 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
   final GlobalKey<ScaffoldMessengerState> _scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
   Uint8List? _selectedImageBytes;
+  
+  String _businessType = 'product';
+  bool _wantsPaymentIntegration = false;
   final _supabase = SupaFlow.client;
   String? _currentUserId;
   bool _isLoading = false;
@@ -167,6 +170,9 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
           instaIdController.text = profileResponse['insta_id'] ?? '';
           instaLinkController.text = profileResponse['insta_link'] ?? '';
           _selectedTemplateId = profileResponse['web_template_id'] ?? 'default';
+          
+          _businessType = profileResponse['business_type'] ?? 'product';
+          _wantsPaymentIntegration = profileResponse['wants_payment_integration'] ?? false;
         });
       }
     } catch (error) {
@@ -534,6 +540,8 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
           'insta_link': instaLinkController.text,
           'web_template_id': _selectedTemplateId,
           'updated_at': DateTime.now().toIso8601String(),
+          'business_type': _businessType,
+          'wants_payment_integration': _wantsPaymentIntegration,
         },
       );
 
@@ -1501,6 +1509,165 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                         ),
                       ),
                     ),
+                  
+                  // Business Setup Section
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Business Setup',
+                          style: theme.bodyMedium.override(
+                            fontFamily: 'Montserrat',
+                            color: theme.primary,
+                            fontSize: 16.0,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'What is your business type?',
+                          style: theme.bodyMedium.override(
+                            fontFamily: 'Montserrat',
+                            color: theme.primaryText,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () => safeSetState(() => _businessType = 'product'),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                  decoration: BoxDecoration(
+                                    color: _businessType == 'product' ? theme.primary : theme.secondaryBackground,
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(
+                                      color: _businessType == 'product' ? theme.primary : theme.alternate,
+                                    ),
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    'Product',
+                                    style: TextStyle(
+                                      color: _businessType == 'product' ? Colors.black : theme.primaryText,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () => safeSetState(() => _businessType = 'service'),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                  decoration: BoxDecoration(
+                                    color: _businessType == 'service' ? theme.primary : theme.secondaryBackground,
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(
+                                      color: _businessType == 'service' ? theme.primary : theme.alternate,
+                                    ),
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    'Service',
+                                    style: TextStyle(
+                                      color: _businessType == 'service' ? Colors.black : theme.primaryText,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: theme.primary.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: theme.primary.withValues(alpha: 0.3)),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(Icons.payment, color: theme.primary, size: 20),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  'Enable Payment Integration (Coming soon)',
+                                  style: TextStyle(color: theme.primaryText, fontSize: 13),
+                                ),
+                              ),
+                              Switch(
+                                value: _wantsPaymentIntegration,
+                                onChanged: (v) {
+                                  safeSetState(() => _wantsPaymentIntegration = v);
+                                  if (v) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text('Payment integration will be fully unlocked in a future update!')),
+                                    );
+                                  }
+                                },
+                                activeColor: theme.primary,
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: theme.secondaryBackground,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: theme.alternate),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(Icons.language, color: theme.primary, size: 20),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Your Shop Website',
+                                    style: TextStyle(color: theme.primaryText, fontWeight: FontWeight.bold, fontSize: 16),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Your store will be hosted at:\nhandskillapp.web.app/${_shopNameController.text.isNotEmpty ? _sanitizeSlug(_shopNameController.text) : 'your-shop-name'}',
+                                style: TextStyle(color: theme.secondaryText, fontSize: 13),
+                              ),
+                              const SizedBox(height: 12),
+                              SizedBox(
+                                width: double.infinity,
+                                child: OutlinedButton.icon(
+                                  onPressed: () {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text('Please contact the Handskill Team at +91 0000000000 to setup a custom domain.')),
+                                    );
+                                  },
+                                  icon: Icon(Icons.support_agent, color: theme.primary),
+                                  label: Text('Get Custom Domain Hosting', style: TextStyle(color: theme.primary)),
+                                  style: OutlinedButton.styleFrom(
+                                    side: BorderSide(color: theme.primary),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
 
                   // Phone Number Section
                   Padding(

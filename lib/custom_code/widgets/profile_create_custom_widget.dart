@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:country_state_city_picker/country_state_city_picker.dart';
 import 'package:image/image.dart' as img;
+import 'dart:io' as io;
 import 'package:flutter/services.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/pages/home_page/home_page_widget.dart';
@@ -64,6 +65,9 @@ class _ProfileCreateCustomWidgetState extends State<ProfileCreateCustomWidget> {
   String selectedCountry = '';
   String selectedState = '';
   String selectedCity = '';
+  
+  String _businessType = 'product';
+  bool _wantsPaymentIntegration = false;
 
   Map<String, dynamic>? hideData;
 
@@ -146,6 +150,9 @@ class _ProfileCreateCustomWidgetState extends State<ProfileCreateCustomWidget> {
 
           instaIdController.text = profileResponse['insta_id'] ?? '';
           instaLinkController.text = profileResponse['insta_link'] ?? '';
+          
+          _businessType = profileResponse['business_type'] ?? 'product';
+          _wantsPaymentIntegration = profileResponse['wants_payment_integration'] ?? false;
         });
       }
     } catch (e) {
@@ -323,6 +330,8 @@ class _ProfileCreateCustomWidgetState extends State<ProfileCreateCustomWidget> {
         'insta_link': instaLinkController.text,
         'updated_at': DateTime.now().toIso8601String(),
         'eula_accepted': true,
+        'business_type': _businessType,
+        'wants_payment_integration': _wantsPaymentIntegration,
         // Set default theme colors if not present
         'bg_color_code': '#000000',
         'bg_text_color': '#FFFFFF',
@@ -431,7 +440,7 @@ class _ProfileCreateCustomWidgetState extends State<ProfileCreateCustomWidget> {
                 onPressed: () => Navigator.pop(context),
               ),
               title: Text(
-                'Complete Your Profile',
+                'Set Up Your Business',
                 style: GoogleFonts.outfit(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -446,6 +455,14 @@ class _ProfileCreateCustomWidgetState extends State<ProfileCreateCustomWidget> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 10),
+                  Text(
+                    'Welcome, Entrepreneur! Let\'s build your storefront.',
+                    style: GoogleFonts.outfit(
+                      color: Colors.grey[400],
+                      fontSize: 16,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
                   Stack(
                     children: [
                       ClipRRect(
@@ -610,7 +627,121 @@ class _ProfileCreateCustomWidgetState extends State<ProfileCreateCustomWidget> {
                             },
                           ),
                         ),
+                        const SizedBox(height: 25),
+                        Text(
+                          'Business Setup',
+                          style: GoogleFonts.outfit(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.yellow,
+                          ),
+                        ),
                         const SizedBox(height: 15),
+                        Text('What is your business type?', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () => safeSetState(() => _businessType = 'product'),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                  decoration: BoxDecoration(
+                                    color: _businessType == 'product' ? Colors.yellow : Colors.grey[900],
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: Text('Product', style: TextStyle(color: _businessType == 'product' ? Colors.black : Colors.white, fontWeight: FontWeight.bold)),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () => safeSetState(() => _businessType = 'service'),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                  decoration: BoxDecoration(
+                                    color: _businessType == 'service' ? Colors.yellow : Colors.grey[900],
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: Text('Service', style: TextStyle(color: _businessType == 'service' ? Colors.black : Colors.white, fontWeight: FontWeight.bold)),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.yellow.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: Colors.yellow.withValues(alpha: 0.3)),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.payment, color: Colors.yellow, size: 20),
+                              const SizedBox(width: 12),
+                              const Expanded(
+                                child: Text(
+                                  'Enable Payment Integration (Coming soon)',
+                                  style: TextStyle(color: Colors.white, fontSize: 13),
+                                ),
+                              ),
+                              ToggleSwitch(
+                                checked: _wantsPaymentIntegration,
+                                onChanged: (v) {
+                                  safeSetState(() => _wantsPaymentIntegration = v);
+                                  if (v) {
+                                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Payment integration will be fully unlocked in a future update!')));
+                                  }
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[900],
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.white12),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(Icons.language, color: Colors.yellow, size: 20),
+                                  const SizedBox(width: 8),
+                                  Text('Your Shop Website', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Text('Your store will be hosted at:\nhandskillapp.web.app/${_shopNameController.text.isNotEmpty ? _sanitizeSlug(_shopNameController.text) : 'your-shop-name'}', style: TextStyle(color: Colors.white70, fontSize: 13)),
+                              const SizedBox(height: 12),
+                              SizedBox(
+                                width: double.infinity,
+                                child: OutlinedButton.icon(
+                                  onPressed: () {
+                                    // Contact team for custom domain hosting
+                                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please contact the Pocket Mates Team to establish your custom domain.')));
+                                  },
+                                  icon: const Icon(Icons.language, color: Colors.yellow),
+                                  label: const Text('Get Custom Domain', style: TextStyle(color: Colors.yellow)),
+                                  style: OutlinedButton.styleFrom(
+                                    side: const BorderSide(color: Colors.yellow),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 25),
                         Text(
                           'Personal Details',
                           style: GoogleFonts.outfit(
@@ -786,7 +917,7 @@ class _ProfileCreateCustomWidgetState extends State<ProfileCreateCustomWidget> {
                                 ? const CircularProgressIndicator(
                                     color: Colors.black)
                                 : Text(
-                                    'GO TO HOME',
+                                    'Launch Storefront',
                                     style: GoogleFonts.outfit(
                                       color: Colors.black,
                                       fontWeight: FontWeight.bold,
@@ -809,7 +940,6 @@ class _ProfileCreateCustomWidgetState extends State<ProfileCreateCustomWidget> {
   );
 }
 }
-
 
 class InfoLabel extends StatelessWidget {
   final String label;

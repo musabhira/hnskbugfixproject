@@ -51,6 +51,9 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
   List<Map<String, dynamic>> allCourses = [];
   bool isLoadingCourses = false;
   Map<String, dynamic>? selectedCourseForCurriculum;
+  bool _showCourseRequests = false;
+  List<Map<String, dynamic>> courseRequests = [];
+  bool isLoadingCourseRequests = false;
   List<Map<String, dynamic>> courseLessons = [];
   bool isLoadingLessons = false;
 
@@ -1596,6 +1599,46 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
 
   // E-Learning Course and Lesson management helper methods
 
+  Future<void> _loadCourseRequests() async {
+    setState(() => isLoadingCourseRequests = true);
+    try {
+      final response = await supabase
+          .from('course_publish_requests')
+          .select('*, users!inner(display_name)')
+          .order('created_at', ascending: false);
+      if (mounted) {
+        setState(() {
+          courseRequests = List<Map<String, dynamic>>.from(response);
+          isLoadingCourseRequests = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading course requests: $e');
+      if (mounted) {
+        setState(() => isLoadingCourseRequests = false);
+        // Table might not exist yet if they haven't run the SQL
+      }
+    }
+  }
+
+  Future<void> _updateCourseRequestStatus(String requestId, String status) async {
+    try {
+      await supabase
+          .from('course_publish_requests')
+          .update({'status': status})
+          .eq('id', requestId);
+      _loadCourseRequests(); // Refresh
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Request marked as $status')));
+      }
+    } catch (e) {
+      debugPrint('Error updating request status: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
+    }
+  }
+
   Future<void> _loadCourses() async {
     if (!mounted) return;
     setState(() => isLoadingCourses = true);
@@ -2118,6 +2161,9 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
 
   // --- E-Learning Tab UI ---
   Widget _buildELearningTab() {
+    if (_showCourseRequests) {
+      return _buildCourseRequestsView();
+    }
     if (selectedCourseForCurriculum != null) {
       return _buildCurriculumView();
     }
@@ -2128,6 +2174,24 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
   Widget _buildCourseListView() {
     return Column(
       children: [
+        // View Course Requests Button
+        Container(
+          margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF2B2B2B),
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            ),
+            icon: const Icon(Icons.inbox, color: Colors.blue),
+            label: const Text('View Publisher Requests', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            onPressed: () {
+              setState(() => _showCourseRequests = true);
+              _loadCourseRequests();
+            },
+          ),
+        ),
         // E-Learning Unlock Toggle Card
         Container(
           margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
@@ -2559,6 +2623,103 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                                   ),
                                 ),
                               ],
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+        ),
+      ],
+    );
+  }
+
+  // Course Requests View
+  Widget _buildCourseRequestsView() {
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(16),
+          color: Colors.grey[900]?.withOpacity(0.5),
+          child: Row(
+            children: [
+              TextButton.icon(
+                icon: const Icon(Icons.arrow_back, color: Color(0xFFFFFC00)),
+                label: const Text('Back', style: TextStyle(color: Color(0xFFFFFC00))),
+                onPressed: () => setState(() => _showCourseRequests = false),
+              ),
+              const SizedBox(width: 16),
+              const Text('Publisher Requests', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+            ],
+          ),
+        ),
+        Expanded(
+          child: isLoadingCourseRequests
+              ? const Center(child: CircularProgressIndicator(color: Color(0xFFFFFC00)))
+              : courseRequests.isEmpty
+                  ? const Center(child: Text('No publish requests yet.', style: TextStyle(color: Colors.grey)))
+                  : ListView.builder(
+                      padding: const EdgeInsets.all(16),
+                      itemCount: courseRequests.length,
+                      itemBuilder: (context, index) {
+                        final req = courseRequests[index];
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[900],
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: Colors.white10),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(req['creator_name'] ?? 'Unknown', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: req['status'] == 'pending' ? Colors.orange.withOpacity(0.2) :
+                                             req['status'] == 'approved' ? Colors.green.withOpacity(0.2) : Colors.red.withOpacity(0.2),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      (req['status'] ?? 'pending').toString().toUpperCase(),
+                                      style: TextStyle(
+                                        color: req['status'] == 'pending' ? Colors.orange :
+                                               req['status'] == 'approved' ? Colors.green : Colors.red,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Text('Course Title: ${req['course_title']}', style: const TextStyle(color: Color(0xFFFFFC00), fontWeight: FontWeight.bold)),
+                              const SizedBox(height: 8),
+                              Text(req['course_description'] ?? '', style: const TextStyle(color: Colors.white70, fontSize: 13)),
+                              const SizedBox(height: 16),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  if (req['status'] == 'pending') ...[
+                                    TextButton.icon(
+                                      icon: const Icon(Icons.close, color: Colors.red, size: 16),
+                                      label: const Text('Reject', style: TextStyle(color: Colors.red)),
+                                      onPressed: () => _updateCourseRequestStatus(req['id'], 'rejected'),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    ElevatedButton.icon(
+                                      style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                                      icon: const Icon(Icons.check, color: Colors.white, size: 16),
+                                      label: const Text('Approve', style: TextStyle(color: Colors.white)),
+                                      onPressed: () => _updateCourseRequestStatus(req['id'], 'approved'),
+                                    ),
+                                  ]
+                                ],
+                              ),
                             ],
                           ),
                         );

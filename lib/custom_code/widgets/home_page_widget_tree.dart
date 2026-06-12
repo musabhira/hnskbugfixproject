@@ -55,7 +55,7 @@ class HomePageWidgetTree extends ConsumerStatefulWidget {
 class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   final supabase = SupaFlow.client;
   // final scaffoldKey = GlobalKey<ScaffoldState>(); // Removed ScaffoldKey
-  int _currentIndex = 0;
+  int _currentIndex = 1;
   String? profileId;
   String? _profileImageUrl;
   bool _isVerified = false;
@@ -674,10 +674,10 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                       color: isDark ? const Color(0xFFFFFC00) : const Color(0xFFFFFC00),
                     ),
                   )
-                : _currentIndex == 1
-                    ? const MainMarketPage()
+                : _currentIndex == 0
+                    ? ToolsPage(onFavoriteToggled: _handleRefresh)
                     : _currentIndex == 2
-                        ? ToolsPage(onFavoriteToggled: _handleRefresh)
+                        ? const MainMarketPage()
                         : material.RefreshIndicator(
                                 onRefresh: _handleRefresh,
                                 color: isDark ? const Color(0xFFFFFC00) : const Color(0xFFFFFC00),
@@ -1314,19 +1314,24 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             _buildNavItem(
-              icon: material.Icons.home_rounded,
+              icon: material.Icons.handyman_rounded,
               isSelected: _currentIndex == 0,
               onTap: () => setState(() => _currentIndex = 0),
             ),
             _buildNavItem(
-              icon: material.Icons.storefront_rounded,
+              icon: material.Icons.chat_bubble_rounded,
               isSelected: _currentIndex == 1,
               onTap: () => setState(() => _currentIndex = 1),
             ),
             _buildNavItem(
-              icon: material.Icons.handyman_rounded,
+              icon: material.Icons.storefront_rounded,
               isSelected: _currentIndex == 2,
               onTap: () => setState(() => _currentIndex = 2),
+            ),
+            _buildNavItem(
+              icon: material.Icons.school_rounded,
+              isSelected: false,
+              onTap: () => _showElearningComingSoonDialog(context),
             ),
             _buildProfileNavItem(),
           ],

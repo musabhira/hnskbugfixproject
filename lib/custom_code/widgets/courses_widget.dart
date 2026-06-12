@@ -276,12 +276,138 @@ class _CoursesWidgetState extends State<CoursesWidget> {
     }
   }
 
+  void _showProposalDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        final nameController = TextEditingController();
+        final titleController = TextEditingController();
+        final descriptionController = TextEditingController();
+        bool isSubmitting = false;
+
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              backgroundColor: const Color(0xFF1E1E1E),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              title: const Text('Submit Course Proposal', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      'Have a skill to share? Submit your course idea to the Handskill team. We will review and add it to our B2B platform.',
+                      style: TextStyle(color: Colors.grey, fontSize: 13),
+                    ),
+                    const SizedBox(height: 20),
+                    TextField(
+                      controller: nameController,
+                      style: const TextStyle(color: Colors.white),
+                      decoration: InputDecoration(
+                        labelText: 'Your Name / Creator Name',
+                        labelStyle: const TextStyle(color: Colors.grey),
+                        enabledBorder: OutlineInputBorder(borderSide: const BorderSide(color: Colors.grey), borderRadius: BorderRadius.circular(10)),
+                        focusedBorder: OutlineInputBorder(borderSide: const BorderSide(color: Color(0xFFFFB700)), borderRadius: BorderRadius.circular(10)),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: titleController,
+                      style: const TextStyle(color: Colors.white),
+                      decoration: InputDecoration(
+                        labelText: 'Course Title',
+                        labelStyle: const TextStyle(color: Colors.grey),
+                        enabledBorder: OutlineInputBorder(borderSide: const BorderSide(color: Colors.grey), borderRadius: BorderRadius.circular(10)),
+                        focusedBorder: OutlineInputBorder(borderSide: const BorderSide(color: Color(0xFFFFB700)), borderRadius: BorderRadius.circular(10)),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: descriptionController,
+                      maxLines: 4,
+                      style: const TextStyle(color: Colors.white),
+                      decoration: InputDecoration(
+                        labelText: 'Course Description / What will you teach?',
+                        labelStyle: const TextStyle(color: Colors.grey),
+                        enabledBorder: OutlineInputBorder(borderSide: const BorderSide(color: Colors.grey), borderRadius: BorderRadius.circular(10)),
+                        focusedBorder: OutlineInputBorder(borderSide: const BorderSide(color: Color(0xFFFFB700)), borderRadius: BorderRadius.circular(10)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFFB700),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  onPressed: isSubmitting ? null : () async {
+                    if (nameController.text.trim().isEmpty || titleController.text.trim().isEmpty || descriptionController.text.trim().isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please fill all fields')));
+                      return;
+                    }
+
+                    setState(() => isSubmitting = true);
+                    try {
+                      final userId = supabase.auth.currentUser?.id;
+                      if (userId == null) throw Exception('Not authenticated');
+
+                      await supabase.from('course_publish_requests').insert({
+                        'user_id': userId,
+                        'creator_name': nameController.text.trim(),
+                        'course_title': titleController.text.trim(),
+                        'course_description': descriptionController.text.trim(),
+                      });
+
+                      if (context.mounted) {
+                        Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Proposal submitted successfully! We will review it shortly.')));
+                      }
+                    } catch (e) {
+                      setState(() => isSubmitting = false);
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+                      }
+                    }
+                  },
+                  child: isSubmitting
+                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black))
+                      : const Text('Submit', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = FlutterFlowTheme.of(context);
 
     return Scaffold(
       backgroundColor: theme.primaryBackground,
+      appBar: AppBar(
+        backgroundColor: theme.primaryBackground,
+        title: const Text('Handskill Learn', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+        centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _showProposalDialog,
+        backgroundColor: const Color(0xFFFFB700),
+        icon: const Icon(Icons.add_box_rounded, color: Colors.black),
+        label: const Text('Teach with Us', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+      ),
       body: Container(
         height: double.infinity,
         width: double.infinity,
@@ -561,7 +687,7 @@ class _CoursesWidgetState extends State<CoursesWidget> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'HANDSKILL ACADEMY',
+                                  'HANDSKILL LEARN',
                                   style: theme.bodySmall.override(
                                     fontFamily: theme.bodySmallFamily,
                                     color: theme.primary,
