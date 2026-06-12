@@ -105,6 +105,79 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
       ? int.tryParse(_yearController.text)
       : null;
 
+  final List<Map<String, String>> _colorPresets = [
+    {
+      'name': 'Luxury Gold',
+      'bgColor': '#000000',
+      'textColor': '#FFFFFF',
+      'btnColor': '#FFD700',
+      'btnTextColor': '#000000',
+    },
+    {
+      'name': 'Royal Navy',
+      'bgColor': '#0D1B2A',
+      'textColor': '#E0E1DD',
+      'btnColor': '#415A77',
+      'btnTextColor': '#FFFFFF',
+    },
+    {
+      'name': 'Rose Gold',
+      'bgColor': '#FAF3F3',
+      'textColor': '#3D3D3D',
+      'btnColor': '#E0A899',
+      'btnTextColor': '#FFFFFF',
+    },
+    {
+      'name': 'Emerald',
+      'bgColor': '#0A2E24',
+      'textColor': '#F4F9F4',
+      'btnColor': '#D4AF37',
+      'btnTextColor': '#0A2E24',
+    },
+    {
+      'name': 'Midnight',
+      'bgColor': '#121212',
+      'textColor': '#E0E0E0',
+      'btnColor': '#2B2B2B',
+      'btnTextColor': '#FFFFFF',
+    },
+    {
+      'name': 'Coral Sunset',
+      'bgColor': '#FFF5F0',
+      'textColor': '#2D2D2D',
+      'btnColor': '#FF6F59',
+      'btnTextColor': '#FFFFFF',
+    },
+    {
+      'name': 'Ocean Mint',
+      'bgColor': '#F0F9F8',
+      'textColor': '#1E3535',
+      'btnColor': '#2EC4B6',
+      'btnTextColor': '#FFFFFF',
+    },
+    {
+      'name': 'Lavender',
+      'bgColor': '#F8F7FF',
+      'textColor': '#2A2A3A',
+      'btnColor': '#B8B8FF',
+      'btnTextColor': '#FFFFFF',
+    },
+    {
+      'name': 'Cyberpunk',
+      'bgColor': '#1A0B2E',
+      'textColor': '#00FFFF',
+      'btnColor': '#FF007F',
+      'btnTextColor': '#FFFFFF',
+    },
+    {
+      'name': 'Ruby Red',
+      'bgColor': '#1C0A10',
+      'textColor': '#FADAE2',
+      'btnColor': '#C1272D',
+      'btnTextColor': '#FFFFFF',
+    },
+  ];
+
   final List<String> imageAssets = [
     'assets/images/image1.png', // Replace with your actual asset paths
     'assets/images/image2.png',
@@ -1984,8 +2057,117 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                     ),
                   ),
 
+                  // Preset Selection Section
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                    child: Row(
+                      children: [
+                        Text(
+                          'Select Color Theme Preset',
+                          style: theme.bodyMedium.override(
+                            fontFamily: 'Montserrat',
+                            color: theme.primaryText,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Row(
+                      children: _colorPresets.map((preset) {
+                        final bg = _convertStringToColor(preset['bgColor']!);
+                        final text = _convertStringToColor(preset['textColor']!);
+                        final btn = _convertStringToColor(preset['btnColor']!);
+                        final btnText = _convertStringToColor(preset['btnTextColor']!);
+                        
+                        // Check if current values match this preset
+                        final isSelected = _colorCode?.toUpperCase() == preset['bgColor']?.toUpperCase() &&
+                            _colorCode1?.toUpperCase() == preset['textColor']?.toUpperCase() &&
+                            _colorCode2?.toUpperCase() == preset['btnColor']?.toUpperCase() &&
+                            _colorCode3?.toUpperCase() == preset['btnTextColor']?.toUpperCase();
+
+                        return GestureDetector(
+                          onTap: () {
+                            safeSetState(() {
+                              _colorCode = preset['bgColor'];
+                              _colorCode1 = preset['textColor'];
+                              _colorCode2 = preset['btnColor'];
+                              _colorCode3 = preset['btnTextColor'];
+                              
+                              _selectedColor = bg;
+                              _selectedColor1 = text;
+                              _selectedColor2 = btn;
+                              _selectedColor3 = btnText;
+                            });
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.only(right: 12, bottom: 8),
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: isSelected ? theme.primary : theme.secondaryBackground,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: isSelected ? theme.primary : theme.alternate,
+                                width: 2,
+                              ),
+                              boxShadow: isSelected
+                                  ? [
+                                      BoxShadow(
+                                        color: theme.primary.withValues(alpha: 0.3),
+                                        blurRadius: 6,
+                                        spreadRadius: 1,
+                                      )
+                                    ]
+                                  : null,
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // Mini Swatch Preview
+                                Container(
+                                  width: 22,
+                                  height: 22,
+                                  decoration: BoxDecoration(
+                                    color: bg,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(color: Colors.white24, width: 1),
+                                  ),
+                                  child: Center(
+                                    child: Container(
+                                      width: 10,
+                                      height: 10,
+                                      decoration: BoxDecoration(
+                                        color: btn,
+                                        shape: BoxShape.circle,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  preset['name']!,
+                                  style: TextStyle(
+                                    color: isSelected ? Colors.white : theme.primaryText,
+                                    fontSize: 13,
+                                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
                   // Color Pickers
                   ColorPickerWidget(
+                    key: ValueKey('bg_$_colorCode'),
                     width: double.infinity,
                     height: 56.0,
                     label: 'Website Background color',
@@ -1999,6 +2181,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                     },
                   ),
                   ColorPickerWidget(
+                    key: ValueKey('text_$_colorCode1'),
                     width: double.infinity,
                     height: 56.0,
                     label: 'Website Text color',
@@ -2012,6 +2195,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                     },
                   ),
                   ColorPickerWidget(
+                    key: ValueKey('btn_$_colorCode2'),
                     width: double.infinity,
                     height: 56.0,
                     label: 'Website Button color',
@@ -2025,6 +2209,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                     },
                   ),
                   ColorPickerWidget(
+                    key: ValueKey('btntext_$_colorCode3'),
                     width: double.infinity,
                     height: 56.0,
                     label: 'Website Button Text color',

@@ -86,6 +86,9 @@ class _AutoLoginBottomSheetState extends State<AutoLoginBottomSheet> {
   }
 
   Future<void> _quickLogin(Map<String, dynamic> userData) async {
+    safeSetState(() {
+      isLoading = true;
+    });
     try {
       GoRouter.of(context).prepareAuthEvent();
       // First logout current user
@@ -105,16 +108,20 @@ class _AutoLoginBottomSheetState extends State<AutoLoginBottomSheet> {
 
       if (!mounted) return;
       Navigator.of(context).pop(); // Close bottom sheet
-      Navigator.of(context).pop();
+      
+      // Navigate to Home Page directly
+      context.goNamed(HomePageWidget.routeName);
+      
       // Navigate and restart the app cleanly
       try {
         MyApp.of(context).restartApp();
       } catch (_) {
-        context.pushReplacementNamed(
-          HomePageWidget.routeName,
-        );
+        // Fallback already handled
       }
     } catch (e) {
+      safeSetState(() {
+        isLoading = false;
+      });
       print(e);
       _showError('Login failed: $e');
     }
@@ -136,10 +143,17 @@ class _AutoLoginBottomSheetState extends State<AutoLoginBottomSheet> {
       return;
     }
 
+    safeSetState(() {
+      isLoading = true;
+    });
+
     try {
       final currentUserId = supabase.auth.currentUser?.id;
       if (currentUserId == null) {
         _showError('No parent user found');
+        safeSetState(() {
+          isLoading = false;
+        });
         return;
       }
 
@@ -158,13 +172,6 @@ class _AutoLoginBottomSheetState extends State<AutoLoginBottomSheet> {
               .text, // Note: In production, never store plain passwords
         });
 
-        // Create profile
-        // await supabase.from('profile').insert({
-        //   'user_id': response.user!.id,
-        //   'name': emailController.text.split('@')[0],
-        //   'profile_image_url': 'https://via.placeholder.com/150',
-        // });
-
         // Add to auto_login table with parent_user_id
         await supabase.from('auto_login').insert({
           'user_id': response.user!.id,
@@ -175,23 +182,28 @@ class _AutoLoginBottomSheetState extends State<AutoLoginBottomSheet> {
         emailController.clear();
         passwordController.clear();
         Navigator.of(context).pop(); // Close bottom sheet
-        Navigator.of(context).pop();
+        
+        // Navigate to Home Page directly
+        context.goNamed(HomePageWidget.routeName);
+        
         // Navigate and restart app cleanly
         try {
           MyApp.of(context).restartApp();
         } catch (_) {
-          context.pushReplacementNamed(
-            HomePageWidget.routeName,
-          );
+          // Fallback already handled
         }
         safeSetState(() {
           showAuth = false;
           isCreatingAccount = false;
+          isLoading = false;
         });
         _showSuccess('Sub-account created and linked successfully!');
         _loadAutoLoginUsers(); // Refresh the list
       }
     } catch (e) {
+      safeSetState(() {
+        isLoading = false;
+      });
       _showError('Failed to create account: $e');
     }
   }
@@ -202,14 +214,20 @@ class _AutoLoginBottomSheetState extends State<AutoLoginBottomSheet> {
       return;
     }
 
+    safeSetState(() {
+      isLoading = true;
+    });
+
     try {
       final currentUserId = supabase.auth.currentUser?.id;
       if (currentUserId == null) {
         _showError('No parent user found');
+        safeSetState(() {
+          isLoading = false;
+        });
         return;
       }
 
-      // Temporarily sign out to login with new credentials
       // Temporarily sign out to login with new credentials
       await supabase.auth.signOut();
 
@@ -245,22 +263,27 @@ class _AutoLoginBottomSheetState extends State<AutoLoginBottomSheet> {
         passwordController.clear();
         safeSetState(() {
           showAuth = false;
+          isLoading = false;
         });
 
         if (!mounted) return;
         Navigator.of(context).pop(); // Close bottom sheet
-        Navigator.of(context).pop();
+        
+        // Navigate to Home Page directly
+        context.goNamed(HomePageWidget.routeName);
+        
         // Navigate and restart app cleanly
         try {
           MyApp.of(context).restartApp();
         } catch (_) {
-          context.pushReplacementNamed(
-            HomePageWidget.routeName,
-          );
+          // Fallback already handled
         }
         _showSuccess('Sub-account linked successfully!');
       }
     } catch (e) {
+      safeSetState(() {
+        isLoading = false;
+      });
       debugPrint(e.toString());
       _showError('Login failed: $e');
     }

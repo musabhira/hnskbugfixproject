@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'dart:math' as math;
-import 'package:fluent_ui/fluent_ui.dart' hide Colors, IconButton, Tooltip;
+import 'package:flutter/material.dart';
 import 'package:flutter/material.dart' as material;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
@@ -471,19 +471,20 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   Future<void> _deleteService(String itemId) async {
     final confirm = await material.showDialog<bool>(
       context: context,
-      builder: (context) => ContentDialog(
+      builder: (context) => material.AlertDialog(
         title: const Text('Delete Service?'),
         content: const Text('Are you sure you want to delete this service? This action cannot be undone.'),
         actions: [
-          Button(
+          material.TextButton(
             child: const Text('Cancel'),
             onPressed: () => Navigator.pop(context, false),
           ),
-          FilledButton(
-            style: ButtonStyle(
-              backgroundColor: WidgetStateProperty.all(material.Colors.red),
+          material.ElevatedButton(
+            style: material.ElevatedButton.styleFrom(
+              backgroundColor: material.Colors.red,
+              foregroundColor: material.Colors.white,
             ),
-            child: const Text('Delete', style: TextStyle(color: material.Colors.white, fontWeight: FontWeight.bold)),
+            child: const Text('Delete', style: TextStyle(fontWeight: FontWeight.bold)),
             onPressed: () => Navigator.pop(context, true),
           ),
         ],
@@ -546,16 +547,31 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       );
     }
 
-    // Defaults based on Theme if not customized
-    final rawBgColor = _bgColor ?? FlutterFlowTheme.of(context).primaryBackground;
-    final rawTextColor = _textColor ?? FlutterFlowTheme.of(context).primaryText;
-    final rawBtnColor = _btnColor ?? FlutterFlowTheme.of(context).primary;
-    final rawBtnTextColor = _btnTextColor ?? FlutterFlowTheme.of(context).info;
+    // Instagram-style Light/Dark mode themes
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final defaultBgColor = isDark ? const Color(0xFF000000) : const Color(0xFFFAFAFA);
+    final defaultTextColor = isDark ? const Color(0xFFF5F5F5) : const Color(0xFF262626);
+    final defaultBtnColor = isDark ? const Color(0xFF363636) : const Color(0xFFEFEFEF);
+    final defaultBtnTextColor = isDark ? const Color(0xFFF5F5F5) : const Color(0xFF262626);
+
+    final rawBgColor = _bgColor ?? defaultBgColor;
+    final rawTextColor = _textColor ?? defaultTextColor;
+    final rawBtnColor = _btnColor ?? (isMe ? defaultBtnColor : const Color(0xFF0095F6));
+    final rawBtnTextColor = _btnTextColor ?? (isMe ? defaultBtnTextColor : const Color(0xFFFFFFFF));
+
+    // Contrast check: if background and text colors are same or too close, override text color
+    var finalBtnTextColor = rawBtnTextColor;
+    if ((rawBtnColor.value & 0xFFFFFF) == (rawBtnTextColor.value & 0xFFFFFF) ||
+        (rawBtnColor.computeLuminance() - rawBtnTextColor.computeLuminance()).abs() < 0.15) {
+      finalBtnTextColor = rawBtnColor.computeLuminance() > 0.5 
+          ? const Color(0xFF1E293B) 
+          : const Color(0xFFFFFFFF);
+    }
 
     final bgColor = rawBgColor;
     final btnColor = _ensureContrast(rawBtnColor, bgColor, isButton: true);
     final textColor = _ensureContrast(rawTextColor, bgColor, isButton: false);
-    final btnTextColor = _ensureContrast(rawBtnTextColor, btnColor, isButton: false);
+    final btnTextColor = _ensureContrast(finalBtnTextColor, btnColor, isButton: false);
 
     return material.Scaffold(
       backgroundColor: bgColor,
@@ -570,8 +586,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               backgroundColor:
                   innerBoxIsScrolled ? bgColor : material.Colors.transparent,
               leading: material.IconButton(
-                icon: Icon(FluentIcons.back,
-                    color: textColor, size: 22),
+                icon: const Icon(material.Icons.arrow_back, size: 22),
+                color: textColor,
                 onPressed: () => Navigator.of(context).pop(),
               ),
               title: innerBoxIsScrolled
@@ -588,8 +604,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               actions: [
                 if (isMe) ...[
                   material.IconButton(
-                    icon: Icon(FluentIcons.view_dashboard,
-                        color: textColor),
+                    icon: const Icon(material.Icons.dashboard),
+                    color: textColor,
                     onPressed: () {
                       Navigator.push(
                         context,
@@ -602,39 +618,39 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                     },
                   ),
                   material.IconButton(
-                    icon: Icon(FluentIcons.contact_list,
-                        color: textColor, size: 22),
+                    icon: const Icon(material.Icons.switch_account, size: 22),
+                    color: textColor,
                     onPressed: () => AutoLoginBottomSheet.show(context),
                     tooltip: 'Switch Account',
                   ),
                 ],
                 material.IconButton(
-                  icon: Icon(FluentIcons.share,
-                      color: textColor, size: 22),
+                  icon: const Icon(material.Icons.share, size: 22),
+                  color: textColor,
                   onPressed: () => SharePlus.instance.share(
                       ShareParams(text: 'Check out ${_profileData?['name']}\'s profile on Handskill Friends!')),
                 ),
-                material.Padding(
-                  padding: const EdgeInsets.only(right: 8.0),
-                  child: DropDownButton(
-                    leading: Icon(FluentIcons.more,
-                        color: textColor),
-                    items: [
-                      MenuFlyoutItem(
-                        text: const Text('Report'),
-                        onPressed: () {
-                          // Report logic
-                        },
-                      ),
-                      MenuFlyoutItem(
-                        text: const Text('Block',
-                            style: TextStyle(color: material.Colors.red)),
-                        onPressed: () {
-                          // Block logic
-                        },
-                      ),
-                    ],
-                  ),
+                PopupMenuButton<String>(
+                  icon: const Icon(material.Icons.more_vert),
+                  color: bgColor,
+                  iconColor: textColor,
+                  onSelected: (value) {
+                    if (value == 'Report') {
+                      // Report logic
+                    } else if (value == 'Block') {
+                      // Block logic
+                    }
+                  },
+                  itemBuilder: (context) => [
+                    const PopupMenuItem(
+                      value: 'Report',
+                      child: Text('Report'),
+                    ),
+                    const PopupMenuItem(
+                      value: 'Block',
+                      child: Text('Block', style: TextStyle(color: material.Colors.red)),
+                    ),
+                  ],
                 ),
               ],
               flexibleSpace: material.FlexibleSpaceBar(
@@ -687,31 +703,27 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       final isSelected = _selectedCategory == cat;
                       return Padding(
                         padding: const EdgeInsets.only(right: 8),
-                        child: Button(
-                          onPressed: () => _filterGalleryByCategory(cat),
-                          style: ButtonStyle(
-                            backgroundColor: WidgetStateProperty.all(
-                              isSelected
-                                  ? btnColor
-                                  : material.Colors.transparent,
-                            ),
-                            shape: WidgetStateProperty.all(RoundedRectangleBorder(
+                        child: GestureDetector(
+                          onTap: () => _filterGalleryByCategory(cat),
+                          child: Container(
+                            alignment: Alignment.center,
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: isSelected ? btnColor : material.Colors.transparent,
                               borderRadius: BorderRadius.circular(20),
-                              side: BorderSide(
-                                color: isSelected
-                                    ? btnColor
-                                    : textColor.withValues(alpha: 0.2),
+                              border: Border.all(
+                                color: isSelected ? btnColor : textColor.withValues(alpha: 0.2),
                               ),
-                            )),
-                          ),
-                          child: Text(
-                            cat,
-                            style: TextStyle(
-                              color: isSelected ? btnTextColor : textColor,
-                              fontSize: 12,
-                              fontWeight: isSelected
-                                  ? FontWeight.bold
-                                  : FontWeight.normal,
+                            ),
+                            child: Text(
+                              cat,
+                              style: TextStyle(
+                                color: isSelected ? btnTextColor : textColor,
+                                fontSize: 12,
+                                fontWeight: isSelected
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                              ),
                             ),
                           ),
                         ),
@@ -749,6 +761,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       PostersTab(
                         profileData: _profileData,
                         galleryItems: _galleryItems,
+                        services: _serviceItems,
+                        thoughts: _threadItems,
                       ),
                   ],
                 ),
@@ -805,378 +819,271 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     final isVerified = _profileData?['verified'] == true;
     final slug = _profileData?['slug'];
 
-    final bgColor = _bgColor ?? FlutterFlowTheme.of(context).primaryBackground;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final secondaryTextColor = isDark ? const Color(0xFFA8A8A8) : const Color(0xFF8E8E8E);
+    final dividerColor = isDark ? const Color(0xFF262626) : const Color(0xFFDBDBDB);
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 600),
-          child: GestureDetector(
-            onTap: () {
-              setState(() {
-                _isExpanded = !_isExpanded;
-              });
-            },
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOut,
-              decoration: BoxDecoration(
-                color: bgColor.withValues(alpha: 0.95),
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: material.Colors.black.withValues(alpha: 0.1),
-                    blurRadius: 15,
-                    spreadRadius: 2,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Avatar and Stats Row
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+          child: Row(
+            children: [
+              // Avatar
+              Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: btnColor.withOpacity(0.3),
+                    width: 2.0,
                   ),
-                ],
-                border: Border.all(
-                  color: btnColor.withValues(alpha: 0.2),
-                  width: 1,
+                ),
+                child: CircleAvatar(
+                  radius: 42,
+                  backgroundColor: dividerColor,
+                  backgroundImage: (profileUrl != null && profileUrl.isNotEmpty)
+                      ? CachedNetworkImageProvider(profileUrl)
+                      : null,
+                  child: (profileUrl == null || profileUrl.isEmpty)
+                      ? Icon(Icons.person, size: 40, color: textColor.withOpacity(0.5))
+                      : null,
                 ),
               ),
-              child: Column(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    child: Row(
-                      children: [
-                        // Profile Image
-                        Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: btnColor.withValues(alpha: 0.3),
-                              width: 2.0,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: material.Colors.black.withValues(alpha: 0.1),
-                                blurRadius: 8,
-                              ),
-                            ],
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(14),
-                            child: Container(
-                              width: 75,
-                              height: 75,
-                              color: bgColor,
-                              child: (profileUrl != null && profileUrl.isNotEmpty)
-                                  ? CachedNetworkImage(
-                                      imageUrl: profileUrl,
-                                      fit: BoxFit.cover,
-                                    )
-                                  : Icon(
-                                      FluentIcons.contact,
-                                      size: 40,
-                                      color: textColor.withValues(alpha: 0.5),
-                                    ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        // Name and Info
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      shopName != null && shopName.isNotEmpty ? shopName : name,
-                                      style: GoogleFonts.outfit(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                        color: textColor,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                  if (isVerified)
-                                    Padding(
-                                      padding: const EdgeInsets.only(left: 4.0),
-                                      child: Container(
-                                        padding: const EdgeInsets.all(2),
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          color: const Color(0xFF0078D4).withValues(alpha: 0.15),
-                                        ),
-                                        child: const Icon(
-                                          FluentIcons.verified_brand,
-                                          color: Color(0xFF0078D4),
-                                          size: 14,
-                                        ),
-                                      ),
-                                    ),
-                                ],
-                              ),
-                              const SizedBox(height: 4),
-                              Row(
-                                children: [
-                                  Icon(
-                                    FluentIcons.people,
-                                    size: 14,
-                                    color: textColor.withValues(alpha: 0.6),
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    '$_followersCount Followers',
-                                    style: GoogleFonts.inter(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w500,
-                                      color: textColor.withValues(alpha: 0.7),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                        Icon(
-                          _isExpanded ? FluentIcons.chevron_up : FluentIcons.chevron_down,
-                          color: textColor,
-                          size: 16,
-                        ),
-                      ],
-                    ),
-                  ),
-                  // Expandable Section
-                  AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeInOut,
-                    height: _isExpanded ? null : 0,
-                    child: _isExpanded
-                        ? Container(
-                            padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                material.Divider(
-                                  color: btnColor.withValues(alpha: 0.2),
-                                  thickness: 1,
-                                ),
-                                const SizedBox(height: 12),
-                                if (bio.isNotEmpty)
-                                  Text(
-                                    bio,
-                                    style: GoogleFonts.inter(
-                                      fontSize: 14,
-                                      color: textColor.withValues(alpha: 0.85),
-                                      height: 1.5,
-                                    ),
-                                  )
-                                else
-                                  Text(
-                                    'No bio available',
-                                    style: GoogleFonts.inter(
-                                      fontSize: 14,
-                                      color: textColor.withValues(alpha: 0.5),
-                                      fontStyle: FontStyle.italic,
-                                    ),
-                                  ),
-                                const SizedBox(height: 16),
-                                if (isVerified && slug != null && slug.toString().isNotEmpty) ...[
-                                  GestureDetector(
-                                    onTap: () async {
-                                      final url = Uri.parse('https://handskillapp.web.app/$slug');
-                                      if (await canLaunchUrl(url)) {
-                                        await launchUrl(url, mode: LaunchMode.externalApplication);
-                                      }
-                                    },
-                                    child: Row(
-                                      children: [
-                                        Icon(FluentIcons.globe, size: 16, color: btnColor),
-                                        const SizedBox(width: 6),
-                                        Expanded(
-                                          child: Text(
-                                            'handskillapp.web.app/$slug',
-                                            style: GoogleFonts.inter(
-                                              fontSize: 13,
-                                              color: btnColor,
-                                              decoration: TextDecoration.underline,
-                                            ),
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  const SizedBox(height: 16),
-                                ],
-                                // Stats Bar
-                                Container(
-                                  padding: const EdgeInsets.symmetric(vertical: 12),
-                                  decoration: BoxDecoration(
-                                    color: btnColor.withValues(alpha: 0.08),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                    children: [
-                                      _buildStatItem("Posts", _galleryItems.length, textColor),
-                                      _buildStatItem("Services", _serviceItems.length, textColor),
-                                      _buildStatItem("Following", _followingCount, textColor),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(height: 16),
-                                // Actions
-                                if (isMe)
-                                  material.Container(
-                                    width: double.infinity,
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(16),
-                                      gradient: LinearGradient(
-                                        colors: [btnColor, btnColor.withValues(alpha: 0.8)],
-                                        begin: Alignment.topLeft,
-                                        end: Alignment.bottomRight,
-                                      ),
-                                    ),
-                                    child: material.InkWell(
-                                      onTap: () {
-                                        Navigator.push(
-                                          context,
-                                          material.MaterialPageRoute(
-                                            builder: (context) => ProfileCustomWidget(
-                                              width: MediaQuery.of(context).size.width,
-                                              height: MediaQuery.of(context).size.height,
-                                            ),
-                                          ),
-                                        ).then((_) => _loadInitialData());
-                                      },
-                                      borderRadius: BorderRadius.circular(16),
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(vertical: 12),
-                                        child: Row(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            const Icon(FluentIcons.edit, color: material.Colors.white, size: 16),
-                                            const SizedBox(width: 8),
-                                            Text(
-                                              "Edit Profile",
-                                              style: GoogleFonts.outfit(
-                                                color: material.Colors.white,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  )
-                                else
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: material.Container(
-                                          decoration: BoxDecoration(
-                                            borderRadius: BorderRadius.circular(16),
-                                            gradient: !_isFollowing
-                                                ? LinearGradient(
-                                                    colors: [btnColor, btnColor.withValues(alpha: 0.8)],
-                                                    begin: Alignment.topLeft,
-                                                    end: Alignment.bottomRight,
-                                                  )
-                                                : null,
-                                            color: _isFollowing ? textColor.withValues(alpha: 0.05) : null,
-                                            border: _isFollowing
-                                                ? Border.all(color: textColor.withValues(alpha: 0.15))
-                                                : null,
-                                          ),
-                                          child: material.InkWell(
-                                            onTap: _toggleFollow,
-                                            borderRadius: BorderRadius.circular(16),
-                                            child: Padding(
-                                              padding: const EdgeInsets.symmetric(vertical: 12),
-                                              child: Text(
-                                                _isFollowing ? "Following" : "Follow",
-                                                textAlign: TextAlign.center,
-                                                style: GoogleFonts.outfit(
-                                                  color: _isFollowing ? textColor : btnTextColor,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: material.Container(
-                                          decoration: BoxDecoration(
-                                            borderRadius: BorderRadius.circular(16),
-                                            color: textColor.withValues(alpha: 0.06),
-                                            border: Border.all(color: textColor.withValues(alpha: 0.1)),
-                                          ),
-                                          child: material.InkWell(
-                                            onTap: () {
-                                              Navigator.push(
-                                                context,
-                                                material.MaterialPageRoute(
-                                                  builder: (context) => WhatsAppGroupChat(
-                                                    groupId: 'p:$userId',
-                                                    groupName: name,
-                                                    groupImage: profileUrl,
-                                                  ),
-                                                ),
-                                              );
-                                            },
-                                            borderRadius: BorderRadius.circular(16),
-                                            child: Padding(
-                                              padding: const EdgeInsets.symmetric(vertical: 12),
-                                              child: Text(
-                                                "Message",
-                                                textAlign: TextAlign.center,
-                                                style: GoogleFonts.outfit(
-                                                  color: textColor,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                              ],
-                            ),
-                          )
-                        : const SizedBox.shrink(),
-                  ),
-                ],
+              const SizedBox(width: 20),
+              // Stats
+              Expanded(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _buildStatItem("Followers", _followersCount, textColor),
+                    _buildStatItem("Gallery", _galleryItems.length, textColor),
+                    _buildStatItem("Services", _serviceItems.length, textColor),
+                    _buildStatItem("Thoughts", _threadItems.length, textColor),
+                  ],
+                ),
               ),
-            ),
+            ],
           ),
         ),
-      ),
+
+        // Name, Bio, and Website Info
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Text(
+                    shopName != null && shopName.isNotEmpty ? shopName : name,
+                    style: GoogleFonts.outfit(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: textColor,
+                    ),
+                  ),
+                  if (isVerified)
+                    const Padding(
+                      padding: EdgeInsets.only(left: 6.0),
+                      child: Icon(
+                        Icons.verified,
+                        color: Color(0xFF0095F6),
+                        size: 18,
+                      ),
+                    ),
+                ],
+              ),
+              if (slug != null && slug.toString().isNotEmpty) ...[
+                const SizedBox(height: 2),
+                Text(
+                  '@$slug',
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    color: secondaryTextColor,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+              if (bio.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Text(
+                  bio,
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    color: textColor,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+              if (isVerified && slug != null && slug.toString().isNotEmpty) ...[
+                const SizedBox(height: 10),
+                GestureDetector(
+                  onTap: () async {
+                    final url = Uri.parse('https://handskillapp.web.app/$slug');
+                    if (await canLaunchUrl(url)) {
+                      await launchUrl(url, mode: LaunchMode.externalApplication);
+                    }
+                  },
+                  child: Row(
+                    children: [
+                      Icon(Icons.link, size: 18, color: btnColor),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          'handskillapp.web.app/$slug',
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            color: btnColor,
+                            fontWeight: FontWeight.w600,
+                            decoration: TextDecoration.underline,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+
+        // Actions Row
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: isMe
+              ? Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        height: 38,
+                        decoration: BoxDecoration(
+                          color: isDark ? const Color(0xFF262626) : const Color(0xFFEFEFEF),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: InkWell(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ProfileCustomWidget(
+                                  width: MediaQuery.of(context).size.width,
+                                  height: MediaQuery.of(context).size.height,
+                                ),
+                              ),
+                            ).then((_) => _loadInitialData());
+                          },
+                          borderRadius: BorderRadius.circular(8),
+                          child: Center(
+                            child: Text(
+                              "Edit Profile",
+                              style: GoogleFonts.outfit(
+                                color: textColor,
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+              : Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        height: 38,
+                        decoration: BoxDecoration(
+                          color: _isFollowing
+                              ? (isDark ? const Color(0xFF262626) : const Color(0xFFEFEFEF))
+                              : btnColor,
+                          borderRadius: BorderRadius.circular(8),
+                          border: _isFollowing
+                              ? Border.all(color: textColor.withOpacity(0.1))
+                              : null,
+                        ),
+                        child: InkWell(
+                          onTap: _toggleFollow,
+                          borderRadius: BorderRadius.circular(8),
+                          child: Center(
+                            child: Text(
+                              _isFollowing ? "Following" : "Follow",
+                              style: GoogleFonts.outfit(
+                                color: _isFollowing ? textColor : btnTextColor,
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Container(
+                        height: 38,
+                        decoration: BoxDecoration(
+                          color: isDark ? const Color(0xFF262626) : const Color(0xFFEFEFEF),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: InkWell(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => WhatsAppGroupChat(
+                                  groupId: 'p:$userId',
+                                  groupName: name,
+                                  groupImage: profileUrl,
+                                ),
+                              ),
+                            );
+                          },
+                          borderRadius: BorderRadius.circular(8),
+                          child: Center(
+                            child: Text(
+                              "Message",
+                              style: GoogleFonts.outfit(
+                                color: textColor,
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+        ),
+        const SizedBox(height: 8),
+      ],
     );
   }
 
   Widget _buildStatItem(String label, int count, Color textColor) {
-    return material.Column(
+    return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
           _formatCount(count),
           style: GoogleFonts.outfit(
             color: textColor,
-            fontSize: 24,
-            fontWeight: FontWeight.w900,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
             letterSpacing: -0.5,
           ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 2),
         Text(
-          label.toUpperCase(),
+          label,
           style: GoogleFonts.inter(
-            color: textColor.withValues(alpha: 0.6),
-            fontSize: 10,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 1.0,
+            color: textColor.withOpacity(0.6),
+            fontSize: 11,
+            fontWeight: FontWeight.w500,
           ),
         ),
       ],
@@ -1304,7 +1211,7 @@ class _GalleryTab extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(FluentIcons.grid_view_medium,
+            Icon(material.Icons.grid_view,
                 size: 48, color: textColor.withValues(alpha: 0.3)),
             const SizedBox(height: 8),
             Text("No posts found",
@@ -1478,7 +1385,7 @@ class _ServicesTab extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(FluentIcons.toolbox,
+            Icon(material.Icons.work,
                 size: 48, color: textColor.withValues(alpha: 0.3)),
             const SizedBox(height: 16),
             Text("No services listed",
@@ -1529,7 +1436,7 @@ class _ServicesTab extends StatelessWidget {
                       border:
                           Border.all(color: btnColor.withValues(alpha: 0.2)),
                     ),
-                    child: Icon(FluentIcons.toolbox, color: btnColor, size: 22),
+                    child: Icon(material.Icons.work, color: btnColor, size: 22),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -1666,7 +1573,7 @@ class _ThreadsTab extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(FluentIcons.chat,
+            Icon(material.Icons.chat,
                 size: 48, color: textColor.withValues(alpha: 0.3)),
             const SizedBox(height: 16),
             Text("No thoughts shared yet",
@@ -1705,7 +1612,7 @@ class _ThreadsTab extends StatelessWidget {
                       color: btnColor.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(FluentIcons.contact, color: btnColor, size: 14),
+                    child: Icon(material.Icons.person, color: btnColor, size: 14),
                   ),
                   const SizedBox(width: 10),
                   Text(
@@ -1718,7 +1625,7 @@ class _ThreadsTab extends StatelessWidget {
                   ),
                   const Spacer(),
                   material.IconButton(
-                    icon: Icon(FluentIcons.more,
+                    icon: Icon(material.Icons.more_vert,
                         size: 16, color: textColor.withValues(alpha: 0.3)),
                     onPressed: () {},
                     padding: material.EdgeInsets.zero,
@@ -1740,19 +1647,19 @@ class _ThreadsTab extends StatelessWidget {
               Row(
                 children: [
                   _buildThreadStat(
-                    FluentIcons.heart,
+                    material.Icons.favorite,
                     ((thread['like_count'] ?? 0) + (thread['fake_likes'] ?? 0))
                         .toString(),
                     btnColor,
                   ),
                   const SizedBox(width: 24),
                   _buildThreadStat(
-                    FluentIcons.comment,
+                    material.Icons.comment,
                     (thread['comment_count'] ?? 0).toString(),
                     textColor.withValues(alpha: 0.5),
                   ),
                   const Spacer(),
-                  Icon(FluentIcons.share,
+                  Icon(material.Icons.share,
                       size: 16, color: textColor.withValues(alpha: 0.4)),
                 ],
               ),
