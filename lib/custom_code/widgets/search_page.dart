@@ -600,7 +600,7 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
               MaterialPageRoute(
                 builder: (context) => isVerified
                     ? VerfiedSwitchPage(userId: profile['user_id'])
-                    : SearchProfileDetailPage(userId: profile['user_id']),
+                    : MainProfileWidget(userId: profile['user_id']),
               ),
             );
           },

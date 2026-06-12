@@ -19,8 +19,6 @@ export 'thoughts_feed_section.dart';
 export 'search_page.dart' show SearchPage;
 export 'gallery_profile_search_page.dart' show GalleryProfileSearchPage;
 export 'gallery_search_page.dart';
-export 'search_profile_detail_page.dart' show SearchProfileDetailPage;
-export 'verfied_search_profile_detail_page.dart' show VerfiedSearchProfileDetailPage;
 export 'nearby_users_page.dart';
 export 'verified_switch_page.dart';
 
@@ -33,7 +31,7 @@ export 'create_service_widget.dart' show CreateServiceWidget;
 
 // Tools & Specialized Pages
 export 'tools_page.dart' show ToolsPage;
-export 'courses_widget.dart' show CoursesWidget, CourseDetailPage;
+export 'courses_widget.dart' show CoursesWidget, CourseDetailPage, WhatsAppShareHelper;
 export 'admin_panel_page.dart' show AdminDashboardPage;
 export 'chess_game_page.dart';
 export 'crazy_games_page.dart';

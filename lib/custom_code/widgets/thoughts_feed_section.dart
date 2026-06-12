@@ -6,7 +6,7 @@ import 'package:timeago/timeago.dart' as timeago;
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
-import 'package:pocket_mates_app/custom_code/widgets/verfied_search_profile_detail_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/main_profile_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/thread_feed_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/share_content_screen.dart';
 import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
@@ -470,7 +470,7 @@ class _TwitterThreadCardState extends State<TwitterThreadCard> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => VerfiedSearchProfileDetailPage(
+                        builder: (context) => MainProfileWidget(
                             userId: widget.thread['user_id'] ?? ''),
                       ),
                     );

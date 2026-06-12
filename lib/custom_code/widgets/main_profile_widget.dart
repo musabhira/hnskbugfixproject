@@ -39,7 +39,7 @@ class MainProfileWidget extends StatefulWidget {
   });
 
   @override
-  _MainProfileWidgetState createState() => _MainProfileWidgetState();
+  State<MainProfileWidget> createState() => _MainProfileWidgetState();
 }
 
 class _MainProfileWidgetState extends State<MainProfileWidget>
@@ -66,6 +66,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   int _followersCount = 0;
   int _followingCount = 0;
   bool _isBlocked = false;
+  bool _isExpanded = false;
   String _selectedCategory = 'All';
   List<String> _categories = ['All'];
   List<Map<String, dynamic>> _filteredGalleryItems = [];
@@ -804,355 +805,353 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     final isVerified = _profileData?['verified'] == true;
     final slug = _profileData?['slug'];
 
+    final bgColor = _bgColor ?? FlutterFlowTheme.of(context).primaryBackground;
+
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Row with Image + Stats
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: btnColor, width: 3.0),
-                  boxShadow: [
-                    BoxShadow(
-                        color: btnColor.withValues(alpha: 0.4),
-                        blurRadius: 20,
-                        spreadRadius: 2,
-                        offset: const Offset(0, 8))
-                  ],
-                ),
-                child: CircleAvatar(
-                  radius: 50,
-                  backgroundColor: const Color(0xFF2C2C2E),
-                  backgroundImage: (profileUrl != null && profileUrl.isNotEmpty)
-                      ? CachedNetworkImageProvider(profileUrl)
-                      : null,
-                  child: (profileUrl == null || profileUrl.isNotEmpty == false)
-                      ? Icon(FluentIcons.contact,
-                          size: 45,
-                          color: material.Colors.white.withValues(alpha: 0.5))
-                      : null,
-                ),
-              ),
-              const SizedBox(width: 24),
-              Expanded(
-                child: material.Container(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  decoration: BoxDecoration(
-                    color: textColor.withValues(alpha: 0.03),
-                    borderRadius: BorderRadius.circular(20),
-                    border:
-                        Border.all(color: textColor.withValues(alpha: 0.05)),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _buildStatItem("Followers", _followersCount, textColor),
-                      _buildStatItem("Following", _followingCount, textColor),
-                      _buildStatItem("Posts", _galleryItems.length, textColor),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-          // Name Section
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Expanded(
-                child: Text(
-                  shopName != null && shopName.isNotEmpty ? shopName : name,
-                  style: GoogleFonts.outfit(
-                    color: textColor,
-                    fontSize: 26,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: -0.5,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              if (isVerified) ...[
-                const SizedBox(width: 12),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF0078D4).withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                        color: const Color(0xFF0078D4).withValues(alpha: 0.3)),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(FluentIcons.verified_brand,
-                          color: Color(0xFF0078D4), size: 16),
-                      const SizedBox(width: 6),
-                      Text("Verified",
-                          style: GoogleFonts.inter(
-                              color: const Color(0xFF0078D4),
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold)),
-                    ],
-                  ),
-                ),
-              ],
-            ],
-          ),
-          if (bio.isNotEmpty) ...[
-            const SizedBox(height: 16),
-            material.Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 600),
+          child: GestureDetector(
+            onTap: () {
+              setState(() {
+                _isExpanded = !_isExpanded;
+              });
+            },
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
               decoration: BoxDecoration(
-                color: textColor.withValues(alpha: 0.04),
+                color: bgColor.withValues(alpha: 0.95),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: textColor.withValues(alpha: 0.08)),
-              ),
-              child: Text(
-                bio,
-                style: GoogleFonts.inter(
-                  color: textColor.withValues(alpha: 0.85),
-                  fontSize: 15,
-                  height: 1.6,
-                ),
-                maxLines: 4,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-          if (isVerified && slug != null && slug.toString().isNotEmpty) ...[
-            const SizedBox(height: 16),
-            GestureDetector(
-              onTap: () async {
-                final url = Uri.parse('https://handskillapp.web.app/$slug');
-                if (await canLaunchUrl(url)) {
-                  await launchUrl(url, mode: LaunchMode.externalApplication);
-                }
-              },
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: BoxDecoration(
-                  color: btnColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: btnColor.withValues(alpha: 0.25)),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(FluentIcons.globe, color: btnColor, size: 16),
-                    const SizedBox(width: 10),
-                    Text(
-                      "handskillapp.web.app/$slug",
-                      style: GoogleFonts.inter(
-                        color: btnColor,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-          const SizedBox(height: 24),
-          // Action Buttons
-          if (!isMe)
-            Row(
-              children: [
-                Expanded(
-                  child: material.Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20),
-                      gradient: !_isFollowing
-                          ? LinearGradient(
-                              colors: [
-                                btnColor,
-                                btnColor.withValues(alpha: 0.8)
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            )
-                          : null,
-                      color: _isFollowing
-                          ? textColor.withValues(alpha: 0.05)
-                          : null,
-                      border: _isFollowing
-                          ? Border.all(
-                              color: textColor.withValues(alpha: 0.15),
-                              width: 1.5)
-                          : null,
-                      boxShadow: _isFollowing
-                          ? null
-                          : [
-                              BoxShadow(
-                                color: btnColor.withValues(alpha: 0.35),
-                                blurRadius: 20,
-                                offset: const Offset(0, 8),
-                              )
-                            ],
-                    ),
-                    child: material.InkWell(
-                      onTap: _toggleFollow,
-                      borderRadius: BorderRadius.circular(20),
-                      child: material.Container(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        alignment: Alignment.center,
-                        child: Text(
-                          _isFollowing ? "Following" : "Follow",
-                          style: GoogleFonts.outfit(
-                            color: _isFollowing ? textColor : btnTextColor,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                      ),
-                    ),
+                boxShadow: [
+                  BoxShadow(
+                    color: material.Colors.black.withValues(alpha: 0.1),
+                    blurRadius: 15,
+                    spreadRadius: 2,
                   ),
+                ],
+                border: Border.all(
+                  color: btnColor.withValues(alpha: 0.2),
+                  width: 1,
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: material.Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20),
-                      color: textColor.withValues(alpha: 0.06),
-                      border: Border.all(
-                          color: textColor.withValues(alpha: 0.1), width: 1.5),
-                    ),
-                    child: material.InkWell(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          material.MaterialPageRoute(
-                            builder: (context) => WhatsAppGroupChat(
-                              groupId: 'p:$userId',
-                              groupName: name,
-                              groupImage: profileUrl,
+              ),
+              child: Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    child: Row(
+                      children: [
+                        // Profile Image
+                        Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: btnColor.withValues(alpha: 0.3),
+                              width: 2.0,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: material.Colors.black.withValues(alpha: 0.1),
+                                blurRadius: 8,
+                              ),
+                            ],
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(14),
+                            child: Container(
+                              width: 75,
+                              height: 75,
+                              color: bgColor,
+                              child: (profileUrl != null && profileUrl.isNotEmpty)
+                                  ? CachedNetworkImage(
+                                      imageUrl: profileUrl,
+                                      fit: BoxFit.cover,
+                                    )
+                                  : Icon(
+                                      FluentIcons.contact,
+                                      size: 40,
+                                      color: textColor.withValues(alpha: 0.5),
+                                    ),
                             ),
                           ),
-                        );
-                      },
-                      borderRadius: BorderRadius.circular(20),
-                      child: material.Container(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        alignment: Alignment.center,
-                        child: Text(
-                          "Message",
-                          style: GoogleFonts.outfit(
-                            color: textColor,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                            letterSpacing: 0.5,
+                        ),
+                        const SizedBox(width: 16),
+                        // Name and Info
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      shopName != null && shopName.isNotEmpty ? shopName : name,
+                                      style: GoogleFonts.outfit(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color: textColor,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  if (isVerified)
+                                    Padding(
+                                      padding: const EdgeInsets.only(left: 4.0),
+                                      child: Container(
+                                        padding: const EdgeInsets.all(2),
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: const Color(0xFF0078D4).withValues(alpha: 0.15),
+                                        ),
+                                        child: const Icon(
+                                          FluentIcons.verified_brand,
+                                          color: Color(0xFF0078D4),
+                                          size: 14,
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  Icon(
+                                    FluentIcons.people,
+                                    size: 14,
+                                    color: textColor.withValues(alpha: 0.6),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    '$_followersCount Followers',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
+                                      color: textColor.withValues(alpha: 0.7),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
                         ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          if (isMe)
-            material.Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: material.Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  gradient: LinearGradient(
-                    colors: [btnColor, btnColor.withValues(alpha: 0.7)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: btnColor.withValues(alpha: 0.35),
-                      blurRadius: 20,
-                      offset: const Offset(0, 8),
-                    )
-                  ],
-                ),
-                child: material.InkWell(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      material.MaterialPageRoute(
-                        builder: (context) => ProfileCustomWidget(
-                          width: MediaQuery.of(context).size.width,
-                          height: MediaQuery.of(context).size.height,
-                        ),
-                      ),
-                    ).then((_) => _loadInitialData());
-                  },
-                  borderRadius: BorderRadius.circular(20),
-                  child: material.Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        material.Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color:
-                                material.Colors.white.withValues(alpha: 0.25),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(FluentIcons.edit,
-                              color: material.Colors.white, size: 16),
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          "Edit Profile",
-                          style: GoogleFonts.outfit(
-                            color: material.Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                            letterSpacing: 0.5,
-                          ),
+                        Icon(
+                          _isExpanded ? FluentIcons.chevron_up : FluentIcons.chevron_down,
+                          color: textColor,
+                          size: 16,
                         ),
                       ],
                     ),
                   ),
-                ),
-              ),
-            ),
-          if (_profileData != null &&
-              _profileData!['phone_no'] != null &&
-              _profileData!['phone_no'].toString().isNotEmpty) ...[
-            const SizedBox(height: 20),
-            material.Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: textColor.withValues(alpha: 0.05),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(FluentIcons.phone,
-                      color: textColor.withValues(alpha: 0.6), size: 16),
-                  const SizedBox(width: 12),
-                  Text(
-                    _profileData!['phone_no'],
-                    style: GoogleFonts.inter(
-                      color: textColor.withValues(alpha: 0.8),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
+                  // Expandable Section
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                    height: _isExpanded ? null : 0,
+                    child: _isExpanded
+                        ? Container(
+                            padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                material.Divider(
+                                  color: btnColor.withValues(alpha: 0.2),
+                                  thickness: 1,
+                                ),
+                                const SizedBox(height: 12),
+                                if (bio.isNotEmpty)
+                                  Text(
+                                    bio,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 14,
+                                      color: textColor.withValues(alpha: 0.85),
+                                      height: 1.5,
+                                    ),
+                                  )
+                                else
+                                  Text(
+                                    'No bio available',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 14,
+                                      color: textColor.withValues(alpha: 0.5),
+                                      fontStyle: FontStyle.italic,
+                                    ),
+                                  ),
+                                const SizedBox(height: 16),
+                                if (isVerified && slug != null && slug.toString().isNotEmpty) ...[
+                                  GestureDetector(
+                                    onTap: () async {
+                                      final url = Uri.parse('https://handskillapp.web.app/$slug');
+                                      if (await canLaunchUrl(url)) {
+                                        await launchUrl(url, mode: LaunchMode.externalApplication);
+                                      }
+                                    },
+                                    child: Row(
+                                      children: [
+                                        Icon(FluentIcons.globe, size: 16, color: btnColor),
+                                        const SizedBox(width: 6),
+                                        Expanded(
+                                          child: Text(
+                                            'handskillapp.web.app/$slug',
+                                            style: GoogleFonts.inter(
+                                              fontSize: 13,
+                                              color: btnColor,
+                                              decoration: TextDecoration.underline,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                ],
+                                // Stats Bar
+                                Container(
+                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                  decoration: BoxDecoration(
+                                    color: btnColor.withValues(alpha: 0.08),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                    children: [
+                                      _buildStatItem("Posts", _galleryItems.length, textColor),
+                                      _buildStatItem("Services", _serviceItems.length, textColor),
+                                      _buildStatItem("Following", _followingCount, textColor),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                // Actions
+                                if (isMe)
+                                  material.Container(
+                                    width: double.infinity,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(16),
+                                      gradient: LinearGradient(
+                                        colors: [btnColor, btnColor.withValues(alpha: 0.8)],
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                      ),
+                                    ),
+                                    child: material.InkWell(
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          material.MaterialPageRoute(
+                                            builder: (context) => ProfileCustomWidget(
+                                              width: MediaQuery.of(context).size.width,
+                                              height: MediaQuery.of(context).size.height,
+                                            ),
+                                          ),
+                                        ).then((_) => _loadInitialData());
+                                      },
+                                      borderRadius: BorderRadius.circular(16),
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(vertical: 12),
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            const Icon(FluentIcons.edit, color: material.Colors.white, size: 16),
+                                            const SizedBox(width: 8),
+                                            Text(
+                                              "Edit Profile",
+                                              style: GoogleFonts.outfit(
+                                                color: material.Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                else
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: material.Container(
+                                          decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.circular(16),
+                                            gradient: !_isFollowing
+                                                ? LinearGradient(
+                                                    colors: [btnColor, btnColor.withValues(alpha: 0.8)],
+                                                    begin: Alignment.topLeft,
+                                                    end: Alignment.bottomRight,
+                                                  )
+                                                : null,
+                                            color: _isFollowing ? textColor.withValues(alpha: 0.05) : null,
+                                            border: _isFollowing
+                                                ? Border.all(color: textColor.withValues(alpha: 0.15))
+                                                : null,
+                                          ),
+                                          child: material.InkWell(
+                                            onTap: _toggleFollow,
+                                            borderRadius: BorderRadius.circular(16),
+                                            child: Padding(
+                                              padding: const EdgeInsets.symmetric(vertical: 12),
+                                              child: Text(
+                                                _isFollowing ? "Following" : "Follow",
+                                                textAlign: TextAlign.center,
+                                                style: GoogleFonts.outfit(
+                                                  color: _isFollowing ? textColor : btnTextColor,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: material.Container(
+                                          decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.circular(16),
+                                            color: textColor.withValues(alpha: 0.06),
+                                            border: Border.all(color: textColor.withValues(alpha: 0.1)),
+                                          ),
+                                          child: material.InkWell(
+                                            onTap: () {
+                                              Navigator.push(
+                                                context,
+                                                material.MaterialPageRoute(
+                                                  builder: (context) => WhatsAppGroupChat(
+                                                    groupId: 'p:$userId',
+                                                    groupName: name,
+                                                    groupImage: profileUrl,
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                            borderRadius: BorderRadius.circular(16),
+                                            child: Padding(
+                                              padding: const EdgeInsets.symmetric(vertical: 12),
+                                              child: Text(
+                                                "Message",
+                                                textAlign: TextAlign.center,
+                                                style: GoogleFonts.outfit(
+                                                  color: textColor,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                              ],
+                            ),
+                          )
+                        : const SizedBox.shrink(),
                   ),
                 ],
               ),
             ),
-          ]
-        ],
+          ),
+        ),
       ),
     );
   }

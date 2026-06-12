@@ -1,6 +1,5 @@
 // Automatic FlutterFlow imports
-import 'package:pocket_mates_app/custom_code/widgets/search_profile_detail_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/verfied_search_profile_detail_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/main_profile_widget.dart';
 
 import '/backend/supabase/supabase.dart';
 import 'package:flutter/material.dart';
@@ -157,7 +156,7 @@ class _VerfiedSwitchPageState extends State<VerfiedSwitchPage> {
         case 3:
         case 4:
         default:
-          return VerfiedSearchProfileDetailPage(
+          return MainProfileWidget(
             width: screenWidth,
             height: screenHeight,
             userId: widget.userId,
@@ -168,7 +167,7 @@ class _VerfiedSwitchPageState extends State<VerfiedSwitchPage> {
       switch (_selectedHomeDesign) {
         case 1:
         default:
-          return SearchProfileDetailPage(
+          return MainProfileWidget(
             width: screenWidth,
             height: screenHeight,
             userId: widget.userId,

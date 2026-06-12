@@ -2,7 +2,6 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:pocket_mates_app/custom_code/widgets/search_profile_detail_page.dart';
 import 'index.dart';
 import 'package:flutter/material.dart' as material;
 

@@ -3,7 +3,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:async';
-import 'package:pocket_mates_app/custom_code/widgets/verfied_search_profile_detail_page.dart'; // To open profile
+import 'package:pocket_mates_app/custom_code/widgets/main_profile_widget.dart'; // To open profile
 
 class NearbyUsersPage extends StatefulWidget {
   const NearbyUsersPage({super.key});
@@ -69,7 +69,7 @@ class _NearbyUsersPageState extends State<NearbyUsersPage> {
     // 2. Get Location
     try {
       _currentPosition = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
+        locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
       );
 
       // 3. Update DB
@@ -305,7 +305,7 @@ class _NearbyUsersPageState extends State<NearbyUsersPage> {
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) =>
-                                        VerfiedSearchProfileDetailPage(
+                                        MainProfileWidget(
                                       userId: user['user_id'],
                                     ),
                                   ),

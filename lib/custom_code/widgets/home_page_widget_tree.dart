@@ -2088,7 +2088,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
           Navigator.push(
             context,
             material.MaterialPageRoute(
-              builder: (context) => VerfiedSearchProfileDetailPage(
+              builder: (context) => MainProfileWidget(
                 userId: person['user_id'] ?? '',
               ),
             ),
@@ -2166,7 +2166,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
           Navigator.push(
             context,
             material.MaterialPageRoute(
-              builder: (context) => VerfiedSearchProfileDetailPage(
+              builder: (context) => MainProfileWidget(
                 userId: product['user_id'] ?? '',
               ),
             ),
