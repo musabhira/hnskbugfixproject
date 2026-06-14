@@ -14,6 +14,7 @@ import 'index.dart';
 
 import 'package:pocket_mates_app/custom_code/widgets/gallery_profile_search_page.dart' hide MenuFlyoutItem;
 import 'package:pocket_mates_app/custom_code/widgets/posters_tab.dart';
+import 'package:pocket_mates_app/custom_code/widgets/business_pos_page.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:url_launcher/url_launcher.dart';
 
@@ -52,7 +53,6 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   bool _isLoading = true;
   Map<String, dynamic>? _profileData;
   List<Map<String, dynamic>> _galleryItems = [];
-  List<Map<String, dynamic>> _serviceItems = [];
   List<Map<String, dynamic>> _threadItems = [];
 
   // Theme Colors
@@ -111,7 +111,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   void initState() {
     super.initState();
     // Initialize controller with correct length if preloaded
-    final initialLength = (widget.preloadedProfile?['verified'] == true) ? 4 : 3;
+    final initialLength = (widget.preloadedProfile?['verified'] == true) ? 3 : 2;
     _tabController = material.TabController(length: initialLength, vsync: this);
     _tabController.addListener(() { if (mounted) setState(() {}); });
     _loadInitialData(); // Instant load strategy
@@ -170,7 +170,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
     // Sync TabController
     final isVerified = data['verified'] == true;
-    final newLength = isVerified ? 4 : 3;
+    final newLength = isVerified ? 3 : 2;
     if (_tabController.length != newLength) {
       final oldIndex = _tabController.index;
       _tabController.dispose();
@@ -306,28 +306,6 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       }
     } catch (e) {
       debugPrint('Error fetching gallery list: $e');
-    }
-
-    // Fetch remaining services
-    try {
-      final servicesRes = await _supabase
-          .from('service')
-          .select()
-          .eq('user_id', userId)
-          .order('created_at', ascending: false);
-
-      if (mounted) {
-        setState(() {
-          _serviceItems = List<Map<String, dynamic>>.from(servicesRes);
-        });
-      }
-    } catch (e) {
-      debugPrint('Error fetching services list: $e');
-      if (mounted) {
-        setState(() {
-          _serviceItems = [];
-        });
-      }
     }
   }
 
@@ -468,56 +446,6 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     }
   }
 
-  Future<void> _deleteService(String itemId) async {
-    final confirm = await material.showDialog<bool>(
-      context: context,
-      builder: (context) => material.AlertDialog(
-        title: const Text('Delete Service?'),
-        content: const Text('Are you sure you want to delete this service? This action cannot be undone.'),
-        actions: [
-          material.TextButton(
-            child: const Text('Cancel'),
-            onPressed: () => Navigator.pop(context, false),
-          ),
-          material.ElevatedButton(
-            style: material.ElevatedButton.styleFrom(
-              backgroundColor: material.Colors.red,
-              foregroundColor: material.Colors.white,
-            ),
-            child: const Text('Delete', style: TextStyle(fontWeight: FontWeight.bold)),
-            onPressed: () => Navigator.pop(context, true),
-          ),
-        ],
-      ),
-    );
-
-    if (confirm != true) return;
-
-    try {
-      await _supabase.from('service').delete().match({'id': itemId});
-      if (mounted) {
-        material.ScaffoldMessenger.of(context).showSnackBar(
-          material.SnackBar(
-            content: const Text('Service deleted successfully!'),
-            backgroundColor: FlutterFlowTheme.of(context).success,
-            duration: const Duration(seconds: 2),
-          ),
-        );
-        _fetchFullLists(); // Reload services tab list
-      }
-    } catch (e) {
-      if (mounted) {
-        material.ScaffoldMessenger.of(context).showSnackBar(
-          material.SnackBar(
-            content: Text('Error deleting service: $e'),
-            backgroundColor: FlutterFlowTheme.of(context).error,
-            duration: const Duration(seconds: 3),
-          ),
-        );
-      }
-    }
-  }
-
   // --- UI Construction ---
 
   @override
@@ -581,7 +509,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
           return [
             material.SliverAppBar(
               elevation: 0,
-              expandedHeight: 220,
+              expandedHeight: MediaQuery.of(context).size.width / 2.0,
               pinned: true,
               backgroundColor:
                   innerBoxIsScrolled ? bgColor : material.Colors.transparent,
@@ -604,15 +532,14 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               actions: [
                 if (isMe) ...[
                   material.IconButton(
-                    icon: const Icon(material.Icons.dashboard),
+                    icon: const Icon(material.Icons.receipt_long_rounded, size: 22),
                     color: textColor,
+                    tooltip: 'POS Terminal',
                     onPressed: () {
                       Navigator.push(
                         context,
                         material.MaterialPageRoute(
-                          builder: (context) => VerfiedSwitchPage(
-                            userId: userId,
-                          ),
+                          builder: (context) => const BusinessPOSPage(),
                         ),
                       );
                     },
@@ -674,7 +601,6 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   labelStyle: GoogleFonts.outfit(fontWeight: FontWeight.bold),
                   tabs: [
                     const material.Tab(text: "Gallery"),
-                    const material.Tab(text: "Services"),
                     const material.Tab(text: "Thoughts"),
                     if (_profileData?['verified'] == true)
                       const material.Tab(text: "Posters"),
@@ -743,14 +669,6 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       btnColor: btnColor,
                       btnTextColor: btnTextColor,
                     ),
-                    _ServicesTab(
-                      items: _serviceItems,
-                      textColor: textColor,
-                      btnColor: btnColor,
-                      btnTextColor: btnTextColor,
-                      userId: userId,
-                      onDelete: isMe ? _deleteService : null,
-                    ),
                     _ThreadsTab(
                       items: _threadItems,
                       textColor: textColor,
@@ -761,7 +679,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       PostersTab(
                         profileData: _profileData,
                         galleryItems: _galleryItems,
-                        services: _serviceItems,
+                        services: const [],
                         thoughts: _threadItems,
                       ),
                   ],
@@ -859,7 +777,6 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   children: [
                     _buildStatItem("Followers", _followersCount, textColor),
                     _buildStatItem("Gallery", _galleryItems.length, textColor),
-                    _buildStatItem("Services", _serviceItems.length, textColor),
                     _buildStatItem("Thoughts", _threadItems.length, textColor),
                   ],
                 ),
@@ -1233,6 +1150,7 @@ class _GalleryTab extends StatelessWidget {
           final imageUrl = item['gallery_image_url'] ?? item['image_url'];
           final title = item['gallery_title'] ?? item['title'];
           final price = item['gallery_price'] ?? item['price'];
+          final isService = item['is_service'] == true;
 
           return GestureDetector(
             onTap: () {
@@ -1337,8 +1255,8 @@ class _GalleryTab extends StatelessWidget {
                   ),
                   if (title != null && title.toString().isNotEmpty)
                     Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 14.0, vertical: 12.0),
+                      padding: const EdgeInsets.only(
+                          left: 14.0, right: 14.0, top: 12.0, bottom: 4.0),
                       child: Text(
                         title,
                         style: GoogleFonts.outfit(
@@ -1351,6 +1269,38 @@ class _GalleryTab extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(14.0, 0, 14.0, 12.0),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: isService 
+                            ? btnColor.withOpacity(0.12)
+                            : textColor.withOpacity(0.06),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            isService ? material.Icons.handyman_outlined : material.Icons.shopping_bag_outlined,
+                            size: 10,
+                            color: isService ? btnColor : textColor.withOpacity(0.7),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            isService ? 'Service' : 'Product',
+                            style: GoogleFonts.outfit(
+                              color: isService ? btnColor : textColor.withOpacity(0.7),
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -1361,197 +1311,7 @@ class _GalleryTab extends StatelessWidget {
   }
 }
 
-class _ServicesTab extends StatelessWidget {
-  final List<Map<String, dynamic>> items;
-  final Color textColor;
-  final Color btnColor;
-  final Color btnTextColor;
-  final String userId;
-  final Function(String itemId)? onDelete;
 
-  const _ServicesTab({
-    required this.items,
-    required this.textColor,
-    required this.btnColor,
-    required this.btnTextColor,
-    required this.userId,
-    this.onDelete,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    if (items.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(material.Icons.work,
-                size: 48, color: textColor.withValues(alpha: 0.3)),
-            const SizedBox(height: 16),
-            Text("No services listed",
-                style: TextStyle(color: textColor.withValues(alpha: 0.5))),
-          ],
-        ),
-      );
-    }
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: items.length,
-      itemBuilder: (ctx, idx) {
-        final service = items[idx];
-        final id = service['id']?.toString() ?? '';
-        final title =
-            service['service_title'] ?? service['service_name'] ?? 'Service';
-        final price = service['service_price'] ?? service['price'];
-        final desc = service['service_description'] ?? service['description'];
-
-        return Container(
-          margin: const EdgeInsets.only(bottom: 16),
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: textColor.withValues(alpha: 0.04),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-                color: textColor.withValues(alpha: 0.08), width: 1.5),
-            boxShadow: [
-              BoxShadow(
-                color: material.Colors.black.withValues(alpha: 0.1),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              )
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: 52,
-                    height: 52,
-                    decoration: BoxDecoration(
-                      color: btnColor.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(14),
-                      border:
-                          Border.all(color: btnColor.withValues(alpha: 0.2)),
-                    ),
-                    child: Icon(material.Icons.work, color: btnColor, size: 22),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: Text(
-                                title,
-                                style: GoogleFonts.outfit(
-                                  color: textColor,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 18,
-                                ),
-                              ),
-                            ),
-                            if (onDelete != null && id.isNotEmpty)
-                              material.IconButton(
-                                icon: const Icon(material.Icons.delete_outline, color: material.Colors.red, size: 20),
-                                onPressed: () => onDelete!(id),
-                                padding: material.EdgeInsets.zero,
-                                constraints: const material.BoxConstraints(),
-                              ),
-                          ],
-                        ),
-                        if (desc != null && desc.toString().isNotEmpty)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 6),
-                            child: Text(
-                              desc,
-                              style: GoogleFonts.inter(
-                                color: textColor.withValues(alpha: 0.7),
-                                fontSize: 13,
-                                height: 1.5,
-                              ),
-                              maxLines: 3,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  if (price != null)
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Starting from',
-                          style: GoogleFonts.inter(
-                            color: textColor.withValues(alpha: 0.4),
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        Text(
-                          '₹$price',
-                          style: GoogleFonts.outfit(
-                            color: const Color(0xFF00CC6A),
-                            fontWeight: FontWeight.bold,
-                            fontSize: 22,
-                          ),
-                        ),
-                      ],
-                    )
-                  else
-                    const SizedBox.shrink(),
-                  material.ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        material.MaterialPageRoute(
-                          builder: (context) => WhatsAppGroupChat(
-                            groupId: 'p:$userId',
-                            groupName: title,
-                          ),
-                        ),
-                      );
-                    },
-                    style: material.ElevatedButton.styleFrom(
-                      backgroundColor: btnColor,
-                      foregroundColor: btnTextColor,
-                      elevation: 4,
-                      shadowColor: btnColor.withValues(alpha: 0.4),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 24, vertical: 14),
-                    ),
-                    child: Text(
-                      "Enquire",
-                      style: GoogleFonts.outfit(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-}
 
 class _ThreadsTab extends StatelessWidget {
   final List<Map<String, dynamic>> items;

@@ -27,7 +27,6 @@ export 'main_market_page.dart' show MainMarketPage;
 export 'tab_view.dart' show GalleryTabViewPage;
 export 'gallery_following_tab_view.dart' show GalleryFollowingTabViewPage;
 export 'create_gallery_widget.dart' show CreateGalleryWidget;
-export 'create_service_widget.dart' show CreateServiceWidget;
 
 // Tools & Specialized Pages
 export 'tools_page.dart' show ToolsPage;
@@ -41,6 +40,7 @@ export 'password_generator_page.dart';
 export 'event_create_page.dart' show EventCreatePage;
 export 'event_display_home_page.dart';
 export 'dual_video_recorder.dart' show DualVideoRecorderWidget;
+export 'business_pos_page.dart' show BusinessPOSPage;
 
 
 // Chat & Communication

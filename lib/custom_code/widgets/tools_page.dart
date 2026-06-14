@@ -23,6 +23,7 @@ import '/custom_code/widgets/drawing_academy_home_page.dart';
 import '/custom_code/widgets/ai_prompt_service.dart';
 import '/custom_code/widgets/dual_video_recorder.dart';
 import '/custom_code/widgets/courses_widget.dart';
+import '/custom_code/widgets/business_pos_page.dart';
 
 class ToolsPage extends StatefulWidget {
   final double? width;
@@ -1075,6 +1076,16 @@ class _TaskManagerScreenState extends State<ToolsPage> {
             _showComingSoonDialog();
           }
         },
+      },
+      {
+        'title': 'POS Tool',
+        'subtitle': 'Business POS & ERP',
+        'icon': Icons.receipt_long_rounded,
+        'color': const Color(0xFFFFB700),
+        'onTap': () => Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => const BusinessPOSPage())),
       },
       {
         'title': 'Test Feature',
