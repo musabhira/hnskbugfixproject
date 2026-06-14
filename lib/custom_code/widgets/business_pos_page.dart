@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '/backend/supabase/supabase.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 
 class BusinessPOSPage extends StatefulWidget {
@@ -302,10 +301,10 @@ class _BusinessPOSPageState extends State<BusinessPOSPage>
         decoration: BoxDecoration(
           color: const Color(0xFF1E1E24),
           borderRadius: BorderRadius.circular(28),
-          border: Border.all(color: const Color(0xFFFFD700).withOpacity(0.3), width: 1.5),
+          border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.3), width: 1.5),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.5),
+              color: Colors.black.withValues(alpha: 0.5),
               blurRadius: 30,
               offset: const Offset(0, 10),
             )
@@ -317,7 +316,7 @@ class _BusinessPOSPageState extends State<BusinessPOSPage>
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.green.withOpacity(0.15),
+                color: Colors.green.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
               child: const Icon(Icons.check_circle_rounded, color: Colors.greenAccent, size: 56),
@@ -340,7 +339,7 @@ class _BusinessPOSPageState extends State<BusinessPOSPage>
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.2),
+                color: Colors.black.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Column(
@@ -466,9 +465,9 @@ class _BusinessPOSPageState extends State<BusinessPOSPage>
   Widget _buildSidebarNav() {
     return Container(
       width: 200,
-      decoration: const BoxDecoration(
-        color: Color(0xFF1E1E24),
-        border: Border(right: BorderSide(color: Colors.white05, width: 1)),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E1E24),
+        border: Border(right: BorderSide(color: Colors.white.withValues(alpha: 0.05), width: 1)),
       ),
       child: Column(
         children: [
@@ -491,7 +490,7 @@ class _BusinessPOSPageState extends State<BusinessPOSPage>
         margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFFFD700).withOpacity(0.1) : Colors.transparent,
+          color: isSelected ? const Color(0xFFFFD700).withValues(alpha: 0.1) : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
@@ -572,9 +571,9 @@ class _BusinessPOSPageState extends State<BusinessPOSPage>
         // Right Column: Checkout cart panel
         Container(
           width: 380,
-          decoration: const BoxDecoration(
-            color: Color(0xFF1A1A20),
-            border: Border(left: BorderSide(color: Colors.white05, width: 1)),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1A1A20),
+            border: Border(left: BorderSide(color: Colors.white.withValues(alpha: 0.05), width: 1)),
           ),
           child: _buildCartPanel(),
         )
@@ -637,7 +636,7 @@ class _BusinessPOSPageState extends State<BusinessPOSPage>
                       color: const Color(0xFF1E1E24),
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: qty > 0 ? const Color(0xFFFFD700) : Colors.white05,
+                        color: qty > 0 ? const Color(0xFFFFD700) : Colors.white.withValues(alpha: 0.05),
                         width: qty > 0 ? 1.5 : 1.0,
                       ),
                     ),
@@ -656,7 +655,7 @@ class _BusinessPOSPageState extends State<BusinessPOSPage>
                                   Container(
                                     padding: const EdgeInsets.all(6),
                                     decoration: BoxDecoration(
-                                      color: isService ? Colors.blue.withOpacity(0.1) : Colors.green.withOpacity(0.1),
+                                      color: isService ? Colors.blue.withValues(alpha: 0.1) : Colors.green.withValues(alpha: 0.1),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Icon(
@@ -780,7 +779,7 @@ class _BusinessPOSPageState extends State<BusinessPOSPage>
               IconButton(icon: const Icon(Icons.delete_sweep, color: Colors.redAccent), onPressed: _clearCart),
             ],
           ),
-          const Divider(color: Colors.white05, height: 16),
+          Divider(color: Colors.white.withValues(alpha: 0.05), height: 16),
           Expanded(
             child: _cart.isEmpty
                 ? Center(
@@ -811,7 +810,7 @@ class _BusinessPOSPageState extends State<BusinessPOSPage>
                               onTap: () => _removeFromCart(entry.key),
                               child: Container(
                                 padding: const EdgeInsets.all(4),
-                                decoration: BoxDecoration(color: Colors.redAccent.withOpacity(0.1), shape: BoxShape.circle),
+                                decoration: BoxDecoration(color: Colors.redAccent.withValues(alpha: 0.1), shape: BoxShape.circle),
                                 child: const Icon(Icons.remove, size: 14, color: Colors.redAccent),
                               ),
                             ),
@@ -821,7 +820,7 @@ class _BusinessPOSPageState extends State<BusinessPOSPage>
                     },
                   ),
           ),
-          const Divider(color: Colors.white05, height: 24),
+          Divider(color: Colors.white.withValues(alpha: 0.05), height: 24),
           
           // Customer Picker
           Row(
@@ -895,7 +894,7 @@ class _BusinessPOSPageState extends State<BusinessPOSPage>
             ],
           ),
           
-          const Divider(color: Colors.white05, height: 24),
+          Divider(color: Colors.white.withValues(alpha: 0.05), height: 24),
           
           // Billing values
           Row(
@@ -977,7 +976,7 @@ class _BusinessPOSPageState extends State<BusinessPOSPage>
               decoration: BoxDecoration(
                 color: const Color(0xFF1E1E24),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Colors.white05),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1084,14 +1083,14 @@ class _BusinessPOSPageState extends State<BusinessPOSPage>
                   decoration: BoxDecoration(
                     color: const Color(0xFF1E1E24),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.white05),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
                   ),
                   child: Row(
                     children: [
                       Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: isService ? Colors.blue.withOpacity(0.1) : Colors.green.withOpacity(0.1),
+                          color: isService ? Colors.blue.withValues(alpha: 0.1) : Colors.green.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Icon(
@@ -1162,7 +1161,7 @@ class _BusinessPOSPageState extends State<BusinessPOSPage>
                         decoration: BoxDecoration(
                           color: const Color(0xFF1E1E24),
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.white05),
+                          border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
                         ),
                         child: ExpansionTile(
                           iconColor: const Color(0xFFFFD700),
@@ -1203,7 +1202,7 @@ class _BusinessPOSPageState extends State<BusinessPOSPage>
                                       ),
                                     );
                                   }),
-                                  const Divider(color: Colors.white05, height: 16),
+                                  Divider(color: Colors.white.withValues(alpha: 0.05), height: 16),
                                   _buildReceiptRow('Subtotal', '₹${tx['subtotal'].toStringAsFixed(2)}'),
                                   if (double.parse(tx['discount'].toString()) > 0)
                                     _buildReceiptRow('Discount', '-₹${tx['discount'].toStringAsFixed(2)}'),
@@ -1283,7 +1282,7 @@ class _BusinessPOSPageState extends State<BusinessPOSPage>
               decoration: BoxDecoration(
                 color: const Color(0xFF1E1E24),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Colors.white05),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1321,13 +1320,13 @@ class _BusinessPOSPageState extends State<BusinessPOSPage>
       decoration: BoxDecoration(
         color: const Color(0xFF1E1E24),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white05),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(color: color.withOpacity(0.1), shape: BoxShape.circle),
+            decoration: BoxDecoration(color: color.withValues(alpha: 0.1), shape: BoxShape.circle),
             child: Icon(icon, color: color, size: 24),
           ),
           const SizedBox(width: 16),
@@ -1384,7 +1383,7 @@ class _BusinessPOSPageState extends State<BusinessPOSPage>
             decoration: BoxDecoration(
               color: const Color(0xFF1E1E24),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.white05),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1463,7 +1462,7 @@ class _BusinessPOSPageState extends State<BusinessPOSPage>
                   decoration: BoxDecoration(
                     color: const Color(0xFF1E1E24),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.white05),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
                   ),
                   child: Row(
                     children: [
