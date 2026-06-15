@@ -41,7 +41,7 @@ final class ProfileRepositoryProvider
   }
 }
 
-String _$profileRepositoryHash() => r'c089755db2ed339376c54c7671c704910139f2bd';
+String _$profileRepositoryHash() => r'db1bc68e098184e550bd6ffa4ee16040b60af4b7';
 
 abstract class _$ProfileRepository extends $Notifier<ProfileRepository> {
   ProfileRepository build();
@@ -134,86 +134,6 @@ final class UserProfileFamily extends $Family
 
   @override
   String toString() => r'userProfileProvider';
-}
-
-@ProviderFor(userServices)
-final userServicesProvider = UserServicesFamily._();
-
-final class UserServicesProvider extends $FunctionalProvider<
-        AsyncValue<List<Map<String, dynamic>>>,
-        List<Map<String, dynamic>>,
-        FutureOr<List<Map<String, dynamic>>>>
-    with
-        $FutureModifier<List<Map<String, dynamic>>>,
-        $FutureProvider<List<Map<String, dynamic>>> {
-  UserServicesProvider._(
-      {required UserServicesFamily super.from, required String super.argument})
-      : super(
-          retry: null,
-          name: r'userServicesProvider',
-          isAutoDispose: true,
-          dependencies: null,
-          $allTransitiveDependencies: null,
-        );
-
-  @override
-  String debugGetCreateSourceHash() => _$userServicesHash();
-
-  @override
-  String toString() {
-    return r'userServicesProvider'
-        ''
-        '($argument)';
-  }
-
-  @$internal
-  @override
-  $FutureProviderElement<List<Map<String, dynamic>>> $createElement(
-          $ProviderPointer pointer) =>
-      $FutureProviderElement(pointer);
-
-  @override
-  FutureOr<List<Map<String, dynamic>>> create(Ref ref) {
-    final argument = this.argument as String;
-    return userServices(
-      ref,
-      argument,
-    );
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return other is UserServicesProvider && other.argument == argument;
-  }
-
-  @override
-  int get hashCode {
-    return argument.hashCode;
-  }
-}
-
-String _$userServicesHash() => r'820f1c0589f618cef998c21cab5da4d67d14fb56';
-
-final class UserServicesFamily extends $Family
-    with
-        $FunctionalFamilyOverride<FutureOr<List<Map<String, dynamic>>>,
-            String> {
-  UserServicesFamily._()
-      : super(
-          retry: null,
-          name: r'userServicesProvider',
-          dependencies: null,
-          $allTransitiveDependencies: null,
-          isAutoDispose: true,
-        );
-
-  UserServicesProvider call(
-    String userId,
-  ) =>
-      UserServicesProvider._(argument: userId, from: this);
-
-  @override
-  String toString() => r'userServicesProvider';
 }
 
 @ProviderFor(userGallery)

@@ -126,8 +126,12 @@ class _PostersTabState extends State<PostersTab> {
     final slug = widget.profileData?['slug'] ?? 'profile';
     final profileImg = widget.profileData?['profile_image_url'] ?? '';
 
-    final gallery = widget.galleryItems;
-    final services = widget.services ?? [];
+    final allGallery = widget.galleryItems;
+    final products = allGallery.where((item) => item['is_service'] != true).toList();
+    final servicesFromGallery = allGallery.where((item) => item['is_service'] == true).toList();
+
+    final gallery = products;
+    final services = servicesFromGallery.isNotEmpty ? servicesFromGallery : (widget.services ?? []);
     final thoughts = widget.thoughts ?? [];
 
     final rawBg = widget.profileData?['bg_color_code'] as String?;
@@ -229,10 +233,10 @@ class _PostersTabState extends State<PostersTab> {
     if (services.isNotEmpty) {
       for (int i = 0; i < services.length; i++) {
         final service = services[i];
-        final title = service['service_title'] ?? service['service_name'] ?? 'Premium Service';
+        final title = service['service_title'] ?? service['title'] ?? service['service_name'] ?? 'Premium Service';
         final desc = service['service_description'] ?? service['description'] ?? 'High quality customized service.';
         final price = (service['service_price'] ?? service['price'] ?? '499').toString();
-        final imgUrl = gallery.isNotEmpty ? gImg(i) : _defaultImages[i % _defaultImages.length];
+        final imgUrl = service['gallery_image_url'] ?? service['image_url'] ?? (gallery.isNotEmpty ? gImg(i) : _defaultImages[i % _defaultImages.length]);
 
         // Split Edge layout for this service
         configs.add(PosterConfig(

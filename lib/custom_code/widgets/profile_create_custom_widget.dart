@@ -467,38 +467,48 @@ class _ProfileCreateCustomWidgetState extends State<ProfileCreateCustomWidget> {
                     children: [
                       ClipRRect(
                         borderRadius: BorderRadius.circular(12.0),
-                        child: _selectedImageBytesBanner != null
-                            ? Image.memory(
-                                _selectedImageBytesBanner!,
-                                width: double.infinity,
-                                height: 160.0,
-                                fit: BoxFit.cover,
-                              )
-                            : CachedNetworkImage(
-                                imageUrl: _imageUrlBanner!,
-                                width: double.infinity,
-                                height: 160.0,
-                                fit: BoxFit.cover,
-                                placeholder: (context, url) => Container(
-                                  color: Colors.grey[800],
-                                  height: 160,
+                        child: AspectRatio(
+                          aspectRatio: 2.0,
+                          child: _selectedImageBytesBanner != null
+                              ? Image.memory(
+                                  _selectedImageBytesBanner!,
                                   width: double.infinity,
-                                  child: const Center(
-                                    child: CircularProgressIndicator(strokeWidth: 2.0),
-                                  ),
-                                ),
-                                errorWidget: (context, url, error) => Container(
-                                  color: Colors.grey[800],
-                                  height: 160,
-                                  width: double.infinity,
-                                  child: const Center(
-                                    child: Icon(
-                                        Icons.image,
-                                        color: Colors.white30,
-                                        size: 40),
-                                  ),
-                                ),
-                              ),
+                                  fit: BoxFit.cover,
+                                )
+                              : (_imageUrlBanner != null && _imageUrlBanner!.isNotEmpty)
+                                  ? CachedNetworkImage(
+                                      imageUrl: _imageUrlBanner!,
+                                      width: double.infinity,
+                                      fit: BoxFit.cover,
+                                      placeholder: (context, url) => Container(
+                                        color: Colors.grey[800],
+                                        width: double.infinity,
+                                        child: const Center(
+                                          child: CircularProgressIndicator(strokeWidth: 2.0),
+                                        ),
+                                      ),
+                                      errorWidget: (context, url, error) => Container(
+                                        color: Colors.grey[800],
+                                        width: double.infinity,
+                                        child: const Center(
+                                          child: Icon(
+                                              Icons.image,
+                                              color: Colors.white30,
+                                              size: 40),
+                                        ),
+                                      ),
+                                    )
+                                  : Container(
+                                      color: Colors.grey[800],
+                                      width: double.infinity,
+                                      child: const Center(
+                                        child: Icon(
+                                            Icons.image,
+                                            color: Colors.white30,
+                                            size: 40),
+                                      ),
+                                    ),
+                        ),
                       ),
                       Positioned(
                         bottom: 10,

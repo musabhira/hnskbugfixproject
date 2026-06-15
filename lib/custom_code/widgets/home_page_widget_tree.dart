@@ -188,24 +188,16 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
           .from('gallery')
           .select('*, profile(name, verified, profile_image_url)')
           .ilike('title', '%$query%')
-          .limit(10);
-
-      final serviceResults = await supabase
-          .from('service')
-          .select('*, profile(name, verified, profile_image_url)')
-          .ilike('title', '%$query%')
-          .limit(10);
+          .limit(20);
 
       safeSetState(() {
         _personSearchResults = List<Map<String, dynamic>>.from(peopleResponse);
 
-        // Merge gallery and services for products
+        // Map gallery results for products (marking services appropriately)
         List<Map<String, dynamic>> products = [];
         for (var item in galleryResults) {
-          products.add({...item, 'type': 'gallery'});
-        }
-        for (var item in serviceResults) {
-          products.add({...item, 'type': 'service'});
+          final isService = item['is_service'] == true;
+          products.add({...item, 'type': isService ? 'service' : 'gallery'});
         }
         _productSearchResults = products;
 
@@ -1667,65 +1659,6 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                           final isAuthenticated =
                               await AuthAlertBox.checkAuthAndShowAlert(
                             context: context,
-                            customMessage: "Please login to add Service",
-                          );
-                          if (isAuthenticated && mounted) {
-                            Navigator.push(
-                                context,
-                                material.MaterialPageRoute(
-                                    builder: (_) => const CreateServiceWidget(
-                                        width: double.infinity,
-                                        height: double.infinity)));
-                          }
-                        },
-                        child: Container(
-                            height: 100,
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  FlutterFlowTheme.of(context)
-                                      .primary
-                                      .withValues(alpha: 0.8),
-                                  FlutterFlowTheme.of(context)
-                                      .secondary
-                                      .withValues(alpha: 0.8),
-                                ],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                              borderRadius: BorderRadius.circular(14.0),
-                            ),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(material.Icons.build_rounded,
-                                    color: Colors.white, size: 30),
-                                const SizedBox(height: 8),
-                                Text('Add\nService',
-                                    textAlign: TextAlign.center,
-                                    style: GoogleFonts.poppins(
-                                        color: Colors.white, fontSize: 12)),
-                              ],
-                            )),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                      child: material.InkWell(
-                        onTap: () async {
-                          Navigator.pop(context);
-                          final isAuthenticated =
-                              await AuthAlertBox.checkAuthAndShowAlert(
-                            context: context,
                             customMessage: "Please login to add Thought",
                           );
                           if (isAuthenticated && mounted) {
@@ -1768,7 +1701,12 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                       ),
                     ),
                   ),
-                  if (_isVerified)
+                ],
+              ),
+              if (_isVerified) ...[
+                const SizedBox(height: 12),
+                Row(
+                  children: [
                     Expanded(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 4.0),
@@ -1818,11 +1756,11 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                               )),
                         ),
                       ),
-                    )
-                  else
+                    ),
                     const Expanded(child: SizedBox.shrink()),
-                ],
-              ),
+                  ],
+                ),
+              ],
               const SizedBox(height: 20),
               material.SizedBox(
                 width: double.infinity,

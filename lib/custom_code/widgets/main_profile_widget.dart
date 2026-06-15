@@ -111,7 +111,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   void initState() {
     super.initState();
     // Initialize controller with correct length if preloaded
-    final initialLength = (widget.preloadedProfile?['verified'] == true) ? 3 : 2;
+    final initialLength = 3;
     _tabController = material.TabController(length: initialLength, vsync: this);
     _tabController.addListener(() { if (mounted) setState(() {}); });
     _loadInitialData(); // Instant load strategy
@@ -170,7 +170,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
     // Sync TabController
     final isVerified = data['verified'] == true;
-    final newLength = isVerified ? 3 : 2;
+    final newLength = 3;
     if (_tabController.length != newLength) {
       final oldIndex = _tabController.index;
       _tabController.dispose();
@@ -602,8 +602,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   tabs: [
                     const material.Tab(text: "Gallery"),
                     const material.Tab(text: "Thoughts"),
-                    if (_profileData?['verified'] == true)
-                      const material.Tab(text: "Posters"),
+                    const material.Tab(text: "Posters"),
                   ],
                 ),
                 bgColor,
@@ -675,13 +674,12 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       btnColor: btnColor,
                       btnTextColor: btnTextColor,
                     ),
-                    if (_profileData?['verified'] == true)
-                      PostersTab(
-                        profileData: _profileData,
-                        galleryItems: _galleryItems,
-                        services: const [],
-                        thoughts: _threadItems,
-                      ),
+                    PostersTab(
+                      profileData: _profileData,
+                      galleryItems: _galleryItems,
+                      services: const [],
+                      thoughts: _threadItems,
+                    ),
                   ],
                 ),
               ),
@@ -834,7 +832,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   ),
                 ),
               ],
-              if (isVerified && slug != null && slug.toString().isNotEmpty) ...[
+              if (slug != null && slug.toString().isNotEmpty) ...[
                 const SizedBox(height: 10),
                 GestureDetector(
                   onTap: () async {

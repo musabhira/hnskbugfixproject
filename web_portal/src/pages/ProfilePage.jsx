@@ -5,12 +5,17 @@ import ProfileDefault from '../templates/ProfileDefault';
 import ProfileNeon from '../templates/ProfileNeon';
 import ProfileElite from '../templates/ProfileElite';
 import ProfileGlass from '../templates/ProfileGlass';
+import ProfileThreeJS from '../templates/ProfileThreeJS';
 
 const TEMPLATES = {
     'default': ProfileDefault,
+    'glass': ProfileGlass,
+    'minimal': ProfileNeon,
     'neon': ProfileNeon,
+    'modern': ProfileElite,
     'elite': ProfileElite,
-    'glass': ProfileGlass
+    'classic': ProfileThreeJS,
+    'threejs': ProfileThreeJS
 };
 
 const ProfilePage = () => {

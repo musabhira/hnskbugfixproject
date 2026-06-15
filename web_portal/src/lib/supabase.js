@@ -17,19 +17,22 @@ export const fetchDataBySlug = async (slug) => {
 
     const userId = profile.user_id;
 
-    // 2. Get gallery, services, threads, banners in parallel
-    const [gallery, services, threads, banners] = await Promise.all([
+    // 2. Get gallery, threads, banners in parallel
+    const [galleryRes, threadsRes, bannersRes] = await Promise.all([
         supabase.from('gallery').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
-        supabase.from('service').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
         supabase.from('threads').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
         supabase.from('premiumbannergallery').select('*').eq('user_id', userId).order('created_at', { ascending: false })
     ]);
 
+    const allGallery = galleryRes.data || [];
+    const galleryItems = allGallery.filter(item => item.is_service !== true);
+    const serviceItems = allGallery.filter(item => item.is_service === true);
+
     return {
         profile,
-        gallery: gallery.data || [],
-        services: services.data || [],
-        threads: threads.data || [],
-        banners: banners.data || []
+        gallery: galleryItems,
+        services: serviceItems,
+        threads: threadsRes.data || [],
+        banners: bannersRes.data || []
     };
 };

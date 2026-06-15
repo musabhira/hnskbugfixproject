@@ -1219,76 +1219,79 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                   ),
                   Stack(
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(20.0),
-                          child: _selectedImageBytesBanner != null
-                              ? Image.memory(
-                                  _selectedImageBytesBanner!,
-                                  width: double.infinity,
-                                  height: 183.0,
-                                  fit: BoxFit.cover,
-                                )
-                              : CachedNetworkImage(
-                                  imageUrl: _imageUrlBanner ??
-                                      'https://picsum.photos/seed/463/600',
-                                  width: double.infinity,
-                                  height: 183.0,
-                                  fit: BoxFit.cover,
-                                  placeholder: (context, url) => Container(
-                                    width: double.infinity,
-                                    height: 183.0,
-                                    color: theme.secondaryBackground,
-                                    child: const Center(
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        valueColor: AlwaysStoppedAnimation<Color>(Colors.yellow),
-                                      ),
-                                    ),
-                                  ),
-                                  errorWidget: (context, url, error) => Image.network(
-                                    'https://picsum.photos/seed/463/600',
-                                    width: double.infinity,
-                                    height: 183.0,
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                        ),
-                      ),
-                      if (_isCompressingBanner)
-                        Positioned.fill(
-                          child: Padding(
+                      Stack(
+                        children: [
+                          Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 20),
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(20.0),
-                              child: Container(
-                                color: Colors.black.withValues(alpha: 0.6),
-                                child: Center(
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      CircularProgressIndicator(
-                                        strokeWidth: 3,
-                                        valueColor: AlwaysStoppedAnimation<Color>(theme.primary),
-                                      ),
-                                      const SizedBox(height: 12),
-                                      const Text(
-                                        'Compressing banner image...',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.bold,
-                                          letterSpacing: 0.5,
+                              child: AspectRatio(
+                                aspectRatio: 2.0,
+                                child: _selectedImageBytesBanner != null
+                                    ? Image.memory(
+                                        _selectedImageBytesBanner!,
+                                        width: double.infinity,
+                                        fit: BoxFit.cover,
+                                      )
+                                    : CachedNetworkImage(
+                                        imageUrl: _imageUrlBanner ??
+                                            'https://picsum.photos/seed/463/600',
+                                        width: double.infinity,
+                                        fit: BoxFit.cover,
+                                        placeholder: (context, url) => Container(
+                                          width: double.infinity,
+                                          color: theme.secondaryBackground,
+                                          child: const Center(
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              valueColor: AlwaysStoppedAnimation<Color>(Colors.yellow),
+                                            ),
+                                          ),
+                                        ),
+                                        errorWidget: (context, url, error) => Image.network(
+                                          'https://picsum.photos/seed/463/600',
+                                          width: double.infinity,
+                                          fit: BoxFit.cover,
                                         ),
                                       ),
-                                    ],
+                              ),
+                            ),
+                          ),
+                          if (_isCompressingBanner)
+                            Positioned.fill(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 20),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(20.0),
+                                  child: Container(
+                                    color: Colors.black.withValues(alpha: 0.6),
+                                    child: Center(
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          CircularProgressIndicator(
+                                            strokeWidth: 3,
+                                            valueColor: AlwaysStoppedAnimation<Color>(theme.primary),
+                                          ),
+                                          const SizedBox(height: 12),
+                                          const Text(
+                                            'Compressing banner image...',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.bold,
+                                              letterSpacing: 0.5,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
-                          ),
-                        ),
+                        ],
+                      ),
                       Column(
                         mainAxisSize: MainAxisSize.max,
                         children: [
@@ -1954,10 +1957,10 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: Row(
                       children: [
-                        _buildTemplateItem('default', 'Glassmorphism', Icons.auto_awesome),
-                        _buildTemplateItem('minimal', 'Minimal Dark', Icons.blur_on),
-                        _buildTemplateItem('modern', 'Modern Grid', Icons.grid_view_rounded),
-                        _buildTemplateItem('classic', 'Artisan Classic', Icons.palette_outlined),
+                        _buildTemplateItem('default', 'React Glassmorphism', Icons.auto_awesome),
+                        _buildTemplateItem('minimal', 'React Cyber Neon', Icons.bolt),
+                        _buildTemplateItem('modern', 'Next.js Portfolio', Icons.web),
+                        _buildTemplateItem('classic', 'Three.js 3D Web', Icons.view_in_ar_rounded),
                       ],
                     ),
                   ),
@@ -2346,47 +2349,311 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
   Widget _buildTemplateItem(String id, String name, IconData icon) {
     final theme = DarkModeTheme();
     final isSelected = _selectedTemplateId == id;
+    
+    // Build the visual preview representing the template layout
+    Widget previewWidget;
+    switch (id) {
+      case 'default':
+        // React Glassmorphism
+        previewWidget = Container(
+          height: 100,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            gradient: const LinearGradient(
+              colors: [Color(0xFF3A1C71), Color(0xFFD76D77), Color(0xFFFFAF7B)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          child: Stack(
+            children: [
+              Center(
+                child: Container(
+                  width: 100,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(width: 16, height: 16, decoration: const BoxDecoration(shape: BoxShape.circle, color: Colors.white70)),
+                      const SizedBox(height: 4),
+                      Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white70, borderRadius: BorderRadius.circular(2))),
+                      const SizedBox(height: 2),
+                      Container(width: 25, height: 4, decoration: BoxDecoration(color: Colors.white54, borderRadius: BorderRadius.circular(2))),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+        break;
+      case 'minimal':
+        // React Cyber Neon
+        previewWidget = Container(
+          height: 100,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            color: const Color(0xFF0D0221),
+          ),
+          child: Stack(
+            children: [
+              // Neon Grid mock
+              Positioned.fill(
+                child: GridView.builder(
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 4,
+                    crossAxisSpacing: 4,
+                    mainAxisSpacing: 4,
+                  ),
+                  itemCount: 16,
+                  itemBuilder: (context, idx) => Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(color: const Color(0x3300FFFF), width: 0.5),
+                    ),
+                  ),
+                ),
+              ),
+              Center(
+                child: Container(
+                  width: 90,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF140152),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: const Color(0xFF00FFFF), width: 1.5),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF00FFFF).withValues(alpha: 0.5),
+                        blurRadius: 6,
+                        spreadRadius: 1,
+                      )
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(width: 14, height: 14, decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0xFFFF007F))),
+                      const SizedBox(height: 4),
+                      Container(width: 50, height: 4, decoration: BoxDecoration(color: const Color(0xFF00FFFF), borderRadius: BorderRadius.circular(2))),
+                      const SizedBox(height: 2),
+                      Container(width: 30, height: 4, decoration: BoxDecoration(color: const Color(0xFF00FFFF).withValues(alpha: 0.7), borderRadius: BorderRadius.circular(2))),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+        break;
+      case 'modern':
+        // Next.js Portfolio
+        previewWidget = Container(
+          height: 100,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            color: const Color(0xFFF1F5F9),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(width: 16, height: 16, decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0xFF0F172A))),
+                    const SizedBox(width: 6),
+                    Container(width: 40, height: 6, decoration: BoxDecoration(color: const Color(0xFF0F172A), borderRadius: BorderRadius.circular(2))),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Expanded(
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: const Color(0xFFCBD5E1)),
+                          ),
+                          child: const Center(child: Icon(Icons.shopping_bag_outlined, size: 16, color: Color(0xFF64748B))),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: const Color(0xFFCBD5E1)),
+                          ),
+                          child: const Center(child: Icon(Icons.settings_outlined, size: 16, color: Color(0xFF64748B))),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+        break;
+      case 'classic':
+      default:
+        // Three.js 3D Web
+        previewWidget = Container(
+          height: 100,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            gradient: const LinearGradient(
+              colors: [Color(0xFF0A0F1D), Color(0xFF070A13)],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+          ),
+          child: Stack(
+            children: [
+              // Floating orbital particles
+              Positioned(
+                left: 15,
+                top: 15,
+                child: Container(
+                  width: 20,
+                  height: 20,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [const Color(0xFF8B5CF6).withValues(alpha: 0.8), const Color(0xFF8B5CF6).withValues(alpha: 0)],
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                right: 20,
+                bottom: 15,
+                child: Container(
+                  width: 30,
+                  height: 30,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [const Color(0xFFEC4899).withValues(alpha: 0.6), const Color(0xFFEC4899).withValues(alpha: 0)],
+                    ),
+                  ),
+                ),
+              ),
+              // Floating 3D card layout in perspective
+              Center(
+                child: Transform(
+                  transform: Matrix4.identity()
+                    ..setEntry(3, 2, 0.003)
+                    ..rotateX(0.2)
+                    ..rotateY(-0.2),
+                  alignment: Alignment.center,
+                  child: Container(
+                    width: 70,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.3),
+                          blurRadius: 6,
+                          offset: const Offset(2, 4),
+                        ),
+                      ],
+                    ),
+                    child: Center(
+                      child: Container(
+                        width: 14,
+                        height: 14,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Color(0xFFEC4899),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+        break;
+    }
+
     return GestureDetector(
       onTap: () => safeSetState(() => _selectedTemplateId = id),
       child: Container(
-        width: 110,
-        margin: const EdgeInsets.only(right: 12),
+        width: 160,
+        margin: const EdgeInsets.only(right: 14, bottom: 8),
         decoration: BoxDecoration(
-          color: isSelected ? theme.primary : theme.secondaryBackground,
-          borderRadius: BorderRadius.circular(16),
+          color: theme.secondaryBackground,
+          borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected ? theme.primary : theme.alternate,
-            width: 2,
+            width: 2.5,
           ),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: theme.primary.withValues(alpha: 0.3),
-                    blurRadius: 10,
-                    spreadRadius: 1,
+                    color: theme.primary.withValues(alpha: 0.4),
+                    blurRadius: 12,
+                    spreadRadius: 2,
                   )
                 ]
-              : null,
+              : [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.1),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  )
+                ],
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              color: isSelected ? Colors.white : Colors.white60,
-              size: 32,
-            ),
-            const SizedBox(height: 12),
-            Text(
-              name,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: isSelected ? Colors.white : theme.primaryText,
-                fontSize: 11,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: previewWidget,
               ),
-            ),
-          ],
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    icon,
+                    size: 14,
+                    color: isSelected ? theme.primary : theme.secondaryText,
+                  ),
+                  const SizedBox(width: 4),
+                  Flexible(
+                    child: Text(
+                      name,
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: isSelected ? theme.primary : theme.primaryText,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

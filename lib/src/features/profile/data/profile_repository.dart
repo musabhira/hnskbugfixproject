@@ -19,11 +19,7 @@ class ProfileRepository extends _$ProfileRepository {
     return response;
   }
 
-  Future<List<Map<String, dynamic>>> fetchUserServices(String userId) async {
-    final response =
-        await _supabase.from('service').select().eq('user_id', userId);
-    return List<Map<String, dynamic>>.from(response);
-  }
+
 
   Future<List<Map<String, dynamic>>> fetchUserGallery(String userId) async {
     final response =
@@ -191,9 +187,7 @@ class ProfileRepository extends _$ProfileRepository {
     await _supabase.from('gallery').delete().match({'id': itemId});
   }
 
-  Future<void> deleteServiceItem(String itemId) async {
-    await _supabase.from('service').delete().match({'id': itemId});
-  }
+
 
   Future<void> deleteThread(String threadId) async {
     await _supabase.from('threads').delete().eq('id', threadId);
@@ -217,11 +211,7 @@ FutureOr<Map<String, dynamic>?> userProfile(Ref ref, String userId) {
   return repository.fetchUserProfile(userId);
 }
 
-@riverpod
-FutureOr<List<Map<String, dynamic>>> userServices(Ref ref, String userId) {
-  final repository = ref.watch(profileRepositoryProvider);
-  return repository.fetchUserServices(userId);
-}
+
 
 @riverpod
 FutureOr<List<Map<String, dynamic>>> userGallery(Ref ref, String userId) {

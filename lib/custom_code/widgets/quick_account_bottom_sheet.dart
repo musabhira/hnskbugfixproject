@@ -109,8 +109,8 @@ class _AutoLoginBottomSheetState extends State<AutoLoginBottomSheet> {
       if (!mounted) return;
       Navigator.of(context).pop(); // Close bottom sheet
       
-      // Navigate to Home Page directly
-      context.goNamed(HomePageWidget.routeName);
+      GoRouter.of(context).clearRedirectLocation();
+      context.goNamedAuth(HomePageWidget.routeName, context.mounted);
       
       // Navigate and restart the app cleanly
       try {
@@ -183,8 +183,8 @@ class _AutoLoginBottomSheetState extends State<AutoLoginBottomSheet> {
         passwordController.clear();
         Navigator.of(context).pop(); // Close bottom sheet
         
-        // Navigate to Home Page directly
-        context.goNamed(HomePageWidget.routeName);
+        GoRouter.of(context).clearRedirectLocation();
+        context.goNamedAuth(HomePageWidget.routeName, context.mounted);
         
         // Navigate and restart app cleanly
         try {
@@ -269,8 +269,8 @@ class _AutoLoginBottomSheetState extends State<AutoLoginBottomSheet> {
         if (!mounted) return;
         Navigator.of(context).pop(); // Close bottom sheet
         
-        // Navigate to Home Page directly
-        context.goNamed(HomePageWidget.routeName);
+        GoRouter.of(context).clearRedirectLocation();
+        context.goNamedAuth(HomePageWidget.routeName, context.mounted);
         
         // Navigate and restart app cleanly
         try {
