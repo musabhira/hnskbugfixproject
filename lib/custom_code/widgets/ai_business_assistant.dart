@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:pocket_mates_app/custom_code/widgets/subscription_page.dart';
 
 class AIBusinessAssistant extends StatefulWidget {
   final double? width;
@@ -19,11 +21,11 @@ class _AIBusinessAssistantState extends State<AIBusinessAssistant>
   final _messageController = TextEditingController();
   final _scrollController = ScrollController();
   late AnimationController _shimmerController;
+  String _currentPlan = 'free';
   bool _isTyping = false;
 
   List<Map<String, String>> _messages = [];
 
-  // Quick prompt suggestions
   final List<Map<String, String>> _quickPrompts = [
     {
       'emoji': '💰',
@@ -70,11 +72,21 @@ class _AIBusinessAssistantState extends State<AIBusinessAssistant>
   @override
   void initState() {
     super.initState();
+    _loadCurrentPlan();
     _shimmerController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1500),
     )..repeat();
     _loadHistory();
+  }
+
+  Future<void> _loadCurrentPlan() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (mounted) {
+      setState(() {
+        _currentPlan = prefs.getString('handskill_plan') ?? 'free';
+      });
+    }
   }
 
   @override
@@ -95,7 +107,6 @@ class _AIBusinessAssistantState extends State<AIBusinessAssistant>
       });
       _scrollToBottom();
     } else {
-      // Welcome message
       setState(() {
         _messages = [
           {
@@ -136,7 +147,6 @@ class _AIBusinessAssistantState extends State<AIBusinessAssistant>
     _scrollToBottom();
 
     try {
-      // Build conversation context
       final contents = _messages
           .where((m) => m['role'] != null && m['content'] != null)
           .map((m) => {
@@ -147,7 +157,6 @@ class _AIBusinessAssistantState extends State<AIBusinessAssistant>
               })
           .toList();
 
-      // System instruction prepended
       final systemInstruction = '''You are an expert AI Business Consultant for small businesses, startups, and entrepreneurs in India. 
       You specialize in: POS systems, inventory management, pricing strategy, GST & tax basics, marketing for small businesses, 
       CRM and customer loyalty, business analytics, and growth strategies. 
@@ -167,12 +176,10 @@ class _AIBusinessAssistantState extends State<AIBusinessAssistant>
         },
       };
 
-      // Using Gemini API - user can set their own key
       final prefs = await SharedPreferences.getInstance();
       final apiKey = prefs.getString('gemini_api_key') ?? '';
 
       if (apiKey.isEmpty) {
-        // Fallback: smart local responses
         await Future.delayed(const Duration(seconds: 1));
         final response = _getLocalResponse(text);
         setState(() {
@@ -362,106 +369,157 @@ class _AIBusinessAssistantState extends State<AIBusinessAssistant>
           ),
         ],
       ),
-      body: Column(
+      body: Stack(
         children: [
-          // Quick Prompts
-          if (_messages.length <= 1)
-            SizedBox(
-              height: 90,
-              child: ListView.builder(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-                scrollDirection: Axis.horizontal,
-                itemCount: _quickPrompts.length,
-                itemBuilder: (context, index) {
-                  final prompt = _quickPrompts[index];
-                  return GestureDetector(
-                    onTap: () => _sendMessage(prompt['prompt']!),
-                    child: Container(
-                      margin: const EdgeInsets.only(right: 10),
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF1E1E24),
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(prompt['emoji']!, style: const TextStyle(fontSize: 20)),
-                          const SizedBox(height: 4),
-                          Text(
-                            prompt['label']!,
-                            style: GoogleFonts.outfit(color: Colors.white70, fontSize: 11),
+          Column(
+            children: [
+              if (_messages.length <= 1)
+                SizedBox(
+                  height: 90,
+                  child: ListView.builder(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                    scrollDirection: Axis.horizontal,
+                    itemCount: _quickPrompts.length,
+                    itemBuilder: (context, index) {
+                      final prompt = _quickPrompts[index];
+                      return GestureDetector(
+                        onTap: () => _sendMessage(prompt['prompt']!),
+                        child: Container(
+                          margin: const EdgeInsets.only(right: 10),
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF1E1E24),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
                           ),
-                        ],
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(prompt['emoji']!, style: const TextStyle(fontSize: 20)),
+                              const SizedBox(height: 4),
+                              Text(
+                                prompt['label']!,
+                                style: GoogleFonts.outfit(color: Colors.white70, fontSize: 11),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              Expanded(
+                child: ListView.builder(
+                  controller: _scrollController,
+                  padding: const EdgeInsets.all(16),
+                  itemCount: _messages.length + (_isTyping ? 1 : 0),
+                  itemBuilder: (context, index) {
+                    if (index == _messages.length) {
+                      return _buildTypingIndicator();
+                    }
+                    final msg = _messages[index];
+                    final isUser = msg['role'] == 'user';
+                    return _buildMessageBubble(msg['content']!, isUser);
+                  },
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                color: const Color(0xFF1A1A22),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF2A2A32),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: TextField(
+                          controller: _messageController,
+                          style: GoogleFonts.outfit(color: Colors.white, fontSize: 14),
+                          maxLines: 3,
+                          minLines: 1,
+                          decoration: InputDecoration(
+                            hintText: 'Ask about pricing, marketing, GST...',
+                            hintStyle: GoogleFonts.outfit(color: Colors.white24, fontSize: 14),
+                            border: InputBorder.none,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          ),
+                          onSubmitted: _sendMessage,
+                        ),
                       ),
                     ),
-                  );
-                },
+                    const SizedBox(width: 10),
+                    GestureDetector(
+                      onTap: () => _sendMessage(_messageController.text),
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFFFFD700), Color(0xFFF59E0B)],
+                          ),
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFFFD700).withValues(alpha: 0.3),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: const Icon(Icons.send_rounded, color: Colors.black, size: 20),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          if (_currentPlan == 'free')
+            Positioned.fill(
+              child: Container(
+                color: Colors.black.withValues(alpha: 0.9),
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.lock_rounded, color: Color(0xFFFFD700), size: 64),
+                      const SizedBox(height: 24),
+                      Text(
+                        'Premium AI Assistant',
+                        style: GoogleFonts.outfit(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Upgrade to unlock the AI Business Assistant\nand get expert startup advice.',
+                        style: GoogleFonts.outfit(color: Colors.white70, fontSize: 16),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 32),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => const SubscriptionPage())).then((_) {
+                            _loadCurrentPlan();
+                          });
+                        },
+                        icon: const Icon(Icons.workspace_premium),
+                        label: Text('Upgrade Plan', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFFFD700),
+                          foregroundColor: Colors.black,
+                          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
-
-          // Messages
-          Expanded(
-            child: ListView.builder(
-              controller: _scrollController,
-              padding: const EdgeInsets.all(16),
-              itemCount: _messages.length + (_isTyping ? 1 : 0),
-              itemBuilder: (context, index) {
-                if (index == _messages.length) {
-                  return _buildTypingIndicator();
-                }
-                final msg = _messages[index];
-                final isUser = msg['role'] == 'user';
-                return _buildMessageBubble(msg['content']!, isUser);
-              },
-            ),
-          ),
-
-          // Input bar
-          Container(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-            color: const Color(0xFF1A1A22),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF2A2A32),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: TextField(
-                      controller: _messageController,
-                      style: GoogleFonts.outfit(color: Colors.white, fontSize: 14),
-                      maxLines: 3,
-                      minLines: 1,
-                      decoration: InputDecoration(
-                        hintText: 'Ask about pricing, marketing, GST...',
-                        hintStyle: GoogleFonts.outfit(color: Colors.white24, fontSize: 14),
-                        border: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      ),
-                      onSubmitted: _sendMessage,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                GestureDetector(
-                  onTap: () => _sendMessage(_messageController.text),
-                  child: Container(
-                    padding: const EdgeInsets.all(14),
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [Color(0xFFFFD700), Color(0xFFF59E0B)],
-                      ),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.send_rounded, color: Colors.black, size: 20),
-                  ),
-                ),
-              ],
-            ),
-          ),
         ],
       ),
     );

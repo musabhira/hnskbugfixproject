@@ -24,6 +24,7 @@ import '/custom_code/widgets/ai_prompt_service.dart';
 import '/custom_code/widgets/dual_video_recorder.dart';
 import '/custom_code/widgets/courses_widget.dart';
 import '/custom_code/widgets/business_pos_page.dart';
+import '/custom_code/widgets/subscription_page.dart';
 
 class ToolsPage extends StatefulWidget {
   final double? width;
@@ -89,10 +90,12 @@ class _TaskManagerScreenState extends State<ToolsPage> {
   List<String> _allowedPrivateTools = [];
   Map<String, Map<String, dynamic>> _globalToolConfigs = {};
   bool _isLoadingTools = false;
+  String _currentPlan = 'free';
 
   @override
   void initState() {
     super.initState();
+    _loadPlan();
     if (widget.initialTab != null) {
       _selectedTab = widget.initialTab!;
       _showToolsList = false;
@@ -100,6 +103,13 @@ class _TaskManagerScreenState extends State<ToolsPage> {
     _loadData();
     _loadFavoritedTools();
     _loadToolPermissions();
+  }
+
+  Future<void> _loadPlan() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (mounted) {
+      setState(() => _currentPlan = prefs.getString('handskill_plan') ?? 'free');
+    }
   }
 
   Future<void> _loadToolPermissions() async {
@@ -184,29 +194,63 @@ class _TaskManagerScreenState extends State<ToolsPage> {
 
   Future<void> _loadData() async {
     final prefs = await SharedPreferences.getInstance();
-    final userId = SupaFlow.client.auth.currentUser?.id ?? 'guest';
+    final userId = SupaFlow.client.auth.currentUser?.id;
+    if (userId == null) return;
 
-    final tasksJson = prefs.getString('tasks_$userId') ?? '[]';
-    final tasksList = jsonDecode(tasksJson) as List;
-    tasks = tasksList.map((task) => Task.fromJson(task)).toList();
+    try {
+      final tasksRes = await SupaFlow.client.from('user_tasks').select().eq('user_id', userId);
+      tasks = (tasksRes as List).map((row) => Task(
+        id: row['id'] ?? UniqueKey().toString(),
+        title: row['title'] ?? '',
+        notes: row['notes'],
+        priority: TaskPriority.values[row['priority'] ?? 1],
+        isCompleted: row['is_completed'] ?? false,
+        createdDate: row['created_date'] != null ? DateTime.parse(row['created_date']) : DateTime.now(),
+        completedDate: row['completed_date'] != null ? DateTime.parse(row['completed_date']) : null,
+      )).toList();
 
-    final challengesJson = prefs.getString('challenges_$userId') ?? '[]';
-    final challengesList = jsonDecode(challengesJson) as List;
-    challenges = challengesList
-        .map((challenge) => Challenge.fromJson(challenge))
-        .toList();
+      final challengesRes = await SupaFlow.client.from('user_challenges').select().eq('user_id', userId);
+      challenges = (challengesRes as List).map((row) => Challenge(
+        id: row['id'] ?? UniqueKey().toString(),
+        title: row['title'] ?? '',
+        totalDays: row['total_days'] ?? 21,
+        startDate: row['start_date'] != null ? DateTime.parse(row['start_date']) : DateTime.now(),
+        completedDate: row['completed_date'] != null ? DateTime.parse(row['completed_date']) : null,
+        isCompleted: row['is_completed'] ?? false,
+        dailyTicks: Map<String, bool>.from(row['daily_ticks'] ?? {}),
+      )).toList();
 
-    final scheduleJson = prefs.getString('schedule_$userId') ?? '[]';
-    final scheduleList = jsonDecode(scheduleJson) as List;
-    final todaySchedule = scheduleList
-        .map((item) => ScheduleItem.fromJson(item))
-        .where((item) =>
-            item.startTime.year == DateTime.now().year &&
-            item.startTime.month == DateTime.now().month &&
-            item.startTime.day == DateTime.now().day)
-        .toList();
+      final schedulesRes = await SupaFlow.client.from('user_schedules').select().eq('user_id', userId);
+      final allSchedules = (schedulesRes as List).map((row) => ScheduleItem(
+        id: row['id'] ?? UniqueKey().toString(),
+        title: row['title'] ?? '',
+        startTime: row['start_time'] != null ? DateTime.parse(row['start_time']) : DateTime.now(),
+        endTime: row['end_time'] != null ? DateTime.parse(row['end_time']) : DateTime.now().add(const Duration(hours: 1)),
+        color: Color(int.tryParse((row['color'] ?? '0xFF424242').toString().replaceAll('#', '0x')) ?? 0xFF424242),
+        isCompleted: row['is_completed'] ?? false,
+        source: ScheduleSource.values[row['source'] ?? 0],
+      )).toList();
 
-    dailySchedule = todaySchedule;
+      dailySchedule = allSchedules.where((item) =>
+          item.startTime.year == DateTime.now().year &&
+          item.startTime.month == DateTime.now().month &&
+          item.startTime.day == DateTime.now().day).toList();
+    } catch (e) {
+      debugPrint('Error loading from Supabase, falling back to local: $e');
+      // Fallback
+      final tasksJson = prefs.getString('tasks_$userId') ?? '[]';
+      tasks = (jsonDecode(tasksJson) as List).map((task) => Task.fromJson(task)).toList();
+      
+      final challengesJson = prefs.getString('challenges_$userId') ?? '[]';
+      challenges = (jsonDecode(challengesJson) as List).map((challenge) => Challenge.fromJson(challenge)).toList();
+      
+      final scheduleJson = prefs.getString('schedule_$userId') ?? '[]';
+      final todaySchedule = (jsonDecode(scheduleJson) as List)
+          .map((item) => ScheduleItem.fromJson(item))
+          .where((item) => item.startTime.year == DateTime.now().year && item.startTime.month == DateTime.now().month && item.startTime.day == DateTime.now().day)
+          .toList();
+      dailySchedule = todaySchedule;
+    }
 
     _calculateStats();
     _updateChallengeStatus();
@@ -215,16 +259,67 @@ class _TaskManagerScreenState extends State<ToolsPage> {
 
   Future<void> _saveData() async {
     final prefs = await SharedPreferences.getInstance();
-    final userId = SupaFlow.client.auth.currentUser?.id ?? 'guest';
+    final userId = SupaFlow.client.auth.currentUser?.id;
+    if (userId == null) return;
+    
+    // Save locally for quick cache
     final tasksJson = jsonEncode(tasks.map((task) => task.toJson()).toList());
-    final challengesJson =
-        jsonEncode(challenges.map((challenge) => challenge.toJson()).toList());
-    final scheduleJson =
-        jsonEncode(dailySchedule.map((item) => item.toJson()).toList());
+    final challengesJson = jsonEncode(challenges.map((challenge) => challenge.toJson()).toList());
+    final scheduleJson = jsonEncode(dailySchedule.map((item) => item.toJson()).toList());
 
     await prefs.setString('tasks_$userId', tasksJson);
     await prefs.setString('challenges_$userId', challengesJson);
     await prefs.setString('schedule_$userId', scheduleJson);
+
+    // Sync to Supabase
+    try {
+      if (tasks.isNotEmpty) {
+        await SupaFlow.client.from('user_tasks').upsert(
+          tasks.map((t) => {
+            'id': t.id,
+            'user_id': userId,
+            'title': t.title,
+            'notes': t.notes,
+            'priority': t.priority.index,
+            'is_completed': t.isCompleted,
+            'created_date': t.createdDate.toIso8601String(),
+            'completed_date': t.completedDate?.toIso8601String()
+          }).toList(),
+        );
+      }
+      
+      if (challenges.isNotEmpty) {
+        await SupaFlow.client.from('user_challenges').upsert(
+          challenges.map((c) => {
+            'id': c.id,
+            'user_id': userId,
+            'title': c.title,
+            'total_days': c.totalDays,
+            'start_date': c.startDate.toIso8601String(),
+            'completed_date': c.completedDate?.toIso8601String(),
+            'is_completed': c.isCompleted,
+            'daily_ticks': c.dailyTicks
+          }).toList(),
+        );
+      }
+
+      if (dailySchedule.isNotEmpty) {
+        await SupaFlow.client.from('user_schedules').upsert(
+          dailySchedule.map((s) => {
+            'id': s.id,
+            'user_id': userId,
+            'title': s.title,
+            'start_time': s.startTime.toIso8601String(),
+            'end_time': s.endTime.toIso8601String(),
+            'color': '0x${s.color.value.toRadixString(16).padLeft(8, '0')}',
+            'is_completed': s.isCompleted,
+            'source': s.source.index
+          }).toList(),
+        );
+      }
+    } catch (e) {
+      debugPrint('Error syncing to Supabase: $e');
+    }
   }
 
   void _updateChallengeStatus() {
@@ -1380,6 +1475,10 @@ class _TaskManagerScreenState extends State<ToolsPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (_currentPlan == 'free') {
+      return _buildPremiumSuiteLock();
+    }
+
     return PopScope(
       canPop: widget.initialTab != null ? true : _showToolsList,
       onPopInvokedWithResult: (didPop, result) {
@@ -1389,6 +1488,66 @@ class _TaskManagerScreenState extends State<ToolsPage> {
         }
       },
       child: _showToolsList ? _buildToolsList() : _buildToolDetailView(),
+    );
+  }
+
+  Widget _buildPremiumSuiteLock() {
+    return Scaffold(
+      backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        iconTheme: IconThemeData(color: FlutterFlowTheme.of(context).primaryText),
+      ),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.business_center_rounded, size: 80, color: Color(0xFFFFFC00)),
+              const SizedBox(height: 24),
+              Text(
+                'Premium Entrepreneur Suite',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                  color: FlutterFlowTheme.of(context).primaryText,
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Unlock powerful tools to manage and grow your business. Includes Tasks, Schedules, Teams, Diagrams, and AI Business Assistants.',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                  color: FlutterFlowTheme.of(context).secondaryText,
+                  fontSize: 16,
+                  height: 1.5,
+                ),
+              ),
+              const SizedBox(height: 32),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const SubscriptionPage())).then((_) {
+                    _loadPlan();
+                  });
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Color(0xFFFFFC00),
+                  foregroundColor: Colors.black,
+                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: const Text(
+                  'Upgrade to Premium',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 

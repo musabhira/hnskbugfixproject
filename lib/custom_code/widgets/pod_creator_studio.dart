@@ -5,6 +5,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'dart:io';
 import 'pod_2d_preview_widget.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '/custom_code/widgets/subscription_page.dart';
 
 // ─── State ────────────────────────────────────────────────────────────────────
 
@@ -204,7 +206,7 @@ class _PodCreatorStudioState extends ConsumerState<PodCreatorStudio> {
 
   /// 0 = pick product, 1 = design canvas, 2 = details & pricing, 3 = success
   int _step = 0;
-
+  String _currentPlan = 'free';
 
   static const _amber = Color(0xFFFFFC00);
   static const _bg = Color(0xFF0A0A0A);
@@ -214,6 +216,14 @@ class _PodCreatorStudioState extends ConsumerState<PodCreatorStudio> {
   @override
   void initState() {
     super.initState();
+    _loadPlan();
+  }
+
+  Future<void> _loadPlan() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (mounted) {
+      setState(() => _currentPlan = prefs.getString('handskill_plan') ?? 'free');
+    }
   }
 
   @override
@@ -808,6 +818,76 @@ class _PodCreatorStudioState extends ConsumerState<PodCreatorStudio> {
 
   @override
   Widget build(BuildContext context) {
+    if (_currentPlan == 'free') {
+      return Scaffold(
+        backgroundColor: _bg,
+        appBar: AppBar(
+          backgroundColor: _bg,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.close, color: Colors.white, size: 20),
+            onPressed: () => Navigator.pop(context)
+          ),
+        ),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: _amber.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.storefront_rounded, size: 80, color: _amber),
+                ),
+                const SizedBox(height: 32),
+                Text(
+                  'Premium Print Shop Creator',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 26,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Start your own merchandise brand. Design custom products and sell them directly on the marketplace. Exclusive to Premium Entrepreneurs.',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(
+                    color: Colors.white60,
+                    fontSize: 15,
+                    height: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 40),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => const SubscriptionPage())).then((_) {
+                      _loadPlan();
+                    });
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _amber,
+                    foregroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: Text(
+                    'Upgrade to Premium',
+                    style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     final s = ref.watch(podCreatorProvider);
     final titles = [
       'Choose Product',

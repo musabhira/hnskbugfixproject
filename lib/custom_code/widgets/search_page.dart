@@ -12,6 +12,8 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import 'dart:async';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:math' as math;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:pocket_mates_app/custom_code/widgets/subscription_page.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({
@@ -402,12 +404,23 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
   int _currentPage = 0;
   String _currentQuery = '';
   final int _pageSize = 10;
+  String _currentPlan = 'free';
 
   @override
   void initState() {
     super.initState();
+    _loadCurrentPlan();
     _scrollController.addListener(_onScroll);
     _fetchInitialProfiles();
+  }
+
+  Future<void> _loadCurrentPlan() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (mounted) {
+      safeSetState(() {
+        _currentPlan = prefs.getString('handskill_plan') ?? 'free';
+      });
+    }
   }
 
   @override
@@ -444,9 +457,15 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
           .range(_currentPage * _pageSize, (_currentPage + 1) * _pageSize - 1);
 
       safeSetState(() {
-        _searchResults = List<Map<String, dynamic>>.from(response);
+        var resultsToDisplay = List<Map<String, dynamic>>.from(response);
+        if (_currentPlan == 'free' && resultsToDisplay.length > 5) {
+          resultsToDisplay = resultsToDisplay.sublist(0, 5);
+          _hasMoreData = false;
+        } else {
+          _hasMoreData = response.length == _pageSize;
+        }
+        _searchResults = resultsToDisplay;
         _isLoading = false;
-        _hasMoreData = response.length == _pageSize;
         _currentPage++;
       });
 
@@ -490,9 +509,15 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
           .range(_currentPage * _pageSize, (_currentPage + 1) * _pageSize - 1);
 
       safeSetState(() {
-        _searchResults = List<Map<String, dynamic>>.from(response);
+        var resultsToDisplay = List<Map<String, dynamic>>.from(response);
+        if (_currentPlan == 'free' && resultsToDisplay.length > 5) {
+          resultsToDisplay = resultsToDisplay.sublist(0, 5);
+          _hasMoreData = false;
+        } else {
+          _hasMoreData = response.length == _pageSize;
+        }
+        _searchResults = resultsToDisplay;
         _isLoading = false;
-        _hasMoreData = response.length == _pageSize;
         _currentPage++;
       });
 
@@ -577,6 +602,40 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
       separatorBuilder: (context, index) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
         if (index == _searchResults.length) {
+          if (_currentPlan == 'free') {
+            return GestureDetector(
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => const SubscriptionPage())).then((_) {
+                  _loadCurrentPlan();
+                  _performSearch(_currentQuery);
+                });
+              },
+              child: Container(
+                margin: const EdgeInsets.only(top: 12),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(colors: [Color(0xFF3B82F6), Color(0xFF1D4ED8)]),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.workspace_premium, color: Colors.white, size: 28),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: const [
+                          Text('Unlock Unlimited Discover', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+                          Text('Upgrade to Premium to view more entrepreneurs.', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                        ],
+                      ),
+                    ),
+                    const Icon(Icons.arrow_forward_ios, color: Colors.white54, size: 16),
+                  ],
+                ),
+              ),
+            );
+          }
           return _isLoadingMore
               ? const Center(
                   child: Padding(

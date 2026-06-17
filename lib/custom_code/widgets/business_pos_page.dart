@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_util.dart';
+import 'package:pocket_mates_app/custom_code/widgets/subscription_page.dart';
 
 class BusinessPOSPage extends StatefulWidget {
   final double? width;
@@ -22,6 +23,7 @@ class BusinessPOSPage extends StatefulWidget {
 class _BusinessPOSPageState extends State<BusinessPOSPage>
     with SingleTickerProviderStateMixin {
   final _supabase = SupaFlow.client;
+  String _currentPlan = 'free';
   
   // Navigation Tabs: 0: Terminal, 1: Catalog, 2: History, 3: Analytics, 4: CRM
   int _selectedTab = 0;
@@ -64,7 +66,17 @@ class _BusinessPOSPageState extends State<BusinessPOSPage>
   @override
   void initState() {
     super.initState();
+    _loadCurrentPlan();
     _loadCatalogAndHistory();
+  }
+
+  Future<void> _loadCurrentPlan() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (mounted) {
+      setState(() {
+        _currentPlan = prefs.getString('handskill_plan') ?? 'free';
+      });
+    }
   }
 
   @override
@@ -105,19 +117,29 @@ class _BusinessPOSPageState extends State<BusinessPOSPage>
         });
       }
 
-      // 2. Load locally created temporary items from SharedPreferences
-      final prefs = await SharedPreferences.getInstance();
-      final localJson = prefs.getString('pos_local_items_$myId') ?? '[]';
-      _localItems = List<Map<String, dynamic>>.from(jsonDecode(localJson));
+      // 2. Fetch locally created temporary items from Supabase pos_items
+      final posItemsRes = await _supabase
+          .from('pos_items')
+          .select()
+          .eq('user_id', myId);
+      _localItems = List<Map<String, dynamic>>.from(posItemsRes);
 
-      // 3. Load POS transaction history
-      final transJson = prefs.getString('pos_transactions_$myId') ?? '[]';
-      _transactions = List<Map<String, dynamic>>.from(jsonDecode(transJson));
+      // 3. Fetch POS transaction history from Supabase
+      final transRes = await _supabase
+          .from('pos_transactions')
+          .select()
+          .eq('user_id', myId)
+          .order('created_at', ascending: false);
+      _transactions = List<Map<String, dynamic>>.from(transRes);
 
-      // 4. Load Custom Customers
-      final custJson = prefs.getString('pos_customers_$myId');
-      if (custJson != null) {
-        _customers = List<Map<String, dynamic>>.from(jsonDecode(custJson));
+      // 4. Fetch Custom Customers from Supabase
+      final custRes = await _supabase
+          .from('pos_customers')
+          .select()
+          .eq('user_id', myId);
+      
+      if ((custRes as List).isNotEmpty) {
+        _customers = List<Map<String, dynamic>>.from(custRes);
       }
 
       setState(() {
@@ -131,13 +153,7 @@ class _BusinessPOSPageState extends State<BusinessPOSPage>
   }
 
   Future<void> _saveLocalPOSData() async {
-    final myId = _supabase.auth.currentUser?.id;
-    if (myId == null) return;
-    
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('pos_local_items_$myId', jsonEncode(_localItems));
-    await prefs.setString('pos_transactions_$myId', jsonEncode(_transactions));
-    await prefs.setString('pos_customers_$myId', jsonEncode(_customers));
+    // Legacy method for shared prefs. We are now using real-time inserts below.
   }
 
   void _addLocalItem() {
@@ -152,8 +168,9 @@ class _BusinessPOSPageState extends State<BusinessPOSPage>
       return;
     }
 
+    final newId = 'local_${DateTime.now().millisecondsSinceEpoch}';
     final newItem = {
-      'id': 'local_${DateTime.now().millisecondsSinceEpoch}',
+      'id': newId,
       'title': title,
       'price': price,
       'category': cat,
@@ -169,7 +186,22 @@ class _BusinessPOSPageState extends State<BusinessPOSPage>
       _itemCategoryController.clear();
     });
 
-    _saveLocalPOSData();
+    final myId = _supabase.auth.currentUser?.id;
+    if (myId != null) {
+      _supabase.from('pos_items').insert({
+        'user_id': myId,
+        'title': title,
+        'price': price,
+        'category': cat,
+        'is_service': _itemType == 'service',
+        'image_url': '',
+      }).then((_) {
+        debugPrint('Item added to Supabase');
+      }).catchError((e) {
+        debugPrint('Error saving pos_item: $e');
+      });
+    }
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('"$title" added to POS catalog!')),
     );
@@ -182,8 +214,9 @@ class _BusinessPOSPageState extends State<BusinessPOSPage>
 
     if (name.isEmpty) return;
 
+    final newCustId = 'cust_${DateTime.now().millisecondsSinceEpoch}';
     final newCust = {
-      'id': 'cust_${DateTime.now().millisecondsSinceEpoch}',
+      'id': newCustId,
       'name': name,
       'phone': phone.isEmpty ? 'N/A' : phone,
       'email': email.isEmpty ? 'N/A' : email,
@@ -197,7 +230,20 @@ class _BusinessPOSPageState extends State<BusinessPOSPage>
       _custPhoneController.clear();
       _custEmailController.clear();
     });
-    _saveLocalPOSData();
+    
+    final myId = _supabase.auth.currentUser?.id;
+    if (myId != null) {
+      _supabase.from('pos_customers').insert({
+        'user_id': myId,
+        'name': name,
+        'phone': phone.isEmpty ? 'N/A' : phone,
+        'email': email.isEmpty ? 'N/A' : email,
+      }).then((_) {
+        debugPrint('Customer added to Supabase');
+      }).catchError((e) {
+        debugPrint('Error saving pos_customer: $e');
+      });
+    }
   }
 
   void _addToCart(String itemId) {
@@ -284,7 +330,24 @@ class _BusinessPOSPageState extends State<BusinessPOSPage>
       _clearCart();
     });
 
-    _saveLocalPOSData();
+    final myId = _supabase.auth.currentUser?.id;
+    if (myId != null) {
+      _supabase.from('pos_transactions').insert({
+        'user_id': myId,
+        'invoice_id': newTx['invoice_id'],
+        'customer_name': newTx['customer_name'],
+        'items': newTx['items'],
+        'subtotal': newTx['subtotal'],
+        'tax': newTx['tax'],
+        'discount': newTx['discount'],
+        'total': newTx['total'],
+        'payment_method': newTx['payment_method'],
+      }).catchError((e) => debugPrint('Error saving transaction: $e'));
+
+      // In real scenario we'd query and update specific customer row, 
+      // but for now since ID is local, we just rely on customer name match or skip update 
+      // if it's the "Walk-in" placeholder.
+    }
 
     // Show Beautiful Checkout Success Overlay
     showDialog(
@@ -444,18 +507,67 @@ class _BusinessPOSPageState extends State<BusinessPOSPage>
                 valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFFD700)),
               ),
             )
-          : Row(
+          : Stack(
               children: [
-                // Navigation Sidebar (only on desktop/tablet)
-                if (!isMobile) _buildSidebarNav(),
-                
-                // Main Workspace
-                Expanded(
-                  child: Container(
-                    color: const Color(0xFF131316),
-                    child: _buildWorkspace(isMobile),
-                  ),
+                Row(
+                  children: [
+                    // Navigation Sidebar (only on desktop/tablet)
+                    if (!isMobile) _buildSidebarNav(),
+                    
+                    // Main Workspace
+                    Expanded(
+                      child: Container(
+                        color: const Color(0xFF131316),
+                        child: _buildWorkspace(isMobile),
+                      ),
+                    ),
+                  ],
                 ),
+                if (_currentPlan == 'free')
+                  Positioned.fill(
+                    child: Container(
+                      color: Colors.black.withValues(alpha: 0.9),
+                      child: Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.lock_rounded, color: Color(0xFFFFD700), size: 64),
+                            const SizedBox(height: 24),
+                            Text(
+                              'Premium Tools',
+                              style: GoogleFonts.outfit(
+                                fontSize: 28,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              'Upgrade to unlock the Advanced POS, Inventory,\nAnalytics, CRM, and PDF Invoicing.',
+                              style: GoogleFonts.outfit(color: Colors.white70, fontSize: 16),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 32),
+                            ElevatedButton.icon(
+                              onPressed: () {
+                                Navigator.push(context, MaterialPageRoute(builder: (context) => const SubscriptionPage())).then((_) {
+                                  _loadCurrentPlan();
+                                });
+                              },
+                              icon: const Icon(Icons.workspace_premium),
+                              label: Text('Upgrade Plan', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16)),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFFFD700),
+                                foregroundColor: Colors.black,
+                                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
               ],
             ),
       bottomNavigationBar: isMobile ? _buildBottomNav() : null,

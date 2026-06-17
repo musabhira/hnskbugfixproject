@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
 import 'package:pocket_mates_app/main.dart';
+import 'package:pocket_mates_app/custom_code/widgets/subscription_page.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
@@ -47,6 +48,7 @@ class ProfileCustomWidget extends StatefulWidget {
 }
 
 class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
+  String _currentPlan = 'free';
   Color? _selectedColor = Colors.black;
   String? _colorCode = '#000000';
   Color? _selectedColor1 = Colors.white;
@@ -187,9 +189,19 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
   @override
   void initState() {
     super.initState();
+    _loadCurrentPlan();
     _getCurrentUser();
     _loadProfileData();
     fetchHideStatus();
+  }
+
+  Future<void> _loadCurrentPlan() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (mounted) {
+      safeSetState(() {
+        _currentPlan = prefs.getString('handskill_plan') ?? 'free';
+      });
+    }
   }
 
   Future<void> _getCurrentUser() async {
@@ -1714,30 +1726,57 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                                     'Your Shop Website',
                                     style: TextStyle(color: theme.primaryText, fontWeight: FontWeight.bold, fontSize: 16),
                                   ),
+                                  if (_currentPlan == 'free') ...[
+                                    const Spacer(),
+                                    Icon(Icons.lock, color: Colors.red[400], size: 16),
+                                  ]
                                 ],
                               ),
                               const SizedBox(height: 8),
-                              Text(
-                                'Your store will be hosted at:\nhandskillapp.web.app/${_shopNameController.text.isNotEmpty ? _sanitizeSlug(_shopNameController.text) : 'your-shop-name'}',
-                                style: TextStyle(color: theme.secondaryText, fontSize: 13),
-                              ),
-                              const SizedBox(height: 12),
-                              SizedBox(
-                                width: double.infinity,
-                                child: OutlinedButton.icon(
-                                  onPressed: () {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(content: Text('Please contact the Handskill Team at +91 0000000000 to setup a custom domain.')),
-                                    );
-                                  },
-                                  icon: Icon(Icons.support_agent, color: theme.primary),
-                                  label: Text('Get Custom Domain Hosting', style: TextStyle(color: theme.primary)),
-                                  style: OutlinedButton.styleFrom(
-                                    side: BorderSide(color: theme.primary),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              if (_currentPlan == 'free') ...[
+                                Text(
+                                  'Upgrade to Premium to unlock your custom web profile.',
+                                  style: TextStyle(color: theme.secondaryText, fontSize: 13),
+                                ),
+                                const SizedBox(height: 12),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: ElevatedButton.icon(
+                                    onPressed: () {
+                                      Navigator.push(context, MaterialPageRoute(builder: (context) => const SubscriptionPage()));
+                                    },
+                                    icon: const Icon(Icons.workspace_premium),
+                                    label: const Text('Upgrade Plan'),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFFFFD700),
+                                      foregroundColor: Colors.black,
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                    ),
                                   ),
                                 ),
-                              ),
+                              ] else ...[
+                                Text(
+                                  'Your store will be hosted at:\nhandskillapp.web.app/${_shopNameController.text.isNotEmpty ? _sanitizeSlug(_shopNameController.text) : 'your-shop-name'}',
+                                  style: TextStyle(color: theme.secondaryText, fontSize: 13),
+                                ),
+                                const SizedBox(height: 12),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: OutlinedButton.icon(
+                                    onPressed: () {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(content: Text('Please contact the Handskill Team at +91 0000000000 to setup a custom domain.')),
+                                      );
+                                    },
+                                    icon: Icon(Icons.support_agent, color: theme.primary),
+                                    label: Text('Get Custom Domain Hosting', style: TextStyle(color: theme.primary)),
+                                    style: OutlinedButton.styleFrom(
+                                      side: BorderSide(color: theme.primary),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ],
                           ),
                         ),
