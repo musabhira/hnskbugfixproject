@@ -65,6 +65,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   bool _isFollowing = false;
   int _followersCount = 0;
   int _followingCount = 0;
+  int _friendsCount = 0;
   bool _isBlocked = false;
   bool _isExpanded = false;
   String _selectedCategory = 'All';
@@ -251,6 +252,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         _filteredGalleryItems = _galleryItems;
         _followersCount = counts['followers'] ?? 0;
         _followingCount = counts['following'] ?? 0;
+        _friendsCount = counts['friends'] ?? 0;
         _isFollowing = responses[3] as bool;
         _isBlocked = responses[4] as bool;
       });
@@ -332,14 +334,19 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       // Get followers count - people who follow this user
       final followersRes = await _supabase
           .from('follows')
-          .select('id')
+          .select('follower_id')
           .eq('followed_id', userId);
 
       // Get following count - people this user follows
       final followingRes = await _supabase
           .from('follows')
-          .select('id')
+          .select('followed_id')
           .eq('follower_id', userId);
+
+      // Calculate mutual friends
+      final followerIds = (followersRes as List).map((e) => e['follower_id'].toString()).toSet();
+      final followingIds = (followingRes as List).map((e) => e['followed_id'].toString()).toSet();
+      final mutualFriends = followerIds.intersection(followingIds);
 
       // Get base followers count from users table
       final userResponse = await _supabase
@@ -354,8 +361,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       }
 
       return {
-        'followers': followersRes.length + baseFollowers,
-        'following': followingRes.length,
+        'followers': followerIds.length + baseFollowers,
+        'following': followingIds.length,
+        'friends': mutualFriends.length,
       };
     } catch (e) {
       debugPrint('Error fetching follow counts: $e');
@@ -773,9 +781,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
+                    _buildStatItem("Friends", _friendsCount, textColor),
                     _buildStatItem("Followers", _followersCount, textColor),
-                    _buildStatItem("Gallery", _galleryItems.length, textColor),
-                    _buildStatItem("Thoughts", _threadItems.length, textColor),
+                    _buildStatItem("Following", _followingCount, textColor),
                   ],
                 ),
               ),

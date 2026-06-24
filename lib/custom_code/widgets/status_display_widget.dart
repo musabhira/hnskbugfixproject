@@ -70,6 +70,27 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
   TabController? _tabController;
   String _vibesFilter = 'Public'; // Default to Public
 
+  Future<void> _addFriend(String followedId) async {
+    try {
+      await supabase.from('follows').insert({
+        'follower_id': widget.currentUserId,
+        'followed_id': followedId,
+      });
+      _loadStatusesOptimized();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Added as friend!'),
+            backgroundColor: Color(0xFFFFFC00),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Error adding friend: $e');
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -976,8 +997,20 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
                 ),
               ),
               if (!isOwn)
-                const Icon(Icons.chevron_right_rounded, 
-                    color: Colors.white24, size: 24),
+                if (!_followingStatuses.any((f) => f['profile']['id'] == profile['id']) && !isGroup)
+                  TextButton.icon(
+                    style: TextButton.styleFrom(
+                      backgroundColor: Colors.white.withValues(alpha: 0.1),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                    ),
+                    icon: const Icon(Icons.person_add, color: Color(0xFFFFFC00), size: 16),
+                    label: Text('Friend', style: GoogleFonts.outfit(color: const Color(0xFFFFFC00), fontSize: 12, fontWeight: FontWeight.bold)),
+                    onPressed: () => _addFriend(profile['id'].toString()),
+                  )
+                else
+                  const Icon(Icons.chevron_right_rounded, 
+                      color: Colors.white24, size: 24),
             ],
           ),
         ),
@@ -3734,6 +3767,49 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
     );
   }
 
+  void _showElearningRequest() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1E1E24),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            const Icon(Icons.school, color: Colors.blueAccent),
+            const SizedBox(width: 8),
+            const Text('B2B E-Learning', style: TextStyle(color: Colors.white)),
+          ],
+        ),
+        content: const Text(
+          'Connect your workforce with premium B2B training modules. Our team will reach out with the digital agreement.',
+          style: TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blueAccent,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Request submitted! Our team will contact you shortly.'),
+                  backgroundColor: Colors.green,
+                ),
+              );
+            },
+            child: const Text('Request Access'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildEditorUI({
     XFile? file,
     String? mediaType,
@@ -5132,6 +5208,12 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
                           label: 'Course',
                           color: Colors.indigo,
                           onTap: _showCoursePicker,
+                        ),
+                        _buildUploadOption(
+                          icon: Icons.business_center_rounded,
+                          label: 'E-Learning',
+                          color: Colors.cyan,
+                          onTap: _showElearningRequest,
                         ),
                       ],
                     ),

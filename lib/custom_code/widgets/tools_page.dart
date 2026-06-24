@@ -1161,15 +1161,10 @@ class _TaskManagerScreenState extends State<ToolsPage> {
         'icon': Icons.school_rounded,
         'color': const Color(0xFFCD7F32),
         'onTap': () {
-          final isUnlocked = _globalToolConfigs['elearning_unlocked']?['android_active'] == true;
-          if (isUnlocked) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const CoursesWidget()),
-            );
-          } else {
-            _showComingSoonDialog();
-          }
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const CoursesWidget()),
+          );
         },
       },
       {
@@ -1209,8 +1204,13 @@ class _TaskManagerScreenState extends State<ToolsPage> {
       
       final platform = Theme.of(context).platform;
       bool publicVisible = false;
-      if (platform == TargetPlatform.android && androidActive) publicVisible = true;
-      if (platform == TargetPlatform.iOS && iosActive) publicVisible = true;
+      if (platform == TargetPlatform.android) {
+        publicVisible = androidActive;
+      } else if (platform == TargetPlatform.iOS) {
+        publicVisible = iosActive;
+      } else {
+        publicVisible = androidActive || iosActive;
+      }
 
       // 3. Permission Overrides
       final isBlocked = _restrictedTools.contains(title);
@@ -2972,7 +2972,65 @@ class _TaskManagerScreenState extends State<ToolsPage> {
             );
           },
         ),
+        _buildToolCard(
+          title: 'Analytics & Interests',
+          icon: Icons.analytics_outlined,
+          color: Colors.greenAccent,
+          onTap: _showAnalyticsPlaceholder,
+        ),
       ],
+    );
+  }
+
+  void _showAnalyticsPlaceholder() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1E1E24),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Row(
+              children: [
+                Icon(Icons.analytics, color: Colors.greenAccent, size: 28),
+                SizedBox(width: 12),
+                Text('Customer Analytics', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+              ],
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Track what your customers are searching for and tap on Google. Discover their interests and automatically share related thoughts to capture your target market.',
+              style: TextStyle(color: Colors.white70, fontSize: 14),
+            ),
+            const SizedBox(height: 24),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.05), borderRadius: BorderRadius.circular(12)),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Trending Interest:', style: TextStyle(color: Colors.white54)),
+                  Text('Startup Growth', style: TextStyle(color: Colors.greenAccent, fontWeight: FontWeight.bold)),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.greenAccent, foregroundColor: Colors.black),
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Upgrade to Unlock Full Analytics', style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
+            )
+          ],
+        ),
+      ),
     );
   }
 

@@ -92,29 +92,13 @@ class _DrawingAcademyHomePageState extends State<DrawingAcademyHomePage> {
 
   void _navigateToCourseDetail(
       BuildContext context, Map<String, dynamic> course) async {
-    try {
-      final configRes = await supabase.from('app_tool_configs').select('*').eq('tool_name', 'elearning_unlocked').maybeSingle();
-      final isUnlocked = configRes?['android_active'] == true;
-      
-      if (isUnlocked) {
-        if (context.mounted) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => CourseDetailPage(courseData: course),
-            ),
-          );
-        }
-      } else {
-        if (context.mounted) {
-          _showComingSoonDialog(context);
-        }
-      }
-    } catch (e) {
-      // Fallback to coming soon if config check fails
-      if (context.mounted) {
-        _showComingSoonDialog(context);
-      }
+    if (context.mounted) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => CourseDetailPage(courseData: course),
+        ),
+      );
     }
   }
 

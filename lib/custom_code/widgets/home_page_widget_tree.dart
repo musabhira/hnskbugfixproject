@@ -8,6 +8,7 @@ import 'dart:convert';
 import 'dart:async' as async;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/custom_code/widgets/settings_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/contacts_sync_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/material.dart' as material;
 import 'package:google_fonts/google_fonts.dart';
@@ -18,6 +19,8 @@ import 'package:pocket_mates_app/custom_code/widgets/active_users_provider.dart'
 import 'package:pocket_mates_app/custom_code/widgets/teams/teams_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/share_content_screen.dart';
 import 'package:pocket_mates_app/custom_code/widgets/status_display_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/tools_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/courses_widget.dart';
 import 'dart:io' as io;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -703,7 +706,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                             material.ScaffoldMessenger.of(context).showSnackBar(
                                               material.SnackBar(
                                                 content: const Text(
-                                                    'Strangers Match feature is calibrating for your region.'),
+                                                    'Founder Match feature is calibrating for your region.'),
                                                 backgroundColor: isDark ? const Color(0xFFFFFC00) : const Color(0xFFFFFC00),
                                               ),
                                             );
@@ -1251,6 +1254,10 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                   ),
                 ),
             ],
+            if (_currentUserId != null && _searchQuery.isEmpty)
+              SliverToBoxAdapter(
+                child: ContactsSyncWidget(currentUserId: _currentUserId!),
+              ),
           ],
         );
       },
@@ -1323,7 +1330,14 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
             _buildNavItem(
               icon: material.Icons.school_rounded,
               isSelected: false,
-              onTap: () => _showElearningComingSoonDialog(context),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  material.MaterialPageRoute(
+                    builder: (context) => const CoursesWidget(),
+                  ),
+                );
+              },
             ),
             _buildProfileNavItem(),
           ],
@@ -1845,7 +1859,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       material.ScaffoldMessenger.of(context).showSnackBar(
         const material.SnackBar(
             duration: Duration(seconds: 1),
-            content: Text('Finding a stranger...')),
+            content: Text('Finding a founder...')),
       );
     }
 
@@ -2431,7 +2445,7 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                           children: [
                             _buildMatchCard(
                               context,
-                              label: 'Video',
+                              label: 'Network',
                               icon: material.Icons.videocam_rounded,
                               color: material.Colors.blue,
                               onTap: onTapVideo,

@@ -211,7 +211,8 @@ class _NativeWebRTCCallScreenState extends State<NativeWebRTCCallScreen> {
 
     setState(() {
       remoteUserId = foundUserId;
-      _isCaller = myUserId!.hashCode > foundUserId.hashCode; // Deterministic caller
+      // Deterministic caller across instances
+      _isCaller = myUserId!.compareTo(foundUserId) > 0; 
       _statusText = 'Peer found! Connecting...';
     });
 
@@ -228,14 +229,29 @@ class _NativeWebRTCCallScreenState extends State<NativeWebRTCCallScreen> {
   }
 
   Future<void> _fetchRemoteUserInfo(String userId) async {
-    // We stay anonymous! Only fetching verification status if needed, 
-    // but we won't show real names to fulfill the "Stranger" requirement.
-    if (mounted) {
-      setState(() {
-        _remoteUserName = 'Stranger';
-        _remoteUserImage = null; // Don't show real profile pictures
-        _isRemoteVerified = false; 
-      });
+    try {
+      final data = await supabase.from('profile').select('name, profile_image_url').eq('id', userId).maybeSingle();
+      if (mounted && data != null) {
+        setState(() {
+          _remoteUserName = data['name'] ?? 'Entrepreneur';
+          _remoteUserImage = data['profile_image_url'];
+          _isRemoteVerified = false; 
+        });
+      } else {
+        if (mounted) {
+          setState(() {
+            _remoteUserName = 'Entrepreneur';
+            _remoteUserImage = null;
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('Error fetching remote user info: $e');
+      if (mounted) {
+        setState(() {
+          _remoteUserName = 'Entrepreneur';
+        });
+      }
     }
   }
 
@@ -716,7 +732,7 @@ class _NativeWebRTCCallScreenState extends State<NativeWebRTCCallScreen> {
                     ),
                   ] else ...[
                     Text(
-                      'Ready to start?',
+                      'Ready to Network?',
                       style: GoogleFonts.outfit(
                         color: Colors.white,
                         fontSize: 32,
@@ -745,7 +761,7 @@ class _NativeWebRTCCallScreenState extends State<NativeWebRTCCallScreen> {
                     const SizedBox(height: 24),
                     _buildActionButton(
                       onTap: () => findRoom(specificRoomId: _roomController.text.isNotEmpty ? _roomController.text : null),
-                      label: _roomController.text.isNotEmpty ? 'Join Meeting' : 'Quick Match',
+                      label: _roomController.text.isNotEmpty ? 'Join Meeting' : 'Find a Founder',
                       icon: _roomController.text.isNotEmpty ? Icons.meeting_room : Icons.flash_on,
                       isPrimary: true,
                     ),
@@ -840,7 +856,7 @@ class _NativeWebRTCCallScreenState extends State<NativeWebRTCCallScreen> {
                         Row(
                           children: [
                             Text(
-                              'Stranger',
+                              _remoteUserName ?? 'Entrepreneur',
                               style: GoogleFonts.outfit(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
@@ -923,7 +939,7 @@ class _NativeWebRTCCallScreenState extends State<NativeWebRTCCallScreen> {
         ),
         child: const Row(
           children: [
-            Text('Next', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16)),
+            Text('Next Match', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16)),
             SizedBox(width: 8),
             Icon(Icons.arrow_forward_rounded, color: Colors.black, size: 20),
           ],
