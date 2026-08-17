@@ -514,7 +514,7 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
          final xFile = XFile(file.path);
          await SharePlus.instance.share(ShareParams(
           files: [xFile],
-          text: 'My drawing from Handskill Friends',
+          text: 'My drawing from Pocketmates',
         ));
        }
      } catch (e) {

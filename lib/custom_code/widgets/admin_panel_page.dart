@@ -4,6 +4,7 @@ import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.dart';
 // import 'package:pocket_mates_app/flutter_flow/flutter_flow_theme.dart';
 // import 'package:pocket_mates_app/flutter_flow/flutter_flow_util.dart';
 // import 'index.dart'; 
@@ -60,7 +61,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 8, vsync: this);
+    _tabController = TabController(length: 9, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _showPasswordDialog();
     });
@@ -189,7 +190,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
     try {
       final res = await supabase
           .from('profile')
-          .select('id, name, shop_name, profile_image_url, verified')
+          .select('id, user_id, name, shop_name, profile_image_url, verified')
           .order('name');
       if (mounted) {
         setState(() {
@@ -407,6 +408,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
             Tab(icon: Icon(Icons.system_update_outlined), text: 'Update'),
             Tab(icon: Icon(Icons.build_circle_outlined), text: 'Tools'),
             Tab(icon: Icon(Icons.collections_bookmark_outlined), text: 'E-Learning'),
+            Tab(icon: Icon(Icons.forum_outlined), text: 'English Hub'),
           ],
         ),
       ),
@@ -421,6 +423,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
           _buildUpdateTab(),
           _buildToolsTab(),
           _buildELearningTab(),
+          _buildEnglishHubTab(),
         ],
       ),
     );
@@ -432,6 +435,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
   bool isLoadingPermissions = false;
 
   final List<String> allToolNames = [
+    'Zoyarex POS Admin',
+    'Zoyarex Super Admin',
     'Drawing Tool',
     'Schedule',
     'Tasks',
@@ -763,7 +768,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                           subtitle: Text(p['shop_name'] ?? '', style: const TextStyle(color: Colors.grey, fontSize: 12)),
                           onTap: () {
                             Navigator.pop(context);
-                            _loadUserPermissions(p['id']);
+                            _loadUserPermissions(p['user_id']?.toString() ?? p['id'].toString());
                           },
                         );
                       },
@@ -781,7 +786,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
   Widget _buildUserToolsTab() {
     final selectedUser = selectedUserIdForTools == null 
         ? null 
-        : allProfiles.firstWhere((p) => p['id'] == selectedUserIdForTools, orElse: () => {});
+        : allProfiles.firstWhere((p) => (p['user_id']?.toString() ?? p['id'].toString()) == selectedUserIdForTools, orElse: () => {});
 
     return Column(
       children: [
@@ -2160,6 +2165,35 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
   }
 
   // --- E-Learning Tab UI ---
+  Future<String?> _fetchEnglishHubId() async {
+    try {
+      final res = await supabase.from('groups').select('id').eq('name', 'English Hub').maybeSingle();
+      return res?['id']?.toString();
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Widget _buildEnglishHubTab() {
+    return FutureBuilder<String?>(
+      future: _fetchEnglishHubId(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        final groupId = snapshot.data;
+        if (groupId == null) {
+          return const Center(child: Text('English Hub not found.', style: TextStyle(color: Colors.white)));
+        }
+        return WhatsAppGroupChat(
+          groupId: groupId,
+          groupName: 'English Hub',
+          isAdminView: true,
+        );
+      },
+    );
+  }
+
   Widget _buildELearningTab() {
     if (_showCourseRequests) {
       return _buildCourseRequestsView();

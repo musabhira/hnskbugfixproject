@@ -1,6 +1,6 @@
 // Automatic FlutterFlow imports
 import 'package:pocket_mates_app/auth_page/auth_page_widget.dart';
-import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
+
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'index.dart'; // Imports other custom widgets
@@ -234,7 +234,7 @@ class _CommunityChatPageState extends State<CommunityChatPage>
         _isLoading = false;
       });
     } catch (e) {
-      print('Error fetching group data: $e');
+      debugPrint('Error fetching group data: $e');
       safeSetState(() {
         _isLoading = false;
       });
@@ -1271,7 +1271,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog>
 
       return Uint8List.fromList(compressedBytes);
     } catch (e) {
-      print('Error compressing image: $e');
+      debugPrint('Error compressing image: $e');
       return null;
     }
   }
@@ -1324,7 +1324,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog>
       }
       return null;
     } catch (e) {
-      print('Error uploading image: $e');
+      debugPrint('Error uploading image: $e');
       _showErrorSnackBar('Failed to upload image: $e');
       return null;
     } finally {
@@ -1475,7 +1475,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog>
         );
       }
     } catch (e) {
-      print('Error creating group: $e');
+      debugPrint('Error creating group: $e');
       _showErrorSnackBar('Error creating group: $e');
     } finally {
       safeSetState(() {

@@ -61,7 +61,8 @@ class _ConversationTileState extends State<ConversationTile> {
     final seconds = (diff.inSeconds % 60).toString().padLeft(2, '0');
 
     setState(() {
-      _elapsedString = hours != '00' ? '$hours:$minutes:$seconds' : '$minutes:$seconds';
+      _elapsedString =
+          hours != '00' ? '$hours:$minutes:$seconds' : '$minutes:$seconds';
     });
   }
 
@@ -130,22 +131,25 @@ class _ConversationTileState extends State<ConversationTile> {
           return isDark ? const Color(0xFFFFD600) : const Color(0xFFFFF500);
       }
     }
-    if (widget.conversation.isNotification) return isDark ? const Color(0xFFFFD600) : const Color(0xFFFFF500);
-    return isDark ? Colors.white.withValues(alpha: 0.5) : Colors.black.withValues(alpha: 0.45);
+    if (widget.conversation.isNotification)
+      return isDark ? const Color(0xFFFFD600) : const Color(0xFFFFF500);
+    return isDark
+        ? Colors.white.withValues(alpha: 0.5)
+        : Colors.black.withValues(alpha: 0.45);
   }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final borderColor = isDark 
-        ? Colors.white.withValues(alpha: 0.05) 
+    final borderColor = isDark
+        ? Colors.white.withValues(alpha: 0.05)
         : Colors.black.withValues(alpha: 0.05);
     final primaryTextColor = isDark ? Colors.white : Colors.black87;
-    final secondaryTextColor = isDark 
-        ? Colors.white.withValues(alpha: 0.4) 
+    final secondaryTextColor = isDark
+        ? Colors.white.withValues(alpha: 0.4)
         : Colors.black.withValues(alpha: 0.45);
-    final unreadTextColor = isDark 
-        ? Colors.white.withValues(alpha: 0.9) 
+    final unreadTextColor = isDark
+        ? Colors.white.withValues(alpha: 0.9)
         : Colors.black.withValues(alpha: 0.85);
 
     return material.Material(
@@ -167,7 +171,9 @@ class _ConversationTileState extends State<ConversationTile> {
           child: Row(
             children: [
               GestureDetector(
-                onTap: widget.conversation.hasStatus ? widget.onStatusTap : widget.onTap,
+                onTap: widget.conversation.hasStatus
+                    ? widget.onStatusTap
+                    : widget.onTap,
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
@@ -192,19 +198,25 @@ class _ConversationTileState extends State<ConversationTile> {
                       width: 58,
                       height: 58,
                       decoration: BoxDecoration(
-                        color: widget.conversation.isActiveTimer 
+                        color: widget.conversation.isActiveTimer
                             ? material.Colors.green.withValues(alpha: 0.1)
-                            : (isDark ? const Color(0xFF262626) : const Color(0xFFE2E8F0)),
+                            : (isDark
+                                ? const Color(0xFF262626)
+                                : const Color(0xFFE2E8F0)),
                         shape: BoxShape.circle,
                         border: Border.all(
                           color: widget.conversation.isActiveTimer
-                              ? material.Colors.greenAccent.withValues(alpha: 0.3)
-                              : (isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.1)),
+                              ? material.Colors.greenAccent
+                                  .withValues(alpha: 0.3)
+                              : (isDark
+                                  ? Colors.white.withValues(alpha: 0.1)
+                                  : Colors.black.withValues(alpha: 0.1)),
                           width: 1.5,
                         ),
                         image: widget.conversation.imageUrl != null
                             ? DecorationImage(
-                                image: NetworkImage(widget.conversation.imageUrl!),
+                                image:
+                                    NetworkImage(widget.conversation.imageUrl!),
                                 fit: BoxFit.cover,
                               )
                             : null,
@@ -219,7 +231,8 @@ class _ConversationTileState extends State<ConversationTile> {
                             )
                           : null,
                     ),
-                    if (widget.conversation.isOnline && !widget.conversation.isGroup)
+                    if (widget.conversation.isOnline &&
+                        !widget.conversation.isGroup)
                       Positioned(
                         right: 2,
                         bottom: 2,
@@ -230,7 +243,9 @@ class _ConversationTileState extends State<ConversationTile> {
                             color: const Color(0xFF10B981), // Emerald
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: isDark ? const Color(0xFF1A1A1A) : const Color(0xFFFFFFFF),
+                              color: isDark
+                                  ? const Color(0xFF1A1A1A)
+                                  : const Color(0xFFFFFFFF),
                               width: 2.5,
                             ),
                           ),
@@ -247,23 +262,39 @@ class _ConversationTileState extends State<ConversationTile> {
                     Row(
                       children: [
                         Expanded(
-                          child: Text(
-                            widget.conversation.name,
-                            style: GoogleFonts.outfit(
-                              color: primaryTextColor,
-                              fontSize: 17,
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: 0.2,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                          child: Row(
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  widget.conversation.name,
+                                  style: GoogleFonts.outfit(
+                                    color: primaryTextColor,
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.w600,
+                                    letterSpacing: 0.2,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              if (widget.conversation.isPinned) ...[
+                                const SizedBox(width: 6),
+                                Icon(
+                                  material.Icons.push_pin,
+                                  size: 14,
+                                  color: secondaryTextColor,
+                                ),
+                              ],
+                            ],
                           ),
                         ),
                         if (widget.conversation.isActiveTimer)
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
-                              color: material.Colors.green.withValues(alpha: 0.2),
+                              color:
+                                  material.Colors.green.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
@@ -282,7 +313,8 @@ class _ConversationTileState extends State<ConversationTile> {
                       children: [
                         if (!widget.conversation.isGroup &&
                             !widget.conversation.isActiveTimer &&
-                            widget.conversation.lastSenderId == widget.currentUserId)
+                            widget.conversation.lastSenderId ==
+                                widget.currentUserId)
                           Padding(
                             padding: const EdgeInsets.only(right: 6),
                             child: Icon(
@@ -298,17 +330,20 @@ class _ConversationTileState extends State<ConversationTile> {
                         Expanded(
                           child: Text(
                             widget.conversation.isActiveTimer
-                                ? (widget.conversation.taskTitle ?? 'Active Task')
+                                ? (widget.conversation.taskTitle ??
+                                    'Active Task')
                                 : (widget.conversation.lastMessage ??
                                     (widget.conversation.isGroup
                                         ? 'No messages yet'
                                         : 'Start chatting')),
                             style: GoogleFonts.outfit(
-                              color: widget.conversation.unreadCount > 0 || widget.conversation.isActiveTimer
+                              color: widget.conversation.unreadCount > 0 ||
+                                      widget.conversation.isActiveTimer
                                   ? unreadTextColor
                                   : secondaryTextColor,
                               fontSize: 14,
-                              fontWeight: widget.conversation.unreadCount > 0 || widget.conversation.isActiveTimer
+                              fontWeight: widget.conversation.unreadCount > 0 ||
+                                      widget.conversation.isActiveTimer
                                   ? FontWeight.w500
                                   : FontWeight.normal,
                             ),
@@ -342,8 +377,12 @@ class _ConversationTileState extends State<ConversationTile> {
                           locale: 'en_short'),
                       style: GoogleFonts.outfit(
                         color: widget.conversation.unreadCount > 0
-                            ? (isDark ? const Color(0xFFFFD600) : const Color(0xFFFFF500))
-                            : (isDark ? Colors.white.withValues(alpha: 0.35) : Colors.black.withValues(alpha: 0.35)),
+                            ? (isDark
+                                ? const Color(0xFFFFD600)
+                                : const Color(0xFFFFF500))
+                            : (isDark
+                                ? Colors.white.withValues(alpha: 0.35)
+                                : Colors.black.withValues(alpha: 0.35)),
                         fontSize: 12,
                         fontWeight: widget.conversation.unreadCount > 0
                             ? FontWeight.bold
@@ -356,11 +395,16 @@ class _ConversationTileState extends State<ConversationTile> {
                       constraints: const BoxConstraints(minWidth: 20),
                       padding: const EdgeInsets.all(5),
                       decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFFFFD600) : const Color(0xFFFFF500),
+                        color: isDark
+                            ? const Color(0xFFFFD600)
+                            : const Color(0xFFFFF500),
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: (isDark ? const Color(0xFFFFD600) : const Color(0xFFFFF500)).withValues(alpha: 0.5),
+                            color: (isDark
+                                    ? const Color(0xFFFFD600)
+                                    : const Color(0xFFFFF500))
+                                .withValues(alpha: 0.5),
                             blurRadius: 4,
                             spreadRadius: -1,
                           ),
@@ -387,4 +431,3 @@ class _ConversationTileState extends State<ConversationTile> {
     );
   }
 }
-

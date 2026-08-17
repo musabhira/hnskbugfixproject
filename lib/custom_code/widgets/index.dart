@@ -41,7 +41,9 @@ export 'event_create_page.dart' show EventCreatePage;
 export 'event_display_home_page.dart';
 export 'dual_video_recorder.dart' show DualVideoRecorderWidget;
 export 'business_pos_page.dart' show BusinessPOSPage;
-
+export 'english_learning_hub_page.dart';
+export 'test_feature_page.dart';
+export 'dynamic_web_view_page.dart';
 
 // Chat & Communication
 export 'chat/whatsapp_group_chat.dart' show WhatsAppGroupChat;

@@ -1,9 +1,7 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '/backend/supabase/supabase.dart';
-import '/flutter_flow/flutter_flow_util.dart';
 import 'package:pocket_mates_app/custom_code/widgets/subscription_page.dart';
 
 class BusinessPOSPage extends StatefulWidget {
@@ -30,7 +28,7 @@ class _BusinessPOSPageState extends State<BusinessPOSPage>
   
   bool _isLoading = true;
   List<Map<String, dynamic>> _catalogItems = [];
-  Map<String, int> _cart = {}; // itemId -> quantity
+  final Map<String, int> _cart = {}; // itemId -> quantity
   
   // Custom temporary items created directly in POS
   List<Map<String, dynamic>> _localItems = [];
@@ -48,7 +46,7 @@ class _BusinessPOSPageState extends State<BusinessPOSPage>
   List<Map<String, dynamic>> _transactions = [];
   
   // Sales Settings
-  double _taxRate = 12.0; // 12% standard GST/Tax
+  final double _taxRate = 12.0; // 12% standard GST/Tax
   double _discountAmount = 0.0;
   String _paymentMethod = 'Cash'; // Cash, Card, Online Transfer, UPI QR
   
@@ -1032,7 +1030,7 @@ class _BusinessPOSPageState extends State<BusinessPOSPage>
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('GST/Tax (${_taxRate}%)', style: GoogleFonts.outfit(color: Colors.white54, fontSize: 14)),
+                Text('GST/Tax ($_taxRate%)', style: GoogleFonts.outfit(color: Colors.white54, fontSize: 14)),
                 Text('₹${_cartTax.toStringAsFixed(2)}', style: const TextStyle(color: Colors.white70, fontSize: 14)),
               ],
             ),

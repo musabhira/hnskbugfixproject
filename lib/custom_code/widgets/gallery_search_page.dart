@@ -33,213 +33,18 @@ class GalleryDetailsPage extends StatefulWidget {
 class _GalleryDetailsPageState extends State<GalleryDetailsPage> {
   late PageController _pageController;
   late int currentIndex;
-  bool isImageExpanded = false;
-  bool _isLoading = false;
-  List<Map<String, dynamic>> _comments = [];
-  bool _isLiked = false;
-  int _likeCount = 0;
-  String? _errorMessage;
-  final _supabase = SupaFlow.client;
-  bool isLoading = true;
-  Map<String, dynamic>? hideData;
-  String? sharetext;
-  final TextEditingController _commentController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     currentIndex = widget.initialIndex;
     _pageController = PageController(initialPage: currentIndex);
-    _loadComments();
-    _checkIfLiked();
-    _getLikeCount();
-    fetchHideStatus();
   }
 
   @override
   void dispose() {
     _pageController.dispose();
     super.dispose();
-  }
-
-  Future<void> fetchHideStatus() async {
-    try {
-      final user = _supabase.auth.currentUser;
-      if (user == null) return;
-
-      final response = await _supabase
-          .from('hide')
-          .select()
-          .eq('user_id', user.id)
-          .order('created_at', ascending: false)
-          .limit(1);
-
-      safeSetState(() {
-        print(response);
-        hideData = response.isNotEmpty ? response.first : null;
-        isLoading = false;
-      });
-    } catch (e) {
-      print('Error fetching hide status: $e');
-      safeSetState(() {
-        isLoading = false;
-      });
-    }
-  }
-
-  Future<void> _loadComments({String? contentFilter}) async {
-    safeSetState(() {
-      _isLoading = true;
-    });
-
-    try {
-      // Start with the base query filtering by gallery_id
-      var query = _supabase
-          .from('gallery_with_comments_view')
-          .select()
-          .eq('gallery_id', widget.item['gallery_id'])
-          // Only show rows where comment_content is not null
-          .not('comment_content', 'is', null);
-
-      // Add content filter if provided
-      if (contentFilter != null && contentFilter.isNotEmpty) {
-        // Filter comments that contain the search text
-        query = query.ilike('comment_content', '%$contentFilter%');
-      }
-
-      // Execute the query
-      final response = await query;
-
-      // Remove duplicates based on comment_content
-      final Map<String, Map<String, dynamic>> uniqueComments = {};
-
-      for (var comment in response) {
-        final commentContent = comment['comment_content']?.toString();
-        if (commentContent != null && commentContent.isNotEmpty) {
-          // Keep the first occurrence or the one with more recent timestamp
-          if (!uniqueComments.containsKey(commentContent) ||
-              _isMoreRecent(comment, uniqueComments[commentContent]!)) {
-            uniqueComments[commentContent] = comment;
-          }
-        }
-      }
-
-      // Convert back to list
-      final deduplicatedComments = uniqueComments.values.toList();
-
-      // Get unique profile_comment_ids from the deduplicated comments
-      final profileCommentIds = deduplicatedComments
-          .map((comment) => comment['profile_comment_id'])
-          .where((id) => id != null)
-          .toSet()
-          .toList();
-
-      // Fetch profile information for all comment authors
-      Map<String, Map<String, dynamic>> profilesMap = {};
-
-      if (profileCommentIds.isNotEmpty) {
-        final profilesResponse = await _supabase
-            .from('profile')
-            .select('id, name, profile_image_url')
-            .inFilter('id', profileCommentIds);
-
-        // Create a map for quick lookup
-        for (var profile in profilesResponse) {
-          profilesMap[profile['id'].toString()] = profile;
-        }
-      }
-
-      // Combine comment data with profile information
-      final List<Map<String, dynamic>> enrichedComments =
-          deduplicatedComments.map((comment) {
-        final profileCommentId = comment['profile_comment_id']?.toString();
-        final profileData = profilesMap[profileCommentId];
-
-        return {
-          ...comment,
-          // Add profile information to each comment
-          'commenter_name': profileData?['name'] ?? 'Unknown User',
-          'commenter_profile_image_url': profileData?['profile_image_url'],
-        };
-      }).toList();
-
-      // Sort comments by timestamp (newest first) - optional
-      enrichedComments.sort((a, b) {
-        final aTime = a['created_at'] ?? a['comment_created_at'];
-        final bTime = b['created_at'] ?? b['comment_created_at'];
-        if (aTime != null && bTime != null) {
-          return DateTime.parse(bTime.toString())
-              .compareTo(DateTime.parse(aTime.toString()));
-        }
-        return 0;
-      });
-
-      safeSetState(() {
-        _comments = enrichedComments;
-        _isLoading = false;
-        _errorMessage = null; // Clear any previous error
-      });
-    } catch (error) {
-      safeSetState(() {
-        _errorMessage = 'Failed to load comments: $error';
-        print(_errorMessage);
-        _isLoading = false;
-        // Don't clear _comments on error to preserve existing data
-      });
-    }
-  }
-
-// Helper method to determine if a comment is more recent
-  bool _isMoreRecent(
-      Map<String, dynamic> comment1, Map<String, dynamic> comment2) {
-    final time1 = comment1['created_at'] ?? comment1['comment_created_at'];
-    final time2 = comment2['created_at'] ?? comment2['comment_created_at'];
-
-    if (time1 == null || time2 == null) return false;
-
-    try {
-      return DateTime.parse(time1.toString())
-          .isAfter(DateTime.parse(time2.toString()));
-    } catch (e) {
-      return false;
-    }
-  }
-
-  Future<void> _getLikeCount() async {
-    try {
-      final response = await _supabase
-          .from('likes')
-          .select('count')
-          .eq('gallery_id', widget.item['gallery_id'])
-          .single();
-
-      safeSetState(() {
-        _likeCount = response['count'] ?? 0;
-      });
-    } catch (e) {
-      print('Error getting like count: $e');
-    }
-  }
-
-  Future<void> _checkIfLiked() async {
-    try {
-      final currentUserId = _supabase.auth.currentUser?.id;
-
-      if (currentUserId != null) {
-        final response = await _supabase
-            .from('likes')
-            .select()
-            .eq('gallery_id', widget.item['gallery_id'])
-            .eq('user_id', currentUserId)
-            .maybeSingle();
-
-        safeSetState(() {
-          _isLiked = response != null;
-        });
-      }
-    } catch (e) {
-      print('Error checking like status: $e');
-    }
   }
 
   @override
@@ -289,6 +94,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
   Map<String, dynamic>? hideData;
   String? sharetext;
   final TextEditingController _commentController = TextEditingController();
+  bool _canMessage = true;
 
   @override
   void initState() {
@@ -298,11 +104,41 @@ class BuildDetailContentState extends State<BuildDetailContent> {
     _checkIfLiked();
     _getLikeCount();
     fetchHideStatus();
+    fetchPrivacyAndFollowStatus();
   }
 
   @override
   void dispose() {
     super.dispose();
+  }
+
+  Future<void> fetchPrivacyAndFollowStatus() async {
+    try {
+      final ownerId = widget.item['user_id']?.toString();
+      final currentUserId = _supabase.auth.currentUser?.id;
+
+      if (ownerId == null || currentUserId == null || ownerId == currentUserId) return;
+
+      final profileRes = await _supabase.from('profile').select('is_private').eq('user_id', ownerId).maybeSingle();
+      final isPrivate = profileRes?['is_private'] == true;
+
+      if (isPrivate) {
+        final followRes = await _supabase
+            .from('follows')
+            .select()
+            .eq('follower_id', currentUserId)
+            .eq('followed_id', ownerId)
+            .maybeSingle();
+
+        if (followRes == null) {
+          safeSetState(() {
+            _canMessage = false;
+          });
+        }
+      }
+    } catch (e) {
+      print('Error fetching privacy: $e');
+    }
   }
 
   Future<void> fetchHideStatus() async {
@@ -1024,6 +860,8 @@ class BuildDetailContentState extends State<BuildDetailContent> {
   }
 
   Widget buildAnimatedDirectMessageButton(BuildContext context) {
+    if (!_canMessage) return const SizedBox.shrink();
+
     return widget.item['phone_no'] != null &&
             widget.item['phone_no'].toString().isNotEmpty
         ? AnimatedButtonWithMenu(
@@ -1064,47 +902,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
         : const SizedBox.shrink();
   }
 
-  Future<void> _toggleLike() async {
-    try {
-      if (!AuthHelper.checkLoggedIn(context)) return;
-      final currentUserId = _supabase.auth.currentUser!.id;
 
-      // Store previous values for rollback if needed
-      final previousIsLiked = _isLiked;
-      final previousLikeCount = _likeCount;
-
-      safeSetState(() {
-        _isLiked = !_isLiked;
-        _likeCount = _isLiked ? _likeCount + 1 : _likeCount - 1;
-      });
-
-      if (_isLiked) {
-        // Add like
-        await _supabase.from('likes').insert({
-          'gallery_id': widget.item['gallery_id'],
-          'user_id': currentUserId,
-        });
-      } else {
-        // Remove like
-        await _supabase
-            .from('likes')
-            .delete()
-            .eq('gallery_id', widget.item['gallery_id'])
-            .eq('user_id', currentUserId);
-      }
-    } catch (e) {
-      print('Error toggling like: $e');
-      // Revert state if error
-      safeSetState(() {
-        _isLiked = !_isLiked;
-        _likeCount = _isLiked ? _likeCount + 1 : _likeCount - 1;
-      });
-      // ignore: use_build_context_synchronously
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to update like status')),
-      );
-    }
-  }
 
   Future<void> _addComment() async {
     if (!AuthHelper.checkLoggedIn(context)) return;

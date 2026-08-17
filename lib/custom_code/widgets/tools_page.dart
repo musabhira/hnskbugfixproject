@@ -23,8 +23,12 @@ import '/custom_code/widgets/drawing_academy_home_page.dart';
 import '/custom_code/widgets/ai_prompt_service.dart';
 import '/custom_code/widgets/dual_video_recorder.dart';
 import '/custom_code/widgets/courses_widget.dart';
+import '/custom_code/widgets/english_learning_hub_page.dart';
 import '/custom_code/widgets/business_pos_page.dart';
 import '/custom_code/widgets/subscription_page.dart';
+
+import 'package:pocket_mates_app/custom_code/widgets/zoyarex_admin/zoyarex_login_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/zoyarex_admin/zoyarex_ai_page.dart';
 
 class ToolsPage extends StatefulWidget {
   final double? width;
@@ -54,7 +58,8 @@ class _TaskManagerScreenState extends State<ToolsPage> {
   final TextEditingController challengeController = TextEditingController();
   final TextEditingController scheduleController = TextEditingController();
   final TextEditingController aiScheduleController = TextEditingController();
-  final TextEditingController challengeDurationController = TextEditingController(text: '21');
+  final TextEditingController challengeDurationController =
+      TextEditingController(text: '21');
 
   @override
   void dispose() {
@@ -108,7 +113,8 @@ class _TaskManagerScreenState extends State<ToolsPage> {
   Future<void> _loadPlan() async {
     final prefs = await SharedPreferences.getInstance();
     if (mounted) {
-      setState(() => _currentPlan = prefs.getString('handskill_plan') ?? 'free');
+      setState(
+          () => _currentPlan = prefs.getString('handskill_plan') ?? 'free');
     }
   }
 
@@ -116,11 +122,13 @@ class _TaskManagerScreenState extends State<ToolsPage> {
     setState(() => _isLoadingTools = true);
     try {
       final userId = SupaFlow.client.auth.currentUser?.id;
-      
+
       // Fetch global configs
-      final configRes = await SupaFlow.client.from('app_tool_configs').select('*');
+      final configRes =
+          await SupaFlow.client.from('app_tool_configs').select('*');
       final configsMap = {
-        for (var c in (configRes as List)) c['tool_name'] as String: c as Map<String, dynamic>
+        for (var c in (configRes as List))
+          c['tool_name'] as String: c as Map<String, dynamic>
       };
 
       List<String> restricted = [];
@@ -130,7 +138,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
             .from('user_tool_permissions')
             .select('tool_name, is_blocked, has_private_access')
             .eq('user_id', userId);
-        
+
         for (var row in (accessRes as List)) {
           if (row['is_blocked'] == true) {
             restricted.add(row['tool_name'] as String);
@@ -198,56 +206,95 @@ class _TaskManagerScreenState extends State<ToolsPage> {
     if (userId == null) return;
 
     try {
-      final tasksRes = await SupaFlow.client.from('user_tasks').select().eq('user_id', userId);
-      tasks = (tasksRes as List).map((row) => Task(
-        id: row['id'] ?? UniqueKey().toString(),
-        title: row['title'] ?? '',
-        notes: row['notes'],
-        priority: TaskPriority.values[row['priority'] ?? 1],
-        isCompleted: row['is_completed'] ?? false,
-        createdDate: row['created_date'] != null ? DateTime.parse(row['created_date']) : DateTime.now(),
-        completedDate: row['completed_date'] != null ? DateTime.parse(row['completed_date']) : null,
-      )).toList();
+      final tasksRes = await SupaFlow.client
+          .from('user_tasks')
+          .select()
+          .eq('user_id', userId);
+      tasks = (tasksRes as List)
+          .map((row) => Task(
+                id: row['id'] ?? UniqueKey().toString(),
+                title: row['title'] ?? '',
+                notes: row['notes'],
+                priority: TaskPriority.values[row['priority'] ?? 1],
+                isCompleted: row['is_completed'] ?? false,
+                createdDate: row['created_date'] != null
+                    ? DateTime.parse(row['created_date'])
+                    : DateTime.now(),
+                completedDate: row['completed_date'] != null
+                    ? DateTime.parse(row['completed_date'])
+                    : null,
+              ))
+          .toList();
 
-      final challengesRes = await SupaFlow.client.from('user_challenges').select().eq('user_id', userId);
-      challenges = (challengesRes as List).map((row) => Challenge(
-        id: row['id'] ?? UniqueKey().toString(),
-        title: row['title'] ?? '',
-        totalDays: row['total_days'] ?? 21,
-        startDate: row['start_date'] != null ? DateTime.parse(row['start_date']) : DateTime.now(),
-        completedDate: row['completed_date'] != null ? DateTime.parse(row['completed_date']) : null,
-        isCompleted: row['is_completed'] ?? false,
-        dailyTicks: Map<String, bool>.from(row['daily_ticks'] ?? {}),
-      )).toList();
+      final challengesRes = await SupaFlow.client
+          .from('user_challenges')
+          .select()
+          .eq('user_id', userId);
+      challenges = (challengesRes as List)
+          .map((row) => Challenge(
+                id: row['id'] ?? UniqueKey().toString(),
+                title: row['title'] ?? '',
+                totalDays: row['total_days'] ?? 21,
+                startDate: row['start_date'] != null
+                    ? DateTime.parse(row['start_date'])
+                    : DateTime.now(),
+                completedDate: row['completed_date'] != null
+                    ? DateTime.parse(row['completed_date'])
+                    : null,
+                isCompleted: row['is_completed'] ?? false,
+                dailyTicks: Map<String, bool>.from(row['daily_ticks'] ?? {}),
+              ))
+          .toList();
 
-      final schedulesRes = await SupaFlow.client.from('user_schedules').select().eq('user_id', userId);
-      final allSchedules = (schedulesRes as List).map((row) => ScheduleItem(
-        id: row['id'] ?? UniqueKey().toString(),
-        title: row['title'] ?? '',
-        startTime: row['start_time'] != null ? DateTime.parse(row['start_time']) : DateTime.now(),
-        endTime: row['end_time'] != null ? DateTime.parse(row['end_time']) : DateTime.now().add(const Duration(hours: 1)),
-        color: Color(int.tryParse((row['color'] ?? '0xFF424242').toString().replaceAll('#', '0x')) ?? 0xFF424242),
-        isCompleted: row['is_completed'] ?? false,
-        source: ScheduleSource.values[row['source'] ?? 0],
-      )).toList();
+      final schedulesRes = await SupaFlow.client
+          .from('user_schedules')
+          .select()
+          .eq('user_id', userId);
+      final allSchedules = (schedulesRes as List)
+          .map((row) => ScheduleItem(
+                id: row['id'] ?? UniqueKey().toString(),
+                title: row['title'] ?? '',
+                startTime: row['start_time'] != null
+                    ? DateTime.parse(row['start_time'])
+                    : DateTime.now(),
+                endTime: row['end_time'] != null
+                    ? DateTime.parse(row['end_time'])
+                    : DateTime.now().add(const Duration(hours: 1)),
+                color: Color(int.tryParse((row['color'] ?? '0xFF424242')
+                        .toString()
+                        .replaceAll('#', '0x')) ??
+                    0xFF424242),
+                isCompleted: row['is_completed'] ?? false,
+                source: ScheduleSource.values[row['source'] ?? 0],
+              ))
+          .toList();
 
-      dailySchedule = allSchedules.where((item) =>
-          item.startTime.year == DateTime.now().year &&
-          item.startTime.month == DateTime.now().month &&
-          item.startTime.day == DateTime.now().day).toList();
+      dailySchedule = allSchedules
+          .where((item) =>
+              item.startTime.year == DateTime.now().year &&
+              item.startTime.month == DateTime.now().month &&
+              item.startTime.day == DateTime.now().day)
+          .toList();
     } catch (e) {
       debugPrint('Error loading from Supabase, falling back to local: $e');
       // Fallback
       final tasksJson = prefs.getString('tasks_$userId') ?? '[]';
-      tasks = (jsonDecode(tasksJson) as List).map((task) => Task.fromJson(task)).toList();
-      
+      tasks = (jsonDecode(tasksJson) as List)
+          .map((task) => Task.fromJson(task))
+          .toList();
+
       final challengesJson = prefs.getString('challenges_$userId') ?? '[]';
-      challenges = (jsonDecode(challengesJson) as List).map((challenge) => Challenge.fromJson(challenge)).toList();
-      
+      challenges = (jsonDecode(challengesJson) as List)
+          .map((challenge) => Challenge.fromJson(challenge))
+          .toList();
+
       final scheduleJson = prefs.getString('schedule_$userId') ?? '[]';
       final todaySchedule = (jsonDecode(scheduleJson) as List)
           .map((item) => ScheduleItem.fromJson(item))
-          .where((item) => item.startTime.year == DateTime.now().year && item.startTime.month == DateTime.now().month && item.startTime.day == DateTime.now().day)
+          .where((item) =>
+              item.startTime.year == DateTime.now().year &&
+              item.startTime.month == DateTime.now().month &&
+              item.startTime.day == DateTime.now().day)
           .toList();
       dailySchedule = todaySchedule;
     }
@@ -261,11 +308,13 @@ class _TaskManagerScreenState extends State<ToolsPage> {
     final prefs = await SharedPreferences.getInstance();
     final userId = SupaFlow.client.auth.currentUser?.id;
     if (userId == null) return;
-    
+
     // Save locally for quick cache
     final tasksJson = jsonEncode(tasks.map((task) => task.toJson()).toList());
-    final challengesJson = jsonEncode(challenges.map((challenge) => challenge.toJson()).toList());
-    final scheduleJson = jsonEncode(dailySchedule.map((item) => item.toJson()).toList());
+    final challengesJson =
+        jsonEncode(challenges.map((challenge) => challenge.toJson()).toList());
+    final scheduleJson =
+        jsonEncode(dailySchedule.map((item) => item.toJson()).toList());
 
     await prefs.setString('tasks_$userId', tasksJson);
     await prefs.setString('challenges_$userId', challengesJson);
@@ -275,47 +324,54 @@ class _TaskManagerScreenState extends State<ToolsPage> {
     try {
       if (tasks.isNotEmpty) {
         await SupaFlow.client.from('user_tasks').upsert(
-          tasks.map((t) => {
-            'id': t.id,
-            'user_id': userId,
-            'title': t.title,
-            'notes': t.notes,
-            'priority': t.priority.index,
-            'is_completed': t.isCompleted,
-            'created_date': t.createdDate.toIso8601String(),
-            'completed_date': t.completedDate?.toIso8601String()
-          }).toList(),
-        );
+              tasks
+                  .map((t) => {
+                        'id': t.id,
+                        'user_id': userId,
+                        'title': t.title,
+                        'notes': t.notes,
+                        'priority': t.priority.index,
+                        'is_completed': t.isCompleted,
+                        'created_date': t.createdDate.toIso8601String(),
+                        'completed_date': t.completedDate?.toIso8601String()
+                      })
+                  .toList(),
+            );
       }
-      
+
       if (challenges.isNotEmpty) {
         await SupaFlow.client.from('user_challenges').upsert(
-          challenges.map((c) => {
-            'id': c.id,
-            'user_id': userId,
-            'title': c.title,
-            'total_days': c.totalDays,
-            'start_date': c.startDate.toIso8601String(),
-            'completed_date': c.completedDate?.toIso8601String(),
-            'is_completed': c.isCompleted,
-            'daily_ticks': c.dailyTicks
-          }).toList(),
-        );
+              challenges
+                  .map((c) => {
+                        'id': c.id,
+                        'user_id': userId,
+                        'title': c.title,
+                        'total_days': c.totalDays,
+                        'start_date': c.startDate.toIso8601String(),
+                        'completed_date': c.completedDate?.toIso8601String(),
+                        'is_completed': c.isCompleted,
+                        'daily_ticks': c.dailyTicks
+                      })
+                  .toList(),
+            );
       }
 
       if (dailySchedule.isNotEmpty) {
         await SupaFlow.client.from('user_schedules').upsert(
-          dailySchedule.map((s) => {
-            'id': s.id,
-            'user_id': userId,
-            'title': s.title,
-            'start_time': s.startTime.toIso8601String(),
-            'end_time': s.endTime.toIso8601String(),
-            'color': '0x${s.color.value.toRadixString(16).padLeft(8, '0')}',
-            'is_completed': s.isCompleted,
-            'source': s.source.index
-          }).toList(),
-        );
+              dailySchedule
+                  .map((s) => {
+                        'id': s.id,
+                        'user_id': userId,
+                        'title': s.title,
+                        'start_time': s.startTime.toIso8601String(),
+                        'end_time': s.endTime.toIso8601String(),
+                        'color':
+                            '0x${s.color.value.toRadixString(16).padLeft(8, '0')}',
+                        'is_completed': s.isCompleted,
+                        'source': s.source.index
+                      })
+                  .toList(),
+            );
       }
     } catch (e) {
       debugPrint('Error syncing to Supabase: $e');
@@ -593,7 +649,8 @@ class _TaskManagerScreenState extends State<ToolsPage> {
         }
 
         // Calculate if completed
-        int completedCount = challenge.dailyTicks.values.where((v) => v == true).length;
+        int completedCount =
+            challenge.dailyTicks.values.where((v) => v == true).length;
         if (completedCount >= challenge.totalDays) {
           challenge.isCompleted = true;
           challenge.completedDate = DateTime.now();
@@ -772,7 +829,8 @@ class _TaskManagerScreenState extends State<ToolsPage> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF2C2C2C),
-        title: Text('Web Search', style: GoogleFonts.outfit(color: Colors.white)),
+        title:
+            Text('Web Search', style: GoogleFonts.outfit(color: Colors.white)),
         content: TextField(
           controller: searchController,
           style: const TextStyle(color: Colors.white),
@@ -785,24 +843,26 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                 borderSide: BorderSide(color: Colors.yellowAccent)),
           ),
           onSubmitted: (query) {
-             if (query.trim().isNotEmpty) {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => DynamicWebViewPage(
-                      title: 'Browser',
-                      url: 'https://www.google.com/search?q=${Uri.encodeComponent(query.trim())}',
-                    ),
+            if (query.trim().isNotEmpty) {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => DynamicWebViewPage(
+                    title: 'Browser',
+                    url:
+                        'https://www.google.com/search?q=${Uri.encodeComponent(query.trim())}',
                   ),
-                );
-             }
+                ),
+              );
+            }
           },
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+            child:
+                const Text('Cancel', style: TextStyle(color: Colors.white54)),
           ),
           TextButton(
             onPressed: () {
@@ -814,13 +874,15 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                   MaterialPageRoute(
                     builder: (context) => DynamicWebViewPage(
                       title: 'Browser',
-                      url: 'https://www.google.com/search?q=${Uri.encodeComponent(query)}',
+                      url:
+                          'https://www.google.com/search?q=${Uri.encodeComponent(query)}',
                     ),
                   ),
                 );
               }
             },
-            child: const Text('Search', style: TextStyle(color: Colors.yellowAccent)),
+            child: const Text('Search',
+                style: TextStyle(color: Colors.yellowAccent)),
           ),
         ],
       ),
@@ -855,7 +917,8 @@ class _TaskManagerScreenState extends State<ToolsPage> {
 
   void _showComingSoonDialog() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final themeYellow = isDark ? const Color(0xFFFFD600) : const Color(0xFFFFF500);
+    final themeYellow =
+        isDark ? const Color(0xFFFFD600) : const Color(0xFFFFF500);
     showDialog(
       context: context,
       builder: (context) => Dialog(
@@ -867,12 +930,17 @@ class _TaskManagerScreenState extends State<ToolsPage> {
             child: Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: isDark ? Colors.black.withOpacity(0.75) : Colors.white.withOpacity(0.95),
+                color: isDark
+                    ? Colors.black.withOpacity(0.75)
+                    : Colors.white.withOpacity(0.95),
                 borderRadius: BorderRadius.circular(28),
-                border: Border.all(color: themeYellow.withOpacity(0.25), width: 1.5),
+                border: Border.all(
+                    color: themeYellow.withOpacity(0.25), width: 1.5),
                 boxShadow: [
                   BoxShadow(
-                    color: isDark ? Colors.black.withOpacity(0.6) : Colors.grey.withOpacity(0.3),
+                    color: isDark
+                        ? Colors.black.withOpacity(0.6)
+                        : Colors.grey.withOpacity(0.3),
                     blurRadius: 40,
                     offset: const Offset(0, 20),
                   ),
@@ -898,7 +966,8 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                         end: Alignment.bottomRight,
                       ),
                       shape: BoxShape.circle,
-                      border: Border.all(color: themeYellow.withOpacity(0.3), width: 1.5),
+                      border: Border.all(
+                          color: themeYellow.withOpacity(0.3), width: 1.5),
                     ),
                     child: Icon(
                       Icons.school_rounded,
@@ -922,7 +991,9 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                     textAlign: TextAlign.center,
                     style: GoogleFonts.inter(
                       fontSize: 14,
-                      color: isDark ? Colors.white.withOpacity(0.8) : Colors.black.withOpacity(0.8),
+                      color: isDark
+                          ? Colors.white.withOpacity(0.8)
+                          : Colors.black.withOpacity(0.8),
                       height: 1.6,
                     ),
                   ),
@@ -994,6 +1065,30 @@ class _TaskManagerScreenState extends State<ToolsPage> {
   Widget _buildToolsList() {
     final List<Map<String, dynamic>> allTools = [
       {
+        'title': 'Zoyarex POS Admin',
+        'subtitle': 'Admin Control Panel',
+        'icon': Icons.admin_panel_settings,
+        'color': Colors.blueAccent,
+        'onTap': () => Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const ZoyarexLoginPage())),
+      },
+      {
+        'title': 'Zoyarex AI',
+        'subtitle': 'AI Assistant for Zoyarex',
+        'icon': Icons.smart_toy_rounded,
+        'color': Colors.blue,
+        'onTap': () => Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const ZoyarexAiPage())),
+      },
+      {
+        'title': 'Zoyarex Super Admin',
+        'subtitle': 'Super Admin Console',
+        'icon': Icons.manage_accounts,
+        'color': Colors.purpleAccent,
+        'onTap': () => Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const ZoyarexLoginPage())),
+      },
+      {
         'title': 'Drawing Tool',
         'icon': Icons.brush,
         'color': const Color(0xFFFFD700),
@@ -1005,8 +1100,10 @@ class _TaskManagerScreenState extends State<ToolsPage> {
         'subtitle': 'YouTube & Reels',
         'icon': Icons.duo_rounded,
         'color': const Color(0xFFFFB700),
-        'onTap': () => Navigator.push(context,
-            MaterialPageRoute(builder: (context) => const DualVideoRecorderWidget())),
+        'onTap': () => Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => const DualVideoRecorderWidget())),
       },
       {
         'title': 'Schedule',
@@ -1156,14 +1253,14 @@ class _TaskManagerScreenState extends State<ToolsPage> {
         'onTap': () => _showWebSearchDialog(),
       },
       {
-        'title': 'Handskill Learn',
-        'subtitle': 'Learning Academy',
-        'icon': Icons.school_rounded,
+        'title': 'English Hub',
+        'subtitle': 'Learn English speaking',
+        'icon': Icons.record_voice_over_rounded,
         'color': const Color(0xFFCD7F32),
         'onTap': () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const CoursesWidget()),
+            MaterialPageRoute(builder: (context) => const EnglishLearningHubPage()),
           );
         },
       },
@@ -1172,312 +1269,364 @@ class _TaskManagerScreenState extends State<ToolsPage> {
         'subtitle': 'Business POS & ERP',
         'icon': Icons.receipt_long_rounded,
         'color': const Color(0xFFFFB700),
-        'onTap': () => Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => const BusinessPOSPage())),
+        'onTap': () => Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const BusinessPOSPage())),
       },
       {
         'title': 'Test Feature',
         'subtitle': 'System Diagnostic',
         'icon': Icons.bug_report_rounded,
         'color': const Color(0xFFFFD700),
-        'onTap': () => Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => const TestFeaturePage())),
+        'onTap': () => Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const TestFeaturePage())),
       },
     ];
 
     final filteredTools = allTools.where((tool) {
       final title = tool['title'] as String;
-      
+
       // 1. Search filter
-      final matchesSearch = title.toLowerCase().contains(_toolsSearchQuery.toLowerCase()) || 
-          (tool['subtitle']?.toString().toLowerCase().contains(_toolsSearchQuery.toLowerCase()) ?? false);
+      final matchesSearch =
+          title.toLowerCase().contains(_toolsSearchQuery.toLowerCase()) ||
+              (tool['subtitle']
+                      ?.toString()
+                      .toLowerCase()
+                      .contains(_toolsSearchQuery.toLowerCase()) ??
+                  false);
       if (!matchesSearch) return false;
 
       // 2. Platform Visibility Check
-      final config = _globalToolConfigs[title] ?? {'android_active': true, 'ios_active': true};
+      final config = _globalToolConfigs[title] ??
+          {'android_active': true, 'ios_active': true, 'windows_active': true, 'web_active': true};
       final androidActive = config['android_active'] ?? true;
       final iosActive = config['ios_active'] ?? true;
-      
+      final windowsActive = config['windows_active'] ?? true;
+      final webActive = config['web_active'] ?? true;
+
       final platform = Theme.of(context).platform;
       bool publicVisible = false;
       if (platform == TargetPlatform.android) {
-        publicVisible = androidActive;
+        publicVisible = androidActive == true;
       } else if (platform == TargetPlatform.iOS) {
-        publicVisible = iosActive;
+        publicVisible = iosActive == true;
+      } else if (platform == TargetPlatform.windows) {
+        publicVisible = windowsActive == true;
       } else {
-        publicVisible = androidActive || iosActive;
+        publicVisible = webActive == true;
       }
 
       // 3. Permission Overrides
       final isBlocked = _restrictedTools.contains(title);
       final hasPrivateAccess = _allowedPrivateTools.contains(title);
 
+      // Force Zoyarex POS and Super Admin to require private access
+      if (title == 'Zoyarex POS Admin' || title == 'Zoyarex Super Admin') {
+        publicVisible = false;
+      }
+
       // Rule: Visible if (Publicly Active on platform OR User has private access) AND NOT blocked
       return (publicVisible || hasPrivateAccess) && !isBlocked;
     }).toList();
 
     return Scaffold(
-      backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
-      resizeToAvoidBottomInset: false,
-      body: SafeArea(
-        bottom: false,
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          child: Column(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(24.0),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.yellow.withValues(alpha: 0.05),
-                      Colors.transparent
-                    ],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                  ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+        resizeToAvoidBottomInset: false,
+        body: SafeArea(
+          bottom: false,
+          child: RefreshIndicator(
+            onRefresh: () async {
+              await _loadToolPermissions();
+              await _loadData();
+            },
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(24.0),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.yellow.withValues(alpha: 0.05),
+                          Colors.transparent
+                        ],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text('Tools for',
-                                style: GoogleFonts.outfit(
-                                    fontSize: 26,
-                                    fontWeight: FontWeight.w400,
-                                    color: FlutterFlowTheme.of(context).secondaryText,
-                                    letterSpacing: 1.2)),
-                            Text('Browser',
-                                style: GoogleFonts.outfit(
-                                    fontSize: 32,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.yellow)),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Tools for',
+                                    style: GoogleFonts.outfit(
+                                        fontSize: 26,
+                                        fontWeight: FontWeight.w400,
+                                        color: FlutterFlowTheme.of(context)
+                                            .secondaryText,
+                                        letterSpacing: 1.2)),
+                                Text('Browser',
+                                    style: GoogleFonts.outfit(
+                                        fontSize: 32,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.yellow)),
+                              ],
+                            ),
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: FlutterFlowTheme.of(context)
+                                    .primaryText
+                                    .withValues(alpha: 0.05),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.dashboard_rounded,
+                                  color: Colors.yellow),
+                            )
                           ],
                         ),
+                        const SizedBox(height: 24),
                         Container(
-                          padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: FlutterFlowTheme.of(context).primaryText.withValues(alpha: 0.05),
-                            shape: BoxShape.circle,
+                            color: FlutterFlowTheme.of(context)
+                                .secondaryBackground,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                                color: FlutterFlowTheme.of(context).alternate),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.15),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
                           ),
-                          child: const Icon(Icons.dashboard_rounded,
-                              color: Colors.yellow),
-                        )
+                          child: TextField(
+                            onChanged: (value) {
+                              if (!_isWebSearchMode) {
+                                setState(() => _toolsSearchQuery = value);
+                              }
+                            },
+                            onSubmitted: (query) {
+                              if (_isWebSearchMode && query.trim().isNotEmpty) {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => DynamicWebViewPage(
+                                      title: 'Browser',
+                                      url:
+                                          'https://www.google.com/search?q=${Uri.encodeComponent(query.trim())}',
+                                    ),
+                                  ),
+                                );
+                              }
+                            },
+                            style: GoogleFonts.outfit(
+                                color:
+                                    FlutterFlowTheme.of(context).primaryText),
+                            decoration: InputDecoration(
+                              hintText: _isWebSearchMode
+                                  ? 'Search Google...'
+                                  : 'Search tools or features...',
+                              hintStyle: GoogleFonts.outfit(
+                                  color: _isWebSearchMode
+                                      ? Colors.yellow.withValues(alpha: 0.5)
+                                      : FlutterFlowTheme.of(context)
+                                          .secondaryText),
+                              prefixIcon: Icon(
+                                _isWebSearchMode
+                                    ? Icons.travel_explore_rounded
+                                    : Icons.search,
+                                color: _isWebSearchMode
+                                    ? Colors.yellow
+                                    : FlutterFlowTheme.of(context)
+                                        .secondaryText,
+                              ),
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  Icons.public_rounded,
+                                  color: _isWebSearchMode
+                                      ? Colors.yellow
+                                      : FlutterFlowTheme.of(context)
+                                          .secondaryText,
+                                ),
+                                tooltip: 'Web Mode',
+                                onPressed: () {
+                                  setState(() {
+                                    _isWebSearchMode = !_isWebSearchMode;
+                                    if (_isWebSearchMode) {
+                                      _toolsSearchQuery = '';
+                                    }
+                                  });
+                                },
+                              ),
+                              border: InputBorder.none,
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 16),
+                            ),
+                          ),
+                        ),
                       ],
                     ),
-                    const SizedBox(height: 24),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: FlutterFlowTheme.of(context).secondaryBackground,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                            color: FlutterFlowTheme.of(context).alternate),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.15),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: TextField(
-                        onChanged: (value) {
-                          if (!_isWebSearchMode) {
-                            setState(() => _toolsSearchQuery = value);
-                          }
-                        },
-                        onSubmitted: (query) {
-                          if (_isWebSearchMode && query.trim().isNotEmpty) {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => DynamicWebViewPage(
-                                  title: 'Browser',
-                                  url: 'https://www.google.com/search?q=${Uri.encodeComponent(query.trim())}',
-                                ),
-                              ),
-                            );
-                          }
-                        },
-                        style: GoogleFonts.outfit(color: FlutterFlowTheme.of(context).primaryText),
-                        decoration: InputDecoration(
-                          hintText: _isWebSearchMode ? 'Search Google...' : 'Search tools or features...',
-                          hintStyle: GoogleFonts.outfit(color: _isWebSearchMode ? Colors.yellow.withValues(alpha: 0.5) : FlutterFlowTheme.of(context).secondaryText),
-                          prefixIcon: Icon(
-                            _isWebSearchMode ? Icons.travel_explore_rounded : Icons.search, 
-                            color: _isWebSearchMode ? Colors.yellow : FlutterFlowTheme.of(context).secondaryText,
-                          ),
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              Icons.public_rounded,
-                              color: _isWebSearchMode ? Colors.yellow : FlutterFlowTheme.of(context).secondaryText,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 24.0),
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 8),
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: filteredTools.length,
+                      itemBuilder: (context, index) {
+                        final tool = filteredTools[index];
+                        final isFav = _favoritedTools.contains(tool['title']);
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 16),
+                          decoration: BoxDecoration(
+                            color: FlutterFlowTheme.of(context)
+                                .secondaryBackground,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: isFav
+                                  ? (tool['color'] as Color)
+                                      .withValues(alpha: 0.5)
+                                  : FlutterFlowTheme.of(context).alternate,
+                              width: 1.5,
                             ),
-                            tooltip: 'Web Mode',
-                            onPressed: () {
-                              setState(() {
-                                _isWebSearchMode = !_isWebSearchMode;
-                                if (_isWebSearchMode) {
-                                  _toolsSearchQuery = ''; 
-                                }
-                              });
-                            },
                           ),
-                          border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 16),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 24.0),
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: filteredTools.length,
-                  itemBuilder: (context, index) {
-                    final tool = filteredTools[index];
-                    final isFav = _favoritedTools.contains(tool['title']);
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 16),
-                      decoration: BoxDecoration(
-                        color: FlutterFlowTheme.of(context).secondaryBackground,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: isFav
-                              ? (tool['color'] as Color).withValues(alpha: 0.5)
-                              : FlutterFlowTheme.of(context).alternate,
-                          width: 1.5,
-                        ),
-                      ),
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: tool['onTap'] as VoidCallback,
-                          borderRadius: BorderRadius.circular(20),
-                          child: Padding(
-                            padding: const EdgeInsets.all(20),
-                            child: Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    color: (tool['color'] as Color)
-                                        .withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  child: Icon(
-                                    tool['icon'] as IconData,
-                                    color: tool['color'] as Color,
-                                    size: 28,
-                                  ),
-                                ),
-                                const SizedBox(width: 20),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        tool['title'] as String,
-                                        style: GoogleFonts.outfit(
-                                          color: FlutterFlowTheme.of(context).primaryText,
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w600,
-                                        ),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: tool['onTap'] as VoidCallback,
+                              borderRadius: BorderRadius.circular(20),
+                              child: Padding(
+                                padding: const EdgeInsets.all(20),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(12),
+                                      decoration: BoxDecoration(
+                                        color: (tool['color'] as Color)
+                                            .withValues(alpha: 0.1),
+                                        borderRadius: BorderRadius.circular(16),
                                       ),
-                                      if (tool.containsKey('subtitle'))
-                                        Padding(
-                                          padding:
-                                              const EdgeInsets.only(top: 4),
-                                          child: Text(
-                                            tool['subtitle'] as String,
+                                      child: Icon(
+                                        tool['icon'] as IconData,
+                                        color: tool['color'] as Color,
+                                        size: 28,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 20),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            tool['title'] as String,
                                             style: GoogleFonts.outfit(
-                                              color: FlutterFlowTheme.of(context).secondaryText,
-                                              fontSize: 13,
+                                              color:
+                                                  FlutterFlowTheme.of(context)
+                                                      .primaryText,
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.w600,
                                             ),
                                           ),
-                                        ),
-                                    ],
-                                  ),
-                                ),
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    IconButton(
-                                      icon: const Icon(Icons.share_rounded, color: Colors.yellow, size: 20),
-                                      onPressed: () {
-                                        final userId = SupaFlow.client.auth.currentUser?.id;
-                                        if (userId != null) {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) => ShareContentScreen(
-                                                contentToShare:
-                                                    "Check out this ${tool['title']} tool on Pocket Mates!",
-                                                currentUserId: userId,
-                                                contentType: 'tool',
-                                                metadata: {
-                                                  'title': tool['title'],
-                                                  'description': tool.containsKey('subtitle') ? tool['subtitle'] : '',
-                                                  'category': 'Tools',
-                                                },
+                                          if (tool.containsKey('subtitle'))
+                                            Padding(
+                                              padding:
+                                                  const EdgeInsets.only(top: 4),
+                                              child: Text(
+                                                tool['subtitle'] as String,
+                                                style: GoogleFonts.outfit(
+                                                  color: FlutterFlowTheme.of(
+                                                          context)
+                                                      .secondaryText,
+                                                  fontSize: 13,
+                                                ),
                                               ),
                                             ),
-                                          );
-                                        }
-                                      },
-                                    ),
-                                    const SizedBox(width: 4),
-                                    IconButton(
-                                      icon: Icon(
-                                        isFav
-                                            ? Icons.favorite_rounded
-                                            : Icons.favorite_border_rounded,
-                                        color: isFav
-                                            ? Colors.redAccent
-                                            : Colors.white24,
+                                        ],
                                       ),
-                                      onPressed: () => _toggleFavoriteTool(
-                                          tool['title'] as String),
+                                    ),
+                                    Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        IconButton(
+                                          icon: const Icon(Icons.share_rounded,
+                                              color: Colors.yellow, size: 20),
+                                          onPressed: () {
+                                            final userId = SupaFlow
+                                                .client.auth.currentUser?.id;
+                                            if (userId != null) {
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      ShareContentScreen(
+                                                    contentToShare:
+                                                        "Check out this ${tool['title']} tool on Pocket Mates!",
+                                                    currentUserId: userId,
+                                                    contentType: 'tool',
+                                                    metadata: {
+                                                      'title': tool['title'],
+                                                      'description':
+                                                          tool.containsKey(
+                                                                  'subtitle')
+                                                              ? tool['subtitle']
+                                                              : '',
+                                                      'category': 'Tools',
+                                                    },
+                                                  ),
+                                                ),
+                                              );
+                                            }
+                                          },
+                                        ),
+                                        const SizedBox(width: 4),
+                                        IconButton(
+                                          icon: Icon(
+                                            isFav
+                                                ? Icons.favorite_rounded
+                                                : Icons.favorite_border_rounded,
+                                            color: isFav
+                                                ? Colors.redAccent
+                                                : Colors.white24,
+                                          ),
+                                          onPressed: () => _toggleFavoriteTool(
+                                              tool['title'] as String),
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 ),
-                              ],
+                              ),
                             ),
                           ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
-      ),
-    );
+        ));
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_currentPlan == 'free') {
-      return _buildPremiumSuiteLock();
-    }
+    // Premium restriction temporarily disabled as requested
+    // if (_currentPlan == 'free') {
+    //   return _buildPremiumSuiteLock();
+    // }
 
     return PopScope(
       canPop: widget.initialTab != null ? true : _showToolsList,
@@ -1497,7 +1646,8 @@ class _TaskManagerScreenState extends State<ToolsPage> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: IconThemeData(color: FlutterFlowTheme.of(context).primaryText),
+        iconTheme:
+            IconThemeData(color: FlutterFlowTheme.of(context).primaryText),
       ),
       body: Center(
         child: Padding(
@@ -1505,7 +1655,8 @@ class _TaskManagerScreenState extends State<ToolsPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.business_center_rounded, size: 80, color: Color(0xFFFFFC00)),
+              Icon(Icons.business_center_rounded,
+                  size: 80, color: Color(0xFFFFFC00)),
               const SizedBox(height: 24),
               Text(
                 'Premium Entrepreneur Suite',
@@ -1529,15 +1680,21 @@ class _TaskManagerScreenState extends State<ToolsPage> {
               const SizedBox(height: 32),
               ElevatedButton(
                 onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const SubscriptionPage())).then((_) {
+                  Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const SubscriptionPage()))
+                      .then((_) {
                     _loadPlan();
                   });
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Color(0xFFFFFC00),
                   foregroundColor: Colors.black,
-                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                 ),
                 child: const Text(
                   'Upgrade to Premium',
@@ -1565,7 +1722,8 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                 children: [
                   IconButton(
                     icon: Icon(Icons.arrow_back_ios_new_rounded,
-                        color: FlutterFlowTheme.of(context).primaryText, size: 20),
+                        color: FlutterFlowTheme.of(context).primaryText,
+                        size: 20),
                     onPressed: () {
                       if (widget.initialTab != null) {
                         Navigator.pop(context);
@@ -1679,7 +1837,10 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                             (_selectedTab == 2 && _showAddChallenge)
                         ? null
                         : LinearGradient(
-                            colors: [Colors.yellow.shade400, Colors.yellow.shade700],
+                            colors: [
+                              Colors.yellow.shade400,
+                              Colors.yellow.shade700
+                            ],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
@@ -1832,7 +1993,8 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                   onTap: () => setState(() => selectedPriority = priority),
                   child: Container(
                     margin: const EdgeInsets.only(right: 8),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
                       color: selectedPriority == priority
                           ? _getPriorityColor(priority)
@@ -1895,8 +2057,9 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 10),
                     decoration: BoxDecoration(
-                      color:
-                          !_useAISchedule ? Colors.yellow : const Color(0xFF424242),
+                      color: !_useAISchedule
+                          ? Colors.yellow
+                          : const Color(0xFF424242),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
@@ -1918,13 +2081,16 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 10),
                     decoration: BoxDecoration(
-                      color: _useAISchedule ? Colors.yellow : const Color(0xFF424242),
+                      color: _useAISchedule
+                          ? Colors.yellow
+                          : const Color(0xFF424242),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.auto_awesome, color: Colors.white, size: 16),
+                        const Icon(Icons.auto_awesome,
+                            color: Colors.white, size: 16),
                         const SizedBox(width: 4),
                         Text(
                           'AI Generate',
@@ -2229,7 +2395,9 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                         _getChallengeTypeText(type),
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          color: selectedChallengeType == type ? Colors.black : Colors.white,
+                          color: selectedChallengeType == type
+                              ? Colors.black
+                              : Colors.white,
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
                         ),
@@ -2288,7 +2456,8 @@ class _TaskManagerScreenState extends State<ToolsPage> {
   }
 
   Widget _buildPresetButton(int days) {
-    final isSelected = challengeDuration == days && selectedChallengeType == ChallengeType.days;
+    final isSelected = challengeDuration == days &&
+        selectedChallengeType == ChallengeType.days;
     return Expanded(
       child: GestureDetector(
         onTap: () {
@@ -2302,12 +2471,13 @@ class _TaskManagerScreenState extends State<ToolsPage> {
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
-            color: isSelected
-                ? const Color(0xFFFFD700)
-                : const Color(0xFF1E1E1E),
+            color:
+                isSelected ? const Color(0xFFFFD700) : const Color(0xFF1E1E1E),
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
-              color: isSelected ? const Color(0xFFFFD700) : const Color(0xFF424242),
+              color: isSelected
+                  ? const Color(0xFFFFD700)
+                  : const Color(0xFF424242),
               width: 1,
             ),
           ),
@@ -2396,7 +2566,9 @@ class _TaskManagerScreenState extends State<ToolsPage> {
               color: const Color(0xFF2C2C2C),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: task.isCompleted ? const Color(0xFF4CAF50) : const Color(0xFF424242),
+                color: task.isCompleted
+                    ? const Color(0xFF4CAF50)
+                    : const Color(0xFF424242),
                 width: task.isCompleted ? 2 : 1,
               ),
             ),
@@ -2423,7 +2595,8 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                           ),
                         ),
                         child: task.isCompleted
-                            ? const Icon(Icons.check, color: Colors.white, size: 14)
+                            ? const Icon(Icons.check,
+                                color: Colors.white, size: 14)
                             : null,
                       ),
                     ),
@@ -2452,8 +2625,8 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                     const SizedBox(width: 8),
                     GestureDetector(
                       onTap: () => _deleteTask(task.id),
-                      child:
-                          const Icon(Icons.close, color: Color(0xFF757575), size: 20),
+                      child: const Icon(Icons.close,
+                          color: Color(0xFF757575), size: 20),
                     ),
                     const SizedBox(width: 14),
                   ],
@@ -2501,7 +2674,9 @@ class _TaskManagerScreenState extends State<ToolsPage> {
         color: const Color(0xFF2C2C2C),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: item.isCompleted ? const Color(0xFF4CAF50) : const Color(0xFF424242),
+          color: item.isCompleted
+              ? const Color(0xFF4CAF50)
+              : const Color(0xFF424242),
           width: item.isCompleted ? 2 : 1,
         ),
       ),
@@ -2567,8 +2742,8 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                       ),
                       if (item.source == ScheduleSource.aiGenerated)
                         Container(
-                          padding:
-                              const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
                             color: const Color(0xFFFF6B9D),
                             borderRadius: BorderRadius.circular(6),
@@ -2637,12 +2812,14 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                 const SizedBox(height: 8),
                 GestureDetector(
                   onTap: () => _editScheduleItem(item),
-                  child: const Icon(Icons.edit, color: Color(0xFF757575), size: 18),
+                  child: const Icon(Icons.edit,
+                      color: Color(0xFF757575), size: 18),
                 ),
                 const SizedBox(height: 8),
                 GestureDetector(
                   onTap: () => _deleteScheduleItem(item.id),
-                  child: const Icon(Icons.delete, color: Color(0xFF757575), size: 18),
+                  child: const Icon(Icons.delete,
+                      color: Color(0xFF757575), size: 18),
                 ),
               ],
             ),
@@ -2654,12 +2831,15 @@ class _TaskManagerScreenState extends State<ToolsPage> {
 
   Widget _buildChallengeCard(Challenge challenge) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final themeYellow = isDark ? const Color(0xFFFFD600) : const Color(0xFFFFF500);
-    final completedDays = challenge.dailyTicks.values.where((v) => v == true).length;
+    final themeYellow =
+        isDark ? const Color(0xFFFFD600) : const Color(0xFFFFF500);
+    final completedDays =
+        challenge.dailyTicks.values.where((v) => v == true).length;
     final percentage =
         (completedDays / challenge.totalDays * 100).clamp(0.0, 100.0);
     final remainingDays = challenge.totalDays - completedDays;
-    final isCompleted = completedDays >= challenge.totalDays || challenge.isCompleted;
+    final isCompleted =
+        completedDays >= challenge.totalDays || challenge.isCompleted;
 
     // Calculate grid height dynamically based on row count (7 columns per row)
     final int rowsCount = (challenge.totalDays / 7).ceil();
@@ -2672,7 +2852,8 @@ class _TaskManagerScreenState extends State<ToolsPage> {
         color: const Color(0xFF2C2C2C),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: isCompleted ? const Color(0xFFFFD700) : const Color(0xFF424242),
+          color:
+              isCompleted ? const Color(0xFFFFD700) : const Color(0xFF424242),
           width: isCompleted ? 2 : 1,
         ),
         boxShadow: isCompleted
@@ -2718,10 +2899,14 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                       ),
                     ),
                     Text(
-                      isCompleted ? 'Goal Completed!' : 'Tap blocks to mark complete',
+                      isCompleted
+                          ? 'Goal Completed!'
+                          : 'Tap blocks to mark complete',
                       style: GoogleFonts.outfit(
                         fontSize: 12,
-                        color: isCompleted ? const Color(0xFFFFD700) : Colors.white60,
+                        color: isCompleted
+                            ? const Color(0xFFFFD700)
+                            : Colors.white60,
                       ),
                     ),
                   ],
@@ -2735,7 +2920,8 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                     color: Colors.white.withValues(alpha: 0.05),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.close, color: Colors.white60, size: 18),
+                  child:
+                      const Icon(Icons.close, color: Colors.white60, size: 18),
                 ),
               ),
             ],
@@ -2746,9 +2932,13 @@ class _TaskManagerScreenState extends State<ToolsPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildChallengeStat('Total Days', '${challenge.totalDays}', Colors.white70),
-              _buildChallengeStat('Completed', '$completedDays', const Color(0xFF4CAF50)),
-              _buildChallengeStat('Remaining', '$remainingDays Left', const Color(0xFFFF6B9D), isBold: true),
+              _buildChallengeStat(
+                  'Total Days', '${challenge.totalDays}', Colors.white70),
+              _buildChallengeStat(
+                  'Completed', '$completedDays', const Color(0xFF4CAF50)),
+              _buildChallengeStat(
+                  'Remaining', '$remainingDays Left', const Color(0xFFFF6B9D),
+                  isBold: true),
             ],
           ),
           const SizedBox(height: 16),
@@ -2860,7 +3050,8 @@ class _TaskManagerScreenState extends State<ToolsPage> {
     );
   }
 
-  Widget _buildChallengeStat(String label, String value, Color color, {bool isBold = false}) {
+  Widget _buildChallengeStat(String label, String value, Color color,
+      {bool isBold = false}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -2968,7 +3159,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
           color: Colors.orange,
           onTap: () {
             Navigator.of(context).push(
-            MaterialPageRoute(builder: (context) => const DrawingAppHome()),
+              MaterialPageRoute(builder: (context) => const DrawingAppHome()),
             );
           },
         ),
@@ -2999,7 +3190,11 @@ class _TaskManagerScreenState extends State<ToolsPage> {
               children: [
                 Icon(Icons.analytics, color: Colors.greenAccent, size: 28),
                 SizedBox(width: 12),
-                Text('Customer Analytics', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+                Text('Customer Analytics',
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold)),
               ],
             ),
             const SizedBox(height: 16),
@@ -3010,12 +3205,18 @@ class _TaskManagerScreenState extends State<ToolsPage> {
             const SizedBox(height: 24),
             Container(
               padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.05), borderRadius: BorderRadius.circular(12)),
+              decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(12)),
               child: const Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Trending Interest:', style: TextStyle(color: Colors.white54)),
-                  Text('Startup Growth', style: TextStyle(color: Colors.greenAccent, fontWeight: FontWeight.bold)),
+                  Text('Trending Interest:',
+                      style: TextStyle(color: Colors.white54)),
+                  Text('Startup Growth',
+                      style: TextStyle(
+                          color: Colors.greenAccent,
+                          fontWeight: FontWeight.bold)),
                 ],
               ),
             ),
@@ -3023,9 +3224,12 @@ class _TaskManagerScreenState extends State<ToolsPage> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.greenAccent, foregroundColor: Colors.black),
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.greenAccent,
+                    foregroundColor: Colors.black),
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Upgrade to Unlock Full Analytics', style: TextStyle(fontWeight: FontWeight.bold)),
+                child: const Text('Upgrade to Unlock Full Analytics',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
               ),
             )
           ],
@@ -3901,7 +4105,8 @@ class _DiagramListScreenState extends State<DiagramListScreen> {
               if (isLoading) ...[
                 const SizedBox(height: 20),
                 const LinearProgressIndicator(
-                    color: Color(0xFFFF6B9D), backgroundColor: Color(0xFF1E1E1E)),
+                    color: Color(0xFFFF6B9D),
+                    backgroundColor: Color(0xFF1E1E1E)),
                 const SizedBox(height: 8),
                 const Text('Generating your plan...',
                     style: TextStyle(color: Colors.white54, fontSize: 12)),
@@ -4155,8 +4360,8 @@ class _DiagramListScreenState extends State<DiagramListScreen> {
                   },
                 ),
                 ListTile(
-                  leading: const Icon(Icons.auto_awesome,
-                      color: Color(0xFFFF6B9D)),
+                  leading:
+                      const Icon(Icons.auto_awesome, color: Color(0xFFFF6B9D)),
                   title: const Text('Generate with AI',
                       style: TextStyle(color: Colors.white)),
                   onTap: () {
@@ -4302,7 +4507,6 @@ class _FlowCanvasScreenState extends State<FlowCanvasScreen> {
       ),
     );
   }
-
 
   void _editNode(FlowNode node) {
     String title = node.title;
@@ -4556,8 +4760,9 @@ class _FlowCanvasScreenState extends State<FlowCanvasScreen> {
                   child: SingleChildScrollView(
                     physics: const NeverScrollableScrollPhysics(),
                     child: Transform(
-                      transform: Matrix4.diagonal3Values(zoomLevel, zoomLevel, 1.0)
-                        ..translate(canvasOffset.dx, canvasOffset.dy),
+                      transform:
+                          Matrix4.diagonal3Values(zoomLevel, zoomLevel, 1.0)
+                            ..translate(canvasOffset.dx, canvasOffset.dy),
                       child: SizedBox(
                         width: canvasWidth,
                         height: canvasHeight,
@@ -4749,5 +4954,3 @@ class ArrowPainter extends CustomPainter {
 // Removed GrowthDashboard and Content AI features
 
 // Mock AI Service - Replace with your actual implementation
-
-

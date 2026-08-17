@@ -134,6 +134,13 @@ class _AuthPageWidgetState extends State<AuthPageWidget>
 
   @override
   Widget build(BuildContext context) {
+    if (loggedIn) {
+      // Prevent flashing the auth UI since we're redirecting anyway
+      return Scaffold(
+        backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+      );
+    }
+
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(

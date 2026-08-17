@@ -162,7 +162,7 @@ class _MyAppState extends State<MyApp> {
       child: ProviderScope(
         child: MaterialApp.router(
           debugShowCheckedModeBanner: false,
-          title: 'Handskill Friends',
+          title: 'Pocketmates',
           scrollBehavior: MyAppScrollBehavior(),
           localizationsDelegates: const [
             GlobalMaterialLocalizations.delegate,

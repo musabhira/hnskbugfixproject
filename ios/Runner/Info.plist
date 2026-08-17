@@ -70,6 +70,8 @@
 	<string>This app needs camera access to take photos and make video calls.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>This app needs microphone access to record voice messages and make audio calls.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>This app needs speech recognition to convert your speech to text for the Voice Assistant.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>This app needs access to your gallery to let you share photos with your friends.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>

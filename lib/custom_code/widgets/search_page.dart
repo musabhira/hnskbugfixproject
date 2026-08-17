@@ -504,6 +504,7 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
       final response = await _supabase
           .from('profile')
           .select('profile_image_url, shop_name, verified, user_id, name')
+          .neq('is_private', true)
           .or('name.ilike.%$query%,shop_name.ilike.%$query%,slug.ilike.%$query%')
           .order('name', ascending: true)
           .range(_currentPage * _pageSize, (_currentPage + 1) * _pageSize - 1);
@@ -547,6 +548,7 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
         response = await _supabase
             .from('profile')
             .select('profile_image_url, shop_name, verified, user_id, name')
+            .neq('is_private', true)
             .order('name', ascending: true)
             .range(
                 _currentPage * _pageSize, (_currentPage + 1) * _pageSize - 1);
@@ -554,6 +556,7 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
         response = await _supabase
             .from('profile')
             .select('profile_image_url, shop_name, verified, user_id, name')
+            .neq('is_private', true)
             .or(
                 'name.ilike.%$_currentQuery%,shop_name.ilike.%$_currentQuery%,slug.ilike.%$_currentQuery%')
             .order('name', ascending: true)
@@ -786,6 +789,7 @@ class FollowButton extends StatefulWidget {
 
 class _FollowButtonState extends State<FollowButton> {
   late bool _isFollowing;
+  bool _isRequested = false;
   bool _isLoading = false;
   final _supabase = SupaFlow.client;
 
@@ -833,11 +837,48 @@ class _FollowButtonState extends State<FollowButton> {
       return;
     }
 
+    final isPrivate = _profileData?['is_private'] == true;
+
     safeSetState(() {
       _isLoading = true;
     });
 
     try {
+      if (isPrivate && !_isFollowing) {
+        final oldRequested = _isRequested;
+        safeSetState(() {
+          _isRequested = !_isRequested;
+          _isLoading = false;
+        });
+
+        try {
+          if (_isRequested) {
+            final myProfile = await _supabase.from('profile').select('name').eq('user_id', currentUserId).maybeSingle();
+            final myName = myProfile?['name'] ?? 'Someone';
+            await _supabase.from('notifications').insert({
+              'user_id': widget.userId,
+              'sender_id': currentUserId,
+              'message': '$myName wants to follow you.',
+              'type': 'follow_request',
+              'status': 'pending',
+            });
+          } else {
+            await _supabase
+                .from('notifications')
+                .delete()
+                .eq('sender_id', currentUserId)
+                .eq('user_id', widget.userId)
+                .eq('type', 'follow_request')
+                .eq('status', 'pending');
+          }
+        } catch (e) {
+          safeSetState(() {
+            _isRequested = oldRequested;
+          });
+        }
+        return;
+      }
+
       if (_isFollowing) {
         // Unfollow - delete the record
         await _supabase
@@ -845,11 +886,6 @@ class _FollowButtonState extends State<FollowButton> {
             .delete()
             .eq('follower_id', currentUserId)
             .eq('followed_id', widget.userId);
-
-        // Reset first follow timestamp when unfollowing
-        // safeSetState(() {
-        //   _firstFollowTimestamp = null;
-        // });
       } else {
         // Check if the follow relationship already exists
         final existingFollow = await _supabase
@@ -866,11 +902,6 @@ class _FollowButtonState extends State<FollowButton> {
             'follower_id': currentUserId,
             'followed_id': widget.userId,
           });
-
-          // Update first follow timestamp
-          // safeSetState(() {
-          //   _firstFollowTimestamp = DateTime.now();
-          // });
         }
       }
 
@@ -920,16 +951,31 @@ class _FollowButtonState extends State<FollowButton> {
       // Fetch button colors directly from profile table
       final buttonColorsResponse = await _supabase
           .from('profile')
-          .select('button_color_code, button_text_color')
+          .select('button_color_code, button_text_color, is_private')
           .eq('user_id', widget.userId)
           .limit(1);
 
       Map<String, dynamic>? buttonColors =
           buttonColorsResponse.isNotEmpty ? buttonColorsResponse.first : null;
 
+      bool isReq = false;
+      final currentUserId = _supabase.auth.currentUser?.id;
+      if (currentUserId != null && currentUserId != widget.userId) {
+        final reqCheck = await _supabase
+            .from('notifications')
+            .select('id')
+            .eq('sender_id', currentUserId)
+            .eq('user_id', widget.userId)
+            .eq('type', 'follow_request')
+            .eq('status', 'pending')
+            .maybeSingle();
+        isReq = reqCheck != null;
+      }
+
       safeSetState(() {
         // Store button colors in _profileData
         _profileData = buttonColors ?? {};
+        _isRequested = isReq;
         _isLoading = false;
       });
     } catch (e) {
@@ -990,11 +1036,17 @@ class _FollowButtonState extends State<FollowButton> {
 
   @override
   Widget build(BuildContext context) {
-    //  if (_isFollowing)
+    final labelText = _isFollowing
+        ? 'Following'
+        : (_isRequested ? 'Requested' : 'Follow');
+    final labelIcon = _isFollowing
+        ? Icons.person_remove
+        : (_isRequested ? Icons.hourglass_empty : Icons.person_add);
+
     return OutlinedButton.icon(
       onPressed: _isLoading ? null : _toggleFollow,
-      icon: Icon(_isFollowing ? Icons.person_remove : Icons.person_add, color: _isFollowing ? _getButtonColor() : _getButtonTextColor()),
-      label: Text(_isFollowing ? 'Following' : 'Follow', style: TextStyle(color: _isFollowing ? _getButtonColor() : _getButtonTextColor())),
+      icon: Icon(labelIcon, color: _isFollowing ? _getButtonColor() : _getButtonTextColor()),
+      label: Text(labelText, style: TextStyle(color: _isFollowing ? _getButtonColor() : _getButtonTextColor())),
       style: OutlinedButton.styleFrom(
         foregroundColor: _isFollowing
             ? _getButtonColor().withValues(alpha: 0.5)
@@ -1046,6 +1098,7 @@ class _ProfileDetailPageState extends State<ProfileDetailPage>
   late TabController _tabController;
   int _followersCount = 0;
   bool _isFollowing = false;
+  bool _isPrivate = false;
 
   @override
   void initState() {
@@ -1080,6 +1133,13 @@ class _ProfileDetailPageState extends State<ProfileDetailPage>
     });
 
     try {
+      final pCheck = await _supabase
+          .from('profile')
+          .select('is_private')
+          .eq('user_id', widget.userId)
+          .maybeSingle();
+      final isPrivate = pCheck?['is_private'] == true;
+
       // Fetch profile data - get the first entry for this user
       final profileResponse =
           await _supabase.from('profile_gallery_service_likes_view').select('''
@@ -1131,6 +1191,7 @@ class _ProfileDetailPageState extends State<ProfileDetailPage>
 
       safeSetState(() {
         _profileData = profile;
+        _isPrivate = isPrivate;
         _galleryItems = uniqueGalleryItems.values.toList();
         _serviceItems = uniqueServiceItems.values.toList();
         _isLoading = false;
@@ -1407,29 +1468,25 @@ class _ProfileDetailPageState extends State<ProfileDetailPage>
                                 ),
 
                               // Contact Button
-                              Padding(
-                                padding: const EdgeInsets.only(top: 16.0),
-                                child: ElevatedButton(
-                                  onPressed: () {
-                                    _navigateToMessages();
-                                    // ScaffoldMessenger.of(context).showSnackBar(
-                                    //   const SnackBar(
-                                    //       content: Text(
-                                    //           'Contact functionality to be implemented')),
-                                    // );
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: buttonColor,
-                                    foregroundColor: buttonTextColor,
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 24, vertical: 12),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8),
+                              if (!(_isPrivate && !_isFollowing && widget.userId != _supabase.auth.currentUser?.id))
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 16.0),
+                                  child: ElevatedButton(
+                                    onPressed: () {
+                                      _navigateToMessages();
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: buttonColor,
+                                      foregroundColor: buttonTextColor,
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 24, vertical: 12),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
                                     ),
+                                    child: const Text('Contact'),
                                   ),
-                                  child: const Text('Contact'),
                                 ),
-                              ),
                             ],
                           ),
                         ),
@@ -1461,21 +1518,60 @@ class _ProfileDetailPageState extends State<ProfileDetailPage>
                         ),
 
                         // Tab Bar
-                        TabBar(
-                          controller: _tabController,
-                          labelColor: bgTextColor,
-                          indicatorColor: buttonColor,
-                          tabs: const [
-                            Tab(text: 'Gallery'),
-                            Tab(text: 'Services'),
-                          ],
-                        ),
+                        if (!(_isPrivate && !_isFollowing && widget.userId != _supabase.auth.currentUser?.id))
+                          TabBar(
+                            controller: _tabController,
+                            labelColor: bgTextColor,
+                            indicatorColor: buttonColor,
+                            tabs: const [
+                              Tab(text: 'Gallery'),
+                              Tab(text: 'Services'),
+                            ],
+                          ),
 
                         // Tab Content
                         Expanded(
-                          child: TabBarView(
-                            controller: _tabController,
-                            children: [
+                          child: (_isPrivate && !_isFollowing && widget.userId != _supabase.auth.currentUser?.id)
+                              ? Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(24),
+                                        decoration: BoxDecoration(
+                                          color: buttonColor.withValues(alpha: 0.1),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: Icon(
+                                          Icons.lock_outline_rounded,
+                                          color: buttonColor,
+                                          size: 48,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 16),
+                                      Text(
+                                        'This account is private',
+                                        style: TextStyle(
+                                          color: bgTextColor,
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        'Follow this user to see their photos and services.',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          color: bgTextColor.withValues(alpha: 0.6),
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              : TabBarView(
+                                  controller: _tabController,
+                                  children: [
                               _galleryItems.isEmpty
                                   ? Center(
                                       child: Text('No gallery items',

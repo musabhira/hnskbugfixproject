@@ -137,6 +137,31 @@ class MarketNotifier extends Notifier<MarketState> {
       var query = _supabase.from('gallery_with_comments_view').select();
       if (category != 'All') query = query.eq('gallery_category', category);
 
+      // --- Privacy Filter ---
+      final privateUsersResponse = await _supabase
+          .from('profile')
+          .select('user_id')
+          .eq('is_private', true);
+      
+      final currentUserId = _supabase.auth.currentUser?.id;
+      final followedUsersResponse = currentUserId != null 
+          ? await _supabase.from('follows').select('followed_id').eq('follower_id', currentUserId)
+          : [];
+          
+      final followedUserIds = followedUsersResponse.map((e) => e['followed_id'].toString()).toSet();
+      
+      // Filter out private users that we don't follow and aren't us
+      final privateUserIdsToHide = privateUsersResponse
+          .map((e) => e['user_id'].toString())
+          .where((id) => id != currentUserId && !followedUserIds.contains(id))
+          .toList();
+
+      if (privateUserIdsToHide.isNotEmpty) {
+        final notInString = '(${privateUserIdsToHide.join(',')})';
+        query = query.not('user_id', 'in', notInString);
+      }
+      // ----------------------
+
       final response = await query
           .order('gallery_created_at', ascending: false)
           .range(page * itemsPerPage, (page + 1) * itemsPerPage - 1);

@@ -16,6 +16,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/whats_app_groups_provider.dart'
     as groups_provider;
 import 'package:pocket_mates_app/custom_code/widgets/active_users_provider.dart';
+import 'package:pocket_mates_app/custom_code/widgets/zoyarex_admin/zoyarex_login_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/zoyarex_admin/zoyarex_ai_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/teams/teams_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/share_content_screen.dart';
 import 'package:pocket_mates_app/custom_code/widgets/status_display_widget.dart';
@@ -28,6 +30,8 @@ import 'dart:math' as math;
 import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.dart';
 import 'package:pocket_mates_app/custom_code/widgets/native_webrtc_call_screen.dart';
 import 'package:pocket_mates_app/custom_code/widgets/conversation_tile.dart';
+import 'package:pocket_mates_app/custom_code/widgets/voice_assistant/pocket_mates_voice_button.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chat/english_learning_group_chat.dart';
 
 // Aliases for WhatsApp Groups Provider to avoid naming conflicts
 typedef ChatConversation = groups_provider.ChatConversation;
@@ -58,7 +62,7 @@ class HomePageWidgetTree extends ConsumerStatefulWidget {
 class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   final supabase = SupaFlow.client;
   // final scaffoldKey = GlobalKey<ScaffoldState>(); // Removed ScaffoldKey
-  int _currentIndex = 1;
+  int _currentIndex = 2;
   String? profileId;
   String? _profileImageUrl;
   bool _isVerified = false;
@@ -82,7 +86,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   bool _isSearchingPeople = false;
   bool _isSearchingProducts = false;
   async.Timer? _searchDebounce;
-  final ValueNotifier<String> _vibesFilterNotifier = ValueNotifier<String>('Public');
+  final ValueNotifier<String> _vibesFilterNotifier =
+      ValueNotifier<String>('Public');
 
   @override
   void initState() {
@@ -91,7 +96,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     _loadCachedData();
     _loadAllUserData();
     _searchController.addListener(_onSearchChanged);
-    
+
     // Add post frame callback to check for updates after initial render
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkAppUpdate();
@@ -125,7 +130,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     if (user != null) {
       try {
         final prefs = await SharedPreferences.getInstance();
-        final hasSeenEulaLocally = prefs.getBool('eula_accepted_${user.id}') ?? false;
+        final hasSeenEulaLocally =
+            prefs.getBool('eula_accepted_${user.id}') ?? false;
 
         if (!hasSeenEulaLocally) {
           // If not seen locally, we MUST show it
@@ -366,17 +372,17 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 
       final bool isAndroid = io.Platform.isAndroid;
       final bool isIOS = io.Platform.isIOS;
-      
-      final String? storeVersion = isAndroid 
-          ? updateData['android_version'] 
+
+      final String? storeVersion = isAndroid
+          ? updateData['android_version']
           : (isIOS ? updateData['ios_version'] : null);
-      
-      final bool isActive = isAndroid 
-          ? (updateData['android_active'] ?? false) 
+
+      final bool isActive = isAndroid
+          ? (updateData['android_active'] ?? false)
           : (isIOS ? (updateData['ios_active'] ?? false) : false);
-          
-      final String? storeLink = isAndroid 
-          ? updateData['android_link'] 
+
+      final String? storeLink = isAndroid
+          ? updateData['android_link']
           : (isIOS ? updateData['ios_link'] : null);
 
       if (storeVersion != null && isActive) {
@@ -393,7 +399,9 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     try {
       final currentParts = current.split('.');
       final storeParts = store.split('.');
-      for (var i = 0; i < math.min(currentParts.length, storeParts.length); i++) {
+      for (var i = 0;
+          i < math.min(currentParts.length, storeParts.length);
+          i++) {
         final currentPart = int.parse(currentParts[i]);
         final storePart = int.parse(storeParts[i]);
         if (storePart > currentPart) return true;
@@ -405,9 +413,11 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     }
   }
 
-  void _showUpdateDialog(Map<String, dynamic> updateData, String? appStoreLink, String storeVersion) {
+  void _showUpdateDialog(Map<String, dynamic> updateData, String? appStoreLink,
+      String storeVersion) {
     final title = updateData['title'] ?? 'New Update Available';
-    final description = updateData['description'] ?? 'A new version with exciting features is available now.';
+    final description = updateData['description'] ??
+        'A new version with exciting features is available now.';
     final features = List<String>.from(updateData['features'] ?? []);
     final isMandatory = updateData['is_mandatory'] ?? false;
 
@@ -418,14 +428,17 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         filter: ui.ImageFilter.blur(sigmaX: 5, sigmaY: 5),
         child: material.Dialog(
           backgroundColor: material.Colors.transparent,
-          insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+          insetPadding:
+              const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
           child: Container(
             constraints: const BoxConstraints(maxWidth: 400),
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
               color: const Color(0xFF1E293B),
               borderRadius: BorderRadius.circular(28),
-              border: Border.all(color: const Color(0xFFFFFC00).withValues(alpha: 0.2), width: 1.5),
+              border: Border.all(
+                  color: const Color(0xFFFFFC00).withValues(alpha: 0.2),
+                  width: 1.5),
               boxShadow: [
                 BoxShadow(
                   color: const Color(0xFFFFFC00).withValues(alpha: 0.1),
@@ -446,11 +459,13 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                         color: const Color(0xFFFFFC00).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(16),
                       ),
-                      child: const Icon(material.Icons.system_update_rounded, color: const Color(0xFFFFFC00), size: 28),
+                      child: const Icon(material.Icons.system_update_rounded,
+                          color: const Color(0xFFFFFC00), size: 28),
                     ),
                     const Spacer(),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
                         color: const Color(0xFFFFFC00),
                         borderRadius: BorderRadius.circular(20),
@@ -505,12 +520,17 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text("•", style: TextStyle(color: const Color(0xFFFFFC00))),
+                            const Text("•",
+                                style:
+                                    TextStyle(color: const Color(0xFFFFFC00))),
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
                                 features[i],
-                                style: TextStyle(color: material.Colors.white.withValues(alpha: 0.8), fontSize: 13),
+                                style: TextStyle(
+                                    color: material.Colors.white
+                                        .withValues(alpha: 0.8),
+                                    fontSize: 13),
                               ),
                             ),
                           ],
@@ -531,7 +551,9 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                           ),
                           child: Text(
                             'Later',
-                            style: TextStyle(color: material.Colors.white.withValues(alpha: 0.5)),
+                            style: TextStyle(
+                                color: material.Colors.white
+                                    .withValues(alpha: 0.5)),
                           ),
                         ),
                       ),
@@ -552,7 +574,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                           if (appStoreLink != null) {
                             final url = Uri.parse(appStoreLink);
                             if (await canLaunchUrl(url)) {
-                              await launchUrl(url, mode: LaunchMode.externalApplication);
+                              await launchUrl(url,
+                                  mode: LaunchMode.externalApplication);
                             }
                           }
                           if (!mounted) return;
@@ -589,8 +612,19 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     int? initialTab;
 
     switch (title) {
+      case 'Zoyrax POS Admin': // Legacy spelling fallback
+      case 'Zoyarex POS Admin':
+      case 'Zoyarex Super Admin':
+        page = const ZoyarexLoginPage();
+        break;
+      case 'Zoyarex AI':
+        page = const ZoyarexAiPage();
+        break;
       case 'Drawing Tool':
         page = const DrawingPage();
+        break;
+      case 'Dual Recorder':
+        page = const DualVideoRecorderWidget();
         break;
       case 'Schedule':
         initialTab = 0;
@@ -599,6 +633,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         initialTab = 1;
         break;
       case 'Challenges':
+      case 'Habit Tracker':
         initialTab = 2;
         break;
       case 'Diagrams':
@@ -619,8 +654,35 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       case 'Poki Games':
         page = const PokiGamesPage();
         break;
+      case 'Crazy Games':
+        page = const CrazyGamesPage();
+        break;
       case 'Travel Radar':
         page = const NearbyUsersPage();
+        break;
+      case 'Chess Match':
+        page = const ChessMatchmakingPage();
+        break;
+      case 'Password Pro':
+        page = const PasswordGeneratorPage();
+        break;
+      case 'WhatsApp Web':
+        page = const DynamicWebViewPage(title: 'WhatsApp Web', url: 'https://web.whatsapp.com');
+        break;
+      case 'English Hub':
+        page = const EnglishLearningHubPage();
+        break;
+      case 'POS Tool':
+        page = const BusinessPOSPage();
+        break;
+      case 'Test Feature':
+        page = const TestFeaturePage();
+        break;
+      case 'Dynamic Web App':
+      case 'QR & Barcode':
+      case 'World Clock':
+      case 'Web Search':
+        page = ToolsPage(onFavoriteToggled: _handleRefresh);
         break;
     }
 
@@ -660,116 +722,127 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         ),
         child: material.Scaffold(
           backgroundColor: material.Colors.transparent,
+          // floatingActionButton: const PocketMatesVoiceButton(),
           bottomNavigationBar: _buildBottomNavigationBar(context),
           body: material.ColoredBox(
             color: material.Colors.transparent,
             child: _isLoading
                 ? Center(
                     child: material.CircularProgressIndicator(
-                      color: isDark ? const Color(0xFFFFFC00) : const Color(0xFFFFFC00),
+                      color: isDark
+                          ? const Color(0xFFFFFC00)
+                          : const Color(0xFFFFFC00),
                     ),
                   )
                 : _currentIndex == 0
                     ? ToolsPage(onFavoriteToggled: _handleRefresh)
                     : _currentIndex == 2
-                        ? const MainMarketPage()
-                        : material.RefreshIndicator(
-                                onRefresh: _handleRefresh,
-                                color: isDark ? const Color(0xFFFFFC00) : const Color(0xFFFFFC00),
-                                backgroundColor: isDark ? const Color(0xFF121218) : const Color(0xFFF4F4F9),
-                                child: material.NestedScrollView(
-                                  physics: const BouncingScrollPhysics(
-                                      parent: AlwaysScrollableScrollPhysics()),
-                                  headerSliverBuilder:
-                                      (context, innerBoxIsScrolled) {
-                                    return [
-                                      // Unified Coordinated Header
-                                      SliverPersistentHeader(
-                                        pinned: false,
-                                        delegate: _HomeMainHeaderDelegate(
-                                          currentUserId:
-                                              supabase.auth.currentUser?.id ??
-                                                  '',
-                                          currentProfileId: profileId ?? '',
-                                          statusRefreshKey: _refreshKeyCount,
-                                          activeUsersRef: ref.watch(
-                                              activeUsersProvider(
-                                                  profileId ?? '')),
-                                          onTapVideo: () =>
-                                              _handleStrangerMatch(
-                                            context,
-                                            ref,
-                                            'Video',
-                                            profileId ?? '',
-                                          ),
-                                          onTapFriends: () {
-                                            material.ScaffoldMessenger.of(context).showSnackBar(
-                                              material.SnackBar(
-                                                content: const Text(
-                                                    'Founder Match feature is calibrating for your region.'),
-                                                backgroundColor: isDark ? const Color(0xFFFFFC00) : const Color(0xFFFFFC00),
-                                              ),
-                                            );
-                                          },
-                                          onTapCall: () => _handleStrangerMatch(
-                                            context,
-                                            ref,
-                                            'Voice',
-                                            profileId ?? '',
-                                          ),
-                                          onTapText: () => _handleStrangerMatch(
-                                            context,
-                                            ref,
-                                            'Text',
-                                            profileId ?? '',
-                                          ),
-                                          onTapSettings: _handleSettings,
-                                          onTapAdd: () =>
-                                              _showAddBottomSheet(context),
-                                          onRefresh: _handleRefresh,
-                                          // Tab Bar params
-                                          selectedIndex: _chatTabIndex,
-                                          onTabTap: _onTabTapped,
-                                          // Search params
-                                          searchController: _searchController,
-                                          searchQuery: _searchQuery,
-                                          isSearching: _isSearchingPeople,
-                                          vibesFilterNotifier: _vibesFilterNotifier,
-                                        ),
+                        ? EnglishLearningGroupChatWidget(
+                            onCancel: () => setState(() => _currentIndex = 1),
+                          )
+                        : _currentIndex == 3
+                            ? const MainMarketPage()
+                            : material.RefreshIndicator(
+                            onRefresh: _handleRefresh,
+                            color: isDark
+                                ? const Color(0xFFFFFC00)
+                                : const Color(0xFFFFFC00),
+                            backgroundColor: isDark
+                                ? const Color(0xFF121218)
+                                : const Color(0xFFF4F4F9),
+                            child: material.NestedScrollView(
+                              physics: const BouncingScrollPhysics(
+                                  parent: AlwaysScrollableScrollPhysics()),
+                              headerSliverBuilder:
+                                  (context, innerBoxIsScrolled) {
+                                return [
+                                  // Unified Coordinated Header
+                                  SliverPersistentHeader(
+                                    pinned: false,
+                                    delegate: _HomeMainHeaderDelegate(
+                                      currentUserId:
+                                          supabase.auth.currentUser?.id ?? '',
+                                      currentProfileId: profileId ?? '',
+                                      statusRefreshKey: _refreshKeyCount,
+                                      activeUsersRef: ref.watch(
+                                          activeUsersProvider(profileId ?? '')),
+                                      onTapVideo: () => _handleStrangerMatch(
+                                        context,
+                                        ref,
+                                        'Video',
+                                        profileId ?? '',
                                       ),
-                                    ];
-                                  },
-                                  body: material.Builder(
-                                    builder: (context) => material.Material(
-                                      color: material.Colors.transparent,
-                                      child: PageView(
-                                        controller: _pageController,
-                                        onPageChanged: _onPageChanged,
-                                        children: [
-                                          material.CustomScrollView(
-                                            physics: const BouncingScrollPhysics(
-                                                parent:
-                                                    AlwaysScrollableScrollPhysics()),
-                                            slivers: [
-                                              _buildChatListSliver(
-                                                  conversationsAsync),
-                                            ],
+                                      onTapFriends: () {
+                                        material.ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          material.SnackBar(
+                                            content: const Text(
+                                                'Founder Match feature is calibrating for your region.'),
+                                            backgroundColor: isDark
+                                                ? const Color(0xFFFFFC00)
+                                                : const Color(0xFFFFFC00),
                                           ),
-                                          _buildVibesSection(),
-                                          ThoughtsFeedSection(
-                                            currentUserId: _currentUserId ?? '',
-                                            currentProfileId: profileId ?? '',
-                                            onStatusShared: _handleRefresh,
-                                            searchQuery: _chatTabIndex == 2
-                                                ? _searchQuery
-                                                : '',
-                                          ),
+                                        );
+                                      },
+                                      onTapCall: () => _handleStrangerMatch(
+                                        context,
+                                        ref,
+                                        'Voice',
+                                        profileId ?? '',
+                                      ),
+                                      onTapText: () => _handleStrangerMatch(
+                                        context,
+                                        ref,
+                                        'Text',
+                                        profileId ?? '',
+                                      ),
+                                      onTapSettings: _handleSettings,
+                                      onTapAdd: () =>
+                                          _showAddBottomSheet(context),
+                                      onRefresh: _handleRefresh,
+                                      // Tab Bar params
+                                      selectedIndex: _chatTabIndex,
+                                      onTabTap: _onTabTapped,
+                                      // Search params
+                                      searchController: _searchController,
+                                      searchQuery: _searchQuery,
+                                      isSearching: _isSearchingPeople,
+                                      vibesFilterNotifier: _vibesFilterNotifier,
+                                    ),
+                                  ),
+                                ];
+                              },
+                              body: material.Builder(
+                                builder: (context) => material.Material(
+                                  color: material.Colors.transparent,
+                                  child: PageView(
+                                    controller: _pageController,
+                                    onPageChanged: _onPageChanged,
+                                    children: [
+                                      material.CustomScrollView(
+                                        physics: const BouncingScrollPhysics(
+                                            parent:
+                                                AlwaysScrollableScrollPhysics()),
+                                        slivers: [
+                                          _buildChatListSliver(
+                                              conversationsAsync),
                                         ],
                                       ),
-                                    ),
+                                      _buildVibesSection(),
+                                      ThoughtsFeedSection(
+                                        currentUserId: _currentUserId ?? '',
+                                        currentProfileId: profileId ?? '',
+                                        onStatusShared: _handleRefresh,
+                                        searchQuery: _chatTabIndex == 2
+                                            ? _searchQuery
+                                            : '',
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
+                            ),
+                          ),
           ),
         ),
       ),
@@ -889,7 +962,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                       (context, index) {
                         final conversation = filteredConversations[index];
                         if (conversation.id == 'notifications_aggregator') {
-                          return _buildNotificationsTile(allNotifications.length);
+                          return _buildNotificationsTile(
+                              allNotifications.length);
                         }
                         return ConversationTile(
                           key: ValueKey(conversation.id),
@@ -906,11 +980,13 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                             } else if (conversation.isActiveTimer) {
                               if (conversation.teamData != null) {
                                 try {
-                                  final team = Team.fromJson(conversation.teamData!);
+                                  final team =
+                                      Team.fromJson(conversation.teamData!);
                                   Navigator.push(
                                     context,
                                     material.MaterialPageRoute(
-                                      builder: (context) => TeamDetailPage(team: team),
+                                      builder: (context) =>
+                                          TeamDetailPage(team: team),
                                     ),
                                   );
                                 } catch (e) {
@@ -993,14 +1069,16 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                   Icon(
                                     material.Icons.search_rounded,
                                     size: 64,
-                                    color: material.Colors.white.withValues(alpha: 0.1),
+                                    color: material.Colors.white
+                                        .withValues(alpha: 0.1),
                                   ),
                                   const SizedBox(height: 16),
                                   Text(
                                     'No results for "$_searchQuery"',
                                     style: GoogleFonts.outfit(
                                       fontSize: 16,
-                                      color: material.Colors.white.withValues(alpha: 0.3),
+                                      color: material.Colors.white
+                                          .withValues(alpha: 0.3),
                                     ),
                                   ),
                                 ],
@@ -1011,18 +1089,24 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Padding(
-                              padding: const EdgeInsets.fromLTRB(20, 24, 20, 12),
+                              padding:
+                                  const EdgeInsets.fromLTRB(20, 24, 20, 12),
                               child: Row(
                                 children: [
                                   Icon(material.Icons.people_rounded,
-                                      size: 18, color: isDark ? const Color(0xFFFFFC00) : const Color(0xFFFFFC00)),
+                                      size: 18,
+                                      color: isDark
+                                          ? const Color(0xFFFFFC00)
+                                          : const Color(0xFFFFFC00)),
                                   const SizedBox(width: 8),
                                   Text(
                                     'SUGGESTED PEOPLE',
                                     style: GoogleFonts.outfit(
                                       fontSize: 13,
                                       fontWeight: FontWeight.bold,
-                                      color: isDark ? const Color(0xFFFFFC00) : const Color(0xFFFFFC00),
+                                      color: isDark
+                                          ? const Color(0xFFFFFC00)
+                                          : const Color(0xFFFFFC00),
                                       letterSpacing: 0.5,
                                     ),
                                   ),
@@ -1033,7 +1117,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                               height: 120,
                               child: ListView.builder(
                                 scrollDirection: Axis.horizontal,
-                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 16),
                                 itemCount: _personSearchResults.length,
                                 itemBuilder: (context, index) {
                                   final person = _personSearchResults[index];
@@ -1045,19 +1130,22 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                       Navigator.push(
                                         context,
                                         material.MaterialPageRoute(
-                                          builder: (context) => WhatsAppGroupChat(
+                                          builder: (context) =>
+                                              WhatsAppGroupChat(
                                             groupId: 'p:${person['user_id']}',
                                             groupName: name,
                                             groupImage: avatarUrl,
                                           ),
                                         ),
                                       ).then((_) {
-                                        ref.refresh(conversationsProvider.future);
+                                        ref.refresh(
+                                            conversationsProvider.future);
                                       });
                                     },
                                     child: Container(
                                       width: 80,
-                                      margin: const EdgeInsets.symmetric(horizontal: 6),
+                                      margin: const EdgeInsets.symmetric(
+                                          horizontal: 6),
                                       child: Column(
                                         children: [
                                           Container(
@@ -1065,7 +1153,12 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                             decoration: BoxDecoration(
                                               shape: BoxShape.circle,
                                               border: Border.all(
-                                                color: (isDark ? const Color(0xFFFFFC00) : const Color(0xFFFFFC00)).withValues(alpha: 0.5),
+                                                color: (isDark
+                                                        ? const Color(
+                                                            0xFFFFFC00)
+                                                        : const Color(
+                                                            0xFFFFFC00))
+                                                    .withValues(alpha: 0.5),
                                                 width: 1.5,
                                               ),
                                             ),
@@ -1074,14 +1167,21 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                               backgroundImage: avatarUrl != null
                                                   ? NetworkImage(avatarUrl)
                                                   : null,
-                                              backgroundColor: isDark ? const Color(0xFFFFFC00) : const Color(0xFFFFFC00),
+                                              backgroundColor: isDark
+                                                  ? const Color(0xFFFFFC00)
+                                                  : const Color(0xFFFFFC00),
                                               child: avatarUrl == null
                                                   ? Text(
-                                                      name.isNotEmpty ? name[0].toUpperCase() : '?',
+                                                      name.isNotEmpty
+                                                          ? name[0]
+                                                              .toUpperCase()
+                                                          : '?',
                                                       style: const TextStyle(
-                                                        color: material.Colors.black,
+                                                        color: material
+                                                            .Colors.black,
                                                         fontSize: 16,
-                                                        fontWeight: FontWeight.bold,
+                                                        fontWeight:
+                                                            FontWeight.bold,
                                                       ),
                                                     )
                                                   : null,
@@ -1091,7 +1191,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                           Text(
                                             name,
                                             style: GoogleFonts.outfit(
-                                              color: material.Colors.white.withValues(alpha: 0.8),
+                                              color: material.Colors.white
+                                                  .withValues(alpha: 0.8),
                                               fontSize: 11,
                                             ),
                                             maxLines: 1,
@@ -1156,11 +1257,13 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                           } else if (conversation.isActiveTimer) {
                             if (conversation.teamData != null) {
                               try {
-                                final team = Team.fromJson(conversation.teamData!);
+                                final team =
+                                    Team.fromJson(conversation.teamData!);
                                 Navigator.push(
                                   context,
                                   material.MaterialPageRoute(
-                                    builder: (context) => TeamDetailPage(team: team),
+                                    builder: (context) =>
+                                        TeamDetailPage(team: team),
                                   ),
                                 );
                               } catch (e) {
@@ -1195,6 +1298,17 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                               ),
                             );
                           }
+                        },
+                        onLongPress: () {
+                          ref
+                              .read(conversationsProvider.notifier)
+                              .togglePin(conversation.id);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                                content: Text(conversation.isPinned
+                                    ? 'Chat Unpinned'
+                                    : 'Chat Pinned to Top')),
+                          );
                         },
                         onStatusTap: () {
                           if (conversation.hasStatus &&
@@ -1276,15 +1390,15 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     );
   }
 
-
   Widget _buildBottomNavigationBar(BuildContext context) {
     final bottomPadding = material.MediaQuery.of(context).padding.bottom;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final navBgColor = isDark ? const Color(0xFF111B21) : const Color(0xFFFFFFFF);
-    final borderColor = isDark 
+    final navBgColor =
+        isDark ? const Color(0xFF111B21) : const Color(0xFFFFFFFF);
+    final borderColor = isDark
         ? material.Colors.white.withValues(alpha: 0.08)
         : material.Colors.black.withValues(alpha: 0.08);
-    final shadowColor = isDark 
+    final shadowColor = isDark
         ? material.Colors.black.withValues(alpha: 0.4)
         : material.Colors.grey.withValues(alpha: 0.1);
 
@@ -1323,21 +1437,14 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
               onTap: () => setState(() => _currentIndex = 1),
             ),
             _buildNavItem(
-              icon: material.Icons.storefront_rounded,
+              icon: material.Icons.group_rounded,
               isSelected: _currentIndex == 2,
               onTap: () => setState(() => _currentIndex = 2),
             ),
             _buildNavItem(
-              icon: material.Icons.school_rounded,
-              isSelected: false,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  material.MaterialPageRoute(
-                    builder: (context) => const CoursesWidget(),
-                  ),
-                );
-              },
+              icon: material.Icons.storefront_rounded,
+              isSelected: _currentIndex == 3,
+              onTap: () => setState(() => _currentIndex = 3),
             ),
             _buildProfileNavItem(),
           ],
@@ -1348,7 +1455,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 
   void _showElearningComingSoonDialog(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final themeYellow = isDark ? const Color(0xFFFFFC00) : const Color(0xFFFFFC00);
+    final themeYellow =
+        isDark ? const Color(0xFFFFFC00) : const Color(0xFFFFFC00);
     showDialog(
       context: context,
       builder: (context) => material.Dialog(
@@ -1360,12 +1468,17 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
             child: Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: isDark ? material.Colors.black.withOpacity(0.75) : material.Colors.white.withOpacity(0.95),
+                color: isDark
+                    ? material.Colors.black.withOpacity(0.75)
+                    : material.Colors.white.withOpacity(0.95),
                 borderRadius: BorderRadius.circular(28),
-                border: Border.all(color: themeYellow.withOpacity(0.25), width: 1.5),
+                border: Border.all(
+                    color: themeYellow.withOpacity(0.25), width: 1.5),
                 boxShadow: [
                   BoxShadow(
-                    color: isDark ? material.Colors.black.withOpacity(0.6) : material.Colors.grey.withOpacity(0.3),
+                    color: isDark
+                        ? material.Colors.black.withOpacity(0.6)
+                        : material.Colors.grey.withOpacity(0.3),
                     blurRadius: 40,
                     offset: const Offset(0, 20),
                   ),
@@ -1391,7 +1504,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                         end: Alignment.bottomRight,
                       ),
                       shape: BoxShape.circle,
-                      border: Border.all(color: themeYellow.withOpacity(0.3), width: 1.5),
+                      border: Border.all(
+                          color: themeYellow.withOpacity(0.3), width: 1.5),
                     ),
                     child: Icon(
                       material.Icons.school_rounded,
@@ -1405,7 +1519,9 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                     style: GoogleFonts.outfit(
                       fontSize: 26,
                       fontWeight: FontWeight.w900,
-                      color: isDark ? material.Colors.white : material.Colors.black87,
+                      color: isDark
+                          ? material.Colors.white
+                          : material.Colors.black87,
                       letterSpacing: 0.5,
                     ),
                   ),
@@ -1415,7 +1531,9 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                     textAlign: TextAlign.center,
                     style: GoogleFonts.inter(
                       fontSize: 14,
-                      color: isDark ? material.Colors.white.withOpacity(0.8) : material.Colors.black.withOpacity(0.8),
+                      color: isDark
+                          ? material.Colors.white.withOpacity(0.8)
+                          : material.Colors.black.withOpacity(0.8),
                       height: 1.6,
                     ),
                   ),
@@ -1536,7 +1654,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
           child: CircularProfileImage(
             profileImageUrl: _profileImageUrl,
             radius: 22.0,
-            borderColor: isDark ? const Color(0xFFFFFC00) : const Color(0xFFFFFC00),
+            borderColor:
+                isDark ? const Color(0xFFFFFC00) : const Color(0xFFFFFC00),
           ),
         ),
       ),
@@ -1549,7 +1668,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     required VoidCallback onTap,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final themeYellow = isDark ? const Color(0xFFFFFC00) : const Color(0xFFFFFC00);
+    final themeYellow =
+        isDark ? const Color(0xFFFFFC00) : const Color(0xFFFFFC00);
     return material.InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
@@ -1573,7 +1693,9 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                 icon,
                 color: isSelected
                     ? themeYellow
-                    : (isDark ? material.Colors.white.withValues(alpha: 0.5) : material.Colors.black.withValues(alpha: 0.45)),
+                    : (isDark
+                        ? material.Colors.white.withValues(alpha: 0.5)
+                        : material.Colors.black.withValues(alpha: 0.45)),
                 size: 24,
               ),
             ),
@@ -1587,7 +1709,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     material.showModalBottomSheet(
       context: context,
-      backgroundColor: isDark ? const Color(0xFF121218) : const Color(0xFFF4F4F9),
+      backgroundColor:
+          isDark ? const Color(0xFF121218) : const Color(0xFFF4F4F9),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(20),
@@ -1605,7 +1728,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                 style: GoogleFonts.outfit(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: isDark ? material.Colors.white : material.Colors.black87,
+                  color:
+                      isDark ? material.Colors.white : material.Colors.black87,
                 ),
               ),
               const SizedBox(height: 20),
@@ -1759,8 +1883,10 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const Icon(material.Icons.calendar_month_rounded,
-                                      color: Colors.white, size: 30),
+                                  const Icon(
+                                      material.Icons.calendar_month_rounded,
+                                      color: Colors.white,
+                                      size: 30),
                                   const SizedBox(height: 8),
                                   Text('Add\nEvent',
                                       textAlign: TextAlign.center,
@@ -1781,13 +1907,20 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                 child: material.OutlinedButton(
                   onPressed: () => Navigator.pop(context),
                   style: material.OutlinedButton.styleFrom(
-                    side: BorderSide(color: isDark ? material.Colors.white.withValues(alpha: 0.2) : material.Colors.black.withValues(alpha: 0.2)),
+                    side: BorderSide(
+                        color: isDark
+                            ? material.Colors.white.withValues(alpha: 0.2)
+                            : material.Colors.black.withValues(alpha: 0.2)),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                     padding: const EdgeInsets.symmetric(vertical: 14),
                   ),
-                  child: Text('Cancel', style: TextStyle(color: isDark ? material.Colors.white70 : material.Colors.black87)),
+                  child: Text('Cancel',
+                      style: TextStyle(
+                          color: isDark
+                              ? material.Colors.white70
+                              : material.Colors.black87)),
                 ),
               ),
             ],
@@ -1811,7 +1944,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 
       material.ScaffoldMessenger.of(context).showSnackBar(
         const material.SnackBar(
-              content: Text('Connecting to active network...')),
+            content: Text('Connecting to active network...')),
       );
       return;
     }
@@ -1877,12 +2010,12 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 
   Widget _buildNotificationsTile(int count) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final borderColor = isDark 
-        ? Colors.white.withValues(alpha: 0.05) 
+    final borderColor = isDark
+        ? Colors.white.withValues(alpha: 0.05)
         : Colors.black.withValues(alpha: 0.05);
     final primaryTextColor = isDark ? Colors.white : Colors.black87;
-    final secondaryTextColor = isDark 
-        ? Colors.white.withValues(alpha: 0.4) 
+    final secondaryTextColor = isDark
+        ? Colors.white.withValues(alpha: 0.4)
         : Colors.black.withValues(alpha: 0.45);
 
     return material.Material(
@@ -1914,17 +2047,23 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                     width: 58,
                     height: 58,
                     decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF262626) : const Color(0xFFE2E8F0),
+                      color: isDark
+                          ? const Color(0xFF262626)
+                          : const Color(0xFFE2E8F0),
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.1),
+                        color: isDark
+                            ? Colors.white.withValues(alpha: 0.1)
+                            : Colors.black.withValues(alpha: 0.1),
                         width: 1.5,
                       ),
                     ),
                     child: Center(
                       child: Icon(
                         material.Icons.notifications_rounded,
-                        color: isDark ? const Color(0xFFFFFC00) : const Color(0xFFFFFC00),
+                        color: isDark
+                            ? const Color(0xFFFFFC00)
+                            : const Color(0xFFFFFC00),
                         size: 26,
                       ),
                     ),
@@ -1933,12 +2072,15 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                     right: -4,
                     top: -4,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 5, vertical: 2),
                       decoration: BoxDecoration(
                         color: material.Colors.redAccent,
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(
-                          color: isDark ? const Color(0xFF111B21) : const Color(0xFFFFFFFF),
+                          color: isDark
+                              ? const Color(0xFF111B21)
+                              : const Color(0xFFFFFFFF),
                           width: 2,
                         ),
                       ),
@@ -2013,7 +2155,10 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: (isDark ? const Color(0xFFFFFC00) : const Color(0xFFFFFC00)).withValues(alpha: 0.3),
+                    color: (isDark
+                            ? const Color(0xFFFFFC00)
+                            : const Color(0xFFFFFC00))
+                        .withValues(alpha: 0.3),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   )
@@ -2082,7 +2227,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                       person['bio'] != null &&
                               person['bio'].toString().isNotEmpty
                           ? person['bio']
-                          : 'Hey there! I am using Handskill Friends.',
+                          : 'Hey there! I am using Pocketmates.',
                       style: GoogleFonts.outfit(
                         fontSize: 13,
                         color: material.Colors.white.withValues(alpha: 0.5),
@@ -2128,12 +2273,12 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
           decoration: BoxDecoration(
-            color: isDark 
+            color: isDark
                 ? material.Colors.white.withValues(alpha: 0.02)
                 : material.Colors.black.withValues(alpha: 0.02),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: isDark 
+              color: isDark
                   ? material.Colors.white.withValues(alpha: 0.05)
                   : material.Colors.black.withValues(alpha: 0.05),
               width: 1,
@@ -2225,7 +2370,9 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                       style: GoogleFonts.outfit(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: isDark ? const Color(0xFFFFFC00) : const Color(0xFFFFFC00),
+                        color: isDark
+                            ? const Color(0xFFFFFC00)
+                            : const Color(0xFFFFFC00),
                       ),
                     ),
                     Text(
@@ -2305,7 +2452,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                     .dismissNotification(notification.id);
                 if (mounted) {
                   material.ScaffoldMessenger.of(context).showSnackBar(
-                    const material.SnackBar(content: Text('Invitation accepted!')),
+                    const material.SnackBar(
+                        content: Text('Invitation accepted!')),
                   );
                 }
               },
@@ -2382,24 +2530,26 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
   });
 
   @override
-  double get maxExtent =>
-      417.0; // 135 (Stranger Match) + 160 (Status) + 50 (Tabs) + 72 (Search)
+  double get maxExtent => 372.0;
 
   @override
   double get minExtent => 282.0;
 
+
+
   @override
   Widget build(
       BuildContext context, double shrinkOffset, bool overlapsContent) {
-    const double strangerMatchHeight = 135.0;
-    const double statusSectionHeight = 160.0;
+    const double strangerMatchHeight = 90.0;
+    const double statusSectionHeight = 180.0;
 
     final double progress =
         (shrinkOffset / strangerMatchHeight).clamp(0.0, 1.0);
     final double topPadding = MediaQuery.of(context).padding.top;
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final headerColor = isDark ? const Color(0xFF111B21) : const Color(0xFFF4F4F9);
+    final headerColor =
+        isDark ? const Color(0xFF111B21) : const Color(0xFFF4F4F9);
 
     return material.Material(
       color: headerColor,
@@ -2433,41 +2583,45 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Handskill',
+                          'Pocketmates',
                           style: GoogleFonts.outfit(
-                            color: isDark ? material.Colors.white : material.Colors.black87,
+                            color: isDark
+                                ? material.Colors.white
+                                : material.Colors.black87,
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(height: 12),
-                        Row(
-                          children: [
-                            _buildMatchCard(
-                              context,
-                              label: 'Network',
-                              icon: material.Icons.videocam_rounded,
-                              color: material.Colors.blue,
-                              onTap: onTapVideo,
-                            ),
-                            const SizedBox(width: 8),
-                            _buildMatchCard(
-                              context,
-                              label: 'Voice',
-                              icon: material.Icons.phone_rounded,
-                              color: material.Colors.green,
-                              onTap: onTapCall,
-                            ),
-                            const SizedBox(width: 8),
-                            _buildMatchCard(
-                              context,
-                              label: 'Chat',
-                              icon: material.Icons.chat_bubble_rounded,
-                              color: isDark ? const Color(0xFFFFFC00) : const Color(0xFFFFFC00),
-                              onTap: onTapText,
-                            ),
-                          ],
-                        ),
+                        // const SizedBox(height: 12),
+                        // Row(
+                        //   children: [
+                        //     _buildMatchCard(
+                        //       context,
+                        //       label: 'Network',
+                        //       icon: material.Icons.videocam_rounded,
+                        //       color: material.Colors.blue,
+                        //       onTap: onTapVideo,
+                        //     ),
+                        //     const SizedBox(width: 8),
+                        //     _buildMatchCard(
+                        //       context,
+                        //       label: 'Voice',
+                        //       icon: material.Icons.phone_rounded,
+                        //       color: material.Colors.green,
+                        //       onTap: onTapCall,
+                        //     ),
+                        //     const SizedBox(width: 8),
+                        //     _buildMatchCard(
+                        //       context,
+                        //       label: 'Chat',
+                        //       icon: material.Icons.chat_bubble_rounded,
+                        //       color: isDark
+                        //           ? const Color(0xFFFFFC00)
+                        //           : const Color(0xFFFFFC00),
+                        //       onTap: onTapText,
+                        //     ),
+                        //   ],
+                        // ),
                       ],
                     ),
                   ),
@@ -2543,7 +2697,7 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                     ),
                     border: Border(
                       top: BorderSide(
-                          color: isDark 
+                          color: isDark
                               ? material.Colors.white.withValues(alpha: 0.12)
                               : material.Colors.black.withValues(alpha: 0.08),
                           width: 1),
@@ -2564,15 +2718,21 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                                 decoration: BoxDecoration(
                                   gradient: LinearGradient(
                                     colors: [
-                                      isDark ? const Color(0xFFFFFC00) : const Color(0xFFFFFC00),
-                                      (isDark ? const Color(0xFFFFFC00) : const Color(0xFFFFFC00))
+                                      isDark
+                                          ? const Color(0xFFFFFC00)
+                                          : const Color(0xFFFFFC00),
+                                      (isDark
+                                              ? const Color(0xFFFFFC00)
+                                              : const Color(0xFFFFFC00))
                                           .withValues(alpha: 0.8),
                                     ],
                                   ),
                                   borderRadius: BorderRadius.circular(12),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: (isDark ? const Color(0xFFFFFC00) : const Color(0xFFFFFC00))
+                                      color: (isDark
+                                              ? const Color(0xFFFFFC00)
+                                              : const Color(0xFFFFFC00))
                                           .withValues(alpha: 0.2),
                                       blurRadius: 8,
                                       offset: const Offset(0, 2),
@@ -2602,7 +2762,8 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                               data: (data) => Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  _buildActiveCounter(data.activeFriends.length),
+                                  _buildActiveCounter(
+                                      data.activeFriends.length),
                                 ],
                               ),
                               loading: () => SizedBox(
@@ -2610,7 +2771,9 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                                 height: 14,
                                 child: material.CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  color: isDark ? const Color(0xFFFFFC00) : const Color(0xFFFFFC00),
+                                  color: isDark
+                                      ? const Color(0xFFFFFC00)
+                                      : const Color(0xFFFFFC00),
                                 ),
                               ),
                               error: (_, __) => const SizedBox(),
@@ -2647,10 +2810,12 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
                   child: Container(
                     decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF202C33) : const Color(0xFFF0F2F5),
+                      color: isDark
+                          ? const Color(0xFF202C33)
+                          : const Color(0xFFF0F2F5),
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: isDark 
+                        color: isDark
                             ? material.Colors.white.withValues(alpha: 0.08)
                             : material.Colors.black.withValues(alpha: 0.08),
                         width: 1,
@@ -2659,25 +2824,31 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                     child: material.TextField(
                       controller: searchController,
                       style: GoogleFonts.outfit(
-                        color: isDark ? material.Colors.white : material.Colors.black87,
+                        color: isDark
+                            ? material.Colors.white
+                            : material.Colors.black87,
                         fontSize: 14,
                       ),
-                      cursorColor: isDark ? const Color(0xFFFFFC00) : const Color(0xFFFFFC00),
+                      cursorColor: isDark
+                          ? const Color(0xFFFFFC00)
+                          : const Color(0xFFFFFC00),
                       decoration: material.InputDecoration(
                         hintText: 'Search for people or conversations...',
                         hintStyle: GoogleFonts.outfit(
-                          color: isDark 
+                          color: isDark
                               ? material.Colors.white.withValues(alpha: 0.35)
                               : material.Colors.black.withValues(alpha: 0.35),
                           fontSize: 14,
                         ),
                         prefixIcon: Padding(
-                          padding: const EdgeInsets.only(left: 14.0, right: 10.0),
+                          padding:
+                              const EdgeInsets.only(left: 14.0, right: 10.0),
                           child: Icon(
                             material.Icons.search_rounded,
-                            color: isDark 
+                            color: isDark
                                 ? const Color(0xFFFFFC00).withValues(alpha: 0.6)
-                                : const Color(0xFFFFFC00).withValues(alpha: 0.7),
+                                : const Color(0xFFFFFC00)
+                                    .withValues(alpha: 0.7),
                             size: 20,
                           ),
                         ),
@@ -2691,13 +2862,16 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                           children: [
                             if (isSearching)
                               Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12.0),
                                 child: SizedBox(
                                   width: 16,
                                   height: 16,
                                   child: material.CircularProgressIndicator(
                                     strokeWidth: 2,
-                                    color: isDark ? const Color(0xFFFFFC00) : const Color(0xFFFFFC00),
+                                    color: isDark
+                                        ? const Color(0xFFFFFC00)
+                                        : const Color(0xFFFFFC00),
                                   ),
                                 ),
                               ),
@@ -2707,7 +2881,9 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                                 child: material.IconButton(
                                   icon: Icon(
                                     material.Icons.clear_rounded,
-                                    color: isDark ? material.Colors.white30 : material.Colors.black38,
+                                    color: isDark
+                                        ? material.Colors.white30
+                                        : material.Colors.black38,
                                     size: 18,
                                   ),
                                   onPressed: () => searchController.clear(),
@@ -2716,7 +2892,8 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                           ],
                         ),
                         border: material.InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                        contentPadding:
+                            const EdgeInsets.symmetric(vertical: 14),
                       ),
                     ),
                   ),
@@ -2732,9 +2909,10 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
   Widget _buildTabItem(BuildContext context, String label, int index) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isSelected = selectedIndex == index;
-    final themeYellow = isDark ? const Color(0xFFFFFC00) : const Color(0xFFFFFC00);
-    final textUnselected = isDark 
-        ? material.Colors.white.withValues(alpha: 0.5) 
+    final themeYellow =
+        isDark ? const Color(0xFFFFFC00) : const Color(0xFFFFFC00);
+    final textUnselected = isDark
+        ? material.Colors.white.withValues(alpha: 0.5)
         : material.Colors.black.withValues(alpha: 0.5);
 
     return Expanded(
@@ -2758,9 +2936,7 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
             child: Text(
               label,
               style: GoogleFonts.outfit(
-                color: isSelected
-                    ? themeYellow
-                    : textUnselected,
+                color: isSelected ? themeYellow : textUnselected,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
                 fontSize: 16,
               ),
@@ -2779,7 +2955,7 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
     required VoidCallback onTap,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardBgColor = isDark 
+    final cardBgColor = isDark
         ? material.Colors.white.withValues(alpha: 0.05)
         : material.Colors.black.withValues(alpha: 0.03);
     final borderColor = isDark
@@ -2799,8 +2975,7 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
             decoration: BoxDecoration(
               color: cardBgColor,
               borderRadius: BorderRadius.circular(30),
-              border: Border.all(
-                  color: borderColor),
+              border: Border.all(color: borderColor),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -2831,8 +3006,6 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
     );
   }
 
-
-
   Widget _buildActiveCounter(int count) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -2860,13 +3033,13 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
     );
   }
 
-  Widget _buildHeaderIconButton(
-      BuildContext context, {required IconData icon, required VoidCallback onTap}) {
+  Widget _buildHeaderIconButton(BuildContext context,
+      {required IconData icon, required VoidCallback onTap}) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = isDark 
+    final bgColor = isDark
         ? material.Colors.white.withValues(alpha: 0.08)
         : material.Colors.black.withValues(alpha: 0.05);
-    final borderColor = isDark 
+    final borderColor = isDark
         ? material.Colors.white.withValues(alpha: 0.05)
         : material.Colors.black.withValues(alpha: 0.05);
     final iconColor = isDark ? material.Colors.white : material.Colors.black87;
@@ -2960,4 +3133,3 @@ class CircularProfileImage extends StatelessWidget {
 }
 
 // --- Original delegates removed, merged into _HomeMainHeaderDelegate ---
-

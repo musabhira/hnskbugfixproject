@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'chat/whats_app_groups_provider.dart';
 import 'teams/teams_service.dart';
+import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 
 class NotificationsListPage extends ConsumerWidget {
   const NotificationsListPage({super.key});
@@ -117,6 +118,8 @@ class NotificationsListPage extends ConsumerWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isInvite = notification.notificationType == 'project_invite';
     final isTask = notification.notificationType == 'task_assign';
+    final isFollowRequest = notification.notificationType == 'follow_request';
+    final isPending = notification.notificationStatus == 'pending';
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -184,54 +187,80 @@ class NotificationsListPage extends ConsumerWidget {
                     ),
                   ],
                 ),
-                if (isInvite || isTask) ...[
+                if (isInvite || isTask || isFollowRequest) ...[
                   const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: FilledButton(
-                          onPressed: () =>
-                              _handleAccept(context, ref, notification),
-                          style: FilledButton.styleFrom(
-                            backgroundColor: isDark ? const Color(0xFFFFD600) : const Color(0xFFFFF500),
-                            foregroundColor: isDark ? material.Colors.black : material.Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 8),
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8)),
-                          ),
-                          child: Text(
-                            isInvite ? 'Accept Invite' : 'View Task',
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ),
+                  if (isFollowRequest && !isPending)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: material.Colors.green.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                      const SizedBox(width: 10),
-                      if (isInvite)
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.check_circle_outline, color: material.Colors.green, size: 14),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Accepted',
+                            style: GoogleFonts.outfit(
+                              color: material.Colors.green,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  else
+                    Row(
+                      children: [
                         Expanded(
-                          child: OutlinedButton(
+                          child: FilledButton(
                             onPressed: () =>
-                                _handleReject(context, ref, notification),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: isDark ? material.Colors.white : material.Colors.black87,
-                              side: BorderSide(color: isDark ? material.Colors.white24 : material.Colors.black26),
+                                _handleAccept(context, ref, notification),
+                            style: FilledButton.styleFrom(
+                              backgroundColor: isDark ? const Color(0xFFFFD600) : const Color(0xFFFFF500),
+                              foregroundColor: isDark ? material.Colors.black : material.Colors.white,
                               padding: const EdgeInsets.symmetric(vertical: 8),
                               shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(8)),
                             ),
-                            child: const Text('Decline'),
+                            child: Text(
+                              isInvite
+                                  ? 'Accept Invite'
+                                  : (isFollowRequest ? 'Accept' : 'View Task'),
+                              style: const TextStyle(fontWeight: FontWeight.bold),
+                            ),
                           ),
-                        )
-                      else
-                        material.IconButton(
-                          onPressed: () async {
-                            await ref
-                                .read(conversationsProvider.notifier)
-                                .dismissNotification(notification.id);
-                          },
-                          icon: Icon(Icons.delete, size: 14, color: isDark ? material.Colors.white70 : material.Colors.black54),
                         ),
-                    ],
-                  ),
+                        const SizedBox(width: 10),
+                        if (isInvite || isFollowRequest)
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: () =>
+                                  _handleReject(context, ref, notification),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: isDark ? material.Colors.white : material.Colors.black87,
+                                side: BorderSide(color: isDark ? material.Colors.white24 : material.Colors.black26),
+                                padding: const EdgeInsets.symmetric(vertical: 8),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8)),
+                              ),
+                              child: const Text('Decline'),
+                            ),
+                          )
+                        else
+                          material.IconButton(
+                            onPressed: () async {
+                              await ref
+                                  .read(conversationsProvider.notifier)
+                                  .dismissNotification(notification.id);
+                            },
+                            icon: Icon(Icons.delete, size: 14, color: isDark ? material.Colors.white70 : material.Colors.black54),
+                          ),
+                      ],
+                    ),
                 ] else ...[
                   // Single dismiss button for generic notifications
                   const SizedBox(height: 12),
@@ -308,6 +337,37 @@ class NotificationsListPage extends ConsumerWidget {
       } catch (e) {
         _showError(context, e.toString());
       }
+    } else if (notification.notificationType == 'follow_request') {
+      try {
+        final myId = SupaFlow.client.auth.currentUser?.id;
+        if (myId != null && notification.sourceId != null) {
+          await SupaFlow.client.from('follows').insert({
+            'follower_id': notification.sourceId,
+            'followed_id': myId,
+          });
+
+          final senderProfile = await SupaFlow.client.from('profile').select('name').eq('user_id', notification.sourceId!).maybeSingle();
+          final senderName = senderProfile?['name'] ?? 'Someone';
+
+          await SupaFlow.client.from('notifications').update({
+            'status': 'accepted',
+            'message': '$senderName is now following you.',
+          }).eq('id', notification.id);
+
+          ref.invalidate(conversationsProvider);
+
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Follow request accepted.'),
+                backgroundColor: material.Colors.green,
+              ),
+            );
+          }
+        }
+      } catch (e) {
+        _showError(context, e.toString());
+      }
     } else if (notification.notificationType == 'task_assign') {
       // Just mark as read/dismiss for now
       await ref
@@ -332,6 +392,13 @@ class NotificationsListPage extends ConsumerWidget {
         await ref
             .read(conversationsProvider.notifier)
             .dismissNotification(notification.id);
+      } catch (e) {
+        _showError(context, e.toString());
+      }
+    } else if (notification.notificationType == 'follow_request') {
+      try {
+        await SupaFlow.client.from('notifications').delete().eq('id', notification.id);
+        ref.invalidate(conversationsProvider);
       } catch (e) {
         _showError(context, e.toString());
       }

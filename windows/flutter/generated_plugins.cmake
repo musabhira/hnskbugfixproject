@@ -8,6 +8,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   emoji_picker_flutter
   file_selector_windows
   firebase_core
+  flutter_tts
   flutter_webrtc
   gal
   geolocator_windows
@@ -15,6 +16,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   permission_handler_windows
   record_windows
   share_plus
+  speech_to_text_windows
   url_launcher_windows
 )
 

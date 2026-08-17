@@ -58,6 +58,8 @@ class _GalleryProfileSearchPageState extends State<GalleryProfileSearchPage> {
 
   String selectedCategory = 'All';
   List<String> categories = ['All'];
+  bool _isPrivateProfile = false;
+  bool _isFollowing = false;
 
   @override
   void initState() {
@@ -96,7 +98,21 @@ class _GalleryProfileSearchPageState extends State<GalleryProfileSearchPage> {
           _colorCode1 = profileResponse['bg_text_color'] ?? '';
           _colorCode2 = profileResponse['button_color_code'] ?? '';
           _colorCode3 = profileResponse['button_text_color'] ?? '';
+          _isPrivateProfile = profileResponse['is_private'] == true;
         });
+        
+        final currentUserId = _supabase.auth.currentUser?.id;
+        if (currentUserId != null && widget.userid != currentUserId && _isPrivateProfile) {
+          final followsResponse = await _supabase
+              .from('follows')
+              .select('followed_id')
+              .eq('follower_id', currentUserId)
+              .eq('followed_id', widget.userid)
+              .maybeSingle();
+          safeSetState(() {
+            _isFollowing = followsResponse != null;
+          });
+        }
       }
     } catch (error) {
       if (mounted) {
@@ -178,13 +194,44 @@ class _GalleryProfileSearchPageState extends State<GalleryProfileSearchPage> {
             .order('gallery_created_at', ascending: false);
       }
 
+      // Fetch private user IDs
+      final privateUsersResponse = await _supabase
+          .from('profile')
+          .select('user_id')
+          .eq('is_private', true);
+      final privateUserIds = privateUsersResponse
+          .map((e) => e['user_id'].toString())
+          .toSet();
+
+      final currentUserId = _supabase.auth.currentUser?.id;
+      Set<String> followedUserIds = {};
+      
+      if (currentUserId != null) {
+        final followsResponse = await _supabase
+            .from('follows')
+            .select('followed_id')
+            .eq('follower_id', currentUserId);
+        followedUserIds = followsResponse
+            .map((e) => e['followed_id'].toString())
+            .toSet();
+      }
+
       safeSetState(() {
-        // Remove duplicates based on gallery ID
+        // Remove duplicates based on gallery ID and apply privacy filter
         final Map<String, Map<String, dynamic>> uniqueItems = {};
 
         for (var item in response) {
           final galleryId =
               item['gallery_id']?.toString() ?? item['id']?.toString();
+          final ownerId = item['user_id']?.toString();
+          
+          // Privacy check
+          if (ownerId != null && privateUserIds.contains(ownerId)) {
+             if (ownerId != currentUserId && !followedUserIds.contains(ownerId)) {
+                continue; // Skip this private item
+             }
+          }
+
           if (galleryId != null && !uniqueItems.containsKey(galleryId)) {
             uniqueItems[galleryId] = item;
           }
@@ -255,7 +302,80 @@ class _GalleryProfileSearchPageState extends State<GalleryProfileSearchPage> {
         child: SafeArea(
           child: Column(
             children: [
-              // Search Bar
+              if (_isPrivateProfile && !_isFollowing && widget.userid.isNotEmpty && widget.userid != _supabase.auth.currentUser?.id)
+                Expanded(
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(24),
+                          decoration: BoxDecoration(
+                            color: buttoncolorcode.withOpacity(0.1),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.lock_outline_rounded,
+                            color: buttoncolorcode,
+                            size: 48,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'This account is private',
+                          style: TextStyle(
+                            color: bgtextcolor,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Follow this user to see their photos and threads.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: bgtextcolor.withOpacity(0.6),
+                            fontSize: 14,
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        ElevatedButton(
+                          onPressed: () async {
+                            final currentUserId = _supabase.auth.currentUser?.id;
+                            if (currentUserId == null) return;
+                            try {
+                              await _supabase.from('follows').insert({
+                                'follower_id': currentUserId,
+                                'followed_id': widget.userid,
+                              });
+                              safeSetState(() {
+                                _isFollowing = true;
+                              });
+                              _loadProfileData();
+                            } catch (e) {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Error following user: $e')),
+                                );
+                              }
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: buttoncolorcode,
+                            foregroundColor: buttontextcolor,
+                            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(24),
+                            ),
+                          ),
+                          child: const Text('Follow', style: TextStyle(fontWeight: FontWeight.bold)),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              else ...[
+                // Search Bar
               const SizedBox(height: 8),
               Container(
                 // height: 50,
@@ -449,6 +569,7 @@ class _GalleryProfileSearchPageState extends State<GalleryProfileSearchPage> {
                             ),
                           ),
               ),
+              ],
             ],
           ),
         ),

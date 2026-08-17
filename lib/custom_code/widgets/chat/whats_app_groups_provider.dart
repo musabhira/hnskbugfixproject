@@ -26,6 +26,7 @@ class ChatConversation {
   final bool isNotification;
   final String? notificationType;
   final String? sourceId;
+  final String? notificationStatus;
   final bool hasStatus;
   final List<Map<String, dynamic>>? statusData;
   final bool isTool;
@@ -52,6 +53,7 @@ class ChatConversation {
     this.isNotification = false,
     this.notificationType,
     this.sourceId,
+    this.notificationStatus,
     this.hasStatus = false,
     this.statusData,
     this.isTool = false,
@@ -152,7 +154,8 @@ class ChatConversation {
       isGroup: false,
       isNotification: true,
       notificationType: json['type'],
-      sourceId: json['source_id'],
+      sourceId: json['sender_id'] ?? json['source_id'],
+      notificationStatus: json['status'] ?? 'pending',
     );
   }
 
@@ -172,6 +175,7 @@ class ChatConversation {
       'isNotification': isNotification,
       'notificationType': notificationType,
       'sourceId': sourceId,
+      'notificationStatus': notificationStatus,
       'hasStatus': hasStatus,
       'statusData': statusData,
       'isTool': isTool,
@@ -200,6 +204,7 @@ class ChatConversation {
       isNotification: json['isNotification'] ?? false,
       notificationType: json['notificationType'],
       sourceId: json['sourceId'],
+      notificationStatus: json['notificationStatus'],
       hasStatus: json['hasStatus'] ?? false,
       statusData: json['statusData'] != null
           ? (json['statusData'] as List)

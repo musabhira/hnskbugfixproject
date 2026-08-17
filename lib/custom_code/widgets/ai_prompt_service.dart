@@ -1440,19 +1440,13 @@ class AIService {
 
   // Free Text Models (Priority Order)
   static const List<String> FREE_TEXT_MODELS = [
-    'google/gemini-2.0-flash-exp:free',
-    'google/gemini-flash-1.5:free',
-    'meta-llama/llama-3.2-3b-instruct:free',
-    'meta-llama/llama-3.2-1b-instruct:free',
-    'microsoft/phi-3-mini-128k-instruct:free',
-    'huggingfaceh4/zephyr-7b-beta:free',
-    'openchat/openchat-7b:free',
-    'deepseek/deepseek-v3:free',
-    'mistralai/devstral-small:free',
-    'google/gemini-2.5-flash:free',
-    'google/gemma-3n-e2b-it:free',
-    'mistralai/mistral-7b-instruct:free',
-    'meta-llama/llama-3-8b-instruct:free',
+    'google/gemma-4-31b-it:free',
+    'google/gemma-4-26b-a4b-it:free',
+    'nvidia/nemotron-3.5-lightning:free',
+    'liquid/lfm-2.5-2.6b:free',
+    'openai/gpt-oss-20b:free',
+    'nvidia/nemotron-nano-9b-v2:free',
+    'openrouter/free',
   ];
 
   // Free Image Models (Priority Order)

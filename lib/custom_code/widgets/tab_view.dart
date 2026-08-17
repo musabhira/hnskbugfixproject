@@ -1215,7 +1215,7 @@ class MasonryGalleryItemCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           const Text(
-            'Join Handskill Community',
+            'Join Pocketmates Community',
             style: TextStyle(
               color: Colors.white,
               fontSize: 15,

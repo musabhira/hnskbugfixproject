@@ -67,6 +67,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
   
   String _businessType = 'product';
   bool _wantsPaymentIntegration = false;
+  bool _isPrivate = false;
   final _supabase = SupaFlow.client;
   String? _currentUserId;
   bool _isLoading = false;
@@ -258,6 +259,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
           
           _businessType = profileResponse['business_type'] ?? 'product';
           _wantsPaymentIntegration = profileResponse['wants_payment_integration'] ?? false;
+          _isPrivate = profileResponse['is_private'] ?? false;
         });
       }
     } catch (error) {
@@ -627,6 +629,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
           'updated_at': DateTime.now().toIso8601String(),
           'business_type': _businessType,
           'wants_payment_integration': _wantsPaymentIntegration,
+          'is_private': _isPrivate,
         },
       );
 
@@ -1701,6 +1704,34 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                                       const SnackBar(content: Text('Payment integration will be fully unlocked in a future update!')),
                                     );
                                   }
+                                },
+                                activeColor: theme.primary,
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: theme.primary.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: theme.primary.withValues(alpha: 0.3)),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(Icons.lock_outline, color: theme.primary, size: 20),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  'Private Account',
+                                  style: TextStyle(color: theme.primaryText, fontSize: 13),
+                                ),
+                              ),
+                              Switch(
+                                value: _isPrivate,
+                                onChanged: (v) {
+                                  safeSetState(() => _isPrivate = v);
                                 },
                                 activeColor: theme.primary,
                               ),

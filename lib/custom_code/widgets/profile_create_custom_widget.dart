@@ -341,6 +341,25 @@ class _ProfileCreateCustomWidgetState extends State<ProfileCreateCustomWidget> {
 
       await SupaFlow.client.from('profile').upsert(profileData);
 
+      // Auto-join English Hub
+      try {
+        final groups = await SupaFlow.client.from('groups').select('id').eq('name', 'English Hub').limit(1);
+        if (groups.isNotEmpty) {
+          final groupId = groups[0]['id'];
+          final existing = await SupaFlow.client.from('group_members').select('id').eq('group_id', groupId).eq('user_id', user.id).limit(1);
+          if (existing.isEmpty) {
+            await SupaFlow.client.from('group_members').insert({
+              'group_id': groupId,
+              'user_id': user.id,
+              'role': 'member',
+              'profile_id': user.id,
+            });
+          }
+        }
+      } catch (e) {
+        debugPrint('Error auto-joining English Hub: $e');
+      }
+
       try {
         final prefs = await SharedPreferences.getInstance();
         await prefs.remove('profile_cache_${user.id}');

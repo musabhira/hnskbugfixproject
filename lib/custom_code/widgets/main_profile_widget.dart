@@ -15,6 +15,7 @@ import 'index.dart';
 import 'package:pocket_mates_app/custom_code/widgets/gallery_profile_search_page.dart' hide MenuFlyoutItem;
 import 'package:pocket_mates_app/custom_code/widgets/posters_tab.dart';
 import 'package:pocket_mates_app/custom_code/widgets/business_pos_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/ai_prompt_service.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:url_launcher/url_launcher.dart';
 
@@ -63,14 +64,19 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
   // Follow/Block State
   bool _isFollowing = false;
+  bool _isRequested = false;
   int _followersCount = 0;
   int _followingCount = 0;
   int _friendsCount = 0;
   bool _isBlocked = false;
-  bool _isExpanded = false;
   String _selectedCategory = 'All';
   List<String> _categories = ['All'];
   List<Map<String, dynamic>> _filteredGalleryItems = [];
+
+  // English Hub Dashboard State
+  int _englishHubPoints = 0;
+  String _hubAnalysis = '';
+  bool _isAnalyzingHub = false;
 
   String get userId {
     if (widget.userId != null) return widget.userId!;
@@ -160,6 +166,47 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
     // 3. Fetch Fresh Data (Always)
     _fetchFreshData();
+    _fetchEnglishHubData();
+  }
+
+  Future<void> _fetchEnglishHubData() async {
+    if (!isMe) return;
+
+    final prefs = await SharedPreferences.getInstance();
+    final points = prefs.getInt('english_hub_points') ?? 0;
+    final cachedAnalysis = prefs.getString('english_hub_analysis') ?? '';
+    final lastPoints = prefs.getInt('english_hub_last_points') ?? -1;
+
+    setState(() {
+      _englishHubPoints = points;
+      _hubAnalysis = cachedAnalysis;
+    });
+
+    // Re-analyze if points increased by 20 or more, or if it's the first time
+    if (points - lastPoints >= 20 || _hubAnalysis.isEmpty) {
+      setState(() {
+        _isAnalyzingHub = true;
+      });
+      
+      final prompt = 'A user in the Pocket Mates English Hub has $points points. '
+          'Assume 0-100 points is Beginner, 100-500 is Intermediate, and 500+ is Advanced. '
+          'Give a very short, encouraging 2-sentence analysis of their progress and tell them what to focus on next (e.g. Grammar, Interview Prep, Communication). Keep it friendly and concise.';
+          
+      final response = await AIService().generateText(prompt: prompt);
+      
+      if (response.isSuccess && response.data != null) {
+        setState(() {
+          _hubAnalysis = response.data!;
+          _isAnalyzingHub = false;
+        });
+        await prefs.setString('english_hub_analysis', _hubAnalysis);
+        await prefs.setInt('english_hub_last_points', points);
+      } else {
+        setState(() {
+          _isAnalyzingHub = false;
+        });
+      }
+    }
   }
 
   void _applyProfileData(Map<String, dynamic> data) {
@@ -170,7 +217,6 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     _btnTextColor = _parseColor(data['button_text_color']);
 
     // Sync TabController
-    final isVerified = data['verified'] == true;
     final newLength = 3;
     if (_tabController.length != newLength) {
       final oldIndex = _tabController.index;
@@ -188,6 +234,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     try {
       if (mounted && _profileData == null) setState(() => _isLoading = true);
 
+      final myId = _supabase.auth.currentUser?.id;
       final responses = await Future.wait<dynamic>([
         _supabase
             .from('profile')
@@ -202,6 +249,16 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         _fetchFollowCountsMap(), // Counts Map
         _checkFollowStatusBool(),
         _checkBlockStatusBool(),
+        (myId != null && myId != userId)
+            ? _supabase
+                .from('notifications')
+                .select('id')
+                .eq('sender_id', myId)
+                .eq('user_id', userId)
+                .eq('type', 'follow_request')
+                .eq('status', 'pending')
+                .maybeSingle()
+            : Future.value(null),
       ]);
 
       if (!mounted) return;
@@ -209,10 +266,18 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       final profileRes = responses[0] as List;
       final galleryRes = responses[1] as List;
       final counts = responses[2] as Map<String, int>;
+      final followStatus = responses[3] as bool;
+      final blockStatus = responses[4] as bool;
+      final requestRes = responses[5];
+
+      final isRequested = requestRes != null;
 
       if (profileRes.isNotEmpty) {
         final data = profileRes.first as Map<String, dynamic>;
         setState(() {
+          _isFollowing = followStatus;
+          _isBlocked = blockStatus;
+          _isRequested = isRequested;
           _applyProfileData(data);
           _isLoading = false;
         });
@@ -253,8 +318,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         _followersCount = counts['followers'] ?? 0;
         _followingCount = counts['following'] ?? 0;
         _friendsCount = counts['friends'] ?? 0;
-        _isFollowing = responses[3] as bool;
-        _isBlocked = responses[4] as bool;
+        _isFollowing = followStatus;
+        _isBlocked = blockStatus;
+        _isRequested = isRequested;
       });
 
       // Lazy load full lists in background
@@ -428,6 +494,42 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     final myId = _supabase.auth.currentUser?.id;
     if (myId == null) return;
 
+    final isPrivate = _profileData?['is_private'] == true;
+
+    if (isPrivate && !_isFollowing) {
+      final oldRequested = _isRequested;
+      setState(() {
+        _isRequested = !_isRequested;
+      });
+
+      try {
+        if (_isRequested) {
+          final myProfile = await _supabase.from('profile').select('name').eq('user_id', myId).maybeSingle();
+          final myName = myProfile?['name'] ?? 'Someone';
+          await _supabase.from('notifications').insert({
+            'user_id': userId,
+            'sender_id': myId,
+            'message': '$myName wants to follow you.',
+            'type': 'follow_request',
+            'status': 'pending',
+          });
+        } else {
+          await _supabase
+              .from('notifications')
+              .delete()
+              .eq('sender_id', myId)
+              .eq('user_id', userId)
+              .eq('type', 'follow_request')
+              .eq('status', 'pending');
+        }
+      } catch (e) {
+        setState(() {
+          _isRequested = oldRequested;
+        });
+      }
+      return;
+    }
+
     setState(() {
       _isFollowing = !_isFollowing;
       _followersCount += _isFollowing ? 1 : -1;
@@ -563,7 +665,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   icon: const Icon(material.Icons.share, size: 22),
                   color: textColor,
                   onPressed: () => SharePlus.instance.share(
-                      ShareParams(text: 'Check out ${_profileData?['name']}\'s profile on Handskill Friends!')),
+                      ShareParams(text: 'Check out ${_profileData?['name']}\'s profile on Pocketmates!')),
                 ),
                 PopupMenuButton<String>(
                   icon: const Icon(material.Icons.more_vert),
@@ -597,32 +699,71 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               child:
                   _buildProfileHeader(textColor, btnColor, btnTextColor, isMe),
             ),
-            material.SliverPersistentHeader(
-              pinned: true,
-              delegate: _SliverAppBarDelegate(
-                material.TabBar(
-                  controller: _tabController,
-                  labelColor: textColor,
-                  unselectedLabelColor: textColor.withValues(alpha: 0.5),
-                  indicatorColor: btnColor,
-                  indicatorWeight: 3,
-                  labelStyle: GoogleFonts.outfit(fontWeight: FontWeight.bold),
-                  tabs: [
-                    const material.Tab(text: "Gallery"),
-                    const material.Tab(text: "Thoughts"),
-                    const material.Tab(text: "Posters"),
-                  ],
+            if (!(_profileData?['is_private'] == true && !_isFollowing && !isMe))
+              material.SliverPersistentHeader(
+                pinned: true,
+                delegate: _SliverAppBarDelegate(
+                  material.TabBar(
+                    controller: _tabController,
+                    labelColor: textColor,
+                    unselectedLabelColor: textColor.withValues(alpha: 0.5),
+                    indicatorColor: btnColor,
+                    indicatorWeight: 3,
+                    labelStyle: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+                    tabs: [
+                      const material.Tab(text: "Gallery"),
+                      const material.Tab(text: "Thoughts"),
+                      const material.Tab(text: "Posters"),
+                    ],
+                  ),
+                  bgColor,
                 ),
-                bgColor,
               ),
-            ),
           ];
         },
         body: Container(
           color: bgColor,
-          child: Column(
-            children: [
-              // Category Selector — only shown on Gallery tab (index 0)
+          child: (_profileData?['is_private'] == true && !_isFollowing && !isMe)
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: btnColor.withValues(alpha: 0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.lock_outline_rounded,
+                          color: btnColor,
+                          size: 48,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'This account is private',
+                        style: GoogleFonts.outfit(
+                          color: textColor,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Follow this user to see their photos and threads.',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.inter(
+                          color: textColor.withValues(alpha: 0.6),
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              : Column(
+                  children: [
+                    // Category Selector — only shown on Gallery tab (index 0)
               if (_categories.length > 1 && _tabController.index == 0)
                 Container(
                   height: 50,
@@ -872,6 +1013,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             ],
           ),
         ),
+        if (isMe) _buildLanguageHubDashboard(textColor, btnColor, isDark),
 
         // Actions Row
         Padding(
@@ -933,7 +1075,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                           borderRadius: BorderRadius.circular(8),
                           child: Center(
                             child: Text(
-                              _isFollowing ? "Following" : "Follow",
+                              _isFollowing
+                                  ? "Following"
+                                  : (_isRequested ? "Requested" : "Follow"),
                               style: GoogleFonts.outfit(
                                 color: _isFollowing ? textColor : btnTextColor,
                                 fontSize: 14,
@@ -944,41 +1088,43 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                         ),
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Container(
-                        height: 38,
-                        decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF262626) : const Color(0xFFEFEFEF),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: InkWell(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => WhatsAppGroupChat(
-                                  groupId: 'p:$userId',
-                                  groupName: name,
-                                  groupImage: profileUrl,
+                    if (!(_profileData?['is_private'] == true && !_isFollowing)) ...[
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Container(
+                          height: 38,
+                          decoration: BoxDecoration(
+                            color: isDark ? const Color(0xFF262626) : const Color(0xFFEFEFEF),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: InkWell(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => WhatsAppGroupChat(
+                                    groupId: 'p:$userId',
+                                    groupName: name,
+                                    groupImage: profileUrl,
+                                  ),
                                 ),
-                              ),
-                            );
-                          },
-                          borderRadius: BorderRadius.circular(8),
-                          child: Center(
-                            child: Text(
-                              "Message",
-                              style: GoogleFonts.outfit(
-                                color: textColor,
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
+                              );
+                            },
+                            borderRadius: BorderRadius.circular(8),
+                            child: Center(
+                              child: Text(
+                                "Message",
+                                style: GoogleFonts.outfit(
+                                  color: textColor,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                           ),
                         ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
         ),
@@ -1073,6 +1219,122 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildLanguageHubDashboard(Color textColor, Color btnColor, bool isDark) {
+    String rank = 'Beginner';
+    Color rankColor = Colors.green;
+    if (_englishHubPoints >= 500) {
+      rank = 'Advanced';
+      rankColor = const Color(0xFFFFD600);
+    } else if (_englishHubPoints >= 100) {
+      rank = 'Intermediate';
+      rankColor = Colors.orange;
+    }
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E1E1E) : const Color(0xFFF5F5F5),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: btnColor.withValues(alpha: 0.1)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.language, size: 20, color: Color(0xFFFFD600)),
+              const SizedBox(width: 8),
+              Text(
+                'English Hub Dashboard',
+                style: GoogleFonts.outfit(
+                  color: textColor,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: rankColor.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  rank,
+                  style: GoogleFonts.outfit(
+                    color: rankColor,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Icon(Icons.star, size: 16, color: btnColor),
+              const SizedBox(width: 6),
+              Text(
+                '$_englishHubPoints Points',
+                style: GoogleFonts.inter(
+                  color: textColor,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          if (_isAnalyzingHub)
+            Row(
+              children: [
+                const SizedBox(
+                  width: 14,
+                  height: 14,
+                  child: material.CircularProgressIndicator(strokeWidth: 2),
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  'AI is analyzing your progress...',
+                  style: GoogleFonts.inter(
+                    color: textColor.withValues(alpha: 0.6),
+                    fontSize: 13,
+                  ),
+                ),
+              ],
+            )
+          else if (_hubAnalysis.isNotEmpty)
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: btnColor.withValues(alpha: 0.05),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(Icons.psychology, size: 16, color: Color(0xFFFFD600)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      _hubAnalysis,
+                      style: GoogleFonts.inter(
+                        color: textColor.withValues(alpha: 0.9),
+                        fontSize: 13,
+                        height: 1.4,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -1452,4 +1714,6 @@ class _ThreadsTab extends StatelessWidget {
       ],
     );
   }
+
+
 }
