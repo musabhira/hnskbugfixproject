@@ -1,0 +1,83 @@
+{
+  "url": "https://speaknow.co.in/blog/english-for-social-media-and-chatting",
+  "path": "/blog/english-for-social-media-and-chatting",
+  "title": "English for Chatting and Social Media | SpeakNow",
+  "description": "DMs, comments and captions — the casual English Indians actually use online, with do-and-dont tips.",
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "English for Chatting and Social Media"
+    },
+    {
+      "tag": "h2",
+      "text": "Common short forms"
+    },
+    {
+      "tag": "h2",
+      "text": "Do"
+    },
+    {
+      "tag": "h2",
+      "text": "Don't"
+    },
+    {
+      "tag": "h2",
+      "text": "Captions"
+    },
+    {
+      "tag": "h2",
+      "text": "Practice"
+    },
+    {
+      "tag": "h3",
+      "text": "🎙️ SpeakNow"
+    }
+  ],
+  "paragraphs": [
+    "DMs, comments and captions — the casual English Indians actually use online, with do-and-dont tips.",
+    "4 min read · Published 2026-07-16",
+    "Online English is relaxed but has rules.",
+    "lol (laughing), brb (be right back), idk (I don't know), tbh (to be honest), imo (in my opinion).",
+    "\"Sunset vibes ☀️\" works. Add a question to get replies: \"Best beach near Mumbai?\"",
+    "Write 3 casual messages on SpeakNow's text-to-speech to hear natural flow.",
+    "Casual English still needs correct basics. Don't drop grammar fully.",
+    "Free browser-based English speaking practice. No downloads, no sign-ups, no data leaving your computer."
+  ],
+  "ldJson": [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Web Browser",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "inLanguage": "en"
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "logo": "https://speaknow.co.in/icon-mic.png?v=3",
+      "sameAs": [
+        "https://instagram.com/speaknow.co.in"
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://speaknow.co.in/practice?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+  ]
+}

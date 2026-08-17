@@ -1,0 +1,207 @@
+{
+  "url": "https://speaknow.co.in/grammar/basic-sentence-structure",
+  "path": "/grammar/basic-sentence-structure",
+  "title": "Basic Sentence Structure — English Grammar Lessons | SpeakNow",
+  "description": "Free basic sentence structure lessons with clear explanations, real examples, and speaking exercises. Practice aloud in your browser with instant feedback — no sign-up.",
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "📐 Basic Sentence Structure"
+    },
+    {
+      "tag": "h3",
+      "text": "The Foundation of Every Sentence"
+    },
+    {
+      "tag": "h3",
+      "text": "Subject"
+    },
+    {
+      "tag": "h3",
+      "text": "Verb"
+    },
+    {
+      "tag": "h3",
+      "text": "Object"
+    },
+    {
+      "tag": "h2",
+      "text": "🎤 Practice Speaking"
+    },
+    {
+      "tag": "h2",
+      "text": "The Core: Subject, Verb, Object"
+    },
+    {
+      "tag": "h2",
+      "text": "Adding Detail with Modifiers"
+    },
+    {
+      "tag": "h2",
+      "text": "Statements, Questions, and Negatives"
+    },
+    {
+      "tag": "h2",
+      "text": "Common Mistakes to Avoid"
+    },
+    {
+      "tag": "h2",
+      "text": "Try This: A Quick Practice"
+    },
+    {
+      "tag": "h2",
+      "text": "Frequently Asked Questions"
+    },
+    {
+      "tag": "h3",
+      "text": "📚 Related Practice Modes"
+    },
+    {
+      "tag": "h3",
+      "text": "🎙️ SpeakNow"
+    }
+  ],
+  "paragraphs": [
+    "Every complete English sentence needs a subject (who or what) and a verb (the action). Many sentences also have an object (what receives the action).",
+    "The subject is the person or thing doing the action. It usually comes first in a sentence.",
+    "The verb is the action word. It tells what the subject does.",
+    "The object receives the action. Not all sentences need an object.",
+    "Say the complete sentence out loud, filling in the blank.",
+    "Exercise 1 of 5",
+    "💡",
+    "SpeakNow is a free, community-supported resource built so anyone can practice English freely and privately — no ads pushed in your face, no account needed. A small coffee helps cover the servers and keeps every feature 100% free for thousands of learners. If it’s helped you even a little, please consider a tip. It genuinely means the world to us. ☕",
+    "Thank you for keeping SpeakNow alive 💖",
+    "Basic sentence structure is the starting point of all English. Every clear sentence is built from a few predictable parts, and once you can name them, the rest of grammar becomes far easier to learn.",
+    "Most English sentences follow a Subject-Verb-Object (SVO) order. The subject is who or what the sentence is about ('The teacher'), the verb is the action ('explains'), and the object is who or what receives it ('the lesson'). 'The teacher explains the lesson' follows this order exactly. Changing the order changes the meaning: 'The lesson explains the teacher' is nonsense. English is strict about this order, so mastering SVO is step one.",
+    "Once you have SVO, you can add adjectives before nouns ('a friendly teacher'), adverbs after verbs ('explains clearly'), and prepositional phrases for time or place ('in the morning'). These modifiers add color without breaking the core order. A longer sentence like 'Our friendly teacher explains the lesson clearly in the morning' is still SVO at heart.",
+    "Statements use plain SVO. Questions invert the subject and the first verb: 'The teacher explains' becomes 'Does the teacher explain?'. Negatives add 'not' after an auxiliary: 'The teacher does not explain'. Learning these three shapes lets you express almost any basic idea. SpeakNow's sentence-structure exercise has you say example sentences aloud so the order becomes automatic.",
+    "The most common slip is abandoning Subject-Verb-Object order under pressure, especially when your native language puts the verb elsewhere. Learners also add a second verb ('She is goes'), drop the object ('I eat' with no what), or forget third-person 's' ('he eat'). Translating word-for-word from your language often scrambles the order, so the sentence sounds backward even when every word is correct. Fix it by mentally locking SVO before you speak: name who, then the action, then what receives it.",
+    "Take one everyday action and build five plain SVO sentences aloud: 'I drink water', 'She reads books', 'We watch films'. Then flip each into a question by inverting: 'Do I drink water?', 'Does she read books?'. Doing this for two minutes a day trains the order so it survives in real conversation. SpeakNow's sentence-structure exercise lets you say example sentences and hear them back.",
+    "English uses Subject-Verb-Object order: 'She (subject) eats (verb) apples (object).' Unlike many languages, English keeps this order rigidly, so getting it right is essential for being understood.",
+    "Mostly no in everyday speech. You can front an adverb for style ('Yesterday I went home'), but the core SVO stays. Inversion is reserved for questions and a few formal structures.",
+    "Clear order lets listeners parse your meaning instantly. Even with a strong accent, correct SVO makes you understandable. SpeakNow drills this with speaking exercises.",
+    "← All Grammar Topics",
+    "Free browser-based English speaking practice. No downloads, no sign-ups, no data leaving your computer."
+  ],
+  "ldJson": [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Web Browser",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "inLanguage": "en"
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "logo": "https://speaknow.co.in/icon-mic.png?v=3",
+      "sameAs": [
+        "https://instagram.com/speaknow.co.in"
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://speaknow.co.in/practice?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "Basic Sentence Structure",
+      "description": "Free Basic Sentence Structure lessons and speaking practice.",
+      "url": "https://speaknow.co.in/grammar/basic-sentence-structure",
+      "breadcrumb": {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://speaknow.co.in"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Grammar",
+            "item": "https://speaknow.co.in/grammar"
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "name": "Basic Sentence Structure",
+            "item": "https://speaknow.co.in/grammar/basic-sentence-structure"
+          }
+        ]
+      }
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://speaknow.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Grammar",
+          "item": "https://speaknow.co.in/grammar"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Basic Sentence Structure",
+          "item": "https://speaknow.co.in/grammar/basic-sentence-structure"
+        }
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is the basic word order in English?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "English uses Subject-Verb-Object order: 'She (subject) eats (verb) apples (object).' Unlike many languages, English keeps this order rigidly, so getting it right is essential for being understood."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I change the word order for emphasis?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Mostly no in everyday speech. You can front an adverb for style ('Yesterday I went home'), but the core SVO stays. Inversion is reserved for questions and a few formal structures."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why is sentence structure important for speaking?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Clear order lets listeners parse your meaning instantly. Even with a strong accent, correct SVO makes you understandable. SpeakNow drills this with speaking exercises."
+          }
+        }
+      ]
+    }
+  ]
+}

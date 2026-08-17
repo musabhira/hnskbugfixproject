@@ -1,0 +1,202 @@
+{
+  "url": "https://speaknow.co.in/grammar/articles-a-an-the",
+  "path": "/grammar/articles-a-an-the",
+  "title": "Articles: A, An, The — English Grammar Lessons | SpeakNow",
+  "description": "Free articles: a, an, the lessons with clear explanations, real examples, and speaking exercises. Practice aloud in your browser with instant feedback — no sign-up.",
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "📝 Articles: A, An, The"
+    },
+    {
+      "tag": "h3",
+      "text": "A vs An"
+    },
+    {
+      "tag": "h3",
+      "text": "The — the Definite Article"
+    },
+    {
+      "tag": "h3",
+      "text": "No Article"
+    },
+    {
+      "tag": "h2",
+      "text": "🎤 Practice Speaking"
+    },
+    {
+      "tag": "h2",
+      "text": "A and An: One Unspecified Thing"
+    },
+    {
+      "tag": "h2",
+      "text": "The: Something Already Known"
+    },
+    {
+      "tag": "h2",
+      "text": "No Article: General and Plural"
+    },
+    {
+      "tag": "h2",
+      "text": "Common Mistakes to Avoid"
+    },
+    {
+      "tag": "h2",
+      "text": "Try This: A Quick Practice"
+    },
+    {
+      "tag": "h2",
+      "text": "Frequently Asked Questions"
+    },
+    {
+      "tag": "h3",
+      "text": "📚 Related Practice Modes"
+    },
+    {
+      "tag": "h3",
+      "text": "🎙️ SpeakNow"
+    }
+  ],
+  "paragraphs": [
+    "Use 'a' before words that start with a consonant sound. Use 'an' before words that start with a vowel sound (a, e, i, o, u). Remember: it's about sound, not spelling!",
+    "Use 'the' when talking about something specific — something both you and the listener know about.",
+    "Don't use an article when talking about things in general, especially with plural or uncountable nouns.",
+    "Say the complete sentence out loud, filling in the blank.",
+    "Exercise 1 of 5",
+    "💡",
+    "SpeakNow is a free, community-supported resource built so anyone can practice English freely and privately — no ads pushed in your face, no account needed. A small coffee helps cover the servers and keeps every feature 100% free for thousands of learners. If it’s helped you even a little, please consider a tip. It genuinely means the world to us. ☕",
+    "Thank you for keeping SpeakNow alive 💖",
+    "Articles are the tiny words 'a', 'an', and 'the' that cause outsized trouble because many languages do not have them. The rule is simpler than it looks once you separate specific from general.",
+    "Use 'a' or 'an' before a singular noun when the listener does not yet know which one. 'A cat' means any cat. Use 'a' before consonant sounds ('a book') and 'an' before vowel sounds ('an apple', 'an hour'). The sound, not the letter, decides: 'an MBA' but 'a university'.",
+    "Use 'the' when both speakers know the noun. 'Close the door' works because there is one door in the room. 'The sun', 'the president', and 'the best restaurant' are specific. Also use 'the' with superlatives and ordinals: 'the first', 'the tallest'.",
+    "Drop the article for general truths and most plurals: 'Cats are friendly', 'I like music'. Languages without articles often over-insert 'the' ('the cats are friendly' is wrong for a general statement). Practice spotting when nothing is needed — that restraint is what makes your English sound natural.",
+    "The biggest mistake is over-inserting 'the' for general statements ('The cats are friendly' when you mean cats in general) and dropping it before a singular countable noun ('I have car'). Many learners also choose 'a' vs 'an' by the letter instead of the sound ('a hour', 'an university'). Another trap is uncountable nouns taking 'a' ('a information'). Rule of thumb: general or plural means no article; one specific unknown thing means 'a/an'; both speakers know which one means 'the'.",
+    "Look around you and describe five objects using the right article: 'a book', 'an apple', 'the window', 'the phone on the desk'. Say why each choice fits. Then make two general statements with no article: 'Books are useful', 'Water is cold'. Practising this contrast aloud is exactly what SpeakNow's articles exercise does, and it quickly kills the habit of spraying 'the' everywhere.",
+    "Use 'a' before a consonant sound and 'an' before a vowel sound. It is the sound that matters: 'a university' (yu-), 'an hour' (ow-). This is one of the most tested rules in English.",
+    "Because it points to a definite, known thing. 'The book' means a specific book both people recognize, while 'a book' is any book.",
+    "Not for general statements: 'Dogs bark.' Use 'the' only when the plural is specific: 'The dogs in our yard bark.' SpeakNow's articles exercise drills this distinction aloud.",
+    "← All Grammar Topics",
+    "Free browser-based English speaking practice. No downloads, no sign-ups, no data leaving your computer."
+  ],
+  "ldJson": [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Web Browser",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "inLanguage": "en"
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "logo": "https://speaknow.co.in/icon-mic.png?v=3",
+      "sameAs": [
+        "https://instagram.com/speaknow.co.in"
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://speaknow.co.in/practice?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "Articles: A, An, The",
+      "description": "Free Articles: A, An, The lessons and speaking practice.",
+      "url": "https://speaknow.co.in/grammar/articles-a-an-the",
+      "breadcrumb": {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://speaknow.co.in"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Grammar",
+            "item": "https://speaknow.co.in/grammar"
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "name": "Articles: A, An, The",
+            "item": "https://speaknow.co.in/grammar/articles-a-an-the"
+          }
+        ]
+      }
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://speaknow.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Grammar",
+          "item": "https://speaknow.co.in/grammar"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Articles A An The",
+          "item": "https://speaknow.co.in/grammar/articles-a-an-the"
+        }
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "When do I use 'a' vs 'an'?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Use 'a' before a consonant sound and 'an' before a vowel sound. It is the sound that matters: 'a university' (yu-), 'an hour' (ow-). This is one of the most tested rules in English."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why is 'the' called the definite article?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Because it points to a definite, known thing. 'The book' means a specific book both people recognize, while 'a book' is any book."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Do I need an article before plurals?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Not for general statements: 'Dogs bark.' Use 'the' only when the plural is specific: 'The dogs in our yard bark.' SpeakNow's articles exercise drills this distinction aloud."
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+[
+  {
+    "structure": "Polite question",
+    "sentence": "Could you tell me where the nearest station is?"
+  },
+  {
+    "structure": "Request form",
+    "sentence": "I would like to order a cup of coffee please."
+  },
+  {
+    "structure": "Tag question",
+    "sentence": "The weather is beautiful today, is it not?"
+  },
+  {
+    "structure": "Past tense",
+    "sentence": "She explained the lesson clearly to the students."
+  },
+  {
+    "structure": "Modal advice",
+    "sentence": "We should practice speaking English every single day."
+  },
+  {
+    "structure": "Gerund subject",
+    "sentence": "Reading aloud helps you notice your pronunciation mistakes."
+  },
+  {
+    "structure": "Imperative request",
+    "sentence": "Can you repeat that sentence a little more slowly?"
+  },
+  {
+    "structure": "Present perfect",
+    "sentence": "I have never been to that part of the city before."
+  },
+  {
+    "structure": "Conditional",
+    "sentence": "If I had more time, I would learn another language."
+  },
+  {
+    "structure": "Relative clause",
+    "sentence": "The book that I borrowed from the library is overdue."
+  },
+  {
+    "structure": "Passive voice",
+    "sentence": "The report was finished before the deadline."
+  },
+  {
+    "structure": "Future plan",
+    "sentence": "She is going to visit her parents this weekend."
+  }
+]

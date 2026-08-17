@@ -1,0 +1,207 @@
+{
+  "url": "https://speaknow.co.in/grammar/conditionals-if-clauses",
+  "path": "/grammar/conditionals-if-clauses",
+  "title": "Conditionals (If Clauses) — English Grammar Lessons | SpeakNow",
+  "description": "Free conditionals (if clauses) lessons with clear explanations, real examples, and speaking exercises. Practice aloud in your browser with instant feedback — no sign-up.",
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "🔀 Conditionals (If Clauses)"
+    },
+    {
+      "tag": "h3",
+      "text": "Zero Conditional: General Truths"
+    },
+    {
+      "tag": "h3",
+      "text": "First Conditional: Real Future Possibilities"
+    },
+    {
+      "tag": "h3",
+      "text": "Second Conditional: Unreal Present/Future"
+    },
+    {
+      "tag": "h3",
+      "text": "Third Conditional: Unreal Past"
+    },
+    {
+      "tag": "h2",
+      "text": "🎤 Practice Speaking"
+    },
+    {
+      "tag": "h2",
+      "text": "Zero and First Conditional"
+    },
+    {
+      "tag": "h2",
+      "text": "Second and Third Conditional"
+    },
+    {
+      "tag": "h2",
+      "text": "Unless, In Case, and Mixing"
+    },
+    {
+      "tag": "h2",
+      "text": "Common Mistakes to Avoid"
+    },
+    {
+      "tag": "h2",
+      "text": "Try This: A Quick Practice"
+    },
+    {
+      "tag": "h2",
+      "text": "Frequently Asked Questions"
+    },
+    {
+      "tag": "h3",
+      "text": "📚 Related Practice Modes"
+    },
+    {
+      "tag": "h3",
+      "text": "🎙️ SpeakNow"
+    }
+  ],
+  "paragraphs": [
+    "Use zero conditional for things that are always true — scientific facts and general rules. Form: if + present simple, present simple.",
+    "Use first conditional for real and possible situations in the future. Form: if + present simple, will + base verb.",
+    "Use second conditional for imaginary or unlikely situations in the present or future. Form: if + past simple, would + base verb.",
+    "Use third conditional for imaginary situations in the past — things that didn't happen. Form: if + had + past participle, would have + past participle.",
+    "Say the complete sentence out loud, filling in the blank.",
+    "Exercise 1 of 5",
+    "💡",
+    "SpeakNow is a free, community-supported resource built so anyone can practice English freely and privately — no ads pushed in your face, no account needed. A small coffee helps cover the servers and keeps every feature 100% free for thousands of learners. If it’s helped you even a little, please consider a tip. It genuinely means the world to us. ☕",
+    "Thank you for keeping SpeakNow alive 💖",
+    "Conditionals describe what happens if something else is true. The zero, first, second, and third conditionals cover facts, real futures, hypotheticals, and imaginary pasts.",
+    "Zero conditional (If + present, present) states facts: 'If you heat water, it boils.' First conditional (If + present, will + verb) describes real future possibilities: 'If it rains, I will stay home.' These are the workhorses of daily plans and warnings.",
+    "Second (If + past, would + verb) is hypothetical: 'If I had time, I would help.' Third (If + past perfect, would have + past participle) is unreal past: 'If I had studied, I would have passed.' These two let you talk about regrets and dreams, common in natural conversation.",
+    "'Unless' means 'if not': 'I'll go unless it rains.' 'In case' prepares for something. Sometimes real and unreal mix ('If you had taken the train, you will arrive by now'). Practice saying full conditional sentences aloud to make the patterns automatic.",
+    "The classic error is wrong tense pairing ('If I will go' instead of 'If I go') and mixing first and second conditionals so the likelihood gets muddled. Learners also add 'will' inside the 'if' clause, use double conjunctions ('If because'), and confuse 'unless' with 'if not' in subtle cases. Keeping each conditional's fixed pairing (e.g. present + will, past + would) is what makes your hypotheticals clear to the listener.",
+    "Write and say one of each: zero ('If you heat water, it boils'), first ('If it rains, I will stay'), second ('If I had time, I would help'). Feel how the verb form signals how likely the situation is. Then start one with the result: 'I would help if I had time'. SpeakNow's conditionals exercise repeats full sentences aloud so the patterns stop needing conscious thought.",
+    "Zero (facts), first (real future), second (hypothetical present), third (unreal past). Each pairs a specific 'if' tense with a result tense.",
+    "First is a real future possibility ('If it rains, I will stay'). Second is imaginary ('If I were rich, I would travel'). The verb form signals how likely it is.",
+    "Yes: 'I will stay home if it rains.' No comma when the 'if' clause comes second. SpeakNow drills both orders aloud.",
+    "← All Grammar Topics",
+    "Free browser-based English speaking practice. No downloads, no sign-ups, no data leaving your computer."
+  ],
+  "ldJson": [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Web Browser",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "inLanguage": "en"
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "logo": "https://speaknow.co.in/icon-mic.png?v=3",
+      "sameAs": [
+        "https://instagram.com/speaknow.co.in"
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://speaknow.co.in/practice?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "Conditionals (If Clauses)",
+      "description": "Free Conditionals (If Clauses) lessons and speaking practice.",
+      "url": "https://speaknow.co.in/grammar/conditionals-if-clauses",
+      "breadcrumb": {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://speaknow.co.in"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Grammar",
+            "item": "https://speaknow.co.in/grammar"
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "name": "Conditionals (If Clauses)",
+            "item": "https://speaknow.co.in/grammar/conditionals-if-clauses"
+          }
+        ]
+      }
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://speaknow.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Grammar",
+          "item": "https://speaknow.co.in/grammar"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Conditionals If Clauses",
+          "item": "https://speaknow.co.in/grammar/conditionals-if-clauses"
+        }
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What are the four types of conditional?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Zero (facts), first (real future), second (hypothetical present), third (unreal past). Each pairs a specific 'if' tense with a result tense."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the difference between first and second conditional?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "First is a real future possibility ('If it rains, I will stay'). Second is imaginary ('If I were rich, I would travel'). The verb form signals how likely it is."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I start a conditional with the result?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes: 'I will stay home if it rains.' No comma when the 'if' clause comes second. SpeakNow drills both orders aloud."
+          }
+        }
+      ]
+    }
+  ]
+}

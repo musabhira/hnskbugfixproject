@@ -1,0 +1,207 @@
+{
+  "url": "https://speaknow.co.in/grammar/degrees-of-comparison",
+  "path": "/grammar/degrees-of-comparison",
+  "title": "Degrees of Comparison — English Grammar Lessons | SpeakNow",
+  "description": "Free degrees of comparison lessons with clear explanations, real examples, and speaking exercises. Practice aloud in your browser with instant feedback — no sign-up.",
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "📈 Degrees of Comparison"
+    },
+    {
+      "tag": "h3",
+      "text": "The Three Degrees"
+    },
+    {
+      "tag": "h3",
+      "text": "Comparative: Comparing Two Things"
+    },
+    {
+      "tag": "h3",
+      "text": "Superlative: One of Many"
+    },
+    {
+      "tag": "h3",
+      "text": "Irregular Forms"
+    },
+    {
+      "tag": "h2",
+      "text": "🎤 Practice Speaking"
+    },
+    {
+      "tag": "h2",
+      "text": "Positive, Comparative, Superlative"
+    },
+    {
+      "tag": "h2",
+      "text": "Than and The"
+    },
+    {
+      "tag": "h2",
+      "text": "Common Mistakes"
+    },
+    {
+      "tag": "h2",
+      "text": "Common Mistakes to Avoid"
+    },
+    {
+      "tag": "h2",
+      "text": "Try This: A Quick Practice"
+    },
+    {
+      "tag": "h2",
+      "text": "Frequently Asked Questions"
+    },
+    {
+      "tag": "h3",
+      "text": "📚 Related Practice Modes"
+    },
+    {
+      "tag": "h3",
+      "text": "🎙️ SpeakNow"
+    }
+  ],
+  "paragraphs": [
+    "Adjectives have three degrees: positive (the base form), comparative (comparing two things), and superlative (comparing one thing to all others).",
+    "For short adjectives (1-2 syllables), add -er + than. For long adjectives (3+ syllables), use more + adjective + than.",
+    "For short adjectives, add the + -est. For long adjectives, use the most + adjective.",
+    "Some common adjectives have completely irregular forms.",
+    "Say the complete sentence out loud, filling in the blank.",
+    "Exercise 1 of 5",
+    "💡",
+    "SpeakNow is a free, community-supported resource built so anyone can practice English freely and privately — no ads pushed in your face, no account needed. A small coffee helps cover the servers and keeps every feature 100% free for thousands of learners. If it’s helped you even a little, please consider a tip. It genuinely means the world to us. ☕",
+    "Thank you for keeping SpeakNow alive 💖",
+    "Degrees of comparison let you grade adjectives: positive (big), comparative (bigger), superlative (biggest). They are essential for describing and ranking things in speech.",
+    "One-syllable adjectives add -er/-est ('small, smaller, smallest'). Longer ones use 'more'/'most' ('beautiful, more beautiful, most beautiful'). Irregulars include good/better/best and bad/worse/worst. Knowing the form prevents 'more bigger' errors.",
+    "Comparatives pair with 'than' ('taller than you'); superlatives use 'the' ('the tallest'). 'Of the three' or 'in the class' often follows a superlative. These small words signal which degree you mean.",
+    "Avoid double comparison ('more better'), and use 'than' not 'then'. 'As...as' shows equality ('as tall as'). Practicing these patterns out loud on SpeakNow fixes them quickly.",
+    "Double comparison is everywhere ('more better', 'most tallest'), along with 'than'/'then' confusion and missing 'the' before a superlative ('tallest boy' should often be 'the tallest boy'). Learners also pick the wrong form for syllable count ('beautifuler' instead of 'more beautiful') and misuse 'as...as' for equality. Knowing one-syllable takes -er/-est while longer words take more/most removes most of the errors.",
+    "Compare three things out loud: 'My bag is big, yours is bigger, his is the biggest'. Then with a long word: 'This book is interesting, that one is more interesting, the library copy is the most interesting'. Practise 'as...as': 'My car is as fast as yours'. SpeakNow's degrees-of-comparison exercise repeats correct forms aloud so the syllable rule becomes automatic.",
+    "Positive (big), comparative (bigger, for two), superlative (biggest, for three or more). Form depends on syllable count and a few irregular adjectives.",
+    "For adjectives of two or more syllables: 'more interesting'. One-syllable words usually take -er/-est. Irregulars like 'good/better/best' must be memorized.",
+    "It double-marks comparison. Use 'better' (comparative of good) alone. SpeakNow drills correct forms in speaking exercises.",
+    "← All Grammar Topics",
+    "Free browser-based English speaking practice. No downloads, no sign-ups, no data leaving your computer."
+  ],
+  "ldJson": [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Web Browser",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "inLanguage": "en"
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "logo": "https://speaknow.co.in/icon-mic.png?v=3",
+      "sameAs": [
+        "https://instagram.com/speaknow.co.in"
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://speaknow.co.in/practice?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "Degrees of Comparison",
+      "description": "Free Degrees of Comparison lessons and speaking practice.",
+      "url": "https://speaknow.co.in/grammar/degrees-of-comparison",
+      "breadcrumb": {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://speaknow.co.in"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Grammar",
+            "item": "https://speaknow.co.in/grammar"
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "name": "Degrees of Comparison",
+            "item": "https://speaknow.co.in/grammar/degrees-of-comparison"
+          }
+        ]
+      }
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://speaknow.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Grammar",
+          "item": "https://speaknow.co.in/grammar"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Degrees Of Comparison",
+          "item": "https://speaknow.co.in/grammar/degrees-of-comparison"
+        }
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What are the three degrees of comparison?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Positive (big), comparative (bigger, for two), superlative (biggest, for three or more). Form depends on syllable count and a few irregular adjectives."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "When do I use 'more' instead of '-er'?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "For adjectives of two or more syllables: 'more interesting'. One-syllable words usually take -er/-est. Irregulars like 'good/better/best' must be memorized."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is wrong with 'more better'?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "It double-marks comparison. Use 'better' (comparative of good) alone. SpeakNow drills correct forms in speaking exercises."
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,99 @@
+{
+  "url": "https://speaknow.co.in/blog/english-for-travel-abroad",
+  "path": "/blog/english-for-travel-abroad",
+  "title": "English for Travel Abroad: Airport to Hotel Phrases | SpeakNow",
+  "description": "From check-in to taxi, the exact English phrases you need on a foreign trip — with replies you will hear.",
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "English for Travel Abroad: Airport to Hotel Phrases"
+    },
+    {
+      "tag": "h2",
+      "text": "At the airport check-in"
+    },
+    {
+      "tag": "h2",
+      "text": "Security"
+    },
+    {
+      "tag": "h2",
+      "text": "On the plane"
+    },
+    {
+      "tag": "h2",
+      "text": "At immigration"
+    },
+    {
+      "tag": "h2",
+      "text": "Taxi"
+    },
+    {
+      "tag": "h2",
+      "text": "Hotel"
+    },
+    {
+      "tag": "h2",
+      "text": "Emergency"
+    },
+    {
+      "tag": "h2",
+      "text": "Practice"
+    },
+    {
+      "tag": "h3",
+      "text": "🎙️ SpeakNow"
+    }
+  ],
+  "paragraphs": [
+    "From check-in to taxi, the exact English phrases you need on a foreign trip — with replies you will hear.",
+    "6 min read · Published 2026-07-16",
+    "Travelling abroad is easier with a few fixed phrases. Here is the journey, step by step.",
+    "\"I have a flight to Dubai.\" \"Here is my passport.\" \"One bag to check in.\"",
+    "\"Laptop out, liquids in the bag.\" You reply: \"Sure.\" Keep answers short.",
+    "\"Window or aisle?\" \"Aisle, please.\" \"Chicken or veg?\" \"Chicken, thank you.\"",
+    "\"Purpose of visit?\" \"Tourism.\" \"How long?\" \"One week.\" \"Where will you stay?\" \"Hotel Nova.\"",
+    "\"To Hotel Nova, please.\" \"How much?\" \"Meter, please.\"",
+    "\"I have a reservation under Patil.\" \"Breakfast included?\" \"What time is checkout?\"",
+    "\"Where is the hospital?\" \"Call a doctor, please.\" \"I need help.\"",
+    "Role-play each step on SpeakNow before the trip. You will speak without panic abroad.",
+    "Free browser-based English speaking practice. No downloads, no sign-ups, no data leaving your computer."
+  ],
+  "ldJson": [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Web Browser",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "inLanguage": "en"
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "logo": "https://speaknow.co.in/icon-mic.png?v=3",
+      "sameAs": [
+        "https://instagram.com/speaknow.co.in"
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://speaknow.co.in/practice?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+  ]
+}

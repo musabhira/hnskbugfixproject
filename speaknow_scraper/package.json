@@ -1,0 +1,10 @@
+{
+  "name": "speaknow-scraper",
+  "version": "1.0.0",
+  "description": "Zero-dependency web scraper for speaknow.co.in",
+  "main": "scraper.js",
+  "type": "module",
+  "scripts": {
+    "start": "node scraper.js"
+  }
+}

@@ -1,0 +1,94 @@
+{
+  "url": "https://speaknow.co.in/blog/telephone-english-phrases",
+  "path": "/blog/telephone-english-phrases",
+  "title": "Telephone English: Phrases for Calls and Customer Care | SpeakNow",
+  "description": "Handle calls with confidence. Opening lines, putting people on hold, and closing — with Indian call-centre ready examples.",
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Telephone English: Phrases for Calls and Customer Care"
+    },
+    {
+      "tag": "h2",
+      "text": "Opening"
+    },
+    {
+      "tag": "h2",
+      "text": "Asking to hold"
+    },
+    {
+      "tag": "h2",
+      "text": "Transfers"
+    },
+    {
+      "tag": "h2",
+      "text": "Closing"
+    },
+    {
+      "tag": "h2",
+      "text": "If you did not hear"
+    },
+    {
+      "tag": "h2",
+      "text": "For job seekers"
+    },
+    {
+      "tag": "h2",
+      "text": "Tip"
+    },
+    {
+      "tag": "h3",
+      "text": "🎙️ SpeakNow"
+    }
+  ],
+  "paragraphs": [
+    "Handle calls with confidence. Opening lines, putting people on hold, and closing — with Indian call-centre ready examples.",
+    "5 min read · Published 2026-07-16",
+    "Phone English is its own skill. You cannot see the face, so clarity matters most.",
+    "\"Good morning, SpeakNow customer care, Rupesh speaking. How may I help you?\"",
+    "\"May I put you on hold for a moment?\" Never just stay silent.",
+    "\"Let me connect you to the billing team.\"",
+    "\"Thank you for calling. Have a great day.\"",
+    "\"Could you please repeat that?\" \"Pardon?\" \"Could you speak a bit slower?\"",
+    "Customer-care roles need clear phone English. Practise these lines daily with the SpeakNow read-aloud tool.",
+    "Smile while talking on the phone. It changes your tone and the listener feels it.",
+    "Free browser-based English speaking practice. No downloads, no sign-ups, no data leaving your computer."
+  ],
+  "ldJson": [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Web Browser",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "inLanguage": "en"
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "logo": "https://speaknow.co.in/icon-mic.png?v=3",
+      "sameAs": [
+        "https://instagram.com/speaknow.co.in"
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://speaknow.co.in/practice?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+  ]
+}

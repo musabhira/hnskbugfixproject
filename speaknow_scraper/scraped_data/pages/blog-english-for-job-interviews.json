@@ -1,0 +1,99 @@
+{
+  "url": "https://speaknow.co.in/blog/english-for-job-interviews",
+  "path": "/blog/english-for-job-interviews",
+  "title": "English for Job Interviews: Questions and Best Answers | SpeakNow",
+  "description": "Ace your next interview. Common questions, strong answer structures, and the phrases that show confidence in English.",
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "English for Job Interviews: Questions and Best Answers"
+    },
+    {
+      "tag": "h2",
+      "text": "\"Tell me about yourself\""
+    },
+    {
+      "tag": "h2",
+      "text": "\"Why do you want this job?\""
+    },
+    {
+      "tag": "h2",
+      "text": "\"What are your strengths?\""
+    },
+    {
+      "tag": "h2",
+      "text": "\"What is your weakness?\""
+    },
+    {
+      "tag": "h2",
+      "text": "\"Where do you see yourself in 5 years?\""
+    },
+    {
+      "tag": "h2",
+      "text": "Body language in English"
+    },
+    {
+      "tag": "h2",
+      "text": "Practice routine"
+    },
+    {
+      "tag": "h2",
+      "text": "Final checklist"
+    },
+    {
+      "tag": "h3",
+      "text": "🎙️ SpeakNow"
+    }
+  ],
+  "paragraphs": [
+    "Ace your next interview. Common questions, strong answer structures, and the phrases that show confidence in English.",
+    "8 min read · Published 2026-07-16",
+    "Interviews test English more than you think. Clear, structured answers win. Here are the most common questions with answer frameworks.",
+    "Use the 4-part formula: name, background, experience, goal. Keep it under 60 seconds.",
+    "Show you researched the company. \"I admire your focus on simple products, and my skills in web development fit your team.\"",
+    "Give one strength with an example. \"I am consistent. For example, I practised coding daily and shipped 3 projects.\"",
+    "Pick a real one with a fix. \"I used to avoid speaking English, but now I practise 15 minutes every day.\"",
+    "Show growth. \"I want to lead small projects and keep learning new tools.\"",
+    "Sit straight. Smile. Make eye contact. Say \"Thank you for the question\" before answering — it buys thinking time.",
+    "Record mock answers with the SpeakNow app. Listen for filler words like \"um\", \"actually\", \"you know\". Reduce them each week.",
+    "Confidence comes from preparation, not talent.",
+    "Free browser-based English speaking practice. No downloads, no sign-ups, no data leaving your computer."
+  ],
+  "ldJson": [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Web Browser",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "inLanguage": "en"
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "logo": "https://speaknow.co.in/icon-mic.png?v=3",
+      "sameAs": [
+        "https://instagram.com/speaknow.co.in"
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://speaknow.co.in/practice?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+  ]
+}

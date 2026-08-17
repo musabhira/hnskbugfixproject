@@ -1,0 +1,88 @@
+{
+  "url": "https://speaknow.co.in/blog/active-vs-passive-voice",
+  "path": "/blog/active-vs-passive-voice",
+  "title": "Active vs Passive Voice: When to Use Each | SpeakNow",
+  "description": "Active is direct, passive hides the doer. Learn the form, the use, and why business English prefers active.",
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Active vs Passive Voice: When to Use Each"
+    },
+    {
+      "tag": "h2",
+      "text": "Active"
+    },
+    {
+      "tag": "h2",
+      "text": "Passive"
+    },
+    {
+      "tag": "h2",
+      "text": "Form passive"
+    },
+    {
+      "tag": "h2",
+      "text": "When to use passive"
+    },
+    {
+      "tag": "h2",
+      "text": "Business tip"
+    },
+    {
+      "tag": "h2",
+      "text": "Practice"
+    },
+    {
+      "tag": "h3",
+      "text": "🎙️ SpeakNow"
+    }
+  ],
+  "paragraphs": [
+    "Active is direct, passive hides the doer. Learn the form, the use, and why business English prefers active.",
+    "5 min read · Published 2026-07-16",
+    "Voice shows who does the action.",
+    "\"Rupesh wrote the report.\" (subject does action)",
+    "\"The report was written by Rupesh.\" (action on subject)",
+    "be + past participle. \"is eaten\", \"was built\", \"will be done\".",
+    "Active is clearer and shorter. \"We launched the app\" beats \"The app was launched by us.\" Use passive only with reason.",
+    "Take 5 active sentences. Flip to passive. Then back. Speak both on SpeakNow.",
+    "Free browser-based English speaking practice. No downloads, no sign-ups, no data leaving your computer."
+  ],
+  "ldJson": [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Web Browser",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "inLanguage": "en"
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "logo": "https://speaknow.co.in/icon-mic.png?v=3",
+      "sameAs": [
+        "https://instagram.com/speaknow.co.in"
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://speaknow.co.in/practice?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+  ]
+}

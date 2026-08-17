@@ -1,0 +1,202 @@
+{
+  "url": "https://speaknow.co.in/grammar/conjunctions",
+  "path": "/grammar/conjunctions",
+  "title": "Conjunctions — English Grammar Lessons | SpeakNow",
+  "description": "Free conjunctions lessons with clear explanations, real examples, and speaking exercises. Practice aloud in your browser with instant feedback — no sign-up.",
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "🔗 Conjunctions"
+    },
+    {
+      "tag": "h3",
+      "text": "Coordinating Conjunctions: FANBOYS"
+    },
+    {
+      "tag": "h3",
+      "text": "Subordinating Conjunctions"
+    },
+    {
+      "tag": "h3",
+      "text": "Correlative Conjunctions"
+    },
+    {
+      "tag": "h2",
+      "text": "🎤 Practice Speaking"
+    },
+    {
+      "tag": "h2",
+      "text": "Coordinating Conjunctions (FANBOYS)"
+    },
+    {
+      "tag": "h2",
+      "text": "Subordinating Conjunctions"
+    },
+    {
+      "tag": "h2",
+      "text": "Correlative Pairs"
+    },
+    {
+      "tag": "h2",
+      "text": "Common Mistakes to Avoid"
+    },
+    {
+      "tag": "h2",
+      "text": "Try This: A Quick Practice"
+    },
+    {
+      "tag": "h2",
+      "text": "Frequently Asked Questions"
+    },
+    {
+      "tag": "h3",
+      "text": "📚 Related Practice Modes"
+    },
+    {
+      "tag": "h3",
+      "text": "🎙️ SpeakNow"
+    }
+  ],
+  "paragraphs": [
+    "Coordinating conjunctions connect equal parts — words with words, phrases with phrases, clauses with clauses. Remember FANBOYS: For, And, Nor, But, Or, Yet, So.",
+    "Subordinating conjunctions connect a dependent clause to an independent clause. Common ones: because, although, while, when, if, since, unless, until.",
+    "Correlative conjunctions come in pairs: either…or, neither…nor, both…and, not only…but also, whether…or.",
+    "Say the complete sentence out loud, filling in the blank.",
+    "Exercise 1 of 5",
+    "💡",
+    "SpeakNow is a free, community-supported resource built so anyone can practice English freely and privately — no ads pushed in your face, no account needed. A small coffee helps cover the servers and keeps every feature 100% free for thousands of learners. If it’s helped you even a little, please consider a tip. It genuinely means the world to us. ☕",
+    "Thank you for keeping SpeakNow alive 💖",
+    "Conjunctions join words, phrases, and clauses so your speech flows instead of arriving in isolated sentences. Coordinating, subordinating, and correlative conjunctions each have a job.",
+    "For, And, Nor, But, Or, Yet, So join equal ideas: 'I studied but I failed.' 'And' adds, 'but' contrasts, 'or' offers a choice, 'so' shows result. Keeping ideas equal with these makes your speaking clear and balanced.",
+    "Because, although, if, when, since, after introduce dependent clauses that explain reason, time, or condition: 'I left because it was late.' The subordinating word tells the listener how the clause connects, which is vital for complex thoughts.",
+    "Either/or, neither/nor, not only/but also link matched parts: 'Either you go or I go.' These add emphasis and rhythm. Using them correctly marks you as an advanced speaker, and saying them aloud trains the pairing automatically.",
+    "Two errors dominate: the comma splice (joining two full sentences with just 'and' and no comma, or with nothing at all) and mixing up 'because' and 'although'. Learners also forget the comma before a FANBOYS word when it links two complete sentences, and create run-ons by stacking 'and' endlessly. Another slip is using 'but' where 'although' is smoother. Mastering a few joiners with correct punctuation makes speech and writing flow instead of arriving in choppy fragments.",
+    "Take two simple sentences and join them three ways: 'I studied' + 'I passed' becomes 'I studied and I passed', 'I studied but I was tired', 'I passed because I studied'. Hear how the conjunction changes the relationship. Try the same with 'although'. SpeakNow's conjunctions practice has you say these aloud so the right linker appears naturally when you speak, not just when you write.",
+    "For, And, Nor, But, Or, Yet, So — remembered as FANBOYS. They join two equal clauses with a comma before the conjunction.",
+    "'Because' gives a reason ('late because tired'); 'although' contrasts ('although tired, I went'). One explains, the other concedes.",
+    "Use a comma before FANBOYS when joining two full sentences ('I came, but he left'). No comma for a simple list or short join.",
+    "← All Grammar Topics",
+    "Free browser-based English speaking practice. No downloads, no sign-ups, no data leaving your computer."
+  ],
+  "ldJson": [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Web Browser",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "inLanguage": "en"
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "logo": "https://speaknow.co.in/icon-mic.png?v=3",
+      "sameAs": [
+        "https://instagram.com/speaknow.co.in"
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://speaknow.co.in/practice?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "Conjunctions",
+      "description": "Free Conjunctions lessons and speaking practice.",
+      "url": "https://speaknow.co.in/grammar/conjunctions",
+      "breadcrumb": {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://speaknow.co.in"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Grammar",
+            "item": "https://speaknow.co.in/grammar"
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "name": "Conjunctions",
+            "item": "https://speaknow.co.in/grammar/conjunctions"
+          }
+        ]
+      }
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://speaknow.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Grammar",
+          "item": "https://speaknow.co.in/grammar"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Conjunctions",
+          "item": "https://speaknow.co.in/grammar/conjunctions"
+        }
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What are the 7 coordinating conjunctions?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "For, And, Nor, But, Or, Yet, So — remembered as FANBOYS. They join two equal clauses with a comma before the conjunction."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the difference between 'because' and 'although'?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "'Because' gives a reason ('late because tired'); 'although' contrasts ('although tired, I went'). One explains, the other concedes."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Do I need a comma before a conjunction?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Use a comma before FANBOYS when joining two full sentences ('I came, but he left'). No comma for a simple list or short join."
+          }
+        }
+      ]
+    }
+  ]
+}

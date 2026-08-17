@@ -1,0 +1,202 @@
+{
+  "url": "https://speaknow.co.in/grammar/complex-sentence-structure",
+  "path": "/grammar/complex-sentence-structure",
+  "title": "Sentence Structure (Complex) — English Grammar Lessons | SpeakNow",
+  "description": "Free sentence structure (complex) lessons with clear explanations, real examples, and speaking exercises. Practice aloud in your browser with instant feedback — no sign-up.",
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "🏗️ Sentence Structure (Complex)"
+    },
+    {
+      "tag": "h3",
+      "text": "Simple, Compound & Complex Sentences"
+    },
+    {
+      "tag": "h3",
+      "text": "Independent vs Dependent Clauses"
+    },
+    {
+      "tag": "h3",
+      "text": "Relative Clauses"
+    },
+    {
+      "tag": "h2",
+      "text": "🎤 Practice Speaking"
+    },
+    {
+      "tag": "h2",
+      "text": "Independent and Dependent Clauses"
+    },
+    {
+      "tag": "h2",
+      "text": "Punctuation Patterns"
+    },
+    {
+      "tag": "h2",
+      "text": "Relative Clauses with Who, Which, That"
+    },
+    {
+      "tag": "h2",
+      "text": "Common Mistakes to Avoid"
+    },
+    {
+      "tag": "h2",
+      "text": "Try This: A Quick Practice"
+    },
+    {
+      "tag": "h2",
+      "text": "Frequently Asked Questions"
+    },
+    {
+      "tag": "h3",
+      "text": "📚 Related Practice Modes"
+    },
+    {
+      "tag": "h3",
+      "text": "🎙️ SpeakNow"
+    }
+  ],
+  "paragraphs": [
+    "A simple sentence has one independent clause. A compound sentence joins two independent clauses with a conjunction. A complex sentence has one independent clause and at least one dependent clause.",
+    "An independent clause can stand alone (it's a complete sentence). A dependent clause cannot stand alone — it needs the independent clause to complete its meaning.",
+    "Relative clauses give extra information about a noun. Use who/that for people, which/that for things, where for places, when for times. Defining clauses are essential to meaning; non-defining clauses add extra info (with commas).",
+    "Say the complete sentence out loud, filling in the blank.",
+    "Exercise 1 of 5",
+    "💡",
+    "SpeakNow is a free, community-supported resource built so anyone can practice English freely and privately — no ads pushed in your face, no account needed. A small coffee helps cover the servers and keeps every feature 100% free for thousands of learners. If it’s helped you even a little, please consider a tip. It genuinely means the world to us. ☕",
+    "Thank you for keeping SpeakNow alive 💖",
+    "Complex sentences join an independent clause with one or more dependent clauses, letting you express cause, contrast, time, and condition in a single breath.",
+    "An independent clause can stand alone ('I left'). A dependent clause cannot ('because it was late'). Joined, they form a complex sentence ('I left because it was late'). The dependent clause often starts with a subordinator like because, although, when, if.",
+    "If the dependent clause comes first, use a comma: 'Although it rained, we went.' If it comes second, usually no comma. Getting this right makes long sentences readable and your speech well-organized.",
+    "These add detail about a noun: 'The book that I read was good.' 'Who' for people, 'which' for things, 'that' for either in defining clauses. Relative clauses are how fluent speakers pack more meaning into one sentence — practice saying them aloud.",
+    "The biggest trap is the sentence fragment: a dependent clause ('Because it rained') offered as if it were a full sentence. Learners also skip the comma when the dependent clause leads ('Although it rained we went'), misuse who/which/that, and produce run-ons by never subordinating. A complex sentence needs one independent clause plus at least one dependent one joined by a subordinator. Getting this right makes long thoughts readable instead of breathless.",
+    "Take two simple sentences and combine them: 'I left' + 'It was late' becomes 'I left because it was late'. Try 'The boy smiled' + 'He won the game' as 'The boy who won the game smiled'. Practise with because, when, and who. SpeakNow's complex-sentence exercise has you say these aloud, which trains both the punctuation logic and the rhythm of longer sentences.",
+    "A complex sentence has one independent clause plus at least one dependent clause joined by a subordinator (because, if, when, who). It expresses richer relationships than two simple sentences.",
+    "Only when it starts the sentence ('Because it rained, we stayed'). No comma when it follows the main clause.",
+    "'Who' for people, 'which' for things (non-defining), 'that' for people or things in defining clauses. SpeakNow's exercises drill these aloud.",
+    "← All Grammar Topics",
+    "Free browser-based English speaking practice. No downloads, no sign-ups, no data leaving your computer."
+  ],
+  "ldJson": [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Web Browser",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "inLanguage": "en"
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "logo": "https://speaknow.co.in/icon-mic.png?v=3",
+      "sameAs": [
+        "https://instagram.com/speaknow.co.in"
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://speaknow.co.in/practice?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "Sentence Structure (Complex)",
+      "description": "Free Sentence Structure (Complex) lessons and speaking practice.",
+      "url": "https://speaknow.co.in/grammar/complex-sentence-structure",
+      "breadcrumb": {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://speaknow.co.in"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Grammar",
+            "item": "https://speaknow.co.in/grammar"
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "name": "Sentence Structure (Complex)",
+            "item": "https://speaknow.co.in/grammar/complex-sentence-structure"
+          }
+        ]
+      }
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://speaknow.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Grammar",
+          "item": "https://speaknow.co.in/grammar"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Complex Sentence Structure",
+          "item": "https://speaknow.co.in/grammar/complex-sentence-structure"
+        }
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What makes a sentence complex?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "A complex sentence has one independent clause plus at least one dependent clause joined by a subordinator (because, if, when, who). It expresses richer relationships than two simple sentences."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Do I need a comma before a dependent clause?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Only when it starts the sentence ('Because it rained, we stayed'). No comma when it follows the main clause."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "When do I use 'who' vs 'which' vs 'that'?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "'Who' for people, 'which' for things (non-defining), 'that' for people or things in defining clauses. SpeakNow's exercises drill these aloud."
+          }
+        }
+      ]
+    }
+  ]
+}

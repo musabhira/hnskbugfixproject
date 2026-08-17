@@ -1,0 +1,207 @@
+{
+  "url": "https://speaknow.co.in/grammar/modal-verbs-can-must-should",
+  "path": "/grammar/modal-verbs-can-must-should",
+  "title": "Modal Verbs: Can, Must, Should — English Grammar Lessons | SpeakNow",
+  "description": "Free modal verbs: can, must, should lessons with clear explanations, real examples, and speaking exercises. Practice aloud in your browser with instant feedback — no sign-up.",
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "🎯 Modal Verbs: Can, Must, Should"
+    },
+    {
+      "tag": "h3",
+      "text": "Can — Ability & Permission"
+    },
+    {
+      "tag": "h3",
+      "text": "Must — Obligation & Necessity"
+    },
+    {
+      "tag": "h3",
+      "text": "Should — Advice & Recommendation"
+    },
+    {
+      "tag": "h3",
+      "text": "Grammar Note"
+    },
+    {
+      "tag": "h2",
+      "text": "🎤 Practice Speaking"
+    },
+    {
+      "tag": "h2",
+      "text": "Ability and Permission"
+    },
+    {
+      "tag": "h2",
+      "text": "Obligation and Advice"
+    },
+    {
+      "tag": "h2",
+      "text": "Possibility and Prediction"
+    },
+    {
+      "tag": "h2",
+      "text": "Common Mistakes to Avoid"
+    },
+    {
+      "tag": "h2",
+      "text": "Try This: A Quick Practice"
+    },
+    {
+      "tag": "h2",
+      "text": "Frequently Asked Questions"
+    },
+    {
+      "tag": "h3",
+      "text": "📚 Related Practice Modes"
+    },
+    {
+      "tag": "h3",
+      "text": "🎙️ SpeakNow"
+    }
+  ],
+  "paragraphs": [
+    "Use 'can' to talk about ability (what you know how to do) and to ask for or give permission.",
+    "Use 'must' to talk about rules, strong obligations, and things that are necessary. 'Must not' (mustn't) means it is forbidden.",
+    "Use 'should' to give advice, opinions, and recommendations. 'Shouldn't' means it's not a good idea.",
+    "Modal verbs are followed by the base verb (no -s, no -ing, no 'to'). They don't change for he/she/it.",
+    "Say the complete sentence out loud, filling in the blank.",
+    "Exercise 1 of 5",
+    "💡",
+    "SpeakNow is a free, community-supported resource built so anyone can practice English freely and privately — no ads pushed in your face, no account needed. A small coffee helps cover the servers and keeps every feature 100% free for thousands of learners. If it’s helped you even a little, please consider a tip. It genuinely means the world to us. ☕",
+    "Thank you for keeping SpeakNow alive 💖",
+    "Modal verbs — can, could, may, might, must, should, will, would, shall — add meaning about ability, permission, obligation, and possibility. They are followed by the base verb and never take 's' or 'ed'.",
+    "'Can' shows ability or informal permission: 'I can swim', 'Can I sit here?'. 'Could' is the past of ability or a polite request: 'Could you help me?'. 'May' is formal permission or possibility: 'May I leave early?' and 'It may rain'. Choosing the right modal changes how confident or polite you sound.",
+    "'Must' is strong obligation or certainty: 'You must wear a seatbelt.' 'Should' is advice or expectation: 'You should see a doctor.' 'Have to' is external obligation. Mixing 'must' and 'should' changes the force of your message, so practice them in context to sound natural.",
+    "'Might' and 'may' express possibility; 'will' predicts; 'would' is hypothetical or polite. 'I would travel if I had time' is second conditional. These modals appear in almost every conversation about plans, so saying them aloud builds fluency fast.",
+    "Modals break normal verb rules, so learners add '-s' ('he cans'), use a gerund after them ('can to go'), or pile two modals ('will can'). Confusing 'must' and 'should' changes how forceful you sound, and using 'can' for past ability is wrong (say 'could'). Remember modals are always followed by the bare base verb and never take 'to', '-s', or '-ed'. Keeping them straight is what makes your requests and advice sound natural rather than robotic.",
+    "Write three ability sentences ('I can swim'), three advice sentences ('You should rest'), and three permission sentences ('May I sit?'). Say them aloud and notice the shift in tone from ability to advice to politeness. Then turn one present ability into the past: 'I could swim as a child'. SpeakNow's modal-verbs exercise repeats these patterns out loud so the base-form rule sticks without conscious effort.",
+    "Can, could, may, might, must, shall, should, will, would. They are always followed by the base form (e.g., 'she can swim') and never add -s or -ed.",
+    "'Must' is strong obligation or near-certainty ('You must stop'). 'Should' is softer advice or expectation ('You should rest'). The difference in force matters in polite conversation.",
+    "Modals are defective verbs with no infinitive or -s form; 'he can' not 'he cans'. This is a fixed rule worth practicing out loud on SpeakNow.",
+    "← All Grammar Topics",
+    "Free browser-based English speaking practice. No downloads, no sign-ups, no data leaving your computer."
+  ],
+  "ldJson": [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Web Browser",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "inLanguage": "en"
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "logo": "https://speaknow.co.in/icon-mic.png?v=3",
+      "sameAs": [
+        "https://instagram.com/speaknow.co.in"
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://speaknow.co.in/practice?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "Modal Verbs: Can, Must, Should",
+      "description": "Free Modal Verbs: Can, Must, Should lessons and speaking practice.",
+      "url": "https://speaknow.co.in/grammar/modal-verbs-can-must-should",
+      "breadcrumb": {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://speaknow.co.in"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Grammar",
+            "item": "https://speaknow.co.in/grammar"
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "name": "Modal Verbs: Can, Must, Should",
+            "item": "https://speaknow.co.in/grammar/modal-verbs-can-must-should"
+          }
+        ]
+      }
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://speaknow.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Grammar",
+          "item": "https://speaknow.co.in/grammar"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Modal Verbs Can Must Should",
+          "item": "https://speaknow.co.in/grammar/modal-verbs-can-must-should"
+        }
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What are the nine modal verbs?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Can, could, may, might, must, shall, should, will, would. They are always followed by the base form (e.g., 'she can swim') and never add -s or -ed."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the difference between 'must' and 'should'?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "'Must' is strong obligation or near-certainty ('You must stop'). 'Should' is softer advice or expectation ('You should rest'). The difference in force matters in polite conversation."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why don't modals take 's' in third person?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Modals are defective verbs with no infinitive or -s form; 'he can' not 'he cans'. This is a fixed rule worth practicing out loud on SpeakNow."
+          }
+        }
+      ]
+    }
+  ]
+}

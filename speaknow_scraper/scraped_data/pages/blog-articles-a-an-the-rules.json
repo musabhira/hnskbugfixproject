@@ -1,0 +1,90 @@
+{
+  "url": "https://speaknow.co.in/blog/articles-a-an-the-rules",
+  "path": "/blog/articles-a-an-the-rules",
+  "title": "A, An, The: The Article Rules Indians Forget | SpeakNow",
+  "description": "When to use a/an/the or nothing. The simple rules with the exceptions that actually appear in speech.",
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "A, An, The: The Article Rules Indians Forget"
+    },
+    {
+      "tag": "h2",
+      "text": "A vs An"
+    },
+    {
+      "tag": "h2",
+      "text": "The (specific)"
+    },
+    {
+      "tag": "h2",
+      "text": "No article (general)"
+    },
+    {
+      "tag": "h2",
+      "text": "Common error"
+    },
+    {
+      "tag": "h2",
+      "text": "With meals"
+    },
+    {
+      "tag": "h2",
+      "text": "Practice"
+    },
+    {
+      "tag": "h3",
+      "text": "🎙️ SpeakNow"
+    }
+  ],
+  "paragraphs": [
+    "When to use a/an/the or nothing. The simple rules with the exceptions that actually appear in speech.",
+    "5 min read · Published 2026-07-16",
+    "Articles confuse everyone. Here is the clean version.",
+    "\"a\" before consonant sound: a book, a university (yu-). \"an\" before vowel sound: an apple, an hour (silent h).",
+    "\"I saw the dog\" = a known dog. \"I saw a dog\" = any dog.",
+    "\"I like music.\" \"She loves cricket.\" No article for general things or sports.",
+    "Wrong: \"I went to the home.\" Right: \"I went home.\" Home is special.",
+    "\"Let's have lunch.\" Not \"the lunch\" unless specific: \"The lunch was good.\"",
+    "Write 10 sentences mixing all three. Speak on SpeakNow. The app flags missing articles.",
+    "Master articles and you sound instantly more natural.",
+    "Free browser-based English speaking practice. No downloads, no sign-ups, no data leaving your computer."
+  ],
+  "ldJson": [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Web Browser",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "inLanguage": "en"
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "logo": "https://speaknow.co.in/icon-mic.png?v=3",
+      "sameAs": [
+        "https://instagram.com/speaknow.co.in"
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://speaknow.co.in/practice?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+  ]
+}

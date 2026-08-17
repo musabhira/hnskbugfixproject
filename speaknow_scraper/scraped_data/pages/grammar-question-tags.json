@@ -1,0 +1,202 @@
+{
+  "url": "https://speaknow.co.in/grammar/question-tags",
+  "path": "/grammar/question-tags",
+  "title": "Question Tags — English Grammar Lessons | SpeakNow",
+  "description": "Free question tags lessons with clear explanations, real examples, and speaking exercises. Practice aloud in your browser with instant feedback — no sign-up.",
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "❓ Question Tags"
+    },
+    {
+      "tag": "h3",
+      "text": "The Basic Rule"
+    },
+    {
+      "tag": "h3",
+      "text": "Tense Matching"
+    },
+    {
+      "tag": "h3",
+      "text": "Special Cases"
+    },
+    {
+      "tag": "h2",
+      "text": "🎤 Practice Speaking"
+    },
+    {
+      "tag": "h2",
+      "text": "Forming a Tag"
+    },
+    {
+      "tag": "h2",
+      "text": "Intonation Changes Meaning"
+    },
+    {
+      "tag": "h2",
+      "text": "Common Tag Patterns"
+    },
+    {
+      "tag": "h2",
+      "text": "Common Mistakes to Avoid"
+    },
+    {
+      "tag": "h2",
+      "text": "Try This: A Quick Practice"
+    },
+    {
+      "tag": "h2",
+      "text": "Frequently Asked Questions"
+    },
+    {
+      "tag": "h3",
+      "text": "📚 Related Practice Modes"
+    },
+    {
+      "tag": "h3",
+      "text": "🎙️ SpeakNow"
+    }
+  ],
+  "paragraphs": [
+    "A question tag is a short question at the end of a statement. If the statement is positive, the tag is negative. If the statement is negative, the tag is positive. The tag uses the same auxiliary verb (or do/does/did) as the main verb.",
+    "The tag must match the tense of the main verb. If there is no auxiliary verb, use do/does/did.",
+    "With 'I am', use 'aren't I?' (not 'amn't I'). With 'Let's', use 'shall we?'. With imperatives, use 'will you?' or 'won't you?'.",
+    "Say the complete sentence out loud, filling in the blank.",
+    "Exercise 1 of 5",
+    "💡",
+    "SpeakNow is a free, community-supported resource built so anyone can practice English freely and privately — no ads pushed in your face, no account needed. A small coffee helps cover the servers and keeps every feature 100% free for thousands of learners. If it’s helped you even a little, please consider a tip. It genuinely means the world to us. ☕",
+    "Thank you for keeping SpeakNow alive 💖",
+    "Question tags are short phrases at the end of a statement — 'isn't it?', 'don't you?' — used to confirm, check, or keep a conversation going. They make you sound natural and friendly.",
+    "Repeat the auxiliary verb and subject, reversed in polarity: positive statement gets negative tag ('It's nice, isn't it?'), negative gets positive ('It isn't nice, is it?'). If there is no auxiliary, use do/does/did ('You like tea, don't you?').",
+    "Rising intonation asks a real question ('You're coming, aren't you?'). Falling intonation seeks agreement on something obvious ('Nice day, isn't it.'). This subtle cue is key to natural conversation and worth practicing aloud.",
+    "'Let's' takes 'shall we?'; 'I am' takes 'aren't I?'; imperatives take 'will you?'. These irregular tags are frequent in speech, so repeating them on SpeakNow builds confidence quickly.",
+    "Mistakes cluster around polarity and auxiliary choice: a positive statement needs a negative tag and vice versa, but learners often match instead of flip. They also grab the wrong auxiliary ('He likes, doesn't he?' not 'don't he?'), and forget the irregular 'I am' takes 'aren't I?'. Intonation matters too: rising tone asks a real question, falling tone seeks agreement. Getting the tag wrong makes you sound unsure rather than natural.",
+    "Make five statements and add tags: 'It's cold, isn't it?', 'You like tea, don't you?', 'She can't drive, can she?', 'Let's go, shall we?', 'I'm late, aren't I?'. Say each twice — once with rising intonation (genuine question), once falling (agreement). SpeakNow's question-tags practice drills these aloud so the polarity flip and irregular forms become instinctive.",
+    "Use the sentence's auxiliary verb + subject pronoun, with opposite polarity: 'She is, isn't she?' No auxiliary? Use do/does/did.",
+    "Rising tone = genuine question; falling tone = confirmation of something obvious. It changes the social meaning of the tag.",
+    "'Shall we?' as in 'Let's go, shall we?'. This irregular tag is common and worth practicing out loud.",
+    "← All Grammar Topics",
+    "Free browser-based English speaking practice. No downloads, no sign-ups, no data leaving your computer."
+  ],
+  "ldJson": [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Web Browser",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "inLanguage": "en"
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "logo": "https://speaknow.co.in/icon-mic.png?v=3",
+      "sameAs": [
+        "https://instagram.com/speaknow.co.in"
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://speaknow.co.in/practice?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "Question Tags",
+      "description": "Free Question Tags lessons and speaking practice.",
+      "url": "https://speaknow.co.in/grammar/question-tags",
+      "breadcrumb": {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://speaknow.co.in"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Grammar",
+            "item": "https://speaknow.co.in/grammar"
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "name": "Question Tags",
+            "item": "https://speaknow.co.in/grammar/question-tags"
+          }
+        ]
+      }
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://speaknow.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Grammar",
+          "item": "https://speaknow.co.in/grammar"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Question Tags",
+          "item": "https://speaknow.co.in/grammar/question-tags"
+        }
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How do I form a question tag?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Use the sentence's auxiliary verb + subject pronoun, with opposite polarity: 'She is, isn't she?' No auxiliary? Use do/does/did."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why does intonation matter in tags?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Rising tone = genuine question; falling tone = confirmation of something obvious. It changes the social meaning of the tag."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What tag follows 'Let's'?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "'Shall we?' as in 'Let's go, shall we?'. This irregular tag is common and worth practicing out loud."
+          }
+        }
+      ]
+    }
+  ]
+}

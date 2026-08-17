@@ -1,0 +1,90 @@
+{
+  "url": "https://speaknow.co.in/blog/how-to-give-a-self-introduction-presentation",
+  "path": "/blog/how-to-give-a-self-introduction-presentation",
+  "title": "How to Give a Short English Presentation | SpeakNow",
+  "description": "Structure a 2-minute talk: opening, body, close. With phrases that keep the audience with you.",
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "How to Give a Short English Presentation"
+    },
+    {
+      "tag": "h2",
+      "text": "Opening"
+    },
+    {
+      "tag": "h2",
+      "text": "Body (3 points)"
+    },
+    {
+      "tag": "h2",
+      "text": "Closing"
+    },
+    {
+      "tag": "h2",
+      "text": "Link phrases"
+    },
+    {
+      "tag": "h2",
+      "text": "Delivery"
+    },
+    {
+      "tag": "h2",
+      "text": "Practice"
+    },
+    {
+      "tag": "h3",
+      "text": "🎙️ SpeakNow"
+    }
+  ],
+  "paragraphs": [
+    "Structure a 2-minute talk: opening, body, close. With phrases that keep the audience with you.",
+    "6 min read · Published 2026-07-16",
+    "A short presentation follows a fixed shape.",
+    "\"Good morning everyone. Today I will talk about improving English at home.\"",
+    "Support each with one line.",
+    "\"To sum up, small daily steps bring big change. Thank you. Any questions?\"",
+    "\"First\", \"Next\", \"For example\", \"In conclusion\". They guide listeners.",
+    "Speak slower than normal. Pause after key points. Eye contact with different people.",
+    "Record your 2-minute talk on SpeakNow. Watch filler words and speed. Do it 3 times.",
+    "Presentations are just introductions with more points. You already have the skill.",
+    "Free browser-based English speaking practice. No downloads, no sign-ups, no data leaving your computer."
+  ],
+  "ldJson": [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Web Browser",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "inLanguage": "en"
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "logo": "https://speaknow.co.in/icon-mic.png?v=3",
+      "sameAs": [
+        "https://instagram.com/speaknow.co.in"
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://speaknow.co.in/practice?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+  ]
+}

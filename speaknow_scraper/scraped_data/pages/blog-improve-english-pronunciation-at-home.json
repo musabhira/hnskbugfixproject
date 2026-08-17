@@ -1,0 +1,89 @@
+{
+  "url": "https://speaknow.co.in/blog/improve-english-pronunciation-at-home",
+  "path": "/blog/improve-english-pronunciation-at-home",
+  "title": "Improve Your English Pronunciation at Home (No Teacher Needed) | SpeakNow",
+  "description": "You do not need a coach. Use minimal pairs, shadowing and tongue twisters at home to sound clearer in 15 minutes a day.",
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Improve Your English Pronunciation at Home (No Teacher Needed)"
+    },
+    {
+      "tag": "h2",
+      "text": "1. Minimal pairs"
+    },
+    {
+      "tag": "h2",
+      "text": "2. Shadowing"
+    },
+    {
+      "tag": "h2",
+      "text": "3. Tongue twisters"
+    },
+    {
+      "tag": "h2",
+      "text": "4. The \"th\" sound"
+    },
+    {
+      "tag": "h2",
+      "text": "5. Record and compare"
+    },
+    {
+      "tag": "h2",
+      "text": "Weekly plan"
+    },
+    {
+      "tag": "h3",
+      "text": "🎙️ SpeakNow"
+    }
+  ],
+  "paragraphs": [
+    "You do not need a coach. Use minimal pairs, shadowing and tongue twisters at home to sound clearer in 15 minutes a day.",
+    "6 min read · Published 2026-07-16",
+    "Clear pronunciation matters more than a big vocabulary. People understand you when sounds are right. Here is a home routine.",
+    "Minimal pairs are words that differ by one sound: \"ship\" vs \"sheep\", \"bat\" vs \"bet\". Say each pair slowly. Record. The SpeakNow minimal-pairs tool scores your accuracy.",
+    "Play a short English clip. Repeat immediately, copying rhythm and stress. Do not translate. Just echo. Five minutes daily trains your mouth muscles.",
+    "\"She sells sea shells.\" \"Red lorry yellow lorry.\" Start slow, then speed up. They fix tricky sounds like s, r, l, th.",
+    "Indians often say \"dis\" for \"this\". Put tongue between teeth: \"this, that, three, think\". Practice 10 times.",
+    "Use your phone. Say a sentence. Play it. Compare with a native audio. Note the gap.",
+    "In 30 days your speech will be noticeably clearer. The SpeakNow pronunciation tool gives instant feedback so you never practise wrong.",
+    "Free browser-based English speaking practice. No downloads, no sign-ups, no data leaving your computer."
+  ],
+  "ldJson": [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Web Browser",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "inLanguage": "en"
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "logo": "https://speaknow.co.in/icon-mic.png?v=3",
+      "sameAs": [
+        "https://instagram.com/speaknow.co.in"
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://speaknow.co.in/practice?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+  ]
+}

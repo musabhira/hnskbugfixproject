@@ -1,0 +1,89 @@
+{
+  "url": "https://speaknow.co.in/blog/english-filler-words-to-avoid",
+  "path": "/blog/english-filler-words-to-avoid",
+  "title": "Filler Words to Avoid: um, actually, you know | SpeakNow",
+  "description": "Fillers make you sound unsure. Spot your habits and replace them with confident pauses.",
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Filler Words to Avoid: um, actually, you know"
+    },
+    {
+      "tag": "h2",
+      "text": "Common fillers"
+    },
+    {
+      "tag": "h2",
+      "text": "Why avoid"
+    },
+    {
+      "tag": "h2",
+      "text": "The fix: pause"
+    },
+    {
+      "tag": "h2",
+      "text": "How to spot yours"
+    },
+    {
+      "tag": "h2",
+      "text": "SpeakNow feedback"
+    },
+    {
+      "tag": "h2",
+      "text": "7-day plan"
+    },
+    {
+      "tag": "h3",
+      "text": "🎙️ SpeakNow"
+    }
+  ],
+  "paragraphs": [
+    "Fillers make you sound unsure. Spot your habits and replace them with confident pauses.",
+    "4 min read · Published 2026-07-16",
+    "Fillers are pause-fillers we use when thinking. Too many hurt clarity.",
+    "um, uh, like, you know, actually, basically, I mean, sort of.",
+    "They signal nervousness. In interviews they cost marks.",
+    "Silence is fine. Take a breath instead of \"um\". A calm pause sounds confident.",
+    "Record a 1-minute talk. Count fillers. Most people find 10-20. Aim for under 3.",
+    "The app flags filler words in your speech so you see real numbers, not guesses.",
+    "Day 1-2: notice. Day 3-4: pause instead. Day 5-7: aim for clean answers. Small wins stack.",
+    "Free browser-based English speaking practice. No downloads, no sign-ups, no data leaving your computer."
+  ],
+  "ldJson": [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Web Browser",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "inLanguage": "en"
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "logo": "https://speaknow.co.in/icon-mic.png?v=3",
+      "sameAs": [
+        "https://instagram.com/speaknow.co.in"
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://speaknow.co.in/practice?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+  ]
+}

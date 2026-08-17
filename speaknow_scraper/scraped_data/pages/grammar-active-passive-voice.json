@@ -1,0 +1,202 @@
+{
+  "url": "https://speaknow.co.in/grammar/active-passive-voice",
+  "path": "/grammar/active-passive-voice",
+  "title": "Active & Passive Voice — English Grammar Lessons | SpeakNow",
+  "description": "Free active & passive voice lessons with clear explanations, real examples, and speaking exercises. Practice aloud in your browser with instant feedback — no sign-up.",
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "🔄 Active & Passive Voice"
+    },
+    {
+      "tag": "h3",
+      "text": "Active vs Passive Voice"
+    },
+    {
+      "tag": "h3",
+      "text": "Forming the Passive: be + past participle"
+    },
+    {
+      "tag": "h3",
+      "text": "When to Use Passive Voice"
+    },
+    {
+      "tag": "h2",
+      "text": "🎤 Practice Speaking"
+    },
+    {
+      "tag": "h2",
+      "text": "Active Voice: Clear and Direct"
+    },
+    {
+      "tag": "h2",
+      "text": "Passive Voice: The Receiver First"
+    },
+    {
+      "tag": "h2",
+      "text": "When to Choose Passive in Speech"
+    },
+    {
+      "tag": "h2",
+      "text": "Common Mistakes to Avoid"
+    },
+    {
+      "tag": "h2",
+      "text": "Try This: A Quick Practice"
+    },
+    {
+      "tag": "h2",
+      "text": "Frequently Asked Questions"
+    },
+    {
+      "tag": "h3",
+      "text": "📚 Related Practice Modes"
+    },
+    {
+      "tag": "h3",
+      "text": "🎙️ SpeakNow"
+    }
+  ],
+  "paragraphs": [
+    "In active voice, the subject performs the action (subject → verb → object). In passive voice, the subject receives the action (object → be + past participle → by subject). Use active for direct, clear sentences. Use passive when the action or object is more important than who did it.",
+    "The passive uses the correct form of 'be' + the past participle of the main verb. The tense of 'be' tells you when the action happened. You can include 'by + agent' or omit it if the agent is unknown or unimportant.",
+    "Use passive when: (1) the agent is unknown, (2) the agent is obvious, (3) you want to emphasise the receiver of the action, (4) writing formal or scientific texts.",
+    "Say the complete sentence out loud, filling in the blank.",
+    "Exercise 1 of 5",
+    "💡",
+    "SpeakNow is a free, community-supported resource built so anyone can practice English freely and privately — no ads pushed in your face, no account needed. A small coffee helps cover the servers and keeps every feature 100% free for thousands of learners. If it’s helped you even a little, please consider a tip. It genuinely means the world to us. ☕",
+    "Thank you for keeping SpeakNow alive 💖",
+    "Voice shows whether the subject performs the action (active) or receives it (passive). Both are correct; the right choice depends on what you want to emphasize.",
+    "In active voice the subject does the action: 'The chef cooked the meal.' It is shorter and more energetic, which is why it is preferred in most speaking. Use active voice when who did it matters or you want punch.",
+    "Passive moves the object to the front: 'The meal was cooked by the chef.' Form: be + past participle + (by agent). Use it when the action or result matters more than the doer, or when the doer is unknown ('My bike was stolen').",
+    "Passive is less common in conversation than writing, but useful for complaints ('The room wasn't cleaned'), news, and processes. Overusing it sounds stiff, so practice both and pick actively. SpeakNow's exercise has you say both forms aloud.",
+    "The usual mistakes are using the wrong participle ('was broke' instead of 'broken'), forgetting the 'by' agent, and overusing passive in casual speech so you sound stiff. Some learners also confuse 'be' + adjective ('the door is open') with true passive ('the door was opened'). Passive is correct when the receiver matters more than the doer, or the doer is unknown, but active is usually livelier. Practise both and choose on purpose.",
+    "Take three active sentences and flip them: 'The chef cooked the meal' becomes 'The meal was cooked by the chef'; 'My brother fixed the bike' becomes 'The bike was fixed by my brother'. Say both forms aloud and feel the emphasis shift. Then try one with an unknown doer: 'My bike was stolen'. SpeakNow's voice exercise drills both forms so you can switch naturally in conversation.",
+    "Use a form of 'be' plus the past participle: 'is eaten', 'was broken', 'will be done'. Add 'by' + agent only if needed ('the window was broken by the wind').",
+    "When the receiver matters more than the doer, or the doer is unknown or obvious. Active is usually better for lively speech.",
+    "Not bad, just less frequent in talk. Use it for emphasis or process. Practicing both on SpeakNow keeps your speech natural.",
+    "← All Grammar Topics",
+    "Free browser-based English speaking practice. No downloads, no sign-ups, no data leaving your computer."
+  ],
+  "ldJson": [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Web Browser",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "inLanguage": "en"
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "logo": "https://speaknow.co.in/icon-mic.png?v=3",
+      "sameAs": [
+        "https://instagram.com/speaknow.co.in"
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://speaknow.co.in/practice?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "Active & Passive Voice",
+      "description": "Free Active & Passive Voice lessons and speaking practice.",
+      "url": "https://speaknow.co.in/grammar/active-passive-voice",
+      "breadcrumb": {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://speaknow.co.in"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Grammar",
+            "item": "https://speaknow.co.in/grammar"
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "name": "Active & Passive Voice",
+            "item": "https://speaknow.co.in/grammar/active-passive-voice"
+          }
+        ]
+      }
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://speaknow.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Grammar",
+          "item": "https://speaknow.co.in/grammar"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Active Passive Voice",
+          "item": "https://speaknow.co.in/grammar/active-passive-voice"
+        }
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How do I form the passive voice?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Use a form of 'be' plus the past participle: 'is eaten', 'was broken', 'will be done'. Add 'by' + agent only if needed ('the window was broken by the wind')."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "When should I use passive instead of active?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "When the receiver matters more than the doer, or the doer is unknown or obvious. Active is usually better for lively speech."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is passive voice bad for speaking?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Not bad, just less frequent in talk. Use it for emphasis or process. Practicing both on SpeakNow keeps your speech natural."
+          }
+        }
+      ]
+    }
+  ]
+}

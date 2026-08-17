@@ -1,0 +1,94 @@
+{
+  "url": "https://speaknow.co.in/blog/how-to-build-English-vocabulary-fast",
+  "path": "/blog/how-to-build-English-vocabulary-fast",
+  "title": "How to Build English Vocabulary Fast (Without Cramming) | SpeakNow",
+  "description": "Forget long word lists. Learn words in context, use spaced repetition, and speak them the same day.",
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "How to Build English Vocabulary Fast (Without Cramming)"
+    },
+    {
+      "tag": "h2",
+      "text": "1. Learn in sentences"
+    },
+    {
+      "tag": "h2",
+      "text": "2. Use the same day"
+    },
+    {
+      "tag": "h2",
+      "text": "3. Spaced repetition"
+    },
+    {
+      "tag": "h2",
+      "text": "4. Theme weeks"
+    },
+    {
+      "tag": "h2",
+      "text": "5. Read graded news"
+    },
+    {
+      "tag": "h2",
+      "text": "6. SpeakNow word drill"
+    },
+    {
+      "tag": "h2",
+      "text": "Target"
+    },
+    {
+      "tag": "h3",
+      "text": "🎙️ SpeakNow"
+    }
+  ],
+  "paragraphs": [
+    "Forget long word lists. Learn words in context, use spaced repetition, and speak them the same day.",
+    "5 min read · Published 2026-07-16",
+    "Cramming 100 words fails. Context and use win. Here is a fast system.",
+    "Do not learn \"ubiquitous = everywhere\". Learn: \"Phones are ubiquitous today.\" The sentence carries meaning.",
+    "Say the new word in a real sentence before sleeping. Speaking locks it in.",
+    "Review after 1 day, 3 days, 7 days. Apps like Anki do this. Or use a simple notebook.",
+    "One week: office words. Next: food. Grouping helps the brain file them.",
+    "Read short English articles. Guess meaning from context before checking.",
+    "The app gives a word, you use it in a sentence aloud. Wrong use is corrected instantly.",
+    "10 new words a day = 300 a month. That is a strong working vocabulary in a year.",
+    "Free browser-based English speaking practice. No downloads, no sign-ups, no data leaving your computer."
+  ],
+  "ldJson": [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Web Browser",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "inLanguage": "en"
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "logo": "https://speaknow.co.in/icon-mic.png?v=3",
+      "sameAs": [
+        "https://instagram.com/speaknow.co.in"
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://speaknow.co.in/practice?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+[
+  {
+    "a": "ship",
+    "b": "sheep",
+    "note": "short i vs long ee"
+  },
+  {
+    "a": "bit",
+    "b": "beat",
+    "note": "short i vs long ee"
+  },
+  {
+    "a": "fan",
+    "b": "van",
+    "note": "f vs v (lower lip bite)"
+  },
+  {
+    "a": "right",
+    "b": "light",
+    "note": "r vs l"
+  },
+  {
+    "a": "think",
+    "b": "sink",
+    "note": "th vs s"
+  },
+  {
+    "a": "cat",
+    "b": "cap",
+    "note": "t vs p final"
+  },
+  {
+    "a": "low",
+    "b": "row",
+    "note": "l vs r"
+  },
+  {
+    "a": "pen",
+    "b": "pan",
+    "note": "e vs a"
+  },
+  {
+    "a": "tree",
+    "b": "three",
+    "note": "t vs th"
+  },
+  {
+    "a": "live",
+    "b": "leave",
+    "note": "short i vs long ee"
+  },
+  {
+    "a": "coat",
+    "b": "boat",
+    "note": "k vs b"
+  },
+  {
+    "a": "gate",
+    "b": "game",
+    "note": "t vs m final"
+  }
+]

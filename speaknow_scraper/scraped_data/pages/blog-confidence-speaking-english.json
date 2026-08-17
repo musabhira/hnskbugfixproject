@@ -1,0 +1,89 @@
+{
+  "url": "https://speaknow.co.in/blog/confidence-speaking-english",
+  "path": "/blog/confidence-speaking-english",
+  "title": "Build Confidence Speaking English (Even If You Make Mistakes) | SpeakNow",
+  "description": "Fear, not grammar, is the real blocker. Practical mindset shifts to speak more and worry less.",
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Build Confidence Speaking English (Even If You Make Mistakes)"
+    },
+    {
+      "tag": "h2",
+      "text": "Shift 1: mistakes are normal"
+    },
+    {
+      "tag": "h2",
+      "text": "Shift 2: aim to be understood"
+    },
+    {
+      "tag": "h2",
+      "text": "Shift 3: prepare scripts"
+    },
+    {
+      "tag": "h2",
+      "text": "Shift 4: practise safe spaces"
+    },
+    {
+      "tag": "h2",
+      "text": "Shift 5: celebrate small wins"
+    },
+    {
+      "tag": "h2",
+      "text": "Daily dare"
+    },
+    {
+      "tag": "h3",
+      "text": "🎙️ SpeakNow"
+    }
+  ],
+  "paragraphs": [
+    "Fear, not grammar, is the real blocker. Practical mindset shifts to speak more and worry less.",
+    "5 min read · Published 2026-07-16",
+    "Most learners know enough words but stay silent from fear.",
+    "Every fluent speaker made errors for years. Native kids take 5 years to speak well. You are ahead.",
+    "You do not need perfect English. You need clear English. \"Where is station?\" works.",
+    "For shops, office, calls — keep 5 ready sentences. Confidence comes from preparation.",
+    "SpeakNow lets you practise alone, no judgement. Build up, then talk to people.",
+    "Ordered tea in English? That is a win. Note it.",
+    "Each day, do one thing in English you normally do in Hindi. A shop, a call, a post. Fear shrinks with use.",
+    "Free browser-based English speaking practice. No downloads, no sign-ups, no data leaving your computer."
+  ],
+  "ldJson": [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Web Browser",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "inLanguage": "en"
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "logo": "https://speaknow.co.in/icon-mic.png?v=3",
+      "sameAs": [
+        "https://instagram.com/speaknow.co.in"
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://speaknow.co.in/practice?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+  ]
+}

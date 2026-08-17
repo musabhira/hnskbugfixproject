@@ -1,0 +1,999 @@
+[
+  {
+    "id": "sentence-structure",
+    "title": "Basic Sentence Structure",
+    "level": "Beginner",
+    "icon": "📐",
+    "description": "Learn how English sentences are built: Subject + Verb + Object.",
+    "color": "#6c5ce7",
+    "lessons": [
+      {
+        "heading": "The Foundation of Every Sentence",
+        "text": "Every complete English sentence needs a subject (who or what) and a verb (the action). Many sentences also have an object (what receives the action).",
+        "examples": [
+          "I eat rice.",
+          "She reads books.",
+          "They play football."
+        ]
+      },
+      {
+        "heading": "Subject",
+        "text": "The subject is the person or thing doing the action. It usually comes first in a sentence.",
+        "examples": [
+          "I run.",
+          "The dog barks.",
+          "My mother cooks."
+        ]
+      },
+      {
+        "heading": "Verb",
+        "text": "The verb is the action word. It tells what the subject does.",
+        "examples": [
+          "I eat.",
+          "She sleeps.",
+          "They study."
+        ]
+      },
+      {
+        "heading": "Object",
+        "text": "The object receives the action. Not all sentences need an object.",
+        "examples": [
+          "I eat rice. (rice = object)",
+          "She reads a book. (a book = object)",
+          "He drives a car."
+        ]
+      }
+    ],
+    "exercises": [
+      {
+        "sentence": "She ___ a letter.",
+        "answer": "writes",
+        "hint": "action of putting words on paper"
+      },
+      {
+        "sentence": "The cat ___ milk.",
+        "answer": "drinks",
+        "hint": "what you do with milk"
+      },
+      {
+        "sentence": "They ___ to school.",
+        "answer": "go",
+        "hint": "travel to a place"
+      },
+      {
+        "sentence": "I ___ my teeth every morning.",
+        "answer": "brush",
+        "hint": "clean with a toothbrush"
+      },
+      {
+        "sentence": "He ___ English very well.",
+        "answer": "speaks",
+        "hint": "the opposite of writing"
+      }
+    ],
+    "slug": "basic-sentence-structure"
+  },
+  {
+    "id": "tenses",
+    "title": "Tenses (12 Tenses)",
+    "level": "All Levels",
+    "icon": "⏰",
+    "description": "Master all 12 English tenses — present, past, future, and their continuous, perfect, and perfect continuous forms.",
+    "color": "#e17055",
+    "lessons": [
+      {
+        "heading": "Overview: The 12 Tenses",
+        "text": "English has 3 time frames (present, past, future) × 4 aspects (simple, continuous, perfect, perfect continuous) = 12 tenses. Each tense changes the verb form to show WHEN and HOW an action happens.",
+        "examples": [
+          "I write. (present simple)",
+          "I am writing. (present continuous)",
+          "I have written. (present perfect)",
+          "I have been writing. (present perfect continuous)"
+        ]
+      },
+      {
+        "heading": "Present Simple",
+        "text": "Use for habits, routines, general truths, and permanent situations. Form: subject + base verb (+s for he/she/it).",
+        "examples": [
+          "I wake up at 7 AM every day.",
+          "She works in a hospital.",
+          "The sun rises in the east.",
+          "They play tennis on Sundays."
+        ]
+      },
+      {
+        "heading": "Present Continuous",
+        "text": "Use for actions happening right now, or temporary situations around now. Form: subject + am/is/are + verb-ing.",
+        "examples": [
+          "I am reading a book right now.",
+          "She is studying for her exam.",
+          "They are playing football.",
+          "We are staying at a hotel this week."
+        ]
+      },
+      {
+        "heading": "Present Perfect",
+        "text": "Use for past actions with a result now, life experiences, and actions that started in the past and continue. Form: subject + have/has + past participle.",
+        "examples": [
+          "I have lost my keys. (result now)",
+          "She has visited Paris three times.",
+          "They have lived here for five years.",
+          "Have you ever eaten sushi?"
+        ]
+      },
+      {
+        "heading": "Present Perfect Continuous",
+        "text": "Use to emphasise the duration of an action that started in the past and is still happening. Form: subject + have/has + been + verb-ing.",
+        "examples": [
+          "I have been studying for three hours.",
+          "She has been reading that book for a week.",
+          "It has been raining all day.",
+          "They have been waiting since 2 PM."
+        ]
+      },
+      {
+        "heading": "Past Simple",
+        "text": "Use for completed actions at a specific time in the past. Form: subject + verb-ed (regular) or irregular past form.",
+        "examples": [
+          "I visited Paris last year.",
+          "She watched a movie yesterday.",
+          "They went to the beach.",
+          "He ate lunch at noon."
+        ]
+      },
+      {
+        "heading": "Past Continuous",
+        "text": "Use for actions in progress at a specific past time, or interrupted actions. Form: subject + was/were + verb-ing.",
+        "examples": [
+          "I was watching TV at 8 PM last night.",
+          "She was reading when I called.",
+          "They were playing football when it started raining.",
+          "The sun was shining and birds were singing."
+        ]
+      },
+      {
+        "heading": "Past Perfect",
+        "text": "Use to show that one past action happened before another past action. Form: subject + had + past participle.",
+        "examples": [
+          "I had already eaten when she arrived.",
+          "She had finished her work before the meeting started.",
+          "They had never seen snow until they visited Canada.",
+          "The movie had already started when we got there."
+        ]
+      },
+      {
+        "heading": "Past Perfect Continuous",
+        "text": "Use to emphasise the duration of an action that continued up to another point in the past. Form: subject + had + been + verb-ing.",
+        "examples": [
+          "I had been waiting for an hour when the bus came.",
+          "She was tired because she had been working all day.",
+          "They had been driving for five hours when they stopped.",
+          "It had been raining all night."
+        ]
+      },
+      {
+        "heading": "Future Simple (Will & Going To)",
+        "text": "Use 'will' for spontaneous decisions, predictions, and promises. Use 'going to' for plans and evidence. Form: subject + will + base verb / subject + am/is/are + going to + verb.",
+        "examples": [
+          "I'll help you with that.",
+          "It will rain tomorrow.",
+          "I am going to visit my parents this weekend.",
+          "She is going to study medicine."
+        ]
+      },
+      {
+        "heading": "Future Continuous",
+        "text": "Use for actions that will be in progress at a specific future time. Form: subject + will + be + verb-ing.",
+        "examples": [
+          "I will be flying to New York at 8 PM tomorrow.",
+          "Don't call at 7 — I will be having dinner.",
+          "She'll be waiting for us at the station.",
+          "Will you be joining us for dinner?"
+        ]
+      },
+      {
+        "heading": "Future Perfect & Future Perfect Continuous",
+        "text": "Use future perfect for actions completed by a future time (will have + past participle). Use future perfect continuous to emphasise duration up to a future time (will have been + verb-ing).",
+        "examples": [
+          "I will have finished the report by 5 PM.",
+          "By next year she will have lived here for ten years.",
+          "I will have been working here for ten years next March.",
+          "She will have been studying for four hours by dinner."
+        ]
+      }
+    ],
+    "exercises": [
+      {
+        "sentence": "She ___ (go) to school every day.",
+        "answer": "goes",
+        "hint": "present simple, he/she/it"
+      },
+      {
+        "sentence": "I ___ (read) a book right now.",
+        "answer": "am reading",
+        "hint": "present continuous for I"
+      },
+      {
+        "sentence": "They have ___ (visit) Paris before.",
+        "answer": "visited",
+        "hint": "present perfect, past participle"
+      },
+      {
+        "sentence": "She has been ___ (study) all morning.",
+        "answer": "studying",
+        "hint": "present perfect continuous"
+      },
+      {
+        "sentence": "Yesterday, I ___ (go) to the market.",
+        "answer": "went",
+        "hint": "past simple, irregular"
+      },
+      {
+        "sentence": "I was ___ (watch) TV when you called.",
+        "answer": "watching",
+        "hint": "past continuous"
+      },
+      {
+        "sentence": "She had already ___ (eat) when I arrived.",
+        "answer": "eaten",
+        "hint": "past perfect, past participle"
+      },
+      {
+        "sentence": "They had been ___ (wait) for an hour.",
+        "answer": "waiting",
+        "hint": "past perfect continuous"
+      },
+      {
+        "sentence": "I ___ call you tomorrow.",
+        "answer": "will",
+        "hint": "future simple"
+      },
+      {
+        "sentence": "This time next week, I will be ___ (lie) on a beach.",
+        "answer": "lying",
+        "hint": "future continuous, verb + -ing"
+      },
+      {
+        "sentence": "By June, I will have ___ (graduate).",
+        "answer": "graduated",
+        "hint": "future perfect, past participle"
+      },
+      {
+        "sentence": "By next year, I will have been ___ (work) here for five years.",
+        "answer": "working",
+        "hint": "future perfect continuous"
+      }
+    ],
+    "slug": "tenses-12-tenses"
+  },
+  {
+    "id": "articles",
+    "title": "Articles: A, An, The",
+    "level": "Beginner",
+    "icon": "📝",
+    "description": "When to use a, an, and the in English sentences.",
+    "color": "#00b4d8",
+    "lessons": [
+      {
+        "heading": "A vs An",
+        "text": "Use 'a' before words that start with a consonant sound. Use 'an' before words that start with a vowel sound (a, e, i, o, u). Remember: it's about sound, not spelling!",
+        "examples": [
+          "a cat",
+          "a university (sounds like 'yoo')",
+          "an apple",
+          "an hour (silent h)",
+          "an umbrella"
+        ]
+      },
+      {
+        "heading": "The — the Definite Article",
+        "text": "Use 'the' when talking about something specific — something both you and the listener know about.",
+        "examples": [
+          "The sun is bright. (there's only one sun)",
+          "Please close the door. (the listener knows which door)",
+          "I saw the movie you recommended."
+        ]
+      },
+      {
+        "heading": "No Article",
+        "text": "Don't use an article when talking about things in general, especially with plural or uncountable nouns.",
+        "examples": [
+          "I like cats. (cats in general)",
+          "Water is important. (water in general)",
+          "She eats rice every day."
+        ]
+      }
+    ],
+    "exercises": [
+      {
+        "sentence": "I saw ___ elephant at the zoo.",
+        "answer": "an",
+        "hint": "elephant starts with a vowel sound"
+      },
+      {
+        "sentence": "She wants to be ___ doctor.",
+        "answer": "a",
+        "hint": "doctor starts with a consonant sound"
+      },
+      {
+        "sentence": "___ sun rises in the east.",
+        "answer": "The",
+        "hint": "there is only one sun"
+      },
+      {
+        "sentence": "He is ___ honest man.",
+        "answer": "an",
+        "hint": "h is silent, so it starts with a vowel sound"
+      },
+      {
+        "sentence": "I need ___ new phone.",
+        "answer": "a",
+        "hint": "new starts with a consonant sound"
+      }
+    ],
+    "slug": "articles-a-an-the"
+  },
+  {
+    "id": "prepositions",
+    "title": "Prepositions: In, On, At",
+    "level": "Beginner",
+    "icon": "📍",
+    "description": "Master the most common English prepositions of time and place.",
+    "color": "#00b894",
+    "lessons": [
+      {
+        "heading": "Prepositions of Place — In",
+        "text": "Use 'in' for enclosed spaces, areas, cities, countries, and inside something.",
+        "examples": [
+          "in the room",
+          "in New York",
+          "in India",
+          "in the box",
+          "in the ocean"
+        ]
+      },
+      {
+        "heading": "Prepositions of Place — On",
+        "text": "Use 'on' for surfaces, streets, and electronic devices.",
+        "examples": [
+          "on the table",
+          "on the wall",
+          "on Main Street",
+          "on TV",
+          "on the phone"
+        ]
+      },
+      {
+        "heading": "Prepositions of Place — At",
+        "text": "Use 'at' for specific points, addresses, and events.",
+        "examples": [
+          "at the bus stop",
+          "at 123 Main Street",
+          "at the cinema",
+          "at the door",
+          "at work"
+        ]
+      },
+      {
+        "heading": "Prepositions of Time — In, On, At",
+        "text": "Use 'in' for months/years/seasons, 'on' for days/dates, 'at' for specific times.",
+        "examples": [
+          "in January",
+          "in 2024",
+          "in summer",
+          "on Monday",
+          "on January 15th",
+          "at 5 PM",
+          "at midnight",
+          "at night"
+        ]
+      }
+    ],
+    "exercises": [
+      {
+        "sentence": "I live ___ Mumbai.",
+        "answer": "in",
+        "hint": "cities use 'in'"
+      },
+      {
+        "sentence": "The book is ___ the table.",
+        "answer": "on",
+        "hint": "surfaces use 'on'"
+      },
+      {
+        "sentence": "I will meet you ___ 6 PM.",
+        "answer": "at",
+        "hint": "specific times use 'at'"
+      },
+      {
+        "sentence": "She was born ___ March.",
+        "answer": "in",
+        "hint": "months use 'in'"
+      },
+      {
+        "sentence": "The meeting is ___ Monday.",
+        "answer": "on",
+        "hint": "days use 'on'"
+      }
+    ],
+    "slug": "prepositions-in-on-at"
+  },
+  {
+    "id": "modals",
+    "title": "Modal Verbs: Can, Must, Should",
+    "level": "Beginner",
+    "icon": "🎯",
+    "description": "Use modal verbs to express ability, obligation, and advice.",
+    "color": "#ff6b9d",
+    "lessons": [
+      {
+        "heading": "Can — Ability & Permission",
+        "text": "Use 'can' to talk about ability (what you know how to do) and to ask for or give permission.",
+        "examples": [
+          "I can swim. (ability)",
+          "She can speak three languages.",
+          "Can I open the window? (permission)",
+          "You can sit here. (permission)"
+        ]
+      },
+      {
+        "heading": "Must — Obligation & Necessity",
+        "text": "Use 'must' to talk about rules, strong obligations, and things that are necessary. 'Must not' (mustn't) means it is forbidden.",
+        "examples": [
+          "You must wear a seatbelt. (rule)",
+          "I must finish this today. (necessity)",
+          "You must not smoke here. (forbidden)"
+        ]
+      },
+      {
+        "heading": "Should — Advice & Recommendation",
+        "text": "Use 'should' to give advice, opinions, and recommendations. 'Shouldn't' means it's not a good idea.",
+        "examples": [
+          "You should see a doctor. (advice)",
+          "We should leave now. (recommendation)",
+          "You shouldn't eat too much sugar."
+        ]
+      },
+      {
+        "heading": "Grammar Note",
+        "text": "Modal verbs are followed by the base verb (no -s, no -ing, no 'to'). They don't change for he/she/it.",
+        "examples": [
+          "He can swim. (not 'he cans')",
+          "She must go. (not 'she musts')",
+          "They should study more."
+        ]
+      }
+    ],
+    "exercises": [
+      {
+        "sentence": "You ___ (ability) speak English very well.",
+        "answer": "can",
+        "hint": "modal for ability"
+      },
+      {
+        "sentence": "She ___ (advice) see a doctor.",
+        "answer": "should",
+        "hint": "modal for advice"
+      },
+      {
+        "sentence": "We ___ (obligation) finish this project today.",
+        "answer": "must",
+        "hint": "modal for strong obligation"
+      },
+      {
+        "sentence": "I ___ (ability not) come to the party.",
+        "answer": "can't",
+        "hint": "negative of can"
+      },
+      {
+        "sentence": "You ___ (advice not) stay up too late.",
+        "answer": "shouldn't",
+        "hint": "negative of should"
+      }
+    ],
+    "slug": "modal-verbs-can-must-should"
+  },
+  {
+    "id": "conjunctions",
+    "title": "Conjunctions",
+    "level": "Intermediate",
+    "icon": "🔗",
+    "description": "Connect words, phrases, and clauses with conjunctions like and, but, or, because, although.",
+    "color": "#0984e3",
+    "lessons": [
+      {
+        "heading": "Coordinating Conjunctions: FANBOYS",
+        "text": "Coordinating conjunctions connect equal parts — words with words, phrases with phrases, clauses with clauses. Remember FANBOYS: For, And, Nor, But, Or, Yet, So.",
+        "examples": [
+          "I like tea and coffee.",
+          "She is tired but happy.",
+          "Do you want pizza or pasta?",
+          "He studied hard, so he passed the exam."
+        ]
+      },
+      {
+        "heading": "Subordinating Conjunctions",
+        "text": "Subordinating conjunctions connect a dependent clause to an independent clause. Common ones: because, although, while, when, if, since, unless, until.",
+        "examples": [
+          "I stayed home because it was raining.",
+          "She went out although she was tired.",
+          "Call me when you arrive.",
+          "He waited until she finished."
+        ]
+      },
+      {
+        "heading": "Correlative Conjunctions",
+        "text": "Correlative conjunctions come in pairs: either…or, neither…nor, both…and, not only…but also, whether…or.",
+        "examples": [
+          "Either you come now or we leave without you.",
+          "Neither John nor Mary was there.",
+          "She is both intelligent and hardworking.",
+          "Not only did he finish first, but he also broke the record."
+        ]
+      }
+    ],
+    "exercises": [
+      {
+        "sentence": "I like tea ___ coffee.",
+        "answer": "and",
+        "hint": "additive conjunction"
+      },
+      {
+        "sentence": "She is tired ___ happy.",
+        "answer": "but",
+        "hint": "contrast conjunction"
+      },
+      {
+        "sentence": "I stayed home ___ it was raining.",
+        "answer": "because",
+        "hint": "reason conjunction"
+      },
+      {
+        "sentence": "___ you come now or we leave.",
+        "answer": "Either",
+        "hint": "pair conjunction"
+      },
+      {
+        "sentence": "He studied hard, ___ he passed the exam.",
+        "answer": "so",
+        "hint": "result conjunction"
+      }
+    ],
+    "slug": "conjunctions"
+  },
+  {
+    "id": "active-passive",
+    "title": "Active & Passive Voice",
+    "level": "Intermediate",
+    "icon": "🔄",
+    "description": "Learn when and how to use the active and passive voice in English.",
+    "color": "#6c5ce7",
+    "lessons": [
+      {
+        "heading": "Active vs Passive Voice",
+        "text": "In active voice, the subject performs the action (subject → verb → object). In passive voice, the subject receives the action (object → be + past participle → by subject). Use active for direct, clear sentences. Use passive when the action or object is more important than who did it.",
+        "examples": [
+          "Active: The cat ate the fish.",
+          "Passive: The fish was eaten by the cat.",
+          "Active: Shakespeare wrote Hamlet.",
+          "Passive: Hamlet was written by Shakespeare."
+        ]
+      },
+      {
+        "heading": "Forming the Passive: be + past participle",
+        "text": "The passive uses the correct form of 'be' + the past participle of the main verb. The tense of 'be' tells you when the action happened. You can include 'by + agent' or omit it if the agent is unknown or unimportant.",
+        "examples": [
+          "The car is washed every week. (present simple passive)",
+          "The car was washed yesterday. (past simple passive)",
+          "The car will be washed tomorrow. (future simple passive)",
+          "The car has been washed. (present perfect passive)"
+        ]
+      },
+      {
+        "heading": "When to Use Passive Voice",
+        "text": "Use passive when: (1) the agent is unknown, (2) the agent is obvious, (3) you want to emphasise the receiver of the action, (4) writing formal or scientific texts.",
+        "examples": [
+          "My phone was stolen. (unknown agent)",
+          "He was arrested. (obvious — by police)",
+          "The experiment was conducted in 2020. (scientific writing)",
+          "The window was broken. (emphasising the window, not who broke it)"
+        ]
+      }
+    ],
+    "exercises": [
+      {
+        "sentence": "The cat ___ (eat) the fish. (active)",
+        "answer": "ate",
+        "hint": "past simple active"
+      },
+      {
+        "sentence": "The fish ___ eaten by the cat. (passive)",
+        "answer": "was",
+        "hint": "past simple passive"
+      },
+      {
+        "sentence": "Hamlet ___ written by Shakespeare.",
+        "answer": "was",
+        "hint": "past simple passive"
+      },
+      {
+        "sentence": "The car is ___ (wash) every week.",
+        "answer": "washed",
+        "hint": "present simple passive"
+      },
+      {
+        "sentence": "The window ___ broken last night.",
+        "answer": "was",
+        "hint": "past simple passive"
+      }
+    ],
+    "slug": "active-passive-voice"
+  },
+  {
+    "id": "reported-speech",
+    "title": "Direct & Indirect Speech",
+    "level": "Advanced",
+    "icon": "💬",
+    "description": "Report what someone said using direct quotes and indirect (reported) speech.",
+    "color": "#a29bfe",
+    "lessons": [
+      {
+        "heading": "Direct Speech vs Indirect Speech",
+        "text": "Direct speech uses the exact words someone said, placed in quotation marks. Indirect (reported) speech reports what someone said without using their exact words, and usually involves a tense shift.",
+        "examples": [
+          "Direct: She said, 'I am tired.'",
+          "Indirect: She said that she was tired.",
+          "Direct: He asked, 'Do you like coffee?'",
+          "Indirect: He asked if I liked coffee."
+        ]
+      },
+      {
+        "heading": "Tense Shifts in Reported Speech",
+        "text": "When the reporting verb is in the past (said, told, asked), the verb in the reported clause shifts back one tense: present → past, past → past perfect, will → would, can → could.",
+        "examples": [
+          "'I am happy.' → She said she was happy.",
+          "'I have finished.' → He said he had finished.",
+          "'I will call you.' → She said she would call me.",
+          "'I can swim.' → He said he could swim."
+        ]
+      },
+      {
+        "heading": "Questions in Reported Speech",
+        "text": "Reported questions use statement word order (not question order). Yes/no questions use 'if' or 'whether'. Wh-questions keep the question word. Do not use question marks.",
+        "examples": [
+          "'Do you like pizza?' → He asked if I liked pizza.",
+          "'Where do you live?' → She asked where I lived.",
+          "'Have you seen this movie?' → He asked whether I had seen that movie."
+        ]
+      },
+      {
+        "heading": "Commands & Requests",
+        "text": "Reported commands use 'told/asked + object + to + verb'. Negative commands use 'told/asked + object + not to + verb'.",
+        "examples": [
+          "'Sit down.' → He told me to sit down.",
+          "'Please help me.' → She asked me to help her.",
+          "'Don't be late.' → He told me not to be late."
+        ]
+      }
+    ],
+    "exercises": [
+      {
+        "sentence": "Direct: 'I am happy.' → She said she ___ happy.",
+        "answer": "was",
+        "hint": "present shifts to past"
+      },
+      {
+        "sentence": "Direct: 'I have finished.' → He said he ___ finished.",
+        "answer": "had",
+        "hint": "present perfect shifts to past perfect"
+      },
+      {
+        "sentence": "Direct: 'I will call you.' → She said she ___ call me.",
+        "answer": "would",
+        "hint": "will shifts to would"
+      },
+      {
+        "sentence": "Direct: 'Do you like pizza?' → He asked ___ I liked pizza.",
+        "answer": "if",
+        "hint": "yes/no questions use 'if'"
+      },
+      {
+        "sentence": "Direct: 'Sit down.' → He told me ___ sit down.",
+        "answer": "to",
+        "hint": "commands use 'to + verb'"
+      }
+    ],
+    "slug": "direct-indirect-speech"
+  },
+  {
+    "id": "conditionals",
+    "title": "Conditionals (If Clauses)",
+    "level": "Intermediate",
+    "icon": "🔀",
+    "description": "Express real and unreal situations using conditionals — zero, first, second, third.",
+    "color": "#fdcb6e",
+    "lessons": [
+      {
+        "heading": "Zero Conditional: General Truths",
+        "text": "Use zero conditional for things that are always true — scientific facts and general rules. Form: if + present simple, present simple.",
+        "examples": [
+          "If you heat ice, it melts.",
+          "If it rains, the grass gets wet.",
+          "If I am tired, I drink coffee."
+        ]
+      },
+      {
+        "heading": "First Conditional: Real Future Possibilities",
+        "text": "Use first conditional for real and possible situations in the future. Form: if + present simple, will + base verb.",
+        "examples": [
+          "If it rains, I will take an umbrella.",
+          "If she studies hard, she will pass the exam.",
+          "If you don't hurry, you will miss the bus."
+        ]
+      },
+      {
+        "heading": "Second Conditional: Unreal Present/Future",
+        "text": "Use second conditional for imaginary or unlikely situations in the present or future. Form: if + past simple, would + base verb.",
+        "examples": [
+          "If I won the lottery, I would travel the world.",
+          "If she were taller, she could be a model. (were for all subjects)",
+          "If I had more time, I would learn piano."
+        ]
+      },
+      {
+        "heading": "Third Conditional: Unreal Past",
+        "text": "Use third conditional for imaginary situations in the past — things that didn't happen. Form: if + had + past participle, would have + past participle.",
+        "examples": [
+          "If I had studied harder, I would have passed the exam. (but I didn't study)",
+          "If she had left earlier, she wouldn't have missed the train.",
+          "If we had known, we would have come earlier."
+        ]
+      }
+    ],
+    "exercises": [
+      {
+        "sentence": "If you heat ice, it ___ (melt).",
+        "answer": "melts",
+        "hint": "zero conditional, present simple"
+      },
+      {
+        "sentence": "If it rains, I ___ take an umbrella.",
+        "answer": "will",
+        "hint": "first conditional, will"
+      },
+      {
+        "sentence": "If I won the lottery, I ___ travel the world.",
+        "answer": "would",
+        "hint": "second conditional, would"
+      },
+      {
+        "sentence": "If I had studied, I ___ have passed.",
+        "answer": "would",
+        "hint": "third conditional, would have"
+      },
+      {
+        "sentence": "If she had left earlier, she wouldn't have ___ (miss) the train.",
+        "answer": "missed",
+        "hint": "third conditional, past participle"
+      }
+    ],
+    "slug": "conditionals-if-clauses"
+  },
+  {
+    "id": "question-tags",
+    "title": "Question Tags",
+    "level": "Intermediate",
+    "icon": "❓",
+    "description": "Turn statements into questions using short tags at the end: You like tea, don't you?",
+    "color": "#00b4d8",
+    "lessons": [
+      {
+        "heading": "The Basic Rule",
+        "text": "A question tag is a short question at the end of a statement. If the statement is positive, the tag is negative. If the statement is negative, the tag is positive. The tag uses the same auxiliary verb (or do/does/did) as the main verb.",
+        "examples": [
+          "You like coffee, don't you? (positive + negative tag)",
+          "She isn't coming, is she? (negative + positive tag)",
+          "He can swim, can't he?",
+          "They have finished, haven't they?"
+        ]
+      },
+      {
+        "heading": "Tense Matching",
+        "text": "The tag must match the tense of the main verb. If there is no auxiliary verb, use do/does/did.",
+        "examples": [
+          "You live here, don't you? (present, no auxiliary)",
+          "She lived there, didn't she? (past, no auxiliary)",
+          "He is coming, isn't he? (present continuous)",
+          "They have arrived, haven't they? (present perfect)"
+        ]
+      },
+      {
+        "heading": "Special Cases",
+        "text": "With 'I am', use 'aren't I?' (not 'amn't I'). With 'Let's', use 'shall we?'. With imperatives, use 'will you?' or 'won't you?'.",
+        "examples": [
+          "I am on time, aren't I?",
+          "Let's go for a walk, shall we?",
+          "Open the door, will you?",
+          "Don't be late, will you?"
+        ]
+      }
+    ],
+    "exercises": [
+      {
+        "sentence": "You like coffee, ___ you?",
+        "answer": "don't",
+        "hint": "positive statement → negative tag"
+      },
+      {
+        "sentence": "She isn't coming, ___ she?",
+        "answer": "is",
+        "hint": "negative statement → positive tag"
+      },
+      {
+        "sentence": "He can swim, ___ he?",
+        "answer": "can't",
+        "hint": "positive statement, can → can't"
+      },
+      {
+        "sentence": "You live here, ___ you?",
+        "answer": "don't",
+        "hint": "present simple, no auxiliary"
+      },
+      {
+        "sentence": "I am on time, ___ I?",
+        "answer": "aren't",
+        "hint": "special case for 'I am'"
+      }
+    ],
+    "slug": "question-tags"
+  },
+  {
+    "id": "complex-sentences",
+    "title": "Sentence Structure (Complex)",
+    "level": "Advanced",
+    "icon": "🏗️",
+    "description": "Build complex sentences using independent and dependent clauses, relative clauses, and connectors.",
+    "color": "#e17055",
+    "lessons": [
+      {
+        "heading": "Simple, Compound & Complex Sentences",
+        "text": "A simple sentence has one independent clause. A compound sentence joins two independent clauses with a conjunction. A complex sentence has one independent clause and at least one dependent clause.",
+        "examples": [
+          "Simple: I like coffee.",
+          "Compound: I like coffee, but my sister prefers tea.",
+          "Complex: I like coffee because it wakes me up.",
+          "Complex: The book that you recommended was excellent."
+        ]
+      },
+      {
+        "heading": "Independent vs Dependent Clauses",
+        "text": "An independent clause can stand alone (it's a complete sentence). A dependent clause cannot stand alone — it needs the independent clause to complete its meaning.",
+        "examples": [
+          "Independent: I went to bed. (complete)",
+          "Dependent: because I was tired (not complete)",
+          "Complex: I went to bed because I was tired.",
+          "Dependent: although it was expensive (not complete)",
+          "Complex: She bought the dress although it was expensive."
+        ]
+      },
+      {
+        "heading": "Relative Clauses",
+        "text": "Relative clauses give extra information about a noun. Use who/that for people, which/that for things, where for places, when for times. Defining clauses are essential to meaning; non-defining clauses add extra info (with commas).",
+        "examples": [
+          "The woman who lives next door is a doctor. (defining)",
+          "The book that I read was amazing. (defining)",
+          "My sister, who lives in London, is a teacher. (non-defining)",
+          "This is the house where I grew up."
+        ]
+      }
+    ],
+    "exercises": [
+      {
+        "sentence": "I like coffee ___ it wakes me up.",
+        "answer": "because",
+        "hint": "complex sentence connector"
+      },
+      {
+        "sentence": "The woman ___ lives next door is a doctor.",
+        "answer": "who",
+        "hint": "relative pronoun for people"
+      },
+      {
+        "sentence": "This is the house ___ I grew up.",
+        "answer": "where",
+        "hint": "relative pronoun for places"
+      },
+      {
+        "sentence": "The book ___ I read was amazing.",
+        "answer": "that",
+        "hint": "relative pronoun for things"
+      },
+      {
+        "sentence": "I went to bed ___ I was tired.",
+        "answer": "because",
+        "hint": "reason clause"
+      }
+    ],
+    "slug": "complex-sentence-structure"
+  },
+  {
+    "id": "degrees-of-comparison",
+    "title": "Degrees of Comparison",
+    "level": "Intermediate",
+    "icon": "📈",
+    "description": "Compare things using positive, comparative, and superlative degrees of adjectives.",
+    "color": "#f0a500",
+    "lessons": [
+      {
+        "heading": "The Three Degrees",
+        "text": "Adjectives have three degrees: positive (the base form), comparative (comparing two things), and superlative (comparing one thing to all others).",
+        "examples": [
+          "Positive: big, She is tall.",
+          "Comparative: bigger, She is taller than me.",
+          "Superlative: the biggest, She is the tallest in the class."
+        ]
+      },
+      {
+        "heading": "Comparative: Comparing Two Things",
+        "text": "For short adjectives (1-2 syllables), add -er + than. For long adjectives (3+ syllables), use more + adjective + than.",
+        "examples": [
+          "small → smaller than",
+          "big → bigger than (double g)",
+          "happy → happier than (y→i)",
+          "beautiful → more beautiful than",
+          "expensive → more expensive than"
+        ]
+      },
+      {
+        "heading": "Superlative: One of Many",
+        "text": "For short adjectives, add the + -est. For long adjectives, use the most + adjective.",
+        "examples": [
+          "small → the smallest",
+          "big → the biggest",
+          "happy → the happiest",
+          "beautiful → the most beautiful",
+          "expensive → the most expensive"
+        ]
+      },
+      {
+        "heading": "Irregular Forms",
+        "text": "Some common adjectives have completely irregular forms.",
+        "examples": [
+          "good → better → the best",
+          "bad → worse → the worst",
+          "far → farther/further → the farthest/furthest",
+          "much/many → more → the most",
+          "little → less → the least"
+        ]
+      }
+    ],
+    "exercises": [
+      {
+        "sentence": "She is ___ (tall) than her brother.",
+        "answer": "taller",
+        "hint": "comparative of tall"
+      },
+      {
+        "sentence": "This is the ___ (good) restaurant in town.",
+        "answer": "best",
+        "hint": "superlative of good (irregular)"
+      },
+      {
+        "sentence": "My car is ___ (expensive) than yours.",
+        "answer": "more expensive",
+        "hint": "long adjective comparative"
+      },
+      {
+        "sentence": "He is the ___ (smart) student in the class.",
+        "answer": "smartest",
+        "hint": "superlative of smart"
+      },
+      {
+        "sentence": "This exam is ___ (bad) than the last one.",
+        "answer": "worse",
+        "hint": "comparative of bad (irregular)"
+      }
+    ],
+    "slug": "degrees-of-comparison"
+  }
+]

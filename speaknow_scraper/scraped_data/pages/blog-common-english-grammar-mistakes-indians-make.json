@@ -1,0 +1,115 @@
+{
+  "url": "https://speaknow.co.in/blog/common-english-grammar-mistakes-indians-make",
+  "path": "/blog/common-english-grammar-mistakes-indians-make",
+  "title": "10 Common English Grammar Mistakes Indians Make (and Fixes) | SpeakNow",
+  "description": "From \"he do\" to \"I am knowing\", these are the grammar errors most Indian speakers make — and the simple rules to fix them.",
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "10 Common English Grammar Mistakes Indians Make (and Fixes)"
+    },
+    {
+      "tag": "h2",
+      "text": "1. Subject-verb agreement"
+    },
+    {
+      "tag": "h2",
+      "text": "2. Using \"know\" in continuous"
+    },
+    {
+      "tag": "h2",
+      "text": "3. \"Myself\" instead of \"me\""
+    },
+    {
+      "tag": "h2",
+      "text": "4. Double negative"
+    },
+    {
+      "tag": "h2",
+      "text": "5. Article with general nouns"
+    },
+    {
+      "tag": "h2",
+      "text": "6. \"Since\" vs \"for\""
+    },
+    {
+      "tag": "h2",
+      "text": "7. Prepositions"
+    },
+    {
+      "tag": "h2",
+      "text": "8. \"Advice\" vs \"advise\""
+    },
+    {
+      "tag": "h2",
+      "text": "9. Word order in questions"
+    },
+    {
+      "tag": "h2",
+      "text": "10. Tense mixing"
+    },
+    {
+      "tag": "h2",
+      "text": "How to fix them"
+    },
+    {
+      "tag": "h3",
+      "text": "🎙️ SpeakNow"
+    }
+  ],
+  "paragraphs": [
+    "From \"he do\" to \"I am knowing\", these are the grammar errors most Indian speakers make — and the simple rules to fix them.",
+    "7 min read · Published 2026-07-16",
+    "Hindi and Marathi grammar is different from English. That is why some errors repeat across India. Here are the top 10 with fixes.",
+    "Wrong: \"He do his work.\" Right: \"He does his work.\" Use \"does\" with he/she/it.",
+    "Wrong: \"I am knowing.\" Right: \"I know.\" Some verbs (know, like, want) are not used in -ing form for states.",
+    "Wrong: \"Please give it to myself.\" Right: \"Please give it to me.\"",
+    "Wrong: \"I don't know nothing.\" Right: \"I don't know anything.\"",
+    "Wrong: \"I love the music.\" Right: \"I love music.\" No article for general things.",
+    "Use \"since\" with a point: \"since Monday.\" Use \"for\" with a length: \"for two days.\"",
+    "Wrong: \"on phone.\" Right: \"on the phone.\" Wrong: \"discuss about.\" Right: \"discuss\" (no about).",
+    "\"Advice\" is a noun. \"Advise\" is a verb. \"He gave me advice.\" \"He advised me.\"",
+    "Wrong: \"What you are doing?\" Right: \"What are you doing?\"",
+    "Pick a time frame and stay in it. Don't jump from past to present in one story without reason.",
+    "Record yourself speaking for one minute daily. Listen back. You will hear your own mistakes. The SpeakNow app highlights tense and agreement errors automatically.",
+    "Small corrections, done daily, remove these habits in a month.",
+    "Free browser-based English speaking practice. No downloads, no sign-ups, no data leaving your computer."
+  ],
+  "ldJson": [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Web Browser",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "inLanguage": "en"
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "logo": "https://speaknow.co.in/icon-mic.png?v=3",
+      "sameAs": [
+        "https://instagram.com/speaknow.co.in"
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://speaknow.co.in/practice?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+  ]
+}

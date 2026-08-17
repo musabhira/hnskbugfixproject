@@ -1,0 +1,207 @@
+{
+  "url": "https://speaknow.co.in/grammar/direct-indirect-speech",
+  "path": "/grammar/direct-indirect-speech",
+  "title": "Direct & Indirect Speech — English Grammar Lessons | SpeakNow",
+  "description": "Free direct & indirect speech lessons with clear explanations, real examples, and speaking exercises. Practice aloud in your browser with instant feedback — no sign-up.",
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "💬 Direct & Indirect Speech"
+    },
+    {
+      "tag": "h3",
+      "text": "Direct Speech vs Indirect Speech"
+    },
+    {
+      "tag": "h3",
+      "text": "Tense Shifts in Reported Speech"
+    },
+    {
+      "tag": "h3",
+      "text": "Questions in Reported Speech"
+    },
+    {
+      "tag": "h3",
+      "text": "Commands & Requests"
+    },
+    {
+      "tag": "h2",
+      "text": "🎤 Practice Speaking"
+    },
+    {
+      "tag": "h2",
+      "text": "Direct Speech: Exact Words"
+    },
+    {
+      "tag": "h2",
+      "text": "Indirect Speech: Reported"
+    },
+    {
+      "tag": "h2",
+      "text": "Common Shifts to Practice"
+    },
+    {
+      "tag": "h2",
+      "text": "Common Mistakes to Avoid"
+    },
+    {
+      "tag": "h2",
+      "text": "Try This: A Quick Practice"
+    },
+    {
+      "tag": "h2",
+      "text": "Frequently Asked Questions"
+    },
+    {
+      "tag": "h3",
+      "text": "📚 Related Practice Modes"
+    },
+    {
+      "tag": "h3",
+      "text": "🎙️ SpeakNow"
+    }
+  ],
+  "paragraphs": [
+    "Direct speech uses the exact words someone said, placed in quotation marks. Indirect (reported) speech reports what someone said without using their exact words, and usually involves a tense shift.",
+    "When the reporting verb is in the past (said, told, asked), the verb in the reported clause shifts back one tense: present → past, past → past perfect, will → would, can → could.",
+    "Reported questions use statement word order (not question order). Yes/no questions use 'if' or 'whether'. Wh-questions keep the question word. Do not use question marks.",
+    "Reported commands use 'told/asked + object + to + verb'. Negative commands use 'told/asked + object + not to + verb'.",
+    "Say the complete sentence out loud, filling in the blank.",
+    "Exercise 1 of 5",
+    "💡",
+    "SpeakNow is a free, community-supported resource built so anyone can practice English freely and privately — no ads pushed in your face, no account needed. A small coffee helps cover the servers and keeps every feature 100% free for thousands of learners. If it’s helped you even a little, please consider a tip. It genuinely means the world to us. ☕",
+    "Thank you for keeping SpeakNow alive 💖",
+    "Reporting speech lets you tell someone what another person said. Direct speech quotes exactly; indirect (reported) speech paraphrases and often shifts tense back.",
+    "Use quotation marks and the original words: She said, 'I am tired.' Direct speech is common in stories and dialogues. Keep the original tense inside the quotes.",
+    "Drop quotes and shift the tense back one step: She said (that) she was tired. Present becomes past, 'will' becomes 'would'. Pronouns and time words also shift ('today' to 'that day'). This is the everyday way to pass on a message.",
+    "am/is -> was, are -> were, will -> would, can -> could, have -> had. 'He said he can come' becomes 'He said he could come.' Regular practice saying both forms aloud prevents mistakes when you retell conversations.",
+    "When reporting speech, learners often forget to shift the tense back ('He said he can' should be 'he could'), keep the original pronouns and time words ('I am tired today' reported as 'he was tired today'), or leave the quotes in ('He said \"I am tired\"'). Using 'said' where 'told' fits, and dropping 'that' inconsistently, also weaken the report. The core rule is backshift: present becomes past when you retell what someone said.",
+    "Say a sentence out loud: 'I will go tomorrow'. Now report it as if it happened yesterday: 'He said he would go the next day'. Practise with 'can/could', 'am/was', 'have/had'. Notice pronouns and time words move too. SpeakNow's direct-and-indirect-speech exercise has you say both forms aloud, which is the fastest way to make backshifting automatic instead of a translation chore.",
+    "Direct quotes exact words with quotes ('I am late'). Indirect reports them, usually shifting tense back ('He said he was late'). Both are useful for storytelling.",
+    "Because the original moment is in the past when you report it: 'I am' said yesterday becomes 'he was'. This backshift is the core rule of indirect speech.",
+    "No. 'He said (that) he was tired' — 'that' is optional in speech and common to drop.",
+    "← All Grammar Topics",
+    "Free browser-based English speaking practice. No downloads, no sign-ups, no data leaving your computer."
+  ],
+  "ldJson": [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Web Browser",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "inLanguage": "en"
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "logo": "https://speaknow.co.in/icon-mic.png?v=3",
+      "sameAs": [
+        "https://instagram.com/speaknow.co.in"
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://speaknow.co.in/practice?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "Direct & Indirect Speech",
+      "description": "Free Direct & Indirect Speech lessons and speaking practice.",
+      "url": "https://speaknow.co.in/grammar/direct-indirect-speech",
+      "breadcrumb": {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://speaknow.co.in"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Grammar",
+            "item": "https://speaknow.co.in/grammar"
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "name": "Direct & Indirect Speech",
+            "item": "https://speaknow.co.in/grammar/direct-indirect-speech"
+          }
+        ]
+      }
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://speaknow.co.in/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Grammar",
+          "item": "https://speaknow.co.in/grammar"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Direct Indirect Speech",
+          "item": "https://speaknow.co.in/grammar/direct-indirect-speech"
+        }
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is the difference between direct and indirect speech?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Direct quotes exact words with quotes ('I am late'). Indirect reports them, usually shifting tense back ('He said he was late'). Both are useful for storytelling."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why does tense shift in reported speech?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Because the original moment is in the past when you report it: 'I am' said yesterday becomes 'he was'. This backshift is the core rule of indirect speech."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Do I always need 'that' in reported speech?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. 'He said (that) he was tired' — 'that' is optional in speech and common to drop."
+          }
+        }
+      ]
+    }
+  ]
+}

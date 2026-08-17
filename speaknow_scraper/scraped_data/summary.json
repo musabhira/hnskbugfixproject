@@ -1,0 +1,399 @@
+{
+  "totalUrls": 72,
+  "scrapedPagesCount": 72,
+  "downloadedJsonFilesCount": 29,
+  "scrapedPages": [
+    {
+      "path": "/",
+      "title": "SpeakNow - Free English Speaking Practice Online",
+      "url": "https://speaknow.co.in/"
+    },
+    {
+      "path": "/grammar",
+      "title": "English Grammar Lessons & Speaking Practice | SpeakNow",
+      "url": "https://speaknow.co.in/grammar"
+    },
+    {
+      "path": "/grammar/basic-sentence-structure",
+      "title": "Basic Sentence Structure — English Grammar Lessons | SpeakNow",
+      "url": "https://speaknow.co.in/grammar/basic-sentence-structure"
+    },
+    {
+      "path": "/grammar/tenses-12-tenses",
+      "title": "Tenses (12 Tenses) — English Grammar Lessons | SpeakNow",
+      "url": "https://speaknow.co.in/grammar/tenses-12-tenses"
+    },
+    {
+      "path": "/grammar/articles-a-an-the",
+      "title": "Articles: A, An, The — English Grammar Lessons | SpeakNow",
+      "url": "https://speaknow.co.in/grammar/articles-a-an-the"
+    },
+    {
+      "path": "/grammar/modal-verbs-can-must-should",
+      "title": "Modal Verbs: Can, Must, Should — English Grammar Lessons | SpeakNow",
+      "url": "https://speaknow.co.in/grammar/modal-verbs-can-must-should"
+    },
+    {
+      "path": "/grammar/conjunctions",
+      "title": "Conjunctions — English Grammar Lessons | SpeakNow",
+      "url": "https://speaknow.co.in/grammar/conjunctions"
+    },
+    {
+      "path": "/grammar/active-passive-voice",
+      "title": "Active & Passive Voice — English Grammar Lessons | SpeakNow",
+      "url": "https://speaknow.co.in/grammar/active-passive-voice"
+    },
+    {
+      "path": "/grammar/direct-indirect-speech",
+      "title": "Direct & Indirect Speech — English Grammar Lessons | SpeakNow",
+      "url": "https://speaknow.co.in/grammar/direct-indirect-speech"
+    },
+    {
+      "path": "/grammar/conditionals-if-clauses",
+      "title": "Conditionals (If Clauses) — English Grammar Lessons | SpeakNow",
+      "url": "https://speaknow.co.in/grammar/conditionals-if-clauses"
+    },
+    {
+      "path": "/grammar/question-tags",
+      "title": "Question Tags — English Grammar Lessons | SpeakNow",
+      "url": "https://speaknow.co.in/grammar/question-tags"
+    },
+    {
+      "path": "/grammar/complex-sentence-structure",
+      "title": "Sentence Structure (Complex) — English Grammar Lessons | SpeakNow",
+      "url": "https://speaknow.co.in/grammar/complex-sentence-structure"
+    },
+    {
+      "path": "/grammar/degrees-of-comparison",
+      "title": "Degrees of Comparison — English Grammar Lessons | SpeakNow",
+      "url": "https://speaknow.co.in/grammar/degrees-of-comparison"
+    },
+    {
+      "path": "/practice/connected-speech",
+      "title": "Connected Speech & Linking Sounds Practice | SpeakNow",
+      "url": "https://speaknow.co.in/practice/connected-speech"
+    },
+    {
+      "path": "/practice/consonant-clusters",
+      "title": "Consonant Clusters Pronunciation Practice | SpeakNow",
+      "url": "https://speaknow.co.in/practice/consonant-clusters"
+    },
+    {
+      "path": "/practice/conversation-starters",
+      "title": "Conversation Starters & Speaking Prompts | SpeakNow",
+      "url": "https://speaknow.co.in/practice/conversation-starters"
+    },
+    {
+      "path": "/practice/dictation",
+      "title": "Dictation Practice — Write What You Hear | SpeakNow",
+      "url": "https://speaknow.co.in/practice/dictation"
+    },
+    {
+      "path": "/practice/fill-the-gap",
+      "title": "Fill the Gap Exercises | SpeakNow",
+      "url": "https://speaknow.co.in/practice/fill-the-gap"
+    },
+    {
+      "path": "/practice/filler-words",
+      "title": "Filler Words & Fluency Practice | SpeakNow",
+      "url": "https://speaknow.co.in/practice/filler-words"
+    },
+    {
+      "path": "/practice/grammar",
+      "title": "Grammar Speaking Practice — Drill Structures Aloud | SpeakNow",
+      "url": "https://speaknow.co.in/practice/grammar"
+    },
+    {
+      "path": "/practice/intonation",
+      "title": "Intonation & Pitch Practice | SpeakNow",
+      "url": "https://speaknow.co.in/practice/intonation"
+    },
+    {
+      "path": "/practice/listening",
+      "title": "Listening Comprehension Practice | SpeakNow",
+      "url": "https://speaknow.co.in/practice/listening"
+    },
+    {
+      "path": "/practice/minimal-pairs",
+      "title": "Word Pairs & Minimal Pair Discrimination | SpeakNow",
+      "url": "https://speaknow.co.in/practice/minimal-pairs"
+    },
+    {
+      "path": "/practice/noun-verb",
+      "title": "Noun vs Verb & Word Stress Practice | SpeakNow",
+      "url": "https://speaknow.co.in/practice/noun-verb"
+    },
+    {
+      "path": "/practice/pairs",
+      "title": "Word Pairs & Minimal Pair Discrimination | SpeakNow",
+      "url": "https://speaknow.co.in/practice/pairs"
+    },
+    {
+      "path": "/practice/picture-description",
+      "title": "Picture Description Practice | SpeakNow",
+      "url": "https://speaknow.co.in/practice/picture-description"
+    },
+    {
+      "path": "/practice/pronounce",
+      "title": "Pronunciation Practice with Feedback | SpeakNow",
+      "url": "https://speaknow.co.in/practice/pronounce"
+    },
+    {
+      "path": "/practice/read",
+      "title": "Read & Listen English Practice | SpeakNow",
+      "url": "https://speaknow.co.in/practice/read"
+    },
+    {
+      "path": "/practice/read-along",
+      "title": "Read Along Practice — Follow the Audio | SpeakNow",
+      "url": "https://speaknow.co.in/practice/read-along"
+    },
+    {
+      "path": "/practice/read-aloud",
+      "title": "Read Aloud Practice for Fluency | SpeakNow",
+      "url": "https://speaknow.co.in/practice/read-aloud"
+    },
+    {
+      "path": "/practice/reading",
+      "title": "Reading Practice for English Learners | SpeakNow",
+      "url": "https://speaknow.co.in/practice/reading"
+    },
+    {
+      "path": "/practice/reading-passage",
+      "title": "Reading Passage Practice | SpeakNow",
+      "url": "https://speaknow.co.in/practice/reading-passage"
+    },
+    {
+      "path": "/practice/rhymes",
+      "title": "Rhymes & Rhyme Awareness Practice | SpeakNow",
+      "url": "https://speaknow.co.in/practice/rhymes"
+    },
+    {
+      "path": "/practice/rhythm",
+      "title": "Rhythm & Sentence Stress Practice | SpeakNow",
+      "url": "https://speaknow.co.in/practice/rhythm"
+    },
+    {
+      "path": "/practice/role-play",
+      "title": "Role Play Speaking Practice | SpeakNow",
+      "url": "https://speaknow.co.in/practice/role-play"
+    },
+    {
+      "path": "/practice/shadowing",
+      "title": "Shadowing Practice for Fluency | SpeakNow",
+      "url": "https://speaknow.co.in/practice/shadowing"
+    },
+    {
+      "path": "/practice/sound-drills",
+      "title": "Sound Drills Pronunciation Practice | SpeakNow",
+      "url": "https://speaknow.co.in/practice/sound-drills"
+    },
+    {
+      "path": "/practice/speaking",
+      "title": "Speaking Practice — Talk Freely | SpeakNow",
+      "url": "https://speaknow.co.in/practice/speaking"
+    },
+    {
+      "path": "/practice/speaking-prompts",
+      "title": "Speaking Prompts & Opinion Practice | SpeakNow",
+      "url": "https://speaknow.co.in/practice/speaking-prompts"
+    },
+    {
+      "path": "/practice/speed-challenge",
+      "title": "Speed Challenge — Fast Speaking Drill | SpeakNow",
+      "url": "https://speaknow.co.in/practice/speed-challenge"
+    },
+    {
+      "path": "/practice/speed-read",
+      "title": "Speed Reading Practice | SpeakNow",
+      "url": "https://speaknow.co.in/practice/speed-read"
+    },
+    {
+      "path": "/practice/spotlight",
+      "title": "Spotlight Sounds Practice | SpeakNow",
+      "url": "https://speaknow.co.in/practice/spotlight"
+    },
+    {
+      "path": "/practice/storytelling",
+      "title": "Storytelling Practice in English | SpeakNow",
+      "url": "https://speaknow.co.in/practice/storytelling"
+    },
+    {
+      "path": "/practice/th-sounds",
+      "title": "TH Sounds Practice (voiced & unvoiced) | SpeakNow",
+      "url": "https://speaknow.co.in/practice/th-sounds"
+    },
+    {
+      "path": "/practice/tongue-twisters",
+      "title": "Tongue Twisters Pronunciation Practice | SpeakNow",
+      "url": "https://speaknow.co.in/practice/tongue-twisters"
+    },
+    {
+      "path": "/practice/vocabulary",
+      "title": "Vocabulary in Context Practice | SpeakNow",
+      "url": "https://speaknow.co.in/practice/vocabulary"
+    },
+    {
+      "path": "/practice/word-stress",
+      "title": "Word Stress Practice | SpeakNow",
+      "url": "https://speaknow.co.in/practice/word-stress"
+    },
+    {
+      "path": "/privacy",
+      "title": "Privacy Policy — SpeakNow | SpeakNow",
+      "url": "https://speaknow.co.in/privacy"
+    },
+    {
+      "path": "/terms",
+      "title": "Terms of Service — SpeakNow | SpeakNow",
+      "url": "https://speaknow.co.in/terms"
+    },
+    {
+      "path": "/blog/daily-english-phrases-for-beginners",
+      "title": "20 Daily English Phrases Every Beginner Should Know | SpeakNow",
+      "url": "https://speaknow.co.in/blog/daily-english-phrases-for-beginners"
+    },
+    {
+      "path": "/blog/how-to-introduce-yourself-in-english",
+      "title": "How to Introduce Yourself in English (With Examples) | SpeakNow",
+      "url": "https://speaknow.co.in/blog/how-to-introduce-yourself-in-english"
+    },
+    {
+      "path": "/blog/common-english-grammar-mistakes-indians-make",
+      "title": "10 Common English Grammar Mistakes Indians Make (and Fixes) | SpeakNow",
+      "url": "https://speaknow.co.in/blog/common-english-grammar-mistakes-indians-make"
+    },
+    {
+      "path": "/blog/speak-english-at-the-market-hinglish",
+      "title": "Speak English at the Market: A Hinglish Phrase Guide | SpeakNow",
+      "url": "https://speaknow.co.in/blog/speak-english-at-the-market-hinglish"
+    },
+    {
+      "path": "/blog/improve-english-pronunciation-at-home",
+      "title": "Improve Your English Pronunciation at Home (No Teacher Needed) | SpeakNow",
+      "url": "https://speaknow.co.in/blog/improve-english-pronunciation-at-home"
+    },
+    {
+      "path": "/blog/english-for-job-interviews",
+      "title": "English for Job Interviews: Questions and Best Answers | SpeakNow",
+      "url": "https://speaknow.co.in/blog/english-for-job-interviews"
+    },
+    {
+      "path": "/blog/difference-between-since-and-for",
+      "title": "Since vs For: Simple Rules to Never Confuse Them Again | SpeakNow",
+      "url": "https://speaknow.co.in/blog/difference-between-since-and-for"
+    },
+    {
+      "path": "/blog/best-english-youtube-channels-for-indians",
+      "title": "8 Free Resources to Learn English if You Are from India | SpeakNow",
+      "url": "https://speaknow.co.in/blog/best-english-youtube-channels-for-indians"
+    },
+    {
+      "path": "/blog/how-to-think-in-english-not-translate",
+      "title": "Stop Translating: How to Start Thinking in English | SpeakNow",
+      "url": "https://speaknow.co.in/blog/how-to-think-in-english-not-translate"
+    },
+    {
+      "path": "/blog/english-tenses-made-simple",
+      "title": "English Tenses Made Simple: A Chart You Will Actually Use | SpeakNow",
+      "url": "https://speaknow.co.in/blog/english-tenses-made-simple"
+    },
+    {
+      "path": "/blog/telephone-english-phrases",
+      "title": "Telephone English: Phrases for Calls and Customer Care | SpeakNow",
+      "url": "https://speaknow.co.in/blog/telephone-english-phrases"
+    },
+    {
+      "path": "/blog/vocabulary-words-for-daily-use",
+      "title": "50 English Words You Use Daily (But Spell Wrong) | SpeakNow",
+      "url": "https://speaknow.co.in/blog/vocabulary-words-for-daily-use"
+    },
+    {
+      "path": "/blog/english-for-travel-abroad",
+      "title": "English for Travel Abroad: Airport to Hotel Phrases | SpeakNow",
+      "url": "https://speaknow.co.in/blog/english-for-travel-abroad"
+    },
+    {
+      "path": "/blog/how-to-build-English-vocabulary-fast",
+      "title": "How to Build English Vocabulary Fast (Without Cramming) | SpeakNow",
+      "url": "https://speaknow.co.in/blog/how-to-build-English-vocabulary-fast"
+    },
+    {
+      "path": "/blog/active-vs-passive-voice",
+      "title": "Active vs Passive Voice: When to Use Each | SpeakNow",
+      "url": "https://speaknow.co.in/blog/active-vs-passive-voice"
+    },
+    {
+      "path": "/blog/english-filler-words-to-avoid",
+      "title": "Filler Words to Avoid: um, actually, you know | SpeakNow",
+      "url": "https://speaknow.co.in/blog/english-filler-words-to-avoid"
+    },
+    {
+      "path": "/blog/present-continuous-vs-present-simple",
+      "title": "Present Simple vs Present Continuous: The Real Difference | SpeakNow",
+      "url": "https://speaknow.co.in/blog/present-continuous-vs-present-simple"
+    },
+    {
+      "path": "/blog/how-to-give-a-self-introduction-presentation",
+      "title": "How to Give a Short English Presentation | SpeakNow",
+      "url": "https://speaknow.co.in/blog/how-to-give-a-self-introduction-presentation"
+    },
+    {
+      "path": "/blog/english-for-social-media-and-chatting",
+      "title": "English for Chatting and Social Media | SpeakNow",
+      "url": "https://speaknow.co.in/blog/english-for-social-media-and-chatting"
+    },
+    {
+      "path": "/blog/confidence-speaking-english",
+      "title": "Build Confidence Speaking English (Even If You Make Mistakes) | SpeakNow",
+      "url": "https://speaknow.co.in/blog/confidence-speaking-english"
+    },
+    {
+      "path": "/blog/articles-a-an-the-rules",
+      "title": "A, An, The: The Article Rules Indians Forget | SpeakNow",
+      "url": "https://speaknow.co.in/blog/articles-a-an-the-rules"
+    },
+    {
+      "path": "/blog/english-idioms-for-daily-conversation",
+      "title": "15 English Idioms You Will Hear Daily (with Meanings) | SpeakNow",
+      "url": "https://speaknow.co.in/blog/english-idioms-for-daily-conversation"
+    },
+    {
+      "path": "/blog/how-to-practice-english-alone-at-home",
+      "title": "How to Practice English Alone at Home (No Partner Needed) | SpeakNow",
+      "url": "https://speaknow.co.in/blog/how-to-practice-english-alone-at-home"
+    }
+  ],
+  "downloadedJsonFiles": [
+    "grammar.json",
+    "connected-speech.json",
+    "consonant-clusters.json",
+    "conversation-starters.json",
+    "dictation.json",
+    "fill-the-gap.json",
+    "grammar-practice.json",
+    "intonation.json",
+    "listening.json",
+    "pairs.json",
+    "picture-description.json",
+    "words.json",
+    "sentences.json",
+    "read-along.json",
+    "read-aloud.json",
+    "reading.json",
+    "reading-passage.json",
+    "rhymes.json",
+    "role-play.json",
+    "shadowing.json",
+    "sound-drills.json",
+    "speaking.json",
+    "speaking-prompts.json",
+    "speed-read.json",
+    "storytelling.json",
+    "th-sounds.json",
+    "tongue-twisters.json",
+    "vocabulary.json",
+    "word-stress.json"
+  ],
+  "timestamp": "2026-08-16T14:07:02.232Z"
+}

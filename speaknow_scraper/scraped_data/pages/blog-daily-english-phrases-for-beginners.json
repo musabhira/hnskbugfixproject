@@ -1,0 +1,104 @@
+{
+  "url": "https://speaknow.co.in/blog/daily-english-phrases-for-beginners",
+  "path": "/blog/daily-english-phrases-for-beginners",
+  "title": "20 Daily English Phrases Every Beginner Should Know | SpeakNow",
+  "description": "Speak naturally from day one. These 20 everyday English phrases cover greetings, shopping, travel and small talk — with Hindi meanings.",
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "20 Daily English Phrases Every Beginner Should Know"
+    },
+    {
+      "tag": "h2",
+      "text": "Greetings and politeness"
+    },
+    {
+      "tag": "h3",
+      "text": "Please and thank you"
+    },
+    {
+      "tag": "h2",
+      "text": "At the shop or market"
+    },
+    {
+      "tag": "h3",
+      "text": "Ordering food"
+    },
+    {
+      "tag": "h2",
+      "text": "Travel and directions"
+    },
+    {
+      "tag": "h2",
+      "text": "Small talk"
+    },
+    {
+      "tag": "h2",
+      "text": "Practice plan"
+    },
+    {
+      "tag": "h2",
+      "text": "Common mistakes to avoid"
+    },
+    {
+      "tag": "h2",
+      "text": "Final tip"
+    },
+    {
+      "tag": "h3",
+      "text": "🎙️ SpeakNow"
+    }
+  ],
+  "paragraphs": [
+    "Speak naturally from day one. These 20 everyday English phrases cover greetings, shopping, travel and small talk — with Hindi meanings.",
+    "6 min read · Published 2026-07-16",
+    "Learning English is not about memorising grammar rules first. It is about using a few real phrases again and again until they become automatic. In this guide we cover 20 daily phrases with Hindi meanings and when to use them.",
+    "Start every conversation with a warm greeting. \"Good morning\" (सुप्रभात) works until noon. \"Good evening\" (शुभ संध्या) is for later. \"How are you?\" (आप कैसे हैं?) shows you care. The easy reply is \"I am fine, thank you.\"",
+    "\"Please\" (कृपया) and \"Thank you\" (धन्यवाद) are the two most important words. Indians sometimes skip them, but in English they change the whole tone. \"Could you please help me?\" sounds polite. \"Thanks a lot\" is stronger than a plain \"thanks.\"",
+    "When you buy something, say \"How much is this?\" (यह कितने का है?). The shopkeeper may say \"It is two hundred rupees.\" You can reply \"Can you give a discount?\" (क्या छूट देंगे?). To accept, say \"Okay, I will take it.\"",
+    "\"Can I get a cup of tea?\" (एक कप चाय मिलेगी?). \"The bill, please\" (बिल दीजिए) asks for the total. These phrases work in any restaurant in India or abroad.",
+    "\"Where is the bus stop?\" (बस स्टॉप कहाँ है?). \"Take a left\" (बायें लें) and \"Take a right\" (दायें लें) help you navigate. \"Is this the train to Mumbai?\" (क्या यह ट्रेन मुंबई वाली है?) saves you from wrong trains.",
+    "Small talk builds confidence. \"Nice weather today\" (आज मौसम अच्छा है). \"What do you do?\" (आप क्या काम करते हैं?). \"Where are you from?\" (आप कहाँ से हैं?). These open real conversations.",
+    "Consistency beats intensity. Twenty phrases a week becomes a hundred in a month. That is enough to handle most daily situations in English.",
+    "Do not translate word-by-word from Hindi. \"Open the fan\" is wrong; say \"Turn on the fan.\" Learn phrases as whole units, not separate words.",
+    "Keep a small notebook. Write each new phrase with its Hindi meaning. Review it on the bus or auto. Within 30 days you will notice real change.",
+    "Free browser-based English speaking practice. No downloads, no sign-ups, no data leaving your computer."
+  ],
+  "ldJson": [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Web Browser",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "inLanguage": "en"
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "logo": "https://speaknow.co.in/icon-mic.png?v=3",
+      "sameAs": [
+        "https://instagram.com/speaknow.co.in"
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://speaknow.co.in/practice?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+  ]
+}

@@ -1,0 +1,124 @@
+{
+  "url": "https://speaknow.co.in/privacy",
+  "path": "/privacy",
+  "title": "Privacy Policy — SpeakNow | SpeakNow",
+  "description": "How SpeakNow handles your data: no accounts, no stored recordings, local speech processing, and Google AdSense advertising with consent-based personalization.",
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Privacy Policy"
+    },
+    {
+      "tag": "h2",
+      "text": "Our Commitment to Privacy"
+    },
+    {
+      "tag": "h2",
+      "text": "Who We Are"
+    },
+    {
+      "tag": "h2",
+      "text": "What Data We Collect"
+    },
+    {
+      "tag": "h2",
+      "text": "Legal Bases and Your Consent"
+    },
+    {
+      "tag": "h2",
+      "text": "How Google Uses Your Data"
+    },
+    {
+      "tag": "h2",
+      "text": "Local Storage"
+    },
+    {
+      "tag": "h2",
+      "text": "Third-Party Services"
+    },
+    {
+      "tag": "h2",
+      "text": "Data Retention"
+    },
+    {
+      "tag": "h2",
+      "text": "International Transfers"
+    },
+    {
+      "tag": "h2",
+      "text": "Children’s Privacy"
+    },
+    {
+      "tag": "h2",
+      "text": "Your Rights"
+    },
+    {
+      "tag": "h2",
+      "text": "Changes to This Policy"
+    },
+    {
+      "tag": "h2",
+      "text": "Contact"
+    },
+    {
+      "tag": "h3",
+      "text": "🎙️ SpeakNow"
+    }
+  ],
+  "paragraphs": [
+    "Last updated: July 16, 2026",
+    "SpeakNow is built with privacy as a core principle. We believe you should not have to trade your privacy to improve your English. Here is exactly how we handle your data, what we collect, and the choices you have. This policy is written in plain language so you can understand it without a legal background.",
+    "SpeakNow is a free, browser-based English speaking practice service operated by SpeakNow. You can contact us at hi@speaknow.co.in. Our website is available at https://speaknow.co.in.",
+    "We collect limited information to operate, improve, and support advertising on the website. We do not require you to create an account or provide personal information to use SpeakNow.",
+    "Where the law requires it (including the EU General Data Protection Regulation and the UK GDPR), we request your consent before setting advertising or analytics cookies. You can accept or reject non-essential cookies through the consent banner. You may withdraw or change your choice at any time by clearing the “speakbetter-cookie-consent” entry in your browser’s local storage, after which the banner will appear again.",
+    "Google’s advertising and analytics cookies are governed by Google’s own policies. For more information about how Google uses data when you use our site or other sites, please visit: https://policies.google.com/technologies/partner-sites . You can manage your ad personalization settings at https://adssettings.google.com/ .",
+    "The only data stored on your device by us is a single localStorage entry for your cookie consent preference. This is not a cookie — it is a simple flag that prevents the cookie banner from showing on every visit. You can clear it anytime through your browser settings.",
+    "SpeakNow is hosted on Vercel. Vercel may collect standard server logs (IP address, request timestamp, page URL) as part of their normal hosting operations. These logs are retained per Vercel’s standard practices and are not directly accessible to us. Advertising and analytics are provided by Google as described above.",
+    "Because we do not create user accounts, we retain no long-term personal profile about you. Server logs are kept by our hosting provider for as long as necessary for security and operational purposes. Advertising and analytics data are retained according to Google’s retention policies, which you can review and control through your Google Account settings.",
+    "If you access SpeakNow from outside the United States, please be aware that Google and our hosting provider may process data in the United States or other countries. Where required, such transfers rely on appropriate safeguards including Google’s certification under the EU-US Data Privacy Framework.",
+    "SpeakNow is intended for general audiences and does not knowingly collect personal information from children under the age of 13 (or the equivalent minimum age in your jurisdiction). Because we do not require accounts or collect personal information, the risk of inadvertent collection is minimal. If you believe a child has provided us with personal data, contact us and we will delete it.",
+    "Depending on where you live, you may have rights to access, correct, delete, or port your personal data, and to object to or restrict certain processing. To exercise these rights, email hi@speaknow.co.in. We will respond within the timeframes required by applicable law.",
+    "If this policy changes, we will update the “Last updated” date at the top of this page. For significant changes we may also display a notice on the site.",
+    "SpeakNow is a free, community-supported resource built so anyone can practice English freely and privately — no ads pushed in your face, no account needed. A small coffee helps cover the servers and keeps every feature 100% free for thousands of learners. If it’s helped you even a little, please consider a tip. It genuinely means the world to us. ☕",
+    "Thank you for keeping SpeakNow alive 💖",
+    "If you have questions about this privacy policy or your data, please reach out via email: hi@speaknow.co.in.",
+    "Free browser-based English speaking practice. No downloads, no sign-ups, no data leaving your computer."
+  ],
+  "ldJson": [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Web Browser",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "inLanguage": "en"
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "logo": "https://speaknow.co.in/icon-mic.png?v=3",
+      "sameAs": [
+        "https://instagram.com/speaknow.co.in"
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://speaknow.co.in/practice?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+  ]
+}

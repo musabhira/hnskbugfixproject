@@ -1,0 +1,242 @@
+[
+  {
+    "word": "record",
+    "a": {
+      "stress": "REcord",
+      "type": "noun",
+      "meaning": "a disc or file with music"
+    },
+    "b": {
+      "stress": "reCORD",
+      "type": "verb",
+      "meaning": "to capture audio/video"
+    },
+    "example_a": "I bought a new rECORD yesterday.",
+    "example_b": "I need to reCORD a video for class."
+  },
+  {
+    "word": "present",
+    "a": {
+      "stress": "PREsent",
+      "type": "noun",
+      "meaning": "a gift"
+    },
+    "b": {
+      "stress": "preSENT",
+      "type": "verb",
+      "meaning": "to show or introduce"
+    },
+    "example_a": "She gave me a beautiful PRESent.",
+    "example_b": "I will preSENT my project tomorrow."
+  },
+  {
+    "word": "perfect",
+    "a": {
+      "stress": "PERfect",
+      "type": "adjective",
+      "meaning": "without flaw"
+    },
+    "b": {
+      "stress": "perFECT",
+      "type": "verb",
+      "meaning": "to make flawless"
+    },
+    "example_a": "The weather is PERfect today.",
+    "example_b": "Practice will perFECT your skills."
+  },
+  {
+    "word": "produce",
+    "a": {
+      "stress": "PROduce",
+      "type": "noun",
+      "meaning": "fresh fruits and vegetables"
+    },
+    "b": {
+      "stress": "proDUCE",
+      "type": "verb",
+      "meaning": "to create or make"
+    },
+    "example_a": "The store sells fresh PROduce.",
+    "example_b": "The factory will proDUCE new cars."
+  },
+  {
+    "word": "object",
+    "a": {
+      "stress": "OBject",
+      "type": "noun",
+      "meaning": "a thing you can see or touch"
+    },
+    "b": {
+      "stress": "obJECT",
+      "type": "verb",
+      "meaning": "to disagree or protest"
+    },
+    "example_a": "What is that strange OBject?",
+    "example_b": "I obJECT to the new policy."
+  },
+  {
+    "word": "subject",
+    "a": {
+      "stress": "SUBject",
+      "type": "noun",
+      "meaning": "a topic or field of study"
+    },
+    "b": {
+      "stress": "subJECT",
+      "type": "verb",
+      "meaning": "to force upon"
+    },
+    "example_a": "Math is my favorite SUBject.",
+    "example_b": "They subJECT us to long meetings."
+  },
+  {
+    "word": "contract",
+    "a": {
+      "stress": "CONtract",
+      "type": "noun",
+      "meaning": "a legal agreement"
+    },
+    "b": {
+      "stress": "conTRACT",
+      "type": "verb",
+      "meaning": "to become smaller or to hire"
+    },
+    "example_a": "Sign the CONtract before Friday.",
+    "example_b": "Muscles conTRACT when you exercise."
+  },
+  {
+    "word": "conflict",
+    "a": {
+      "stress": "CONflict",
+      "type": "noun",
+      "meaning": "a disagreement"
+    },
+    "b": {
+      "stress": "conFLICT",
+      "type": "verb",
+      "meaning": "to be in opposition"
+    },
+    "example_a": "There is a CONflict between the two groups.",
+    "example_b": "Our schedules conFLICT this week."
+  },
+  {
+    "word": "desert",
+    "a": {
+      "stress": "DESert",
+      "type": "noun",
+      "meaning": "a dry, sandy region"
+    },
+    "b": {
+      "stress": "deSERT",
+      "type": "verb",
+      "meaning": "to abandon"
+    },
+    "example_a": "Camels live in the DESert.",
+    "example_b": "Do not deSERT your friends."
+  },
+  {
+    "word": "permit",
+    "a": {
+      "stress": "PERmit",
+      "type": "noun",
+      "meaning": "a license or pass"
+    },
+    "b": {
+      "stress": "perMIT",
+      "type": "verb",
+      "meaning": "to allow"
+    },
+    "example_a": "You need a PERmit to park here.",
+    "example_b": "Smoking is not perMITTed here."
+  },
+  {
+    "word": "import",
+    "a": {
+      "stress": "IMport",
+      "type": "noun",
+      "meaning": "goods brought from another country"
+    },
+    "b": {
+      "stress": "imPORT",
+      "type": "verb",
+      "meaning": "to bring goods from abroad"
+    },
+    "example_a": "The country relies on oil IMports.",
+    "example_b": "They imPORT electronics from China."
+  },
+  {
+    "word": "export",
+    "a": {
+      "stress": "EXport",
+      "type": "noun",
+      "meaning": "goods sent to another country"
+    },
+    "b": {
+      "stress": "exPORT",
+      "type": "verb",
+      "meaning": "to send goods abroad"
+    },
+    "example_a": "Coffee is a major EXport of Brazil.",
+    "example_b": "They exPORT cars to Europe."
+  },
+  {
+    "word": "increase",
+    "a": {
+      "stress": "INcrease",
+      "type": "noun",
+      "meaning": "a rise in amount"
+    },
+    "b": {
+      "stress": "inCREASE",
+      "type": "verb",
+      "meaning": "to become larger"
+    },
+    "example_a": "There was an INcrease in sales.",
+    "example_b": "Prices inCREASE every year."
+  },
+  {
+    "word": "decrease",
+    "a": {
+      "stress": "DEcrease",
+      "type": "noun",
+      "meaning": "a reduction"
+    },
+    "b": {
+      "stress": "deCREASE",
+      "type": "verb",
+      "meaning": "to become smaller"
+    },
+    "example_a": "A DEcrease in temperature is expected.",
+    "example_b": "The population will deCREASE slowly."
+  },
+  {
+    "word": "insult",
+    "a": {
+      "stress": "INsult",
+      "type": "noun",
+      "meaning": "a rude remark"
+    },
+    "b": {
+      "stress": "inSULT",
+      "type": "verb",
+      "meaning": "to say something rude"
+    },
+    "example_a": "That comment was an INsult.",
+    "example_b": "Please do not inSULT anyone."
+  },
+  {
+    "word": "refuse",
+    "a": {
+      "stress": "REFuse",
+      "type": "noun",
+      "meaning": "garbage or waste"
+    },
+    "b": {
+      "stress": "reFUSE",
+      "type": "verb",
+      "meaning": "to say no or decline"
+    },
+    "example_a": "Please take out the REFuse.",
+    "example_b": "I reFUSE to accept the offer."
+  }
+]

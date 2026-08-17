@@ -1,0 +1,457 @@
+{
+  "url": "https://speaknow.co.in/",
+  "path": "/",
+  "title": "SpeakNow - Free English Speaking Practice Online",
+  "description": "Improve your spoken English for free. Practice pronunciation, shadowing, minimal pairs, tongue twisters, and more. All in your browser with real-time speech recognition. No sign-up required.",
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Improve Your Spoken English, for Free"
+    },
+    {
+      "tag": "h2",
+      "text": "All Practice Modes"
+    },
+    {
+      "tag": "h3",
+      "text": "English Grammar"
+    },
+    {
+      "tag": "h3",
+      "text": "Read & Improve"
+    },
+    {
+      "tag": "h3",
+      "text": "Pronunciation"
+    },
+    {
+      "tag": "h3",
+      "text": "Minimal Pairs"
+    },
+    {
+      "tag": "h3",
+      "text": "Shadowing"
+    },
+    {
+      "tag": "h3",
+      "text": "Tongue Twisters"
+    },
+    {
+      "tag": "h3",
+      "text": "Fill the Gap"
+    },
+    {
+      "tag": "h3",
+      "text": "Sound Drills"
+    },
+    {
+      "tag": "h3",
+      "text": "Conversation Starters"
+    },
+    {
+      "tag": "h3",
+      "text": "Word Stress Drills"
+    },
+    {
+      "tag": "h3",
+      "text": "Speed Read"
+    },
+    {
+      "tag": "h3",
+      "text": "Spotlight Practice"
+    },
+    {
+      "tag": "h3",
+      "text": "Rhythm Practice"
+    },
+    {
+      "tag": "h3",
+      "text": "Speed Challenge"
+    },
+    {
+      "tag": "h3",
+      "text": "Noun–Verb Practice"
+    },
+    {
+      "tag": "h3",
+      "text": "Filler Word Practice"
+    },
+    {
+      "tag": "h3",
+      "text": "Connected Speech"
+    },
+    {
+      "tag": "h3",
+      "text": "Consonant Clusters"
+    },
+    {
+      "tag": "h3",
+      "text": "Th Sounds"
+    },
+    {
+      "tag": "h3",
+      "text": "Intonation"
+    },
+    {
+      "tag": "h3",
+      "text": "Listening Practice"
+    },
+    {
+      "tag": "h3",
+      "text": "Word Pairs"
+    },
+    {
+      "tag": "h3",
+      "text": "Picture Description"
+    },
+    {
+      "tag": "h3",
+      "text": "Read Along"
+    },
+    {
+      "tag": "h3",
+      "text": "Read Aloud"
+    },
+    {
+      "tag": "h3",
+      "text": "Reading Practice"
+    },
+    {
+      "tag": "h3",
+      "text": "Reading Passage"
+    },
+    {
+      "tag": "h3",
+      "text": "Rhymes"
+    },
+    {
+      "tag": "h3",
+      "text": "Role Play"
+    },
+    {
+      "tag": "h3",
+      "text": "Speaking Practice"
+    },
+    {
+      "tag": "h3",
+      "text": "Speaking Prompts"
+    },
+    {
+      "tag": "h3",
+      "text": "Storytelling"
+    },
+    {
+      "tag": "h3",
+      "text": "Vocabulary"
+    },
+    {
+      "tag": "h3",
+      "text": "Grammar"
+    },
+    {
+      "tag": "h3",
+      "text": "Dictation"
+    },
+    {
+      "tag": "h2",
+      "text": "How It Works"
+    },
+    {
+      "tag": "h3",
+      "text": "Pick a Mode"
+    },
+    {
+      "tag": "h3",
+      "text": "Speak Aloud"
+    },
+    {
+      "tag": "h3",
+      "text": "Get Feedback"
+    },
+    {
+      "tag": "h3",
+      "text": "Repeat Daily"
+    },
+    {
+      "tag": "h2",
+      "text": "Why SpeakNow?"
+    },
+    {
+      "tag": "h3",
+      "text": "Completely Free"
+    },
+    {
+      "tag": "h3",
+      "text": "100% Private"
+    },
+    {
+      "tag": "h3",
+      "text": "Works in Browser"
+    },
+    {
+      "tag": "h3",
+      "text": "Instant Feedback"
+    },
+    {
+      "tag": "h2",
+      "text": "Master English Speaking with Targeted Practice"
+    },
+    {
+      "tag": "h3",
+      "text": "Pronunciation Practice at Your Own Pace"
+    },
+    {
+      "tag": "h3",
+      "text": "Build Fluency Through Conversation Practice"
+    },
+    {
+      "tag": "h3",
+      "text": "Fun Practice That Keeps You Coming Back"
+    },
+    {
+      "tag": "h3",
+      "text": "How to Get the Most Out of SpeakNow"
+    },
+    {
+      "tag": "h3",
+      "text": "Who Is SpeakNow For?"
+    },
+    {
+      "tag": "h2",
+      "text": "Frequently Asked Questions About Speaking English"
+    },
+    {
+      "tag": "h3",
+      "text": "How can I improve my English speaking at home for free?"
+    },
+    {
+      "tag": "h3",
+      "text": "How do I pronounce the TH sound in English?"
+    },
+    {
+      "tag": "h3",
+      "text": "What is the best way to practice English speaking alone?"
+    },
+    {
+      "tag": "h3",
+      "text": "How can I speak English fluently and confidently?"
+    },
+    {
+      "tag": "h3",
+      "text": "How do I fix my pronunciation if my native language has no certain sounds?"
+    },
+    {
+      "tag": "h3",
+      "text": "What is the difference between ship and sheep, or light and right?"
+    },
+    {
+      "tag": "h3",
+      "text": "How can I improve my English pronunciation for job interviews?"
+    },
+    {
+      "tag": "h3",
+      "text": "How do I reduce my accent when speaking English?"
+    },
+    {
+      "tag": "h3",
+      "text": "What are the best English speaking exercises for beginners?"
+    },
+    {
+      "tag": "h3",
+      "text": "How can I practice English speaking if I am shy?"
+    },
+    {
+      "tag": "h3",
+      "text": "How do I improve my English listening and speaking together?"
+    },
+    {
+      "tag": "h3",
+      "text": "Can I learn spoken English without a teacher or app subscription?"
+    },
+    {
+      "tag": "h3",
+      "text": "How long does it take to speak English fluently?"
+    },
+    {
+      "tag": "h2",
+      "text": "Practice English Speaking by Your Goal"
+    },
+    {
+      "tag": "h3",
+      "text": "English speaking practice for IELTS and TOEFL"
+    },
+    {
+      "tag": "h3",
+      "text": "English pronunciation practice for Indian speakers"
+    },
+    {
+      "tag": "h3",
+      "text": "English fluency practice for Spanish and Latin American learners"
+    },
+    {
+      "tag": "h3",
+      "text": "English speaking for Japanese and Korean learners"
+    },
+    {
+      "tag": "h3",
+      "text": "English conversation practice for daily life"
+    },
+    {
+      "tag": "h3",
+      "text": "English speaking practice for kids and beginners"
+    },
+    {
+      "tag": "h2",
+      "text": "Common English Pronunciation Challenges"
+    },
+    {
+      "tag": "h3",
+      "text": "Mastering word stress and sentence stress"
+    },
+    {
+      "tag": "h3",
+      "text": "Improving rhythm and connected speech"
+    },
+    {
+      "tag": "h3",
+      "text": "Fixing the most confused sound pairs"
+    },
+    {
+      "tag": "h3",
+      "text": "Building vocabulary you can actually say"
+    },
+    {
+      "tag": "h3",
+      "text": "Reading aloud to improve clarity and pace"
+    },
+    {
+      "tag": "h3",
+      "text": "Using dictation to sharpen listening at the phonetic level"
+    },
+    {
+      "tag": "h3",
+      "text": "🎙️ SpeakNow"
+    }
+  ],
+  "paragraphs": [
+    "Practice pronunciation, shadowing, tongue twisters, and more — all in your browser with instant speech recognition feedback. No downloads, no accounts, no data leaving your computer.",
+    "Thirty-five different ways to practice — pick what works for you today.",
+    "Learn English grammar from scratch. Clear explanations, real examples, and speaking exercises for every topic — from sentence structure to tenses.",
+    "Read full sentences aloud and get instant word-by-word accuracy feedback.",
+    "Practice individual words with Hear It and Say It from 800+ daily words.",
+    "Train your ear to distinguish similar sounds — ship vs sheep, right vs light, and many more.",
+    "Listen to a sentence, then repeat it aloud. Improves rhythm, intonation, and natural fluency.",
+    "Fun tricky sentences to warm up your mouth and improve clarity and speed.",
+    "Complete sentences with a missing word. Practice vocabulary and speaking in context.",
+    "Pick a specific sound (th, r/l, sh, v/w) and drill targeted word lists to master it.",
+    "Answer open-ended questions aloud. Build fluency with spontaneous speaking practice.",
+    "Master words that change meaning by stress — REcord vs reCORD, PREsent vs preSENT.",
+    "Read sentences as fast and accurately as possible. Track your words per minute and accuracy.",
+    "Zoom in on one tricky word in a sentence and drill it until it sounds natural.",
+    "Train natural English stress and timing so you sound fluent and easy to follow.",
+    "Read sentences aloud against the clock. Build fast, confident, fluent speech.",
+    "Master words that change meaning by stress — REcord vs reCORD, PREsent vs preSENT.",
+    "Speak on a prompt and spot your ums and likes. Pause instead of fill, sound confident.",
+    "Hear how words blur together in fast speech and learn to produce natural connected English.",
+    "Tackle tricky consonant groupings like str-, -mpl, and -ngth with targeted drills.",
+    "Master the voiced and unvoiced /θ/ and /ð/ that learners often replace or skip.",
+    "Use rising and falling pitch to convey meaning, mood, and attitude in English.",
+    "Train your ear with model sentences and transcript feedback to catch every sound.",
+    "Drill minimal and confusing word pairs to sharpen discrimination and production.",
+    "Describe images in detail to build vocabulary, grammar, and fluency on the spot.",
+    "Follow a model sentence and speak in sync to build rhythm and confidence.",
+    "Read full sentences aloud and get instant word-by-word accuracy feedback.",
+    "Read passages and record yourself to improve pace, phrasing, and expression.",
+    "Work through longer passages to build endurance and natural reading flow.",
+    "Use rhyming words and patterns to improve sound awareness and memory.",
+    "Step into real scenarios and speak naturally with a model to guide you.",
+    "Practice free speaking with prompts and hear your own recordings to improve.",
+    "Get a prompt, speak for a minute, and refine with instant self-feedback.",
+    "Tell short stories to build coherence, tension, and expressive delivery.",
+    "Learn and pronounce new words in context with hear-and-say practice.",
+    "Speak grammatically correct English with structure drills and feedback.",
+    "Write what you hear to sharpen listening at the finest phonetic level.",
+    "No complexity — just open your browser, pick a mode, and start speaking.",
+    "Choose from 35 practice modes — pronunciation, shadowing, rhythm, and more.",
+    "Click Say It or Start and speak into your microphone. Your browser processes your speech in real time.",
+    "See which words were correct, which need work, and track your accuracy percentage.",
+    "Consistent practice is key. Each mode has hundreds of items so you never run out.",
+    "No subscriptions, no hidden charges, no sign-up required. Every feature is free forever.",
+    "Your speech never leaves your device. All processing happens locally with the Web Speech API.",
+    "No downloads or installs. Works on Chrome, Edge, and other modern browsers on any device.",
+    "Word-by-word accuracy, timing, and detailed scoring — see exactly where to improve.",
+    "SpeakNow is a comprehensive, free online tool designed to help English learners improve their spoken English through targeted, browser-based practice. Unlike traditional language apps, SpeakNow focuses exclusively on speaking — helping you build the muscle memory, confidence, and accuracy needed for real conversations.",
+    "Clear pronunciation is the foundation of effective communication. SpeakNow offers multiple ways to work on your pronunciation:",
+    "Speaking fluently means more than just saying words correctly. It means responding naturally, maintaining a steady pace, and organizing your thoughts in English. Our Conversation Starters and Shadowing modes are built for exactly this.",
+    "Consistent daily practice is the fastest path to improvement. SpeakNow keeps practice engaging with varied modes — tongue twisters for a warm-up, speed reading for a challenge, and fill-the-gap exercises for vocabulary building. With hundreds of items in every mode, you will always have fresh material.",
+    "SpeakNow is designed for anyone learning English as a second language who wants to improve their speaking skills. Whether you are a beginner working on basic pronunciation, an intermediate learner building fluency, or an advanced speaker polishing specific sounds, SpeakNow has something for you. It is also useful for English teachers looking for no-cost tools to recommend to students.",
+    "Choose a Practice Mode →",
+    "Learners around the world ask the same questions about how to speak English clearly, confidently, and fluently. Below are the most common questions with practical, free ways to improve using browser-based practice.",
+    "You can improve spoken English at home without paying for classes by practicing a little every day with free tools. SpeakNow lets you practice pronunciation, shadowing, and conversation entirely in your browser — no sign-up, no downloads, no cost. Speak aloud, listen to the model, and repeat. Ten minutes a day builds real muscle memory for clearer English speaking.",
+    "The English TH sound comes in two forms: the unvoiced /θ/ in \"think\" and \"three\", and the voiced /ð/ in \"this\" and \"that\". Place the tip of your tongue gently between your top and bottom teeth and push air out. Use the Th Sounds and Sound Drills modes on SpeakNow to hear the difference and practice hundreds of /θ/ and /ð/ words with instant feedback.",
+    "Practicing English alone works best when you combine listening, repeating, and recording. Shadowing mode lets you hear a sentence and speak it back immediately, training rhythm and intonation. Speaking Prompts give you a topic to talk about for a minute, then you review your own recording. Consistent solo practice is one of the fastest ways to gain confidence.",
+    "Fluency comes from repeated, low-pressure speaking. Build it with Conversation Starters, Role Play, and Storytelling modes that push you to form thoughts in English on the spot. Focus on steady pace and natural linking rather than perfect grammar. The more you speak, the more automatic fluent English becomes.",
+    "Many learners struggle with sounds their first language lacks — for example, /r/ and /l/ for Japanese speakers, or /v/ and /w/ for Hindi and Spanish speakers. Targeted Sound Drills and Minimal Pairs let you isolate each tricky sound and train your ear and mouth together until the sound feels natural.",
+    "These are minimal pairs — words that differ by only one sound. Mixing them up changes meaning completely. The Minimal Pairs and Word Pairs modes train your ear to hear the difference (short /ɪ/ vs long /iː/) and your mouth to produce it, which is essential for being understood in real conversations.",
+    "Clear pronunciation helps interviewers understand you easily. Practice common interview vocabulary with Pronunciation and Read Aloud modes, record yourself answering sample questions in Speaking Prompts, and use Word Stress drills so emphasis lands on the right syllable. Confident, clear speech makes a strong first impression.",
+    "Reducing an accent means making tricky sounds and stress patterns closer to standard English. Focus on Sound Drills for problem sounds, Word Stress for emphasis, and Intonation for pitch. SpeakNow gives instant feedback so you can hear exactly which words need more work — all free, all in your browser.",
+    "Beginners should start with short, repeatable exercises: Pronunciation for single words, Read Aloud for full sentences, and Tongue Twisters to warm up the mouth. These build the basics of clear English speaking before moving on to free conversation practice.",
+    "Practicing alone removes the fear of being judged. SpeakNow runs entirely on your device with no other person listening, so you can experiment, make mistakes, and improve in private. Over time, daily solo practice naturally reduces speaking anxiety.",
+    "Listening and speaking reinforce each other. Use Listening Practice and Shadowing to copy native rhythm and sounds, then produce them yourself. This linked training is how your ear and mouth learn English as one skill.",
+    "Yes. SpeakNow is completely free and needs no teacher or paid app. With 35 practice modes and hundreds of items in each, self-learners can build strong speaking skills through consistent daily practice in any modern browser.",
+    "Fluency depends on how often and how intentionally you practice. Most learners notice clear improvement within a few weeks of daily practice, and much stronger fluency after a few months. The key is regularity — short daily sessions beat occasional long ones.",
+    "Different learners need different things from their English practice. Pick the goal that matches you and use the free modes built for it.",
+    "Speaking tests reward fluency, coherence, and pronunciation. Use Speaking Prompts and Storytelling to build extended answers, Intonation and Word Stress for natural delivery, and Pronunciation for clear individual words. Regular free practice mirrors test conditions.",
+    "Many Hindi and other Indian-language speakers want to master /v/ vs /w/, /θ/ and /ð/, and sentence stress. Sound Drills, Th Sounds, and Word Stress modes target exactly these areas with hundreds of examples and instant feedback.",
+    "Spanish speakers often work on /b/ vs /v/, syllable timing, and English word stress. Use Minimal Pairs, Rhythm Practice, and Shadowing to retrain rhythm and sound production for clearer English.",
+    "Learners from Japan and Korea frequently target /r/ vs /l/, and English intonation. Minimal Pairs, Sound Drills, and Intonation modes give focused, repeatable practice for these sounds.",
+    "For real-world talking — ordering food, small talk, meetings — use Conversation Starters, Role Play, and Picture Description. They build the spontaneous speaking skills daily life demands.",
+    "Younger or new learners stay engaged with Tongue Twisters, Rhymes, and Read Along. These modes make early English speaking fun while building sound awareness and confidence.",
+    "These are the sounds and patterns learners ask about most. Each has a free SpeakNow mode to train it.",
+    "English meaning often changes with stress — REcord vs reCORD. Word Stress and Noun–Verb Practice drills teach you which syllable to emphasize so you sound natural and are understood.",
+    "Natural English blends words together. Rhythm Practice and Connected Speech train you to hear and produce linking, reductions, and natural pacing instead of robotic word-by-word speech.",
+    "Beyond ship/sheep, common confusions include live/leave, full/fool, and copy/coffee. Minimal Pairs and Word Pairs give endless targeted repetition until each pair is effortless.",
+    "Knowing a word and saying it well are different skills. Vocabulary and Fill the Gap modes pair new words with speaking practice so you learn to pronounce them, not just recognize them.",
+    "Read Aloud and Speed Read give word-by-word accuracy and words-per-minute feedback, helping you speak clearly and at a natural speed — useful for presentations and confident talking.",
+    "Dictation trains you to catch fine sound differences by writing what you hear. It pairs perfectly with pronunciation work to lock in clear, accurate English.",
+    "Start Free Practice →",
+    "Free browser-based English speaking practice. No downloads, no sign-ups, no data leaving your computer."
+  ],
+  "ldJson": [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Web Browser",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "inLanguage": "en"
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "logo": "https://speaknow.co.in/icon-mic.png?v=3",
+      "sameAs": [
+        "https://instagram.com/speaknow.co.in"
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://speaknow.co.in/practice?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+  ]
+}

@@ -1,0 +1,212 @@
+[
+  {
+    "before": "I would like to order",
+    "blank": "a cup of",
+    "after": "coffee please.",
+    "hint": "a coffee order"
+  },
+  {
+    "before": "The meeting has been postponed until",
+    "blank": "next",
+    "after": "Thursday.",
+    "hint": "a day"
+  },
+  {
+    "before": "She",
+    "blank": "graduated",
+    "after": "with honors last year.",
+    "hint": "completed studies"
+  },
+  {
+    "before": "We should leave early to avoid",
+    "blank": "traffic",
+    "after": "on the highway.",
+    "hint": "too many cars"
+  },
+  {
+    "before": "Could you tell me where the nearest",
+    "blank": "restroom",
+    "after": "is?",
+    "hint": "a toilet"
+  },
+  {
+    "before": "He",
+    "blank": "apologized",
+    "after": "for arriving late.",
+    "hint": "said sorry"
+  },
+  {
+    "before": "The weather forecast says it's going to",
+    "blank": "rain",
+    "after": "this weekend.",
+    "hint": "water from the sky"
+  },
+  {
+    "before": "I'd like to",
+    "blank": "book",
+    "after": "a table for two.",
+    "hint": "reserve (starts with b)"
+  },
+  {
+    "before": "She",
+    "blank": "recommended",
+    "after": "this restaurant to us.",
+    "hint": "suggested positively"
+  },
+  {
+    "before": "I need to",
+    "blank": "renew",
+    "after": "my passport.",
+    "hint": "extend validity"
+  },
+  {
+    "before": "They moved to a new",
+    "blank": "apartment",
+    "after": "in the city center.",
+    "hint": "a rented home"
+  },
+  {
+    "before": "The package should",
+    "blank": "arrive",
+    "after": "within three days.",
+    "hint": "be delivered"
+  },
+  {
+    "before": "I'm trying to cut down on",
+    "blank": "sugar",
+    "after": "and eat healthier.",
+    "hint": "sweet stuff"
+  },
+  {
+    "before": "He speaks English with a slight",
+    "blank": "accent",
+    "after": "from his home country.",
+    "hint": "way of pronouncing"
+  },
+  {
+    "before": "The doctor advised him to",
+    "blank": "exercise",
+    "after": "more regularly.",
+    "hint": "physical activity"
+  },
+  {
+    "before": "She gave a fascinating",
+    "blank": "presentation",
+    "after": "on climate change.",
+    "hint": "a talk with slides"
+  },
+  {
+    "before": "I think we should discuss this",
+    "blank": "matter",
+    "after": "in private.",
+    "hint": "topic or issue"
+  },
+  {
+    "before": "The hotel room has a beautiful",
+    "blank": "view",
+    "after": "of the ocean.",
+    "hint": "what you see outside"
+  },
+  {
+    "before": "He accidentally deleted all the",
+    "blank": "files",
+    "after": "on his computer.",
+    "hint": "documents on PC"
+  },
+  {
+    "before": "I read the article twice to make sure I",
+    "blank": "understood",
+    "after": "it correctly.",
+    "hint": "comprehended"
+  },
+  {
+    "before": "Could you please",
+    "blank": "repeat",
+    "after": "what you just said?",
+    "hint": "say again"
+  },
+  {
+    "before": "We are looking forward to",
+    "blank": "meeting",
+    "after": "you next week.",
+    "hint": "seeing in person"
+  },
+  {
+    "before": "She spends most of her free time",
+    "blank": "reading",
+    "after": "novels and poetry.",
+    "hint": "looking at books"
+  },
+  {
+    "before": "The children were playing",
+    "blank": "happily",
+    "after": "in the garden.",
+    "hint": "with joy"
+  },
+  {
+    "before": "I appreciate all your",
+    "blank": "help",
+    "after": "with this project.",
+    "hint": "assistance"
+  },
+  {
+    "before": "The instructions are clearly",
+    "blank": "written",
+    "after": "on the package.",
+    "hint": "marked (past tense)"
+  },
+  {
+    "before": "The train is expected to",
+    "blank": "arrive",
+    "after": "at platform three.",
+    "hint": "come in"
+  },
+  {
+    "before": "The exam was more difficult",
+    "blank": "than",
+    "after": "I expected.",
+    "hint": "comparison word"
+  },
+  {
+    "before": "We usually have",
+    "blank": "lunch",
+    "after": "together on Fridays.",
+    "hint": "midday meal"
+  },
+  {
+    "before": "The neighborhood has become much",
+    "blank": "quieter",
+    "after": "since last year.",
+    "hint": "less noisy"
+  },
+  {
+    "before": "He decided to",
+    "blank": "change",
+    "after": "his job last month.",
+    "hint": "switch"
+  },
+  {
+    "before": "She was thrilled when she heard the",
+    "blank": "news",
+    "after": "about her promotion.",
+    "hint": "information (starts with n)"
+  },
+  {
+    "before": "I'm not sure what you",
+    "blank": "mean",
+    "after": "by that comment.",
+    "hint": "intend to say"
+  },
+  {
+    "before": "The restaurant serves the best",
+    "blank": "pizza",
+    "after": "in the entire city.",
+    "hint": "Italian dish"
+  },
+  {
+    "before": "The conference will be",
+    "blank": "held",
+    "after": "at the convention center.",
+    "hint": "take place (past)"
+  }
+]

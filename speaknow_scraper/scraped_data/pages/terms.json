@@ -1,0 +1,147 @@
+{
+  "url": "https://speaknow.co.in/terms",
+  "path": "/terms",
+  "title": "Terms of Service — SpeakNow | SpeakNow",
+  "description": "The terms governing use of SpeakNow’s free, browser-based English speaking practice tool, including acceptable use and advertising disclosures.",
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Terms of Service"
+    },
+    {
+      "tag": "h2",
+      "text": "1. Acceptance of Terms"
+    },
+    {
+      "tag": "h2",
+      "text": "2. Description of Service"
+    },
+    {
+      "tag": "h2",
+      "text": "3. Eligibility"
+    },
+    {
+      "tag": "h2",
+      "text": "4. No Account Required"
+    },
+    {
+      "tag": "h2",
+      "text": "5. Acceptable Use"
+    },
+    {
+      "tag": "h2",
+      "text": "6. Advertising"
+    },
+    {
+      "tag": "h2",
+      "text": "7. Intellectual Property"
+    },
+    {
+      "tag": "h2",
+      "text": "8. Disclaimers"
+    },
+    {
+      "tag": "h2",
+      "text": "9. Limitation of Liability"
+    },
+    {
+      "tag": "h2",
+      "text": "10. Third-Party Services"
+    },
+    {
+      "tag": "h2",
+      "text": "11. Termination"
+    },
+    {
+      "tag": "h2",
+      "text": "12. Indemnification"
+    },
+    {
+      "tag": "h2",
+      "text": "13. Force Majeure"
+    },
+    {
+      "tag": "h2",
+      "text": "14. Changes to Terms"
+    },
+    {
+      "tag": "h2",
+      "text": "15. Governing Law"
+    },
+    {
+      "tag": "h2",
+      "text": "16. Contact"
+    },
+    {
+      "tag": "h2",
+      "text": "17. Severability"
+    },
+    {
+      "tag": "h2",
+      "text": "18. Entire Agreement"
+    },
+    {
+      "tag": "h3",
+      "text": "🎙️ SpeakNow"
+    }
+  ],
+  "paragraphs": [
+    "Last updated: July 16, 2026",
+    "By accessing and using SpeakNow (“the Service”), you accept and agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use the Service.",
+    "SpeakNow is a free, browser-based English speaking practice tool. It uses the Web Speech API (SpeechRecognition and SpeechSynthesis) available in modern browsers to provide real-time feedback on spoken English. The Service includes, without limitation, pronunciation drills, minimal-pair exercises, shadowing practice, daily-reminder notifications, and a library of written lessons published on our blog. The Service does not require registration, does not store personal data on servers, and processes all speech entirely within your browser. Feature availability may vary depending on your browser, device, operating system, and internet connection.",
+    "The Service is intended for users of all ages who wish to practise English. If you are under the age of majority in your jurisdiction, you should use the Service with the involvement of a parent or guardian. By using the Service you represent that you have the legal capacity to enter into these Terms or have obtained the necessary consent.",
+    "SpeakNow does not require you to create an account, provide an email address, or submit any personal information to use its core features. Optional features such as daily reminder notifications use your browser’s own push subscription and do not require an account.",
+    "You agree to use the Service only for lawful purposes and in a way that does not infringe the rights of others or restrict their use of the Service. You must not:",
+    "The Service is supported by advertising provided by Google AdSense and other Google advertising products. Advertisements are displayed on the site, and Google may use cookies and similar technologies to personalize and measure ads. Advertising cookies are set only where you have provided consent as described in our Privacy Policy . We are not responsible for the content of third-party advertisements or the practices of advertisers.",
+    "All content, design, and code of SpeakNow are the property of SpeakNow unless otherwise noted. You may not reproduce, distribute, or create derivative works without prior written consent. You may, however, share links to the Service freely.",
+    "SpeakNow is provided “as is” without any warranty, express or implied. We do not warrant that the Service will be uninterrupted, error-free, or that speech recognition will be perfectly accurate. The Service is a practice aid and does not guarantee improvement in English speaking ability. Speech recognition quality depends on your device, browser, microphone, and environment.",
+    "To the maximum extent permitted by law, SpeakNow and its operators shall not be liable for any indirect, incidental, or consequential damages arising from your use of the Service. Your sole remedy for dissatisfaction with the Service is to stop using it.",
+    "The Service relies on third-party providers including Google (analytics and advertising) and Vercel (hosting). Your use of the Service is also subject to the respective terms and policies of those providers, including Google’s Privacy & Terms and Vercel’s policies.",
+    "We may suspend or discontinue the Service, or block access to it, at any time for operational, security, or legal reasons. These Terms remain in effect with respect to any prior use of the Service.",
+    "You agree to indemnify and hold SpeakNow harmless from any claims, losses, or damages arising out of your use of the Service or your violation of these Terms, to the extent permitted by applicable law.",
+    "SpeakNow is not liable for any failure or delay in performance caused by events beyond its reasonable control, including internet outages, browser changes, or acts of third-party providers such as Google or Vercel.",
+    "We reserve the right to update these terms at any time. Changes will be posted on this page with an updated “Last updated” date. Continued use of the Service after changes constitutes acceptance of the new terms.",
+    "These terms are governed by the laws of India, without regard to its conflict-of-law provisions. Any disputes shall be subject to the exclusive jurisdiction of the courts located in Maharashtra, India.",
+    "If you have any questions about these Terms, please reach out via email: hi@speaknow.co.in.",
+    "If any provision of these Terms is found to be invalid or unenforceable by a court of competent jurisdiction, the remaining provisions will continue in full force and effect, and the invalid provision will be reformed to the minimum extent necessary to make it enforceable.",
+    "These Terms, together with our Privacy Policy , constitute the entire agreement between you and SpeakNow regarding your use of the Service and supersede any prior understandings, whether written or oral, relating to the Service.",
+    "Free browser-based English speaking practice. No downloads, no sign-ups, no data leaving your computer."
+  ],
+  "ldJson": [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Web Browser",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "inLanguage": "en"
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "logo": "https://speaknow.co.in/icon-mic.png?v=3",
+      "sameAs": [
+        "https://instagram.com/speaknow.co.in"
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://speaknow.co.in/practice?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+  ]
+}

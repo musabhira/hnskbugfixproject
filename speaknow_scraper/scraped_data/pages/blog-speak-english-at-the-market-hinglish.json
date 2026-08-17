@@ -1,0 +1,87 @@
+{
+  "url": "https://speaknow.co.in/blog/speak-english-at-the-market-hinglish",
+  "path": "/blog/speak-english-at-the-market-hinglish",
+  "title": "Speak English at the Market: A Hinglish Phrase Guide | SpeakNow",
+  "description": "Buy vegetables, bargain and ask prices in English. A practical Hinglish guide for daily market visits in India.",
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Speak English at the Market: A Hinglish Phrase Guide"
+    },
+    {
+      "tag": "h2",
+      "text": "Asking prices"
+    },
+    {
+      "tag": "h2",
+      "text": "Bargaining"
+    },
+    {
+      "tag": "h2",
+      "text": "Quantity"
+    },
+    {
+      "tag": "h2",
+      "text": "Common replies"
+    },
+    {
+      "tag": "h2",
+      "text": "Practice tip"
+    },
+    {
+      "tag": "h2",
+      "text": "Why this works"
+    },
+    {
+      "tag": "h3",
+      "text": "🎙️ SpeakNow"
+    }
+  ],
+  "paragraphs": [
+    "Buy vegetables, bargain and ask prices in English. A practical Hinglish guide for daily market visits in India.",
+    "5 min read · Published 2026-07-16",
+    "The local market is the best place to practice English. Vendors are friendly and you get instant replies. Here is a Hinglish phrase guide.",
+    "Vendor: \"Sa hundred rupees.\" You: \"Okay, pack it.\" (ठीक है, पैक करो.)",
+    "Before going to the market, pick 3 phrases. Use only English with the vendor that day. Even if they reply in Hindi, your practice still counts.",
+    "Market talk is repetitive. The same 20 sentences cover most visits. Once automatic, your confidence grows for bigger conversations.",
+    "Try the SpeakNow daily drill after shopping to lock in the phrases you used.",
+    "Free browser-based English speaking practice. No downloads, no sign-ups, no data leaving your computer."
+  ],
+  "ldJson": [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Web Browser",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "inLanguage": "en"
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "logo": "https://speaknow.co.in/icon-mic.png?v=3",
+      "sameAs": [
+        "https://instagram.com/speaknow.co.in"
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://speaknow.co.in/practice?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+  ]
+}

@@ -1,0 +1,78 @@
+{
+  "url": "https://speaknow.co.in/blog/vocabulary-words-for-daily-use",
+  "path": "/blog/vocabulary-words-for-daily-use",
+  "title": "50 English Words You Use Daily (But Spell Wrong) | SpeakNow",
+  "description": "Common words Indians mispronounce or misspell — separate, accommodation, recommend — with the right form and a memory trick.",
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "50 English Words You Use Daily (But Spell Wrong)"
+    },
+    {
+      "tag": "h2",
+      "text": "Often misspelled"
+    },
+    {
+      "tag": "h2",
+      "text": "Often mispronounced"
+    },
+    {
+      "tag": "h2",
+      "text": "Memory tricks"
+    },
+    {
+      "tag": "h2",
+      "text": "Practice"
+    },
+    {
+      "tag": "h3",
+      "text": "🎙️ SpeakNow"
+    }
+  ],
+  "paragraphs": [
+    "Common words Indians mispronounce or misspell — separate, accommodation, recommend — with the right form and a memory trick.",
+    "6 min read · Published 2026-07-16",
+    "A small word used wrong breaks trust. Here are 50 daily words with the correct form.",
+    "\"Separate\" has \"a rat\" in the middle. \"Accommodation\" = two cots in a room (cc, mm).",
+    "Learn 5 words a day. Write each 3 times. Say it aloud. The SpeakNow spelling drill tests you weekly.",
+    "Correct small words build a big reputation.",
+    "Free browser-based English speaking practice. No downloads, no sign-ups, no data leaving your computer."
+  ],
+  "ldJson": [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Web Browser",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "inLanguage": "en"
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "logo": "https://speaknow.co.in/icon-mic.png?v=3",
+      "sameAs": [
+        "https://instagram.com/speaknow.co.in"
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://speaknow.co.in/practice?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+  ]
+}

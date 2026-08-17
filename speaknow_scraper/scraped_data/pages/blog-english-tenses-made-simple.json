@@ -1,0 +1,82 @@
+{
+  "url": "https://speaknow.co.in/blog/english-tenses-made-simple",
+  "path": "/blog/english-tenses-made-simple",
+  "title": "English Tenses Made Simple: A Chart You Will Actually Use | SpeakNow",
+  "description": "Forget confusing rules. A clean 12-tense chart with one example each and when to use it in real life.",
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "English Tenses Made Simple: A Chart You Will Actually Use"
+    },
+    {
+      "tag": "h2",
+      "text": "Present"
+    },
+    {
+      "tag": "h2",
+      "text": "Past"
+    },
+    {
+      "tag": "h2",
+      "text": "Future"
+    },
+    {
+      "tag": "h2",
+      "text": "When to use which"
+    },
+    {
+      "tag": "h2",
+      "text": "Practice"
+    },
+    {
+      "tag": "h3",
+      "text": "🎙️ SpeakNow"
+    }
+  ],
+  "paragraphs": [
+    "Forget confusing rules. A clean 12-tense chart with one example each and when to use it in real life.",
+    "7 min read · Published 2026-07-16",
+    "Tenses feel hard because books over-explain. Here is a simple working chart.",
+    "For daily life, master present simple, present continuous, past simple and future simple. That covers 80% of talk.",
+    "Pick one tense a day. Write 5 sentences. Speak them on SpeakNow. The app checks tense use live.",
+    "Do not memorise all 12 at once. Build from the core four.",
+    "Free browser-based English speaking practice. No downloads, no sign-ups, no data leaving your computer."
+  ],
+  "ldJson": [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Web Browser",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "inLanguage": "en"
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "logo": "https://speaknow.co.in/icon-mic.png?v=3",
+      "sameAs": [
+        "https://instagram.com/speaknow.co.in"
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://speaknow.co.in/practice?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "url": "https://speaknow.co.in/blog/english-idioms-for-daily-conversation",
+  "path": "/blog/english-idioms-for-daily-conversation",
+  "title": "15 English Idioms You Will Hear Daily (with Meanings) | SpeakNow",
+  "description": "Break the ice, piece of cake, hit the nail — idioms natives use constantly, explained simply with examples.",
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "15 English Idioms You Will Hear Daily (with Meanings)"
+    },
+    {
+      "tag": "h2",
+      "text": "15 common ones"
+    },
+    {
+      "tag": "h2",
+      "text": "Example"
+    },
+    {
+      "tag": "h2",
+      "text": "Practice"
+    },
+    {
+      "tag": "h3",
+      "text": "🎙️ SpeakNow"
+    }
+  ],
+  "paragraphs": [
+    "Break the ice, piece of cake, hit the nail — idioms natives use constantly, explained simply with examples.",
+    "5 min read · Published 2026-07-16",
+    "Idioms are phrases you cannot translate word-by-word.",
+    "\"The exam was a piece of cake.\" \"Let's call it a day.\"",
+    "Learn 3 idioms a week. Use one in real talk. The SpeakNow chat drill accepts idioms in context.",
+    "Idioms make you sound natural, not textbook.",
+    "Free browser-based English speaking practice. No downloads, no sign-ups, no data leaving your computer."
+  ],
+  "ldJson": [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Web Browser",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "inLanguage": "en"
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "logo": "https://speaknow.co.in/icon-mic.png?v=3",
+      "sameAs": [
+        "https://instagram.com/speaknow.co.in"
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://speaknow.co.in/practice?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+  ]
+}

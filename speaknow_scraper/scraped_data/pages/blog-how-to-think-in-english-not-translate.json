@@ -1,0 +1,95 @@
+{
+  "url": "https://speaknow.co.in/blog/how-to-think-in-english-not-translate",
+  "path": "/blog/how-to-think-in-english-not-translate",
+  "title": "Stop Translating: How to Start Thinking in English | SpeakNow",
+  "description": "Translating from Hindi slows you down. Train your brain to think directly in English with 5 daily habits.",
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Stop Translating: How to Start Thinking in English"
+    },
+    {
+      "tag": "h2",
+      "text": "Why translating hurts"
+    },
+    {
+      "tag": "h2",
+      "text": "Habit 1: Label objects"
+    },
+    {
+      "tag": "h2",
+      "text": "Habit 2: Self-talk"
+    },
+    {
+      "tag": "h2",
+      "text": "Habit 3: One English sentence per task"
+    },
+    {
+      "tag": "h2",
+      "text": "Habit 4: Dream journal"
+    },
+    {
+      "tag": "h2",
+      "text": "Habit 5: Use SpeakNow daily"
+    },
+    {
+      "tag": "h2",
+      "text": "The 30-day challenge"
+    },
+    {
+      "tag": "h3",
+      "text": "🎙️ SpeakNow"
+    }
+  ],
+  "paragraphs": [
+    "Translating from Hindi slows you down. Train your brain to think directly in English with 5 daily habits.",
+    "6 min read · Published 2026-07-16",
+    "Most learners form a sentence in Hindi, then translate. That is slow and error-prone. Thinking in English is the real goal.",
+    "Translation adds a step. By the time you speak, the moment is gone. Native speakers skip this step.",
+    "Walk around your home naming things in English: \"table, fan, bottle, window\". No Hindi. Just the word.",
+    "Describe what you do: \"I am making tea. The water is boiling.\" Quietly, to yourself.",
+    "While cooking, think one English sentence about it. Expand to two tomorrow.",
+    "On waking, write 3 English sentences about your dream or plan. Even simple ones count.",
+    "The app's real-time feedback trains direct production. You stop rehearsing Hindi in your head.",
+    "For one month, spend the first 5 minutes after waking in English only — in your mind. You will feel the shift.",
+    "Thinking in English is a muscle. Exercise it daily.",
+    "Free browser-based English speaking practice. No downloads, no sign-ups, no data leaving your computer."
+  ],
+  "ldJson": [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Web Browser",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "inLanguage": "en"
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "logo": "https://speaknow.co.in/icon-mic.png?v=3",
+      "sameAs": [
+        "https://instagram.com/speaknow.co.in"
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://speaknow.co.in/practice?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+  ]
+}

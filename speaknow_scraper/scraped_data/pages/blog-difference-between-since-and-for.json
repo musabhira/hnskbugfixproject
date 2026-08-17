@@ -1,0 +1,89 @@
+{
+  "url": "https://speaknow.co.in/blog/difference-between-since-and-for",
+  "path": "/blog/difference-between-since-and-for",
+  "title": "Since vs For: Simple Rules to Never Confuse Them Again | SpeakNow",
+  "description": "A tiny pair that causes big errors. Learn exactly when to use \"since\" and \"for\" with clear examples and a quick test.",
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Since vs For: Simple Rules to Never Confuse Them Again"
+    },
+    {
+      "tag": "h2",
+      "text": "Use \"since\" with a point in time"
+    },
+    {
+      "tag": "h2",
+      "text": "Use \"for\" with a duration"
+    },
+    {
+      "tag": "h2",
+      "text": "Examples"
+    },
+    {
+      "tag": "h2",
+      "text": "Quick test"
+    },
+    {
+      "tag": "h2",
+      "text": "Common error"
+    },
+    {
+      "tag": "h2",
+      "text": "Practice"
+    },
+    {
+      "tag": "h3",
+      "text": "🎙️ SpeakNow"
+    }
+  ],
+  "paragraphs": [
+    "A tiny pair that causes big errors. Learn exactly when to use \"since\" and \"for\" with clear examples and a quick test.",
+    "4 min read · Published 2026-07-16",
+    "Indians often mix \"since\" and \"for\". The rule is simple once you see it.",
+    "\"Since\" answers the question \"from when?\"",
+    "\"For\" answers \"how long?\"",
+    "Both are correct but mean slightly different focus.",
+    "If you can put a clock or date after it, use \"since\". If you can count the time, use \"for\".",
+    "Wrong: \"I am waiting since two hours.\" Right: \"I have been waiting for two hours.\"",
+    "Write 3 sentences with \"since\" and 3 with \"for\" today. Say them aloud. The SpeakNow grammar drill will check them.",
+    "Free browser-based English speaking practice. No downloads, no sign-ups, no data leaving your computer."
+  ],
+  "ldJson": [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Web Browser",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "inLanguage": "en"
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "logo": "https://speaknow.co.in/icon-mic.png?v=3",
+      "sameAs": [
+        "https://instagram.com/speaknow.co.in"
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://speaknow.co.in/practice?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+  ]
+}

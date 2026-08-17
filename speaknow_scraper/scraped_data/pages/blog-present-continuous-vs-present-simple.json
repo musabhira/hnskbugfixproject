@@ -1,0 +1,89 @@
+{
+  "url": "https://speaknow.co.in/blog/present-continuous-vs-present-simple",
+  "path": "/blog/present-continuous-vs-present-simple",
+  "title": "Present Simple vs Present Continuous: The Real Difference | SpeakNow",
+  "description": "One is for habits, one for now. A clear rule with examples Indians mix up daily.",
+  "headings": [
+    {
+      "tag": "h1",
+      "text": "Present Simple vs Present Continuous: The Real Difference"
+    },
+    {
+      "tag": "h2",
+      "text": "Present simple = habit or fact"
+    },
+    {
+      "tag": "h2",
+      "text": "Present continuous = now"
+    },
+    {
+      "tag": "h2",
+      "text": "The trap"
+    },
+    {
+      "tag": "h2",
+      "text": "With \"always\""
+    },
+    {
+      "tag": "h2",
+      "text": "Test"
+    },
+    {
+      "tag": "h2",
+      "text": "Practice"
+    },
+    {
+      "tag": "h3",
+      "text": "🎙️ SpeakNow"
+    }
+  ],
+  "paragraphs": [
+    "One is for habits, one for now. A clear rule with examples Indians mix up daily.",
+    "4 min read · Published 2026-07-16",
+    "These two cause constant errors.",
+    "\"I work in Mumbai.\" (regular) \"The sun rises in the east.\" (fact)",
+    "\"I am working now.\" (at this moment) \"She is eating.\" (right now)",
+    "Wrong: \"I am working in Mumbai\" (if it is your permanent job). Right: \"I work in Mumbai.\"",
+    "\"I always eat at 9\" (simple). \"I am always losing my keys\" (continuous = annoyance).",
+    "If it happens generally, use simple. If it is happening this second, use continuous.",
+    "Write 5 habit sentences and 5 now sentences. Speak them on SpeakNow for live checks.",
+    "Free browser-based English speaking practice. No downloads, no sign-ups, no data leaving your computer."
+  ],
+  "ldJson": [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Web Browser",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "inLanguage": "en"
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "logo": "https://speaknow.co.in/icon-mic.png?v=3",
+      "sameAs": [
+        "https://instagram.com/speaknow.co.in"
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "SpeakNow",
+      "url": "https://speaknow.co.in",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://speaknow.co.in/practice?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+  ]
+}
