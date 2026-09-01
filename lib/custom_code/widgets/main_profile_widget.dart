@@ -78,6 +78,19 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   String _hubAnalysis = '';
   bool _isAnalyzingHub = false;
 
+  // Avatar & State
+  bool _showAvatarMode = true;
+
+  VectorAvatarConfig _getAvatarConfig() {
+    if (_profileData != null && _profileData!['avatar_config'] != null) {
+      try {
+        final map = Map<String, dynamic>.from(_profileData!['avatar_config']);
+        return VectorAvatarConfig.fromMap(map);
+      } catch (_) {}
+    }
+    return const VectorAvatarConfig();
+  }
+
   String get userId {
     if (widget.userId != null) return widget.userId!;
     if (_profileData != null && _profileData!['user_id'] != null) {
@@ -896,24 +909,68 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
           child: Row(
             children: [
-              // Avatar
-              Container(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: btnColor.withOpacity(0.3),
-                    width: 2.0,
-                  ),
-                ),
-                child: CircleAvatar(
-                  radius: 42,
-                  backgroundColor: dividerColor,
-                  backgroundImage: (profileUrl != null && profileUrl.isNotEmpty)
-                      ? CachedNetworkImageProvider(profileUrl)
-                      : null,
-                  child: (profileUrl == null || profileUrl.isEmpty)
-                      ? Icon(Icons.person, size: 40, color: textColor.withOpacity(0.5))
-                      : null,
+              // Interactive Avatar / Real Photo Flip Switcher
+              GestureDetector(
+                onTap: () {
+                  setState(() => _showAvatarMode = !_showAvatarMode);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(_showAvatarMode ? '🎨 Showing Pocket Mate Avatar' : '📷 Showing Real Profile Photo'),
+                      duration: const Duration(milliseconds: 700),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                },
+                child: Stack(
+                  alignment: Alignment.bottomRight,
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: const Color(0xFFFFFC00).withValues(alpha: 0.5),
+                          width: 2.5,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
+                            blurRadius: 10,
+                            spreadRadius: 1,
+                          ),
+                        ],
+                      ),
+                      child: _showAvatarMode
+                          ? VectorAvatarWidget(
+                              config: _getAvatarConfig(),
+                              size: 84,
+                              showAura: true,
+                            )
+                          : CircleAvatar(
+                              radius: 42,
+                              backgroundColor: dividerColor,
+                              backgroundImage: (profileUrl != null && profileUrl.isNotEmpty)
+                                  ? CachedNetworkImageProvider(profileUrl)
+                                  : null,
+                              child: (profileUrl == null || profileUrl.isEmpty)
+                                  ? Icon(Icons.person, size: 40, color: textColor.withValues(alpha: 0.5))
+                                  : null,
+                            ),
+                    ),
+                    // Flip badge indicator
+                    Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFFC00),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.black, width: 1.5),
+                      ),
+                      child: const Icon(
+                        Icons.swap_horiz_rounded,
+                        size: 13,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(width: 20),
@@ -1021,12 +1078,14 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
           child: isMe
               ? Row(
                   children: [
+                    // Edit Profile Button
                     Expanded(
+                      flex: 4,
                       child: Container(
                         height: 38,
                         decoration: BoxDecoration(
                           color: isDark ? const Color(0xFF262626) : const Color(0xFFEFEFEF),
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(10),
                         ),
                         child: InkWell(
                           onTap: () {
@@ -1040,17 +1099,91 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                               ),
                             ).then((_) => _loadInitialData());
                           },
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(10),
                           child: Center(
                             child: Text(
                               "Edit Profile",
                               style: GoogleFonts.outfit(
                                 color: textColor,
-                                fontSize: 14,
+                                fontSize: 13,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+
+                    // Avatar Studio Button
+                    Expanded(
+                      flex: 5,
+                      child: Container(
+                        height: 38,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFFC00),
+                          borderRadius: BorderRadius.circular(10),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFFFFC00).withValues(alpha: 0.25),
+                              blurRadius: 8,
+                            ),
+                          ],
+                        ),
+                        child: InkWell(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => VectorAvatarStudioPage(
+                                  initialConfig: _getAvatarConfig(),
+                                  onAvatarSaved: (newCfg) {
+                                    setState(() {
+                                      _profileData ??= {};
+                                      _profileData!['avatar_config'] = newCfg.toMap();
+                                      _showAvatarMode = true;
+                                    });
+                                  },
+                                ),
+                              ),
+                            ).then((_) => _loadInitialData());
+                          },
+                          borderRadius: BorderRadius.circular(10),
+                          child: Center(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(Icons.auto_awesome, size: 15, color: Colors.black),
+                                const SizedBox(width: 6),
+                                Text(
+                                  "Avatar Studio",
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.black,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+
+                    // Stickers Quick Button
+                    Container(
+                      height: 38,
+                      width: 42,
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF262626) : const Color(0xFFEFEFEF),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: InkWell(
+                        onTap: () => AvatarStickerPackSheet.show(context, _getAvatarConfig()),
+                        borderRadius: BorderRadius.circular(10),
+                        child: const Center(
+                          child: Icon(Icons.auto_awesome_mosaic, size: 18, color: Color(0xFFFFFC00)),
                         ),
                       ),
                     ),

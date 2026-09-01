@@ -4,6 +4,8 @@ import 'package:flutter/material.dart' as material;
 import 'package:google_fonts/google_fonts.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:pocket_mates_app/custom_code/widgets/chat/whats_app_groups_provider.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
 
 class ConversationTile extends StatefulWidget {
   final ChatConversation conversation;
@@ -222,13 +224,35 @@ class _ConversationTileState extends State<ConversationTile> {
                             : null,
                       ),
                       child: widget.conversation.imageUrl == null
-                          ? Center(
-                              child: Icon(
-                                _getIconData(),
-                                color: _getIconColor(isDark),
-                                size: 26,
-                              ),
-                            )
+                          ? (!widget.conversation.isGroup &&
+                                  !widget.conversation.isTool &&
+                                  !widget.conversation.isNotification &&
+                                  !widget.conversation.isActiveTimer)
+                              ? VectorAvatarWidget(
+                                  config: VectorAvatarConfig(
+                                    hairStyle: VectorAvatarPalette.hairStyles[
+                                        (widget.conversation.name.hashCode.abs()) %
+                                            VectorAvatarPalette.hairStyles.length]['id'],
+                                    hairColor: VectorAvatarPalette.hairColors[
+                                        (widget.conversation.id.hashCode.abs() ~/ 3) %
+                                            VectorAvatarPalette.hairColors.length],
+                                    outfitStyle: VectorAvatarPalette.outfitStyles[
+                                        (widget.conversation.name.hashCode.abs() ~/ 5) %
+                                            VectorAvatarPalette.outfitStyles.length]['id'],
+                                    auraStyle: VectorAvatarPalette.auraStyles[
+                                        (widget.conversation.id.hashCode.abs() ~/ 7) %
+                                            VectorAvatarPalette.auraStyles.length]['id'],
+                                  ),
+                                  size: 56,
+                                  showAura: true,
+                                )
+                              : Center(
+                                  child: Icon(
+                                    _getIconData(),
+                                    color: _getIconColor(isDark),
+                                    size: 26,
+                                  ),
+                                )
                           : null,
                     ),
                     if (widget.conversation.isOnline &&

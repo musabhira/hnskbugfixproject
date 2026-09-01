@@ -85,7 +85,7 @@ class _MessageListPageState extends State<MessageListPage> {
       if (conversations.isEmpty) {
         String mussabUserId = '188d1b93-1d15-436e-b6ed-455d91ec8bd6';
         String mussabName = "Mus'ab hira";
-        String? mussabAvatar = 'https://gswhynuabdspnwudltth.supabase.co/storage/v1/object/public/profile/profile/1758693565848_188d1b93-1d15-436e-b6ed-455d91ec8bd6.jpg';
+        String? mussabAvatar = 'https://gswhynuabdspnwudltth.supabase.co/storage/v1/object/public/profile/188d1b93-1d15-436e-b6ed-455d91ec8bd6/1781195183004.jpg';
 
         try {
           final profileQuery = await _supabase

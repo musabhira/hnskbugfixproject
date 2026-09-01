@@ -41,6 +41,7 @@ class ProfileCreateCustomWidget extends StatefulWidget {
 }
 
 class _ProfileCreateCustomWidgetState extends State<ProfileCreateCustomWidget> {
+  String? _loadedProfileId;
   String? _imageUrl;
   String? _imageUrlBanner;
   Uint8List? _selectedImageBytes;
@@ -134,6 +135,7 @@ class _ProfileCreateCustomWidgetState extends State<ProfileCreateCustomWidget> {
 
       if (profileResponse != null) {
         safeSetState(() {
+          _loadedProfileId = profileResponse['id'];
           _nameController.text = profileResponse['name'] ?? '';
           _shopNameController.text = profileResponse['shop_name'] ?? '';
           _imageUrlBanner = (profileResponse['banner_image_url']?.toString().isEmpty ?? true) ? null : profileResponse['banner_image_url'];
@@ -300,18 +302,20 @@ class _ProfileCreateCustomWidgetState extends State<ProfileCreateCustomWidget> {
     try {
       String? profileUrl = _imageUrl;
       if (_selectedImageBytes != null) {
+        final fileName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
         profileUrl =
-            await _uploadImage(_selectedImageBytes!, 'profile', 'profile.jpg');
+            await _uploadImage(_selectedImageBytes!, 'profile', fileName);
       }
 
       String? bannerUrl = _imageUrlBanner;
       if (_selectedImageBytesBanner != null) {
+        final fileName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
         bannerUrl = await _uploadImage(
-            _selectedImageBytesBanner!, 'profile_banner', 'banner.jpg');
+            _selectedImageBytesBanner!, 'profile_banner', fileName);
       }
 
       final profileData = {
-        'id': user.id,
+        'id': _loadedProfileId ?? user.id,
         'user_id': user.id,
         'name': filterContent(_nameController.text),
         'shop_name': filterContent(_shopNameController.text),

@@ -722,7 +722,6 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         ),
         child: material.Scaffold(
           backgroundColor: material.Colors.transparent,
-          // floatingActionButton: const PocketMatesVoiceButton(),
           bottomNavigationBar: _buildBottomNavigationBar(context),
           body: material.ColoredBox(
             color: material.Colors.transparent,
