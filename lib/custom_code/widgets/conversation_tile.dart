@@ -30,6 +30,30 @@ class ConversationTile extends StatefulWidget {
 class _ConversationTileState extends State<ConversationTile> {
   async.Timer? _timer;
   String _elapsedString = '';
+  bool _showRealPhoto = false;
+
+  VectorAvatarConfig _getAvatarConfig() {
+    if (widget.conversation.avatarConfig != null) {
+      try {
+        return VectorAvatarConfig.fromMap(widget.conversation.avatarConfig!);
+      } catch (_) {}
+    }
+    final nameHash = widget.conversation.name.hashCode.abs();
+    final idHash = widget.conversation.id.hashCode.abs();
+    final hairs = VectorAvatarPalette.hairStyles;
+    final hairColors = VectorAvatarPalette.hairColors;
+    final outfits = VectorAvatarPalette.outfitStyles;
+    final auras = VectorAvatarPalette.auraStyles;
+    final faces = ['oval', 'round', 'sharp', 'square'];
+
+    return VectorAvatarConfig(
+      faceShape: faces[(nameHash ~/ 2) % faces.length],
+      hairStyle: hairs[nameHash % hairs.length]['id'],
+      hairColor: hairColors[(idHash ~/ 3) % hairColors.length],
+      outfitStyle: outfits[(nameHash ~/ 5) % outfits.length]['id'],
+      auraStyle: auras[(idHash ~/ 7) % auras.length]['id'],
+    );
+  }
 
   @override
   void initState() {
@@ -196,64 +220,70 @@ class _ConversationTileState extends State<ConversationTile> {
                           ),
                         ),
                       ),
-                    Container(
-                      width: 58,
-                      height: 58,
-                      decoration: BoxDecoration(
-                        color: widget.conversation.isActiveTimer
-                            ? material.Colors.green.withValues(alpha: 0.1)
-                            : (isDark
-                                ? const Color(0xFF262626)
-                                : const Color(0xFFE2E8F0)),
-                        shape: BoxShape.circle,
-                        border: Border.all(
+                    GestureDetector(
+                      onDoubleTap: () {
+                        if (widget.conversation.imageUrl != null) {
+                          setState(() => _showRealPhoto = !_showRealPhoto);
+                          HapticFeedback.lightImpact();
+                        }
+                      },
+                      onLongPress: () {
+                        if (widget.conversation.imageUrl != null) {
+                          setState(() => _showRealPhoto = !_showRealPhoto);
+                          HapticFeedback.mediumImpact();
+                        }
+                      },
+                      child: Container(
+                        width: 58,
+                        height: 58,
+                        decoration: BoxDecoration(
                           color: widget.conversation.isActiveTimer
-                              ? material.Colors.greenAccent
-                                  .withValues(alpha: 0.3)
+                              ? material.Colors.green.withValues(alpha: 0.1)
                               : (isDark
-                                  ? Colors.white.withValues(alpha: 0.1)
-                                  : Colors.black.withValues(alpha: 0.1)),
-                          width: 1.5,
+                                  ? const Color(0xFF262626)
+                                  : const Color(0xFFE2E8F0)),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: widget.conversation.isActiveTimer
+                                ? material.Colors.greenAccent.withValues(alpha: 0.3)
+                                : (isDark
+                                    ? Colors.white.withValues(alpha: 0.1)
+                                    : Colors.black.withValues(alpha: 0.1)),
+                            width: 1.5,
+                          ),
+                          image: (_showRealPhoto && widget.conversation.imageUrl != null)
+                              ? DecorationImage(
+                                  image: NetworkImage(widget.conversation.imageUrl!),
+                                  fit: BoxFit.cover,
+                                )
+                              : (widget.conversation.isGroup && widget.conversation.imageUrl != null)
+                                  ? DecorationImage(
+                                      image: NetworkImage(widget.conversation.imageUrl!),
+                                      fit: BoxFit.cover,
+                                    )
+                                  : null,
                         ),
-                        image: widget.conversation.imageUrl != null
-                            ? DecorationImage(
-                                image:
-                                    NetworkImage(widget.conversation.imageUrl!),
-                                fit: BoxFit.cover,
-                              )
+                        child: (!_showRealPhoto || widget.conversation.imageUrl == null)
+                            ? (!widget.conversation.isGroup &&
+                                    !widget.conversation.isTool &&
+                                    !widget.conversation.isNotification &&
+                                    !widget.conversation.isActiveTimer)
+                                ? VectorAvatarWidget(
+                                    config: _getAvatarConfig(),
+                                    size: 56,
+                                    showAura: true,
+                                  )
+                                : (widget.conversation.imageUrl == null
+                                    ? Center(
+                                        child: Icon(
+                                          _getIconData(),
+                                          color: _getIconColor(isDark),
+                                          size: 26,
+                                        ),
+                                      )
+                                    : null)
                             : null,
                       ),
-                      child: widget.conversation.imageUrl == null
-                          ? (!widget.conversation.isGroup &&
-                                  !widget.conversation.isTool &&
-                                  !widget.conversation.isNotification &&
-                                  !widget.conversation.isActiveTimer)
-                              ? VectorAvatarWidget(
-                                  config: VectorAvatarConfig(
-                                    hairStyle: VectorAvatarPalette.hairStyles[
-                                        (widget.conversation.name.hashCode.abs()) %
-                                            VectorAvatarPalette.hairStyles.length]['id'],
-                                    hairColor: VectorAvatarPalette.hairColors[
-                                        (widget.conversation.id.hashCode.abs() ~/ 3) %
-                                            VectorAvatarPalette.hairColors.length],
-                                    outfitStyle: VectorAvatarPalette.outfitStyles[
-                                        (widget.conversation.name.hashCode.abs() ~/ 5) %
-                                            VectorAvatarPalette.outfitStyles.length]['id'],
-                                    auraStyle: VectorAvatarPalette.auraStyles[
-                                        (widget.conversation.id.hashCode.abs() ~/ 7) %
-                                            VectorAvatarPalette.auraStyles.length]['id'],
-                                  ),
-                                  size: 56,
-                                  showAura: true,
-                                )
-                              : Center(
-                                  child: Icon(
-                                    _getIconData(),
-                                    color: _getIconColor(isDark),
-                                    size: 26,
-                                  ),
-                                )
-                          : null,
                     ),
                     if (widget.conversation.isOnline &&
                         !widget.conversation.isGroup)

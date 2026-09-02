@@ -37,6 +37,7 @@ class ChatConversation {
   final String? teamName;
   final DateTime? timerStartTime;
   final Map<String, dynamic>? teamData;
+  final Map<String, dynamic>? avatarConfig;
 
   ChatConversation({
     required this.id,
@@ -64,6 +65,7 @@ class ChatConversation {
     this.teamName,
     this.timerStartTime,
     this.teamData,
+    this.avatarConfig,
   });
 
   factory ChatConversation.fromActiveTimer(Map<String, dynamic> json) {
