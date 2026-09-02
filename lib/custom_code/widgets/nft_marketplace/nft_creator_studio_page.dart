@@ -2,8 +2,8 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pocket_mates_app/custom_code/widgets/doodle_background_painter.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/bored_ape_painter.dart';
 import 'nft_models.dart';
 
 class NftCreatorStudioPage extends StatefulWidget {
@@ -16,66 +16,69 @@ class NftCreatorStudioPage extends StatefulWidget {
 }
 
 class _NftCreatorStudioPageState extends State<NftCreatorStudioPage> {
-  // Config state
-  int _selectedArchetype = 0;
-  int _selectedBackground = 0;
-  int _selectedHeadwear = 0;
-  int _selectedEyes = 0;
-  int _selectedOutfit = 0;
+  // Bored Ape Traits
+  String _fur = 'brown';
+  String _eyes = 'laser_beams';
+  String _mouth = 'wide_grin';
+  String _headwear = 'none';
+  String _outfit = 'military_jacket';
+  String _background = 'orange';
+  bool _hasEarring = true;
 
-  final TextEditingController _titleController = TextEditingController(text: 'Cyber Bored Ape #999');
-  final TextEditingController _priceController = TextEditingController(text: '0.25');
-  int _coinPrice = 500;
-  String _rarityTier = 'Mythic 1-of-1';
+  final TextEditingController _titleController = TextEditingController(text: 'Bored Ape Yacht #320');
+  final TextEditingController _priceController = TextEditingController(text: '0.20');
+  final int _coinPrice = 500;
+  final String _rarityTier = 'Mythic 1-of-1';
   bool _isMinting = false;
 
   late String _dnaHash;
 
-  final List<Map<String, dynamic>> _archetypes = [
-    {
-      'name': 'Bored Ape',
-      'species': 'Ape Illustration',
-      'img': 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80',
-      'color': const Color(0xFF8B5CF6),
-    },
-    {
-      'name': 'Monarch Ape',
-      'species': 'Royal Ape',
-      'img': 'https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?w=800&auto=format&fit=crop&q=80',
-      'color': const Color(0xFFFFB700),
-    },
-    {
-      'name': 'Samurai Shinobi',
-      'species': 'Shinobi Beast',
-      'img': 'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?w=800&auto=format&fit=crop&q=80',
-      'color': const Color(0xFFFF007A),
-    },
-    {
-      'name': 'Mecha Kong',
-      'species': 'Cyber Mecha',
-      'img': 'https://images.unsplash.com/photo-1614680376593-902f749f7ffc?w=800&auto=format&fit=crop&q=80',
-      'color': const Color(0xFF00E5FF),
-    },
-    {
-      'name': 'Cosmic Dragon',
-      'species': 'Astral Dragon',
-      'img': 'https://images.unsplash.com/photo-1633167606207-d840b5070fc2?w=800&auto=format&fit=crop&q=80',
-      'color': const Color(0xFF7928CA),
-    },
+  final List<Map<String, dynamic>> _furOptions = [
+    {'id': 'brown', 'name': 'Classic Brown', 'color': Color(0xFF8D5524)},
+    {'id': 'leopard', 'name': 'Leopard Cheetah', 'color': Color(0xFFE4A444)},
+    {'id': 'gold', 'name': 'Pure Gold', 'color': Color(0xFFFFD700)},
+    {'id': 'cyber_grey', 'name': 'Cyber Grey', 'color': Color(0xFF7F8C8D)},
+    {'id': 'zombie_green', 'name': 'Zombie Green', 'color': Color(0xFF55EFC4)},
+    {'id': 'obsidian', 'name': 'Obsidian Dark', 'color': Color(0xFF2D3436)},
   ];
 
-  final List<Color> _backgroundColors = [
-    const Color(0xFF8B5CF6), // Purple
-    const Color(0xFFFF007A), // Neon Magenta
-    const Color(0xFF00E5FF), // Cyber Cyan
-    const Color(0xFFFFB700), // Gold
-    const Color(0xFF10B981), // Emerald Matrix
-    const Color(0xFF1E202E), // Obsidian Dark
+  final List<Map<String, dynamic>> _eyeOptions = [
+    {'id': 'laser_beams', 'name': 'Cyan Laser Beams'},
+    {'id': 'cyborg_red', 'name': 'Cyborg Red Eye'},
+    {'id': '3d_glasses', 'name': '3D Red-Blue Glasses'},
+    {'id': 'vr_visor', 'name': 'VR Neon Visor'},
+    {'id': 'x_eyes', 'name': 'Dead X-Eyes'},
+    {'id': 'sleepy', 'name': 'Sleepy Droop'},
   ];
 
-  final List<String> _headwears = ['None', 'Solar Gold Crown', 'Artist Pencil', 'Samurai Headband', 'VR Goggles'];
-  final List<String> _eyesOptions = ['Normal', 'Neon Laser Eyes', 'Cyber Glasses', 'Shuriken Pupils', 'Golden Shades'];
-  final List<String> _outfits = ['Tuxedo Bowtie', 'Cyber Armor', 'Shadow Kimono', 'Astronaut Suit', 'Royal Cape'];
+  final List<Map<String, dynamic>> _mouthOptions = [
+    {'id': 'wide_grin', 'name': 'Wide Grin Teeth'},
+    {'id': 'tongue_out', 'name': 'Tongue Out'},
+    {'id': 'cigarette', 'name': 'Cigarette Joint'},
+    {'id': 'pout', 'name': 'Bored Pout'},
+  ];
+
+  final List<Map<String, dynamic>> _headwearOptions = [
+    {'id': 'none', 'name': 'None'},
+    {'id': 'sailor_hat', 'name': 'Navy Sailor Hat'},
+    {'id': 'captain_hat', 'name': 'Captain Officer Hat'},
+    {'id': 'gold_crown', 'name': 'Solar King Crown'},
+  ];
+
+  final List<Map<String, dynamic>> _outfitOptions = [
+    {'id': 'military_jacket', 'name': 'Military Army Jacket'},
+    {'id': 'cyber_armor', 'name': 'Cybernetic Plate Armor'},
+    {'id': 'naked', 'name': 'Natural Fur'},
+  ];
+
+  final List<Map<String, dynamic>> _bgOptions = [
+    {'id': 'orange', 'name': 'Vibrant Orange', 'color': Color(0xFFE58E26)},
+    {'id': 'teal', 'name': 'Teal Green', 'color': Color(0xFF00B894)},
+    {'id': 'cyan', 'name': 'Electric Cyan', 'color': Color(0xFF00CEC9)},
+    {'id': 'purple', 'name': 'Cyber Purple', 'color': Color(0xFF6C5CE7)},
+    {'id': 'amber', 'name': 'Golden Amber', 'color': Color(0xFFF39C12)},
+    {'id': 'dark', 'name': 'Obsidian Void', 'color': Color(0xFF1E202E)},
+  ];
 
   @override
   void initState() {
@@ -96,11 +99,13 @@ class _NftCreatorStudioPageState extends State<NftCreatorStudioPage> {
     HapticFeedback.mediumImpact();
     final rand = Random();
     setState(() {
-      _selectedArchetype = rand.nextInt(_archetypes.length);
-      _selectedBackground = rand.nextInt(_backgroundColors.length);
-      _selectedHeadwear = rand.nextInt(_headwears.length);
-      _selectedEyes = rand.nextInt(_eyesOptions.length);
-      _selectedOutfit = rand.nextInt(_outfits.length);
+      _fur = _furOptions[rand.nextInt(_furOptions.length)]['id'];
+      _eyes = _eyeOptions[rand.nextInt(_eyeOptions.length)]['id'];
+      _mouth = _mouthOptions[rand.nextInt(_mouthOptions.length)]['id'];
+      _headwear = _headwearOptions[rand.nextInt(_headwearOptions.length)]['id'];
+      _outfit = _outfitOptions[rand.nextInt(_outfitOptions.length)]['id'];
+      _background = _bgOptions[rand.nextInt(_bgOptions.length)]['id'];
+      _hasEarring = rand.nextBool();
       _generateDna();
     });
   }
@@ -109,19 +114,18 @@ class _NftCreatorStudioPageState extends State<NftCreatorStudioPage> {
     setState(() => _isMinting = true);
     HapticFeedback.heavyImpact();
 
-    await Future.delayed(const Duration(milliseconds: 1200));
+    await Future.delayed(const Duration(milliseconds: 1000));
 
-    final archetype = _archetypes[_selectedArchetype];
     final eth = double.tryParse(_priceController.text) ?? 0.20;
 
     final minted = NftItem(
-      id: 'MINT-${DateTime.now().millisecondsSinceEpoch}',
-      title: _titleController.text.trim().isEmpty ? archetype['name'] : _titleController.text.trim(),
-      collectionName: 'Pocket Exclusive Mints',
+      id: 'BAYC-${DateTime.now().millisecondsSinceEpoch}',
+      title: _titleController.text.trim().isEmpty ? 'Bored Ape #999' : _titleController.text.trim(),
+      collectionName: 'Bored Ape Yacht Club',
       artistName: 'You (Creator)',
       artistHandle: '@you',
       artistAvatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&auto=format&fit=crop&q=80',
-      imageUrl: archetype['img'],
+      imageUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80',
       priceEth: eth,
       priceCoins: _coinPrice,
       priceInr: eth * 1000,
@@ -129,13 +133,14 @@ class _NftCreatorStudioPageState extends State<NftCreatorStudioPage> {
       rarityTier: _rarityTier,
       dnaHash: _dnaHash,
       auctionEndsAt: DateTime.now().add(const Duration(days: 7)),
-      cardColor: _backgroundColors[_selectedBackground],
+      cardColor: BoredApeTraits.getBackgroundColor(_background),
       isTrending: true,
       traits: [
-        NftTrait(traitType: 'Archetype', value: archetype['name'], rarityPercent: 1.5),
-        NftTrait(traitType: 'Headwear', value: _headwears[_selectedHeadwear], rarityPercent: 2.8),
-        NftTrait(traitType: 'Eyes', value: _eyesOptions[_selectedEyes], rarityPercent: 3.1),
-        NftTrait(traitType: 'Outfit', value: _outfits[_selectedOutfit], rarityPercent: 4.0),
+        NftTrait(traitType: 'Fur', value: _fur, rarityPercent: 1.2),
+        NftTrait(traitType: 'Eyes', value: _eyes, rarityPercent: 2.5),
+        NftTrait(traitType: 'Mouth', value: _mouth, rarityPercent: 3.1),
+        NftTrait(traitType: 'Headwear', value: _headwear, rarityPercent: 1.8),
+        NftTrait(traitType: 'Outfit', value: _outfit, rarityPercent: 4.2),
       ],
     );
 
@@ -166,8 +171,15 @@ class _NftCreatorStudioPageState extends State<NftCreatorStudioPage> {
 
   @override
   Widget build(BuildContext context) {
-    final curArchetype = _archetypes[_selectedArchetype];
-    final curBg = _backgroundColors[_selectedBackground];
+    final traits = BoredApeTraits(
+      furColor: _fur,
+      eyes: _eyes,
+      mouth: _mouth,
+      headwear: _headwear,
+      outfit: _outfit,
+      background: _background,
+      hasEarring: _hasEarring,
+    );
 
     return Scaffold(
       backgroundColor: const Color(0xFF0C0D14),
@@ -175,7 +187,7 @@ class _NftCreatorStudioPageState extends State<NftCreatorStudioPage> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text(
-          'PRO NFT MINTING STUDIO',
+          'BORED APE NFT STUDIO',
           style: GoogleFonts.outfit(
             color: Colors.white,
             fontWeight: FontWeight.w900,
@@ -212,127 +224,50 @@ class _NftCreatorStudioPageState extends State<NftCreatorStudioPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Live 3D High-Res NFT Card Preview (Matching User Screenshot)
+                        // Live Vector Bored Ape Canvas (Matching user screenshot)
                         Center(
                           child: Container(
-                            height: 320,
-                            width: 270,
                             decoration: BoxDecoration(
-                              color: curBg,
                               borderRadius: BorderRadius.circular(28),
                               boxShadow: [
                                 BoxShadow(
-                                  color: curBg.withValues(alpha: 0.5),
+                                  color: BoredApeTraits.getBackgroundColor(_background).withValues(alpha: 0.5),
                                   blurRadius: 35,
                                   offset: const Offset(0, 12),
                                 ),
                               ],
                             ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(28),
-                              child: Stack(
-                                children: [
-                                  Positioned.fill(
-                                    child: CachedNetworkImage(
-                                      imageUrl: curArchetype['img'],
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                  // Gradient shadow
-                                  Positioned.fill(
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        gradient: LinearGradient(
-                                          begin: Alignment.topCenter,
-                                          end: Alignment.bottomCenter,
-                                          colors: [
-                                            Colors.black26,
-                                            Colors.transparent,
-                                            Colors.black.withValues(alpha: 0.8),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  // Top Rarity
-                                  Positioned(
-                                    top: 14,
-                                    left: 14,
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                      decoration: BoxDecoration(
-                                        color: Colors.black54,
-                                        borderRadius: BorderRadius.circular(10),
-                                        border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.5)),
-                                      ),
-                                      child: Text(
-                                        _rarityTier,
-                                        style: GoogleFonts.outfit(color: const Color(0xFFFFD700), fontSize: 9, fontWeight: FontWeight.bold),
-                                      ),
-                                    ),
-                                  ),
-                                  // DNA Hash
-                                  Positioned(
-                                    top: 14,
-                                    right: 14,
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                      decoration: BoxDecoration(
-                                        color: Colors.black54,
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      child: Text(
-                                        _dnaHash,
-                                        style: GoogleFonts.sourceCodePro(color: Colors.white70, fontSize: 9),
-                                      ),
-                                    ),
-                                  ),
-                                  // Bottom Frosted Bar
-                                  Positioned(
-                                    bottom: 12,
-                                    left: 12,
-                                    right: 12,
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFF14141E).withValues(alpha: 0.85),
-                                        borderRadius: BorderRadius.circular(16),
-                                        border: Border.all(color: Colors.white12),
-                                      ),
-                                      child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Text(
-                                                _titleController.text.isEmpty ? curArchetype['name'] : _titleController.text,
-                                                style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
-                                              ),
-                                              Text(
-                                                'By You (Creator)',
-                                                style: GoogleFonts.inter(color: Colors.white54, fontSize: 10),
-                                              ),
-                                            ],
-                                          ),
-                                          Text(
-                                            '${_priceController.text} ETH',
-                                            style: GoogleFonts.outfit(color: const Color(0xFFFF007A), fontWeight: FontWeight.w900, fontSize: 12),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ],
+                            child: BoredApeWidget(
+                              traits: traits,
+                              size: 260,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+
+                        // DNA & Rarity Tag
+                        Center(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF1A1B28),
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.3)),
+                            ),
+                            child: Text(
+                              '🧬 DNA HASH: $_dnaHash  •  $_rarityTier',
+                              style: GoogleFonts.sourceCodePro(
+                                color: const Color(0xFFFFD700),
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 20),
 
                         // Title & Price Inputs
-                        Text('NFT Title', style: GoogleFonts.outfit(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.bold)),
+                        Text('NFT Name', style: GoogleFonts.outfit(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.bold)),
                         const SizedBox(height: 6),
                         TextField(
                           controller: _titleController,
@@ -347,112 +282,107 @@ class _NftCreatorStudioPageState extends State<NftCreatorStudioPage> {
                         ),
                         const SizedBox(height: 14),
 
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text('Price (ETH)', style: GoogleFonts.outfit(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.bold)),
-                                  const SizedBox(height: 6),
-                                  TextField(
-                                    controller: _priceController,
-                                    keyboardType: TextInputType.number,
-                                    onChanged: (_) => setState(() {}),
-                                    style: GoogleFonts.outfit(color: Colors.white),
-                                    decoration: InputDecoration(
-                                      filled: true,
-                                      fillColor: const Color(0xFF1A1B28),
-                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
-                                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text('Pocket Coins (🪙)', style: GoogleFonts.outfit(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.bold)),
-                                  const SizedBox(height: 6),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFF1A1B28),
-                                      borderRadius: BorderRadius.circular(14),
-                                    ),
-                                    child: Text('🪙 $_coinPrice Coins', style: GoogleFonts.outfit(color: const Color(0xFFFFFC00), fontWeight: FontWeight.bold)),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 20),
-
-                        // Section 1: Base Character Archetype
-                        Text('Base Character Archetype', style: GoogleFonts.outfit(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold)),
+                        // Trait 1: Eyes (Laser Beams, 3D Glasses, VR Visor, etc.)
+                        Text('👀 Eyes & Cyber Visor', style: GoogleFonts.outfit(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold)),
                         const SizedBox(height: 10),
-                        SizedBox(
-                          height: 70,
-                          child: ListView.separated(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: _archetypes.length,
-                            separatorBuilder: (_, __) => const SizedBox(width: 10),
-                            itemBuilder: (context, i) {
-                              final a = _archetypes[i];
-                              final isSel = _selectedArchetype == i;
-                              return GestureDetector(
-                                onTap: () => setState(() {
-                                  _selectedArchetype = i;
-                                  _generateDna();
-                                }),
-                                child: Container(
-                                  width: 120,
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color: isSel ? a['color'] : const Color(0xFF1A1B28),
-                                    borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(color: isSel ? Colors.white : Colors.white10, width: isSel ? 2 : 1),
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      a['name'],
-                                      style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: _eyeOptions.map((opt) {
+                            final isSel = _eyes == opt['id'];
+                            return ChoiceChip(
+                              label: Text(opt['name']),
+                              selected: isSel,
+                              selectedColor: const Color(0xFF00CEC9),
+                              backgroundColor: const Color(0xFF1A1B28),
+                              labelStyle: GoogleFonts.outfit(color: isSel ? Colors.black : Colors.white70, fontWeight: FontWeight.bold),
+                              onSelected: (_) => setState(() {
+                                _eyes = opt['id'];
+                                _generateDna();
+                              }),
+                            );
+                          }).toList(),
                         ),
                         const SizedBox(height: 20),
 
-                        // Section 2: Background Canvas
-                        Text('Background Color & Aura', style: GoogleFonts.outfit(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold)),
+                        // Trait 2: Mouth & Teeth Grin
+                        Text('👄 Mouth & Expression', style: GoogleFonts.outfit(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 10),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: _mouthOptions.map((opt) {
+                            final isSel = _mouth == opt['id'];
+                            return ChoiceChip(
+                              label: Text(opt['name']),
+                              selected: isSel,
+                              selectedColor: const Color(0xFFFF007A),
+                              backgroundColor: const Color(0xFF1A1B28),
+                              labelStyle: GoogleFonts.outfit(color: isSel ? Colors.white : Colors.white70, fontWeight: FontWeight.bold),
+                              onSelected: (_) => setState(() {
+                                _mouth = opt['id'];
+                                _generateDna();
+                              }),
+                            );
+                          }).toList(),
+                        ),
+                        const SizedBox(height: 20),
+
+                        // Trait 3: Headwear (Sailor, Captain, Crown)
+                        Text('🎩 Headwear & Hats', style: GoogleFonts.outfit(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 10),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: _headwearOptions.map((opt) {
+                            final isSel = _headwear == opt['id'];
+                            return ChoiceChip(
+                              label: Text(opt['name']),
+                              selected: isSel,
+                              selectedColor: const Color(0xFF8B5CF6),
+                              backgroundColor: const Color(0xFF1A1B28),
+                              labelStyle: GoogleFonts.outfit(color: isSel ? Colors.white : Colors.white70, fontWeight: FontWeight.bold),
+                              onSelected: (_) => setState(() {
+                                _headwear = opt['id'];
+                                _generateDna();
+                              }),
+                            );
+                          }).toList(),
+                        ),
+                        const SizedBox(height: 20),
+
+                        // Trait 4: Fur (Brown, Leopard, Gold, Cyber)
+                        Text('🦁 Fur & Skin', style: GoogleFonts.outfit(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold)),
                         const SizedBox(height: 10),
                         SizedBox(
                           height: 50,
                           child: ListView.separated(
                             scrollDirection: Axis.horizontal,
-                            itemCount: _backgroundColors.length,
+                            itemCount: _furOptions.length,
                             separatorBuilder: (_, __) => const SizedBox(width: 10),
                             itemBuilder: (context, i) {
-                              final c = _backgroundColors[i];
-                              final isSel = _selectedBackground == i;
+                              final f = _furOptions[i];
+                              final isSel = _fur == f['id'];
                               return GestureDetector(
-                                onTap: () => setState(() => _selectedBackground = i),
+                                onTap: () => setState(() {
+                                  _fur = f['id'];
+                                  _generateDna();
+                                }),
                                 child: Container(
-                                  width: 50,
+                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                                   decoration: BoxDecoration(
-                                    color: c,
-                                    shape: BoxShape.circle,
-                                    border: Border.all(color: isSel ? Colors.white : Colors.transparent, width: 3),
-                                    boxShadow: [
-                                      if (isSel) BoxShadow(color: c.withValues(alpha: 0.6), blurRadius: 10),
+                                    color: isSel ? f['color'] : const Color(0xFF1A1B28),
+                                    borderRadius: BorderRadius.circular(14),
+                                    border: Border.all(color: isSel ? Colors.white : Colors.white10),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Container(width: 12, height: 12, decoration: BoxDecoration(color: f['color'], shape: BoxShape.circle)),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        f['name'],
+                                        style: GoogleFonts.outfit(color: isSel ? Colors.black : Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -462,43 +392,57 @@ class _NftCreatorStudioPageState extends State<NftCreatorStudioPage> {
                         ),
                         const SizedBox(height: 20),
 
-                        // Section 3: Headwear
-                        Text('Headwear & Crowns', style: GoogleFonts.outfit(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold)),
+                        // Trait 5: Outfit (Military Jacket, Cyber Armor)
+                        Text('🥋 Outfit & Cyber Neck', style: GoogleFonts.outfit(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold)),
                         const SizedBox(height: 10),
                         Wrap(
                           spacing: 8,
                           runSpacing: 8,
-                          children: List.generate(_headwears.length, (i) {
-                            final isSel = _selectedHeadwear == i;
+                          children: _outfitOptions.map((opt) {
+                            final isSel = _outfit == opt['id'];
                             return ChoiceChip(
-                              label: Text(_headwears[i]),
+                              label: Text(opt['name']),
                               selected: isSel,
-                              selectedColor: const Color(0xFF8B5CF6),
+                              selectedColor: const Color(0xFFF1C40F),
                               backgroundColor: const Color(0xFF1A1B28),
-                              labelStyle: GoogleFonts.outfit(color: isSel ? Colors.white : Colors.white70, fontWeight: FontWeight.bold),
-                              onSelected: (_) => setState(() => _selectedHeadwear = i),
+                              labelStyle: GoogleFonts.outfit(color: isSel ? Colors.black : Colors.white70, fontWeight: FontWeight.bold),
+                              onSelected: (_) => setState(() {
+                                _outfit = opt['id'];
+                                _generateDna();
+                              }),
                             );
-                          }),
+                          }).toList(),
                         ),
                         const SizedBox(height: 20),
 
-                        // Section 4: Eyes & Cyber Visor
-                        Text('Eyes & Cyber Visor', style: GoogleFonts.outfit(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold)),
+                        // Trait 6: Background Color
+                        Text('🎨 Background Color', style: GoogleFonts.outfit(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold)),
                         const SizedBox(height: 10),
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: List.generate(_eyesOptions.length, (i) {
-                            final isSel = _selectedEyes == i;
-                            return ChoiceChip(
-                              label: Text(_eyesOptions[i]),
-                              selected: isSel,
-                              selectedColor: const Color(0xFFFF007A),
-                              backgroundColor: const Color(0xFF1A1B28),
-                              labelStyle: GoogleFonts.outfit(color: isSel ? Colors.white : Colors.white70, fontWeight: FontWeight.bold),
-                              onSelected: (_) => setState(() => _selectedEyes = i),
-                            );
-                          }),
+                        SizedBox(
+                          height: 48,
+                          child: ListView.separated(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: _bgOptions.length,
+                            separatorBuilder: (_, __) => const SizedBox(width: 10),
+                            itemBuilder: (context, i) {
+                              final b = _bgOptions[i];
+                              final isSel = _background == b['id'];
+                              return GestureDetector(
+                                onTap: () => setState(() => _background = b['id']),
+                                child: Container(
+                                  width: 48,
+                                  decoration: BoxDecoration(
+                                    color: b['color'],
+                                    shape: BoxShape.circle,
+                                    border: Border.all(color: isSel ? Colors.white : Colors.transparent, width: 3),
+                                    boxShadow: [
+                                      if (isSel) BoxShadow(color: (b['color'] as Color).withValues(alpha: 0.6), blurRadius: 10),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
                         ),
                       ],
                     ),
@@ -535,7 +479,7 @@ class _NftCreatorStudioPageState extends State<NftCreatorStudioPage> {
                                 const Icon(Icons.auto_awesome, color: Colors.black, size: 20),
                                 const SizedBox(width: 8),
                                 Text(
-                                  'MINT 1-OF-1 NFT TO MARKET',
+                                  'MINT BORED APE 1-OF-1 NFT',
                                   style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 14, letterSpacing: 1),
                                 ),
                               ],

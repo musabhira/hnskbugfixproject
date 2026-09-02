@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/bored_ape_painter.dart';
 import 'nft_models.dart';
 import 'nft_artist_profile_page.dart';
 
@@ -77,27 +77,29 @@ class _NftCardWidgetState extends State<NftCardWidget> {
           borderRadius: BorderRadius.circular(26),
           child: Stack(
             children: [
-              // Full-Bleed Artwork Image
+              // Full-Bleed Artwork (Vector Bored Ape or Network Image)
               Positioned.fill(
-                child: CachedNetworkImage(
-                  imageUrl: item.imageUrl,
-                  fit: BoxFit.cover,
-                  placeholder: (context, url) => Container(
-                    color: item.cardColor.withValues(alpha: 0.5),
-                    child: const Center(
-                      child: CircularProgressIndicator(color: Colors.white),
-                    ),
-                  ),
-                  errorWidget: (context, url, error) => Container(
-                    color: item.cardColor,
-                    child: const Center(
-                      child: Icon(Icons.broken_image_rounded, color: Colors.white54, size: 40),
-                    ),
-                  ),
-                ),
+                child: item.apeTraits != null
+                    ? BoredApeWidget(traits: item.apeTraits!, size: 300)
+                    : CachedNetworkImage(
+                        imageUrl: item.imageUrl,
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) => Container(
+                          color: item.cardColor.withValues(alpha: 0.5),
+                          child: const Center(
+                            child: CircularProgressIndicator(color: Colors.white),
+                          ),
+                        ),
+                        errorWidget: (context, url, error) => Container(
+                          color: item.cardColor,
+                          child: const Center(
+                            child: Icon(Icons.broken_image_rounded, color: Colors.white54, size: 40),
+                          ),
+                        ),
+                      ),
               ),
 
-              // Gradient Overlay for readability
+              // Gradient Overlay for readability at bottom
               Positioned.fill(
                 child: Container(
                   decoration: BoxDecoration(
@@ -105,17 +107,17 @@ class _NftCardWidgetState extends State<NftCardWidget> {
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        Colors.black.withValues(alpha: 0.15),
                         Colors.transparent,
-                        Colors.black.withValues(alpha: 0.85),
+                        Colors.black.withValues(alpha: 0.1),
+                        Colors.black.withValues(alpha: 0.8),
                       ],
-                      stops: const [0.0, 0.45, 1.0],
+                      stops: const [0.0, 0.55, 1.0],
                     ),
                   ),
                 ),
               ),
 
-              // Top Floating Likes Pill (Like screenshot)
+              // Top Floating Likes Pill
               Positioned(
                 top: 14,
                 right: 14,
@@ -124,7 +126,7 @@ class _NftCardWidgetState extends State<NftCardWidget> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.45),
+                      color: Colors.black.withValues(alpha: 0.5),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
                     ),
@@ -158,9 +160,9 @@ class _NftCardWidgetState extends State<NftCardWidget> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.45),
+                    color: Colors.black.withValues(alpha: 0.5),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
+                    border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.5)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -181,7 +183,7 @@ class _NftCardWidgetState extends State<NftCardWidget> {
                 ),
               ),
 
-              // Bottom Info Card Overlay (Matching screenshot)
+              // Bottom Info Card Overlay (Matching user screenshot 2)
               Positioned(
                 bottom: 12,
                 left: 12,
@@ -189,7 +191,7 @@ class _NftCardWidgetState extends State<NftCardWidget> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF14141E).withValues(alpha: 0.85),
+                    color: const Color(0xFF14141E).withValues(alpha: 0.88),
                     borderRadius: BorderRadius.circular(18),
                     border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
                   ),
@@ -270,37 +272,26 @@ class NftDetailModal extends StatefulWidget {
 }
 
 class _NftDetailModalState extends State<NftDetailModal> {
-  int _userCoins = 1500;
   bool _isProcessing = false;
 
-  @override
-  void initState() {
-    super.initState();
-    _loadBalance();
-  }
-
-  Future<void> _loadBalance() async {
-    final prefs = await SharedPreferences.getInstance();
-    final coins = prefs.getInt('pocket_coins_balance') ?? 1500;
-    if (mounted) setState(() => _userCoins = coins);
-  }
-
-  Future<void> _buyWithCoins() async {
+  Future<void> _claimAsAvatar() async {
     final item = widget.item;
-    if (_userCoins < item.priceCoins) return;
 
     setState(() => _isProcessing = true);
     HapticFeedback.heavyImpact();
 
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final newBalance = _userCoins - item.priceCoins;
-      await prefs.setInt('pocket_coins_balance', newBalance);
-
       final user = SupaFlow.client.auth.currentUser;
       if (user != null) {
         await SupaFlow.client.from('profile').update({
           'image_url': item.imageUrl,
+          'avatar_config': {
+            'species': 'bored_ape',
+            'mintId': item.id,
+            'dnaHash': item.dnaHash,
+            'rarityTier': item.rarityTier,
+            'artStyle': 'bayc',
+          },
           'updated_at': DateTime.now().toIso8601String(),
         }).eq('user_id', user.id);
       }
@@ -316,7 +307,7 @@ class _NftDetailModalState extends State<NftDetailModal> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    '🎉 Owned ${item.title}! 1-of-1 NFT Avatar is now your profile picture!',
+                    '🎉 Owned ${item.title}! 1-of-1 Bored Ape NFT is now your exclusive profile avatar!',
                     style: GoogleFonts.outfit(color: Colors.black, fontWeight: FontWeight.bold),
                   ),
                 ),
@@ -330,7 +321,7 @@ class _NftDetailModalState extends State<NftDetailModal> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Purchase error: $e'), backgroundColor: Colors.red),
+          SnackBar(content: Text('Claim error: $e'), backgroundColor: Colors.red),
         );
       }
     } finally {
@@ -387,10 +378,12 @@ class _NftDetailModalState extends State<NftDetailModal> {
                       child: Stack(
                         children: [
                           Positioned.fill(
-                            child: CachedNetworkImage(
-                              imageUrl: item.imageUrl,
-                              fit: BoxFit.cover,
-                            ),
+                            child: item.apeTraits != null
+                                ? BoredApeWidget(traits: item.apeTraits!, size: 320)
+                                : CachedNetworkImage(
+                                    imageUrl: item.imageUrl,
+                                    fit: BoxFit.cover,
+                                  ),
                           ),
                           // Rarity & DNA Tag
                           Positioned(
@@ -642,7 +635,7 @@ class _NftDetailModalState extends State<NftDetailModal> {
             ),
             child: Row(
               children: [
-                // Pocket Coins Button
+                // Claim as My 1-of-1 NFT Avatar
                 Expanded(
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
@@ -652,36 +645,17 @@ class _NftDetailModalState extends State<NftDetailModal> {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                       elevation: 0,
                     ),
-                    onPressed: _userCoins >= item.priceCoins && !_isProcessing ? _buyWithCoins : null,
-                    child: Text(
-                      'Claim for 🪙 ${item.priceCoins}',
-                      style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 13),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                // Place Bid / Buy Cash
-                Expanded(
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF8B5CF6),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      elevation: 0,
-                    ),
-                    onPressed: () {
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Bid of ${item.priceEth} ETH placed for ${item.title}!'),
-                          backgroundColor: const Color(0xFF8B5CF6),
+                    onPressed: !_isProcessing ? _claimAsAvatar : null,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.verified, color: Colors.black, size: 18),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Claim 1-of-1 NFT Avatar',
+                          style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 13),
                         ),
-                      );
-                    },
-                    child: Text(
-                      'Bid ${item.priceEth} ETH',
-                      style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 13),
+                      ],
                     ),
                   ),
                 ),
