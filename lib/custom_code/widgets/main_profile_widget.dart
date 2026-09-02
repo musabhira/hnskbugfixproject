@@ -1047,23 +1047,47 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       await launchUrl(url, mode: LaunchMode.externalApplication);
                     }
                   },
-                  child: Row(
-                    children: [
-                      Icon(Icons.link, size: 18, color: btnColor),
-                      const SizedBox(width: 4),
-                      Expanded(
-                        child: Text(
-                          'handskillapp.web.app/$slug',
-                          style: GoogleFonts.inter(
-                            fontSize: 13,
-                            color: btnColor,
-                            fontWeight: FontWeight.w600,
-                            decoration: TextDecoration.underline,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: btnColor.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: btnColor.withValues(alpha: 0.35), width: 1),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.language_rounded, size: 16, color: btnColor),
+                        const SizedBox(width: 6),
+                        Flexible(
+                          child: Text(
+                            'handskillapp.web.app/$slug',
+                            style: GoogleFonts.inter(
+                              fontSize: 12.5,
+                              color: btnColor,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          overflow: TextOverflow.ellipsis,
                         ),
-                      ),
-                    ],
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: btnColor,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            '3D WEB',
+                            style: GoogleFonts.outfit(
+                              color: btnTextColor,
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],

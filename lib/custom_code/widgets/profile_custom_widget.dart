@@ -23,6 +23,9 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:math' as math;
+import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_studio_page.dart';
 
 // Begin custom action code
 
@@ -81,6 +84,165 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
   bool _isCompressingBanner = false;
   String? _selectedTemplateId = 'default';
   String? _loadedProfileId;
+  VectorAvatarConfig _avatarConfig = const VectorAvatarConfig();
+
+  final List<Map<String, String>> _avatarBannerPresets = [
+    {
+      'name': 'Pocket Gold Glow ✨',
+      'url': 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80',
+      'aura': 'pocket_gold',
+    },
+    {
+      'name': 'Cyberpunk Matrix ⚡',
+      'url': 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1200&q=80',
+      'aura': 'matrix_green',
+    },
+    {
+      'name': 'Comic Action Boom 💥',
+      'url': 'https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&w=1200&q=80',
+      'aura': 'comic_boom',
+    },
+    {
+      'name': 'Neon Synthwave 🌌',
+      'url': 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=1200&q=80',
+      'aura': 'cyber_synthwave',
+    },
+    {
+      'name': 'Electric Aqua Grid 🌊',
+      'url': 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&w=1200&q=80',
+      'aura': 'electric_aqua',
+    },
+    {
+      'name': 'Sakura Blossom 🌸',
+      'url': 'https://images.unsplash.com/photo-1522383225653-ed111181a951?auto=format&fit=crop&w=1200&q=80',
+      'aura': 'sakura_blossom',
+    },
+    {
+      'name': 'Royal Monarch Gold 👑',
+      'url': 'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=1200&q=80',
+      'aura': 'royal_gold',
+    },
+    {
+      'name': '8-Bit Pixel Arcade 👾',
+      'url': 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1200&q=80',
+      'aura': 'pixel_arcade',
+    },
+    {
+      'name': 'Obsidian Stealth 🖤',
+      'url': 'https://images.unsplash.com/photo-1618005198919-d3d4b5a92ead?auto=format&fit=crop&w=1200&q=80',
+      'aura': 'obsidian_stealth',
+    },
+    {
+      'name': 'Sunset Horizon Glow 🌅',
+      'url': 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
+      'aura': 'sunset_glow',
+    },
+  ];
+
+  void _applyAvatarTheme(VectorAvatarConfig cfg) {
+    final auraId = cfg.auraStyle;
+    Map<String, String> themeMap;
+    switch (auraId) {
+      case 'matrix_green':
+        themeMap = {
+          'bgColor': '#050D0A',
+          'textColor': '#E8F5E9',
+          'btnColor': '#00FF66',
+          'btnTextColor': '#000000',
+        };
+        break;
+      case 'comic_boom':
+        themeMap = {
+          'bgColor': '#0E0D14',
+          'textColor': '#FFF9E6',
+          'btnColor': '#FF8906',
+          'btnTextColor': '#000000',
+        };
+        break;
+      case 'cyber_synthwave':
+        themeMap = {
+          'bgColor': '#0D0818',
+          'textColor': '#F3E5F5',
+          'btnColor': '#E056FD',
+          'btnTextColor': '#FFFFFF',
+        };
+        break;
+      case 'electric_aqua':
+        themeMap = {
+          'bgColor': '#041018',
+          'textColor': '#E0F7FA',
+          'btnColor': '#00E5FF',
+          'btnTextColor': '#000000',
+        };
+        break;
+      case 'sakura_blossom':
+        themeMap = {
+          'bgColor': '#170A17',
+          'textColor': '#FCE4EC',
+          'btnColor': '#FF69B4',
+          'btnTextColor': '#000000',
+        };
+        break;
+      case 'royal_gold':
+        themeMap = {
+          'bgColor': '#0E0E12',
+          'textColor': '#FFFDF0',
+          'btnColor': '#FFD700',
+          'btnTextColor': '#000000',
+        };
+        break;
+      case 'pixel_arcade':
+        themeMap = {
+          'bgColor': '#100020',
+          'textColor': '#EDE7F6',
+          'btnColor': '#FF007F',
+          'btnTextColor': '#FFFFFF',
+        };
+        break;
+      case 'obsidian_stealth':
+        themeMap = {
+          'bgColor': '#121212',
+          'textColor': '#E0E0E0',
+          'btnColor': '#2C3E50',
+          'btnTextColor': '#FFFFFF',
+        };
+        break;
+      case 'sunset_glow':
+        themeMap = {
+          'bgColor': '#170914',
+          'textColor': '#FFF3E0',
+          'btnColor': '#FF5722',
+          'btnTextColor': '#FFFFFF',
+        };
+        break;
+      default:
+        themeMap = {
+          'bgColor': '#0D0E15',
+          'textColor': '#FFFFFF',
+          'btnColor': '#FFFC00',
+          'btnTextColor': '#000000',
+        };
+    }
+
+    safeSetState(() {
+      _colorCode = themeMap['bgColor'];
+      _colorCode1 = themeMap['textColor'];
+      _colorCode2 = themeMap['btnColor'];
+      _colorCode3 = themeMap['btnTextColor'];
+      _selectedColor = _convertStringToColor(_colorCode!);
+      _selectedColor1 = _convertStringToColor(_colorCode1!);
+      _selectedColor2 = _convertStringToColor(_colorCode2!);
+      _selectedColor3 = _convertStringToColor(_colorCode3!);
+    });
+
+    _scaffoldMessengerKey.currentState?.showSnackBar(
+      const SnackBar(
+        content: Text('✨ Applied theme colors matching your Avatar aura!'),
+        duration: Duration(milliseconds: 900),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
 
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _shopNameController = TextEditingController();
@@ -260,6 +422,12 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
           _businessType = profileResponse['business_type'] ?? 'product';
           _wantsPaymentIntegration = profileResponse['wants_payment_integration'] ?? false;
           _isPrivate = profileResponse['is_private'] ?? false;
+          if (profileResponse['avatar_config'] != null) {
+            try {
+              final map = Map<String, dynamic>.from(profileResponse['avatar_config']);
+              _avatarConfig = VectorAvatarConfig.fromMap(map);
+            } catch (_) {}
+          }
         });
       }
     } catch (error) {
@@ -630,6 +798,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
           'business_type': _businessType,
           'wants_payment_integration': _wantsPaymentIntegration,
           'is_private': _isPrivate,
+          'avatar_config': _avatarConfig.toMap(),
         },
       );
 
@@ -2127,6 +2296,250 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                           ),
                         ),
                       ],
+                    ),
+                  ),
+
+                  // --- Pocket Mates Avatar & Comic Styling Section ---
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: theme.secondaryBackground,
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(
+                          color: const Color(0xFFFFFC00).withValues(alpha: 0.35),
+                          width: 1.5,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFFFFFC00).withValues(alpha: 0.08),
+                            blurRadius: 14,
+                            spreadRadius: 1,
+                          ),
+                        ],
+                      ),
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(Icons.auto_awesome, color: Color(0xFFFFFC00), size: 20),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Pocket Mates Avatar & Styling 🎭',
+                                      style: GoogleFonts.outfit(
+                                        color: theme.primaryText,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    Text(
+                                      '50+ Roles, Hairstyles, Comic Banners & Theme Sync',
+                                      style: GoogleFonts.inter(
+                                        color: theme.secondaryText,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Avatar Preview & Action Row
+                          Row(
+                            children: [
+                              // Live Avatar
+                              Container(
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: const Color(0xFFFFFC00), width: 2),
+                                ),
+                                child: VectorAvatarWidget(
+                                  config: _avatarConfig,
+                                  size: 76,
+                                  showAura: true,
+                                ),
+                              ),
+                              const SizedBox(width: 14),
+
+                              // Edit Avatar & Match Theme Buttons
+                              Expanded(
+                                child: Column(
+                                  children: [
+                                    SizedBox(
+                                      width: double.infinity,
+                                      height: 38,
+                                      child: ElevatedButton.icon(
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => VectorAvatarStudioPage(
+                                                initialConfig: _avatarConfig,
+                                                onAvatarSaved: (newCfg) {
+                                                  safeSetState(() {
+                                                    _avatarConfig = newCfg;
+                                                  });
+                                                  _applyAvatarTheme(newCfg);
+                                                },
+                                              ),
+                                            ),
+                                          ).then((res) {
+                                            if (res is VectorAvatarConfig) {
+                                              safeSetState(() => _avatarConfig = res);
+                                              _applyAvatarTheme(res);
+                                            }
+                                          });
+                                        },
+                                        icon: const Icon(Icons.palette, size: 16, color: Colors.black),
+                                        label: Text(
+                                          'Open Avatar Studio',
+                                          style: GoogleFonts.outfit(
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 13,
+                                          ),
+                                        ),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: const Color(0xFFFFFC00),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(10),
+                                          ),
+                                          elevation: 2,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    SizedBox(
+                                      width: double.infinity,
+                                      height: 36,
+                                      child: OutlinedButton.icon(
+                                        onPressed: () => _applyAvatarTheme(_avatarConfig),
+                                        icon: const Icon(Icons.sync_alt, size: 15, color: Color(0xFFFFFC00)),
+                                        label: Text(
+                                          'Sync Theme to Avatar',
+                                          style: GoogleFonts.outfit(
+                                            color: const Color(0xFFFFFC00),
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                        style: OutlinedButton.styleFrom(
+                                          side: const BorderSide(color: Color(0xFFFFFC00)),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(10),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 18),
+                          const Divider(color: Colors.white12),
+                          const SizedBox(height: 12),
+
+                          // Avatar Themed Banners
+                          Text(
+                            'Avatar-Themed Banners (10 Presets)',
+                            style: GoogleFonts.outfit(
+                              color: theme.primaryText,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          SizedBox(
+                            height: 70,
+                            child: ListView.separated(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: _avatarBannerPresets.length,
+                              separatorBuilder: (_, __) => const SizedBox(width: 10),
+                              itemBuilder: (context, index) {
+                                final preset = _avatarBannerPresets[index];
+                                final isSelected = _imageUrlBanner == preset['url'];
+
+                                return GestureDetector(
+                                  onTap: () {
+                                    safeSetState(() {
+                                      _imageUrlBanner = preset['url'];
+                                      _selectedImageBytesBanner = null;
+                                    });
+                                    _scaffoldMessengerKey.currentState?.showSnackBar(
+                                      SnackBar(
+                                        content: Text('🖼️ Applied ${preset['name']} banner!'),
+                                        duration: const Duration(milliseconds: 700),
+                                        behavior: SnackBarBehavior.floating,
+                                      ),
+                                    );
+                                  },
+                                  child: Container(
+                                    width: 120,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                        color: isSelected ? const Color(0xFFFFFC00) : Colors.white24,
+                                        width: isSelected ? 2.5 : 1,
+                                      ),
+                                      image: DecorationImage(
+                                        image: CachedNetworkImageProvider(preset['url']!),
+                                        fit: BoxFit.cover,
+                                      ),
+                                      boxShadow: isSelected
+                                          ? [
+                                              BoxShadow(
+                                                color: const Color(0xFFFFFC00).withValues(alpha: 0.4),
+                                                blurRadius: 8,
+                                              ),
+                                            ]
+                                          : [],
+                                    ),
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(10),
+                                        gradient: const LinearGradient(
+                                          begin: Alignment.bottomCenter,
+                                          end: Alignment.topCenter,
+                                          colors: [Colors.black87, Colors.transparent],
+                                        ),
+                                      ),
+                                      alignment: Alignment.bottomLeft,
+                                      padding: const EdgeInsets.all(6),
+                                      child: Text(
+                                        preset['name']!,
+                                        style: GoogleFonts.outfit(
+                                          color: Colors.white,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
 
