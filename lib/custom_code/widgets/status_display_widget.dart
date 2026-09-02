@@ -33,6 +33,8 @@ import 'package:pocket_mates_app/custom_code/widgets/thread_feed_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.dart';
 import 'package:pocket_mates_app/custom_code/widgets/courses_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/story/snapchat_story_creator_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
 
 class StatusDisplayWidget extends StatefulWidget {
   final String currentUserId;
@@ -960,14 +962,27 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
     final isOwn = statusGroup['is_own'] ?? false;
     final isGroup = statusGroup['is_group'] ?? false;
     final isFullyWatched = statusGroup['is_fully_watched'] ?? false;
-    final name = profile['name'] ?? 'Unknown';
-    final profileImageUrl = profile['profile_image_url'];
-    final statuses = statusGroup['statuses'] as List;
-    final lastStatus = statuses.first;
-    final createdAt = DateTime.parse(lastStatus['created_at']);
+    final name = profile != null ? (profile['name'] ?? 'Unknown') : 'Unknown';
+    final profileImageUrl = profile != null ? profile['profile_image_url'] : null;
+    final statuses = (statusGroup['statuses'] as List?) ?? [];
+    final lastStatus = statuses.isNotEmpty ? statuses.first : null;
+    final createdAt = lastStatus != null && lastStatus['created_at'] != null
+        ? DateTime.tryParse(lastStatus['created_at'].toString()) ?? DateTime.now()
+        : DateTime.now();
     final timeString = timeago.format(createdAt, locale: 'en_short');
     final activeList =
         listOverride ?? (isHorizontal ? _followingStatuses : _statuses);
+
+    final mediaUrl = lastStatus != null ? lastStatus['media_url'] : null;
+    final mediaType = lastStatus != null ? lastStatus['media_type'] : null;
+    final thumbnailUrl = lastStatus != null ? lastStatus['thumbnail_url'] : null;
+    final String? vibePreviewUrl = (mediaType == 'video' && thumbnailUrl != null)
+        ? thumbnailUrl
+        : ((mediaUrl != null && mediaUrl.toString().isNotEmpty) ? mediaUrl.toString() : null);
+
+    final avatarConfigMap = profile != null && profile['avatar_config'] is Map
+        ? Map<String, dynamic>.from(profile['avatar_config'])
+        : null;
 
     if (!isHorizontal) {
       return InkWell(
@@ -977,7 +992,15 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
           padding: const EdgeInsets.symmetric(vertical: 10),
           child: Row(
             children: [
-              _buildAvatarWithRing(profileImageUrl, name, 60, isGroup: isGroup, isWatched: isFullyWatched),
+              _buildAvatarWithRing(
+                profileImageUrl,
+                name,
+                60,
+                isGroup: isGroup,
+                isWatched: isFullyWatched,
+                vibePreviewUrl: vibePreviewUrl,
+                avatarConfigMap: avatarConfigMap,
+              ),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
@@ -1002,7 +1025,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
                 ),
               ),
               if (!isOwn)
-                if (!_followingStatuses.any((f) => f['profile']['id'] == profile['id']) && !isGroup)
+                if (!_followingStatuses.any((f) => f['profile']?['id'] == profile?['id']) && !isGroup)
                   TextButton.icon(
                     style: TextButton.styleFrom(
                       backgroundColor: Colors.white.withValues(alpha: 0.1),
@@ -1011,7 +1034,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
                     ),
                     icon: const Icon(Icons.person_add, color: Color(0xFFFFFC00), size: 16),
                     label: Text('Friend', style: GoogleFonts.outfit(color: const Color(0xFFFFFC00), fontSize: 12, fontWeight: FontWeight.bold)),
-                    onPressed: () => _addFriend(profile['id'].toString()),
+                    onPressed: () => _addFriend(profile?['id']?.toString() ?? ''),
                   )
                 else
                   const Icon(Icons.chevron_right_rounded, 
@@ -1029,7 +1052,15 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
         margin: const EdgeInsets.only(right: 12),
         child: Column(
           children: [
-            _buildAvatarWithRing(profileImageUrl, name, 72, isGroup: isGroup, isWatched: isFullyWatched),
+            _buildAvatarWithRing(
+              profileImageUrl,
+              name,
+              72,
+              isGroup: isGroup,
+              isWatched: isFullyWatched,
+              vibePreviewUrl: vibePreviewUrl,
+              avatarConfigMap: avatarConfigMap,
+            ),
             const SizedBox(height: 2),
             Text(isOwn ? 'My Vibes' : name,
                 style: GoogleFonts.outfit(
@@ -1045,8 +1076,35 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
     );
   }
 
-  Widget _buildAvatarWithRing(String? url, String name, double size,
-      {bool isGroup = false, bool isWatched = false}) {
+  Widget _buildAvatarWithRing(
+    String? url,
+    String name,
+    double size, {
+    bool isGroup = false,
+    bool isWatched = false,
+    String? vibePreviewUrl,
+    Map<String, dynamic>? avatarConfigMap,
+  }) {
+    final hasVibePreview = vibePreviewUrl != null && vibePreviewUrl.isNotEmpty;
+    final displayUrl = hasVibePreview ? vibePreviewUrl : url;
+
+    VectorAvatarConfig avatarConfig = const VectorAvatarConfig();
+    if (avatarConfigMap != null) {
+      try {
+        avatarConfig = VectorAvatarConfig.fromMap(avatarConfigMap);
+      } catch (_) {}
+    } else {
+      final nameHash = name.hashCode.abs();
+      final hairs = VectorAvatarPalette.hairStyles;
+      final hairColors = VectorAvatarPalette.hairColors;
+      final outfits = VectorAvatarPalette.outfitStyles;
+      avatarConfig = VectorAvatarConfig(
+        hairStyle: hairs[nameHash % hairs.length]['id'],
+        hairColor: hairColors[(nameHash ~/ 3) % hairColors.length],
+        outfitStyle: outfits[(nameHash ~/ 5) % outfits.length]['id'],
+      );
+    }
+
     return Container(
       width: size,
       height: size,
@@ -1081,25 +1139,34 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
         decoration:
             const BoxDecoration(color: Colors.black, shape: BoxShape.circle),
         child: ClipOval(
-          child: url != null
+          child: displayUrl != null
               ? CachedNetworkImage(
-                  imageUrl: url,
+                  imageUrl: displayUrl,
                   fit: BoxFit.cover,
                   placeholder: (context, url) =>
                       Container(color: Colors.black),
                   errorWidget: (context, url, error) =>
-                      const Icon(Icons.person, color: Colors.white24),
+                      VectorAvatarWidget(config: avatarConfig, size: size * 0.8),
                 )
-              : Container(
-                  color: Colors.black,
-                  child: Center(
-                    child: Text(name[0].toUpperCase(),
-                        style: GoogleFonts.outfit(
-                            fontSize: size * 0.4,
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold)),
-                  ),
-                ),
+              : isGroup
+                  ? Container(
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Color(0xFF4F46E5), Color(0xFF7C3AED)],
+                        ),
+                      ),
+                      child: Center(
+                        child: Icon(
+                          Icons.groups_rounded,
+                          color: Colors.white,
+                          size: size * 0.5,
+                        ),
+                      ),
+                    )
+                  : VectorAvatarWidget(
+                      config: avatarConfig,
+                      size: size * 0.8,
+                    ),
         ),
       ),
     );
