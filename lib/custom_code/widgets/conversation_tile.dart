@@ -222,6 +222,14 @@ class _ConversationTileState extends State<ConversationTile> {
                         ),
                       ),
                     GestureDetector(
+                      onTap: () {
+                        if (widget.conversation.hasStatus && widget.onStatusTap != null) {
+                          widget.onStatusTap!();
+                        } else if (widget.conversation.imageUrl != null) {
+                          setState(() => _showRealPhoto = !_showRealPhoto);
+                          HapticFeedback.lightImpact();
+                        }
+                      },
                       onDoubleTap: () {
                         if (widget.conversation.imageUrl != null) {
                           setState(() => _showRealPhoto = !_showRealPhoto);
