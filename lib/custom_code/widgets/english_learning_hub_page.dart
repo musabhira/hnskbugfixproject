@@ -4,6 +4,7 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:pocket_mates_app/custom_code/widgets/ai_prompt_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:pocket_mates_app/custom_code/widgets/pocket_library_page.dart';
 import 'dart:async';
 
 class EnglishLearningHubPage extends StatefulWidget {
@@ -720,6 +721,7 @@ class _EnglishLearningHubPageState extends State<EnglishLearningHubPage>
                 _modeTile('word_stress', '📝', 'Word Stress', 'Master syllable stress changes: REcord vs reCORD.'),
               ]),
               _buildCategoryList([
+                _modeTile('pocket_library', '📚', 'Pocket Library & Books', 'Free classics, stories & interactive word audio speech.'),
                 _modeTile('read_aloud', '📖', 'Read Aloud / Improve', 'Speak sentences aloud with accuracy matching.'),
                 _modeTile('shadowing', '🔄', 'Shadowing', 'Listen to model sentence rhythm and echo it back.'),
                 _modeTile('connected_speech', '🔗', 'Connected Speech', 'Blur words together naturally: want to -> wanna.'),
@@ -775,6 +777,13 @@ class _EnglishLearningHubPageState extends State<EnglishLearningHubPage>
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       child: ListTile(
         onTap: () {
+          if (mode == 'pocket_library') {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const PocketLibraryPage()),
+            );
+            return;
+          }
           setState(() {
             _selectedSubMode = mode;
             _selectedModeTitle = title;

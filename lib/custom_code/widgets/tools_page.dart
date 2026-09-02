@@ -24,6 +24,7 @@ import '/custom_code/widgets/ai_prompt_service.dart';
 import '/custom_code/widgets/dual_video_recorder.dart';
 import '/custom_code/widgets/courses_widget.dart';
 import '/custom_code/widgets/english_learning_hub_page.dart';
+import '/custom_code/widgets/pocket_library_page.dart';
 import '/custom_code/widgets/business_pos_page.dart';
 import '/custom_code/widgets/subscription_page.dart';
 
@@ -1234,6 +1235,25 @@ class _TaskManagerScreenState extends State<ToolsPage> {
             context,
             MaterialPageRoute(
                 builder: (context) => const EnglishLearningHubPage())),
+      },
+      {
+        'title': 'Pocket Library',
+        'subtitle': 'Free Classics & Word Audio Reader',
+        'icon': Icons.auto_stories_rounded,
+        'category': 'Language',
+        'color': const Color(0xFFFFFC00),
+        'gradient': [const Color(0xFF6366F1), const Color(0xFFFFD700)],
+        'avatar': const VectorAvatarConfig(
+          species: 'celestial_owl',
+          artStyle: 'vector',
+          outfitStyle: 'blazer',
+          auraStyle: 'sunset_orange',
+          hairStyle: 'classic_side',
+        ),
+        'onTap': () => Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => const PocketLibraryPage())),
       },
       {
         'title': 'Avatar Studio & NFT',
