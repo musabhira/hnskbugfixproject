@@ -20,6 +20,7 @@ export 'profile_switch_page.dart';
 export 'followers_screen.dart' show FollowersScreen;
 export 'thread_feed_page.dart' show ThreadFeedPage, CreateThreadPage;
 export 'thoughts_feed_section.dart';
+export 'story/snapchat_story_creator_page.dart';
 
 // Search & Discovery
 export 'search_page.dart' show SearchPage;

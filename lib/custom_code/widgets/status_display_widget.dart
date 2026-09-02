@@ -32,6 +32,7 @@ import 'package:pocket_mates_app/custom_code/widgets/chess_game_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/thread_feed_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.dart';
 import 'package:pocket_mates_app/custom_code/widgets/courses_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/story/snapchat_story_creator_page.dart';
 
 class StatusDisplayWidget extends StatefulWidget {
   final String currentUserId;
@@ -431,9 +432,13 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => StatusUploadWidget(
+        builder: (context) => SnapchatStoryCreatorPage(
           userId: widget.currentUserId,
           profileId: widget.currentProfileId,
+          onStatusUploaded: () {
+            _loadStatusesOptimized();
+            widget.onStatusUploaded?.call();
+          },
         ),
       ),
     );
@@ -3460,8 +3465,20 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
         imageQuality: 100,
       );
 
-      if (image != null) {
-        _showCaptionDialog(image, 'image');
+      if (image != null && mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => SnapchatStoryCreatorPage(
+              userId: widget.userId,
+              profileId: widget.profileId,
+              initialFile: image,
+              initialMediaType: 'image',
+            ),
+          ),
+        ).then((res) {
+          if (res == true && mounted) Navigator.pop(context, true);
+        });
       }
     } catch (e) {
       _showErrorSnackBar('Error picking image: $e');
