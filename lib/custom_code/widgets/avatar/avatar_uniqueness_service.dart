@@ -104,17 +104,25 @@ class AvatarUniquenessService {
     return true;
   }
 
-  /// Procedurally generates a batch of 50+ unique, never-before-seen Bored Ape avatars!
-  List<NftItem> generateProceduralBoredApes({int count = 50}) {
+  /// Procedurally generates a batch of up to 500+ unique, never-before-seen 1-of-1 NFT avatars!
+  List<NftItem> generateProceduralBoredApes({int count = 100}) {
     final rand = Random();
     final List<NftItem> results = [];
 
-    final furs = ['brown', 'leopard', 'gold', 'cyber_grey', 'zombie_green', 'obsidian'];
-    final eyes = ['laser_beams', 'cyborg_red', '3d_glasses', 'vr_visor', 'x_eyes', 'sleepy'];
-    final mouths = ['wide_grin', 'tongue_out', 'cigarette', 'pout'];
-    final headwears = ['none', 'sailor_hat', 'captain_hat', 'gold_crown'];
-    final outfits = ['military_jacket', 'cyber_armor', 'naked'];
-    final bgs = ['orange', 'teal', 'cyan', 'purple', 'amber', 'dark'];
+    final furs = ['brown', 'leopard', 'gold', 'cyber_grey', 'zombie_green', 'obsidian', 'trippy', 'pink_fur', 'crystal_blue'];
+    final eyes = ['laser_beams', 'cyborg_red', '3d_glasses', 'vr_visor', 'x_eyes', 'sleepy', 'hologram', 'golden_glow'];
+    final mouths = ['wide_grin', 'tongue_out', 'cigarette', 'pout', 'diamond_grill', 'vampire_fangs', 'bubblegum'];
+    final headwears = ['none', 'sailor_hat', 'captain_hat', 'gold_crown', 'cyber_helmet', 'ninja_headband', 'beanie', 'halo'];
+    final outfits = ['military_jacket', 'cyber_armor', 'naked', 'tuxedo', 'space_suit', 'hoodie', 'samurai_robe'];
+    final bgs = ['orange', 'teal', 'cyan', 'purple', 'amber', 'dark', 'matrix_green', 'sunset_violet', 'ruby_red'];
+
+    final collections = [
+      'Bored Ape Yacht Club',
+      'Cyberpunk 2099 Legends',
+      'Anime Neon Knights',
+      'Pixel Retro Champs',
+      'Golden Monarchs 1-of-1',
+    ];
 
     final artistNames = [
       'Rocky Rio',
@@ -125,6 +133,8 @@ class AvatarUniquenessService {
       'Arcade Legend',
       'Celestial Arts',
       'Pocket Labs',
+      'Apex Cybernetics',
+      'Meta Dynasty',
     ];
 
     for (int i = 0; i < count; i++) {
@@ -147,8 +157,9 @@ class AvatarUniquenessService {
       final b = bgs[rand.nextInt(bgs.length)];
       final earring = rand.nextBool();
 
+      final collection = collections[rand.nextInt(collections.length)];
       final artist = artistNames[rand.nextInt(artistNames.length)];
-      final number = rand.nextInt(900) + 100;
+      final number = rand.nextInt(9000) + 1000;
       final rarity = rand.nextDouble() < 0.15
           ? 'Mythic 1-of-1'
           : (rand.nextDouble() < 0.4 ? 'Legendary' : 'Rare');
@@ -168,8 +179,8 @@ class AvatarUniquenessService {
       results.add(
         NftItem(
           id: id,
-          title: 'Bored Ape #$number',
-          collectionName: 'Bored Ape Yacht Club',
+          title: '$collection #$number',
+          collectionName: collection,
           artistName: artist,
           artistHandle: '@${artist.toLowerCase().replaceAll(' ', '_')}',
           artistAvatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&auto=format&fit=crop&q=80',

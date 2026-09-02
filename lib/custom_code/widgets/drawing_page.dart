@@ -10,6 +10,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 // import 'package:ed_screen_recorder/ed_screen_recorder.dart';
@@ -873,7 +874,7 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
       final user = SupaFlow.client.auth.currentUser;
       if (user != null) {
         await SupaFlow.client.from('profile').update({
-          'image_url': base64Image,
+          'profile_image_url': base64Image,
           'avatar_config': {
             'species': 'hand_drawn_masterpiece',
             'dnaHash': dnaHash,
@@ -882,6 +883,12 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
           },
           'updated_at': DateTime.now().toIso8601String(),
         }).eq('user_id', user.id);
+
+        try {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.remove('profile_cache_${user.id}');
+          await prefs.remove('cached_profile_${user.id}');
+        } catch (_) {}
       }
 
       if (mounted) {

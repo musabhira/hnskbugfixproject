@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'avatar_network_service.dart';
 
@@ -62,11 +63,24 @@ class _AvatarNetworkExplorerPageState extends State<AvatarNetworkExplorerPage> {
     try {
       final user = SupaFlow.client.auth.currentUser;
       if (user != null) {
-        // Save as profile photo URL
+        // Save as profile photo URL and avatar config
         await SupaFlow.client.from('profile').update({
-          'image_url': avatarUrl,
+          'profile_image_url': avatarUrl,
+          'avatar_config': {
+            'artStyle': 'network',
+            'species': styleName.toLowerCase(),
+            'mintId': '#MATE-${DateTime.now().millisecondsSinceEpoch % 100000}',
+            'dnaHash': '0xNET-${DateTime.now().millisecondsSinceEpoch % 1000000}',
+            'rarityTier': 'Original 1-of-1',
+          },
           'updated_at': DateTime.now().toIso8601String(),
         }).eq('user_id', user.id);
+
+        try {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.remove('profile_cache_${user.id}');
+          await prefs.remove('cached_profile_${user.id}');
+        } catch (_) {}
       }
 
       if (widget.onAvatarSelected != null) {
@@ -97,7 +111,32 @@ class _AvatarNetworkExplorerPageState extends State<AvatarNetworkExplorerPage> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to update avatar: $e'), backgroundColor: Colors.red),
+          SnackBar(
+            content: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'Failed to update avatar: $e',
+                    style: const TextStyle(color: Colors.white, fontSize: 12),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                TextButton.icon(
+                  icon: const Icon(Icons.copy, color: Color(0xFFFFFC00), size: 14),
+                  label: const Text('Copy', style: TextStyle(color: Color(0xFFFFFC00), fontSize: 12, fontWeight: FontWeight.bold)),
+                  onPressed: () {
+                    Clipboard.setData(ClipboardData(text: e.toString()));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Error copied to clipboard!'), duration: Duration(seconds: 1)),
+                    );
+                  },
+                ),
+              ],
+            ),
+            backgroundColor: Colors.red[900],
+            duration: const Duration(seconds: 6),
+          ),
         );
       }
     } finally {

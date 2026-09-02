@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/bored_ape_painter.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/avatar_uniqueness_service.dart';
@@ -345,7 +346,7 @@ class _NftDetailModalState extends State<NftDetailModal> {
       // 2. Update Supabase Profile
       if (user != null) {
         await SupaFlow.client.from('profile').update({
-          'image_url': item.imageUrl,
+          'profile_image_url': item.imageUrl,
           'avatar_config': {
             'species': 'bored_ape',
             'mintId': item.id,
@@ -365,6 +366,12 @@ class _NftDetailModalState extends State<NftDetailModal> {
           },
           'updated_at': DateTime.now().toIso8601String(),
         }).eq('user_id', user.id);
+
+        try {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.remove('profile_cache_${user.id}');
+          await prefs.remove('cached_profile_${user.id}');
+        } catch (_) {}
       }
 
       if (mounted) {
@@ -392,7 +399,27 @@ class _NftDetailModalState extends State<NftDetailModal> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Claim error: $e'), backgroundColor: Colors.red),
+          SnackBar(
+            content: Row(
+              children: [
+                Expanded(
+                  child: Text('Claim error: $e', style: const TextStyle(color: Colors.white, fontSize: 12), maxLines: 2, overflow: TextOverflow.ellipsis),
+                ),
+                TextButton.icon(
+                  icon: const Icon(Icons.copy, color: Color(0xFFFFFC00), size: 14),
+                  label: const Text('Copy', style: TextStyle(color: Color(0xFFFFFC00), fontSize: 12, fontWeight: FontWeight.bold)),
+                  onPressed: () {
+                    Clipboard.setData(ClipboardData(text: e.toString()));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Error copied to clipboard!'), duration: Duration(seconds: 1)),
+                    );
+                  },
+                ),
+              ],
+            ),
+            backgroundColor: Colors.red[900],
+            duration: const Duration(seconds: 6),
+          ),
         );
       }
     } finally {
