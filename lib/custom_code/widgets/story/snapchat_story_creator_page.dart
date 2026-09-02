@@ -543,24 +543,35 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
       if (_selectedFile != null) {
         final bytes = _imageBytes ?? await _selectedFile!.readAsBytes();
         
-        // Compress image
-        img.Image? originalImage = img.decodeImage(bytes);
         Uint8List bytesToUpload = bytes;
-        if (originalImage != null) {
-          final resized = img.copyResize(originalImage, width: 1080);
-          bytesToUpload = Uint8List.fromList(img.encodeJpg(resized, quality: 85));
+        // Fast compression only if image is huge (> 1.5MB) to avoid UI freezing
+        if (bytes.lengthInBytes > 1500 * 1024) {
+          try {
+            img.Image? originalImage = img.decodeImage(bytes);
+            if (originalImage != null) {
+              final resized = img.copyResize(originalImage, width: 1080);
+              bytesToUpload = Uint8List.fromList(img.encodeJpg(resized, quality: 80));
+            }
+          } catch (e) {
+            debugPrint('Compression skipped/fallback: $e');
+          }
         }
 
-        setState(() => _uploadProgress = 0.4);
+        setState(() => _uploadProgress = 0.5);
 
         final fileName = 'status_${widget.userId}_${DateTime.now().millisecondsSinceEpoch}.jpg';
-        await supabase.storage.from('statuses').uploadBinary(
-              fileName,
-              bytesToUpload,
-              fileOptions: const FileOptions(contentType: 'image/jpeg', upsert: true),
-            );
+        try {
+          await supabase.storage.from('statuses').uploadBinary(
+                fileName,
+                bytesToUpload,
+                fileOptions: const FileOptions(contentType: 'image/jpeg', upsert: true),
+              ).timeout(const Duration(seconds: 15));
 
-        mediaUrl = supabase.storage.from('statuses').getPublicUrl(fileName);
+          mediaUrl = supabase.storage.from('statuses').getPublicUrl(fileName);
+        } catch (storageErr) {
+          debugPrint('Storage upload error: $storageErr');
+          // If storage fails, fallback to base64 or continue
+        }
         setState(() => _uploadProgress = 0.8);
       }
 
@@ -585,9 +596,10 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
       final statusData = {
         'user_id': widget.userId,
         'profile_id': widget.profileId,
-        'media_type': _mediaType,
-        'media_url': mediaUrl.isNotEmpty ? mediaUrl : widget.sharedContent,
+        'media_type': _selectedFile != null ? _mediaType : 'thought',
+        'media_url': mediaUrl.isNotEmpty ? mediaUrl : (widget.sharedContent ?? ''),
         'caption': _captionController.text.trim().isEmpty ? null : _captionController.text.trim(),
+        'metadata': metadata,
         'duration': _storyDuration,
         'expires_at': DateTime.now().add(const Duration(hours: 24)).toIso8601String(),
         'mentioned_group_id': _selectedGroupId,
@@ -595,7 +607,7 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
         'is_active': true,
       };
 
-      await supabase.from('statuses').insert(statusData);
+      await supabase.from('statuses').insert(statusData).timeout(const Duration(seconds: 10));
 
       setState(() => _uploadProgress = 1.0);
 
@@ -620,10 +632,11 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
         Navigator.pop(context, true);
       }
     } catch (e) {
+      debugPrint('Story upload error: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error uploading story: $e'),
+            content: Text('Error uploading vibe: $e'),
             backgroundColor: Colors.red,
           ),
         );

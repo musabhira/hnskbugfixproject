@@ -1883,28 +1883,29 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                           itemBuilder: (context, index) {
                             final tool = filteredTools[index];
                             final isFav = _favoritedTools.contains(tool['title']);
-                            final gradient = tool['gradient'] as List<Color>? ?? [
-                              tool['color'] as Color? ?? const Color(0xFFFFFC00),
-                              (tool['color'] as Color? ?? const Color(0xFFFFFC00)).withValues(alpha: 0.6),
-                            ];
                             final category = tool['category'] as String? ?? 'Tool';
 
+                            final isDark = Theme.of(context).brightness == Brightness.dark;
+                            final toolColor = tool['color'] as Color? ?? const Color(0xFFFFFC00);
+
                             return Container(
-                              margin: const EdgeInsets.only(bottom: 16),
+                              margin: const EdgeInsets.only(bottom: 12),
                               decoration: BoxDecoration(
                                 color: FlutterFlowTheme.of(context).secondaryBackground,
-                                borderRadius: BorderRadius.circular(22),
+                                borderRadius: BorderRadius.circular(18),
                                 border: Border.all(
                                   color: isFav
-                                      ? (tool['color'] as Color)
-                                      : (tool['color'] as Color).withValues(alpha: 0.25),
-                                  width: isFav ? 2 : 1.2,
+                                      ? const Color(0xFFFFFC00).withValues(alpha: 0.6)
+                                      : (isDark
+                                          ? Colors.white.withValues(alpha: 0.08)
+                                          : Colors.black.withValues(alpha: 0.06)),
+                                  width: isFav ? 1.5 : 1.0,
                                 ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: (tool['color'] as Color).withValues(alpha: 0.08),
-                                    blurRadius: 16,
-                                    offset: const Offset(0, 4),
+                                    color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 3),
                                   ),
                                 ],
                               ),
@@ -1912,39 +1913,34 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                                 color: Colors.transparent,
                                 child: InkWell(
                                   onTap: tool['onTap'] as VoidCallback,
-                                  borderRadius: BorderRadius.circular(22),
+                                  borderRadius: BorderRadius.circular(18),
                                   child: Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
                                     child: Row(
                                       children: [
-                                        // Specialized 3D Glowing Illustration Emblem
+                                        // Clean Minimalist Icon Container
                                         Container(
-                                          width: 52,
-                                          height: 52,
+                                          width: 46,
+                                          height: 46,
                                           decoration: BoxDecoration(
-                                            gradient: LinearGradient(
-                                              colors: gradient,
-                                              begin: Alignment.topLeft,
-                                              end: Alignment.bottomRight,
+                                            color: isDark
+                                                ? toolColor.withValues(alpha: 0.12)
+                                                : toolColor.withValues(alpha: 0.1),
+                                            borderRadius: BorderRadius.circular(14),
+                                            border: Border.all(
+                                              color: toolColor.withValues(alpha: 0.25),
+                                              width: 1,
                                             ),
-                                            borderRadius: BorderRadius.circular(16),
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: gradient.first.withValues(alpha: 0.4),
-                                                blurRadius: 12,
-                                                offset: const Offset(0, 4),
-                                              ),
-                                            ],
                                           ),
                                           child: Center(
                                             child: Icon(
                                               tool['icon'] as IconData,
-                                              color: Colors.white,
-                                              size: 26,
+                                              color: toolColor,
+                                              size: 22,
                                             ),
                                           ),
                                         ),
-                                        const SizedBox(width: 16),
+                                        const SizedBox(width: 14),
                                         Expanded(
                                           child: Column(
                                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1957,8 +1953,8 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                                                       tool['title'] as String,
                                                       style: GoogleFonts.outfit(
                                                         color: FlutterFlowTheme.of(context).primaryText,
-                                                        fontSize: 17,
-                                                        fontWeight: FontWeight.bold,
+                                                        fontSize: 16,
+                                                        fontWeight: FontWeight.w600,
                                                       ),
                                                       maxLines: 1,
                                                       overflow: TextOverflow.ellipsis,
@@ -1968,19 +1964,23 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                                                   Container(
                                                     padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                                                     decoration: BoxDecoration(
-                                                      color: (tool['color'] as Color).withValues(alpha: 0.15),
-                                                      borderRadius: BorderRadius.circular(8),
+                                                      color: isDark
+                                                          ? Colors.white.withValues(alpha: 0.06)
+                                                          : Colors.black.withValues(alpha: 0.05),
+                                                      borderRadius: BorderRadius.circular(6),
                                                       border: Border.all(
-                                                        color: (tool['color'] as Color).withValues(alpha: 0.4),
+                                                        color: isDark
+                                                            ? Colors.white.withValues(alpha: 0.08)
+                                                            : Colors.black.withValues(alpha: 0.06),
                                                         width: 0.8,
                                                       ),
                                                     ),
                                                     child: Text(
                                                       category.toUpperCase(),
                                                       style: GoogleFonts.outfit(
-                                                        color: tool['color'] as Color,
+                                                        color: FlutterFlowTheme.of(context).secondaryText,
                                                         fontSize: 9,
-                                                        fontWeight: FontWeight.w800,
+                                                        fontWeight: FontWeight.w700,
                                                         letterSpacing: 0.5,
                                                       ),
                                                     ),
@@ -1995,6 +1995,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                                                     style: GoogleFonts.inter(
                                                       color: FlutterFlowTheme.of(context).secondaryText,
                                                       fontSize: 12,
+                                                      height: 1.2,
                                                     ),
                                                   ),
                                                 ),
@@ -2005,7 +2006,11 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
                                             IconButton(
-                                              icon: const Icon(Icons.share_rounded, color: Colors.white38, size: 18),
+                                              icon: Icon(
+                                                Icons.share_outlined,
+                                                color: isDark ? Colors.white38 : Colors.black38,
+                                                size: 18,
+                                              ),
                                               onPressed: () {
                                                 final userId = SupaFlow.client.auth.currentUser?.id;
                                                 if (userId != null) {
@@ -2030,7 +2035,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                                             IconButton(
                                               icon: Icon(
                                                 isFav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                                                color: isFav ? Colors.redAccent : Colors.white24,
+                                                color: isFav ? Colors.redAccent : (isDark ? Colors.white24 : Colors.black26),
                                                 size: 20,
                                               ),
                                               onPressed: () => _toggleFavoriteTool(tool['title'] as String),
