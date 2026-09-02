@@ -56,6 +56,7 @@ export 'dynamic_web_view_page.dart';
 export 'chat/whatsapp_group_chat.dart' show WhatsAppGroupChat;
 export 'chat/chat_screen.dart';
 export 'chat/create_group_dialog.dart';
+export 'chat/create_group_page.dart';
 export 'message_screen.dart' show MessageScreen;
 export 'message_list_page.dart' show MessageListPage;
 export 'native_webrtc_call_screen.dart' show NativeWebRTCCallScreen;
