@@ -819,16 +819,34 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                 },
                 child: Hero(
                   tag: 'group_avatar_${widget.groupId}',
-                  child: CircleAvatar(
-                    radius: 18,
-                    backgroundColor: Colors.grey[700],
-                    backgroundImage: widget.groupImage != null
-                        ? NetworkImage(widget.groupImage!)
-                        : null,
-                    child: widget.groupImage == null
-                        ? const Icon(Icons.group, color: Colors.white, size: 20)
-                        : null,
-                  ),
+                  child: widget.groupImage != null
+                      ? CircleAvatar(
+                          radius: 19,
+                          backgroundColor: Colors.grey[800],
+                          backgroundImage: NetworkImage(widget.groupImage!),
+                        )
+                      : widget.groupId.startsWith('p:')
+                          ? const VectorAvatarWidget(
+                              config: VectorAvatarConfig(
+                                hairColor: '#FFFFFC00',
+                                hairStyle: 'dreadlocks',
+                                outfitStyle: 'hoodie',
+                              ),
+                              size: 38,
+                            )
+                          : Container(
+                              width: 38,
+                              height: 38,
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                                gradient: LinearGradient(
+                                  colors: [Color(0xFF4F46E5), Color(0xFF7C3AED)],
+                                ),
+                              ),
+                              child: const Center(
+                                child: Icon(Icons.groups_rounded, color: Colors.white, size: 20),
+                              ),
+                            ),
                 ),
               ),
             ],
@@ -838,23 +856,35 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  widget.groupName,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        widget.groupName,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    if (widget.groupId.startsWith('p:')) ...[
+                      const SizedBox(width: 4),
+                      const Icon(Icons.lock_outline, color: Color(0xFFFFFC00), size: 12),
+                    ],
+                  ],
                 ),
                 const SizedBox(height: 2),
                 Text(
                   widget.groupId.startsWith('p:')
-                      ? 'Tap to view profile'
+                      ? '🔒 End-to-End Encrypted'
                       : (_groupMembers.isEmpty
-                          ? 'Tap for info'
-                          : '${_groupMembers.length} members'),
+                          ? 'Tap for community info'
+                          : '${_groupMembers.length} members • English Lounge'),
                   style: const TextStyle(
-                    fontSize: 12,
+                    fontSize: 11,
                     color: Colors.white70,
                   ),
                 ),

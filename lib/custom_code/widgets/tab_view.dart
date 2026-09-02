@@ -6,6 +6,7 @@ import 'package:pocket_mates_app/backend/supabase/database/database.dart';
 import 'package:pocket_mates_app/custom_code/widgets/gallery_search_page.dart';
 import 'package:pocket_mates_app/flutter_flow/flutter_flow_util.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.dart';
 
 class GalleryTabViewPage extends StatefulWidget {
   const GalleryTabViewPage({super.key});
@@ -1114,13 +1115,13 @@ class MasonryGalleryItemCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: Colors.yellow),
                 ),
-                child: Row(
+                child: const Row(
                   children: [
-                    const Icon(Icons.phone, color: Colors.yellow, size: 20),
-                    const SizedBox(width: 8),
+                    Icon(Icons.verified_user_rounded, color: Colors.yellow, size: 20),
+                    SizedBox(width: 8),
                     Text(
-                      phoneNumber,
-                      style: const TextStyle(
+                      'Official In-App Community',
+                      style: TextStyle(
                         fontWeight: FontWeight.w500,
                         color: Colors.white,
                       ),
@@ -1143,12 +1144,20 @@ class MasonryGalleryItemCard extends StatelessWidget {
             ElevatedButton.icon(
               onPressed: () {
                 Navigator.of(context).pop();
-                sendWhatsAppMessage();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const WhatsAppGroupChat(
+                      groupId: 'hand_skill_community',
+                      groupName: 'Hand Skill Art Community',
+                    ),
+                  ),
+                );
               },
-              icon: const Icon(Icons.chat, color: Colors.black),
+              icon: const Icon(Icons.forum_rounded, color: Colors.black),
               label: const Text(
-                'Join Now',
-                style: TextStyle(color: Colors.black),
+                'Join In-App Community',
+                style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.yellow,
@@ -1161,35 +1170,6 @@ class MasonryGalleryItemCard extends StatelessWidget {
         );
       },
     );
-  }
-
-  final String phoneNumber = "+919497290670";
-  final String message =
-      "Hi! I want to join your Hand Skill Art Community. Please let me know how I can become a member.";
-  // Remove any spaces or special characters from phone number
-  Future<void> sendWhatsAppMessage() async {
-    String phoneNumber = "+919746358192";
-    String message =
-        "Hi! I want to join your Hand Skill Art Community. Please let me know how I can become a member.";
-
-    String whatsappUrl =
-        "https://wa.me/$phoneNumber?text=${Uri.encodeComponent(message)}";
-
-    try {
-      await launchUrl(
-        Uri.parse(whatsappUrl),
-        mode: LaunchMode.externalApplication,
-      );
-    } catch (e) {
-      // Fallback: try opening WhatsApp directly
-      try {
-        await launchUrl(
-          Uri.parse(
-              "whatsapp://send?phone=$phoneNumber&text=${Uri.encodeComponent(message)}"),
-          mode: LaunchMode.externalApplication,
-        );
-      } catch (e2) {}
-    }
   }
 
   Widget _buildCommunityCard(BuildContext context) {
