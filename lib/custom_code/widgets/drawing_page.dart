@@ -1,14 +1,15 @@
 import 'dart:io';
 import 'dart:convert';
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 // import 'package:ed_screen_recorder/ed_screen_recorder.dart';
@@ -857,9 +858,62 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
 
   Widget _sideBtn(IconData icon, bool active, VoidCallback onTap) => IconButton(icon: Icon(icon, color: active ? Color(0xFFFFFC00) : Colors.white30, size: 22), onPressed: onTap);
 
+  Future<void> _convertTo1of1Avatar() async {
+    try {
+      HapticFeedback.heavyImpact();
+      RenderRepaintBoundary? boundary = _canvasKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+      if (boundary == null) return;
+      ui.Image image = await boundary.toImage(pixelRatio: 2.0);
+      ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      if (byteData == null) return;
+
+      final base64Image = 'data:image/png;base64,${base64Encode(byteData.buffer.asUint8List())}';
+      final dnaHash = '0xHAND-${DateTime.now().millisecondsSinceEpoch % 1000000}';
+
+      final user = SupaFlow.client.auth.currentUser;
+      if (user != null) {
+        await SupaFlow.client.from('profile').update({
+          'image_url': base64Image,
+          'avatar_config': {
+            'species': 'hand_drawn_masterpiece',
+            'dnaHash': dnaHash,
+            'rarityTier': 'Mythic 1-of-1 Hand-Drawn',
+            'artStyle': 'sketch',
+          },
+          'updated_at': DateTime.now().toIso8601String(),
+        }).eq('user_id', user.id);
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.stars_rounded, color: Colors.yellow),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    '🎉 Converted hand drawing to your official 1-of-1 NFT Profile Avatar!',
+                    style: GoogleFonts.outfit(color: Colors.black, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: const Color(0xFFFFFC00),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint("Avatar convert error: $e");
+    }
+  }
+
   Widget _buildTopBar(FlutterFlowTheme theme) => Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
     _headerBtn(Icons.home, () => Navigator.pop(context)),
     Row(children: [
+      _headerBtn(Icons.face_retouching_natural_rounded, _convertTo1of1Avatar),
+      const SizedBox(width: 8),
       _headerBtn(Icons.save_outlined, _saveImage),
       const SizedBox(width: 8),
       _headerBtn(Icons.layers_outlined, () => setState(() => _showLayersPanel = !_showLayersPanel)),

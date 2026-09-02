@@ -33,6 +33,9 @@ class NftItem {
   final List<NftTrait> traits;
   final bool isVerified;
   final bool isTrending;
+  final bool isClaimed;
+  final String? claimedByUsername;
+  final bool isPremium;
 
   const NftItem({
     required this.id,
@@ -54,6 +57,9 @@ class NftItem {
     required this.traits,
     this.isVerified = true,
     this.isTrending = false,
+    this.isClaimed = false,
+    this.claimedByUsername,
+    this.isPremium = false,
   });
 
   String get timeRemaining {

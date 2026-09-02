@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/custom_code/widgets/doodle_background_painter.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/avatar_uniqueness_service.dart';
 import 'nft_marketplace/nft_models.dart';
 import 'nft_marketplace/nft_card_widget.dart';
 import 'nft_marketplace/nft_creator_studio_page.dart';
@@ -16,29 +16,61 @@ class NftAvatarMarketTabView extends StatefulWidget {
 
 class _NftAvatarMarketTabViewState extends State<NftAvatarMarketTabView> {
   String _selectedCategory = 'Trending';
-  int _userCoins = 1500;
+  bool _isGenerating = false;
   late List<NftItem> _items;
 
   final List<String> _categories = [
     'Trending',
-    'Popular',
-    'Following',
-    'Bored Apes',
-    'Cyberpunk',
-    'Pixel Punks',
+    'Unclaimed Only',
+    'Bored Apes (BAYC)',
+    'Claimed 1-of-1s',
   ];
 
   @override
   void initState() {
     super.initState();
-    _loadBalance();
-    _items = NftMockData.getItems();
+    AvatarUniquenessService().init();
+    _loadCatalog();
   }
 
-  Future<void> _loadBalance() async {
-    final prefs = await SharedPreferences.getInstance();
-    final coins = prefs.getInt('pocket_coins_balance') ?? 1500;
-    if (mounted) setState(() => _userCoins = coins);
+  void _loadCatalog() {
+    final base = NftMockData.getItems();
+    final procedural = AvatarUniquenessService().generateProceduralBoredApes(count: 30);
+    _items = [...base, ...procedural];
+  }
+
+  Future<void> _generateFreshBatch() async {
+    setState(() => _isGenerating = true);
+    HapticFeedback.mediumImpact();
+
+    await Future.delayed(const Duration(milliseconds: 600));
+    final fresh = AvatarUniquenessService().generateProceduralBoredApes(count: 20);
+
+    if (mounted) {
+      setState(() {
+        _items.insertAll(0, fresh);
+        _isGenerating = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.auto_awesome, color: Colors.yellow),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  '✨ Generated 20+ fresh unique 1-of-1 Bored Ape NFT avatars!',
+                  style: GoogleFonts.outfit(color: Colors.black, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: const Color(0xFFFFFC00),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 
   void _openCreatorStudio() {
@@ -60,8 +92,20 @@ class _NftAvatarMarketTabViewState extends State<NftAvatarMarketTabView> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final heroItem = _items.first;
-    final collectionItems = _items.skip(1).toList();
+
+    final filteredItems = _items.where((item) {
+      final isClaimed = item.isClaimed || AvatarUniquenessService().isClaimed(item.id);
+      if (_selectedCategory == 'Unclaimed Only') {
+        return !isClaimed;
+      }
+      if (_selectedCategory == 'Claimed 1-of-1s') {
+        return isClaimed;
+      }
+      return true;
+    }).toList();
+
+    final heroItem = filteredItems.isNotEmpty ? filteredItems.first : _items.first;
+    final collectionItems = filteredItems.skip(1).toList();
 
     return Stack(
       children: [
@@ -85,38 +129,45 @@ class _NftAvatarMarketTabViewState extends State<NftAvatarMarketTabView> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Top Bar (Matching Screenshot 2)
+                    // Top Bar
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        // Coins Pill & Mint Button
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF1B1D2A),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.3)),
+                        // Auto-Replenish / Generate Fresh Button
+                        ElevatedButton.icon(
+                          onPressed: _isGenerating ? null : _generateFreshBatch,
+                          icon: _isGenerating
+                              ? const SizedBox(
+                                  width: 14,
+                                  height: 14,
+                                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                )
+                              : const Icon(Icons.refresh_rounded, size: 16, color: Color(0xFFFFD700)),
+                          label: Text(
+                            'Generate Fresh',
+                            style: GoogleFonts.outfit(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                              color: Colors.white,
+                            ),
                           ),
-                          child: Row(
-                            children: [
-                              const Text('🪙', style: TextStyle(fontSize: 14)),
-                              const SizedBox(width: 6),
-                              Text(
-                                '$_userCoins Coins',
-                                style: GoogleFonts.outfit(
-                                  color: const Color(0xFFFFD700),
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ],
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF1B1D2A),
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              side: const BorderSide(color: Colors.white12),
+                            ),
                           ),
                         ),
+
+                        // Mint Custom Button
                         ElevatedButton.icon(
                           onPressed: _openCreatorStudio,
                           icon: const Icon(Icons.auto_awesome, size: 14, color: Colors.black),
                           label: Text(
-                            'Mint NFT',
+                            'Mint 1-of-1 Ape',
                             style: GoogleFonts.outfit(
                               fontWeight: FontWeight.w900,
                               fontSize: 12,
@@ -134,7 +185,7 @@ class _NftAvatarMarketTabViewState extends State<NftAvatarMarketTabView> {
                     ),
                     const SizedBox(height: 18),
 
-                    // Big Bold Headline (Matching Screenshot 2)
+                    // Big Bold Headline (Matching user screenshot 2)
                     Text(
                       "Find Your\nNFT's Today",
                       style: GoogleFonts.outfit(
@@ -147,7 +198,7 @@ class _NftAvatarMarketTabViewState extends State<NftAvatarMarketTabView> {
                     ),
                     const SizedBox(height: 18),
 
-                    // Category Filter Pills (Matching Screenshot 2)
+                    // Category Filter Pills
                     SizedBox(
                       height: 44,
                       child: ListView.separated(
@@ -162,7 +213,7 @@ class _NftAvatarMarketTabViewState extends State<NftAvatarMarketTabView> {
                             onTap: () => setState(() => _selectedCategory = cat),
                             child: AnimatedContainer(
                               duration: const Duration(milliseconds: 200),
-                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
                               decoration: BoxDecoration(
                                 gradient: isSel
                                     ? const LinearGradient(
@@ -198,19 +249,19 @@ class _NftAvatarMarketTabViewState extends State<NftAvatarMarketTabView> {
                     ),
                     const SizedBox(height: 24),
 
-                    // Hero Featured NFT Card (Matching Screenshot 2 center card)
+                    // Hero Featured NFT Card
                     SizedBox(
                       height: 380,
                       width: double.infinity,
                       child: NftCardWidget(
                         item: heroItem,
                         isLarge: true,
-                        onPurchased: _loadBalance,
+                        onPurchased: () => setState(() {}),
                       ),
                     ),
                     const SizedBox(height: 28),
 
-                    // Latest Collection Section (Matching Screenshot 2)
+                    // Latest Collection Section
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -223,7 +274,7 @@ class _NftAvatarMarketTabViewState extends State<NftAvatarMarketTabView> {
                           ),
                         ),
                         Text(
-                          'View All (${_items.length})',
+                          'Available: ${filteredItems.length}',
                           style: GoogleFonts.outfit(
                             color: const Color(0xFFFFFC00),
                             fontSize: 12,
@@ -253,7 +304,7 @@ class _NftAvatarMarketTabViewState extends State<NftAvatarMarketTabView> {
                       width: 190,
                       child: NftCardWidget(
                         item: item,
-                        onPurchased: _loadBalance,
+                        onPurchased: () => setState(() {}),
                       ),
                     );
                   },
@@ -287,10 +338,10 @@ class _NftAvatarMarketTabViewState extends State<NftAvatarMarketTabView> {
                 ),
                 delegate: SliverChildBuilderDelegate(
                   (context, index) => NftCardWidget(
-                    item: _items[index],
-                    onPurchased: _loadBalance,
+                    item: filteredItems[index],
+                    onPurchased: () => setState(() {}),
                   ),
-                  childCount: _items.length,
+                  childCount: filteredItems.length,
                 ),
               ),
             ),

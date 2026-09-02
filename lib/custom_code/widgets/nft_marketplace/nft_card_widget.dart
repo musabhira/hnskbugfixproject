@@ -1,9 +1,11 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/bored_ape_painter.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/avatar_uniqueness_service.dart';
 import 'nft_models.dart';
 import 'nft_artist_profile_page.dart';
 
@@ -58,6 +60,8 @@ class _NftCardWidgetState extends State<NftCardWidget> {
   @override
   Widget build(BuildContext context) {
     final item = widget.item;
+    final isClaimed = item.isClaimed || AvatarUniquenessService().isClaimed(item.id);
+    final claimInfo = AvatarUniquenessService().getClaimRecord(item.id);
 
     return GestureDetector(
       onTap: _openDetailModal,
@@ -109,7 +113,7 @@ class _NftCardWidgetState extends State<NftCardWidget> {
                       colors: [
                         Colors.transparent,
                         Colors.black.withValues(alpha: 0.1),
-                        Colors.black.withValues(alpha: 0.8),
+                        Colors.black.withValues(alpha: 0.85),
                       ],
                       stops: const [0.0, 0.55, 1.0],
                     ),
@@ -153,37 +157,69 @@ class _NftCardWidgetState extends State<NftCardWidget> {
                 ),
               ),
 
-              // Top Left Rarity Badge
+              // Top Left Rarity Badge or Claimed Badge
               Positioned(
                 top: 14,
                 left: 14,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.5),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.5)),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.verified_rounded, color: Color(0xFFFFD700), size: 12),
-                      const SizedBox(width: 4),
-                      Text(
-                        item.rarityTier.toUpperCase(),
-                        style: GoogleFonts.outfit(
-                          color: const Color(0xFFFFD700),
-                          fontSize: 9,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 0.5,
+                child: isClaimed
+                    ? Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFFFF007A), Color(0xFF7928CA)],
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFFF007A).withValues(alpha: 0.5),
+                              blurRadius: 8,
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.lock_rounded, color: Colors.white, size: 12),
+                            const SizedBox(width: 4),
+                            Text(
+                              'CLAIMED 1-OF-1',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontSize: 9,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.5),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.5)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.verified_rounded, color: Color(0xFFFFD700), size: 12),
+                            const SizedBox(width: 4),
+                            Text(
+                              item.rarityTier.toUpperCase(),
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFFFFD700),
+                                fontSize: 9,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ],
-                  ),
-                ),
               ),
 
-              // Bottom Info Card Overlay (Matching user screenshot 2)
+              // Bottom Info Card Overlay
               Positioned(
                 bottom: 12,
                 left: 12,
@@ -214,10 +250,13 @@ class _NftCardWidgetState extends State<NftCardWidget> {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              item.artistName,
+                              isClaimed
+                                  ? 'Owned by @${claimInfo?.username ?? "Mate"}'
+                                  : item.artistName,
                               style: GoogleFonts.inter(
-                                color: Colors.white60,
+                                color: isClaimed ? const Color(0xFFFFFC00) : Colors.white60,
                                 fontSize: widget.isLarge ? 11 : 10,
+                                fontWeight: isClaimed ? FontWeight.bold : FontWeight.normal,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -226,17 +265,17 @@ class _NftCardWidgetState extends State<NftCardWidget> {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      // Price Tag
+                      // Price Tag or Owned Pill
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                         decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF7928CA), Color(0xFFFF007A)],
-                          ),
+                          gradient: isClaimed
+                              ? const LinearGradient(colors: [Color(0xFF374151), Color(0xFF1F2937)])
+                              : const LinearGradient(colors: [Color(0xFF7928CA), Color(0xFFFF007A)]),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
-                          '${item.priceEth} ETH',
+                          isClaimed ? 'CLAIMED' : '${item.priceEth} ETH',
                           style: GoogleFonts.outfit(
                             color: Colors.white,
                             fontWeight: FontWeight.w900,
@@ -277,11 +316,33 @@ class _NftDetailModalState extends State<NftDetailModal> {
   Future<void> _claimAsAvatar() async {
     final item = widget.item;
 
+    if (AvatarUniquenessService().isClaimed(item.id)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('⚠️ This 1-of-1 NFT Avatar has already been claimed by another user!'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
     setState(() => _isProcessing = true);
     HapticFeedback.heavyImpact();
 
     try {
       final user = SupaFlow.client.auth.currentUser;
+      final username = user?.email?.split('@').first ?? 'Mate_${Random().nextInt(9000) + 1000}';
+      final userId = user?.id ?? 'anon_${DateTime.now().millisecondsSinceEpoch}';
+
+      // 1. Register in Global Uniqueness Engine
+      await AvatarUniquenessService().claimAvatar(
+        avatarId: item.id,
+        userId: userId,
+        username: username,
+        dnaHash: item.dnaHash,
+      );
+
+      // 2. Update Supabase Profile
       if (user != null) {
         await SupaFlow.client.from('profile').update({
           'image_url': item.imageUrl,
@@ -291,6 +352,16 @@ class _NftDetailModalState extends State<NftDetailModal> {
             'dnaHash': item.dnaHash,
             'rarityTier': item.rarityTier,
             'artStyle': 'bayc',
+            'traits': item.apeTraits != null
+                ? {
+                    'fur': item.apeTraits!.furColor,
+                    'eyes': item.apeTraits!.eyes,
+                    'mouth': item.apeTraits!.mouth,
+                    'headwear': item.apeTraits!.headwear,
+                    'outfit': item.apeTraits!.outfit,
+                    'bg': item.apeTraits!.background,
+                  }
+                : null,
           },
           'updated_at': DateTime.now().toIso8601String(),
         }).eq('user_id', user.id);
@@ -307,7 +378,7 @@ class _NftDetailModalState extends State<NftDetailModal> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    '🎉 Owned ${item.title}! 1-of-1 Bored Ape NFT is now your exclusive profile avatar!',
+                    '🎉 Owned ${item.title}! 1-of-1 Bored Ape NFT is permanently bound to @$username!',
                     style: GoogleFonts.outfit(color: Colors.black, fontWeight: FontWeight.bold),
                   ),
                 ),
@@ -332,6 +403,8 @@ class _NftDetailModalState extends State<NftDetailModal> {
   @override
   Widget build(BuildContext context) {
     final item = widget.item;
+    final isClaimed = item.isClaimed || AvatarUniquenessService().isClaimed(item.id);
+    final claimInfo = AvatarUniquenessService().getClaimRecord(item.id);
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.88,
@@ -448,7 +521,7 @@ class _NftDetailModalState extends State<NftDetailModal> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
-                          item.rarityTier,
+                          isClaimed ? 'CLAIMED 1-OF-1' : item.rarityTier,
                           style: GoogleFonts.outfit(
                             color: Colors.white,
                             fontSize: 11,
@@ -460,7 +533,7 @@ class _NftDetailModalState extends State<NftDetailModal> {
                   ),
                   const SizedBox(height: 14),
 
-                  // Creator Info Card (Matching Screenshot 3)
+                  // Ownership / Creator Info Card
                   GestureDetector(
                     onTap: () {
                       Navigator.push(
@@ -512,8 +585,14 @@ class _NftDetailModalState extends State<NftDetailModal> {
                                   ],
                                 ),
                                 Text(
-                                  'Creator & Concept Artist • ${item.artistHandle}',
-                                  style: GoogleFonts.inter(color: Colors.white54, fontSize: 11),
+                                  isClaimed
+                                      ? 'Permanently owned by @${claimInfo?.username ?? "Mate"}'
+                                      : 'Creator & Concept Artist • ${item.artistHandle}',
+                                  style: GoogleFonts.inter(
+                                    color: isClaimed ? const Color(0xFFFFFC00) : Colors.white54,
+                                    fontSize: 11,
+                                    fontWeight: isClaimed ? FontWeight.bold : FontWeight.normal,
+                                  ),
                                 ),
                               ],
                             ),
@@ -542,16 +621,16 @@ class _NftDetailModalState extends State<NftDetailModal> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Auction ending in',
+                              isClaimed ? 'Status' : 'Auction ending in',
                               style: GoogleFonts.inter(color: Colors.white54, fontSize: 11),
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              item.timeRemaining,
+                              isClaimed ? 'LOCKED / CLAIMED' : item.timeRemaining,
                               style: GoogleFonts.outfit(
-                                color: const Color(0xFFFFFC00),
+                                color: isClaimed ? const Color(0xFFFF007A) : const Color(0xFFFFFC00),
                                 fontWeight: FontWeight.bold,
-                                fontSize: 16,
+                                fontSize: 15,
                                 letterSpacing: 1,
                               ),
                             ),
@@ -561,7 +640,7 @@ class _NftDetailModalState extends State<NftDetailModal> {
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
                             Text(
-                              'Current Price / Bid',
+                              'Valuation',
                               style: GoogleFonts.inter(color: Colors.white54, fontSize: 11),
                             ),
                             const SizedBox(height: 4),
@@ -633,33 +712,29 @@ class _NftDetailModalState extends State<NftDetailModal> {
               color: Color(0xFF14151F),
               border: Border(top: BorderSide(color: Colors.white10)),
             ),
-            child: Row(
-              children: [
-                // Claim as My 1-of-1 NFT Avatar
-                Expanded(
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFFFD700),
-                      foregroundColor: Colors.black,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      elevation: 0,
-                    ),
-                    onPressed: !_isProcessing ? _claimAsAvatar : null,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.verified, color: Colors.black, size: 18),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Claim 1-of-1 NFT Avatar',
-                          style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 13),
-                        ),
-                      ],
-                    ),
-                  ),
+            child: SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: isClaimed ? const Color(0xFF2C3E50) : const Color(0xFFFFD700),
+                  foregroundColor: isClaimed ? Colors.white70 : Colors.black,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  elevation: 0,
                 ),
-              ],
+                onPressed: isClaimed || _isProcessing ? null : _claimAsAvatar,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(isClaimed ? Icons.lock : Icons.verified, size: 18),
+                    const SizedBox(width: 8),
+                    Text(
+                      isClaimed ? 'Already Claimed by Owner' : 'Claim 1-of-1 NFT Avatar',
+                      style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 13),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
         ],
