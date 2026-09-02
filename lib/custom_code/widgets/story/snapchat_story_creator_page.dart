@@ -400,7 +400,8 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
                                       children: [
                                         VectorAvatarWidget(
                                           config: _myAvatarConfig.copyWith(
-                                            faceExpression: item['exp']!,
+                                            mouthStyle: item['exp'] == 'laugh' ? 'laugh' : (item['exp'] == 'wink' ? 'smirk' : 'smile'),
+                                            eyeStyle: item['exp'] == 'wink' ? 'wink' : (item['exp'] == 'fire' ? 'sparkle' : 'anime'),
                                           ),
                                           size: 48,
                                           showAura: true,
@@ -722,7 +723,8 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
                           children: [
                             VectorAvatarWidget(
                               config: _myAvatarConfig.copyWith(
-                                faceExpression: sticker.avatarExpression ?? 'happy',
+                                mouthStyle: sticker.avatarExpression == 'laugh' ? 'laugh' : (sticker.avatarExpression == 'wink' ? 'smirk' : 'smile'),
+                                eyeStyle: sticker.avatarExpression == 'wink' ? 'wink' : 'anime',
                               ),
                               size: 40,
                               showAura: false,

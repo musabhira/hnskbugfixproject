@@ -28,7 +28,9 @@ import 'package:video_compress/video_compress.dart';
 import 'package:video_player/video_player.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
-// import '../webrtc_call_screen.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
 import '../image_viewer.dart';
 import 'package:pocket_mates_app/custom_code/widgets/ai_prompt_service.dart' show AIService;
 import 'package:pocket_mates_app/custom_code/widgets/gallery_search_page.dart';
@@ -105,6 +107,52 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   final Set<String> _loadingAnalysisMessageIds = {};
 
   bool _isAdminBlockedFromHub = false;
+
+  // Speech-to-Text for English Hub
+  final stt.SpeechToText _speechToText = stt.SpeechToText();
+  bool _isSttListening = false;
+
+  Future<void> _toggleEnglishSpeechDictation() async {
+    if (_isSttListening) {
+      await _speechToText.stop();
+      safeSetState(() => _isSttListening = false);
+      HapticFeedback.mediumImpact();
+      return;
+    }
+
+    final available = await _speechToText.initialize(
+      onError: (val) => safeSetState(() => _isSttListening = false),
+      onStatus: (val) {
+        if (val == 'done' || val == 'notListening') {
+          safeSetState(() => _isSttListening = false);
+        }
+      },
+    );
+
+    if (available) {
+      safeSetState(() => _isSttListening = true);
+      HapticFeedback.mediumImpact();
+      _speechToText.listen(
+        onResult: (val) {
+          safeSetState(() {
+            _messageController.text = val.recognizedWords;
+          });
+        },
+        localeId: 'en_US',
+        listenFor: const Duration(seconds: 30),
+        pauseFor: const Duration(seconds: 3),
+      );
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Microphone or Speech Recognition not available'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    }
+  }
 
   Future<void> _checkEnglishHubAdminBlock() async {
     if (widget.groupName != 'English Hub') return;
@@ -2694,6 +2742,39 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                     backgroundColor: Colors.yellow,
                     radius: 24,
                     child: Icon(_isEditing ? Icons.check : Icons.send, color: Colors.black),
+                  ),
+                );
+              } else if (widget.groupName == 'English Hub') {
+                // English Hub: Direct Voice-To-English Speech-To-Text Transcriber
+                return GestureDetector(
+                  onTap: _toggleEnglishSpeechDictation,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 250),
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        colors: _isSttListening
+                            ? [const Color(0xFFEF4444), const Color(0xFFFF8906)]
+                            : [const Color(0xFF10B981), const Color(0xFFFFD700)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: (_isSttListening ? Colors.redAccent : const Color(0xFF10B981))
+                              .withValues(alpha: 0.5),
+                          blurRadius: _isSttListening ? 16 : 8,
+                          spreadRadius: _isSttListening ? 3 : 0,
+                        ),
+                      ],
+                    ),
+                    child: Icon(
+                      _isSttListening ? Icons.mic_rounded : Icons.mic_none_rounded,
+                      color: Colors.black,
+                      size: 24,
+                    ),
                   ),
                 );
               } else {

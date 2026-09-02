@@ -343,82 +343,152 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 1. Group Squad Avatar / Badge Generator Preview
+            // 1. Group Squad Avatar / Badge Generator Preview (Crest Shield)
             Center(
               child: Column(
                 children: [
                   Container(
-                    width: 130,
-                    height: 130,
+                    width: 170,
+                    height: 170,
                     decoration: BoxDecoration(
-                      shape: BoxShape.circle,
+                      borderRadius: BorderRadius.circular(32),
                       gradient: LinearGradient(
-                        colors: activeTheme.gradientColors,
+                        colors: [
+                          ...activeTheme.gradientColors,
+                          const Color(0xFF14141E),
+                        ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
-                      border: Border.all(color: const Color(0xFFFFFC00), width: 2.5),
+                      border: Border.all(color: const Color(0xFFFFFC00), width: 3),
                       boxShadow: [
                         BoxShadow(
-                          color: activeTheme.gradientColors.first.withValues(alpha: 0.4),
-                          blurRadius: 20,
-                          spreadRadius: 2,
+                          color: activeTheme.gradientColors.first.withValues(alpha: 0.45),
+                          blurRadius: 28,
+                          spreadRadius: 4,
+                        ),
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.6),
+                          blurRadius: 15,
+                          offset: const Offset(0, 10),
                         ),
                       ],
                     ),
                     child: _isUsingCustomPhoto && _selectedImageBytes != null
-                        ? ClipOval(
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(28),
                             child: Image.memory(
                               _selectedImageBytes!,
                               fit: BoxFit.cover,
-                              width: 130,
-                              height: 130,
+                              width: 170,
+                              height: 170,
                             ),
                           )
                         : Stack(
                             alignment: Alignment.center,
                             children: [
-                              // Multi-avatar squad cluster
+                              // Decorative Background Crest Rings
                               Positioned(
-                                left: 18,
-                                top: 22,
-                                child: VectorAvatarWidget(
-                                  config: _myAvatarConfig,
-                                  size: 48,
-                                  showAura: false,
-                                ),
-                              ),
-                              if (_selectedMembers.isNotEmpty)
-                                Positioned(
-                                  right: 18,
-                                  top: 22,
-                                  child: VectorAvatarWidget(
-                                    config: _getMemberAvatarConfig(_selectedMembers.first),
-                                    size: 48,
-                                    showAura: false,
+                                top: -20,
+                                child: Container(
+                                  width: 120,
+                                  height: 120,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.white.withValues(alpha: 0.08),
                                   ),
                                 ),
-                              // Squad Icon Emblem at bottom
+                              ),
+                              // Multi-avatar 3D Depth squad formation
+                              if (_selectedMembers.isNotEmpty)
+                                Positioned(
+                                  left: 12,
+                                  top: 28,
+                                  child: Transform.scale(
+                                    scale: 0.85,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        border: Border.all(color: Colors.white38, width: 2),
+                                      ),
+                                      child: VectorAvatarWidget(
+                                        config: _getMemberAvatarConfig(_selectedMembers.first),
+                                        size: 46,
+                                        showAura: false,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              if (_selectedMembers.length > 1)
+                                Positioned(
+                                  right: 12,
+                                  top: 28,
+                                  child: Transform.scale(
+                                    scale: 0.85,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        border: Border.all(color: Colors.white38, width: 2),
+                                      ),
+                                      child: VectorAvatarWidget(
+                                        config: _getMemberAvatarConfig(_selectedMembers[1]),
+                                        size: 46,
+                                        showAura: false,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              // Captain Avatar (Foreground Center)
+                              Positioned(
+                                top: 22,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border: Border.all(color: const Color(0xFFFFFC00), width: 2.5),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withValues(alpha: 0.5),
+                                        blurRadius: 10,
+                                        spreadRadius: 1,
+                                      ),
+                                    ],
+                                  ),
+                                  child: VectorAvatarWidget(
+                                    config: _myAvatarConfig,
+                                    size: 58,
+                                    showAura: true,
+                                  ),
+                                ),
+                              ),
+                              // Squad Emblem Ribbon
                               Positioned(
                                 bottom: 10,
                                 child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                                   decoration: BoxDecoration(
-                                    color: Colors.black87,
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(color: Colors.white30),
+                                    color: const Color(0xFF0F1016),
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(color: const Color(0xFFFFFC00).withValues(alpha: 0.6), width: 1.5),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withValues(alpha: 0.6),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
                                   ),
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Icon(activeTheme.icon, color: const Color(0xFFFFFC00), size: 14),
-                                      const SizedBox(width: 4),
+                                      const SizedBox(width: 6),
                                       Text(
-                                        '${_selectedMembers.length + 1} Mates',
+                                        '${_selectedMembers.length + 1} SQUAD MATES',
                                         style: GoogleFonts.outfit(
                                           color: Colors.white,
                                           fontSize: 10,
-                                          fontWeight: FontWeight.bold,
+                                          fontWeight: FontWeight.w900,
+                                          letterSpacing: 0.8,
                                         ),
                                       ),
                                     ],
@@ -428,18 +498,19 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
                             ],
                           ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 14),
                   Text(
                     groupName,
                     style: GoogleFonts.outfit(
                       color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 0.5,
                     ),
                   ),
                   Text(
-                    '${activeTheme.name} • ${_isPublicGroup ? "Public Squad 🌟" : "Private 🔒"}',
-                    style: GoogleFonts.inter(color: Colors.white60, fontSize: 12),
+                    '${activeTheme.name} • ${_isPublicGroup ? "Public English Squad 🌟" : "Private Pocket Squad 🔒"}',
+                    style: GoogleFonts.inter(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w500),
                   ),
                   const SizedBox(height: 10),
 

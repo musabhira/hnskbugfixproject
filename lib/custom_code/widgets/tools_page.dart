@@ -1218,13 +1218,16 @@ class _TaskManagerScreenState extends State<ToolsPage> {
       {
         'title': 'English Hub & Habits',
         'subtitle': 'Speaking, Vocab & Streaks',
-        'icon': Icons.school_rounded,
-        'color': const Color(0xFFFFD700),
+        'icon': Icons.record_voice_over_rounded,
+        'category': 'Language',
+        'color': const Color(0xFF10B981),
+        'gradient': [const Color(0xFF059669), const Color(0xFFFFD700)],
         'avatar': const VectorAvatarConfig(
           outfitStyle: 'detective_trench',
           auraStyle: 'pocket_gold',
           hairStyle: 'bob_cut',
           faceShape: 'oval',
+          skinColor: '#F5D0A9',
         ),
         'onTap': () => Navigator.push(
             context,
@@ -1232,66 +1235,151 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                 builder: (context) => const EnglishLearningHubPage())),
       },
       {
-        'title': 'Zoyarex POS Admin',
-        'subtitle': 'Admin Control Panel',
-        'icon': Icons.admin_panel_settings,
-        'color': Colors.blueAccent,
-        'avatar': const VectorAvatarConfig(
-          outfitStyle: 'executive_blazer',
-          auraStyle: 'royal_gold',
-          hairStyle: 'afro_fade',
-          faceShape: 'square',
-        ),
-        'onTap': () => Navigator.push(context,
-            MaterialPageRoute(builder: (context) => const ZoyarexLoginPage())),
-      },
-      {
-        'title': 'Zoyarex AI',
-        'subtitle': 'AI Assistant for Zoyarex',
-        'icon': Icons.smart_toy_rounded,
-        'color': Colors.blue,
-        'avatar': const VectorAvatarConfig(
-          outfitStyle: 'astronaut_suit',
-          auraStyle: 'cyber_synthwave',
-          hairStyle: 'anime_spiky',
-          faceShape: 'sharp',
-        ),
-        'onTap': () => Navigator.push(context,
-            MaterialPageRoute(builder: (context) => const ZoyarexAiPage())),
-      },
-      {
-        'title': 'Zoyarex Super Admin',
-        'subtitle': 'Super Admin Console',
-        'icon': Icons.manage_accounts,
-        'color': Colors.purpleAccent,
-        'avatar': const VectorAvatarConfig(
-          outfitStyle: 'executive_blazer',
-          auraStyle: 'royal_gold',
-          hairStyle: 'buzz_cut',
-          faceShape: 'sharp',
-        ),
-        'onTap': () => Navigator.push(context,
-            MaterialPageRoute(builder: (context) => const ZoyarexLoginPage())),
-      },
-      {
         'title': 'Drawing Tool',
         'subtitle': 'Creative Sketchbook',
-        'icon': Icons.brush,
-        'color': const Color(0xFFFFD700),
+        'icon': Icons.palette_rounded,
+        'category': 'Creative',
+        'color': const Color(0xFFFF007A),
+        'gradient': [const Color(0xFFFF007A), const Color(0xFF7928CA)],
         'avatar': const VectorAvatarConfig(
           outfitStyle: 'artist_beret',
           auraStyle: 'sakura_blossom',
           hairStyle: 'curly_top',
           faceShape: 'round',
+          hairColor: '#FF2A6D',
         ),
         'onTap': () => Navigator.push(context,
             MaterialPageRoute(builder: (context) => const DrawingAppHome())),
       },
       {
+        'title': 'Poster Maker',
+        'subtitle': 'Design Pro Banners',
+        'icon': Icons.photo_library_rounded,
+        'category': 'Design',
+        'color': const Color(0xFFFF5722),
+        'gradient': [const Color(0xFFFF5722), const Color(0xFFFF9800)],
+        'avatar': const VectorAvatarConfig(
+          outfitStyle: 'tech_hoodie',
+          auraStyle: 'comic_boom',
+          hairStyle: 'side_part',
+          faceShape: 'oval',
+          skinColor: '#FFDFC4',
+        ),
+        'onTap': () => Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => const TemplateGalleryPage())),
+      },
+      {
+        'title': 'Chess Match',
+        'subtitle': 'Tactical Grandmaster',
+        'icon': Icons.casino_rounded,
+        'category': 'Strategy',
+        'color': const Color(0xFFFFB700),
+        'gradient': [const Color(0xFFFFB700), const Color(0xFFE65100)],
+        'avatar': const VectorAvatarConfig(
+          outfitStyle: 'royal_cape',
+          auraStyle: 'royal_gold',
+          hairStyle: 'long_wavy',
+          faceShape: 'sharp',
+          skinColor: '#E0AC69',
+        ),
+        'onTap': () => Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => const ChessMatchmakingPage())),
+      },
+      {
+        'title': 'Poki Games',
+        'subtitle': 'Online Play with Mates',
+        'icon': Icons.videogame_asset_rounded,
+        'category': 'Arcade',
+        'color': const Color(0xFF00E5FF),
+        'gradient': [const Color(0xFF00E5FF), const Color(0xFF00FF66)],
+        'avatar': const VectorAvatarConfig(
+          outfitStyle: 'cyberpunk_jacket',
+          auraStyle: 'pixel_arcade',
+          hairStyle: 'anime_spiky',
+          faceShape: 'sharp',
+          hairColor: '#00FF66',
+        ),
+        'onTap': () => Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const PokiGamesPage())),
+      },
+      {
+        'title': 'Crazy Games',
+        'subtitle': 'Action & Multiplayer',
+        'icon': Icons.sports_esports_rounded,
+        'category': 'Gaming',
+        'color': const Color(0xFF8B5CF6),
+        'gradient': [const Color(0xFF8B5CF6), const Color(0xFFEC4899)],
+        'avatar': const VectorAvatarConfig(
+          outfitStyle: 'cyberpunk_jacket',
+          auraStyle: 'cyber_synthwave',
+          hairStyle: 'spiky',
+          faceShape: 'round',
+          hairColor: '#EC4899',
+        ),
+        'onTap': () => Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const CrazyGamesPage())),
+      },
+      {
+        'title': 'Bulk Sender',
+        'subtitle': 'Instant Group Blast',
+        'icon': Icons.rocket_launch_rounded,
+        'category': 'Comms',
+        'color': const Color(0xFF10B981),
+        'gradient': [const Color(0xFF10B981), const Color(0xFF06B6D4)],
+        'avatar': const VectorAvatarConfig(
+          outfitStyle: 'tech_hoodie',
+          auraStyle: 'matrix_green',
+          hairStyle: 'undercut',
+          faceShape: 'sharp',
+        ),
+        'onTap': () => Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const BulkSenderPage())),
+      },
+      {
+        'title': 'Travel Radar',
+        'subtitle': 'Explore Global Mates',
+        'icon': Icons.radar_rounded,
+        'category': 'Explore',
+        'color': const Color(0xFF06B6D4),
+        'gradient': [const Color(0xFF06B6D4), const Color(0xFF3B82F6)],
+        'avatar': const VectorAvatarConfig(
+          outfitStyle: 'aviator_jacket',
+          auraStyle: 'electric_aqua',
+          hairStyle: 'curly_top',
+          faceShape: 'round',
+        ),
+        'onTap': () => Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const NearbyUsersPage())),
+      },
+      {
+        'title': 'Password Pro',
+        'subtitle': 'Fort Knox Security',
+        'icon': Icons.lock_person_rounded,
+        'category': 'Security',
+        'color': const Color(0xFF64748B),
+        'gradient': [const Color(0xFF334155), const Color(0xFF0F172A)],
+        'avatar': const VectorAvatarConfig(
+          outfitStyle: 'secret_agent_suit',
+          auraStyle: 'obsidian_stealth',
+          hairStyle: 'buzz_cut',
+          faceShape: 'sharp',
+        ),
+        'onTap': () => Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => const PasswordGeneratorPage())),
+      },
+      {
         'title': 'Dual Recorder',
         'subtitle': 'YouTube & Reels',
-        'icon': Icons.duo_rounded,
-        'color': const Color(0xFFFFB700),
+        'icon': Icons.videocam_rounded,
+        'category': 'Video',
+        'color': const Color(0xFFEF4444),
+        'gradient': [const Color(0xFFEF4444), const Color(0xFFF97316)],
         'avatar': const VectorAvatarConfig(
           outfitStyle: 'cyberpunk_jacket',
           auraStyle: 'comic_boom',
@@ -1306,8 +1394,10 @@ class _TaskManagerScreenState extends State<ToolsPage> {
       {
         'title': 'Schedule',
         'subtitle': 'Time Matrix',
-        'icon': Icons.calendar_today_rounded,
-        'color': const Color(0xFFE8D3A7),
+        'icon': Icons.calendar_month_rounded,
+        'category': 'Planning',
+        'color': const Color(0xFF3B82F6),
+        'gradient': [const Color(0xFF3B82F6), const Color(0xFF60A5FA)],
         'avatar': const VectorAvatarConfig(
           outfitStyle: 'executive_blazer',
           auraStyle: 'pocket_gold',
@@ -1322,8 +1412,10 @@ class _TaskManagerScreenState extends State<ToolsPage> {
       {
         'title': 'Tasks',
         'subtitle': 'Daily Checklists',
-        'icon': Icons.check_circle_outline_rounded,
-        'color': const Color(0xFFCD7F32),
+        'icon': Icons.task_alt_rounded,
+        'category': 'Productivity',
+        'color': const Color(0xFF14B8A6),
+        'gradient': [const Color(0xFF14B8A6), const Color(0xFF2DD4BF)],
         'avatar': const VectorAvatarConfig(
           outfitStyle: 'tech_hoodie',
           auraStyle: 'matrix_green',
@@ -1338,8 +1430,10 @@ class _TaskManagerScreenState extends State<ToolsPage> {
       {
         'title': 'Habit Tracker',
         'subtitle': '21-Day Streaks',
-        'icon': Icons.emoji_events_outlined,
-        'color': const Color(0xFFFFD700),
+        'icon': Icons.emoji_events_rounded,
+        'category': 'Growth',
+        'color': const Color(0xFFF59E0B),
+        'gradient': [const Color(0xFFF59E0B), const Color(0xFFD97706)],
         'avatar': const VectorAvatarConfig(
           outfitStyle: 'royal_cape',
           auraStyle: 'pocket_gold',
@@ -1355,7 +1449,9 @@ class _TaskManagerScreenState extends State<ToolsPage> {
         'title': 'Diagrams',
         'subtitle': 'Visual Flowcharts',
         'icon': Icons.schema_rounded,
-        'color': const Color(0xFFFFB700),
+        'category': 'System',
+        'color': const Color(0xFF8B5CF6),
+        'gradient': [const Color(0xFF8B5CF6), const Color(0xFFA855F7)],
         'avatar': const VectorAvatarConfig(
           outfitStyle: 'tech_hoodie',
           auraStyle: 'electric_aqua',
@@ -1370,8 +1466,10 @@ class _TaskManagerScreenState extends State<ToolsPage> {
       {
         'title': 'Teams',
         'subtitle': 'Squad Workspaces',
-        'icon': Icons.groups_rounded,
-        'color': const Color(0xFFE8D3A7),
+        'icon': Icons.diversity_3_rounded,
+        'category': 'Collab',
+        'color': const Color(0xFFEC4899),
+        'gradient': [const Color(0xFFEC4899), const Color(0xFFF43F5E)],
         'avatar': const VectorAvatarConfig(
           outfitStyle: 'cyberpunk_jacket',
           auraStyle: 'comic_boom',
@@ -1384,114 +1482,60 @@ class _TaskManagerScreenState extends State<ToolsPage> {
             }),
       },
       {
-        'title': 'Poster Maker',
-        'subtitle': 'Design Pro Banners',
-        'icon': Icons.photo_library_rounded,
-        'color': const Color(0xFFCD7F32),
+        'title': 'Zoyarex POS Admin',
+        'subtitle': 'Admin Control Panel',
+        'icon': Icons.admin_panel_settings_rounded,
+        'category': 'Business',
+        'color': const Color(0xFF2563EB),
+        'gradient': [const Color(0xFF1E40AF), const Color(0xFF3B82F6)],
         'avatar': const VectorAvatarConfig(
-          outfitStyle: 'tech_hoodie',
-          auraStyle: 'comic_boom',
-          hairStyle: 'side_part',
-          faceShape: 'oval',
-        ),
-        'onTap': () => Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => const TemplateGalleryPage())),
-      },
-      {
-        'title': 'Bulk Sender',
-        'subtitle': 'Instant Group Blast',
-        'icon': Icons.send_rounded,
-        'color': const Color(0xFFFFD700),
-        'avatar': const VectorAvatarConfig(
-          outfitStyle: 'tech_hoodie',
-          auraStyle: 'matrix_green',
-          hairStyle: 'undercut',
-          faceShape: 'sharp',
+          outfitStyle: 'executive_blazer',
+          auraStyle: 'royal_gold',
+          hairStyle: 'afro_fade',
+          faceShape: 'square',
         ),
         'onTap': () => Navigator.push(context,
-            MaterialPageRoute(builder: (context) => const BulkSenderPage())),
+            MaterialPageRoute(builder: (context) => const ZoyarexLoginPage())),
       },
       {
-        'title': 'Poki Games',
-        'subtitle': 'Online Play with Mates',
-        'icon': Icons.videogame_asset_rounded,
-        'color': const Color(0xFFFFB700),
+        'title': 'Zoyarex AI',
+        'subtitle': 'AI Assistant for Zoyarex',
+        'icon': Icons.smart_toy_rounded,
+        'category': 'AI & Tech',
+        'color': const Color(0xFF6366F1),
+        'gradient': [const Color(0xFF4F46E5), const Color(0xFF818CF8)],
         'avatar': const VectorAvatarConfig(
-          outfitStyle: 'cyberpunk_jacket',
-          auraStyle: 'pixel_arcade',
+          outfitStyle: 'astronaut_suit',
+          auraStyle: 'cyber_synthwave',
           hairStyle: 'anime_spiky',
           faceShape: 'sharp',
         ),
         'onTap': () => Navigator.push(context,
-            MaterialPageRoute(builder: (context) => const PokiGamesPage())),
+            MaterialPageRoute(builder: (context) => const ZoyarexAiPage())),
       },
       {
-        'title': 'Crazy Games',
-        'subtitle': 'Action & Arcade',
-        'icon': Icons.sports_esports_rounded,
-        'color': const Color(0xFFE8D3A7),
+        'title': 'Zoyarex Super Admin',
+        'subtitle': 'Super Admin Console',
+        'icon': Icons.manage_accounts_rounded,
+        'category': 'System',
+        'color': const Color(0xFF9333EA),
+        'gradient': [const Color(0xFF7E22CE), const Color(0xFFA855F7)],
         'avatar': const VectorAvatarConfig(
-          outfitStyle: 'cyberpunk_jacket',
-          auraStyle: 'cyber_synthwave',
-          hairStyle: 'spiky',
-          faceShape: 'round',
-        ),
-        'onTap': () => Navigator.push(context,
-            MaterialPageRoute(builder: (context) => const CrazyGamesPage())),
-      },
-      {
-        'title': 'Chess Match',
-        'subtitle': 'Tactical Grandmaster',
-        'icon': Icons.casino_rounded,
-        'color': const Color(0xFFFFD700),
-        'avatar': const VectorAvatarConfig(
-          outfitStyle: 'royal_cape',
+          outfitStyle: 'executive_blazer',
           auraStyle: 'royal_gold',
-          hairStyle: 'long_wavy',
-          faceShape: 'oval',
-        ),
-        'onTap': () => Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => const ChessMatchmakingPage())),
-      },
-      {
-        'title': 'Travel Radar',
-        'subtitle': 'Explore Global Mates',
-        'icon': Icons.radar,
-        'color': const Color(0xFFFFB700),
-        'avatar': const VectorAvatarConfig(
-          outfitStyle: 'aviator_jacket',
-          auraStyle: 'electric_aqua',
-          hairStyle: 'curly_top',
-          faceShape: 'round',
-        ),
-        'onTap': () => Navigator.push(context,
-            MaterialPageRoute(builder: (context) => const NearbyUsersPage())),
-      },
-      {
-        'title': 'Password Pro',
-        'subtitle': 'Fort Knox Security',
-        'icon': Icons.password_rounded,
-        'color': const Color(0xFFE8D3A7),
-        'avatar': const VectorAvatarConfig(
-          outfitStyle: 'secret_agent_suit',
-          auraStyle: 'obsidian_stealth',
           hairStyle: 'buzz_cut',
           faceShape: 'sharp',
         ),
-        'onTap': () => Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => const PasswordGeneratorPage())),
+        'onTap': () => Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const ZoyarexLoginPage())),
       },
       {
         'title': 'Dynamic Web App',
         'subtitle': 'Any URL In-App',
         'icon': Icons.public_rounded,
-        'color': const Color(0xFFCD7F32),
+        'category': 'Browser',
+        'color': const Color(0xFF0284C7),
+        'gradient': [const Color(0xFF0369A1), const Color(0xFF38BDF8)],
         'avatar': const VectorAvatarConfig(
           outfitStyle: 'tech_hoodie',
           auraStyle: 'electric_aqua',
@@ -1504,7 +1548,9 @@ class _TaskManagerScreenState extends State<ToolsPage> {
         'title': 'WhatsApp Web',
         'subtitle': 'Chat on Desktop',
         'icon': Icons.chat_rounded,
-        'color': const Color(0xFFFFB700),
+        'category': 'Messaging',
+        'color': const Color(0xFF22C55E),
+        'gradient': [const Color(0xFF16A34A), const Color(0xFF4ADE80)],
         'avatar': const VectorAvatarConfig(
           outfitStyle: 'tech_hoodie',
           auraStyle: 'matrix_green',
@@ -1522,8 +1568,10 @@ class _TaskManagerScreenState extends State<ToolsPage> {
       {
         'title': 'Web Search',
         'subtitle': 'Search the Internet',
-        'icon': Icons.search_rounded,
-        'color': const Color(0xFFE8D3A7),
+        'icon': Icons.travel_explore_rounded,
+        'category': 'Explore',
+        'color': const Color(0xFFEAB308),
+        'gradient': [const Color(0xFFCA8A04), const Color(0xFFFACC15)],
         'avatar': const VectorAvatarConfig(
           outfitStyle: 'detective_trench',
           auraStyle: 'pocket_gold',
@@ -1536,7 +1584,9 @@ class _TaskManagerScreenState extends State<ToolsPage> {
         'title': 'QR & Barcode',
         'subtitle': 'Scan & Generate',
         'icon': Icons.qr_code_scanner_rounded,
-        'color': const Color(0xFFCD7F32),
+        'category': 'Utility',
+        'color': const Color(0xFF64748B),
+        'gradient': [const Color(0xFF475569), const Color(0xFF94A3B8)],
         'avatar': const VectorAvatarConfig(
           outfitStyle: 'tech_hoodie',
           auraStyle: 'electric_aqua',
@@ -1548,8 +1598,10 @@ class _TaskManagerScreenState extends State<ToolsPage> {
       {
         'title': 'World Clock',
         'subtitle': 'Global Times',
-        'icon': Icons.public_rounded,
-        'color': const Color(0xFFFFD700),
+        'icon': Icons.schedule_rounded,
+        'category': 'Utility',
+        'color': const Color(0xFFF97316),
+        'gradient': [const Color(0xFFEA580C), const Color(0xFFFB923C)],
         'avatar': const VectorAvatarConfig(
           outfitStyle: 'executive_blazer',
           auraStyle: 'royal_gold',
@@ -1557,11 +1609,14 @@ class _TaskManagerScreenState extends State<ToolsPage> {
           faceShape: 'round',
         ),
         'onTap': () => _showWorldClockSimulation(),
+      },
       {
         'title': 'Test Feature',
         'subtitle': 'System Diagnostic',
         'icon': Icons.bug_report_rounded,
-        'color': const Color(0xFFFFD700),
+        'category': 'Developer',
+        'color': const Color(0xFFE11D48),
+        'gradient': [const Color(0xFFBE123C), const Color(0xFFFB7185)],
         'avatar': const VectorAvatarConfig(
           outfitStyle: 'tech_hoodie',
           auraStyle: 'pixel_arcade',
@@ -1794,25 +1849,28 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                                   auraStyle: 'pocket_gold',
                                   hairStyle: 'anime_spiky',
                                 );
+                            final gradient = tool['gradient'] as List<Color>? ?? [
+                              tool['color'] as Color? ?? const Color(0xFFFFFC00),
+                              (tool['color'] as Color? ?? const Color(0xFFFFFC00)).withValues(alpha: 0.6),
+                            ];
+                            final category = tool['category'] as String? ?? 'Tool';
 
                             return Container(
                               margin: const EdgeInsets.only(bottom: 16),
                               decoration: BoxDecoration(
-                                color: FlutterFlowTheme.of(context)
-                                    .secondaryBackground,
-                                borderRadius: BorderRadius.circular(20),
+                                color: FlutterFlowTheme.of(context).secondaryBackground,
+                                borderRadius: BorderRadius.circular(22),
                                 border: Border.all(
                                   color: isFav
                                       ? (tool['color'] as Color)
-                                          .withValues(alpha: 0.6)
-                                      : FlutterFlowTheme.of(context).alternate,
+                                      : (tool['color'] as Color).withValues(alpha: 0.25),
                                   width: isFav ? 2 : 1.2,
                                 ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.08),
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 3),
+                                    color: (tool['color'] as Color).withValues(alpha: 0.08),
+                                    blurRadius: 16,
+                                    offset: const Offset(0, 4),
                                   ),
                                 ],
                               ),
@@ -1820,134 +1878,162 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                                 color: Colors.transparent,
                                 child: InkWell(
                                   onTap: tool['onTap'] as VoidCallback,
-                                  borderRadius: BorderRadius.circular(20),
+                                  borderRadius: BorderRadius.circular(22),
                                   child: Padding(
-                                    padding: const EdgeInsets.all(16),
+                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                                     child: Row(
                                       children: [
-                                        // Tool Avatar Persona with badge
+                                        // Tool Avatar Persona with gradient aura frame & badge
                                         Stack(
                                           alignment: Alignment.bottomRight,
                                           children: [
                                             Container(
+                                              padding: const EdgeInsets.all(3),
                                               decoration: BoxDecoration(
                                                 shape: BoxShape.circle,
-                                                border: Border.all(
-                                                  color: (tool['color'] as Color).withValues(alpha: 0.5),
-                                                  width: 1.5,
+                                                gradient: LinearGradient(
+                                                  colors: gradient,
+                                                  begin: Alignment.topLeft,
+                                                  end: Alignment.bottomRight,
+                                                ),
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: gradient.first.withValues(alpha: 0.4),
+                                                    blurRadius: 10,
+                                                    spreadRadius: 1,
+                                                  ),
+                                                ],
+                                              ),
+                                              child: Container(
+                                                decoration: const BoxDecoration(
+                                                  shape: BoxShape.circle,
+                                                  color: Color(0xFF14141E),
+                                                ),
+                                                child: VectorAvatarWidget(
+                                                  config: avatarConfig,
+                                                  size: 52,
+                                                  showAura: false,
                                                 ),
                                               ),
-                                              child: VectorAvatarWidget(
-                                                config: avatarConfig,
-                                                size: 54,
-                                                showAura: true,
-                                              ),
                                             ),
-                                            Container(
-                                              padding: const EdgeInsets.all(4),
-                                              decoration: BoxDecoration(
-                                                color: (tool['color'] as Color),
-                                                shape: BoxShape.circle,
-                                                border: Border.all(color: Colors.black, width: 1.5),
-                                              ),
-                                              child: Icon(
-                                                tool['icon'] as IconData,
-                                                color: Colors.black,
-                                                size: 13,
+                                            Positioned(
+                                              bottom: 0,
+                                              right: 0,
+                                              child: Container(
+                                                padding: const EdgeInsets.all(5),
+                                                decoration: BoxDecoration(
+                                                  gradient: LinearGradient(colors: gradient),
+                                                  shape: BoxShape.circle,
+                                                  border: Border.all(color: const Color(0xFF14141E), width: 2),
+                                                ),
+                                                child: Icon(
+                                                  tool['icon'] as IconData,
+                                                  color: Colors.white,
+                                                  size: 13,
+                                                ),
                                               ),
                                             ),
                                           ],
                                         ),
-                                        const SizedBox(width: 18),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            tool['title'] as String,
-                                            style: GoogleFonts.outfit(
-                                              color:
-                                                  FlutterFlowTheme.of(context)
-                                                      .primaryText,
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                          if (tool.containsKey('subtitle'))
-                                            Padding(
-                                              padding:
-                                                  const EdgeInsets.only(top: 4),
-                                              child: Text(
-                                                tool['subtitle'] as String,
-                                                style: GoogleFonts.outfit(
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .secondaryText,
-                                                  fontSize: 13,
-                                                ),
+                                        const SizedBox(width: 16),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              Row(
+                                                children: [
+                                                  Flexible(
+                                                    child: Text(
+                                                      tool['title'] as String,
+                                                      style: GoogleFonts.outfit(
+                                                        color: FlutterFlowTheme.of(context).primaryText,
+                                                        fontSize: 17,
+                                                        fontWeight: FontWeight.bold,
+                                                      ),
+                                                      maxLines: 1,
+                                                      overflow: TextOverflow.ellipsis,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(width: 8),
+                                                  Container(
+                                                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                                                    decoration: BoxDecoration(
+                                                      color: (tool['color'] as Color).withValues(alpha: 0.15),
+                                                      borderRadius: BorderRadius.circular(8),
+                                                      border: Border.all(
+                                                        color: (tool['color'] as Color).withValues(alpha: 0.4),
+                                                        width: 0.8,
+                                                      ),
+                                                    ),
+                                                    child: Text(
+                                                      category.toUpperCase(),
+                                                      style: GoogleFonts.outfit(
+                                                        color: tool['color'] as Color,
+                                                        fontSize: 9,
+                                                        fontWeight: FontWeight.w800,
+                                                        letterSpacing: 0.5,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
-                                            ),
-                                        ],
-                                      ),
-                                    ),
-                                    Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        IconButton(
-                                          icon: const Icon(Icons.share_rounded,
-                                              color: Colors.yellow, size: 20),
-                                          onPressed: () {
-                                            final userId = SupaFlow
-                                                .client.auth.currentUser?.id;
-                                            if (userId != null) {
-                                              Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      ShareContentScreen(
-                                                    contentToShare:
-                                                        "Check out this ${tool['title']} tool on Pocket Mates!",
-                                                    currentUserId: userId,
-                                                    contentType: 'tool',
-                                                    metadata: {
-                                                      'title': tool['title'],
-                                                      'description':
-                                                          tool.containsKey(
-                                                                  'subtitle')
-                                                              ? tool['subtitle']
-                                                              : '',
-                                                      'category': 'Tools',
-                                                    },
+                                              if (tool.containsKey('subtitle'))
+                                                Padding(
+                                                  padding: const EdgeInsets.only(top: 3),
+                                                  child: Text(
+                                                    tool['subtitle'] as String,
+                                                    style: GoogleFonts.inter(
+                                                      color: FlutterFlowTheme.of(context).secondaryText,
+                                                      fontSize: 12,
+                                                    ),
                                                   ),
                                                 ),
-                                              );
-                                            }
-                                          },
-                                        ),
-                                        const SizedBox(width: 4),
-                                        IconButton(
-                                          icon: Icon(
-                                            isFav
-                                                ? Icons.favorite_rounded
-                                                : Icons.favorite_border_rounded,
-                                            color: isFav
-                                                ? Colors.redAccent
-                                                : Colors.white24,
+                                            ],
                                           ),
-                                          onPressed: () => _toggleFavoriteTool(
-                                              tool['title'] as String),
+                                        ),
+                                        Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            IconButton(
+                                              icon: const Icon(Icons.share_rounded, color: Colors.white38, size: 18),
+                                              onPressed: () {
+                                                final userId = SupaFlow.client.auth.currentUser?.id;
+                                                if (userId != null) {
+                                                  Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder: (context) => ShareContentScreen(
+                                                        contentToShare: "Check out this ${tool['title']} tool on Pocket Mates!",
+                                                        currentUserId: userId,
+                                                        contentType: 'tool',
+                                                        metadata: {
+                                                          'title': tool['title'],
+                                                          'description': tool.containsKey('subtitle') ? tool['subtitle'] : '',
+                                                          'category': 'Tools',
+                                                        },
+                                                      ),
+                                                    ),
+                                                  );
+                                                }
+                                              },
+                                            ),
+                                            IconButton(
+                                              icon: Icon(
+                                                isFav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                                                color: isFav ? Colors.redAccent : Colors.white24,
+                                                size: 20,
+                                              ),
+                                              onPressed: () => _toggleFavoriteTool(tool['title'] as String),
+                                            ),
+                                          ],
                                         ),
                                       ],
                                     ),
-                                  ],
+                                  ),
                                 ),
                               ),
-                            ),
-                          ),
-                        );
+                            );
                       },
                     ),
                   ),
@@ -1955,10 +2041,11 @@ class _TaskManagerScreenState extends State<ToolsPage> {
               ),
             ),
           ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
+}
 
   @override
   Widget build(BuildContext context) {

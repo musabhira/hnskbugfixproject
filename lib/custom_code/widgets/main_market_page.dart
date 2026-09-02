@@ -7,6 +7,8 @@ import 'main_market_logic.dart';
 import 'gallery_profile_search_page.dart';
 import 'gallery_search_page.dart';
 import 'pod_marketplace_view.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 
 class MainMarketPage extends ConsumerStatefulWidget {
@@ -707,21 +709,37 @@ class _MarketItemCardState extends State<MarketItemCard> {
                     Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.all(1.5),
+                          width: 24,
+                          height: 24,
                           decoration: BoxDecoration(
-                            color: Color(0xFFFFFC00).withValues(alpha: 0.4),
                             shape: BoxShape.circle,
+                            border: Border.all(
+                              color: const Color(0xFFFFFC00).withValues(alpha: 0.6),
+                              width: 1.2,
+                            ),
                           ),
-                          child: CircleAvatar(
-                            radius: 11,
-                            backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
-                            backgroundImage: userProfileImg != null
-                                ? NetworkImage(userProfileImg)
-                                : null,
-                            child: userProfileImg == null
-                                ? Icon(Icons.person,
-                                    size: 11, color: FlutterFlowTheme.of(context).secondaryText)
-                                : null,
+                          child: ClipOval(
+                            child: item['avatar_config'] != null
+                                ? VectorAvatarWidget(
+                                    config: VectorAvatarConfig.fromJson(item['avatar_config']),
+                                    size: 24,
+                                    showAura: false,
+                                  )
+                                : (userProfileImg != null && userProfileImg.toString().isNotEmpty
+                                    ? Image.network(
+                                        userProfileImg,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (_, __, ___) => const Icon(Icons.person, size: 14, color: Colors.white70),
+                                      )
+                                    : VectorAvatarWidget(
+                                        config: VectorAvatarConfig(
+                                          hairStyle: 'anime_spiky',
+                                          auraStyle: 'pocket_gold',
+                                          outfitStyle: 'artist_beret',
+                                        ),
+                                        size: 24,
+                                        showAura: false,
+                                      )),
                           ),
                         ),
                         const SizedBox(width: 8),
