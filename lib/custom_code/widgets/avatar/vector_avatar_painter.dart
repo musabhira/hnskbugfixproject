@@ -160,7 +160,10 @@ class VectorAvatarPainter extends CustomPainter {
     // 7. Front Hair (14 styles)
     _paintFrontHair(canvas, size, null);
 
-    // 8. Accessories & Hats/Crown
+    // 8. 1-of-1 Species Unique Features (Ears, Horns, Wings, Antennas)
+    _paintSpeciesFeatures(canvas, size, null);
+
+    // 9. Accessories & Hats/Crown
     _paintAccessories(canvas, size, null);
   }
 
@@ -889,6 +892,104 @@ class VectorAvatarPainter extends CustomPainter {
       canvas.drawPath(maskPath, maskPaint);
     } else if (config.accessory == 'earring') {
       canvas.drawCircle(Offset(size.width * 0.24, size.height * 0.54), size.width * 0.025, Paint()..color = const Color(0xFFFFD700)..style = PaintingStyle.stroke..strokeWidth = 2.5);
+    }
+  }
+
+  // ==========================================
+  // 🦁 1-OF-1 SPECIES FEATURES (Ears, Horns, Wings, Antennas)
+  // ==========================================
+  void _paintSpeciesFeatures(Canvas canvas, Size size, [Paint? inkLine]) {
+    if (config.species == 'cyber_fox') {
+      // Pointed Fox Kitsune Ears with Neon Inner Glow
+      final leftEar = Path();
+      leftEar.moveTo(size.width * 0.26, size.height * 0.32);
+      leftEar.lineTo(size.width * 0.18, size.height * 0.12);
+      leftEar.lineTo(size.width * 0.40, size.height * 0.26);
+      leftEar.close();
+      canvas.drawPath(leftEar, Paint()..color = const Color(0xFFFF7043));
+      if (inkLine != null) canvas.drawPath(leftEar, inkLine);
+
+      final leftInner = Path();
+      leftInner.moveTo(size.width * 0.27, size.height * 0.28);
+      leftInner.lineTo(size.width * 0.22, size.height * 0.16);
+      leftInner.lineTo(size.width * 0.36, size.height * 0.25);
+      leftInner.close();
+      canvas.drawPath(leftInner, Paint()..color = const Color(0xFFFF4081));
+
+      final rightEar = Path();
+      rightEar.moveTo(size.width * 0.74, size.height * 0.32);
+      rightEar.lineTo(size.width * 0.82, size.height * 0.12);
+      rightEar.lineTo(size.width * 0.60, size.height * 0.26);
+      rightEar.close();
+      canvas.drawPath(rightEar, Paint()..color = const Color(0xFFFF7043));
+      if (inkLine != null) canvas.drawPath(rightEar, inkLine);
+
+      final rightInner = Path();
+      rightInner.moveTo(size.width * 0.73, size.height * 0.28);
+      rightInner.lineTo(size.width * 0.78, size.height * 0.16);
+      rightInner.lineTo(size.width * 0.64, size.height * 0.25);
+      rightInner.close();
+      canvas.drawPath(rightInner, Paint()..color = const Color(0xFFFF4081));
+    } else if (config.species == 'shadow_wolf') {
+      // Midnight Wolf Ears
+      final leftEar = Path();
+      leftEar.moveTo(size.width * 0.28, size.height * 0.34);
+      leftEar.lineTo(size.width * 0.20, size.height * 0.14);
+      leftEar.lineTo(size.width * 0.42, size.height * 0.26);
+      leftEar.close();
+      canvas.drawPath(leftEar, Paint()..color = const Color(0xFF2C3437));
+      if (inkLine != null) canvas.drawPath(leftEar, inkLine);
+
+      final rightEar = Path();
+      rightEar.moveTo(size.width * 0.72, size.height * 0.34);
+      rightEar.lineTo(size.width * 0.80, size.height * 0.14);
+      rightEar.lineTo(size.width * 0.58, size.height * 0.26);
+      rightEar.close();
+      canvas.drawPath(rightEar, Paint()..color = const Color(0xFF2C3437));
+      if (inkLine != null) canvas.drawPath(rightEar, inkLine);
+    } else if (config.species == 'ninja_panda') {
+      // Round Panda Ears
+      canvas.drawCircle(Offset(size.width * 0.26, size.height * 0.24), size.width * 0.08, Paint()..color = const Color(0xFF1E1E24));
+      canvas.drawCircle(Offset(size.width * 0.74, size.height * 0.24), size.width * 0.08, Paint()..color = const Color(0xFF1E1E24));
+    } else if (config.species == 'cyber_cat') {
+      // Neon Cat Ears
+      final leftEar = Path();
+      leftEar.moveTo(size.width * 0.30, size.height * 0.32);
+      leftEar.lineTo(size.width * 0.22, size.height * 0.16);
+      leftEar.lineTo(size.width * 0.42, size.height * 0.24);
+      leftEar.close();
+      canvas.drawPath(leftEar, Paint()..color = const Color(0xFFEC4899));
+
+      final rightEar = Path();
+      rightEar.moveTo(size.width * 0.70, size.height * 0.32);
+      rightEar.lineTo(size.width * 0.78, size.height * 0.16);
+      rightEar.lineTo(size.width * 0.58, size.height * 0.24);
+      rightEar.close();
+      canvas.drawPath(rightEar, Paint()..color = const Color(0xFFEC4899));
+    } else if (config.species == 'cosmic_dragon') {
+      // Curving Astral Dragon Horns
+      final leftHorn = Path();
+      leftHorn.moveTo(size.width * 0.32, size.height * 0.28);
+      leftHorn.quadraticBezierTo(size.width * 0.12, size.height * 0.20, size.width * 0.16, size.height * 0.06);
+      leftHorn.quadraticBezierTo(size.width * 0.26, size.height * 0.16, size.width * 0.40, size.height * 0.24);
+      leftHorn.close();
+      canvas.drawPath(leftHorn, Paint()..color = const Color(0xFF8B5CF6));
+
+      final rightHorn = Path();
+      rightHorn.moveTo(size.width * 0.68, size.height * 0.28);
+      rightHorn.quadraticBezierTo(size.width * 0.88, size.height * 0.20, size.width * 0.84, size.height * 0.06);
+      rightHorn.quadraticBezierTo(size.width * 0.74, size.height * 0.16, size.width * 0.60, size.height * 0.24);
+      rightHorn.close();
+      canvas.drawPath(rightHorn, Paint()..color = const Color(0xFF8B5CF6));
+    } else if (config.species == 'space_robot') {
+      // Cyber Antennas
+      canvas.drawLine(Offset(size.width * 0.30, size.height * 0.24), Offset(size.width * 0.22, size.height * 0.10), Paint()..color = const Color(0xFF00E5FF)..strokeWidth = 3);
+      canvas.drawCircle(Offset(size.width * 0.22, size.height * 0.10), 4, Paint()..color = const Color(0xFFFFFC00));
+      canvas.drawLine(Offset(size.width * 0.70, size.height * 0.24), Offset(size.width * 0.78, size.height * 0.10), Paint()..color = const Color(0xFF00E5FF)..strokeWidth = 3);
+      canvas.drawCircle(Offset(size.width * 0.78, size.height * 0.10), 4, Paint()..color = const Color(0xFFFFFC00));
+    } else if (config.species == 'golden_monarch') {
+      // Radiant Solar Halo
+      canvas.drawCircle(Offset(size.width * 0.5, size.height * 0.20), size.width * 0.18, Paint()..color = const Color(0xFFFFD700).withValues(alpha: 0.35)..style = PaintingStyle.stroke..strokeWidth = 3);
     }
   }
 

@@ -2447,6 +2447,33 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                                         ),
                                       ),
                                     ),
+                                    const SizedBox(height: 8),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF161822),
+                                        borderRadius: BorderRadius.circular(10),
+                                        border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.5)),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          const Icon(Icons.verified_rounded, color: Color(0xFFFFD700), size: 14),
+                                          const SizedBox(width: 6),
+                                          Expanded(
+                                            child: Text(
+                                              '1-of-1 NFT: ${_avatarConfig.mintId ?? "#MATE-ORIGINAL"} • ${_avatarConfig.rarityTier.toUpperCase()}',
+                                              style: GoogleFonts.outfit(
+                                                color: const Color(0xFFFFD700),
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ),

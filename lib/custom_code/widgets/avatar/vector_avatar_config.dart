@@ -1,9 +1,11 @@
 import 'dart:convert';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
-/// Configuration model for Pocket Mates Multi-Style Profile Avatars
+/// Configuration model for Pocket Mates Multi-Style Profile Avatars & 1-of-1 NFT Identities
 class VectorAvatarConfig {
   final String artStyle; // 'vector' | 'doodle' | 'pixel' | 'cyberpunk'
+  final String species; // 'human' | 'cyber_fox' | 'shadow_wolf' | 'mecha_lion' | 'cosmic_dragon' | 'ninja_panda' | 'arcade_ape' | 'cyber_cat' | 'mystic_phoenix' | 'space_robot' | 'neon_tiger' | 'celestial_owl' | 'grizzly_brawler' | 'viper_assassin' | 'astral_mage' | 'golden_monarch'
   final String gender; // 'male', 'female', 'neutral'
   final String skinColor; // Hex string e.g. '#FFDFC4'
   final String faceShape; // 'oval', 'round', 'sharp', 'square'
@@ -21,8 +23,17 @@ class VectorAvatarConfig {
   final String accessoryColor; // Hex string
   final String auraStyle; // 'matrix_green', 'comic_boom', 'neon_yellow', 'cyber_purple', 'electric_blue', 'sunset_orange', 'pixel_arcade', 'cherry_blossom', 'golden_sparks', 'minimal_dark'
 
+  // 1-of-1 NFT & Blockchain Identity Metadata
+  final String? mintId; // e.g. '#MATE-8492'
+  final String? dnaHash; // e.g. '0x9E7A-41B0-FD23'
+  final String rarityTier; // 'Original' | 'Rare' | 'Epic' | 'Legendary' | 'Mythic 1-of-1'
+  final String? ownerId;
+  final String? mintedAt;
+  final String? customDrawingSvg;
+
   const VectorAvatarConfig({
     this.artStyle = 'vector',
+    this.species = 'human',
     this.gender = 'male',
     this.skinColor = '#FFDFC4',
     this.faceShape = 'oval',
@@ -39,10 +50,17 @@ class VectorAvatarConfig {
     this.accessory = 'none',
     this.accessoryColor = '#1E1E24',
     this.auraStyle = 'neon_yellow',
+    this.mintId,
+    this.dnaHash,
+    this.rarityTier = 'Original',
+    this.ownerId,
+    this.mintedAt,
+    this.customDrawingSvg,
   });
 
   VectorAvatarConfig copyWith({
     String? artStyle,
+    String? species,
     String? gender,
     String? skinColor,
     String? faceShape,
@@ -59,9 +77,16 @@ class VectorAvatarConfig {
     String? accessory,
     String? accessoryColor,
     String? auraStyle,
+    String? mintId,
+    String? dnaHash,
+    String? rarityTier,
+    String? ownerId,
+    String? mintedAt,
+    String? customDrawingSvg,
   }) {
     return VectorAvatarConfig(
       artStyle: artStyle ?? this.artStyle,
+      species: species ?? this.species,
       gender: gender ?? this.gender,
       skinColor: skinColor ?? this.skinColor,
       faceShape: faceShape ?? this.faceShape,
@@ -78,12 +103,19 @@ class VectorAvatarConfig {
       accessory: accessory ?? this.accessory,
       accessoryColor: accessoryColor ?? this.accessoryColor,
       auraStyle: auraStyle ?? this.auraStyle,
+      mintId: mintId ?? this.mintId,
+      dnaHash: dnaHash ?? this.dnaHash,
+      rarityTier: rarityTier ?? this.rarityTier,
+      ownerId: ownerId ?? this.ownerId,
+      mintedAt: mintedAt ?? this.mintedAt,
+      customDrawingSvg: customDrawingSvg ?? this.customDrawingSvg,
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
       'artStyle': artStyle,
+      'species': species,
       'gender': gender,
       'skinColor': skinColor,
       'faceShape': faceShape,
@@ -100,6 +132,12 @@ class VectorAvatarConfig {
       'accessory': accessory,
       'accessoryColor': accessoryColor,
       'auraStyle': auraStyle,
+      'mintId': mintId,
+      'dnaHash': dnaHash,
+      'rarityTier': rarityTier,
+      'ownerId': ownerId,
+      'mintedAt': mintedAt,
+      'customDrawingSvg': customDrawingSvg,
     };
   }
 
@@ -109,6 +147,7 @@ class VectorAvatarConfig {
     if (map == null) return const VectorAvatarConfig();
     return VectorAvatarConfig(
       artStyle: map['artStyle'] ?? 'vector',
+      species: map['species'] ?? 'human',
       gender: map['gender'] ?? 'male',
       skinColor: map['skinColor'] ?? '#FFDFC4',
       faceShape: map['faceShape'] ?? 'oval',
@@ -125,6 +164,91 @@ class VectorAvatarConfig {
       accessory: map['accessory'] ?? 'none',
       accessoryColor: map['accessoryColor'] ?? '#1E1E24',
       auraStyle: map['auraStyle'] ?? 'neon_yellow',
+      mintId: map['mintId'],
+      dnaHash: map['dnaHash'],
+      rarityTier: map['rarityTier'] ?? 'Original',
+      ownerId: map['ownerId'],
+      mintedAt: map['mintedAt'],
+      customDrawingSvg: map['customDrawingSvg'],
+    );
+  }
+
+  /// Procedural 1-of-1 NFT Identity Minting Engine
+  static VectorAvatarConfig mintUniqueOneOfOne({String? userId, String? specificSpecies}) {
+    final rng = math.Random();
+    final speciesList = [
+      'human',
+      'cyber_fox',
+      'shadow_wolf',
+      'mecha_lion',
+      'cosmic_dragon',
+      'ninja_panda',
+      'arcade_ape',
+      'cyber_cat',
+      'mystic_phoenix',
+      'space_robot',
+      'neon_tiger',
+      'celestial_owl',
+      'grizzly_brawler',
+      'viper_assassin',
+      'astral_mage',
+      'golden_monarch',
+    ];
+    final selectedSpecies = specificSpecies ?? speciesList[rng.nextInt(speciesList.length)];
+    
+    final styles = ['vector', 'cyberpunk', 'doodle', 'pixel'];
+    final auras = [
+      'matrix_green', 'comic_boom', 'neon_yellow', 'cyber_purple', 
+      'electric_blue', 'sunset_orange', 'pixel_arcade', 'cherry_blossom', 'golden_sparks', 'minimal_dark'
+    ];
+    final hairList = [
+      'curly_fade', 'classic_side', 'anime_spiky', 'long_wavy', 'bob_cut', 
+      'afro', 'ponytail', 'messy_top', 'bald_beanie', 'dreadlocks', 'mullet', 'high_bun', 'slicked_back', 'mohawk'
+    ];
+    final outfits = [
+      'doctor_coat', 'hacker_hood', 'developer_tee', 'spider_suit', 'joker_suit', 
+      'pilot_uniform', 'artist_apron', 'ninja_robe', 'hoodie', 'varsity_jacket', 
+      'blazer', 'traditional_kurta', 'sports_jersey', 'superman_suit', 'astronaut_suit', 'detective_trench'
+    ];
+    final accessories = [
+      'none', 'cool_sunglasses', 'cyber_visor', 'ninja_mask', 'beret', 
+      'cap', 'beanie', 'crown', 'earring', 'pirate_eyepatch', 'headphones'
+    ];
+
+    final serialNum = 1000 + rng.nextInt(9000);
+    final hexParts = [
+      rng.nextInt(256).toRadixString(16).padLeft(2, '0').toUpperCase(),
+      rng.nextInt(256).toRadixString(16).padLeft(2, '0').toUpperCase(),
+      rng.nextInt(256).toRadixString(16).padLeft(2, '0').toUpperCase(),
+      rng.nextInt(256).toRadixString(16).padLeft(2, '0').toUpperCase(),
+    ];
+    final dna = '0x${hexParts.join('-')}';
+
+    final rarityRoll = rng.nextInt(100);
+    final rarity = rarityRoll > 90 
+        ? 'Mythic 1-of-1' 
+        : (rarityRoll > 70 
+            ? 'Legendary' 
+            : (rarityRoll > 45 ? 'Epic' : (rarityRoll > 20 ? 'Rare' : 'Original')));
+
+    return VectorAvatarConfig(
+      artStyle: styles[rng.nextInt(styles.length)],
+      species: selectedSpecies,
+      skinColor: ['#FFDFC4', '#F0D0B0', '#D8A070', '#8D5524', '#00F0FF', '#FF007F', '#A020F0'][rng.nextInt(7)],
+      faceShape: ['oval', 'round', 'sharp', 'square'][rng.nextInt(4)],
+      eyeStyle: ['chill', 'anime', 'mischief', 'sparkle', 'wink', 'focused'][rng.nextInt(6)],
+      mouthStyle: ['smile', 'laugh', 'smirk', 'open_talk', 'joker_grin', 'chill'][rng.nextInt(6)],
+      hairStyle: hairList[rng.nextInt(hairList.length)],
+      hairColor: ['#1A1A1A', '#4A2E18', '#D4AF37', '#FF007F', '#00F0FF', '#FFFFFF', '#8A2BE2'][rng.nextInt(7)],
+      outfitStyle: outfits[rng.nextInt(outfits.length)],
+      outfitColor: ['#FFFC00', '#FF007F', '#00F0FF', '#10B981', '#8B5CF6', '#EF4444', '#F97316'][rng.nextInt(7)],
+      accessory: accessories[rng.nextInt(accessories.length)],
+      auraStyle: auras[rng.nextInt(auras.length)],
+      mintId: '#MATE-$serialNum',
+      dnaHash: dna,
+      rarityTier: rarity,
+      ownerId: userId,
+      mintedAt: DateTime.now().toIso8601String(),
     );
   }
 
@@ -191,6 +315,137 @@ class VectorAvatarPalette {
       'name': '⚡ Cyber Neon',
       'desc': 'Futuristic Matrix Glow',
       'accent': Color(0xFFFF007F),
+    },
+  ];
+
+  static const List<Map<String, dynamic>> speciesList = [
+    {
+      'id': 'human',
+      'name': 'Human Mate',
+      'icon': '👤',
+      'rarity': 'Original',
+      'desc': 'Classic Streetwear Persona',
+      'badgeColor': Color(0xFFFFD700),
+    },
+    {
+      'id': 'cyber_fox',
+      'name': 'Kitsune Cyber Fox',
+      'icon': '🦊',
+      'rarity': 'Mythic 1-of-1',
+      'desc': 'Nine-Tails Cyber Guardian',
+      'badgeColor': Color(0xFFFF007F),
+    },
+    {
+      'id': 'shadow_wolf',
+      'name': 'Shadow Alpha Wolf',
+      'icon': '🐺',
+      'rarity': 'Legendary',
+      'desc': 'Midnight Alpha Pack Leader',
+      'badgeColor': Color(0xFF00E5FF),
+    },
+    {
+      'id': 'mecha_lion',
+      'name': 'Solar Mecha Lion',
+      'icon': '🦁',
+      'rarity': 'Mythic 1-of-1',
+      'desc': 'Solar Charged Apex Beast',
+      'badgeColor': Color(0xFFFFB700),
+    },
+    {
+      'id': 'cosmic_dragon',
+      'name': 'Astral Cosmic Dragon',
+      'icon': '🐲',
+      'rarity': 'Mythic 1-of-1',
+      'desc': 'Celestial Dragon Entity',
+      'badgeColor': Color(0xFF9C27B0),
+    },
+    {
+      'id': 'ninja_panda',
+      'name': 'Shinobi Bamboo Panda',
+      'icon': '🐼',
+      'rarity': 'Legendary',
+      'desc': 'Master of Silent Martial Arts',
+      'badgeColor': Color(0xFF10B981),
+    },
+    {
+      'id': 'arcade_ape',
+      'name': 'Retro Arcade Ape',
+      'icon': '🦍',
+      'rarity': 'Epic',
+      'desc': '80s Synthwave Brawler',
+      'badgeColor': Color(0xFFFF5722),
+    },
+    {
+      'id': 'cyber_cat',
+      'name': 'Holo Neko Cyber Cat',
+      'icon': '🐱',
+      'rarity': 'Rare',
+      'desc': 'Futuristic Tokyo Cyber Feline',
+      'badgeColor': Color(0xFFEC4899),
+    },
+    {
+      'id': 'mystic_phoenix',
+      'name': 'Celestial Flame Phoenix',
+      'icon': '🦅',
+      'rarity': 'Mythic 1-of-1',
+      'desc': 'Immortal Astral Firebird',
+      'badgeColor': Color(0xFFEF4444),
+    },
+    {
+      'id': 'space_robot',
+      'name': 'Quantum Space AI',
+      'icon': '🤖',
+      'rarity': 'Legendary',
+      'desc': 'Sentient Orbital AI Bot',
+      'badgeColor': Color(0xFF3B82F6),
+    },
+    {
+      'id': 'neon_tiger',
+      'name': 'Cyber Neon Tiger',
+      'icon': '🐯',
+      'rarity': 'Epic',
+      'desc': 'Electric Striped Hunter',
+      'badgeColor': Color(0xFFF59E0B),
+    },
+    {
+      'id': 'celestial_owl',
+      'name': 'Starlight Sage Owl',
+      'icon': '🦉',
+      'rarity': 'Rare',
+      'desc': 'Wise Guardian of Constellations',
+      'badgeColor': Color(0xFF6366F1),
+    },
+    {
+      'id': 'grizzly_brawler',
+      'name': 'Grizzly Iron Brawler',
+      'icon': '🐻',
+      'rarity': 'Epic',
+      'desc': 'Heavyweight Champion',
+      'badgeColor': Color(0xFF795548),
+    },
+    {
+      'id': 'viper_assassin',
+      'name': 'Venom Shadow Viper',
+      'icon': '🐍',
+      'rarity': 'Legendary',
+      'desc': 'Stealth Cyber Assassin',
+      'badgeColor': Color(0xFF00FF66),
+    },
+    {
+      'id': 'astral_mage',
+      'name': 'Cosmic Arcane Mage',
+      'icon': '🧙‍♂️',
+      'rarity': 'Mythic 1-of-1',
+      'desc': 'Master of Reality & Runes',
+      'badgeColor': Color(0xFF8B5CF6),
+    },
+    {
+      'id': 'golden_monarch',
+      'name': 'Royal Solar Monarch',
+      'icon': '👑',
+      'rarity': 'Mythic 1-of-1',
+      'desc': 'Crowned Celestial Ruler',
+      'badgeColor': Color(0xFFFFD700),
     },
   ];
 

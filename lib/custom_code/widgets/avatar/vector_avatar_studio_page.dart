@@ -1,7 +1,8 @@
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
+import 'package:pocket_mates_app/custom_code/widgets/drawing_app_home.dart';
 import 'vector_avatar_config.dart';
 import 'vector_avatar_widget.dart';
 import 'avatar_sticker_pack_sheet.dart';
@@ -31,6 +32,7 @@ class _VectorAvatarStudioPageState extends State<VectorAvatarStudioPage>
   String _selectedRoleCategory = 'All';
 
   final List<String> _tabs = [
+    '🦁 Species (300+)',
     '🎭 Roles (50+)',
     'Face & Skin',
     'Hairstyle',
@@ -109,50 +111,6 @@ class _VectorAvatarStudioPageState extends State<VectorAvatarStudioPage>
     );
   }
 
-  void _randomizeAvatar() {
-    final rand = math.Random();
-
-    final skins = VectorAvatarPalette.skinTones;
-    final hairs = VectorAvatarPalette.hairStyles;
-    final hairColors = VectorAvatarPalette.hairColors;
-    final eyes = VectorAvatarPalette.eyeStyles;
-    final eyeColors = VectorAvatarPalette.eyeColors;
-    final beards = VectorAvatarPalette.beardStyles;
-    final outfits = VectorAvatarPalette.outfitStyles;
-    final outfitColors = VectorAvatarPalette.outfitColors;
-    final accessories = VectorAvatarPalette.accessoryStyles;
-    final auras = VectorAvatarPalette.auraStyles;
-    final artStyles = VectorAvatarPalette.artStyles;
-
-    setState(() {
-      _selectedPersonaId = null;
-      _config = _config.copyWith(
-        artStyle: artStyles[rand.nextInt(artStyles.length)]['id'],
-        skinColor: skins[rand.nextInt(skins.length)],
-        faceShape: ['oval', 'round', 'sharp', 'square'][rand.nextInt(4)],
-        hairStyle: hairs[rand.nextInt(hairs.length)]['id'],
-        hairColor: hairColors[rand.nextInt(hairColors.length)],
-        eyeStyle: eyes[rand.nextInt(eyes.length)]['id'],
-        eyeColor: eyeColors[rand.nextInt(eyeColors.length)],
-        eyebrowStyle: ['confident', 'thick', 'arched', 'angry_hero'][rand.nextInt(4)],
-        mouthStyle: ['smile', 'laugh', 'smirk', 'joker_grin', 'chill'][rand.nextInt(5)],
-        beardStyle: beards[rand.nextInt(beards.length)]['id'],
-        outfitStyle: outfits[rand.nextInt(outfits.length)]['id'],
-        outfitColor: outfitColors[rand.nextInt(outfitColors.length)],
-        outfitAccentColor: outfitColors[rand.nextInt(outfitColors.length)],
-        accessory: accessories[rand.nextInt(accessories.length)]['id'],
-        auraStyle: auras[rand.nextInt(auras.length)]['id'],
-      );
-    });
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('🎲 Rolled a fresh randomized avatar!'),
-        duration: Duration(milliseconds: 900),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-  }
 
   Future<void> _saveAvatar() async {
     setState(() => _isSaving = true);
@@ -210,6 +168,43 @@ class _VectorAvatarStudioPageState extends State<VectorAvatarStudioPage>
           ),
         ),
         actions: [
+          // 🎲 Mint 1-of-1 NFT Mate Button
+          IconButton(
+            tooltip: '🎲 Mint 1-of-1 NFT Mate',
+            icon: Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(colors: [Color(0xFFFFD700), Color(0xFFFF8906)]),
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFFFD700).withValues(alpha: 0.4),
+                    blurRadius: 8,
+                  ),
+                ],
+              ),
+              child: const Icon(Icons.casino_rounded, color: Colors.black, size: 20),
+            ),
+            onPressed: _mintRandomNftMate,
+          ),
+          // 🎨 Hand-Draw Custom Layers Button
+          IconButton(
+            tooltip: '🎨 Hand-Draw Layers',
+            icon: Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFF007A).withValues(alpha: 0.25),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.brush_rounded, color: Color(0xFFFF007A), size: 20),
+            ),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const DrawingAppHome()),
+              );
+            },
+          ),
           // Comic Strip Creator Button
           IconButton(
             tooltip: 'Avatar Comic Strip',
@@ -243,12 +238,7 @@ class _VectorAvatarStudioPageState extends State<VectorAvatarStudioPage>
             ),
             onPressed: () => AvatarStickerPackSheet.show(context, _config),
           ),
-          IconButton(
-            tooltip: 'Randomize',
-            icon: const Icon(Icons.casino_outlined, color: Color(0xFFFFFC00), size: 24),
-            onPressed: _randomizeAvatar,
-          ),
-          const SizedBox(width: 6),
+          const SizedBox(width: 4),
         ],
       ),
       body: _isLoading
@@ -271,6 +261,7 @@ class _VectorAvatarStudioPageState extends State<VectorAvatarStudioPage>
                   child: TabBarView(
                     controller: _tabController,
                     children: [
+                      _buildSpeciesTab(),
                       _buildHeroRolesTab(),
                       _buildFaceAndSkinTab(),
                       _buildHairTab(),
@@ -289,6 +280,34 @@ class _VectorAvatarStudioPageState extends State<VectorAvatarStudioPage>
     );
   }
 
+  void _mintRandomNftMate() {
+    final user = SupaFlow.client.auth.currentUser;
+    final minted = VectorAvatarConfig.mintUniqueOneOfOne(userId: user?.id);
+    setState(() {
+      _config = minted;
+      _selectedPersonaId = null;
+    });
+    HapticFeedback.heavyImpact();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.stars_rounded, color: Colors.yellow),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Minted ${minted.mintId}! [${minted.rarityTier.toUpperCase()}] 🌟',
+                style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: Colors.black),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: const Color(0xFFFFFC00),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
   Widget _buildArtStyleSelector() {
     return SizedBox(
       height: 40,
@@ -300,19 +319,23 @@ class _VectorAvatarStudioPageState extends State<VectorAvatarStudioPage>
         itemBuilder: (context, index) {
           final style = VectorAvatarPalette.artStyles[index];
           final isSelected = _config.artStyle == style['id'];
-          final Color accent = style['accent'];
+          final accent = style['accent'] as Color;
 
           return GestureDetector(
-            onTap: () => setState(() => _config = _config.copyWith(artStyle: style['id'])),
+            onTap: () {
+              setState(() {
+                _config = _config.copyWith(artStyle: style['id']);
+              });
+            },
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
-              padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               decoration: BoxDecoration(
-                color: isSelected ? accent : const Color(0xFF161822),
+                color: isSelected ? accent : const Color(0xFF1E202E),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: isSelected ? accent : Colors.white12,
-                  width: 1.5,
+                  color: isSelected ? Colors.transparent : Colors.white12,
+                  width: 1.2,
                 ),
                 boxShadow: isSelected
                     ? [
@@ -342,6 +365,9 @@ class _VectorAvatarStudioPageState extends State<VectorAvatarStudioPage>
   }
 
   Widget _buildHeroPreviewCard() {
+    final mintId = _config.mintId ?? '#MATE-ORIGINAL';
+    final rarity = _config.rarityTier;
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
@@ -363,7 +389,7 @@ class _VectorAvatarStudioPageState extends State<VectorAvatarStudioPage>
           Center(
             child: VectorAvatarWidget(
               config: _config,
-              size: 130,
+              size: 124,
               showAura: true,
             ),
           ),
@@ -391,9 +417,26 @@ class _VectorAvatarStudioPageState extends State<VectorAvatarStudioPage>
                         ),
                       ),
                     ),
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(colors: [Color(0xFFFF007A), Color(0xFF7928CA)]),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        rarity.toUpperCase(),
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 9,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 5),
                 Text(
                   _getRoleDisplayName(),
                   style: GoogleFonts.outfit(
@@ -401,17 +444,52 @@ class _VectorAvatarStudioPageState extends State<VectorAvatarStudioPage>
                     fontWeight: FontWeight.bold,
                     fontSize: 15,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 4),
-                // Sticker Quick Link
-                GestureDetector(
-                  onTap: () => AvatarStickerPackSheet.show(context, _config),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.auto_awesome, color: Color(0xFFFFFC00), size: 14),
-                      const SizedBox(width: 4),
-                      Text(
-                        'View 12 Chat Stickers 💬',
+                Text(
+                  'Exclusive 1-of-1: $mintId',
+                  style: GoogleFonts.inter(
+                    color: Colors.white60,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    // NFT Certificate button
+                    GestureDetector(
+                      onTap: _showNftCertificateModal,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFFC00),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.verified_rounded, color: Colors.black, size: 12),
+                            const SizedBox(width: 4),
+                            Text(
+                              'NFT Certificate',
+                              style: GoogleFonts.outfit(
+                                color: Colors.black,
+                                fontWeight: FontWeight.w900,
+                                fontSize: 10,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    // Sticker Quick Link
+                    GestureDetector(
+                      onTap: () => AvatarStickerPackSheet.show(context, _config),
+                      child: Text(
+                        '12 Stickers 💬',
                         style: GoogleFonts.outfit(
                           color: const Color(0xFFFFFC00),
                           fontWeight: FontWeight.bold,
@@ -419,8 +497,8 @@ class _VectorAvatarStudioPageState extends State<VectorAvatarStudioPage>
                           decoration: TextDecoration.underline,
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -479,6 +557,353 @@ class _VectorAvatarStudioPageState extends State<VectorAvatarStudioPage>
         unselectedLabelStyle: GoogleFonts.outfit(fontWeight: FontWeight.w500, fontSize: 12),
         tabs: _tabs.map((tab) => Tab(text: tab)).toList(),
       ),
+    );
+  }
+
+  // --- TAB 0: 1-of-1 Species & Archetypes (Animals, Mythic Beasts, Cyber Warriors) ---
+  Widget _buildSpeciesTab() {
+    return ListView(
+      padding: const EdgeInsets.all(14),
+      children: [
+        // Mint Random 1-of-1 Quick Banner
+        GestureDetector(
+          onTap: _mintRandomNftMate,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFFFFD700), Color(0xFFFF8906)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFFFD700).withValues(alpha: 0.3),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: const BoxDecoration(
+                    color: Colors.black,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.casino_rounded, color: Color(0xFFFFD700), size: 20),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '🎲 Mint 1-of-1 NFT Pocket Mate',
+                        style: GoogleFonts.outfit(
+                          color: Colors.black,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 14,
+                        ),
+                      ),
+                      Text(
+                        'Generate unique traits & DNA from 300+ combinations',
+                        style: GoogleFonts.inter(
+                          color: Colors.black87,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(Icons.arrow_forward_ios_rounded, color: Colors.black, size: 14),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 14),
+
+        // Grid of 16+ Species Archetypes
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            childAspectRatio: 1.45,
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
+          ),
+          itemCount: VectorAvatarPalette.speciesList.length,
+          itemBuilder: (context, index) {
+            final s = VectorAvatarPalette.speciesList[index];
+            final isSelected = _config.species == s['id'];
+            final badgeColor = s['badgeColor'] as Color? ?? const Color(0xFFFFD700);
+
+            return GestureDetector(
+              onTap: () {
+                setState(() {
+                  _config = _config.copyWith(
+                    species: s['id'],
+                    rarityTier: s['rarity'],
+                  );
+                });
+                HapticFeedback.selectionClick();
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? const Color(0xFF1E202E)
+                      : const Color(0xFF14151F),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: isSelected ? badgeColor : Colors.white12,
+                    width: isSelected ? 2 : 1,
+                  ),
+                  boxShadow: isSelected
+                      ? [
+                          BoxShadow(
+                            color: badgeColor.withValues(alpha: 0.35),
+                            blurRadius: 10,
+                            spreadRadius: 1,
+                          ),
+                        ]
+                      : [],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Row(
+                      children: [
+                        Text(s['icon'], style: const TextStyle(fontSize: 22)),
+                        const Spacer(),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: badgeColor.withValues(alpha: 0.18),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: badgeColor.withValues(alpha: 0.5), width: 0.8),
+                          ),
+                          child: Text(
+                            s['rarity'],
+                            style: GoogleFonts.outfit(
+                              color: badgeColor,
+                              fontSize: 8,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      s['name'],
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      s['desc'],
+                      style: GoogleFonts.inter(
+                        color: Colors.white54,
+                        fontSize: 9,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  void _showNftCertificateModal() {
+    final mintId = _config.mintId ?? '#MATE-ORIGINAL';
+    final dna = _config.dnaHash ?? '0x7F2A-91BC-4402';
+    final rarity = _config.rarityTier;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF1E202E), Color(0xFF0F1017)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(28),
+              border: Border.all(color: const Color(0xFFFFD700), width: 2.5),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFFFD700).withValues(alpha: 0.35),
+                  blurRadius: 30,
+                  spreadRadius: 2,
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Header
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.verified_rounded, color: Color(0xFFFFD700), size: 22),
+                        const SizedBox(width: 8),
+                        Text(
+                          '1-OF-1 NFT CERTIFICATE',
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 1,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close, color: Colors.white54, size: 20),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+
+                // Avatar Display
+                Center(
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: const Color(0xFFFFD700), width: 2),
+                    ),
+                    child: VectorAvatarWidget(config: _config, size: 110, showAura: true),
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // Mint ID and Rarity
+                Text(
+                  mintId,
+                  style: GoogleFonts.outfit(
+                    color: const Color(0xFFFFD700),
+                    fontWeight: FontWeight.w900,
+                    fontSize: 22,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  margin: const EdgeInsets.only(top: 4),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(colors: [Color(0xFFFF007A), Color(0xFF7928CA)]),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    '🌟 $rarity ORIGINAL',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 11,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Cryptographic Proof Table
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.black54,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.white12),
+                  ),
+                  child: Column(
+                    children: [
+                      _buildCertificateRow('DNA Hash', dna),
+                      const Divider(color: Colors.white12, height: 12),
+                      _buildCertificateRow('Species', _config.species.toUpperCase()),
+                      const Divider(color: Colors.white12, height: 12),
+                      _buildCertificateRow('Art Style', _config.artStyle.toUpperCase()),
+                      const Divider(color: Colors.white12, height: 12),
+                      _buildCertificateRow('Aura Style', _config.auraStyle.toUpperCase()),
+                      const Divider(color: Colors.white12, height: 12),
+                      _buildCertificateRow('Ownership', '🔒 1-of-1 Exclusive Locked'),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 18),
+
+                // Claim & Save Button
+                SizedBox(
+                  width: double.infinity,
+                  height: 46,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFFFD700),
+                      foregroundColor: Colors.black,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      elevation: 0,
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                      _saveAvatar();
+                    },
+                    child: Text(
+                      'Claim & Lock as My 1-of-1 Avatar',
+                      style: GoogleFonts.outfit(
+                        fontWeight: FontWeight.w900,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildCertificateRow(String label, String value) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.inter(color: Colors.white60, fontSize: 11, fontWeight: FontWeight.w500),
+        ),
+        Text(
+          value,
+          style: GoogleFonts.outfit(
+            color: Colors.white,
+            fontSize: 11,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
     );
   }
 
