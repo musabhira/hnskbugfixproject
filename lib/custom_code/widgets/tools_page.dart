@@ -29,6 +29,157 @@ import '/custom_code/widgets/subscription_page.dart';
 
 import 'package:pocket_mates_app/custom_code/widgets/zoyarex_admin/zoyarex_login_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/zoyarex_admin/zoyarex_ai_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
+
+class DoodleBackgroundPainter extends CustomPainter {
+  final Color color;
+  final bool isDark;
+
+  DoodleBackgroundPainter({
+    required this.color,
+    required this.isDark,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color.withValues(alpha: isDark ? 0.045 : 0.03)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.3
+      ..strokeCap = StrokeCap.round;
+
+    const stepX = 130.0;
+    const stepY = 150.0;
+
+    int type = 0;
+    for (double y = 30; y < size.height + 100; y += stepY) {
+      for (double x = 25; x < size.width + 100; x += stepX) {
+        final cx = x + ((y ~/ stepY) % 2 == 0 ? 0 : 45);
+        final cy = y;
+
+        switch (type % 8) {
+          case 0:
+            _drawStar(canvas, cx, cy, 12, paint);
+            break;
+          case 1:
+            _drawSpeechBubble(canvas, cx, cy, 20, 14, paint);
+            break;
+          case 2:
+            _drawGamepad(canvas, cx, cy, 24, 14, paint);
+            break;
+          case 3:
+            _drawLightning(canvas, cx, cy, paint);
+            break;
+          case 4:
+            _drawLightbulb(canvas, cx, cy, paint);
+            break;
+          case 5:
+            _drawCrown(canvas, cx, cy, paint);
+            break;
+          case 6:
+            _drawPencil(canvas, cx, cy, paint);
+            break;
+          case 7:
+            _drawCoffee(canvas, cx, cy, paint);
+            break;
+        }
+        type++;
+      }
+    }
+  }
+
+  void _drawStar(Canvas canvas, double cx, double cy, double radius, Paint p) {
+    final path = Path();
+    for (int i = 0; i < 5; i++) {
+      final angle = (i * 4 * pi / 5) - (pi / 2);
+      final x = cx + radius * cos(angle);
+      final y = cy + radius * sin(angle);
+      if (i == 0) path.moveTo(x, y);
+      else path.lineTo(x, y);
+    }
+    path.close();
+    canvas.drawPath(path, p);
+  }
+
+  void _drawSpeechBubble(Canvas canvas, double cx, double cy, double w, double h, Paint p) {
+    final rect = RRect.fromRectAndRadius(
+      Rect.fromCenter(center: Offset(cx, cy), width: w, height: h),
+      const Radius.circular(5),
+    );
+    canvas.drawRRect(rect, p);
+    final tail = Path()
+      ..moveTo(cx - 3, cy + h / 2)
+      ..lineTo(cx - 7, cy + h / 2 + 4)
+      ..lineTo(cx + 2, cy + h / 2);
+    canvas.drawPath(tail, p);
+  }
+
+  void _drawGamepad(Canvas canvas, double cx, double cy, double w, double h, Paint p) {
+    final rect = RRect.fromRectAndRadius(
+      Rect.fromCenter(center: Offset(cx, cy), width: w, height: h),
+      const Radius.circular(7),
+    );
+    canvas.drawRRect(rect, p);
+    canvas.drawLine(Offset(cx - 5, cy - 3), Offset(cx - 5, cy + 3), p);
+    canvas.drawLine(Offset(cx - 8, cy), Offset(cx - 2, cy), p);
+    canvas.drawCircle(Offset(cx + 5, cy), 1.3, p);
+  }
+
+  void _drawLightning(Canvas canvas, double cx, double cy, Paint p) {
+    final path = Path()
+      ..moveTo(cx + 2, cy - 10)
+      ..lineTo(cx - 3, cy)
+      ..lineTo(cx + 1, cy)
+      ..lineTo(cx - 2, cy + 10)
+      ..lineTo(cx + 4, cy - 2)
+      ..lineTo(cx, cy - 2)
+      ..close();
+    canvas.drawPath(path, p);
+  }
+
+  void _drawLightbulb(Canvas canvas, double cx, double cy, Paint p) {
+    canvas.drawCircle(Offset(cx, cy - 2), 6, p);
+    canvas.drawLine(Offset(cx - 3, cy + 5), Offset(cx + 3, cy + 5), p);
+    canvas.drawLine(Offset(cx - 2, cy + 7), Offset(cx + 2, cy + 7), p);
+  }
+
+  void _drawCrown(Canvas canvas, double cx, double cy, Paint p) {
+    final path = Path()
+      ..moveTo(cx - 8, cy + 4)
+      ..lineTo(cx - 8, cy - 3)
+      ..lineTo(cx - 4, cy)
+      ..lineTo(cx, cy - 5)
+      ..lineTo(cx + 4, cy)
+      ..lineTo(cx + 8, cy - 3)
+      ..lineTo(cx + 8, cy + 4)
+      ..close();
+    canvas.drawPath(path, p);
+  }
+
+  void _drawPencil(Canvas canvas, double cx, double cy, Paint p) {
+    final path = Path()
+      ..moveTo(cx - 7, cy - 7)
+      ..lineTo(cx + 7, cy + 7)
+      ..lineTo(cx + 3, cy + 9)
+      ..lineTo(cx - 9, cy - 5)
+      ..close();
+    canvas.drawPath(path, p);
+  }
+
+  void _drawCoffee(Canvas canvas, double cx, double cy, Paint p) {
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromCenter(center: Offset(cx, cy + 1), width: 12, height: 10),
+        const Radius.circular(3),
+      ),
+      p,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
 
 class ToolsPage extends StatefulWidget {
   final double? width;
@@ -1065,10 +1216,32 @@ class _TaskManagerScreenState extends State<ToolsPage> {
   Widget _buildToolsList() {
     final List<Map<String, dynamic>> allTools = [
       {
+        'title': 'English Hub & Habits',
+        'subtitle': 'Speaking, Vocab & Streaks',
+        'icon': Icons.school_rounded,
+        'color': const Color(0xFFFFD700),
+        'avatar': const VectorAvatarConfig(
+          outfitStyle: 'detective_trench',
+          auraStyle: 'pocket_gold',
+          hairStyle: 'bob_cut',
+          faceShape: 'oval',
+        ),
+        'onTap': () => Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => const EnglishLearningHubPage())),
+      },
+      {
         'title': 'Zoyarex POS Admin',
         'subtitle': 'Admin Control Panel',
         'icon': Icons.admin_panel_settings,
         'color': Colors.blueAccent,
+        'avatar': const VectorAvatarConfig(
+          outfitStyle: 'executive_blazer',
+          auraStyle: 'royal_gold',
+          hairStyle: 'afro_fade',
+          faceShape: 'square',
+        ),
         'onTap': () => Navigator.push(context,
             MaterialPageRoute(builder: (context) => const ZoyarexLoginPage())),
       },
@@ -1077,6 +1250,12 @@ class _TaskManagerScreenState extends State<ToolsPage> {
         'subtitle': 'AI Assistant for Zoyarex',
         'icon': Icons.smart_toy_rounded,
         'color': Colors.blue,
+        'avatar': const VectorAvatarConfig(
+          outfitStyle: 'astronaut_suit',
+          auraStyle: 'cyber_synthwave',
+          hairStyle: 'anime_spiky',
+          faceShape: 'sharp',
+        ),
         'onTap': () => Navigator.push(context,
             MaterialPageRoute(builder: (context) => const ZoyarexAiPage())),
       },
@@ -1085,13 +1264,26 @@ class _TaskManagerScreenState extends State<ToolsPage> {
         'subtitle': 'Super Admin Console',
         'icon': Icons.manage_accounts,
         'color': Colors.purpleAccent,
+        'avatar': const VectorAvatarConfig(
+          outfitStyle: 'executive_blazer',
+          auraStyle: 'royal_gold',
+          hairStyle: 'buzz_cut',
+          faceShape: 'sharp',
+        ),
         'onTap': () => Navigator.push(context,
             MaterialPageRoute(builder: (context) => const ZoyarexLoginPage())),
       },
       {
         'title': 'Drawing Tool',
+        'subtitle': 'Creative Sketchbook',
         'icon': Icons.brush,
         'color': const Color(0xFFFFD700),
+        'avatar': const VectorAvatarConfig(
+          outfitStyle: 'artist_beret',
+          auraStyle: 'sakura_blossom',
+          hairStyle: 'curly_top',
+          faceShape: 'round',
+        ),
         'onTap': () => Navigator.push(context,
             MaterialPageRoute(builder: (context) => const DrawingAppHome())),
       },
@@ -1100,6 +1292,12 @@ class _TaskManagerScreenState extends State<ToolsPage> {
         'subtitle': 'YouTube & Reels',
         'icon': Icons.duo_rounded,
         'color': const Color(0xFFFFB700),
+        'avatar': const VectorAvatarConfig(
+          outfitStyle: 'cyberpunk_jacket',
+          auraStyle: 'comic_boom',
+          hairStyle: 'anime_spiky',
+          faceShape: 'sharp',
+        ),
         'onTap': () => Navigator.push(
             context,
             MaterialPageRoute(
@@ -1107,8 +1305,15 @@ class _TaskManagerScreenState extends State<ToolsPage> {
       },
       {
         'title': 'Schedule',
+        'subtitle': 'Time Matrix',
         'icon': Icons.calendar_today_rounded,
         'color': const Color(0xFFE8D3A7),
+        'avatar': const VectorAvatarConfig(
+          outfitStyle: 'executive_blazer',
+          auraStyle: 'pocket_gold',
+          hairStyle: 'ponytail',
+          faceShape: 'round',
+        ),
         'onTap': () => setState(() {
               _selectedTab = 0;
               _showToolsList = false;
@@ -1116,8 +1321,15 @@ class _TaskManagerScreenState extends State<ToolsPage> {
       },
       {
         'title': 'Tasks',
+        'subtitle': 'Daily Checklists',
         'icon': Icons.check_circle_outline_rounded,
         'color': const Color(0xFFCD7F32),
+        'avatar': const VectorAvatarConfig(
+          outfitStyle: 'tech_hoodie',
+          auraStyle: 'matrix_green',
+          hairStyle: 'side_part',
+          faceShape: 'oval',
+        ),
         'onTap': () => setState(() {
               _selectedTab = 1;
               _showToolsList = false;
@@ -1125,8 +1337,15 @@ class _TaskManagerScreenState extends State<ToolsPage> {
       },
       {
         'title': 'Habit Tracker',
+        'subtitle': '21-Day Streaks',
         'icon': Icons.emoji_events_outlined,
         'color': const Color(0xFFFFD700),
+        'avatar': const VectorAvatarConfig(
+          outfitStyle: 'royal_cape',
+          auraStyle: 'pocket_gold',
+          hairStyle: 'afro_fade',
+          faceShape: 'round',
+        ),
         'onTap': () => setState(() {
               _selectedTab = 2;
               _showToolsList = false;
@@ -1134,8 +1353,15 @@ class _TaskManagerScreenState extends State<ToolsPage> {
       },
       {
         'title': 'Diagrams',
+        'subtitle': 'Visual Flowcharts',
         'icon': Icons.schema_rounded,
         'color': const Color(0xFFFFB700),
+        'avatar': const VectorAvatarConfig(
+          outfitStyle: 'tech_hoodie',
+          auraStyle: 'electric_aqua',
+          hairStyle: 'undercut',
+          faceShape: 'sharp',
+        ),
         'onTap': () => setState(() {
               _selectedTab = 3;
               _showToolsList = false;
@@ -1143,18 +1369,31 @@ class _TaskManagerScreenState extends State<ToolsPage> {
       },
       {
         'title': 'Teams',
+        'subtitle': 'Squad Workspaces',
         'icon': Icons.groups_rounded,
         'color': const Color(0xFFE8D3A7),
+        'avatar': const VectorAvatarConfig(
+          outfitStyle: 'cyberpunk_jacket',
+          auraStyle: 'comic_boom',
+          hairStyle: 'curly_top',
+          faceShape: 'round',
+        ),
         'onTap': () => setState(() {
               _selectedTab = 4;
               _showToolsList = false;
             }),
       },
-      // AI Tools removed as per request
       {
         'title': 'Poster Maker',
+        'subtitle': 'Design Pro Banners',
         'icon': Icons.photo_library_rounded,
         'color': const Color(0xFFCD7F32),
+        'avatar': const VectorAvatarConfig(
+          outfitStyle: 'tech_hoodie',
+          auraStyle: 'comic_boom',
+          hairStyle: 'side_part',
+          faceShape: 'oval',
+        ),
         'onTap': () => Navigator.push(
             context,
             MaterialPageRoute(
@@ -1162,38 +1401,57 @@ class _TaskManagerScreenState extends State<ToolsPage> {
       },
       {
         'title': 'Bulk Sender',
+        'subtitle': 'Instant Group Blast',
         'icon': Icons.send_rounded,
         'color': const Color(0xFFFFD700),
+        'avatar': const VectorAvatarConfig(
+          outfitStyle: 'tech_hoodie',
+          auraStyle: 'matrix_green',
+          hairStyle: 'undercut',
+          faceShape: 'sharp',
+        ),
         'onTap': () => Navigator.push(context,
             MaterialPageRoute(builder: (context) => const BulkSenderPage())),
       },
       {
         'title': 'Poki Games',
-        'subtitle': 'poki.com',
+        'subtitle': 'Online Play with Mates',
         'icon': Icons.videogame_asset_rounded,
         'color': const Color(0xFFFFB700),
+        'avatar': const VectorAvatarConfig(
+          outfitStyle: 'cyberpunk_jacket',
+          auraStyle: 'pixel_arcade',
+          hairStyle: 'anime_spiky',
+          faceShape: 'sharp',
+        ),
         'onTap': () => Navigator.push(context,
             MaterialPageRoute(builder: (context) => const PokiGamesPage())),
       },
       {
         'title': 'Crazy Games',
-        'subtitle': 'crazygames.com',
+        'subtitle': 'Action & Arcade',
         'icon': Icons.sports_esports_rounded,
         'color': const Color(0xFFE8D3A7),
+        'avatar': const VectorAvatarConfig(
+          outfitStyle: 'cyberpunk_jacket',
+          auraStyle: 'cyber_synthwave',
+          hairStyle: 'spiky',
+          faceShape: 'round',
+        ),
         'onTap': () => Navigator.push(context,
             MaterialPageRoute(builder: (context) => const CrazyGamesPage())),
       },
       {
-        'title': 'Dynamic Web App',
-        'subtitle': 'Any URL',
-        'icon': Icons.public_rounded,
-        'color': const Color(0xFFCD7F32),
-        'onTap': () => _showDynamicWebAppDialog(),
-      },
-      {
         'title': 'Chess Match',
+        'subtitle': 'Tactical Grandmaster',
         'icon': Icons.casino_rounded,
         'color': const Color(0xFFFFD700),
+        'avatar': const VectorAvatarConfig(
+          outfitStyle: 'royal_cape',
+          auraStyle: 'royal_gold',
+          hairStyle: 'long_wavy',
+          faceShape: 'oval',
+        ),
         'onTap': () => Navigator.push(
             context,
             MaterialPageRoute(
@@ -1201,42 +1459,58 @@ class _TaskManagerScreenState extends State<ToolsPage> {
       },
       {
         'title': 'Travel Radar',
+        'subtitle': 'Explore Global Mates',
         'icon': Icons.radar,
         'color': const Color(0xFFFFB700),
+        'avatar': const VectorAvatarConfig(
+          outfitStyle: 'aviator_jacket',
+          auraStyle: 'electric_aqua',
+          hairStyle: 'curly_top',
+          faceShape: 'round',
+        ),
         'onTap': () => Navigator.push(context,
             MaterialPageRoute(builder: (context) => const NearbyUsersPage())),
       },
-      // Diagram AI removed as per request
       {
         'title': 'Password Pro',
-        'subtitle': 'Secure Generator',
+        'subtitle': 'Fort Knox Security',
         'icon': Icons.password_rounded,
         'color': const Color(0xFFE8D3A7),
+        'avatar': const VectorAvatarConfig(
+          outfitStyle: 'secret_agent_suit',
+          auraStyle: 'obsidian_stealth',
+          hairStyle: 'buzz_cut',
+          faceShape: 'sharp',
+        ),
         'onTap': () => Navigator.push(
             context,
             MaterialPageRoute(
                 builder: (context) => const PasswordGeneratorPage())),
       },
-      // AI Studio removed as per request
       {
-        'title': 'QR & Barcode',
-        'subtitle': 'Scan & Generate',
-        'icon': Icons.qr_code_scanner_rounded,
-        'color': const Color(0xFFCD7F32),
-        'onTap': () => _showQRCodeSimulation(),
-      },
-      {
-        'title': 'World Clock',
-        'subtitle': 'Global Times',
+        'title': 'Dynamic Web App',
+        'subtitle': 'Any URL In-App',
         'icon': Icons.public_rounded,
-        'color': const Color(0xFFFFD700),
-        'onTap': () => _showWorldClockSimulation(),
+        'color': const Color(0xFFCD7F32),
+        'avatar': const VectorAvatarConfig(
+          outfitStyle: 'tech_hoodie',
+          auraStyle: 'electric_aqua',
+          hairStyle: 'side_part',
+          faceShape: 'oval',
+        ),
+        'onTap': () => _showDynamicWebAppDialog(),
       },
       {
         'title': 'WhatsApp Web',
         'subtitle': 'Chat on Desktop',
         'icon': Icons.chat_rounded,
         'color': const Color(0xFFFFB700),
+        'avatar': const VectorAvatarConfig(
+          outfitStyle: 'tech_hoodie',
+          auraStyle: 'matrix_green',
+          hairStyle: 'buzz_cut',
+          faceShape: 'round',
+        ),
         'onTap': () => Navigator.push(
             context,
             MaterialPageRoute(
@@ -1248,35 +1522,52 @@ class _TaskManagerScreenState extends State<ToolsPage> {
       {
         'title': 'Web Search',
         'subtitle': 'Search the Internet',
-        'icon': Icons.travel_explore_rounded,
+        'icon': Icons.search_rounded,
         'color': const Color(0xFFE8D3A7),
-        'onTap': () => _showWebSearchDialog(),
+        'avatar': const VectorAvatarConfig(
+          outfitStyle: 'detective_trench',
+          auraStyle: 'pocket_gold',
+          hairStyle: 'curly_top',
+          faceShape: 'oval',
+        ),
+        'onTap': () => setState(() => _isWebSearchMode = true),
       },
       {
-        'title': 'English Hub',
-        'subtitle': 'Learn English speaking',
-        'icon': Icons.record_voice_over_rounded,
+        'title': 'QR & Barcode',
+        'subtitle': 'Scan & Generate',
+        'icon': Icons.qr_code_scanner_rounded,
         'color': const Color(0xFFCD7F32),
-        'onTap': () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const EnglishLearningHubPage()),
-          );
-        },
+        'avatar': const VectorAvatarConfig(
+          outfitStyle: 'tech_hoodie',
+          auraStyle: 'electric_aqua',
+          hairStyle: 'undercut',
+          faceShape: 'sharp',
+        ),
+        'onTap': () => _showQRCodeSimulation(),
       },
       {
-        'title': 'POS Tool',
-        'subtitle': 'Business POS & ERP',
-        'icon': Icons.receipt_long_rounded,
-        'color': const Color(0xFFFFB700),
-        'onTap': () => Navigator.push(context,
-            MaterialPageRoute(builder: (context) => const BusinessPOSPage())),
-      },
+        'title': 'World Clock',
+        'subtitle': 'Global Times',
+        'icon': Icons.public_rounded,
+        'color': const Color(0xFFFFD700),
+        'avatar': const VectorAvatarConfig(
+          outfitStyle: 'executive_blazer',
+          auraStyle: 'royal_gold',
+          hairStyle: 'ponytail',
+          faceShape: 'round',
+        ),
+        'onTap': () => _showWorldClockSimulation(),
       {
         'title': 'Test Feature',
         'subtitle': 'System Diagnostic',
         'icon': Icons.bug_report_rounded,
         'color': const Color(0xFFFFD700),
+        'avatar': const VectorAvatarConfig(
+          outfitStyle: 'tech_hoodie',
+          auraStyle: 'pixel_arcade',
+          hairStyle: 'anime_spiky',
+          faceShape: 'round',
+        ),
         'onTap': () => Navigator.push(context,
             MaterialPageRoute(builder: (context) => const TestFeaturePage())),
       },
@@ -1328,200 +1619,246 @@ class _TaskManagerScreenState extends State<ToolsPage> {
       return (publicVisible || hasPrivateAccess) && !isBlocked;
     }).toList();
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
         backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
         resizeToAvoidBottomInset: false,
-        body: SafeArea(
-          bottom: false,
-          child: RefreshIndicator(
-            onRefresh: () async {
-              await _loadToolPermissions();
-              await _loadData();
-            },
-            child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              child: Column(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(24.0),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.yellow.withValues(alpha: 0.05),
-                          Colors.transparent
-                        ],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                      ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        body: Stack(
+          children: [
+            // Subtle Doodle Sketch Canvas Background
+            Positioned.fill(
+              child: CustomPaint(
+                painter: DoodleBackgroundPainter(
+                  color: const Color(0xFFFFFC00),
+                  isDark: isDark,
+                ),
+              ),
+            ),
+            SafeArea(
+              bottom: false,
+              child: RefreshIndicator(
+                onRefresh: () async {
+                  await _loadToolPermissions();
+                  await _loadData();
+                },
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  child: Column(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(24.0),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.yellow.withValues(alpha: 0.05),
+                              Colors.transparent
+                            ],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text('Tools for',
-                                    style: GoogleFonts.outfit(
-                                        fontSize: 26,
-                                        fontWeight: FontWeight.w400,
-                                        color: FlutterFlowTheme.of(context)
-                                            .secondaryText,
-                                        letterSpacing: 1.2)),
-                                Text('Browser',
-                                    style: GoogleFonts.outfit(
-                                        fontSize: 32,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.yellow)),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('Pocket Mates',
+                                        style: GoogleFonts.outfit(
+                                            fontSize: 22,
+                                            fontWeight: FontWeight.w500,
+                                            color: FlutterFlowTheme.of(context)
+                                                .secondaryText,
+                                            letterSpacing: 1.1)),
+                                    Text('Productivity & Tools 🎭',
+                                        style: GoogleFonts.outfit(
+                                            fontSize: 28,
+                                            fontWeight: FontWeight.bold,
+                                            color: const Color(0xFFFFFC00))),
+                                  ],
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFFFC00).withValues(alpha: 0.12),
+                                    shape: BoxShape.circle,
+                                    border: Border.all(color: const Color(0xFFFFFC00).withValues(alpha: 0.3)),
+                                  ),
+                                  child: const Icon(Icons.auto_awesome,
+                                      color: Color(0xFFFFFC00)),
+                                )
                               ],
                             ),
+                            const SizedBox(height: 20),
                             Container(
-                              padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
                                 color: FlutterFlowTheme.of(context)
-                                    .primaryText
-                                    .withValues(alpha: 0.05),
-                                shape: BoxShape.circle,
+                                    .secondaryBackground,
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                    color: FlutterFlowTheme.of(context).alternate),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.15),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
                               ),
-                              child: const Icon(Icons.dashboard_rounded,
-                                  color: Colors.yellow),
-                            )
+                              child: TextField(
+                                onChanged: (value) {
+                                  if (!_isWebSearchMode) {
+                                    setState(() => _toolsSearchQuery = value);
+                                  }
+                                },
+                                onSubmitted: (query) {
+                                  if (_isWebSearchMode && query.trim().isNotEmpty) {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => DynamicWebViewPage(
+                                          title: 'Browser',
+                                          url:
+                                              'https://www.google.com/search?q=${Uri.encodeComponent(query.trim())}',
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                },
+                                style: GoogleFonts.outfit(
+                                    color:
+                                        FlutterFlowTheme.of(context).primaryText),
+                                decoration: InputDecoration(
+                                  hintText: _isWebSearchMode
+                                      ? 'Search Google...'
+                                      : 'Search avatar tools or learning features...',
+                                  hintStyle: GoogleFonts.outfit(
+                                      color: _isWebSearchMode
+                                          ? Colors.yellow.withValues(alpha: 0.5)
+                                          : FlutterFlowTheme.of(context)
+                                              .secondaryText),
+                                  prefixIcon: Icon(
+                                    _isWebSearchMode
+                                        ? Icons.travel_explore_rounded
+                                        : Icons.search,
+                                    color: _isWebSearchMode
+                                        ? Colors.yellow
+                                        : FlutterFlowTheme.of(context)
+                                            .secondaryText,
+                                  ),
+                                  suffixIcon: IconButton(
+                                    icon: Icon(
+                                      Icons.public_rounded,
+                                      color: _isWebSearchMode
+                                        ? Colors.yellow
+                                        : FlutterFlowTheme.of(context)
+                                            .secondaryText,
+                                    ),
+                                    tooltip: 'Web Mode',
+                                    onPressed: () {
+                                      setState(() {
+                                        _isWebSearchMode = !_isWebSearchMode;
+                                        if (_isWebSearchMode) {
+                                          _toolsSearchQuery = '';
+                                        }
+                                      });
+                                    },
+                                  ),
+                                  border: InputBorder.none,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 20, vertical: 16),
+                                ),
+                              ),
+                            ),
                           ],
                         ),
-                        const SizedBox(height: 24),
-                        Container(
-                          decoration: BoxDecoration(
-                            color: FlutterFlowTheme.of(context)
-                                .secondaryBackground,
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                                color: FlutterFlowTheme.of(context).alternate),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.15),
-                                blurRadius: 10,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: TextField(
-                            onChanged: (value) {
-                              if (!_isWebSearchMode) {
-                                setState(() => _toolsSearchQuery = value);
-                              }
-                            },
-                            onSubmitted: (query) {
-                              if (_isWebSearchMode && query.trim().isNotEmpty) {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => DynamicWebViewPage(
-                                      title: 'Browser',
-                                      url:
-                                          'https://www.google.com/search?q=${Uri.encodeComponent(query.trim())}',
-                                    ),
-                                  ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 24.0),
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 24, vertical: 8),
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: filteredTools.length,
+                          itemBuilder: (context, index) {
+                            final tool = filteredTools[index];
+                            final isFav = _favoritedTools.contains(tool['title']);
+                            final avatarConfig = tool['avatar'] as VectorAvatarConfig? ??
+                                const VectorAvatarConfig(
+                                  outfitStyle: 'tech_hoodie',
+                                  auraStyle: 'pocket_gold',
+                                  hairStyle: 'anime_spiky',
                                 );
-                              }
-                            },
-                            style: GoogleFonts.outfit(
-                                color:
-                                    FlutterFlowTheme.of(context).primaryText),
-                            decoration: InputDecoration(
-                              hintText: _isWebSearchMode
-                                  ? 'Search Google...'
-                                  : 'Search tools or features...',
-                              hintStyle: GoogleFonts.outfit(
-                                  color: _isWebSearchMode
-                                      ? Colors.yellow.withValues(alpha: 0.5)
-                                      : FlutterFlowTheme.of(context)
-                                          .secondaryText),
-                              prefixIcon: Icon(
-                                _isWebSearchMode
-                                    ? Icons.travel_explore_rounded
-                                    : Icons.search,
-                                color: _isWebSearchMode
-                                    ? Colors.yellow
-                                    : FlutterFlowTheme.of(context)
-                                        .secondaryText,
-                              ),
-                              suffixIcon: IconButton(
-                                icon: Icon(
-                                  Icons.public_rounded,
-                                  color: _isWebSearchMode
-                                      ? Colors.yellow
-                                      : FlutterFlowTheme.of(context)
-                                          .secondaryText,
+
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 16),
+                              decoration: BoxDecoration(
+                                color: FlutterFlowTheme.of(context)
+                                    .secondaryBackground,
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: isFav
+                                      ? (tool['color'] as Color)
+                                          .withValues(alpha: 0.6)
+                                      : FlutterFlowTheme.of(context).alternate,
+                                  width: isFav ? 2 : 1.2,
                                 ),
-                                tooltip: 'Web Mode',
-                                onPressed: () {
-                                  setState(() {
-                                    _isWebSearchMode = !_isWebSearchMode;
-                                    if (_isWebSearchMode) {
-                                      _toolsSearchQuery = '';
-                                    }
-                                  });
-                                },
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.08),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 3),
+                                  ),
+                                ],
                               ),
-                              border: InputBorder.none,
-                              contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 20, vertical: 16),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 24.0),
-                    child: ListView.builder(
-                      shrinkWrap: true,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 24, vertical: 8),
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: filteredTools.length,
-                      itemBuilder: (context, index) {
-                        final tool = filteredTools[index];
-                        final isFav = _favoritedTools.contains(tool['title']);
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: 16),
-                          decoration: BoxDecoration(
-                            color: FlutterFlowTheme.of(context)
-                                .secondaryBackground,
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: isFav
-                                  ? (tool['color'] as Color)
-                                      .withValues(alpha: 0.5)
-                                  : FlutterFlowTheme.of(context).alternate,
-                              width: 1.5,
-                            ),
-                          ),
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: tool['onTap'] as VoidCallback,
-                              borderRadius: BorderRadius.circular(20),
-                              child: Padding(
-                                padding: const EdgeInsets.all(20),
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.all(12),
-                                      decoration: BoxDecoration(
-                                        color: (tool['color'] as Color)
-                                            .withValues(alpha: 0.1),
-                                        borderRadius: BorderRadius.circular(16),
-                                      ),
-                                      child: Icon(
-                                        tool['icon'] as IconData,
-                                        color: tool['color'] as Color,
-                                        size: 28,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 20),
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  onTap: tool['onTap'] as VoidCallback,
+                                  borderRadius: BorderRadius.circular(20),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(16),
+                                    child: Row(
+                                      children: [
+                                        // Tool Avatar Persona with badge
+                                        Stack(
+                                          alignment: Alignment.bottomRight,
+                                          children: [
+                                            Container(
+                                              decoration: BoxDecoration(
+                                                shape: BoxShape.circle,
+                                                border: Border.all(
+                                                  color: (tool['color'] as Color).withValues(alpha: 0.5),
+                                                  width: 1.5,
+                                                ),
+                                              ),
+                                              child: VectorAvatarWidget(
+                                                config: avatarConfig,
+                                                size: 54,
+                                                showAura: true,
+                                              ),
+                                            ),
+                                            Container(
+                                              padding: const EdgeInsets.all(4),
+                                              decoration: BoxDecoration(
+                                                color: (tool['color'] as Color),
+                                                shape: BoxShape.circle,
+                                                border: Border.all(color: Colors.black, width: 1.5),
+                                              ),
+                                              child: Icon(
+                                                tool['icon'] as IconData,
+                                                color: Colors.black,
+                                                size: 13,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(width: 18),
                                     Expanded(
                                       child: Column(
                                         crossAxisAlignment:
@@ -1618,7 +1955,9 @@ class _TaskManagerScreenState extends State<ToolsPage> {
               ),
             ),
           ),
-        ));
+        ],
+      ),
+    );
   }
 
   @override
