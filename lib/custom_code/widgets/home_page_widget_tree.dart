@@ -32,6 +32,7 @@ import 'package:pocket_mates_app/custom_code/widgets/native_webrtc_call_screen.d
 import 'package:pocket_mates_app/custom_code/widgets/conversation_tile.dart';
 import 'package:pocket_mates_app/custom_code/widgets/voice_assistant/pocket_mates_voice_button.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/english_learning_group_chat.dart';
+import 'package:pocket_mates_app/custom_code/widgets/doodle_background_painter.dart';
 
 // Aliases for WhatsApp Groups Provider to avoid naming conflicts
 typedef ChatConversation = groups_provider.ChatConversation;
@@ -720,12 +721,23 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
             colors: gradientColors,
           ),
         ),
-        child: material.Scaffold(
-          backgroundColor: material.Colors.transparent,
-          bottomNavigationBar: _buildBottomNavigationBar(context),
-          body: material.ColoredBox(
-            color: material.Colors.transparent,
-            child: _isLoading
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: CustomPaint(
+                painter: PocketDoodleBackgroundPainter(
+                  color: const Color(0xFFFFFC00),
+                  isDark: isDark,
+                  opacityMultiplier: 0.5,
+                ),
+              ),
+            ),
+            material.Scaffold(
+              backgroundColor: material.Colors.transparent,
+              bottomNavigationBar: _buildBottomNavigationBar(context),
+              body: material.ColoredBox(
+                color: material.Colors.transparent,
+                child: _isLoading
                 ? Center(
                     child: material.CircularProgressIndicator(
                       color: isDark
@@ -844,8 +856,10 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                           ),
           ),
         ),
-      ),
-    );
+      ],
+    ),
+  ),
+);
   }
 
   Future<void> _handleRefresh() async {

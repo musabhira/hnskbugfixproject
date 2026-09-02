@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/widgets/drawing_app_home.dart';
 import 'vector_avatar_config.dart';
 import 'vector_avatar_widget.dart';
 import 'avatar_sticker_pack_sheet.dart';
 import 'avatar_comic_strip_page.dart';
+import 'avatar_network_service.dart';
+import 'avatar_network_explorer_page.dart';
 
 class VectorAvatarStudioPage extends StatefulWidget {
   final VectorAvatarConfig? initialConfig;
@@ -33,6 +36,7 @@ class _VectorAvatarStudioPageState extends State<VectorAvatarStudioPage>
 
   final List<String> _tabs = [
     '🦁 Species (300+)',
+    '🌐 Network (Millions+)',
     '🎭 Roles (50+)',
     'Face & Skin',
     'Hairstyle',
@@ -205,6 +209,24 @@ class _VectorAvatarStudioPageState extends State<VectorAvatarStudioPage>
               );
             },
           ),
+          // 🌐 Global Avatar Network Button
+          IconButton(
+            tooltip: '🌐 Global Avatar Network (Millions+)',
+            icon: Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: const Color(0xFF00E5FF).withValues(alpha: 0.25),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.public_rounded, color: Color(0xFF00E5FF), size: 20),
+            ),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const AvatarNetworkExplorerPage()),
+              );
+            },
+          ),
           // Comic Strip Creator Button
           IconButton(
             tooltip: 'Avatar Comic Strip',
@@ -262,6 +284,7 @@ class _VectorAvatarStudioPageState extends State<VectorAvatarStudioPage>
                     controller: _tabController,
                     children: [
                       _buildSpeciesTab(),
+                      _buildAvatarNetworkTab(),
                       _buildHeroRolesTab(),
                       _buildFaceAndSkinTab(),
                       _buildHairTab(),
@@ -716,6 +739,171 @@ class _VectorAvatarStudioPageState extends State<VectorAvatarStudioPage>
                       style: GoogleFonts.inter(
                         color: Colors.white54,
                         fontSize: 9,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  // --- TAB 1: 🌐 Global Avatar Network (Millions of Avatars across DiceBear, RoboHash, Multiavatar, Boring Avatars) ---
+  Widget _buildAvatarNetworkTab() {
+    return ListView(
+      padding: const EdgeInsets.all(14),
+      children: [
+        // Launch Full Explorer Banner
+        GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const AvatarNetworkExplorerPage()),
+            );
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF00E5FF), Color(0xFF7928CA)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF00E5FF).withValues(alpha: 0.3),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: const BoxDecoration(
+                    color: Colors.black,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.travel_explore_rounded, color: Color(0xFF00E5FF), size: 20),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '🌐 Explore 18+ Avatar Engines',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 14,
+                        ),
+                      ),
+                      Text(
+                        'DiceBear, RoboHash, Multiavatar & Boring Avatars',
+                        style: GoogleFonts.inter(
+                          color: Colors.white70,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 14),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 14),
+
+        // Grid of 18+ Network Styles
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            childAspectRatio: 0.88,
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
+          ),
+          itemCount: AvatarNetworkService.catalog.length,
+          itemBuilder: (context, index) {
+            final style = AvatarNetworkService.catalog[index];
+            final avatarUrl = AvatarNetworkService.buildAvatarUrl(
+              styleId: style.id,
+              seed: style.sampleSeed,
+              size: 160,
+            );
+
+            return GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AvatarNetworkExplorerPage()),
+                );
+              },
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF161822),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: style.accentColor.withValues(alpha: 0.3), width: 1.2),
+                ),
+                child: Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: style.accentColor.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        style.category.toUpperCase(),
+                        style: GoogleFonts.outfit(
+                          color: style.accentColor,
+                          fontSize: 8,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Expanded(
+                      child: Container(
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Color(0xFF0F1017),
+                        ),
+                        child: ClipOval(
+                          child: CachedNetworkImage(
+                            imageUrl: avatarUrl,
+                            placeholder: (_, __) => const Center(
+                              child: SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(color: Color(0xFFFFFC00), strokeWidth: 2),
+                              ),
+                            ),
+                            errorWidget: (_, __, ___) => const Icon(Icons.broken_image, color: Colors.white24),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      '${style.icon} ${style.name}',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 11,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,

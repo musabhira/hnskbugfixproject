@@ -36,6 +36,7 @@ import 'package:pocket_mates_app/custom_code/widgets/ai_prompt_service.dart' sho
 import 'package:pocket_mates_app/custom_code/widgets/gallery_search_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/thread_feed_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/doodle_background_painter.dart';
 
 import 'package:pocket_mates_app/custom_code/widgets/poster_designer/template_gallery_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/bulk_sender/bulk_sender_page.dart';
@@ -966,8 +967,18 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
             ),
             child: Stack(
               children: [
-              Column(
-                children: [
+                // Subtle Custom Doodle Background
+                Positioned.fill(
+                  child: CustomPaint(
+                    painter: PocketDoodleBackgroundPainter(
+                      color: const Color(0xFFFFFC00),
+                      isDark: true,
+                      opacityMultiplier: 0.6,
+                    ),
+                  ),
+                ),
+                Column(
+                  children: [
                   if (widget.groupName == 'English Hub')
                     Container(
                       width: double.infinity,

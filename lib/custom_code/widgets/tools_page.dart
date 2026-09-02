@@ -30,7 +30,8 @@ import '/custom_code/widgets/subscription_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/zoyarex_admin/zoyarex_login_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/zoyarex_admin/zoyarex_ai_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
-import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_studio_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/avatar_network_explorer_page.dart';
 
 class DoodleBackgroundPainter extends CustomPainter {
   final Color color;
@@ -1235,6 +1236,45 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                 builder: (context) => const EnglishLearningHubPage())),
       },
       {
+        'title': 'Avatar Studio & NFT',
+        'subtitle': '300+ Species & 1-of-1 Mint',
+        'icon': Icons.face_retouching_natural_rounded,
+        'category': 'Avatars',
+        'color': const Color(0xFFFFD700),
+        'gradient': [const Color(0xFFFFD700), const Color(0xFFFF8906)],
+        'avatar': const VectorAvatarConfig(
+          species: 'cyber_fox',
+          artStyle: 'cyberpunk',
+          outfitStyle: 'hacker_hood',
+          auraStyle: 'matrix_green',
+          hairStyle: 'anime_spiky',
+          hairColor: '#00F0FF',
+        ),
+        'onTap': () => Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => const VectorAvatarStudioPage())),
+      },
+      {
+        'title': 'Avatar Network',
+        'subtitle': 'DiceBear & RoboHash (Millions+)',
+        'icon': Icons.public_rounded,
+        'category': 'Avatars',
+        'color': const Color(0xFF00E5FF),
+        'gradient': [const Color(0xFF00E5FF), const Color(0xFF7928CA)],
+        'avatar': const VectorAvatarConfig(
+          species: 'space_robot',
+          artStyle: 'pixel',
+          outfitStyle: 'astronaut_suit',
+          auraStyle: 'electric_blue',
+          hairStyle: 'bald_beanie',
+        ),
+        'onTap': () => Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => const AvatarNetworkExplorerPage())),
+      },
+      {
         'title': 'Drawing Tool',
         'subtitle': 'Creative Sketchbook',
         'icon': Icons.palette_rounded,
@@ -1242,9 +1282,9 @@ class _TaskManagerScreenState extends State<ToolsPage> {
         'color': const Color(0xFFFF007A),
         'gradient': [const Color(0xFFFF007A), const Color(0xFF7928CA)],
         'avatar': const VectorAvatarConfig(
-          outfitStyle: 'artist_beret',
-          auraStyle: 'sakura_blossom',
-          hairStyle: 'curly_top',
+          outfitStyle: 'artist_apron',
+          auraStyle: 'cherry_blossom',
+          hairStyle: 'curly_fade',
           faceShape: 'round',
           hairColor: '#FF2A6D',
         ),
@@ -1843,12 +1883,6 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                           itemBuilder: (context, index) {
                             final tool = filteredTools[index];
                             final isFav = _favoritedTools.contains(tool['title']);
-                            final avatarConfig = tool['avatar'] as VectorAvatarConfig? ??
-                                const VectorAvatarConfig(
-                                  outfitStyle: 'tech_hoodie',
-                                  auraStyle: 'pocket_gold',
-                                  hairStyle: 'anime_spiky',
-                                );
                             final gradient = tool['gradient'] as List<Color>? ?? [
                               tool['color'] as Color? ?? const Color(0xFFFFFC00),
                               (tool['color'] as Color? ?? const Color(0xFFFFFC00)).withValues(alpha: 0.6),
@@ -1883,57 +1917,32 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                                     child: Row(
                                       children: [
-                                        // Tool Avatar Persona with gradient aura frame & badge
-                                        Stack(
-                                          alignment: Alignment.bottomRight,
-                                          children: [
-                                            Container(
-                                              padding: const EdgeInsets.all(3),
-                                              decoration: BoxDecoration(
-                                                shape: BoxShape.circle,
-                                                gradient: LinearGradient(
-                                                  colors: gradient,
-                                                  begin: Alignment.topLeft,
-                                                  end: Alignment.bottomRight,
-                                                ),
-                                                boxShadow: [
-                                                  BoxShadow(
-                                                    color: gradient.first.withValues(alpha: 0.4),
-                                                    blurRadius: 10,
-                                                    spreadRadius: 1,
-                                                  ),
-                                                ],
-                                              ),
-                                              child: Container(
-                                                decoration: const BoxDecoration(
-                                                  shape: BoxShape.circle,
-                                                  color: Color(0xFF14141E),
-                                                ),
-                                                child: VectorAvatarWidget(
-                                                  config: avatarConfig,
-                                                  size: 52,
-                                                  showAura: false,
-                                                ),
-                                              ),
+                                        // Specialized 3D Glowing Illustration Emblem
+                                        Container(
+                                          width: 52,
+                                          height: 52,
+                                          decoration: BoxDecoration(
+                                            gradient: LinearGradient(
+                                              colors: gradient,
+                                              begin: Alignment.topLeft,
+                                              end: Alignment.bottomRight,
                                             ),
-                                            Positioned(
-                                              bottom: 0,
-                                              right: 0,
-                                              child: Container(
-                                                padding: const EdgeInsets.all(5),
-                                                decoration: BoxDecoration(
-                                                  gradient: LinearGradient(colors: gradient),
-                                                  shape: BoxShape.circle,
-                                                  border: Border.all(color: const Color(0xFF14141E), width: 2),
-                                                ),
-                                                child: Icon(
-                                                  tool['icon'] as IconData,
-                                                  color: Colors.white,
-                                                  size: 13,
-                                                ),
+                                            borderRadius: BorderRadius.circular(16),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: gradient.first.withValues(alpha: 0.4),
+                                                blurRadius: 12,
+                                                offset: const Offset(0, 4),
                                               ),
+                                            ],
+                                          ),
+                                          child: Center(
+                                            child: Icon(
+                                              tool['icon'] as IconData,
+                                              color: Colors.white,
+                                              size: 26,
                                             ),
-                                          ],
+                                          ),
                                         ),
                                         const SizedBox(width: 16),
                                         Expanded(

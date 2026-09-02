@@ -7,6 +7,7 @@ import 'main_market_logic.dart';
 import 'gallery_profile_search_page.dart';
 import 'gallery_search_page.dart';
 import 'pod_marketplace_view.dart';
+import 'nft_avatar_market_tab_view.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -25,7 +26,7 @@ class _MainMarketPageState extends ConsumerState<MainMarketPage>
   @override
   void initState() {
     super.initState();
-    _mainTabController = TabController(length: 3, vsync: this);
+    _mainTabController = TabController(length: 4, vsync: this);
     // Initialize market data
     Future.microtask(() => ref.read(marketProvider.notifier).initialize());
   }
@@ -69,6 +70,7 @@ class _MainMarketPageState extends ConsumerState<MainMarketPage>
                 tabs: const [
                   Tab(text: 'EXPLORE'),
                   Tab(text: 'FOLLOWING'),
+                  Tab(text: '🌟 NFT AVATARS'),
                   Tab(text: 'PRINT SHOP'),
                 ],
               ),
@@ -106,6 +108,7 @@ class _MainMarketPageState extends ConsumerState<MainMarketPage>
           children: const [
             MarketExploreTabView(),
             MarketFollowingTabView(),
+            NftAvatarMarketTabView(),
             PodMarketplaceView(),
           ],
         ),
