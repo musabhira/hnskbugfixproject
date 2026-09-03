@@ -24,6 +24,7 @@ import '/custom_code/widgets/ai_prompt_service.dart';
 import '/custom_code/widgets/dual_video_recorder.dart';
 import '/custom_code/widgets/courses_widget.dart';
 import '/custom_code/widgets/english_learning_hub_page.dart';
+import '/custom_code/widgets/learning_60day/english_tasks_master_hub.dart';
 import '/custom_code/widgets/pocket_library_page.dart';
 import '/custom_code/widgets/business_pos_page.dart';
 import '/custom_code/widgets/subscription_page.dart';
@@ -189,6 +190,7 @@ class ToolsPage extends StatefulWidget {
   final VoidCallback? onFavoriteToggled;
 
   final int? initialTab;
+  final String? externalSearchQuery;
 
   const ToolsPage({
     super.key,
@@ -196,6 +198,7 @@ class ToolsPage extends StatefulWidget {
     this.height,
     this.onFavoriteToggled,
     this.initialTab,
+    this.externalSearchQuery,
   });
 
   @override
@@ -318,12 +321,31 @@ class _TaskManagerScreenState extends State<ToolsPage> {
     final prefs = await SharedPreferences.getInstance();
     final userId = SupaFlow.client.auth.currentUser?.id ?? '';
     final favoritedToolsJson =
-        prefs.getString('favorited_tools_$userId') ?? '[]';
-    final favoritedToolsList = jsonDecode(favoritedToolsJson) as List;
-    setState(() {
-      _favoritedTools =
-          favoritedToolsList.map((e) => e['title'] as String).toList();
-    });
+        prefs.getString('favorited_tools_$userId');
+    if (favoritedToolsJson != null) {
+      final favoritedToolsList = jsonDecode(favoritedToolsJson) as List;
+      final titles = favoritedToolsList.map((e) => e['title'] as String).toList();
+      if (!titles.contains('English Learning Tasks')) {
+        titles.insert(0, 'English Learning Tasks');
+        favoritedToolsList.insert(0, {
+          'title': 'English Learning Tasks',
+          'timeAdded': DateTime.now().toIso8601String(),
+        });
+        await prefs.setString('favorited_tools_$userId', jsonEncode(favoritedToolsList));
+      }
+      setState(() {
+        _favoritedTools = titles;
+      });
+    } else {
+      // Default pinned tool on first signup: English Learning Tasks
+      setState(() {
+        _favoritedTools = ['English Learning Tasks'];
+      });
+      final defaultList = [
+        {'title': 'English Learning Tasks', 'timeAdded': DateTime.now().toIso8601String()}
+      ];
+      await prefs.setString('favorited_tools_$userId', jsonEncode(defaultList));
+    }
   }
 
   Future<void> _toggleFavoriteTool(String title) async {
@@ -1218,23 +1240,28 @@ class _TaskManagerScreenState extends State<ToolsPage> {
   Widget _buildToolsList() {
     final List<Map<String, dynamic>> allTools = [
       {
-        'title': 'English Hub & Habits',
-        'subtitle': 'Speaking, Vocab & Streaks',
-        'icon': Icons.record_voice_over_rounded,
+        'title': 'English Learning Tasks',
+        'subtitle': '60-90 Day Plan • Dragon Evolution & Daily Drills',
+        'icon': Icons.task_alt_rounded,
         'category': 'Language',
         'color': const Color(0xFF10B981),
         'gradient': [const Color(0xFF059669), const Color(0xFFFFD700)],
         'avatar': const VectorAvatarConfig(
-          outfitStyle: 'detective_trench',
-          auraStyle: 'pocket_gold',
-          hairStyle: 'bob_cut',
-          faceShape: 'oval',
-          skinColor: '#F5D0A9',
+          species: 'cosmic_dragon',
+          artStyle: 'cyberpunk',
+          outfitStyle: 'astronaut_suit',
+          auraStyle: 'electric_blue',
+          accessory: 'cyber_visor',
         ),
-        'onTap': () => Navigator.push(
+        'onTap': () {
+          final userId = SupaFlow.client.auth.currentUser?.id;
+          Navigator.push(
             context,
             MaterialPageRoute(
-                builder: (context) => const EnglishLearningHubPage())),
+              builder: (context) => EnglishTasksMasterHubPage(userId: userId),
+            ),
+          );
+        },
       },
       {
         'title': 'Pocket Library',
@@ -1688,17 +1715,27 @@ class _TaskManagerScreenState extends State<ToolsPage> {
       },
     ];
 
+    final effectiveSearchQuery = (widget.externalSearchQuery != null &&
+            widget.externalSearchQuery!.trim().isNotEmpty)
+        ? widget.externalSearchQuery!.trim()
+        : _toolsSearchQuery.trim();
+
     final filteredTools = allTools.where((tool) {
       final title = tool['title'] as String;
 
       // 1. Search filter
-      final matchesSearch =
-          title.toLowerCase().contains(_toolsSearchQuery.toLowerCase()) ||
-              (tool['subtitle']
-                      ?.toString()
-                      .toLowerCase()
-                      .contains(_toolsSearchQuery.toLowerCase()) ??
-                  false);
+      final matchesSearch = effectiveSearchQuery.isEmpty ||
+          title.toLowerCase().contains(effectiveSearchQuery.toLowerCase()) ||
+          (tool['subtitle']
+                  ?.toString()
+                  .toLowerCase()
+                  .contains(effectiveSearchQuery.toLowerCase()) ??
+              false) ||
+          (tool['category']
+                  ?.toString()
+                  .toLowerCase()
+                  .contains(effectiveSearchQuery.toLowerCase()) ??
+              false);
       if (!matchesSearch) return false;
 
       // 2. Platform Visibility Check
@@ -1761,137 +1798,28 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                   physics: const AlwaysScrollableScrollPhysics(),
                   child: Column(
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(24.0),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              Colors.yellow.withValues(alpha: 0.05),
-                              Colors.transparent
-                            ],
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                          ),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      const SizedBox(height: 12),
+                      if (filteredTools.isEmpty)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+                          child: Center(
+                            child: Column(
                               children: [
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text('Pocket Mates',
-                                        style: GoogleFonts.outfit(
-                                            fontSize: 22,
-                                            fontWeight: FontWeight.w500,
-                                            color: FlutterFlowTheme.of(context)
-                                                .secondaryText,
-                                            letterSpacing: 1.1)),
-                                    Text('Productivity & Tools 🎭',
-                                        style: GoogleFonts.outfit(
-                                            fontSize: 28,
-                                            fontWeight: FontWeight.bold,
-                                            color: const Color(0xFFFFFC00))),
-                                  ],
-                                ),
-                                Container(
-                                  padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFFFFC00).withValues(alpha: 0.12),
-                                    shape: BoxShape.circle,
-                                    border: Border.all(color: const Color(0xFFFFFC00).withValues(alpha: 0.3)),
+                                Icon(Icons.search_off_rounded,
+                                    size: 48,
+                                    color: FlutterFlowTheme.of(context).secondaryText.withValues(alpha: 0.5)),
+                                const SizedBox(height: 12),
+                                Text(
+                                  'No tools found for "$effectiveSearchQuery"',
+                                  style: GoogleFonts.outfit(
+                                    color: FlutterFlowTheme.of(context).secondaryText,
+                                    fontSize: 15,
                                   ),
-                                  child: const Icon(Icons.auto_awesome,
-                                      color: Color(0xFFFFFC00)),
-                                )
+                                ),
                               ],
                             ),
-                            const SizedBox(height: 20),
-                            Container(
-                              decoration: BoxDecoration(
-                                color: FlutterFlowTheme.of(context)
-                                    .secondaryBackground,
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                    color: FlutterFlowTheme.of(context).alternate),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.15),
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              child: TextField(
-                                onChanged: (value) {
-                                  if (!_isWebSearchMode) {
-                                    setState(() => _toolsSearchQuery = value);
-                                  }
-                                },
-                                onSubmitted: (query) {
-                                  if (_isWebSearchMode && query.trim().isNotEmpty) {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => DynamicWebViewPage(
-                                          title: 'Browser',
-                                          url:
-                                              'https://www.google.com/search?q=${Uri.encodeComponent(query.trim())}',
-                                        ),
-                                      ),
-                                    );
-                                  }
-                                },
-                                style: GoogleFonts.outfit(
-                                    color:
-                                        FlutterFlowTheme.of(context).primaryText),
-                                decoration: InputDecoration(
-                                  hintText: _isWebSearchMode
-                                      ? 'Search Google...'
-                                      : 'Search avatar tools or learning features...',
-                                  hintStyle: GoogleFonts.outfit(
-                                      color: _isWebSearchMode
-                                          ? Colors.yellow.withValues(alpha: 0.5)
-                                          : FlutterFlowTheme.of(context)
-                                              .secondaryText),
-                                  prefixIcon: Icon(
-                                    _isWebSearchMode
-                                        ? Icons.travel_explore_rounded
-                                        : Icons.search,
-                                    color: _isWebSearchMode
-                                        ? Colors.yellow
-                                        : FlutterFlowTheme.of(context)
-                                            .secondaryText,
-                                  ),
-                                  suffixIcon: IconButton(
-                                    icon: Icon(
-                                      Icons.public_rounded,
-                                      color: _isWebSearchMode
-                                        ? Colors.yellow
-                                        : FlutterFlowTheme.of(context)
-                                            .secondaryText,
-                                    ),
-                                    tooltip: 'Web Mode',
-                                    onPressed: () {
-                                      setState(() {
-                                        _isWebSearchMode = !_isWebSearchMode;
-                                        if (_isWebSearchMode) {
-                                          _toolsSearchQuery = '';
-                                        }
-                                      });
-                                    },
-                                  ),
-                                  border: InputBorder.none,
-                                  contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 20, vertical: 16),
-                                ),
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
-                      ),
                       Padding(
                         padding: const EdgeInsets.only(bottom: 24.0),
                         child: ListView.builder(

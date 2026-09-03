@@ -477,25 +477,27 @@ class BoredApePainter extends CustomPainter {
 class BoredApeWidget extends StatelessWidget {
   final BoredApeTraits traits;
   final double size;
+  final Color? backgroundColor;
 
   const BoredApeWidget({
     super.key,
     required this.traits,
     this.size = 200,
+    this.backgroundColor,
   });
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
+    return Container(
       width: size,
       height: size,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(size * 0.15),
-        child: CustomPaint(
-          size: Size(size, size),
-          painter: BoredApePainter(traits: traits),
-        ),
+      color: backgroundColor ?? BoredApeTraits.getBackgroundColor(traits.background),
+      child: CustomPaint(
+        size: Size(size, size),
+        painter: BoredApePainter(traits: traits),
       ),
     );
   }
 }
+
+typedef BoredApePainterWidget = BoredApeWidget;

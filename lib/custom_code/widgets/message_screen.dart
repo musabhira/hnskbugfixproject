@@ -22,6 +22,7 @@ import 'package:pocket_mates_app/custom_code/widgets/gallery_search_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/image_viewer.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/voice_player.dart';
+import 'package:pocket_mates_app/custom_code/widgets/ads/pocket_ad_service.dart';
 import 'package:gal/gal.dart';
 import 'package:dio/dio.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/voice_recorder.dart';
@@ -1706,6 +1707,7 @@ class _MessageScreenState extends State<MessageScreen> {
         ? const Center(child: CircularProgressIndicator())
         : ListView.builder(
             controller: _scrollController,
+            physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
             reverse: true,
             padding: const EdgeInsets.symmetric(
               vertical: 8,
@@ -1721,6 +1723,21 @@ class _MessageScreenState extends State<MessageScreen> {
               // Then regular messages
               final messageIndex = index - _ephemeralMessages.length;
               final message = _messages[messageIndex];
+              final showNativeAd = messageIndex > 0 && messageIndex % 12 == 0;
+
+              if (showNativeAd) {
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildRegularMessageBubble(message),
+                    const PocketNativeAdWidget(
+                      category: 'English & Business',
+                      margin: EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                    ),
+                  ],
+                );
+              }
+
               return _buildRegularMessageBubble(message);
             },
           );

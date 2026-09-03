@@ -6,10 +6,9 @@ import 'package:shimmer/shimmer.dart';
 import 'main_market_logic.dart';
 import 'gallery_profile_search_page.dart';
 import 'gallery_search_page.dart';
-import 'pod_marketplace_view.dart';
-import 'nft_avatar_market_tab_view.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/ads/pocket_ad_service.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 
 class MainMarketPage extends ConsumerStatefulWidget {
@@ -26,7 +25,7 @@ class _MainMarketPageState extends ConsumerState<MainMarketPage>
   @override
   void initState() {
     super.initState();
-    _mainTabController = TabController(length: 4, vsync: this);
+    _mainTabController = TabController(length: 2, vsync: this);
     // Initialize market data
     Future.microtask(() => ref.read(marketProvider.notifier).initialize());
   }
@@ -70,8 +69,6 @@ class _MainMarketPageState extends ConsumerState<MainMarketPage>
                 tabs: const [
                   Tab(text: 'EXPLORE'),
                   Tab(text: 'FOLLOWING'),
-                  Tab(text: '🌟 NFT AVATARS'),
-                  Tab(text: 'PRINT SHOP'),
                 ],
               ),
               actions: [
@@ -108,8 +105,6 @@ class _MainMarketPageState extends ConsumerState<MainMarketPage>
           children: const [
             MarketExploreTabView(),
             MarketFollowingTabView(),
-            NftAvatarMarketTabView(),
-            PodMarketplaceView(),
           ],
         ),
       ),
@@ -452,13 +447,26 @@ class MarketItemsList extends ConsumerWidget {
             crossAxisSpacing: 16,
             padding: const EdgeInsets.all(16),
             itemCount: items.length +
+                (items.length >= 6 ? (items.length ~/ 6) : 0) +
                 (state.isLoadingMore[category] == true ? crossAxisCount : 0),
             itemBuilder: (context, index) {
-              if (index >= items.length) {
+              // Insert a native sponsor card every 6th item
+              final int adInterval = 6;
+              final bool isAdSlot = (index + 1) % (adInterval + 1) == 0;
+
+              if (isAdSlot) {
+                return const MarketNativeProductAdCard();
+              }
+
+              final int actualItemIndex = index - (index ~/ (adInterval + 1));
+
+              if (actualItemIndex >= items.length) {
                 return const ItemSkeleton();
               }
               return MarketItemCard(
-                  item: items[index], index: index, allItems: items);
+                  item: items[actualItemIndex],
+                  index: actualItemIndex,
+                  allItems: items);
             },
           ),
         ),
@@ -801,6 +809,239 @@ class ItemSkeleton extends StatelessWidget {
       decoration: BoxDecoration(
         color: FlutterFlowTheme.of(context).secondaryBackground,
         borderRadius: BorderRadius.circular(20),
+      ),
+    );
+  }
+}
+
+/// A Native Sponsor Product Card that fits seamlessly inside Market Masonry Grid
+class MarketNativeProductAdCard extends StatefulWidget {
+  const MarketNativeProductAdCard({super.key});
+
+  @override
+  State<MarketNativeProductAdCard> createState() => _MarketNativeProductAdCardState();
+}
+
+class _MarketNativeProductAdCardState extends State<MarketNativeProductAdCard> {
+  bool _isSubscribed = false;
+
+  final List<Map<String, dynamic>> _sponsorProducts = [
+    {
+      'title': 'Oxford Spoken English 30-Day Master Kit',
+      'price': '₹499',
+      'brand': 'Oxford Learning Hub',
+      'tag': 'BESTSELLER',
+      'rating': '4.9 ★',
+      'badge': 'SPONSORED',
+      'accent': Color(0xFF38BDF8),
+      'icon': Icons.menu_book_rounded,
+    },
+    {
+      'title': 'IELTS Band 8+ AI Speaking Simulator',
+      'price': '₹299',
+      'brand': 'Global Prep Academy',
+      'tag': '50% OFF',
+      'rating': '4.8 ★',
+      'badge': 'SPONSORED',
+      'accent': Color(0xFFFFD700),
+      'icon': Icons.record_voice_over_rounded,
+    },
+    {
+      'title': 'Remote Tech & Interview Prep Guide 2026',
+      'price': '₹399',
+      'brand': 'CareerSprint Tech',
+      'tag': 'HOT',
+      'rating': '5.0 ★',
+      'badge': 'SPONSORED',
+      'accent': Color(0xFF10B981),
+      'icon': Icons.work_outline_rounded,
+    },
+  ];
+
+  late final Map<String, dynamic> _ad;
+
+  @override
+  void initState() {
+    super.initState();
+    _ad = (_sponsorProducts..shuffle()).first;
+    _checkVip();
+  }
+
+  Future<void> _checkVip() async {
+    final sub = await PocketAdService().isUserSubscribed();
+    if (mounted) setState(() => _isSubscribed = sub);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isSubscribed) return const SizedBox.shrink();
+
+    final Color accent = _ad['accent'] as Color;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: FlutterFlowTheme.of(context).secondaryBackground,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: accent.withValues(alpha: 0.4),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: accent.withValues(alpha: 0.08),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Banner Artwork
+          Container(
+            height: 150,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(19)),
+              gradient: LinearGradient(
+                colors: [accent.withValues(alpha: 0.25), const Color(0xFF0F172A)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+            child: Stack(
+              children: [
+                Center(
+                  child: Icon(
+                    _ad['icon'] as IconData,
+                    size: 52,
+                    color: accent,
+                  ),
+                ),
+                Positioned(
+                  top: 10,
+                  left: 10,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.7),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: accent.withValues(alpha: 0.5)),
+                    ),
+                    child: Text(
+                      _ad['badge'] as String,
+                      style: TextStyle(
+                        color: accent,
+                        fontSize: 8.5,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: 10,
+                  right: 10,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: accent,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      _ad['tag'] as String,
+                      style: const TextStyle(
+                        color: Colors.black,
+                        fontSize: 8.5,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Details & Price
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _ad['brand'] as String,
+                  style: TextStyle(
+                    color: FlutterFlowTheme.of(context).secondaryText,
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  _ad['title'] as String,
+                  style: TextStyle(
+                    color: FlutterFlowTheme.of(context).primaryText,
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.bold,
+                    height: 1.2,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      _ad['price'] as String,
+                      style: TextStyle(
+                        color: accent,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    Text(
+                      _ad['rating'] as String,
+                      style: const TextStyle(
+                        color: Color(0xFFFFD700),
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Opening sponsor deal...'),
+                          duration: Duration(milliseconds: 700),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: accent,
+                      foregroundColor: Colors.black,
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      minimumSize: const Size(0, 32),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      elevation: 0,
+                    ),
+                    child: const Text(
+                      'View Deal',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

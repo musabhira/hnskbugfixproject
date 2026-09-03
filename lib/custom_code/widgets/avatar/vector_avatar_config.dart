@@ -30,6 +30,9 @@ class VectorAvatarConfig {
   final String? ownerId;
   final String? mintedAt;
   final String? customDrawingSvg;
+  final String? customDrawingImage;
+  final String? imageUrl;
+  final String? networkImageUrl;
 
   const VectorAvatarConfig({
     this.artStyle = 'vector',
@@ -56,6 +59,9 @@ class VectorAvatarConfig {
     this.ownerId,
     this.mintedAt,
     this.customDrawingSvg,
+    this.customDrawingImage,
+    this.imageUrl,
+    this.networkImageUrl,
   });
 
   VectorAvatarConfig copyWith({
@@ -83,6 +89,9 @@ class VectorAvatarConfig {
     String? ownerId,
     String? mintedAt,
     String? customDrawingSvg,
+    String? customDrawingImage,
+    String? imageUrl,
+    String? networkImageUrl,
   }) {
     return VectorAvatarConfig(
       artStyle: artStyle ?? this.artStyle,
@@ -109,7 +118,20 @@ class VectorAvatarConfig {
       ownerId: ownerId ?? this.ownerId,
       mintedAt: mintedAt ?? this.mintedAt,
       customDrawingSvg: customDrawingSvg ?? this.customDrawingSvg,
+      customDrawingImage: customDrawingImage ?? this.customDrawingImage,
+      imageUrl: imageUrl ?? this.imageUrl,
+      networkImageUrl: networkImageUrl ?? this.networkImageUrl,
     );
+  }
+
+  String get computedDna {
+    return 'DNA_${species}_${artStyle}_${gender}_${skinColor.replaceAll('#', '')}_${faceShape}_${eyeStyle}_${hairStyle}_${hairColor.replaceAll('#', '')}_${beardStyle}_${outfitStyle}_${accessory}_$auraStyle';
+  }
+
+  String get computedAvatarId {
+    if (mintId != null && mintId!.isNotEmpty) return mintId!;
+    final hash = computedDna.hashCode.abs();
+    return '#MATE-${(hash % 900000) + 100000}';
   }
 
   Map<String, dynamic> toMap() {
@@ -138,6 +160,9 @@ class VectorAvatarConfig {
       'ownerId': ownerId,
       'mintedAt': mintedAt,
       'customDrawingSvg': customDrawingSvg,
+      'customDrawingImage': customDrawingImage,
+      'imageUrl': imageUrl,
+      'networkImageUrl': networkImageUrl,
     };
   }
 
@@ -170,6 +195,9 @@ class VectorAvatarConfig {
       ownerId: map['ownerId'],
       mintedAt: map['mintedAt'],
       customDrawingSvg: map['customDrawingSvg'],
+      customDrawingImage: map['customDrawingImage'],
+      imageUrl: map['imageUrl'],
+      networkImageUrl: map['networkImageUrl'],
     );
   }
 
@@ -250,6 +278,306 @@ class VectorAvatarConfig {
       ownerId: userId,
       mintedAt: DateTime.now().toIso8601String(),
     );
+  }
+
+  /// Systematic 90-Day Avatar Evolution Engine
+  /// Maps each learning stage to a distinct character progression:
+  /// - Days 1–20: Human Starters & Scholars (Beginner to Intermediate Speech Mechanics)
+  /// - Days 21–30: Arcade Apes & Agile Primates (Speed Vocal Sprint & Reaction Drills)
+  /// - Days 31–45: Cyber Beasts & Wild Predators (Shadow Wolf, Mecha Lion, Neon Tiger)
+  /// - Days 46–55: Celestial Mystics & 24K Monarchs (Astral Mage, Mystic Phoenix, Golden Monarch)
+  /// - Days 56–90: Cosmic Dragon / Pocket Full Dragon (Capstone Mythic 1-of-1 Grandmaster)
+  /// Systematic 90-Day NFT Avatar Progression (1 distinct avatar per day, from human beginners to animals, beasts, and culminating in the Day 90 Cosmic Dragon)
+  static VectorAvatarConfig getEvolutionAvatarForStage(int stage) {
+    final day = stage.clamp(1, 90);
+
+    // ====================================================
+    // 🌟 14 DISTINCT ANIMAL SPECIES TIERS (EVERY 6 DAYS UNLOCKS A BRAND NEW SPECIES!)
+    // 1. Days 1-6:   Cyber Cat 🐱
+    // 2. Days 7-12:  Mystic Fox / Kitsune 🦊
+    // 3. Days 13-18: Shadow Wolf 🐺
+    // 4. Days 19-24: Royal Tiger 🐯
+    // 5. Days 25-30: Golden Lion 🦁
+    // 6. Days 31-36: Mighty Elephant 🐘
+    // 7. Days 37-42: Ninja Panda 🐼
+    // 8. Days 43-48: Noble Grizzly Bear 🐻
+    // 9. Days 49-54: Cyber Ape / Primate 🐵
+    // 10. Days 55-60: Majestic Eagle 🦅
+    // 11. Days 61-66: Shadow Leopard 🐆
+    // 12. Days 67-72: Cosmic Unicorn 🦄
+    // 13. Days 73-80: Solar Phoenix 🕊️
+    // 14. Days 81-90: Celestial Dragon Sovereign 🐉
+    // ====================================================
+
+    String species = 'cyber_cat';
+    String furColor = '#F59E0B';
+    String eyeColor = '#10B981';
+    String outfitColor = '#1E293B';
+    String outfitAccent = '#FFFC00';
+    String accessory = 'none';
+    String auraStyle = 'minimal_dark';
+    String rarityTier = 'Common';
+    String hairStyle = 'short_crop';
+
+    if (day <= 6) {
+      // 🐱 1. Cyber Cat (Days 1–6)
+      species = 'cyber_cat';
+      final catFurs = ['#F59E0B', '#EC4899', '#1E293B', '#8B5CF6', '#FFFFFF', '#00F0FF'];
+      furColor = catFurs[(day - 1) % catFurs.length];
+      eyeColor = '#10B981';
+      outfitColor = '#1E293B';
+      accessory = day == 6 ? 'cool_sunglasses' : 'none';
+      rarityTier = day == 6 ? 'Feline Milestone' : 'Common';
+    } else if (day <= 12) {
+      // 🦊 2. Mystic Fox / Kitsune (Days 7–12)
+      species = 'cyber_fox';
+      final foxFurs = ['#F97316', '#EA580C', '#C2410C', '#FF6D00', '#D97706', '#FFAB91'];
+      furColor = foxFurs[(day - 7) % foxFurs.length];
+      eyeColor = '#FFD700';
+      outfitColor = '#7F1D1D';
+      outfitAccent = '#F97316';
+      accessory = day == 12 ? 'samurai_headband' : 'none';
+      auraStyle = 'cyber_purple';
+      rarityTier = day == 12 ? 'Kitsune Milestone' : 'Rare';
+    } else if (day <= 18) {
+      // 🐺 3. Shadow Wolf (Days 13–18)
+      species = 'shadow_wolf';
+      final wolfFurs = ['#1E293B', '#334155', '#475569', '#0F172A', '#1E1B4B', '#2C3437'];
+      furColor = wolfFurs[(day - 13) % wolfFurs.length];
+      eyeColor = '#00F0FF';
+      outfitColor = '#0F172A';
+      outfitAccent = '#38BDF8';
+      accessory = day == 18 ? 'headphones' : 'none';
+      auraStyle = 'electric_blue';
+      rarityTier = day == 18 ? 'Apex Wolf Milestone' : 'Rare';
+    } else if (day <= 24) {
+      // 🐯 4. Royal Tiger (Days 19–24)
+      species = 'royal_tiger';
+      final tigerFurs = ['#F97316', '#FB923C', '#EA580C', '#FF8F00', '#E65100', '#FFB74D'];
+      furColor = tigerFurs[(day - 19) % tigerFurs.length];
+      eyeColor = '#FACC15';
+      outfitColor = '#1E1B4B';
+      outfitAccent = '#FFD700';
+      accessory = day == 24 ? 'gold_chain' : 'none';
+      auraStyle = 'golden_sparks';
+      rarityTier = day == 24 ? 'Royal Tiger Milestone' : 'Epic';
+    } else if (day <= 30) {
+      // 🦁 5. Golden Lion (Days 25–30)
+      species = 'golden_lion';
+      final lionFurs = ['#D97706', '#F59E0B', '#B45309', '#EAB308', '#FACC15', '#FFD700'];
+      furColor = lionFurs[(day - 25) % lionFurs.length];
+      eyeColor = '#38BDF8';
+      outfitColor = '#451A03';
+      outfitAccent = '#FFD700';
+      accessory = day == 30 ? 'crown' : (day == 28 ? 'cool_sunglasses' : 'none');
+      auraStyle = 'golden_sparks';
+      rarityTier = day == 30 ? 'Crown Lion Sovereign' : 'Epic';
+    } else if (day <= 36) {
+      // 🐘 6. Mighty Elephant (Days 31–36)
+      species = 'mighty_elephant';
+      final elephantFurs = ['#64748B', '#94A3B8', '#475569', '#CBD5E1', '#334155', '#E2E8F0'];
+      furColor = elephantFurs[(day - 31) % elephantFurs.length];
+      eyeColor = '#10B981';
+      outfitColor = '#064E3B';
+      outfitAccent = '#34D399';
+      accessory = day == 36 ? 'beanie' : 'none';
+      rarityTier = day == 36 ? 'Colossal Milestone' : 'Epic';
+    } else if (day <= 42) {
+      // 🐼 7. Ninja Panda (Days 37–42)
+      species = 'ninja_panda';
+      furColor = day % 2 == 0 ? '#FFFFFF' : '#1E1E24';
+      eyeColor = '#38BDF8';
+      outfitColor = '#1E1E24';
+      outfitAccent = '#22C55E';
+      accessory = day == 42 ? 'samurai_headband' : 'none';
+      auraStyle = 'neon_green';
+      rarityTier = day == 42 ? 'Grandmaster Panda' : 'Epic';
+    } else if (day <= 48) {
+      // 🐻 8. Noble Grizzly Bear (Days 43–48)
+      species = 'noble_bear';
+      final bearFurs = ['#78350F', '#854D0E', '#92400E', '#5C2D0C', '#451A03', '#B45309'];
+      furColor = bearFurs[(day - 43) % bearFurs.length];
+      eyeColor = '#FDE047';
+      outfitColor = '#1C1917';
+      outfitAccent = '#F59E0B';
+      accessory = day == 48 ? 'cap' : 'none';
+      rarityTier = day == 48 ? 'Noble Grizzly Milestone' : 'Legendary';
+    } else if (day <= 54) {
+      // 🐵 9. Cyber Ape / Primate (Days 49–54)
+      species = 'bored_ape';
+      final apeFurs = ['#8D5B4C', '#D97706', '#FF007A', '#1E293B', '#78350F', '#B45309'];
+      furColor = apeFurs[(day - 49) % apeFurs.length];
+      eyeColor = '#FFD700';
+      outfitColor = '#0F172A';
+      outfitAccent = '#FF007A';
+      accessory = day == 54 ? 'crown' : 'headphones';
+      auraStyle = 'cyber_purple';
+      rarityTier = day == 54 ? 'Ape Champion' : 'Legendary';
+    } else if (day <= 60) {
+      // 🦅 10. Majestic Eagle (Days 55–60)
+      species = 'majestic_eagle';
+      final eagleFurs = ['#F8FAFC', '#E2E8F0', '#CBD5E1', '#78350F', '#854D0E', '#FFFFFF'];
+      furColor = eagleFurs[(day - 55) % eagleFurs.length];
+      eyeColor = '#F59E0B';
+      outfitColor = '#1E3A8A';
+      outfitAccent = '#FFD700';
+      accessory = day == 60 ? 'cool_sunglasses' : 'none';
+      auraStyle = 'golden_sparks';
+      rarityTier = day == 60 ? 'Sky Sovereign Milestone' : 'Legendary';
+    } else if (day <= 66) {
+      // 🐆 11. Shadow Leopard (Days 61–66)
+      species = 'shadow_leopard';
+      final leopardFurs = ['#F59E0B', '#D97706', '#B45309', '#EAB308', '#CA8A04', '#FACC15'];
+      furColor = leopardFurs[(day - 61) % leopardFurs.length];
+      eyeColor = '#10B981';
+      outfitColor = '#18181B';
+      outfitAccent = '#F59E0B';
+      accessory = day == 66 ? 'gold_chain' : 'none';
+      auraStyle = 'neon_green';
+      rarityTier = day == 66 ? 'Shadow Hunter Milestone' : 'Legendary';
+    } else if (day <= 72) {
+      // 🦄 12. Cosmic Unicorn (Days 67–72)
+      species = 'cosmic_unicorn';
+      final unicornFurs = ['#FFFFFF', '#FDF4FF', '#FAE8FF', '#F5D0FE', '#E0E7FF', '#DDD6FE'];
+      furColor = unicornFurs[(day - 67) % unicornFurs.length];
+      eyeColor = '#00F0FF';
+      outfitColor = '#4C1D95';
+      outfitAccent = '#38BDF8';
+      accessory = day == 72 ? 'crown' : 'none';
+      auraStyle = 'cyber_purple';
+      rarityTier = day == 72 ? 'Celestial Unicorn Sovereign' : 'Mythic';
+    } else if (day <= 80) {
+      // 🕊️ 13. Solar Phoenix (Days 73–80)
+      species = 'solar_phoenix';
+      final phoenixFurs = ['#DC2626', '#EF4444', '#F97316', '#FB923C', '#F59E0B', '#B91C1C', '#E11D48', '#FF0055'];
+      furColor = phoenixFurs[(day - 73) % phoenixFurs.length];
+      eyeColor = '#FFD700';
+      outfitColor = '#7F1D1D';
+      outfitAccent = '#FFD700';
+      accessory = 'crown';
+      auraStyle = 'golden_sparks';
+      rarityTier = day == 80 ? 'Immortal Phoenix Sovereign' : 'Mythic';
+    } else {
+      // 🐉 14. Celestial Dragon Sovereign (Days 81–90)
+      species = 'cosmic_dragon';
+      final dragonFurs = [
+        '#7C3AED', '#6D28D9', '#5B21B6', '#D97706', '#F59E0B',
+        '#EAB308', '#FACC15', '#00F0FF', '#EC4899', '#FFD700',
+      ];
+      furColor = dragonFurs[(day - 81).clamp(0, dragonFurs.length - 1)];
+      eyeColor = day == 90 ? '#00F0FF' : '#FFD700';
+      outfitColor = '#050B14';
+      outfitAccent = day == 90 ? '#FFD700' : '#F97316';
+      accessory = 'crown';
+      auraStyle = day == 90 ? 'golden_sparks' : 'cyber_purple';
+      rarityTier = day == 90 ? 'Supreme Cosmic Dragon 1-of-1' : 'Mythic 1-of-1';
+    }
+
+    return VectorAvatarConfig(
+      artStyle: 'vector',
+      species: species,
+      gender: 'neutral',
+      imageUrl: null,
+      networkImageUrl: null,
+      customDrawingImage: null,
+      skinColor: furColor,
+      faceShape: 'sharp',
+      eyeStyle: day >= 80 ? 'sparkle' : 'chill',
+      eyeColor: eyeColor,
+      hairStyle: hairStyle,
+      hairColor: furColor,
+      outfitStyle: day >= 81 ? 'astronaut_suit' : (day >= 49 ? 'leather_jacket' : 'varsity_jacket'),
+      outfitColor: outfitColor,
+      outfitAccentColor: outfitAccent,
+      accessory: accessory,
+      accessoryColor: '#FFD700',
+      auraStyle: auraStyle,
+      mintId: '#MATE-DAY$day-${species.toUpperCase()}',
+      dnaHash: '0x$species-DAY$day-VECTOR',
+      rarityTier: rarityTier,
+    );
+  }
+
+    static BoxDecoration getEvolutionBannerDecoration(int stage) {
+    if (stage <= 10) {
+      // Days 1–10: Modern Genesis Deep Space
+      return BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFF0284C7).withValues(alpha: 0.4), width: 1.2),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF0F172A), Color(0xFF0B192C), Color(0xFF0284C7)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      );
+    } else if (stage <= 20) {
+      // Days 11–20: Emerald Flow Explorer
+      return BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.5), width: 1.2),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF064E3B), Color(0xFF022C22), Color(0xFF10B981)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      );
+    } else if (stage <= 29) {
+      // Days 21–29: Habit Anchor Lock (Cyber Amber & Electric Red)
+      return BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFFF5252).withValues(alpha: 0.6), width: 1.5),
+        boxShadow: [
+          BoxShadow(color: const Color(0xFFFF5252).withValues(alpha: 0.25), blurRadius: 16),
+        ],
+        gradient: const LinearGradient(
+          colors: [Color(0xFF270505), Color(0xFF1A0A10), Color(0xFFE11D48)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      );
+    } else if (stage <= 59) {
+      // Days 30–59: Silver Knight & Chrome Frosted Glass
+      return BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0).withValues(alpha: 0.7), width: 1.5),
+        boxShadow: [
+          BoxShadow(color: const Color(0xFFE2E8F0).withValues(alpha: 0.2), blurRadius: 18),
+        ],
+        gradient: const LinearGradient(
+          colors: [Color(0xFF13141C), Color(0xFF27293D), Color(0xFF475569)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      );
+    } else if (stage < 90) {
+      // Days 60–89: 24K Gold Sovereign Royal Crown
+      return BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.8), width: 1.8),
+        boxShadow: [
+          BoxShadow(color: const Color(0xFFFFD700).withValues(alpha: 0.35), blurRadius: 20),
+        ],
+        gradient: const LinearGradient(
+          colors: [Color(0xFF161103), Color(0xFF382905), Color(0xFFB45309)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      );
+    } else {
+      // Day 90: Grandmaster Astral Cosmic Dragon Celestial Diamond
+      return BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFF00F0FF).withValues(alpha: 0.9), width: 2.0),
+        boxShadow: [
+          BoxShadow(color: const Color(0xFF00F0FF).withValues(alpha: 0.4), blurRadius: 24, spreadRadius: 2),
+        ],
+        gradient: const LinearGradient(
+          colors: [Color(0xFF020205), Color(0xFF13172E), Color(0xFF00F0FF)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      );
+    }
   }
 
   factory VectorAvatarConfig.fromJson(String source) {
@@ -446,6 +774,54 @@ class VectorAvatarPalette {
       'rarity': 'Mythic 1-of-1',
       'desc': 'Crowned Celestial Ruler',
       'badgeColor': Color(0xFFFFD700),
+    },
+    {
+      'id': 'golden_griffin',
+      'name': 'Solar Gold Griffin',
+      'icon': '🦅',
+      'rarity': 'Mythic 1-of-1',
+      'desc': 'Legendary Winged Apex Guardian',
+      'badgeColor': Color(0xFFFFB300),
+    },
+    {
+      'id': 'samurai_shiba',
+      'name': 'Ronin Samurai Shiba',
+      'icon': '🐕',
+      'rarity': 'Legendary',
+      'desc': 'Honorable Katana Blade Master',
+      'badgeColor': Color(0xFFF97316),
+    },
+    {
+      'id': 'cyber_bunny',
+      'name': 'Neo Cyber Bunny',
+      'icon': '🐰',
+      'rarity': 'Epic',
+      'desc': 'High-Frequency Neon Jumper',
+      'badgeColor': Color(0xFFE879F9),
+    },
+    {
+      'id': 'galactic_bear',
+      'name': 'Galactic Polar Guardian',
+      'icon': '🐻‍❄️',
+      'rarity': 'Mythic 1-of-1',
+      'desc': 'Cosmic Aurora Heavy Defender',
+      'badgeColor': Color(0xFF38BDF8),
+    },
+    {
+      'id': 'shadow_panther',
+      'name': 'Midnight Shadow Panther',
+      'icon': '🐆',
+      'rarity': 'Legendary',
+      'desc': 'Silent Night Phantom Hunter',
+      'badgeColor': Color(0xFFA855F7),
+    },
+    {
+      'id': 'techno_shark',
+      'name': 'Deepsea Techno Shark',
+      'icon': '🦈',
+      'rarity': 'Epic',
+      'desc': 'Hydro-Sonic Cyber Predator',
+      'badgeColor': Color(0xFF06B6D4),
     },
   ];
 

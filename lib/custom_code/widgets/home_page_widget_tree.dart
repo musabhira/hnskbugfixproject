@@ -21,7 +21,6 @@ import 'package:pocket_mates_app/custom_code/widgets/zoyarex_admin/zoyarex_ai_pa
 import 'package:pocket_mates_app/custom_code/widgets/teams/teams_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/share_content_screen.dart';
 import 'package:pocket_mates_app/custom_code/widgets/status_display_widget.dart';
-import 'package:pocket_mates_app/custom_code/widgets/tools_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/courses_widget.dart';
 import 'dart:io' as io;
 import 'package:package_info_plus/package_info_plus.dart';
@@ -671,9 +670,30 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         page = const DynamicWebViewPage(title: 'WhatsApp Web', url: 'https://web.whatsapp.com');
         break;
       case 'English Hub':
+      case 'Voice Speaking Sprint':
         page = const EnglishLearningHubPage();
         break;
+      case '90-Day English Tasks':
+      case 'English Tasks':
+      case 'English Learning Tasks':
+      case '90-Day Tasks':
+        page = EnglishTasksMasterHubPage(userId: _currentUserId);
+        break;
+      case '1-on-1 English Match':
+      case 'Stage Match':
+        page = const StagePeerMatchmakerPage();
+        break;
+      case 'Pocket Library':
+        page = const PocketLibraryPage();
+        break;
+      case 'Avatar Studio & NFT':
+        page = const VectorAvatarStudioPage();
+        break;
+      case 'Avatar Network':
+        page = const AvatarNetworkExplorerPage();
+        break;
       case 'POS Tool':
+      case 'POS & Billing':
         page = const BusinessPOSPage();
         break;
       case 'Test Feature':
@@ -735,6 +755,29 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
             material.Scaffold(
               backgroundColor: material.Colors.transparent,
               bottomNavigationBar: _buildBottomNavigationBar(context),
+              floatingActionButton: _currentIndex == 1
+                  ? material.FloatingActionButton.extended(
+                      onPressed: () {
+                        material.Navigator.push(
+                          context,
+                          material.MaterialPageRoute(
+                            builder: (context) => const AnonymousEnglishChatPage(),
+                          ),
+                        );
+                      },
+                      backgroundColor: const Color(0xFFFFFC00),
+                      foregroundColor: material.Colors.black,
+                      elevation: 6,
+                      icon: const Text('🎭', style: TextStyle(fontSize: 18)),
+                      label: Text(
+                        'Anonymous Match',
+                        style: GoogleFonts.outfit(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
+                      ),
+                    )
+                  : null,
               body: material.ColoredBox(
                 color: material.Colors.transparent,
                 child: _isLoading
@@ -746,13 +789,13 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                     ),
                   )
                 : _currentIndex == 0
-                    ? ToolsPage(onFavoriteToggled: _handleRefresh)
+                    ? const MainMarketPage()
                     : _currentIndex == 2
                         ? EnglishLearningGroupChatWidget(
                             onCancel: () => setState(() => _currentIndex = 1),
                           )
                         : _currentIndex == 3
-                            ? const MainMarketPage()
+                            ? EnglishTasksMasterHubPage(userId: _currentUserId)
                             : material.RefreshIndicator(
                             onRefresh: _handleRefresh,
                             color: isDark
@@ -847,6 +890,10 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                         searchQuery: _chatTabIndex == 2
                                             ? _searchQuery
                                             : '',
+                                      ),
+                                      ToolsPage(
+                                        onFavoriteToggled: _handleRefresh,
+                                        externalSearchQuery: _chatTabIndex == 3 ? _searchQuery : null,
                                       ),
                                     ],
                                   ),
@@ -1440,7 +1487,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             _buildNavItem(
-              icon: material.Icons.handyman_rounded,
+              icon: material.Icons.storefront_rounded,
               isSelected: _currentIndex == 0,
               onTap: () => setState(() => _currentIndex = 0),
             ),
@@ -1455,7 +1502,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
               onTap: () => setState(() => _currentIndex = 2),
             ),
             _buildNavItem(
-              icon: material.Icons.storefront_rounded,
+              icon: material.Icons.track_changes_rounded,
               isSelected: _currentIndex == 3,
               onTap: () => setState(() => _currentIndex = 3),
             ),
@@ -1602,6 +1649,16 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     );
   }
 
+  VectorAvatarConfig _getNavAvatarConfig() {
+    if (_preloadedProfile != null && _preloadedProfile!['avatar_config'] != null) {
+      try {
+        final map = Map<String, dynamic>.from(_preloadedProfile!['avatar_config']);
+        return VectorAvatarConfig.fromMap(map);
+      } catch (_) {}
+    }
+    return const VectorAvatarConfig();
+  }
+
   Widget _buildProfileNavItem() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return GestureDetector(
@@ -1664,11 +1721,10 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       child: material.SizedBox(
         height: 70,
         child: material.Center(
-          child: CircularProfileImage(
-            profileImageUrl: _profileImageUrl,
-            radius: 22.0,
-            borderColor:
-                isDark ? const Color(0xFFFFFC00) : const Color(0xFFFFFC00),
+          child: VectorAvatarWidget(
+            config: _getNavAvatarConfig(),
+            size: 36.0,
+            showAura: true,
           ),
         ),
       ),
@@ -2646,6 +2702,19 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                       children: [
                         _buildHeaderIconButton(
                           context,
+                          icon: material.Icons.notifications_outlined,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              material.MaterialPageRoute(
+                                builder: (context) => const NotificationsPage(),
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(width: 10),
+                        _buildHeaderIconButton(
+                          context,
                           icon: material.Icons.search_rounded,
                           onTap: () {
                             Navigator.push(
@@ -2804,7 +2873,7 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                     ],
                   ),
                 ),
-                // Tab Bar
+                // Tab Bar (Chats, Vibes, Thoughts, Tools)
                 Container(
                   height: 50,
                   color: headerColor,
@@ -2813,6 +2882,7 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                       _buildTabItem(context, 'Chats', 0),
                       _buildTabItem(context, 'Vibes', 1),
                       _buildTabItem(context, 'Thoughts', 2),
+                      _buildTabItem(context, 'Tools', 3),
                     ],
                   ),
                 ),
@@ -2846,7 +2916,13 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                           ? const Color(0xFFFFFC00)
                           : const Color(0xFFFFFC00),
                       decoration: material.InputDecoration(
-                        hintText: 'Search for people or conversations...',
+                        hintText: selectedIndex == 3
+                            ? 'Search tools, games, or features...'
+                            : selectedIndex == 2
+                                ? 'Search thoughts...'
+                                : selectedIndex == 1
+                                    ? 'Search vibes & stories...'
+                                    : 'Search for people, conversations, or tools...',
                         hintStyle: GoogleFonts.outfit(
                           color: isDark
                               ? material.Colors.white.withValues(alpha: 0.35)
@@ -2951,7 +3027,8 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
               style: GoogleFonts.outfit(
                 color: isSelected ? themeYellow : textUnselected,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                fontSize: 16,
+                fontSize: 14.5,
+                letterSpacing: 0.2,
               ),
             ),
           ),

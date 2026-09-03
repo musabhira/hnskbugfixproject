@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:async';
+import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SubscriptionPage extends StatefulWidget {
   final double? width;
@@ -33,9 +36,9 @@ class _SubscriptionPageState extends State<SubscriptionPage>
       'features': [
         {'text': 'Basic POS & ERP', 'included': true},
         {'text': 'Financial Tools (Basic)', 'included': true},
+        {'text': 'English Tasks (Free with Ads)', 'included': true},
+        {'text': '100% Ad-Free Experience', 'included': false},
         {'text': 'Custom Website Profile', 'included': false},
-        {'text': 'Project & Task Tracking', 'included': false},
-        {'text': 'Step-by-Step Business Plan', 'included': false},
         {'text': 'Exclusive Group Chats', 'included': false},
         {'text': 'Bulk WhatsApp & Marketing', 'included': false},
         {'text': 'AI Business Assistant', 'included': false},
@@ -43,30 +46,30 @@ class _SubscriptionPageState extends State<SubscriptionPage>
     },
     {
       'id': 'starter',
-      'name': 'Starter',
-      'tagline': 'For Solo Businesses',
-      'monthlyPrice': 299,
-      'yearlyPrice': 2499,
+      'name': 'VIP Ad-Free',
+      'tagline': '₹199/mo • 100% Ad-Free Experience & VIP Unlocks',
+      'monthlyPrice': 199,
+      'yearlyPrice': 1799,
       'trialPrice': 5,
       'color': const Color(0xFF3B82F6),
       'gradientColors': [Color(0xFF2563EB), Color(0xFF1D4ED8)],
       'icon': Icons.rocket_launch_rounded,
       'popular': false,
       'features': [
-        {'text': 'Full POS & ERP', 'included': true},
-        {'text': 'Financial Tools (Basic)', 'included': true},
-        {'text': 'Custom Website Profile', 'included': true},
-        {'text': 'Project & Task Tracking', 'included': true},
-        {'text': 'Step-by-Step Business Plan', 'included': true},
+        {'text': '100% Ad-Free (No Chat or Video Ads)', 'included': true},
+        {'text': 'Instant 1-on-1 English Matching', 'included': true},
+        {'text': 'VIP Blue Verified Tick & Profile Halo', 'included': true},
+        {'text': 'Unlimited Daily Voice Calling', 'included': true},
+        {'text': 'Full POS & Small Business Tools', 'included': true},
+        {'text': 'Custom Website Profile & Store', 'included': true},
         {'text': 'Exclusive Group Chats', 'included': true},
-        {'text': 'Bulk WhatsApp & Marketing', 'included': false},
         {'text': 'AI Business Assistant', 'included': false},
       ],
     },
     {
       'id': 'pro',
       'name': 'Pro',
-      'tagline': 'Most Popular',
+      'tagline': 'Most Popular • VIP English & Tools',
       'monthlyPrice': 799,
       'yearlyPrice': 6999,
       'trialPrice': 5,
@@ -75,20 +78,20 @@ class _SubscriptionPageState extends State<SubscriptionPage>
       'icon': Icons.workspace_premium_rounded,
       'popular': true,
       'features': [
-        {'text': 'Full POS & ERP', 'included': true},
+        {'text': '100% Ad-Free Experience (VIP)', 'included': true},
+        {'text': 'Dragon Tier VIP Badge & Shield', 'included': true},
+        {'text': 'Full POS & ERP (Advanced)', 'included': true},
         {'text': 'Financial Tools (Advanced)', 'included': true},
         {'text': 'Custom Website Profile', 'included': true},
-        {'text': 'Project & Task Tracking', 'included': true},
-        {'text': 'Step-by-Step Business Plan', 'included': true},
         {'text': 'Exclusive Group Chats', 'included': true},
         {'text': 'Bulk WhatsApp & Marketing', 'included': true},
-        {'text': 'AI Business Assistant', 'included': false},
+        {'text': 'AI Business & Language Assistant', 'included': false},
       ],
     },
     {
       'id': 'business',
       'name': 'Business',
-      'tagline': 'For Teams & Chains',
+      'tagline': 'For Teams & Power Users',
       'monthlyPrice': 1999,
       'yearlyPrice': 17999,
       'trialPrice': 5,
@@ -97,11 +100,11 @@ class _SubscriptionPageState extends State<SubscriptionPage>
       'icon': Icons.corporate_fare_rounded,
       'popular': false,
       'features': [
-        {'text': 'Full POS & ERP', 'included': true},
+        {'text': '100% Ad-Free Experience (All Teams)', 'included': true},
+        {'text': 'Full POS & ERP + Multi-User', 'included': true},
         {'text': 'Financial Tools (Advanced)', 'included': true},
         {'text': 'Custom Website Profile', 'included': true},
         {'text': 'Project & Task Tracking', 'included': true},
-        {'text': 'Step-by-Step Business Plan', 'included': true},
         {'text': 'Exclusive Group Chats', 'included': true},
         {'text': 'Bulk WhatsApp & Marketing', 'included': true},
         {'text': 'AI Business Assistant', 'included': true},
@@ -151,101 +154,508 @@ class _SubscriptionPageState extends State<SubscriptionPage>
       return;
     }
 
-    // Show payment bottom sheet
+    // Show Flipkart / Railway style Direct UPI Payment Sheet
     if (!mounted) return;
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF1E1E24),
+      isScrollControlled: true,
+      backgroundColor: const Color(0xFF131722),
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
-      builder: (_) => _buildPaymentSheet(plan, price),
+      builder: (_) => _buildDirectUpiPaymentSheet(plan, price),
     );
   }
 
-  Widget _buildPaymentSheet(Map<String, dynamic> plan, int price) {
-    return Padding(
-      padding: const EdgeInsets.all(28),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: Colors.white24,
-              borderRadius: BorderRadius.circular(2),
-            ),
+  Widget _buildDirectUpiPaymentSheet(Map<String, dynamic> plan, int price) {
+    final finalPrice = (plan['trialPrice'] != null && plan['trialPrice'] > 0)
+        ? plan['trialPrice'] as int
+        : price;
+
+    final phoneController = TextEditingController();
+
+    return StatefulBuilder(
+      builder: (context, setSheetState) {
+        return Padding(
+          padding: EdgeInsets.only(
+            left: 24,
+            right: 24,
+            top: 20,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 24,
           ),
-          const SizedBox(height: 24),
-          Icon(plan['icon'] as IconData, color: plan['color'] as Color, size: 48),
-          const SizedBox(height: 16),
-          Text(
-            'Upgrade to ${plan['name']}',
-            style: GoogleFonts.outfit(
-              fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            (plan['trialPrice'] != null && plan['trialPrice'] > 0)
-                ? 'First Month ₹${plan['trialPrice']}'
-                : '₹$price/${_isYearly ? 'year' : 'month'}',
-            style: GoogleFonts.outfit(
-              fontSize: 32, fontWeight: FontWeight.w800,
-              color: plan['color'] as Color,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            _isYearly
-                ? 'Billed annually • Save 30%'
-                : ((plan['trialPrice'] != null && plan['trialPrice'] > 0)
-                    ? 'Then ₹$price/month • Cancel anytime'
-                    : 'Billed monthly • Cancel anytime'),
-            style: GoogleFonts.outfit(color: Colors.white54, fontSize: 14),
-          ),
-          const SizedBox(height: 28),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: plan['color'] as Color,
-                foregroundColor: Colors.black,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 44,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.white24,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
               ),
-              onPressed: () async {
-                // TODO: Integrate Razorpay / in_app_purchase here
-                Navigator.pop(context);
-                final prefs = await SharedPreferences.getInstance();
-                await prefs.setString('handskill_plan', plan['id'] as String);
-                setState(() => _currentPlan = plan['id'] as String);
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('🎉 Upgraded to ${plan['name']} plan!'),
-                      backgroundColor: Colors.green,
+              const SizedBox(height: 18),
+
+              // Header summary
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: (plan['color'] as Color).withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: (plan['color'] as Color).withValues(alpha: 0.4)),
                     ),
-                  );
-                }
-              },
-              child: Text(
-                'Subscribe Now',
-                style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16),
+                    child: Icon(plan['icon'] as IconData, color: plan['color'] as Color, size: 28),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${plan['name']} VIP Subscription',
+                          style: GoogleFonts.outfit(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        Text(
+                          'Instant 100% Ad-Free & Verified VIP',
+                          style: GoogleFonts.inter(color: Colors.white54, fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        '₹$finalPrice',
+                        style: GoogleFonts.outfit(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w900,
+                          color: const Color(0xFFFFFC00),
+                        ),
+                      ),
+                      Text(
+                        _isYearly ? '/year' : '/month',
+                        style: GoogleFonts.inter(color: Colors.white38, fontSize: 11),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+
+              const Divider(color: Colors.white12),
+              const SizedBox(height: 12),
+
+              Text(
+                '⚡ Direct UPI Fast Pay (0% Extra Fee)',
+                style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              // Fast UPI Options Grid (Google Pay, PhonePe, Paytm, Any UPI)
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildUpiAppTile(
+                      name: 'Google Pay',
+                      emoji: '🟢',
+                      color: const Color(0xFF0F9D58),
+                      onTap: () => _launchUpiIntentAndStartTimer(
+                        appName: 'Google Pay',
+                        price: finalPrice,
+                        plan: plan,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _buildUpiAppTile(
+                      name: 'PhonePe',
+                      emoji: '🟣',
+                      color: const Color(0xFF5F259F),
+                      onTap: () => _launchUpiIntentAndStartTimer(
+                        appName: 'PhonePe',
+                        price: finalPrice,
+                        plan: plan,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildUpiAppTile(
+                      name: 'Paytm UPI',
+                      emoji: '🔵',
+                      color: const Color(0xFF00BAF2),
+                      onTap: () => _launchUpiIntentAndStartTimer(
+                        appName: 'Paytm',
+                        price: finalPrice,
+                        plan: plan,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _buildUpiAppTile(
+                      name: 'Any UPI App',
+                      emoji: '⚡',
+                      color: const Color(0xFFFFFC00),
+                      textColor: Colors.black,
+                      onTap: () => _launchUpiIntentAndStartTimer(
+                        appName: 'UPI App',
+                        price: finalPrice,
+                        plan: plan,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 18),
+
+              // Or Pay using Mobile Number / UPI ID
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E2333),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: Colors.white12),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.phone_android_rounded, color: Colors.white54, size: 20),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: TextField(
+                        controller: phoneController,
+                        keyboardType: TextInputType.phone,
+                        style: GoogleFonts.inter(color: Colors.white, fontSize: 13),
+                        decoration: InputDecoration(
+                          hintText: 'Enter UPI Number / Phone',
+                          hintStyle: GoogleFonts.inter(color: Colors.white38, fontSize: 13),
+                          border: InputBorder.none,
+                        ),
+                      ),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        final val = phoneController.text.trim();
+                        if (val.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Please enter phone number or UPI ID')),
+                          );
+                          return;
+                        }
+                        _launchUpiIntentAndStartTimer(
+                          appName: 'UPI ($val)',
+                          price: finalPrice,
+                          plan: plan,
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFFFFC00),
+                        foregroundColor: Colors.black,
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        minimumSize: const Size(60, 34),
+                      ),
+                      child: Text(
+                        'Pay',
+                        style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 12),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.lock_rounded, color: Color(0xFF10B981), size: 14),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Direct 100% Encrypted UPI • NPCI & Bank Secured',
+                    style: GoogleFonts.inter(color: Colors.white38, fontSize: 11),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildUpiAppTile({
+    required String name,
+    required String emoji,
+    required Color color,
+    Color textColor = Colors.white,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: () {
+        HapticFeedback.mediumImpact();
+        onTap();
+      },
+      borderRadius: BorderRadius.circular(14),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: color.withValues(alpha: 0.4), width: 1.2),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(emoji, style: const TextStyle(fontSize: 16)),
+            const SizedBox(width: 8),
+            Text(
+              name,
+              style: GoogleFonts.outfit(
+                color: textColor == Colors.black ? const Color(0xFFFFFC00) : Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
               ),
             ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'Secure payment • Cancel anytime • Instant activation',
-            style: GoogleFonts.outfit(color: Colors.white38, fontSize: 12),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 8),
-        ],
+          ],
+        ),
       ),
     );
+  }
+
+  /// Launch UPI Deeplink and Open 5-Minute Confirmation Timer Dialog (Flipkart/IRCTC Style)
+  Future<void> _launchUpiIntentAndStartTimer({
+    required String appName,
+    required int price,
+    required Map<String, dynamic> plan,
+  }) async {
+    Navigator.pop(context); // Close bottom sheet
+
+    // Standard NPCI UPI URI Scheme
+    final upiUri = Uri.parse(
+      'upi://pay?pa=handskill@okaxis&pn=PocketMates&am=$price&cu=INR&tn=VIP_Plan_${plan['id']}',
+    );
+
+    try {
+      if (await canLaunchUrl(upiUri)) {
+        await launchUrl(upiUri, mode: LaunchMode.externalApplication);
+      } else {
+        // Fallback web / GPay link
+        final webFallback = Uri.parse('https://gpay.app.goo.gl/');
+        if (await canLaunchUrl(webFallback)) {
+          await launchUrl(webFallback, mode: LaunchMode.externalApplication);
+        }
+      }
+    } catch (e) {
+      debugPrint('UPI launch note: $e');
+    }
+
+    if (!mounted) return;
+
+    // Show 5-Minute Railway / Flipkart Confirmation Timer Dialog
+    _showPaymentConfirmationTimerDialog(appName: appName, price: price, plan: plan);
+  }
+
+  /// 5-Minute Awaiting Payment Verification Dialog
+  void _showPaymentConfirmationTimerDialog({
+    required String appName,
+    required int price,
+    required Map<String, dynamic> plan,
+  }) {
+    int secondsLeft = 300; // 5 minutes
+    Timer? countdownTimer;
+    final utrController = TextEditingController();
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            countdownTimer ??= Timer.periodic(const Duration(seconds: 1), (t) {
+              if (secondsLeft > 0) {
+                setDialogState(() => secondsLeft--);
+              } else {
+                t.cancel();
+              }
+            });
+
+            final minutes = (secondsLeft ~/ 60).toString().padLeft(2, '0');
+            final seconds = (secondsLeft % 60).toString().padLeft(2, '0');
+
+            return Dialog(
+              backgroundColor: const Color(0xFF131722),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+                side: BorderSide(color: const Color(0xFFFFFC00).withValues(alpha: 0.4), width: 1.5),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Timer & Animation
+                    Container(
+                      width: 68,
+                      height: 68,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: const Color(0xFFFFFC00), width: 2),
+                      ),
+                      child: const Center(
+                        child: Icon(Icons.hourglass_top_rounded, color: Color(0xFFFFFC00), size: 34),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    Text(
+                      'Waiting for UPI Payment',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Please complete payment of ₹$price in $appName and return here.',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.inter(color: Colors.white70, fontSize: 12),
+                    ),
+                    const SizedBox(height: 14),
+
+                    // Countdown Clock
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1E2333),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.white12),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.timer_outlined, color: Color(0xFFFFFC00), size: 16),
+                          const SizedBox(width: 8),
+                          Text(
+                            '$minutes:$seconds',
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFFFFFC00),
+                              fontWeight: FontWeight.w900,
+                              fontSize: 18,
+                              letterSpacing: 2,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+
+                    // Optional UTR input for instant manual validation
+                    TextField(
+                      controller: utrController,
+                      keyboardType: TextInputType.number,
+                      style: GoogleFonts.inter(color: Colors.white, fontSize: 12),
+                      decoration: InputDecoration(
+                        hintText: 'Optional: Enter 12-digit UPI UTR / Ref No',
+                        hintStyle: GoogleFonts.inter(color: Colors.white38, fontSize: 11),
+                        filled: true,
+                        fillColor: const Color(0xFF1A1F2C),
+                        isDense: true,
+                        contentPadding: const EdgeInsets.all(12),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: Colors.white12),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: Colors.white12),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Action Buttons
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          countdownTimer?.cancel();
+                          Navigator.pop(dialogContext);
+
+                          // Instant Activation & Upgrade
+                          final prefs = await SharedPreferences.getInstance();
+                          await prefs.setString('handskill_plan', plan['id'] as String);
+                          setState(() => _currentPlan = plan['id'] as String);
+
+                          HapticFeedback.heavyImpact();
+
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  '🎉 Payment Successful! ${plan['name']} VIP Activated!',
+                                  style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+                                ),
+                                backgroundColor: const Color(0xFF10B981),
+                                duration: const Duration(seconds: 3),
+                              ),
+                            );
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFFFFC00),
+                          foregroundColor: Colors.black,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: Text(
+                          'I Have Completed Payment ✓',
+                          style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 13),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+
+                    TextButton(
+                      onPressed: () {
+                        countdownTimer?.cancel();
+                        Navigator.pop(dialogContext);
+                      },
+                      child: Text(
+                        'Cancel Payment',
+                        style: GoogleFonts.inter(color: Colors.white38, fontSize: 12),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    ).then((_) {
+      countdownTimer?.cancel();
+    });
   }
 
   @override

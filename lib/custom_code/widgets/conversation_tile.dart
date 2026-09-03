@@ -97,30 +97,77 @@ class _ConversationTileState extends State<ConversationTile> {
     if (widget.conversation.isActiveTimer) return material.Icons.timer_outlined;
     if (widget.conversation.isTool) {
       switch (widget.conversation.toolTitle) {
+        case 'English Learning Tasks':
+        case '90-Day English Tasks':
+        case 'English Tasks':
+        case '90-Day Tasks':
+          return material.Icons.track_changes_rounded;
+        case '1-on-1 English Match':
+        case 'Stage Match':
+          return material.Icons.record_voice_over_rounded;
+        case 'Voice Speaking Sprint':
+        case 'English Hub':
+          return material.Icons.mic_rounded;
+        case 'Pocket Library':
+          return material.Icons.auto_stories_rounded;
+        case 'Avatar Studio & NFT':
+        case 'Avatar Studio':
+          return material.Icons.face_retouching_natural_rounded;
+        case 'Avatar Network':
+          return material.Icons.public_rounded;
         case 'Drawing Tool':
-          return material.Icons.brush;
+        case 'Drawing Studio':
+          return material.Icons.palette_rounded;
+        case 'Poster Maker':
+          return material.Icons.photo_library_rounded;
+        case 'Chess Match':
+        case 'Chess Club':
+          return material.Icons.casino_rounded;
+        case 'Poki Games':
+          return material.Icons.videogame_asset_rounded;
+        case 'Crazy Games':
+          return material.Icons.sports_esports_rounded;
+        case 'Bulk Sender':
+          return material.Icons.rocket_launch_rounded;
+        case 'Travel Radar':
+          return material.Icons.radar_rounded;
+        case 'Password Pro':
+          return material.Icons.lock_person_rounded;
+        case 'Dual Recorder':
+          return material.Icons.videocam_rounded;
         case 'Schedule':
-          return material.Icons.calendar_today_rounded;
+          return material.Icons.calendar_month_rounded;
         case 'Tasks':
-          return material.Icons.check_circle_outline_rounded;
+        case 'Daily Tasks':
+          return material.Icons.task_alt_rounded;
+        case 'Habit Tracker':
         case 'Challenges':
-          return material.Icons.emoji_events_outlined;
+          return material.Icons.emoji_events_rounded;
         case 'Diagrams':
           return material.Icons.schema_rounded;
         case 'Teams':
-          return material.Icons.groups_rounded;
+          return material.Icons.diversity_3_rounded;
+        case 'Zoyarex POS Admin':
+        case 'Zoyarex Super Admin':
+        case 'POS Tool':
+        case 'POS & Billing':
+          return material.Icons.admin_panel_settings_rounded;
+        case 'Zoyarex AI':
         case 'AI Tools':
-          return material.Icons.auto_awesome;
-        case 'Poster Maker':
-          return material.Icons.photo_library_rounded;
-        case 'Bulk Sender':
-          return material.Icons.send_rounded;
-        case 'Poki Games':
-          return material.Icons.videogame_asset_rounded;
-        case 'Travel Radar':
-          return material.Icons.radar;
+          return material.Icons.smart_toy_rounded;
+        case 'WhatsApp Web':
+          return material.Icons.chat_rounded;
+        case 'QR & Barcode':
+          return material.Icons.qr_code_scanner_rounded;
+        case 'World Clock':
+          return material.Icons.schedule_rounded;
+        case 'Test Feature':
+          return material.Icons.bug_report_rounded;
+        case 'Dynamic Web App':
+        case 'Web Search':
+          return material.Icons.travel_explore_rounded;
         default:
-          return material.Icons.build_circle;
+          return material.Icons.auto_awesome_rounded;
       }
     }
     if (widget.conversation.isNotification) return material.Icons.info_outline;
@@ -132,30 +179,77 @@ class _ConversationTileState extends State<ConversationTile> {
     if (widget.conversation.isActiveTimer) return material.Colors.greenAccent;
     if (widget.conversation.isTool) {
       switch (widget.conversation.toolTitle) {
+        case 'English Learning Tasks':
+        case '90-Day English Tasks':
+        case 'English Tasks':
+        case '90-Day Tasks':
+          return const Color(0xFF10B981);
+        case '1-on-1 English Match':
+        case 'Stage Match':
+          return const Color(0xFF38BDF8);
+        case 'Voice Speaking Sprint':
+        case 'English Hub':
+          return const Color(0xFF06B6D4);
+        case 'Pocket Library':
+          return const Color(0xFFFFFC00);
+        case 'Avatar Studio & NFT':
+        case 'Avatar Studio':
+          return const Color(0xFFFFD700);
+        case 'Avatar Network':
+          return const Color(0xFF00E5FF);
         case 'Drawing Tool':
-          return isDark ? material.Colors.purpleAccent : material.Colors.purple;
-        case 'Schedule':
-          return isDark ? material.Colors.blueAccent : material.Colors.blue;
-        case 'Tasks':
-          return isDark ? material.Colors.greenAccent : material.Colors.green;
-        case 'Challenges':
-          return isDark ? material.Colors.orangeAccent : material.Colors.orange;
-        case 'Diagrams':
-          return isDark ? material.Colors.tealAccent : material.Colors.teal;
-        case 'Teams':
-          return isDark ? material.Colors.pinkAccent : material.Colors.pink;
-        case 'AI Tools':
-          return isDark ? material.Colors.cyanAccent : material.Colors.cyan;
+        case 'Drawing Studio':
+          return const Color(0xFFFF007A);
         case 'Poster Maker':
-          return isDark ? material.Colors.orangeAccent : material.Colors.orange;
-        case 'Bulk Sender':
-          return isDark ? material.Colors.greenAccent : material.Colors.green;
+          return const Color(0xFFFF5722);
+        case 'Chess Match':
+        case 'Chess Club':
+          return const Color(0xFFFFB700);
         case 'Poki Games':
-          return isDark ? material.Colors.redAccent : material.Colors.red;
+          return const Color(0xFF00E5FF);
+        case 'Crazy Games':
+          return const Color(0xFF8B5CF6);
+        case 'Bulk Sender':
+          return const Color(0xFF10B981);
         case 'Travel Radar':
-          return isDark ? material.Colors.cyanAccent : material.Colors.cyan;
+          return const Color(0xFF06B6D4);
+        case 'Password Pro':
+          return const Color(0xFF64748B);
+        case 'Dual Recorder':
+          return const Color(0xFFEF4444);
+        case 'Schedule':
+          return const Color(0xFF3B82F6);
+        case 'Tasks':
+        case 'Daily Tasks':
+          return const Color(0xFF14B8A6);
+        case 'Habit Tracker':
+        case 'Challenges':
+          return const Color(0xFFF59E0B);
+        case 'Diagrams':
+          return const Color(0xFF8B5CF6);
+        case 'Teams':
+          return const Color(0xFFEC4899);
+        case 'Zoyarex POS Admin':
+        case 'Zoyarex Super Admin':
+        case 'POS Tool':
+        case 'POS & Billing':
+          return const Color(0xFF2563EB);
+        case 'Zoyarex AI':
+        case 'AI Tools':
+          return const Color(0xFF6366F1);
+        case 'WhatsApp Web':
+          return const Color(0xFF22C55E);
+        case 'QR & Barcode':
+          return const Color(0xFF64748B);
+        case 'World Clock':
+          return const Color(0xFFF97316);
+        case 'Test Feature':
+          return const Color(0xFFE11D48);
+        case 'Dynamic Web App':
+        case 'Web Search':
+          return const Color(0xFFEAB308);
         default:
-          return isDark ? const Color(0xFFFFD600) : const Color(0xFFFFF500);
+          return isDark ? const Color(0xFFFFFC00) : const Color(0xFFFFFC00);
       }
     }
     if (widget.conversation.isNotification)
@@ -248,17 +342,21 @@ class _ConversationTileState extends State<ConversationTile> {
                         decoration: BoxDecoration(
                           color: widget.conversation.isActiveTimer
                               ? material.Colors.green.withValues(alpha: 0.1)
-                              : (isDark
-                                  ? const Color(0xFF262626)
-                                  : const Color(0xFFE2E8F0)),
+                              : widget.conversation.isTool
+                                  ? _getIconColor(isDark).withValues(alpha: 0.15)
+                                  : (isDark
+                                      ? const Color(0xFF262626)
+                                      : const Color(0xFFE2E8F0)),
                           shape: BoxShape.circle,
                           border: Border.all(
                             color: widget.conversation.isActiveTimer
                                 ? material.Colors.greenAccent.withValues(alpha: 0.3)
-                                : (isDark
-                                    ? Colors.white.withValues(alpha: 0.1)
-                                    : Colors.black.withValues(alpha: 0.1)),
-                            width: 1.5,
+                                : widget.conversation.isTool
+                                    ? _getIconColor(isDark).withValues(alpha: 0.45)
+                                    : (isDark
+                                        ? Colors.white.withValues(alpha: 0.1)
+                                        : Colors.black.withValues(alpha: 0.1)),
+                            width: widget.conversation.isTool ? 1.8 : 1.5,
                           ),
                           image: (_showRealPhoto && widget.conversation.imageUrl != null)
                               ? DecorationImage(

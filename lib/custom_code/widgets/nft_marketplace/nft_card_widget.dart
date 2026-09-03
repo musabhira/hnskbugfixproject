@@ -343,16 +343,16 @@ class _NftDetailModalState extends State<NftDetailModal> {
         dnaHash: item.dnaHash,
       );
 
-      // 2. Update Supabase Profile
+      // 2. Update Supabase Profile (avatar_config only, preserve real profile image)
       if (user != null) {
         await SupaFlow.client.from('profile').update({
-          'profile_image_url': item.imageUrl,
           'avatar_config': {
             'species': 'bored_ape',
             'mintId': item.id,
             'dnaHash': item.dnaHash,
             'rarityTier': item.rarityTier,
             'artStyle': 'bayc',
+            'imageUrl': item.imageUrl,
             'traits': item.apeTraits != null
                 ? {
                     'fur': item.apeTraits!.furColor,

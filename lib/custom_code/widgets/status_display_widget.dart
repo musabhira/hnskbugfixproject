@@ -23,7 +23,6 @@ import 'package:timeago/timeago.dart' as timeago;
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:pocket_mates_app/custom_code/widgets/share_content_screen.dart';
-import 'package:pocket_mates_app/custom_code/widgets/drawing_academy_home_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poster_designer/template_gallery_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/bulk_sender/bulk_sender_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poki_games_page.dart';
@@ -35,6 +34,7 @@ import 'package:pocket_mates_app/custom_code/widgets/courses_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/story/snapchat_story_creator_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/ads/pocket_ad_service.dart';
 
 class StatusDisplayWidget extends StatefulWidget {
   final String currentUserId;
@@ -923,6 +923,30 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
 
     return GestureDetector(
       onTap: _openStatusUpload,
+      onLongPress: () async {
+        HapticFeedback.mediumImpact();
+        try {
+          final picker = ImagePicker();
+          final photo = await picker.pickImage(source: ImageSource.camera, imageQuality: 85);
+          if (photo != null && mounted) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => SnapchatStoryCreatorPage(
+                  userId: widget.currentUserId,
+                  profileId: widget.currentProfileId,
+                  initialFile: photo,
+                  initialMediaType: 'image',
+                  onStatusUploaded: () {
+                    _loadStatusesOptimized();
+                    widget.onStatusUploaded?.call();
+                  },
+                ),
+              ),
+            );
+          }
+        } catch (_) {}
+      },
       child: Container(
         width: 80,
         margin: const EdgeInsets.only(right: 12),
@@ -934,19 +958,25 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                    color: Colors.yellow.withValues(alpha: 0.3), width: 1),
-                color: Colors.yellow.withValues(alpha: 0.05),
+                    color: const Color(0xFFFFFC00).withValues(alpha: 0.5), width: 1.5),
+                color: const Color(0xFFFFFC00).withValues(alpha: 0.08),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
+                    blurRadius: 8,
+                  )
+                ],
               ),
               child:
-                  const Icon(Icons.add_rounded, size: 28, color: Colors.yellow),
+                  const Icon(Icons.add_rounded, size: 28, color: Color(0xFFFFFC00)),
             ),
             const SizedBox(height: 8),
             Text(
-              'Add',
+              'Add Vibe',
               style: GoogleFonts.outfit(
-                color: Colors.white.withValues(alpha: 0.7),
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
+                color: Colors.white.withValues(alpha: 0.8),
+                fontSize: 12.5,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ],
@@ -1195,12 +1225,21 @@ class StatusViewerWrapper extends StatefulWidget {
 
 class _StatusViewerWrapperState extends State<StatusViewerWrapper> {
   late int _currentGroupIndex;
+  bool _showingAd = false;
+  int _groupsWatchedSinceAd = 0;
+  bool _isSubscribed = false;
 
   @override
   void initState() {
     super.initState();
     _currentGroupIndex = widget.initialGroupIndex;
+    _checkVipStatus();
     _preloadAdjacentGroups();
+  }
+
+  Future<void> _checkVipStatus() async {
+    final sub = await PocketAdService().isUserSubscribed();
+    if (mounted) setState(() => _isSubscribed = sub);
   }
 
   void _preloadAdjacentGroups() {
@@ -1237,8 +1276,20 @@ class _StatusViewerWrapperState extends State<StatusViewerWrapper> {
   }
 
   void _goToNextGroup() {
+    _groupsWatchedSinceAd++;
+
+    // Insert clean story ad after watching 3 status groups (bypassed if VIP)
+    if (!_isSubscribed && _groupsWatchedSinceAd >= 3 && !_showingAd) {
+      setState(() {
+        _showingAd = true;
+        _groupsWatchedSinceAd = 0;
+      });
+      return;
+    }
+
     if (_currentGroupIndex < widget.allStatusGroups.length - 1) {
       setState(() {
+        _showingAd = false;
         _currentGroupIndex++;
       });
       _preloadAdjacentGroups();
@@ -1248,6 +1299,11 @@ class _StatusViewerWrapperState extends State<StatusViewerWrapper> {
   }
 
   void _goToPreviousGroup() {
+    if (_showingAd) {
+      setState(() => _showingAd = false);
+      return;
+    }
+
     if (_currentGroupIndex > 0) {
       setState(() {
         _currentGroupIndex--;
@@ -1260,6 +1316,25 @@ class _StatusViewerWrapperState extends State<StatusViewerWrapper> {
 
   @override
   Widget build(BuildContext context) {
+    if (_showingAd) {
+      return PocketVibesStoryAdWidget(
+        onNext: () {
+          if (_currentGroupIndex < widget.allStatusGroups.length - 1) {
+            setState(() {
+              _showingAd = false;
+              _currentGroupIndex++;
+            });
+            _preloadAdjacentGroups();
+          } else {
+            Navigator.pop(context);
+          }
+        },
+        onPrevious: () {
+          setState(() => _showingAd = false);
+        },
+      );
+    }
+
     return StatusViewerScreen(
       key: ValueKey(_currentGroupIndex),
       statusGroup: widget.allStatusGroups[_currentGroupIndex],

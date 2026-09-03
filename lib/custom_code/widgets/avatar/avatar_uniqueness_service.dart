@@ -5,12 +5,50 @@ import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/bored_ape_painter.dart';
 import 'package:pocket_mates_app/custom_code/widgets/nft_marketplace/nft_models.dart';
 
+class AvatarProvenanceEvent {
+  final String eventType; // 'MINTED' | 'CLAIMED' | 'TRANSFERRED' | 'EQUIPPED'
+  final String from;
+  final String to;
+  final DateTime timestamp;
+  final String txHash;
+  final String? note;
+
+  AvatarProvenanceEvent({
+    required this.eventType,
+    required this.from,
+    required this.to,
+    required this.timestamp,
+    required this.txHash,
+    this.note,
+  });
+
+  Map<String, dynamic> toMap() => {
+        'event_type': eventType,
+        'from': from,
+        'to': to,
+        'timestamp': timestamp.toIso8601String(),
+        'tx_hash': txHash,
+        'note': note,
+      };
+
+  factory AvatarProvenanceEvent.fromMap(Map<String, dynamic> map) =>
+      AvatarProvenanceEvent(
+        eventType: map['event_type'] ?? 'MINTED',
+        from: map['from'] ?? 'Pocket Labs',
+        to: map['to'] ?? '',
+        timestamp: DateTime.tryParse(map['timestamp'] ?? '') ?? DateTime.now(),
+        txHash: map['tx_hash'] ?? '0xGENESIS',
+        note: map['note'],
+      );
+}
+
 class AvatarClaimRecord {
   final String avatarId;
   final String userId;
   final String username;
   final String dnaHash;
   final DateTime claimedAt;
+  final List<AvatarProvenanceEvent> history;
 
   AvatarClaimRecord({
     required this.avatarId,
@@ -18,7 +56,8 @@ class AvatarClaimRecord {
     required this.username,
     required this.dnaHash,
     required this.claimedAt,
-  });
+    List<AvatarProvenanceEvent>? history,
+  }) : history = history ?? [];
 
   Map<String, dynamic> toMap() => {
         'avatar_id': avatarId,
@@ -26,19 +65,27 @@ class AvatarClaimRecord {
         'username': username,
         'dna_hash': dnaHash,
         'claimed_at': claimedAt.toIso8601String(),
+        'history': history.map((e) => e.toMap()).toList(),
       };
 
-  factory AvatarClaimRecord.fromMap(Map<String, dynamic> map) => AvatarClaimRecord(
-        avatarId: map['avatar_id'] ?? '',
-        userId: map['user_id'] ?? '',
-        username: map['username'] ?? 'Anonymous',
-        dnaHash: map['dna_hash'] ?? '',
-        claimedAt: DateTime.tryParse(map['claimed_at'] ?? '') ?? DateTime.now(),
-      );
+  factory AvatarClaimRecord.fromMap(Map<String, dynamic> map) {
+    final rawHist = map['history'] as List? ?? [];
+    return AvatarClaimRecord(
+      avatarId: map['avatar_id'] ?? '',
+      userId: map['user_id'] ?? '',
+      username: map['username'] ?? 'Anonymous',
+      dnaHash: map['dna_hash'] ?? '',
+      claimedAt: DateTime.tryParse(map['claimed_at'] ?? '') ?? DateTime.now(),
+      history: rawHist
+          .map((e) => AvatarProvenanceEvent.fromMap(Map<String, dynamic>.from(e)))
+          .toList(),
+    );
+  }
 }
 
 class AvatarUniquenessService {
-  static final AvatarUniquenessService _instance = AvatarUniquenessService._internal();
+  static final AvatarUniquenessService _instance =
+      AvatarUniquenessService._internal();
   factory AvatarUniquenessService() => _instance;
   AvatarUniquenessService._internal();
 
@@ -52,7 +99,8 @@ class AvatarUniquenessService {
       try {
         final List list = jsonDecode(raw);
         for (final item in list) {
-          final record = AvatarClaimRecord.fromMap(Map<String, dynamic>.from(item));
+          final record =
+              AvatarClaimRecord.fromMap(Map<String, dynamic>.from(item));
           _claimedRegistry[record.avatarId] = record;
           _usedDnaHashes.add(record.dnaHash);
         }
@@ -62,17 +110,63 @@ class AvatarUniquenessService {
 
   bool isClaimed(String avatarId) => _claimedRegistry.containsKey(avatarId);
 
-  AvatarClaimRecord? getClaimRecord(String avatarId) => _claimedRegistry[avatarId];
+  AvatarClaimRecord? getClaimRecord(String avatarId) =>
+      _claimedRegistry[avatarId];
+
+  List<AvatarProvenanceEvent> getProvenance(String avatarId,
+      {String creator = 'Pocket Labs', String? dnaHash}) {
+    final record = _claimedRegistry[avatarId];
+    final hash = dnaHash ?? record?.dnaHash ?? '0xMATE-${avatarId.hashCode.abs() % 999999}';
+
+    final List<AvatarProvenanceEvent> events = [
+      AvatarProvenanceEvent(
+        eventType: 'MINTED',
+        from: 'Smart Contract Engine',
+        to: creator,
+        timestamp: DateTime.now().subtract(const Duration(days: 14)),
+        txHash: '0xMINT-${hash.replaceAll('0x', '')}',
+        note: 'Genesis 1-of-1 Minted on Pocket Mates Network',
+      ),
+    ];
+
+    if (record != null) {
+      events.add(
+        AvatarProvenanceEvent(
+          eventType: 'CLAIMED',
+          from: creator,
+          to: '@${record.username}',
+          timestamp: record.claimedAt,
+          txHash: '0xCLAIM-${record.dnaHash.replaceAll('0x', '')}',
+          note: 'Verified 1-of-1 Ownership Established',
+        ),
+      );
+      events.addAll(record.history);
+    }
+
+    return events;
+  }
 
   Future<bool> claimAvatar({
     required String avatarId,
     required String userId,
     required String username,
     required String dnaHash,
+    String creator = 'Pocket Labs',
   }) async {
     if (_claimedRegistry.containsKey(avatarId)) {
       return false; // Already claimed by another user!
     }
+
+    final initialHistory = [
+      AvatarProvenanceEvent(
+        eventType: 'CLAIMED',
+        from: creator,
+        to: '@$username',
+        timestamp: DateTime.now(),
+        txHash: '0xCLAIM-${DateTime.now().millisecondsSinceEpoch % 1000000}',
+        note: 'Initial 1-of-1 Claim',
+      ),
+    ];
 
     final record = AvatarClaimRecord(
       avatarId: avatarId,
@@ -80,13 +174,15 @@ class AvatarUniquenessService {
       username: username,
       dnaHash: dnaHash,
       claimedAt: DateTime.now(),
+      history: initialHistory,
     );
 
     _claimedRegistry[avatarId] = record;
     _usedDnaHashes.add(dnaHash);
 
     final prefs = await SharedPreferences.getInstance();
-    final encoded = jsonEncode(_claimedRegistry.values.map((v) => v.toMap()).toList());
+    final encoded =
+        jsonEncode(_claimedRegistry.values.map((v) => v.toMap()).toList());
     await prefs.setString('claimed_avatars_registry', encoded);
 
     // Save claim record to Supabase if logged in
@@ -100,6 +196,49 @@ class AvatarUniquenessService {
         }).eq('user_id', user.id);
       }
     } catch (_) {}
+
+    return true;
+  }
+
+  Future<bool> transferAvatar({
+    required String avatarId,
+    required String fromUserId,
+    required String fromUsername,
+    required String toUserId,
+    required String toUsername,
+  }) async {
+    final existing = _claimedRegistry[avatarId];
+    if (existing == null || existing.userId != fromUserId) {
+      return false; // Not owned by fromUser
+    }
+
+    final transferEvent = AvatarProvenanceEvent(
+      eventType: 'TRANSFERRED',
+      from: '@$fromUsername',
+      to: '@$toUsername',
+      timestamp: DateTime.now(),
+      txHash: '0xTX-${DateTime.now().millisecondsSinceEpoch % 1000000}',
+      note: 'Ownership Transferred on Pocket Mates Network',
+    );
+
+    final updatedHistory = List<AvatarProvenanceEvent>.from(existing.history)
+      ..add(transferEvent);
+
+    final updatedRecord = AvatarClaimRecord(
+      avatarId: avatarId,
+      userId: toUserId,
+      username: toUsername,
+      dnaHash: existing.dnaHash,
+      claimedAt: existing.claimedAt,
+      history: updatedHistory,
+    );
+
+    _claimedRegistry[avatarId] = updatedRecord;
+
+    final prefs = await SharedPreferences.getInstance();
+    final encoded =
+        jsonEncode(_claimedRegistry.values.map((v) => v.toMap()).toList());
+    await prefs.setString('claimed_avatars_registry', encoded);
 
     return true;
   }

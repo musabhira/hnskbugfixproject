@@ -15,6 +15,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   passkeys_windows
   permission_handler_windows
   record_windows
+  rive_common
   share_plus
   speech_to_text_windows
   url_launcher_windows

@@ -873,13 +873,14 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
 
       final user = SupaFlow.client.auth.currentUser;
       if (user != null) {
+        // Save to avatar_config only so user's real profile photo remains untouched
         await SupaFlow.client.from('profile').update({
-          'profile_image_url': base64Image,
           'avatar_config': {
             'species': 'hand_drawn_masterpiece',
             'dnaHash': dnaHash,
             'rarityTier': 'Mythic 1-of-1 Hand-Drawn',
             'artStyle': 'sketch',
+            'customDrawingImage': base64Image,
           },
           'updated_at': DateTime.now().toIso8601String(),
         }).eq('user_id', user.id);

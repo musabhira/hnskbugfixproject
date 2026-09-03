@@ -48,6 +48,8 @@ import 'package:pocket_mates_app/custom_code/widgets/teams/teams_service.dart';
 import 'live_task_tile.dart';
 import 'package:pocket_mates_app/custom_code/widgets/courses_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/english_learning_hub_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/ads/pocket_ad_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/snap/snap_view_dialog.dart';
 
 import 'package:pocket_mates_app/flutter_flow/flutter_flow_theme.dart';
 import 'package:pocket_mates_app/auth/auth_helper.dart';
@@ -1009,22 +1011,36 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                 ),
                 Column(
                   children: [
-                  if (widget.groupName == 'English Hub')
+                  if (!widget.groupId.startsWith('p:'))
                     Container(
                       width: double.infinity,
-                      color: const Color(0xFFFFD600).withValues(alpha: 0.15),
-                      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            const Color(0xFFFFFC00).withValues(alpha: 0.15),
+                            const Color(0xFFFFD600).withValues(alpha: 0.08),
+                          ],
+                        ),
+                        border: Border(
+                          bottom: BorderSide(
+                            color: const Color(0xFFFFFC00).withValues(alpha: 0.2),
+                            width: 1,
+                          ),
+                        ),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Icons.info_outline, color: Color(0xFFFFD600), size: 16),
+                          const Text('🇬🇧', style: TextStyle(fontSize: 14)),
                           const SizedBox(width: 8),
                           Text(
-                            'Only Talking in English',
+                            'Group Rule: English Only • Keep the chat in English',
                             style: GoogleFonts.outfit(
-                              color: const Color(0xFFFFD600),
-                              fontSize: 12,
+                              color: const Color(0xFFFFFC00),
+                              fontSize: 11.5,
                               fontWeight: FontWeight.bold,
+                              letterSpacing: 0.3,
                             ),
                           ),
                         ],
@@ -1119,6 +1135,8 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                                     message.createdAt, nextMessage.createdAt);
                               }
 
+                              final showNativeAd = index > 0 && index % 12 == 0;
+
                               return Container(
                                 key: ValueKey(message.id),
                                 child: Column(
@@ -1126,6 +1144,11 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                                     if (showDate)
                                       _buildDateSeparator(message.createdAt),
                                     _buildMessageTile(message, isMe),
+                                    if (showNativeAd)
+                                      const PocketNativeAdWidget(
+                                        category: 'English & Business',
+                                        margin: EdgeInsets.symmetric(vertical: 6, horizontal: 16),
+                                      ),
                                   ],
                                 ),
                               );
@@ -1231,37 +1254,13 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
       );
     }
 
-    final radius = BorderRadius.circular(12);
-    final borderRadius = isMe
-        ? radius.copyWith(topRight: Radius.zero)
-        : radius.copyWith(topLeft: Radius.zero);
-
-    return GestureDetector(
-      onHorizontalDragUpdate: (details) {
-        if (details.primaryDelta! > 8) {
-          if (_replyMessage?['id'] != message.id) {
-            safeSetState(() {
-              _replyMessage = {
-                'id': message.id,
-                'message_text': message.messageText,
-                'sender_id': message.senderId,
-                'sender_name': message.senderName,
-                'metadata': message.metadata,
-                'message_type': message.messageType,
-                'file_url': message.fileUrl,
-              };
-            });
-            HapticFeedback.lightImpact();
-          }
-        }
-      },
-      child: Row(
+    return Row(
         mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           if (isMe && message.messageType == 'text') ...[
             IconButton(
-              icon: const Icon(Icons.auto_awesome, color: Colors.yellow, size: 16),
+              icon: const Icon(Icons.auto_awesome, color: Color(0xFFFFFC00), size: 16),
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(),
               tooltip: 'AI Correct',
@@ -1312,7 +1311,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                           Text(
                             message.senderName ?? 'User',
                             style: const TextStyle(
-                              color: Colors.yellow,
+                              color: Color(0xFFFFFC00),
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
                             ),
@@ -1323,15 +1322,15 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 4, vertical: 1),
                               decoration: BoxDecoration(
-                                color: Colors.yellow.withValues(alpha: 0.2),
+                                color: const Color(0xFFFFFC00).withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(4),
                                 border:
-                                    Border.all(color: Colors.yellow, width: 0.5),
+                                    Border.all(color: const Color(0xFFFFFC00), width: 0.5),
                               ),
                               child: const Text(
                                 'Admin',
                                 style:
-                                    TextStyle(color: Colors.yellow, fontSize: 8),
+                                    TextStyle(color: Color(0xFFFFFC00), fontSize: 8),
                               ),
                             ),
                           ],
@@ -1339,29 +1338,39 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                       ),
                     ),
                   ),
-
                 GestureDetector(
                   onLongPress: () => _showMessageContextMenu(message, isMe),
                   child: Container(
                     decoration: BoxDecoration(
                       gradient: isMe
                           ? const LinearGradient(
-                              colors: [Color(0xFFFFD600), Color(0xFFFFAB00)],
+                              colors: [Color(0xFFFFFC00), Color(0xFFFFD600)], // Signature Snapchat Cyber-Yellow
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             )
-                          : null,
-                      color: isMe ? null : const Color(0xFF121B22),
-                      borderRadius: borderRadius,
-                      border: isMe
-                          ? null
-                          : Border.all(color: Colors.white.withValues(alpha: 0.05)),
+                          : const LinearGradient(
+                              colors: [Color(0xFF1E2433), Color(0xFF131722)], // Deep Obsidian Glass
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                      borderRadius: BorderRadius.circular(16).copyWith(
+                        bottomRight: isMe ? const Radius.circular(3) : const Radius.circular(16),
+                        bottomLeft: !isMe ? const Radius.circular(3) : const Radius.circular(16),
+                      ),
+                      border: Border.all(
+                        color: isMe
+                            ? const Color(0xFFFFD600).withValues(alpha: 0.8)
+                            : Colors.white.withValues(alpha: 0.08),
+                        width: 1,
+                      ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.5),
-                          offset: const Offset(0, 2),
-                          blurRadius: 6,
-                          spreadRadius: 1,
+                          color: isMe
+                              ? const Color(0xFFFFD600).withValues(alpha: 0.25)
+                              : Colors.black.withValues(alpha: 0.4),
+                          offset: const Offset(0, 3),
+                          blurRadius: 8,
+                          spreadRadius: 0.5,
                         )
                       ],
                     ),
@@ -1379,6 +1388,8 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                                 _buildReplyInBubble(message, isMe),
                               if (message.messageType == 'image')
                                 _buildImageMessage(message),
+                              if (message.messageType == 'snap')
+                                _buildSnapMessage(message, isMe),
                               if (message.messageType == 'voice' &&
                                   message.fileUrl != null)
                                 _buildVoiceMessage(message),
@@ -1406,16 +1417,16 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      SelectableText(
-                                        message.messageText!,
-                                        onTap: () => _showMessageContextMenu(message, isMe),
-                                        style: TextStyle(
-                                            color: isMe
-                                                ? Colors.black87
-                                                : Colors.white.withValues(alpha: 0.93),
-                                            fontSize: 15,
-                                            height: 1.3),
-                                      ),
+                                       Text(
+                                         message.messageText!,
+                                         style: GoogleFonts.inter(
+                                           color: isMe ? const Color(0xFF0F172A) : Colors.white,
+                                           fontSize: 15,
+                                           fontWeight: isMe ? FontWeight.w600 : FontWeight.w400,
+                                           height: 1.35,
+                                           letterSpacing: 0.2,
+                                         ),
+                                       ),
                                       if (_loadingAnalysisMessageIds.contains(message.id))
                                         Padding(
                                           padding: const EdgeInsets.only(top: 8.0),
@@ -1511,19 +1522,18 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                                   },
                                   child: Icon(
                                     Icons.copy,
-                                    size: 12,
-                                    color: (isMe ? Colors.black : Colors.white)
-                                        .withValues(alpha: 0.6),
+                                    size: 11,
+                                    color: isMe ? const Color(0xFF0F172A).withValues(alpha: 0.6) : Colors.white.withValues(alpha: 0.65),
                                   ),
                                 ),
                                 const SizedBox(width: 4),
                               ],
                               Text(
                                 _formatTime(message.createdAt),
-                                style: TextStyle(
-                                  color: (isMe ? Colors.black : Colors.white)
-                                      .withValues(alpha: 0.6),
+                                style: GoogleFonts.inter(
+                                  color: isMe ? const Color(0xFF0F172A).withValues(alpha: 0.75) : Colors.white.withValues(alpha: 0.7),
                                   fontSize: 10,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                               if (isMe) ...[
@@ -1532,10 +1542,10 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                                   (message.isOptimistic || message.isPending)
                                       ? Icons.access_time
                                       : Icons.done_all,
-                                  size: 14,
+                                  size: 13,
                                   color: (message.isOptimistic || message.isPending)
-                                      ? (isMe ? Colors.black54 : Colors.white54)
-                                      : (message.isRead ? Colors.blue : (isMe ? Colors.black54 : Colors.white54)),
+                                      ? const Color(0xFF0F172A).withValues(alpha: 0.4)
+                                      : (message.isRead ? const Color(0xFF0284C7) : const Color(0xFF0F172A).withValues(alpha: 0.6)),
                                 ),
                               ]
                             ],
@@ -1560,9 +1570,8 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
           ),
         ],
       ],
-    ),
-  );
-}
+    );
+  }
 
   Widget _buildStatusMentionMessage(ChatMessage message, bool isMe) {
     final metadata = message.metadata ?? {};
@@ -2110,6 +2119,115 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSnapMessage(ChatMessage message, bool isMe) {
+    final url = message.fileUrl;
+    final metadata = message.metadata ?? {};
+    final isBurned = metadata['is_burned'] == true;
+
+    return InkWell(
+      onTap: isBurned || url == null
+          ? null
+          : () {
+              SnapViewDialog.show(
+                context: context,
+                mediaUrl: url,
+                senderName: message.senderName ?? 'Mate',
+                isMe: isMe,
+                onBurned: () async {
+                  try {
+                    // Burn metadata update in supabase
+                    final updatedMeta = Map<String, dynamic>.from(metadata);
+                    updatedMeta['is_burned'] = true;
+                    await _supabase
+                        .from('messages')
+                        .update({'metadata': updatedMeta})
+                        .eq('id', message.id);
+                  } catch (e) {
+                    debugPrint('Error burning snap: $e');
+                  }
+                },
+              );
+            },
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: isBurned
+              ? Colors.white.withValues(alpha: 0.04)
+              : const Color(0xFFFFFC00).withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isBurned
+                ? Colors.white12
+                : const Color(0xFFFFFC00).withValues(alpha: 0.6),
+            width: 1.2,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: isBurned ? Colors.white10 : const Color(0xFFFFFC00),
+              ),
+              child: Icon(
+                isBurned ? Icons.lock_clock : Icons.local_fire_department_rounded,
+                size: 18,
+                color: isBurned ? Colors.white38 : Colors.black,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      isBurned ? 'Opened Snap' : 'Snap 🔥',
+                      style: GoogleFonts.outfit(
+                        color: isBurned ? Colors.white54 : Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                      decoration: BoxDecoration(
+                        color: isBurned ? Colors.transparent : Colors.redAccent.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(6),
+                        border: isBurned ? null : Border.all(color: Colors.redAccent.withValues(alpha: 0.5)),
+                      ),
+                      child: Text(
+                        isBurned ? 'EXPIRED' : 'VIEW ONCE',
+                        style: GoogleFonts.inter(
+                          color: isBurned ? Colors.white30 : Colors.redAccent,
+                          fontSize: 8,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                Text(
+                  isBurned ? 'Burned permanently' : 'Tap to view (Self-destructs)',
+                  style: GoogleFonts.inter(
+                    color: isBurned ? Colors.white30 : Colors.white70,
+                    fontSize: 11,
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
@@ -2717,9 +2835,9 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                       focusNode: _focusNode,
                       style: const TextStyle(color: Colors.white),
                       decoration: InputDecoration(
-                        hintText: widget.groupName == 'English Hub'
-                            ? 'Type in English only...'
-                            : 'Message',
+                        hintText: !widget.groupId.startsWith('p:')
+                            ? 'Type in English only... 🇬🇧'
+                            : 'Type a message...',
                         hintStyle: const TextStyle(color: Colors.white38),
                         border: InputBorder.none,
                         contentPadding:
@@ -2903,10 +3021,10 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  _buildAttachOption(Icons.insert_drive_file, Colors.blue,
-                      'Document', () {
+                  _buildAttachOption(Icons.local_fire_department_rounded, const Color(0xFFFFFC00),
+                      'Snap 🔥', () {
                     Navigator.pop(ctx);
-                    _pickAndStageDocument();
+                    _pickAndSendSnap();
                   }),
                   _buildAttachOption(Icons.camera_alt, Colors.pink, 'Camera',
                       () {
@@ -2916,6 +3034,11 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                   _buildAttachOption(Icons.image, Colors.purple, 'Gallery', () {
                     Navigator.pop(context);
                     _pickAndUploadImage(ImageSource.gallery);
+                  }),
+                  _buildAttachOption(Icons.insert_drive_file, Colors.blue,
+                      'Document', () {
+                    Navigator.pop(ctx);
+                    _pickAndStageDocument();
                   }),
                 ],
               ),
@@ -3382,6 +3505,43 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     } catch (e) {
       debugPrint('Error picking/uploading image: $e');
       _showErrorSnackBar('Error: $e');
+    }
+  }
+
+  Future<void> _pickAndSendSnap() async {
+    try {
+      final image = await _imagePicker.pickImage(
+        source: ImageSource.camera,
+        maxWidth: 1600,
+        maxHeight: 1600,
+        imageQuality: 85,
+      );
+      if (image == null) return;
+
+      final path = image.path;
+      const type = 'snap';
+
+      // 1. Immediate optimistic send
+      final messageId = await _sendMessage(
+        text: 'View Once Snap 🔥',
+        messageType: type,
+        metadata: {
+          'local_path': path,
+          'is_burned': false,
+          'view_once': true,
+        },
+      );
+
+      // 2. Perform upload in background
+      _performBackgroundUpload(messageId, path, 'image', '');
+
+      safeSetState(() {
+        _showEmojiPicker = false;
+      });
+      _showSnackBar('Snap sent! 🔥 (Self-destructs after viewing)');
+    } catch (e) {
+      debugPrint('Error capturing snap: $e');
+      _showErrorSnackBar('Error capturing snap: $e');
     }
   }
 

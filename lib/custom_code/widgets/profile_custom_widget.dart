@@ -10,7 +10,6 @@ import 'package:flutter/material.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
-import 'package:pocket_mates_app/main.dart';
 import 'package:pocket_mates_app/custom_code/widgets/subscription_page.dart';
 
 import 'package:flutter/foundation.dart';
@@ -27,6 +26,7 @@ import 'dart:math' as math;
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_studio_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/learning_60day_dashboard.dart';
 
 // Begin custom action code
 
@@ -1875,7 +1875,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                                     );
                                   }
                                 },
-                                activeColor: theme.primary,
+                                activeThumbColor: theme.primary,
                               ),
                             ],
                           ),
@@ -1903,7 +1903,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                                 onChanged: (v) {
                                   safeSetState(() => _isPrivate = v);
                                 },
-                                activeColor: theme.primary,
+                                activeThumbColor: theme.primary,
                               ),
                             ],
                           ),
@@ -2042,7 +2042,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                           Switch(
                             value: !isHidden,
                             onChanged: (value) => saveHideStatus(!value),
-                            activeColor: theme.primary,
+                            activeThumbColor: theme.primary,
                             activeTrackColor: theme.primary.withValues(alpha: 0.3),
                             inactiveThumbColor: Colors.white,
                             inactiveTrackColor: theme.alternate,
@@ -2568,6 +2568,65 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                           ),
                         ],
                       ),
+                    ),
+                  ),
+
+                  // 🎯 60-Day English Journey Theme Banner
+                  Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: const Color(0xFFFFFC00).withValues(alpha: 0.5), width: 1.2),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Text('🎯', style: TextStyle(fontSize: 18)),
+                            const SizedBox(width: 8),
+                            Text(
+                              '60-Day English Palette Evolution',
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFFFFFC00),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Your profile theme unlocks automatically through 20 progressive color milestones as you practice English daily.',
+                          style: GoogleFonts.inter(color: Colors.white70, fontSize: 11),
+                        ),
+                        const SizedBox(height: 10),
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton.icon(
+                            onPressed: () {
+                              if (_currentUserId != null) {
+                                Learning60DayDashboardSheet.show(context, userId: _currentUserId!);
+                              }
+                            },
+                            icon: const Icon(Icons.auto_awesome, size: 14, color: Color(0xFFFFFC00)),
+                            label: Text(
+                              'View 60-Day Dashboard & 20 Palettes',
+                              style: GoogleFonts.outfit(color: const Color(0xFFFFFC00), fontSize: 12, fontWeight: FontWeight.bold),
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              side: const BorderSide(color: Color(0xFFFFFC00)),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
 

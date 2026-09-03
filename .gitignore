@@ -55,3 +55,6 @@ app.*.map.json
 # Firebase Secrets
 firebase-auth.json
 **/firebase-auth.json
+
+# Scrapers & temporary scripts
+speaknow_scraper/

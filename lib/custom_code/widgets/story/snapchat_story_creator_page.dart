@@ -150,6 +150,36 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
         0.0, 0.0, 0.0, 1.0, 0.0,
       ],
     },
+    {
+      'name': 'Cinema 35mm',
+      'color': const Color(0xFF2C3E50).withValues(alpha: 0.1),
+      'matrix': [
+        1.1, 0.0, 0.0, 0.0, -5.0,
+        0.0, 1.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 1.2, 0.0, 15.0,
+        0.0, 0.0, 0.0, 1.0, 0.0,
+      ],
+    },
+    {
+      'name': 'Emerald Glow',
+      'color': Colors.tealAccent.withValues(alpha: 0.12),
+      'matrix': [
+        0.9, 0.0, 0.0, 0.0, 0.0,
+        0.0, 1.25, 0.0, 0.0, 15.0,
+        0.0, 0.0, 1.1, 0.0, 10.0,
+        0.0, 0.0, 0.0, 1.0, 0.0,
+      ],
+    },
+    {
+      'name': 'Lavender Dream',
+      'color': Colors.deepPurpleAccent.withValues(alpha: 0.15),
+      'matrix': [
+        1.15, 0.0, 0.0, 0.0, 20.0,
+        0.0, 0.95, 0.0, 0.0, 0.0,
+        0.0, 0.0, 1.35, 0.0, 25.0,
+        0.0, 0.0, 0.0, 1.0, 0.0,
+      ],
+    },
   ];
 
   // Text Overlay State
@@ -178,6 +208,9 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
   double _uploadProgress = 0.0;
   bool _showFiltersBar = false;
 
+  // Photo Canvas Pan & Zoom Transformation Controller
+  final TransformationController _transformController = TransformationController();
+
   @override
   void initState() {
     super.initState();
@@ -186,12 +219,8 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
       _selectedFile = widget.initialFile;
       _mediaType = widget.initialMediaType ?? 'image';
       _loadFileBytes();
-    } else {
-      // Auto-pick from gallery on start if no initial file
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _pickMedia(ImageSource.gallery);
-      });
     }
+    // Canvas opens instantly with ZERO lag. User can pick image, record video, or use stickers on canvas.
 
     if (widget.sharedContent != null) {
       _captionController.text = widget.sharedContent!;
@@ -250,6 +279,7 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
   void dispose() {
     _textOverlayController.dispose();
     _captionController.dispose();
+    _transformController.dispose();
     super.dispose();
   }
 
@@ -660,20 +690,47 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
       backgroundColor: Colors.black,
       body: Stack(
         children: [
-          // 1. Story Canvas Area
+          // 1. Story Canvas Area with Snapchat-style horizontal swipe to switch filters
           Positioned.fill(
-            child: _imageBytes != null
-                ? ColorFiltered(
-                    colorFilter: colorMatrix != null
-                        ? ColorFilter.matrix(colorMatrix)
-                        : const ColorFilter.mode(Colors.transparent, BlendMode.dst),
-                    child: Image.memory(
-                      _imageBytes!,
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                      height: double.infinity,
-                    ),
-                  )
+            child: GestureDetector(
+              onHorizontalDragEnd: (details) {
+                if (details.primaryVelocity != null && details.primaryVelocity!.abs() > 200) {
+                  if (details.primaryVelocity! < 0) {
+                    // Swipe Left -> Next Filter
+                    setState(() {
+                      _selectedFilterIndex = (_selectedFilterIndex + 1) % _filters.length;
+                    });
+                  } else {
+                    // Swipe Right -> Previous Filter
+                    setState(() {
+                      _selectedFilterIndex = (_selectedFilterIndex - 1 + _filters.length) % _filters.length;
+                    });
+                  }
+                  HapticFeedback.lightImpact();
+                }
+              },
+              child: _imageBytes != null
+                  ? ColorFiltered(
+                      colorFilter: colorMatrix != null
+                          ? ColorFilter.matrix(colorMatrix)
+                          : const ColorFilter.mode(Colors.transparent, BlendMode.dst),
+                      child: InteractiveViewer(
+                        transformationController: _transformController,
+                        minScale: 0.5,
+                        maxScale: 4.0,
+                        panEnabled: true,
+                        scaleEnabled: true,
+                        boundaryMargin: const EdgeInsets.all(150),
+                        child: Center(
+                          child: Image.memory(
+                            _imageBytes!,
+                            fit: BoxFit.contain,
+                            width: double.infinity,
+                            height: double.infinity,
+                          ),
+                        ),
+                      ),
+                    )
                 : Container(
                     decoration: const BoxDecoration(
                       gradient: LinearGradient(
@@ -703,6 +760,7 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
                       ),
                     ),
                   ),
+            ),
           ),
 
           // 2. Placed Stickers Overlay
@@ -801,7 +859,47 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
               ),
             ),
 
-          // 4. Top Header & Snapchat Tool Ribbon (Right Side)
+          // 4. Snapchat-style Active Filter Name HUD Pill
+          if (_selectedFilterIndex != 0)
+            Positioned(
+              top: 100,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.65),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: const Color(0xFFFFFC00).withValues(alpha: 0.6)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.4),
+                        blurRadius: 10,
+                      )
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.auto_awesome, color: Color(0xFFFFFC00), size: 14),
+                      const SizedBox(width: 6),
+                      Text(
+                        _filters[_selectedFilterIndex]['name'],
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+          // 5. Top Header & Snapchat Tool Ribbon (Right Side)
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),

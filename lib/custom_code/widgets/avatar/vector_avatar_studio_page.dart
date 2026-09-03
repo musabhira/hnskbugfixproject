@@ -10,6 +10,9 @@ import 'avatar_sticker_pack_sheet.dart';
 import 'avatar_comic_strip_page.dart';
 import 'avatar_network_service.dart';
 import 'avatar_network_explorer_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:pocket_mates_app/custom_code/widgets/main_profile_widget.dart';
+import 'avatar_dna_service.dart';
 
 class VectorAvatarStudioPage extends StatefulWidget {
   final VectorAvatarConfig? initialConfig;
@@ -31,19 +34,24 @@ class _VectorAvatarStudioPageState extends State<VectorAvatarStudioPage>
   late TabController _tabController;
   bool _isSaving = false;
   bool _isLoading = true;
+  bool _isDnaAvailable = true;
+  bool _isCheckingDna = false;
+  bool _isOwnedByMe = false;
+  String _currentDna = '';
+  String? _claimedByUsername;
   String? _selectedPersonaId;
   String _selectedRoleCategory = 'All';
 
   final List<String> _tabs = [
-    '🦁 Species (300+)',
-    '🌐 Network (Millions+)',
-    '🎭 Roles (50+)',
-    'Face & Skin',
-    'Hairstyle',
-    'Expressions',
-    'Outfits',
-    'Accessories',
-    'Aura',
+    '👑 Species',
+    '🌐 Network',
+    '🎭 Roles',
+    '🎨 Face & Skin',
+    '💇 Hair',
+    '👀 Eyes & Face',
+    '👕 Outfits',
+    '✨ Accessories',
+    '🌟 Aura Glow',
   ];
 
   final List<String> _roleCategories = [
@@ -95,7 +103,46 @@ class _VectorAvatarStudioPageState extends State<VectorAvatarStudioPage>
     } catch (e) {
       debugPrint('Error loading avatar config: $e');
     } finally {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+        _checkDnaAvailability();
+      }
+    }
+  }
+
+  Future<void> _checkDnaAvailability() async {
+    final components = AvatarService().fromVectorConfig(_config);
+    final dna = AvatarService().generateAvatarDNA(components);
+    final user = SupaFlow.client.auth.currentUser;
+    final currentUserId = user?.id ?? '';
+
+    setState(() {
+      _currentDna = dna;
+      _isCheckingDna = true;
+    });
+
+    final isAvail = await AvatarService().checkDNAAvailability(dna);
+    
+    // Check if claimed by current user
+    bool ownedByMe = false;
+    String? owner;
+    if (!isAvail) {
+      final prefs = await SharedPreferences.getInstance();
+      final activeStr = prefs.getString('active_avatar_$currentUserId');
+      if (activeStr != null && activeStr.contains(dna)) {
+        ownedByMe = true;
+      } else {
+        owner = 'another Mate';
+      }
+    }
+
+    if (mounted) {
+      setState(() {
+        _isDnaAvailable = isAvail || ownedByMe;
+        _isOwnedByMe = ownedByMe;
+        _claimedByUsername = owner;
+        _isCheckingDna = false;
+      });
     }
   }
 
@@ -105,6 +152,7 @@ class _VectorAvatarStudioPageState extends State<VectorAvatarStudioPage>
       _selectedPersonaId = persona['id'];
       _config = cfg;
     });
+    _checkDnaAvailability();
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -115,15 +163,39 @@ class _VectorAvatarStudioPageState extends State<VectorAvatarStudioPage>
     );
   }
 
-
   Future<void> _saveAvatar() async {
+    if (!_isDnaAvailable && !_isOwnedByMe) {
+      HapticFeedback.heavyImpact();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '⚠️ This exact Avatar DNA is already claimed by ${_claimedByUsername ?? "another Mate"}! Please change hairstyle, outfit, or traits to create a unique 1-of-1 avatar.',
+            style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+          ),
+          backgroundColor: Colors.redAccent,
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 4),
+        ),
+      );
+      return;
+    }
+
     setState(() => _isSaving = true);
     try {
       final user = SupaFlow.client.auth.currentUser;
       if (user != null) {
-        await SupaFlow.client.from('profile').update({
-          'avatar_config': _config.toMap(),
-        }).eq('user_id', user.id);
+        final components = AvatarService().fromVectorConfig(_config);
+        final avatar = AvatarService().createAvatar(
+          userId: user.id,
+          components: components,
+          configJson: _config.toMap(),
+          customId: _config.mintId,
+        );
+
+        await AvatarService().claimAvatar(
+          userId: user.id,
+          avatar: avatar,
+        );
       }
 
       widget.onAvatarSaved?.call(_config);
@@ -131,8 +203,8 @@ class _VectorAvatarStudioPageState extends State<VectorAvatarStudioPage>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('✨ Avatar saved to your Profile!'),
-            backgroundColor: Colors.green,
+            content: Text('✨ Unique Avatar DNA Claimed & Saved! 🚀'),
+            backgroundColor: Color(0xFFFFFC00),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -220,11 +292,21 @@ class _VectorAvatarStudioPageState extends State<VectorAvatarStudioPage>
               ),
               child: const Icon(Icons.public_rounded, color: Color(0xFF00E5FF), size: 20),
             ),
-            onPressed: () {
-              Navigator.push(
+            onPressed: () async {
+              final res = await Navigator.push<String>(
                 context,
                 MaterialPageRoute(builder: (context) => const AvatarNetworkExplorerPage()),
               );
+              if (res != null && mounted) {
+                setState(() {
+                  _config = _config.copyWith(
+                    artStyle: 'network',
+                    networkImageUrl: res,
+                    imageUrl: res,
+                  );
+                });
+                widget.onAvatarSaved?.call(_config);
+              }
             },
           ),
           // Comic Strip Creator Button
@@ -310,6 +392,7 @@ class _VectorAvatarStudioPageState extends State<VectorAvatarStudioPage>
       _config = minted;
       _selectedPersonaId = null;
     });
+    _checkDnaAvailability();
     HapticFeedback.heavyImpact();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -422,7 +505,10 @@ class _VectorAvatarStudioPageState extends State<VectorAvatarStudioPage>
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Row(
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 4,
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -440,7 +526,6 @@ class _VectorAvatarStudioPageState extends State<VectorAvatarStudioPage>
                         ),
                       ),
                     ),
-                    const SizedBox(width: 6),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                       decoration: BoxDecoration(
@@ -477,9 +562,14 @@ class _VectorAvatarStudioPageState extends State<VectorAvatarStudioPage>
                     fontSize: 11,
                     fontWeight: FontWeight.w500,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 6),
-                Row(
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 6,
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     // NFT Certificate button
                     GestureDetector(
@@ -507,7 +597,6 @@ class _VectorAvatarStudioPageState extends State<VectorAvatarStudioPage>
                         ),
                       ),
                     ),
-                    const SizedBox(width: 8),
                     // Sticker Quick Link
                     GestureDetector(
                       onTap: () => AvatarStickerPackSheet.show(context, _config),
@@ -522,6 +611,92 @@ class _VectorAvatarStudioPageState extends State<VectorAvatarStudioPage>
                       ),
                     ),
                   ],
+                ),
+
+                // 🧬 DNA Uniqueness Availability Status Pill
+                Container(
+                  margin: const EdgeInsets.only(top: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: _isCheckingDna
+                        ? Colors.white.withValues(alpha: 0.05)
+                        : _isOwnedByMe
+                            ? const Color(0xFFFFD700).withValues(alpha: 0.15)
+                            : _isDnaAvailable
+                                ? const Color(0xFF10B981).withValues(alpha: 0.15)
+                                : Colors.redAccent.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: _isCheckingDna
+                          ? Colors.white24
+                          : _isOwnedByMe
+                              ? const Color(0xFFFFD700)
+                              : _isDnaAvailable
+                                  ? const Color(0xFF10B981)
+                                  : Colors.redAccent,
+                      width: 1.2,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        _isCheckingDna
+                            ? Icons.hourglass_top_rounded
+                            : _isOwnedByMe
+                                ? Icons.verified_user_rounded
+                                : _isDnaAvailable
+                                    ? Icons.check_circle_rounded
+                                    : Icons.lock_rounded,
+                        size: 13,
+                        color: _isCheckingDna
+                            ? Colors.white70
+                            : _isOwnedByMe
+                                ? const Color(0xFFFFD700)
+                                : _isDnaAvailable
+                                    ? const Color(0xFF10B981)
+                                    : Colors.redAccent,
+                      ),
+                      const SizedBox(width: 5),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              _isCheckingDna
+                                  ? 'VERIFYING DNA...'
+                                  : _isOwnedByMe
+                                      ? '👑 OWNED BY YOU'
+                                      : _isDnaAvailable
+                                          ? '✨ UNIQUE AVATAR AVAILABLE'
+                                          : '🔒 CLAIMED BY ANOTHER MATE',
+                              style: GoogleFonts.outfit(
+                                color: _isCheckingDna
+                                    ? Colors.white70
+                                    : _isOwnedByMe
+                                        ? const Color(0xFFFFD700)
+                                        : _isDnaAvailable
+                                            ? const Color(0xFF10B981)
+                                            : Colors.redAccent,
+                                fontWeight: FontWeight.w900,
+                                fontSize: 9.5,
+                                letterSpacing: 0.4,
+                              ),
+                            ),
+                            Text(
+                              'DNA: ${_currentDna.isNotEmpty ? _currentDna : "Calculating..."}',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.robotoMono(
+                                color: Colors.white54,
+                                fontSize: 8,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -760,11 +935,21 @@ class _VectorAvatarStudioPageState extends State<VectorAvatarStudioPage>
       children: [
         // Launch Full Explorer Banner
         GestureDetector(
-          onTap: () {
-            Navigator.push(
+          onTap: () async {
+            final res = await Navigator.push<String>(
               context,
               MaterialPageRoute(builder: (context) => const AvatarNetworkExplorerPage()),
             );
+            if (res != null && mounted) {
+              setState(() {
+                _config = _config.copyWith(
+                  artStyle: 'network',
+                  networkImageUrl: res,
+                  imageUrl: res,
+                );
+              });
+              widget.onAvatarSaved?.call(_config);
+            }
           },
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -844,11 +1029,21 @@ class _VectorAvatarStudioPageState extends State<VectorAvatarStudioPage>
             );
 
             return GestureDetector(
-              onTap: () {
-                Navigator.push(
+              onTap: () async {
+                final res = await Navigator.push<String>(
                   context,
                   MaterialPageRoute(builder: (context) => const AvatarNetworkExplorerPage()),
                 );
+                if (res != null && mounted) {
+                  setState(() {
+                    _config = _config.copyWith(
+                      artStyle: 'network',
+                      networkImageUrl: res,
+                      imageUrl: res,
+                    );
+                  });
+                  widget.onAvatarSaved?.call(_config);
+                }
               },
               child: Container(
                 padding: const EdgeInsets.all(8),
@@ -919,8 +1114,8 @@ class _VectorAvatarStudioPageState extends State<VectorAvatarStudioPage>
   }
 
   void _showNftCertificateModal() {
-    final mintId = _config.mintId ?? '#MATE-ORIGINAL';
-    final dna = _config.dnaHash ?? '0x7F2A-91BC-4402';
+    final mintId = _config.mintId ?? _config.computedAvatarId;
+    final dna = _currentDna.isNotEmpty ? _currentDna : _config.computedDna;
     final rarity = _config.rarityTier;
 
     showDialog(
@@ -928,146 +1123,266 @@ class _VectorAvatarStudioPageState extends State<VectorAvatarStudioPage>
       builder: (context) {
         return Dialog(
           backgroundColor: Colors.transparent,
-          insetPadding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF1E202E), Color(0xFF0F1017)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+          child: SingleChildScrollView(
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF1E202E), Color(0xFF0F1017)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(28),
+                border: Border.all(color: const Color(0xFFFFD700), width: 2),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFFFD700).withValues(alpha: 0.3),
+                    blurRadius: 30,
+                    spreadRadius: 2,
+                  ),
+                ],
               ),
-              borderRadius: BorderRadius.circular(28),
-              border: Border.all(color: const Color(0xFFFFD700), width: 2.5),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFFFFD700).withValues(alpha: 0.35),
-                  blurRadius: 30,
-                  spreadRadius: 2,
-                ),
-              ],
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Header
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        const Icon(Icons.verified_rounded, color: Color(0xFFFFD700), size: 22),
-                        const SizedBox(width: 8),
-                        Text(
-                          '1-OF-1 NFT CERTIFICATE',
-                          style: GoogleFonts.outfit(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 1,
-                            fontSize: 14,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Header
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.verified_rounded, color: Color(0xFFFFD700), size: 22),
+                          const SizedBox(width: 8),
+                          Text(
+                            '1-OF-1 NFT CERTIFICATE',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 1,
+                              fontSize: 14,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.close, color: Colors.white54, size: 20),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
+                        ],
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close, color: Colors.white54, size: 20),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
 
-                // Avatar Display
-                Center(
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: const Color(0xFFFFD700), width: 2),
+                  // Avatar Display
+                  Center(
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: const Color(0xFFFFD700), width: 2),
+                      ),
+                      child: VectorAvatarWidget(config: _config, size: 100, showAura: true),
                     ),
-                    child: VectorAvatarWidget(config: _config, size: 110, showAura: true),
                   ),
-                ),
-                const SizedBox(height: 12),
+                  const SizedBox(height: 10),
 
-                // Mint ID and Rarity
-                Text(
-                  mintId,
-                  style: GoogleFonts.outfit(
-                    color: const Color(0xFFFFD700),
-                    fontWeight: FontWeight.w900,
-                    fontSize: 22,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  margin: const EdgeInsets.only(top: 4),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(colors: [Color(0xFFFF007A), Color(0xFF7928CA)]),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    '🌟 $rarity ORIGINAL',
+                  // Mint ID and Rarity
+                  Text(
+                    mintId,
                     style: GoogleFonts.outfit(
-                      color: Colors.white,
+                      color: const Color(0xFFFFD700),
                       fontWeight: FontWeight.w900,
-                      fontSize: 11,
+                      fontSize: 20,
                       letterSpacing: 0.5,
                     ),
                   ),
-                ),
-                const SizedBox(height: 16),
-
-                // Cryptographic Proof Table
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.black54,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.white12),
-                  ),
-                  child: Column(
-                    children: [
-                      _buildCertificateRow('DNA Hash', dna),
-                      const Divider(color: Colors.white12, height: 12),
-                      _buildCertificateRow('Species', _config.species.toUpperCase()),
-                      const Divider(color: Colors.white12, height: 12),
-                      _buildCertificateRow('Art Style', _config.artStyle.toUpperCase()),
-                      const Divider(color: Colors.white12, height: 12),
-                      _buildCertificateRow('Aura Style', _config.auraStyle.toUpperCase()),
-                      const Divider(color: Colors.white12, height: 12),
-                      _buildCertificateRow('Ownership', '🔒 1-of-1 Exclusive Locked'),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 18),
-
-                // Claim & Save Button
-                SizedBox(
-                  width: double.infinity,
-                  height: 46,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFFFD700),
-                      foregroundColor: Colors.black,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                      elevation: 0,
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                    margin: const EdgeInsets.only(top: 4),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(colors: [Color(0xFFFF007A), Color(0xFF7928CA)]),
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    onPressed: () {
-                      Navigator.pop(context);
-                      _saveAvatar();
-                    },
                     child: Text(
-                      'Claim & Lock as My 1-of-1 Avatar',
+                      '🌟 $rarity 1-OF-1',
                       style: GoogleFonts.outfit(
+                        color: Colors.white,
                         fontWeight: FontWeight.w900,
-                        fontSize: 14,
+                        fontSize: 10,
+                        letterSpacing: 0.5,
                       ),
                     ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 14),
+
+                  // Cryptographic Proof Table
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.black54,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.white12),
+                    ),
+                    child: Column(
+                      children: [
+                        _buildCertificateRow('DNA Sequence', dna),
+                        const Divider(color: Colors.white12, height: 10),
+                        _buildCertificateRow('Species', _config.species.toUpperCase()),
+                        const Divider(color: Colors.white12, height: 10),
+                        _buildCertificateRow('Art Style', _config.artStyle.toUpperCase()),
+                        const Divider(color: Colors.white12, height: 10),
+                        _buildCertificateRow('Aura Glow', _config.auraStyle.toUpperCase()),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Ownership & Provenance Card
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF161822),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: _isOwnedByMe
+                            ? const Color(0xFFFFD700).withValues(alpha: 0.5)
+                            : _isDnaAvailable
+                                ? const Color(0xFF10B981).withValues(alpha: 0.5)
+                                : Colors.redAccent.withValues(alpha: 0.5),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              _isOwnedByMe
+                                  ? Icons.verified_user_rounded
+                                  : _isDnaAvailable
+                                      ? Icons.check_circle_outline
+                                      : Icons.lock_outline_rounded,
+                              size: 16,
+                              color: _isOwnedByMe
+                                  ? const Color(0xFFFFD700)
+                                  : _isDnaAvailable
+                                      ? const Color(0xFF10B981)
+                                      : Colors.redAccent,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'OWNERSHIP STATUS',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 11,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        if (_isOwnedByMe) ...[
+                          Text(
+                            '👑 Claimed & Owned by You',
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFFFFD700),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
+                          ),
+                          Text(
+                            'This 1-of-1 Avatar identity is locked to your account.',
+                            style: GoogleFonts.inter(color: Colors.white60, fontSize: 11),
+                          ),
+                        ] else if (_isDnaAvailable) ...[
+                          Text(
+                            '✨ Unclaimed 1-of-1 Genesis Avatar',
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFF10B981),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
+                          ),
+                          Text(
+                            'Ready to claim! No other Mate owns this exact DNA combination.',
+                            style: GoogleFonts.inter(color: Colors.white60, fontSize: 11),
+                          ),
+                        ] else ...[
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  '🔒 Claimed by @${_claimedByUsername ?? "another Mate"}',
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.redAccent,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ),
+                              if (_config.ownerId != null && _config.ownerId!.isNotEmpty)
+                                TextButton.icon(
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => MainProfileWidget(userId: _config.ownerId!),
+                                      ),
+                                    );
+                                  },
+                                  icon: const Icon(Icons.person, size: 14, color: Color(0xFFFFFC00)),
+                                  label: Text(
+                                    'View Profile',
+                                    style: GoogleFonts.outfit(
+                                      color: const Color(0xFFFFFC00),
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Claim & Save Button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 46,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: (!_isDnaAvailable && !_isOwnedByMe)
+                            ? const Color(0xFF374151)
+                            : const Color(0xFFFFD700),
+                        foregroundColor: Colors.black,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        elevation: 0,
+                      ),
+                      onPressed: (!_isDnaAvailable && !_isOwnedByMe)
+                          ? null
+                          : () {
+                              Navigator.pop(context);
+                              _saveAvatar();
+                            },
+                      child: Text(
+                        (!_isDnaAvailable && !_isOwnedByMe)
+                            ? 'DNA Taken 🔒 Choose Different Traits'
+                            : 'Claim & Lock as My 1-of-1 Avatar 🚀',
+                        style: GoogleFonts.outfit(
+                          fontWeight: FontWeight.w900,
+                          fontSize: 13,
+                          color: (!_isDnaAvailable && !_isOwnedByMe) ? Colors.white54 : Colors.black,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         );
@@ -1083,12 +1398,18 @@ class _VectorAvatarStudioPageState extends State<VectorAvatarStudioPage>
           label,
           style: GoogleFonts.inter(color: Colors.white60, fontSize: 11, fontWeight: FontWeight.w500),
         ),
-        Text(
-          value,
-          style: GoogleFonts.outfit(
-            color: Colors.white,
-            fontSize: 11,
-            fontWeight: FontWeight.bold,
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            value,
+            textAlign: TextAlign.right,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.outfit(
+              color: Colors.white,
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
       ],
@@ -1686,15 +2007,35 @@ class _VectorAvatarStudioPageState extends State<VectorAvatarStudioPage>
               ),
             ),
 
-            // Save Button
+            // Save / Claim 1-of-1 Button
             Expanded(
               child: SizedBox(
                 height: 48,
                 child: ElevatedButton(
-                  onPressed: _isSaving ? null : _saveAvatar,
+                  onPressed: _isSaving
+                      ? null
+                      : (!_isDnaAvailable && !_isOwnedByMe)
+                          ? () {
+                              HapticFeedback.vibrate();
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    '⚠️ This exact Avatar DNA is already claimed by ${_claimedByUsername ?? "another Mate"}! Please change hairstyle, outfit, or traits to create a unique 1-of-1 avatar.',
+                                    style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+                                  ),
+                                  backgroundColor: Colors.redAccent,
+                                  behavior: SnackBarBehavior.floating,
+                                ),
+                              );
+                            }
+                          : _saveAvatar,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFFFFC00),
-                    foregroundColor: Colors.black,
+                    backgroundColor: (!_isDnaAvailable && !_isOwnedByMe)
+                        ? const Color(0xFF2E3245)
+                        : const Color(0xFFFFFC00),
+                    foregroundColor: (!_isDnaAvailable && !_isOwnedByMe)
+                        ? Colors.white54
+                        : Colors.black,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                     elevation: 4,
                   ),
@@ -1706,15 +2047,29 @@ class _VectorAvatarStudioPageState extends State<VectorAvatarStudioPage>
                         )
                       : Row(
                           mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.check_circle_outline, size: 19, color: Colors.black),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Set as Pocket Mate Avatar',
-                              style: GoogleFonts.outfit(
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black,
+                            Icon(
+                              (!_isDnaAvailable && !_isOwnedByMe)
+                                  ? Icons.lock_outline_rounded
+                                  : Icons.check_circle_outline,
+                              size: 18,
+                              color: (!_isDnaAvailable && !_isOwnedByMe) ? Colors.white54 : Colors.black,
+                            ),
+                            const SizedBox(width: 6),
+                            Flexible(
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Text(
+                                  (!_isDnaAvailable && !_isOwnedByMe)
+                                      ? 'DNA ALREADY CLAIMED 🔒'
+                                      : 'CLAIM & SET 1-OF-1 AVATAR 🚀',
+                                  style: GoogleFonts.outfit(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w900,
+                                    color: (!_isDnaAvailable && !_isOwnedByMe) ? Colors.white70 : Colors.black,
+                                  ),
+                                ),
                               ),
                             ),
                           ],

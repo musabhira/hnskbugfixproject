@@ -407,10 +407,21 @@ class Conversations extends _$Conversations {
       final pinnedIds =
           prefs.getStringList('pinned_conversations_$userId') ?? [];
 
-      // Load Favorited Tools
-      final favoritedToolsJson =
-          prefs.getString('favorited_tools_$userId') ?? '[]';
-      final favoritedTools = jsonDecode(favoritedToolsJson) as List;
+      // Load Favorited Tools (Initialize with 4 Default Starter Tools for new users)
+      final favoritedToolsRaw = prefs.getString('favorited_tools_$userId');
+      List favoritedTools;
+      if (favoritedToolsRaw == null) {
+        favoritedTools = [
+          {'title': '90-Day English Tasks', 'timeAdded': DateTime.now().toIso8601String()},
+          {'title': '1-on-1 English Match', 'timeAdded': DateTime.now().subtract(const Duration(minutes: 1)).toIso8601String()},
+          {'title': 'Voice Speaking Sprint', 'timeAdded': DateTime.now().subtract(const Duration(minutes: 2)).toIso8601String()},
+          {'title': 'Diagrams', 'timeAdded': DateTime.now().subtract(const Duration(minutes: 3)).toIso8601String()},
+        ];
+        await prefs.setString('favorited_tools_$userId', jsonEncode(favoritedTools));
+      } else {
+        favoritedTools = jsonDecode(favoritedToolsRaw) as List;
+      }
+
       final toolChats = favoritedTools.map((t) {
         final timeAddedStr = t['timeAdded'];
         final timeAdded = timeAddedStr != null
@@ -616,7 +627,10 @@ class Conversations extends _$Conversations {
 
       final List<ChatConversation?> conversations =
           await Future.wait(conversationFutures);
-      return conversations.whereType<ChatConversation>().toList();
+      return conversations
+          .whereType<ChatConversation>()
+          .where((c) => c.name.toLowerCase() != 'english learning group' && c.name.toLowerCase() != 'english learning')
+          .toList();
     } catch (e) {
       rethrow;
     }
