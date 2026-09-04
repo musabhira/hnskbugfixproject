@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'jackie_chan_talisman_service.dart';
 import 'vector_avatar_config.dart';
 
 /// Multi-Style & Profession Avatar Painter
@@ -72,6 +73,11 @@ class VectorAvatarPainter extends CustomPainter {
       );
     } else {
       canvas.drawCircle(center, radius - size.width * 0.015, borderPaint);
+    }
+
+    // 🔮 Jackie Chan Talisman Floating Rune Stone!
+    if (config.talismanId != null && config.talismanId!.isNotEmpty) {
+      _paintEquippedTalisman(canvas, size);
     }
   }
 
@@ -1087,7 +1093,243 @@ class VectorAvatarPainter extends CustomPainter {
       flamePath.quadraticBezierTo(size.width * 0.65, size.height * 0.08, size.width * 0.60, size.height * 0.24);
       flamePath.close();
       canvas.drawPath(flamePath, Paint()..color = const Color(0xFFEF4444));
+    } else if (config.species == 'armored_rhino') {
+      // 🦏 Armored Rhino Forehead Horn
+      final horn = Path();
+      horn.moveTo(size.width * 0.46, size.height * 0.36);
+      horn.lineTo(size.width * 0.50, size.height * 0.16);
+      horn.lineTo(size.width * 0.54, size.height * 0.36);
+      horn.close();
+      canvas.drawPath(horn, Paint()..color = const Color(0xFFCBD5E1));
+    } else if (config.species == 'thunder_bison') {
+      // 🦬 Thunder Bison / Bull Curved Horns
+      final leftHorn = Path()
+        ..moveTo(size.width * 0.32, size.height * 0.28)
+        ..quadraticBezierTo(size.width * 0.14, size.height * 0.18, size.width * 0.16, size.height * 0.08)
+        ..lineTo(size.width * 0.22, size.height * 0.14)
+        ..quadraticBezierTo(size.width * 0.28, size.height * 0.22, size.width * 0.38, size.height * 0.26)
+        ..close();
+      canvas.drawPath(leftHorn, Paint()..color = const Color(0xFFF59E0B));
+      final rightHorn = Path()
+        ..moveTo(size.width * 0.68, size.height * 0.28)
+        ..quadraticBezierTo(size.width * 0.86, size.height * 0.18, size.width * 0.84, size.height * 0.08)
+        ..lineTo(size.width * 0.78, size.height * 0.14)
+        ..quadraticBezierTo(size.width * 0.72, size.height * 0.22, size.width * 0.62, size.height * 0.26)
+        ..close();
+      canvas.drawPath(rightHorn, Paint()..color = const Color(0xFFF59E0B));
+    } else if (config.species == 'mystic_croc') {
+      // 🐊 Mystic Croc Scutes / Spikes
+      for (int i = 0; i < 3; i++) {
+        final spikeLeft = Path()
+          ..moveTo(size.width * 0.20, size.height * (0.35 + i * 0.08))
+          ..lineTo(size.width * 0.12, size.height * (0.32 + i * 0.08))
+          ..lineTo(size.width * 0.22, size.height * (0.39 + i * 0.08))
+          ..close();
+        canvas.drawPath(spikeLeft, Paint()..color = const Color(0xFF047857));
+        final spikeRight = Path()
+          ..moveTo(size.width * 0.80, size.height * (0.35 + i * 0.08))
+          ..lineTo(size.width * 0.88, size.height * (0.32 + i * 0.08))
+          ..lineTo(size.width * 0.78, size.height * (0.39 + i * 0.08))
+          ..close();
+        canvas.drawPath(spikeRight, Paint()..color = const Color(0xFF047857));
+      }
+    } else if (config.species == 'abyssal_shark') {
+      // 🦈 Abyssal Shark Dorsal Fin
+      final fin = Path()
+        ..moveTo(size.width * 0.44, size.height * 0.25)
+        ..quadraticBezierTo(size.width * 0.48, size.height * 0.06, size.width * 0.54, size.height * 0.04)
+        ..quadraticBezierTo(size.width * 0.50, size.height * 0.14, size.width * 0.56, size.height * 0.25)
+        ..close();
+      canvas.drawPath(fin, Paint()..color = const Color(0xFF0284C7));
+    } else if (config.species == 'wisdom_owl') {
+      // 🦉 Wisdom Owl Feather Tufts
+      final leftTuft = Path()
+        ..moveTo(size.width * 0.32, size.height * 0.28)
+        ..lineTo(size.width * 0.22, size.height * 0.12)
+        ..lineTo(size.width * 0.38, size.height * 0.22)
+        ..close();
+      canvas.drawPath(leftTuft, Paint()..color = const Color(0xFF92400E));
+      final rightTuft = Path()
+        ..moveTo(size.width * 0.68, size.height * 0.28)
+        ..lineTo(size.width * 0.78, size.height * 0.12)
+        ..lineTo(size.width * 0.62, size.height * 0.22)
+        ..close();
+      canvas.drawPath(rightTuft, Paint()..color = const Color(0xFF92400E));
+    } else if (config.species == 'astral_stag') {
+      // 🦌 Astral Stag Antlers
+      final antlerPaint = Paint()..color = const Color(0xFFD97706)..strokeWidth = 3.5..strokeCap = StrokeCap.round;
+      canvas.drawLine(Offset(size.width * 0.36, size.height * 0.24), Offset(size.width * 0.24, size.height * 0.08), antlerPaint);
+      canvas.drawLine(Offset(size.width * 0.28, size.height * 0.15), Offset(size.width * 0.18, size.height * 0.14), antlerPaint);
+      canvas.drawLine(Offset(size.width * 0.64, size.height * 0.24), Offset(size.width * 0.76, size.height * 0.08), antlerPaint);
+      canvas.drawLine(Offset(size.width * 0.72, size.height * 0.15), Offset(size.width * 0.82, size.height * 0.14), antlerPaint);
+    } else if (config.species == 'silverback_titan') {
+      // 🦍 Titan Brow Ridge & Heavy Ears
+      canvas.drawOval(Rect.fromCenter(center: Offset(size.width * 0.5, size.height * 0.28), width: size.width * 0.44, height: size.height * 0.10), Paint()..color = const Color(0xFF1E293B));
+      canvas.drawCircle(Offset(size.width * 0.22, size.height * 0.46), size.width * 0.075, Paint()..color = const Color(0xFF1E293B));
+      canvas.drawCircle(Offset(size.width * 0.78, size.height * 0.46), size.width * 0.075, Paint()..color = const Color(0xFF1E293B));
+    } else if (config.species == 'imperial_cobra') {
+      // 🐍 Imperial Cobra Hood
+      final hoodPaint = Paint()..color = const Color(0xFF047857).withValues(alpha: 0.5);
+      canvas.drawOval(Rect.fromCenter(center: Offset(size.width * 0.5, size.height * 0.44), width: size.width * 0.72, height: size.height * 0.42), hoodPaint);
+    } else if (config.species == 'pegasus_stallion') {
+      // 🐎 Pegasus Stallion Ears
+      canvas.drawOval(Rect.fromCenter(center: Offset(size.width * 0.32, size.height * 0.18), width: size.width * 0.08, height: size.height * 0.20), Paint()..color = const Color(0xFFE2E8F0));
+      canvas.drawOval(Rect.fromCenter(center: Offset(size.width * 0.68, size.height * 0.18), width: size.width * 0.08, height: size.height * 0.20), Paint()..color = const Color(0xFFE2E8F0));
+    } else if (config.species == 'royal_peacock') {
+      // 🦚 Royal Peacock Plumage Fan
+      for (int i = 0; i < 5; i++) {
+        final angle = (i * 20 - 40) * math.pi / 180;
+        final px = size.width * 0.5 + size.width * 0.35 * math.sin(angle);
+        final py = size.height * 0.25 - size.height * 0.22 * math.cos(angle);
+        canvas.drawLine(Offset(size.width * 0.5, size.height * 0.25), Offset(px, py), Paint()..color = const Color(0xFF0284C7)..strokeWidth = 2.5);
+        canvas.drawCircle(Offset(px, py), 4.5, Paint()..color = const Color(0xFF10B981));
+      }
+    } else if (config.species == 'combat_kangaroo') {
+      // 🦘 Combat Kangaroo Ears
+      canvas.drawOval(Rect.fromCenter(center: Offset(size.width * 0.30, size.height * 0.14), width: size.width * 0.09, height: size.height * 0.24), Paint()..color = const Color(0xFFD97706));
+      canvas.drawOval(Rect.fromCenter(center: Offset(size.width * 0.70, size.height * 0.14), width: size.width * 0.09, height: size.height * 0.24), Paint()..color = const Color(0xFFD97706));
+    } else if (config.species == 'nightfang_bat') {
+      // 🦇 Nightfang Bat Pointed Ears
+      final leftBatEar = Path()
+        ..moveTo(size.width * 0.28, size.height * 0.30)
+        ..lineTo(size.width * 0.18, size.height * 0.10)
+        ..lineTo(size.width * 0.38, size.height * 0.22)
+        ..close();
+      canvas.drawPath(leftBatEar, Paint()..color = const Color(0xFF1E1E24));
+      final rightBatEar = Path()
+        ..moveTo(size.width * 0.72, size.height * 0.30)
+        ..lineTo(size.width * 0.82, size.height * 0.10)
+        ..lineTo(size.width * 0.62, size.height * 0.22)
+        ..close();
+      canvas.drawPath(rightBatEar, Paint()..color = const Color(0xFF1E1E24));
+    } else if (config.species == 'zen_sloth') {
+      // 🦥 Zen Sloth Eye Patches
+      canvas.drawOval(Rect.fromCenter(center: Offset(size.width * 0.37, size.height * 0.42), width: size.width * 0.12, height: size.height * 0.08), Paint()..color = const Color(0xFF78350F).withValues(alpha: 0.4));
+      canvas.drawOval(Rect.fromCenter(center: Offset(size.width * 0.63, size.height * 0.42), width: size.width * 0.12, height: size.height * 0.08), Paint()..color = const Color(0xFF78350F).withValues(alpha: 0.4));
+    } else if (config.species == 'celestial_hound') {
+      // 🐕 Celestial Hound Ears
+      canvas.drawOval(Rect.fromCenter(center: Offset(size.width * 0.22, size.height * 0.38), width: size.width * 0.12, height: size.height * 0.22), Paint()..color = const Color(0xFFF59E0B));
+      canvas.drawOval(Rect.fromCenter(center: Offset(size.width * 0.78, size.height * 0.38), width: size.width * 0.12, height: size.height * 0.22), Paint()..color = const Color(0xFFF59E0B));
+    } else if (config.species == 'astral_rabbit') {
+      // 🐇 Astral Rabbit Long Ears
+      canvas.drawOval(Rect.fromCenter(center: Offset(size.width * 0.34, size.height * 0.12), width: size.width * 0.08, height: size.height * 0.28), Paint()..color = const Color(0xFFFFFFFF));
+      canvas.drawOval(Rect.fromCenter(center: Offset(size.width * 0.34, size.height * 0.12), width: size.width * 0.04, height: size.height * 0.20), Paint()..color = const Color(0xFFFF80AB));
+      canvas.drawOval(Rect.fromCenter(center: Offset(size.width * 0.66, size.height * 0.12), width: size.width * 0.08, height: size.height * 0.28), Paint()..color = const Color(0xFFFFFFFF));
+      canvas.drawOval(Rect.fromCenter(center: Offset(size.width * 0.66, size.height * 0.12), width: size.width * 0.04, height: size.height * 0.20), Paint()..color = const Color(0xFFFF80AB));
+    } else if (config.species == 'abyssal_kraken') {
+      // 🐙 Abyssal Kraken Crown Tentacles
+      for (int i = 0; i < 4; i++) {
+        final tx = size.width * (0.28 + i * 0.14);
+        final tentacle = Path()
+          ..moveTo(tx - 6, size.height * 0.26)
+          ..quadraticBezierTo(tx + (i % 2 == 0 ? 8 : -8), size.height * 0.10, tx, size.height * 0.04)
+          ..lineTo(tx + 4, size.height * 0.06)
+          ..quadraticBezierTo(tx + (i % 2 == 0 ? 12 : -4), size.height * 0.14, tx + 6, size.height * 0.26)
+          ..close();
+        canvas.drawPath(tentacle, Paint()..color = const Color(0xFF831843));
+      }
     }
+  }
+
+  // ==========================================
+  // 🔮 JACKIE CHAN 12 ZODIAC TALISMAN STONE (മാന്ത്രിക കല്ല്)
+  // ==========================================
+  void _paintEquippedTalisman(Canvas canvas, Size size) {
+    final talismanId = config.talismanId;
+    if (talismanId == null) return;
+
+    final talisman = kJackieChanTalismans.firstWhere(
+      (t) => t.id == talismanId,
+      orElse: () => kJackieChanTalismans.first,
+    );
+
+    // Floating position at bottom-right corner of avatar frame
+    final center = Offset(size.width * 0.80, size.height * 0.80);
+    final radius = size.width * 0.16;
+
+    // 1. Mystical pulsing glow aura
+    final glowPaint = Paint()
+      ..color = talisman.glowColor.withValues(alpha: 0.55)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 7);
+    canvas.drawCircle(center, radius + 3, glowPaint);
+
+    // 2. Canonical 8-sided octagonal talisman shape
+    final octPath = Path();
+    const double angleStep = math.pi / 4; // 45 degrees
+    const double initialAngle = -math.pi / 8; // flat top/bottom
+    for (int i = 0; i < 8; i++) {
+      final a = initialAngle + i * angleStep;
+      final x = center.dx + radius * math.cos(a);
+      final y = center.dy + radius * math.sin(a);
+      if (i == 0) {
+        octPath.moveTo(x, y);
+      } else {
+        octPath.lineTo(x, y);
+      }
+    }
+    octPath.close();
+
+    // 3. Ancient textured stone body
+    final stoneGradient = RadialGradient(
+      colors: [
+        const Color(0xFFE2E8F0),
+        talisman.stoneColor,
+        const Color(0xFF1E293B),
+      ],
+      stops: const [0.1, 0.65, 1.0],
+    );
+    final stonePaint = Paint()
+      ..shader = stoneGradient.createShader(Rect.fromCircle(center: center, radius: radius));
+    canvas.drawPath(octPath, stonePaint);
+
+    // 4. Inner beveled octagonal border
+    final innerPath = Path();
+    final innerRadius = radius * 0.82;
+    for (int i = 0; i < 8; i++) {
+      final a = initialAngle + i * angleStep;
+      final x = center.dx + innerRadius * math.cos(a);
+      final y = center.dy + innerRadius * math.sin(a);
+      if (i == 0) {
+        innerPath.moveTo(x, y);
+      } else {
+        innerPath.lineTo(x, y);
+      }
+    }
+    innerPath.close();
+    final bevelPaint = Paint()
+      ..color = talisman.glowColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.4;
+    canvas.drawPath(innerPath, bevelPaint);
+
+    // 5. Carved Chinese Zodiac Glyph in the center
+    final textSpan = TextSpan(
+      text: talisman.runeSymbol,
+      style: TextStyle(
+        color: Colors.white,
+        fontSize: radius * 0.95,
+        fontWeight: FontWeight.w900,
+        shadows: [
+          Shadow(
+            color: talisman.glowColor,
+            blurRadius: 6,
+          ),
+          const Shadow(
+            color: Colors.black,
+            blurRadius: 3,
+          ),
+        ],
+      ),
+    );
+    final textPainter = TextPainter(
+      text: textSpan,
+      textDirection: TextDirection.ltr,
+    )..layout();
+
+    textPainter.paint(
+      canvas,
+      Offset(center.dx - textPainter.width / 2, center.dy - textPainter.height / 2),
+    );
   }
 
   // ==========================================

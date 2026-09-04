@@ -20,6 +20,7 @@ import 'package:pocket_mates_app/custom_code/widgets/ai_prompt_service.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/nft_trading_card_dialog.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/jackie_chan_talisman_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/flame_english_house_game.dart';
 
 class MainProfileWidget extends StatefulWidget {
@@ -85,12 +86,13 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   // Avatar & State
   bool _showAvatarMode = true;
   bool _isPublicProfileView = false;
+  String? _equippedTalismanId;
 
   VectorAvatarConfig _getAvatarConfig() {
     final day = (_profileData?['learning_day'] as num?)?.toInt() ?? 1;
     // When in My Account / My Pocket view, show the systematic stage-evolved avatar
     if (!_isPublicProfileView) {
-      return VectorAvatarConfig.getEvolutionAvatarForStage(day);
+      return VectorAvatarConfig.getEvolutionAvatarForStage(day, talismanId: _equippedTalismanId);
     }
     // When in Public Profile view, show custom configured avatar if available
     if (_profileData != null && _profileData!['avatar_config'] != null) {
@@ -99,7 +101,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         return VectorAvatarConfig.fromMap(map);
       } catch (_) {}
     }
-    return VectorAvatarConfig.getEvolutionAvatarForStage(day);
+    return VectorAvatarConfig.getEvolutionAvatarForStage(day, talismanId: _equippedTalismanId);
   }
 
   String get userId {
@@ -148,6 +150,18 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     _publicTabController.addListener(() { if (mounted) setState(() {}); });
     _loadInitialData(); // Instant load strategy
     _fetchThreads();
+    _loadEquippedTalisman();
+  }
+
+  Future<void> _loadEquippedTalisman() async {
+    try {
+      final talisman = await JackieChanTalismanService.getEquippedTalisman();
+      if (mounted) {
+        setState(() {
+          _equippedTalismanId = talisman.id;
+        });
+      }
+    } catch (_) {}
   }
 
   void _setProfileViewMode(bool isPublic) {
@@ -1176,6 +1190,51 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                         ],
                       ),
                     ),
+                    GestureDetector(
+                      onTap: () async {
+                        HapticFeedback.mediumImpact();
+                        await JackieChanTalismanVaultModal.show(context, currentDay: day);
+                        final talisman = await JackieChanTalismanService.getEquippedTalisman();
+                        if (mounted) setState(() => _equippedTalismanId = talisman.id);
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFFDC2626), Color(0xFFD97706)],
+                          ),
+                          borderRadius: BorderRadius.circular(10),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFF59E0B).withValues(alpha: 0.4),
+                              blurRadius: 6,
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              kJackieChanTalismans.firstWhere(
+                                (t) => t.id == (_equippedTalismanId ?? 'rabbit'),
+                                orElse: () => kJackieChanTalismans.first,
+                              ).emoji,
+                              style: const TextStyle(fontSize: 13),
+                            ),
+                            const SizedBox(width: 4),
+                            const Text(
+                              'മാന്ത്രിക കല്ല്',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                       decoration: BoxDecoration(
@@ -1807,6 +1866,40 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                           color: dividerColor,
                           child: Icon(Icons.person, size: size * 0.45, color: textColor.withValues(alpha: 0.5)),
                         ),
+            ),
+          ),
+          Positioned(
+            left: -2,
+            bottom: -2,
+            child: GestureDetector(
+              onTap: () async {
+                HapticFeedback.mediumImpact();
+                final currentDay = (_profileData?['learning_day'] as num?)?.toInt() ?? 1;
+                await JackieChanTalismanVaultModal.show(context, currentDay: currentDay);
+                final talisman = await JackieChanTalismanService.getEquippedTalisman();
+                if (mounted) setState(() => _equippedTalismanId = talisman.id);
+              },
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0F172A),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: const Color(0xFFF59E0B), width: 1.5),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFF59E0B).withValues(alpha: 0.5),
+                      blurRadius: 6,
+                    ),
+                  ],
+                ),
+                child: Text(
+                  kJackieChanTalismans.firstWhere(
+                    (t) => t.id == (_equippedTalismanId ?? 'rabbit'),
+                    orElse: () => kJackieChanTalismans.first,
+                  ).emoji,
+                  style: const TextStyle(fontSize: 12),
+                ),
+              ),
             ),
           ),
           Positioned(
