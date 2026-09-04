@@ -9,8 +9,8 @@ import 'package:pocket_mates_app/custom_code/widgets/english_match/stage_peer_ma
 import 'package:pocket_mates_app/custom_code/widgets/english_learning_hub_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
-import 'package:pocket_mates_app/custom_code/widgets/avatar/nft_trading_card_dialog.dart';
-import 'package:lottie/lottie.dart';
+import 'pocket_battle_arena_page.dart';
+import 'pocket_world_street_page.dart';
 
 /// 🎮 90-Day Full English Transformation Gamified Adventure Map
 /// Super Mario World / Candy Crush / Duolingo style snaking level progression trail (Days 1–90)
@@ -804,54 +804,96 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                 // 2. Sticky Glassmorphism Top HUD (Without Back button on tab navigation!)
                 _buildTopHUD(prog),
 
-                // 3. Floating Target "Jump to Today" Action Button with Cheering Mascot (As requested by user: ഡിങ്കു കുടുക്കുക ഡിങ്കു കുടുക്കുക)
+                // 3. ⚔️ Floating Action Buttons (Attack Arena & Day Target)
+                // Left: ⚔️ Attack / 10 Games Arena Launcher
                 Positioned(
-                  right: 18,
+                  left: 18,
                   bottom: 24,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      // 🎬 Cheering Animated Mascot perched gracefully beside/above the target button
-                      GestureDetector(
-                        onTap: () {
-                          HapticFeedback.lightImpact();
-                          _scrollToDay(prog.currentDay, animate: true);
-                        },
-                        child: Container(
-                          width: 82,
-                          height: 82,
-                          margin: const EdgeInsets.only(bottom: 2, right: 12),
-                          child: Lottie.asset(
-                            'assets/rive_animations/target_mascot.json',
-                            fit: BoxFit.contain,
-                            errorBuilder: (ctx, err, stack) => Lottie.network(
-                              'https://lottie.host/5df1b073-5921-48a5-811d-a158119c2228/mmYtXIDbVr.lottie',
-                              fit: BoxFit.contain,
+                  child: FloatingActionButton.extended(
+                    heroTag: 'target_page_attack_button',
+                    onPressed: () {
+                      HapticFeedback.heavyImpact();
+                      final rival = PocketNeighbor(
+                        id: 'rival_fortress',
+                        name: 'Lord Sterling',
+                        day: prog.currentDay,
+                        streak: prog.streak + 3,
+                        rank: 'Rival Fortress',
+                        paletteId: 'regal_amethyst',
+                        statusMessage: 'Can you breach my English gates?',
+                        hasActiveShield: true,
+                      );
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => PocketBattleArenaPage(
+                            neighbor: rival,
+                            userDay: prog.currentDay,
+                            userStreak: prog.streak,
+                          ),
+                        ),
+                      );
+                    },
+                    backgroundColor: const Color(0xFFDC2626),
+                    elevation: 8,
+                    icon: const Text('⚔️', style: TextStyle(fontSize: 18)),
+                    label: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'ATTACK',
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 13,
+                            letterSpacing: 0.8,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.45),
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: const Color(0xFFFFD700), width: 0.8),
+                          ),
+                          child: const Text(
+                            '10 GAMES',
+                            style: TextStyle(
+                              color: Color(0xFFFFD700),
+                              fontWeight: FontWeight.w900,
+                              fontSize: 9.5,
                             ),
                           ),
                         ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // Right: 🎯 Jump to Today Button (Clean, no broken Lottie)
+                Positioned(
+                  right: 18,
+                  bottom: 24,
+                  child: FloatingActionButton.extended(
+                    heroTag: 'target_page_jump_today_button',
+                    onPressed: () {
+                      HapticFeedback.mediumImpact();
+                      _scrollToDay(prog.currentDay, animate: true);
+                    },
+                    backgroundColor: const Color(0xFFFFFC00),
+                    elevation: 6,
+                    icon: const Icon(Icons.gps_fixed_rounded,
+                        color: Colors.black, size: 20),
+                    label: Text(
+                      'DAY ${prog.currentDay}',
+                      style: GoogleFonts.outfit(
+                        color: Colors.black,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 13,
+                        letterSpacing: 0.5,
                       ),
-                      FloatingActionButton.extended(
-                        onPressed: () {
-                          HapticFeedback.mediumImpact();
-                          _scrollToDay(prog.currentDay, animate: true);
-                        },
-                        backgroundColor: const Color(0xFFFFFC00),
-                        elevation: 6,
-                        icon: const Icon(Icons.gps_fixed_rounded,
-                            color: Colors.black, size: 20),
-                        label: Text(
-                          'DAY ${prog.currentDay}',
-                          style: GoogleFonts.outfit(
-                            color: Colors.black,
-                            fontWeight: FontWeight.w900,
-                            fontSize: 13,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
               ],

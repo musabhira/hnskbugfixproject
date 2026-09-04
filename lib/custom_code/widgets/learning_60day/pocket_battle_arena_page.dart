@@ -8,7 +8,7 @@ import '../avatar/vector_avatar_config.dart';
 import '../avatar/vector_avatar_widget.dart';
 import 'pocket_world_street_page.dart';
 
-/// 🎮 The 6 High-Value English Battle Modes
+/// 🎮 The 10 High-Value English Battle Modes
 enum BattleMode {
   vocabCannonball,
   speechThunderbolt,
@@ -16,6 +16,10 @@ enum BattleMode {
   runeCatapult,
   whisperPhantom,
   idiomBlitz,
+  tenseArchery,
+  syntaxJigsaw,
+  collocationRam,
+  riddleSphinx,
 }
 
 class BattleModeInfo {
@@ -93,10 +97,46 @@ const List<BattleModeInfo> kBattleModes = [
     secondaryColor: Color(0xFF9D174D),
     description: 'Match real-world natural English idioms and native phrases to daily life scenarios!',
   ),
+  BattleModeInfo(
+    mode: BattleMode.tenseArchery,
+    title: 'Tense Archery',
+    subtitle: 'Rapid Time-Shifting Volley',
+    icon: '🏹',
+    primaryColor: Color(0xFF10B981),
+    secondaryColor: Color(0xFF047857),
+    description: 'Aim precision arrows by instantly choosing the correct English grammatical tense!',
+  ),
+  BattleModeInfo(
+    mode: BattleMode.syntaxJigsaw,
+    title: 'Syntax Jigsaw',
+    subtitle: 'Word Reassembly Trebuchet',
+    icon: '🧩',
+    primaryColor: Color(0xFF6366F1),
+    secondaryColor: Color(0xFF4338CA),
+    description: 'Assemble scrambled words into perfect sentence syntax to launch the heavy trebuchet!',
+  ),
+  BattleModeInfo(
+    mode: BattleMode.collocationRam,
+    title: 'Collocation Ram',
+    subtitle: 'Phrasal & Idiom Pairings',
+    icon: '🔨',
+    primaryColor: Color(0xFFF97316),
+    secondaryColor: Color(0xFFC2410C),
+    description: 'Pair natural phrasal verbs and native collocations to swing the heavy battering ram!',
+  ),
+  BattleModeInfo(
+    mode: BattleMode.riddleSphinx,
+    title: 'Riddle Sphinx',
+    subtitle: 'Mind Breach & Context Inference',
+    icon: '🔮',
+    primaryColor: Color(0xFFA855F7),
+    secondaryColor: Color(0xFF7E22CE),
+    description: 'Solve witty English riddles and deduction puzzles for massive critical damage!',
+  ),
 ];
 
 /// ⚔️ Pocket English Battle Arena
-/// Full PvP Duel Screen with live Opponent House HP damage, damage numbers, and 6 mini-games!
+/// Full PvP Duel Screen with live Opponent House HP damage, damage numbers, and 10 mini-games!
 class PocketBattleArenaPage extends StatefulWidget {
   final PocketNeighbor neighbor;
   final int userDay;
@@ -130,6 +170,9 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage> with Sing
   // Question index
   int _qIndex = 0;
 
+  // Jigsaw game state
+  List<String> _jigsawSelected = [];
+
   @override
   void initState() {
     super.initState();
@@ -158,6 +201,7 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage> with Sing
       _comboStreak = 0;
       _score = 0;
       _qIndex = 0;
+      _jigsawSelected = [];
       _isGameOver = false;
     });
 
@@ -388,6 +432,118 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage> with Sing
       ],
       'correct': 1,
       'meaning': '"The ball is in their court" means it is now someone else’s turn to take action.',
+    },
+  ];
+
+  // 7. Tense Archery Data
+  final List<Map<String, dynamic>> _tenseQuestions = [
+    {
+      'sentence': 'By the time the professor arrived, the students _______ their essays.',
+      'options': ['had finished', 'have finished', 'will finish', 'are finishing'],
+      'correct': 0,
+      'explanation': 'Past Perfect ("had finished") is used for an action completed before another past event.',
+    },
+    {
+      'sentence': 'If she _______ earlier, she would not have missed the international flight.',
+      'options': ['had woken up', 'wakes up', 'would wake up', 'has woken up'],
+      'correct': 0,
+      'explanation': 'Third Conditional: "If + Past Perfect (had woken up), would have + V3".',
+    },
+    {
+      'sentence': 'By next December, we _______ English fluently for over a full year.',
+      'options': ['will have been practicing', 'have practiced', 'practiced', 'are practicing'],
+      'correct': 0,
+      'explanation': 'Future Perfect Continuous expresses ongoing action continuing up to a future point.',
+    },
+    {
+      'sentence': 'Neither of the proposals _______ approved by the executive board yesterday.',
+      'options': ['was', 'were', 'are', 'have been'],
+      'correct': 0,
+      'explanation': '"Neither of" takes a singular past verb ("was", not "were").',
+    },
+  ];
+
+  // 8. Syntax Jigsaw Data (Scrambled phrase reassembly)
+  final List<Map<String, dynamic>> _syntaxQuestions = [
+    {
+      'scrambled': ['Rarely', 'such courage', 'have we', 'witnessed'],
+      'correctOrder': ['Rarely', 'have we', 'witnessed', 'such courage'],
+      'fullSentence': 'Rarely have we witnessed such courage.',
+      'rule': 'Negative inversion: Negative adverb "Rarely" triggers auxiliary-subject inversion.',
+    },
+    {
+      'scrambled': ['Hardly', 'the phone rang', 'had I arrived', 'when'],
+      'correctOrder': ['Hardly', 'had I arrived', 'when', 'the phone rang'],
+      'fullSentence': 'Hardly had I arrived when the phone rang.',
+      'rule': 'Correlative conjunction structure: "Hardly had... when..."',
+    },
+    {
+      'scrambled': ['No sooner', 'the bell rang', 'had he entered', 'than'],
+      'correctOrder': ['No sooner', 'had he entered', 'than', 'the bell rang'],
+      'fullSentence': 'No sooner had he entered than the bell rang.',
+      'rule': 'Correlative conjunction structure: "No sooner had... than..."',
+    },
+    {
+      'scrambled': ['Not only', 'talented', 'is she', 'but also humble'],
+      'correctOrder': ['Not only', 'is she', 'talented', 'but also humble'],
+      'fullSentence': 'Not only is she talented but also humble.',
+      'rule': 'Emphatic inversion: "Not only is she talented but also humble."',
+    },
+  ];
+
+  // 9. Collocation Ram Data (Natural native pairings & Phrasal verbs)
+  final List<Map<String, dynamic>> _collocationQuestions = [
+    {
+      'prompt': 'Match the natural English collocation: "Make a _______"',
+      'options': ['difference', 'homework', 'exercise', 'a research'],
+      'correct': 0,
+      'explanation': 'In native English, we "make a difference" and "make a decision", but "do homework".',
+    },
+    {
+      'prompt': 'Which phrasal verb means "to tolerate or endure patiently"?',
+      'options': ['Put up with', 'Look down on', 'Run out of', 'Give in to'],
+      'correct': 0,
+      'explanation': '"Put up with" means to tolerate difficult behavior or situations.',
+    },
+    {
+      'prompt': 'Match the natural pairing: "Pay _______ to the safety guidelines"',
+      'options': ['attention', 'concentration', 'regards', 'observation'],
+      'correct': 0,
+      'explanation': 'The standard English collocation is "pay attention".',
+    },
+    {
+      'prompt': 'Which phrasal verb means "to cancel an arranged event"?',
+      'options': ['Call off', 'Call out', 'Turn off', 'Put on'],
+      'correct': 0,
+      'explanation': '"Call off" means to cancel an event or meeting.',
+    },
+  ];
+
+  // 10. Riddle Sphinx Data (Context inference & logic)
+  final List<Map<String, dynamic>> _riddleQuestions = [
+    {
+      'riddle': 'I speak without a mouth and hear without ears. I have no body, but I come alive with wind. What am I?',
+      'options': ['An Echo', 'A Cloud', 'A Shadow', 'A Mirror'],
+      'correct': 0,
+      'clue': 'A sound bouncing back to you.',
+    },
+    {
+      'riddle': 'The more of this there is in a dark room, the less you can see. What is it?',
+      'options': ['Darkness', 'Dust', 'Space', 'Silence'],
+      'correct': 0,
+      'clue': 'The total absence of light.',
+    },
+    {
+      'riddle': 'I have cities, but no houses. I have mountains, but no trees. I have water, but no fish. What am I?',
+      'options': ['A Map', 'A Globe', 'A Painting', 'A Dream'],
+      'correct': 0,
+      'clue': 'A cartographic guide for explorers.',
+    },
+    {
+      'riddle': 'What English word begins and ends with the letter "E", but only contains one single letter?',
+      'options': ['An Envelope', 'An Eye', 'An Engine', 'An Eagle'],
+      'correct': 0,
+      'clue': 'It holds a written letter inside!',
     },
   ];
 
@@ -799,6 +955,14 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage> with Sing
                   return _buildWhisperPhantomGame();
                 case BattleMode.idiomBlitz:
                   return _buildIdiomBlitzGame();
+                case BattleMode.tenseArchery:
+                  return _buildTenseArcheryGame();
+                case BattleMode.syntaxJigsaw:
+                  return _buildSyntaxJigsawGame();
+                case BattleMode.collocationRam:
+                  return _buildCollocationRamGame();
+                case BattleMode.riddleSphinx:
+                  return _buildRiddleSphinxGame();
               }
             },
           ),
@@ -1217,6 +1381,386 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage> with Sing
                       setState(() => _qIndex++);
                     },
                     child: Text(q['options'][i], style: GoogleFonts.outfit(fontSize: 13, fontWeight: FontWeight.bold)),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ============================================================
+  // 7. TENSE ARCHERY (RAPID GRAMMATICAL TENSE VOLLEY)
+  // ============================================================
+  Widget _buildTenseArcheryGame() {
+    final q = _tenseQuestions[_qIndex % _tenseQuestions.length];
+    return Padding(
+      padding: const EdgeInsets.all(18),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFF064E3B),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFF10B981)),
+            ),
+            child: Column(
+              children: [
+                const Text(
+                  '🏹 AIM & SHOOT: CHOOSE THE ACCURATE TENSE',
+                  style: TextStyle(color: Color(0xFF34D399), fontSize: 11, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  q['sentence'],
+                  style: GoogleFonts.outfit(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          Expanded(
+            child: ListView.builder(
+              itemCount: (q['options'] as List).length,
+              itemBuilder: (context, i) {
+                final isCorrect = i == q['correct'];
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF1E293B),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      side: const BorderSide(color: Colors.white24),
+                    ),
+                    onPressed: () {
+                      if (isCorrect) {
+                        _applyDamage(25);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('🏹 Bullseye! ${q['explanation']}', style: GoogleFonts.outfit()),
+                            backgroundColor: const Color(0xFF059669),
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
+                      } else {
+                        _onIncorrect();
+                      }
+                      setState(() => _qIndex++);
+                    },
+                    child: Text(
+                      q['options'][i],
+                      style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ============================================================
+  // 8. SYNTAX JIGSAW (TREBUCHET WORD REASSEMBLY)
+  // ============================================================
+  Widget _buildSyntaxJigsawGame() {
+    final q = _syntaxQuestions[_qIndex % _syntaxQuestions.length];
+    final List<String> scrambled = List<String>.from(q['scrambled']);
+    final List<String> correctOrder = List<String>.from(q['correctOrder']);
+
+    return Padding(
+      padding: const EdgeInsets.all(18),
+      child: Column(
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFF312E81),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFF6366F1)),
+            ),
+            child: Column(
+              children: [
+                const Text(
+                  '🧩 SYNTAX TREBUCHET: TAP WORDS IN GRAMMATICAL ORDER',
+                  style: TextStyle(color: Color(0xFFA5B4FC), fontSize: 11, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  width: double.infinity,
+                  constraints: const BoxConstraints(minHeight: 52),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.black26,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.white24),
+                  ),
+                  child: _jigsawSelected.isEmpty
+                      ? Center(
+                          child: Text(
+                            'Tap blocks below to assemble the siege boulder...',
+                            style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 12),
+                          ),
+                        )
+                      : Wrap(
+                          spacing: 6,
+                          runSpacing: 6,
+                          children: _jigsawSelected
+                              .map(
+                                (w) => Chip(
+                                  backgroundColor: const Color(0xFF4F46E5),
+                                  label: Text(
+                                    w,
+                                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                                  ),
+                                ),
+                              )
+                              .toList(),
+                        ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Scrambled Block Options
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            alignment: WrapAlignment.center,
+            children: scrambled.map((word) {
+              final isUsed = _jigsawSelected.contains(word);
+              return ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: isUsed ? const Color(0xFF334155) : const Color(0xFF1E293B),
+                  foregroundColor: isUsed ? Colors.white38 : Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  side: BorderSide(color: isUsed ? Colors.white12 : const Color(0xFF6366F1)),
+                ),
+                onPressed: isUsed
+                    ? null
+                    : () {
+                        HapticFeedback.selectionClick();
+                        setState(() {
+                          _jigsawSelected.add(word);
+                        });
+
+                        // Check if complete
+                        if (_jigsawSelected.length == correctOrder.length) {
+                          bool matches = true;
+                          for (int i = 0; i < correctOrder.length; i++) {
+                            if (_jigsawSelected[i] != correctOrder[i]) {
+                              matches = false;
+                              break;
+                            }
+                          }
+                          if (matches) {
+                            _applyDamage(30, isCrit: true);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('🎯 Trebuchet Direct Hit! ${q['rule']}', style: GoogleFonts.outfit()),
+                                backgroundColor: const Color(0xFF4338CA),
+                                duration: const Duration(seconds: 2),
+                              ),
+                            );
+                            Future.delayed(const Duration(milliseconds: 600), () {
+                              if (mounted) {
+                                setState(() {
+                                  _jigsawSelected = [];
+                                  _qIndex++;
+                                });
+                              }
+                            });
+                          } else {
+                            _onIncorrect();
+                            Future.delayed(const Duration(milliseconds: 600), () {
+                              if (mounted) {
+                                setState(() {
+                                  _jigsawSelected = [];
+                                });
+                              }
+                            });
+                          }
+                        }
+                      },
+                child: Text(word, style: GoogleFonts.outfit(fontSize: 13, fontWeight: FontWeight.bold)),
+              );
+            }).toList(),
+          ),
+
+          const Spacer(),
+          if (_jigsawSelected.isNotEmpty)
+            TextButton.icon(
+              icon: const Icon(Icons.refresh_rounded, color: Colors.amberAccent, size: 18),
+              label: const Text('RESET BLOCKS', style: TextStyle(color: Colors.amberAccent, fontSize: 12, fontWeight: FontWeight.bold)),
+              onPressed: () {
+                HapticFeedback.lightImpact();
+                setState(() => _jigsawSelected = []);
+              },
+            ),
+          const SizedBox(height: 12),
+        ],
+      ),
+    );
+  }
+
+  // ============================================================
+  // 9. COLLOCATION RAM (PHRASAL VERBS & NATURAL PAIRINGS)
+  // ============================================================
+  Widget _buildCollocationRamGame() {
+    final q = _collocationQuestions[_qIndex % _collocationQuestions.length];
+    return Padding(
+      padding: const EdgeInsets.all(18),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFF7C2D12),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFF97316)),
+            ),
+            child: Column(
+              children: [
+                const Text(
+                  '🔨 BATTERING RAM: NATURAL ENGLISH COLLOCATIONS',
+                  style: TextStyle(color: Color(0xFFFDBA74), fontSize: 11, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  q['prompt'],
+                  style: GoogleFonts.outfit(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          Expanded(
+            child: ListView.builder(
+              itemCount: (q['options'] as List).length,
+              itemBuilder: (context, i) {
+                final isCorrect = i == q['correct'];
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF1E293B),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      side: const BorderSide(color: Colors.white24),
+                    ),
+                    onPressed: () {
+                      if (isCorrect) {
+                        _applyDamage(25);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('💥 Gate Smashed! ${q['explanation']}', style: GoogleFonts.outfit()),
+                            backgroundColor: const Color(0xFFC2410C),
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
+                      } else {
+                        _onIncorrect();
+                      }
+                      setState(() => _qIndex++);
+                    },
+                    child: Text(
+                      q['options'][i],
+                      style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ============================================================
+  // 10. RIDDLE SPHINX (CONTEXT INFERENCE & MIND BREACH)
+  // ============================================================
+  Widget _buildRiddleSphinxGame() {
+    final q = _riddleQuestions[_qIndex % _riddleQuestions.length];
+    return Padding(
+      padding: const EdgeInsets.all(18),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFF581C87),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFA855F7)),
+            ),
+            child: Column(
+              children: [
+                const Text(
+                  '🔮 SPHINX ENIGMA (CRITICAL MIND DAMAGE)',
+                  style: TextStyle(color: Color(0xFFD8B4FE), fontSize: 11, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  q['riddle'],
+                  style: GoogleFonts.outfit(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Clue: ${q['clue']}',
+                  style: TextStyle(color: Colors.white.withValues(alpha: 0.65), fontSize: 11, fontStyle: FontStyle.italic),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          Expanded(
+            child: ListView.builder(
+              itemCount: (q['options'] as List).length,
+              itemBuilder: (context, i) {
+                final isCorrect = i == q['correct'];
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF1E293B),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      side: const BorderSide(color: Colors.white24),
+                    ),
+                    onPressed: () {
+                      if (isCorrect) {
+                        _applyDamage(35, isCrit: true);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('✨ Sphinx Mind Breach! Correct Answer: ${q['options'][q['correct']]}', style: GoogleFonts.outfit()),
+                            backgroundColor: const Color(0xFF7E22CE),
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
+                      } else {
+                        _onIncorrect();
+                      }
+                      setState(() => _qIndex++);
+                    },
+                    child: Text(
+                      q['options'][i],
+                      style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.bold),
+                    ),
                   ),
                 );
               },
