@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'pocket_defense_admin_modal.dart';
 import 'pocket_fortress_defense_service.dart';
 
 class PocketDefenseTrapModal extends StatefulWidget {
@@ -34,6 +35,7 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
   List<HouseShieldQuestion> _questions = [];
   HouseDefenseStatus _houseStatus = const HouseDefenseStatus();
   bool _isLoading = true;
+  bool _isBanned = false;
 
   @override
   void initState() {
@@ -51,16 +53,37 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
   Future<void> _loadData() async {
     final status = await PocketFortressDefenseService.getHouseStatus();
     final qList = await PocketFortressDefenseService.loadShieldQuestions(widget.userDay);
+    final banned = await PocketFortressDefenseService.isHouseBanned('me');
     if (mounted) {
       setState(() {
         _houseStatus = status;
         _questions = qList;
+        _isBanned = banned || status.isBanned;
         _isLoading = false;
       });
     }
   }
 
   void _openAddEditDialog({int? editIndex}) {
+    if (_isBanned) {
+      HapticFeedback.heavyImpact();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: const Color(0xFFDC2626),
+          content: Row(
+            children: const [
+              Icon(Icons.gavel_rounded, color: Colors.white),
+              SizedBox(width: 8),
+              Expanded(
+                child: Text('🚫 നിങ്ങളുടെ വീട് അഡ്മിൻ ബാൻ ചെയ്തിരിക്കുന്നു! ചോദ്യങ്ങൾ മാറ്റാൻ കഴിയില്ല.'),
+              ),
+            ],
+          ),
+        ),
+      );
+      return;
+    }
+
     final isEdit = editIndex != null;
     final existing = isEdit ? _questions[editIndex] : null;
 
@@ -302,18 +325,17 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
                     }
                   });
 
+                  final messenger = ScaffoldMessenger.of(context);
                   await PocketFortressDefenseService.saveShieldQuestions(_questions);
                   if (ctx.mounted) Navigator.pop(ctx);
                   HapticFeedback.mediumImpact();
-
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('✅ Presidential Seal Approved & Shield Armored!', style: GoogleFonts.outfit()),
-                        backgroundColor: const Color(0xFF059669),
-                      ),
-                    );
-                  }
+                  if (!mounted) return;
+                  messenger.showSnackBar(
+                    SnackBar(
+                      content: Text('✅ Presidential Seal Approved & Shield Armored!', style: GoogleFonts.outfit()),
+                      backgroundColor: const Color(0xFF059669),
+                    ),
+                  );
                 },
                 child: const Text('SAVE & DEPLOY', style: TextStyle(fontWeight: FontWeight.bold)),
               ),
@@ -371,6 +393,41 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
                   ],
                 ),
               ),
+              InkWell(
+                onTap: () => PocketDefenseAdminModal.show(context),
+                borderRadius: BorderRadius.circular(10),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF854D0E), Color(0xFF713F12)],
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.amber.shade400, width: 1.2),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.amber.withValues(alpha: 0.2),
+                        blurRadius: 6,
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      const Text('⚖️', style: TextStyle(fontSize: 13)),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Admin Court',
+                        style: GoogleFonts.outfit(
+                          color: Colors.amber.shade200,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 4),
               IconButton(
                 icon: const Icon(Icons.close_rounded, color: Colors.white70),
                 onPressed: () => Navigator.pop(context),
@@ -419,6 +476,72 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
   Widget _buildShieldQuestionsTab(int maxAllowed) {
     return Column(
       children: [
+        // Banned Notice Banner if house is banned
+        if (_isBanned)
+          Container(
+            padding: const EdgeInsets.all(12),
+            margin: const EdgeInsets.only(bottom: 10),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF7F1D1D), Color(0xFF450A0A)],
+              ),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: Colors.redAccent, width: 1.5),
+            ),
+            child: Row(
+              children: [
+                const Text('🚫', style: TextStyle(fontSize: 22)),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'PRESIDENTIAL BAN IN EFFECT',
+                        style: GoogleFonts.outfit(
+                          color: Colors.red.shade200,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      const Text(
+                        'ഫേക്ക് അല്ലെങ്കിൽ തെറ്റായ ചോദ്യങ്ങൾ റിപ്പോർട്ട് ചെയ്യപ്പെട്ടതിനാൽ നിങ്ങളുടെ വീട് അഡ്മിൻ ബാൻ ചെയ്തിരിക്കുന്നു. കോട്ട സംരക്ഷണം താൽക്കാലികമായി റദ്ദാക്കി.',
+                        style: TextStyle(color: Colors.white70, fontSize: 10.5),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+        // Fair-Play Advisory Banner
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          margin: const EdgeInsets.only(bottom: 10),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1E293B).withValues(alpha: 0.6),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
+          ),
+          child: Row(
+            children: [
+              const Text('⚖️', style: TextStyle(fontSize: 16)),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'ഫെയർ പ്ലേ: യഥാർത്ഥ ചോദ്യങ്ങൾ മാത്രം നൽകുക. എതിരാളികൾക്ക് ഫേക്ക് ചോദ്യങ്ങൾ റിപ്പോർട്ട് ചെയ്യാം; അഡ്മിൻ റിവ്യൂവിൽ വീട് ബാൻ ചെയ്യപ്പെടും!',
+                  style: GoogleFonts.outfit(
+                    color: Colors.amber.shade200,
+                    fontSize: 10.5,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+
         // Quota Bar
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),

@@ -5,6 +5,8 @@ import '../avatar/vector_avatar_config.dart';
 import '../avatar/vector_avatar_widget.dart';
 import 'flame_english_house_game.dart';
 import 'pocket_battle_arena_page.dart';
+import 'pocket_defense_admin_modal.dart';
+import 'pocket_fortress_defense_service.dart';
 
 /// 🌍 Pocket World Street Model: A resident on the neighborhood street
 class PocketNeighbor {
@@ -17,6 +19,8 @@ class PocketNeighbor {
   final bool isMe;
   final bool hasActiveShield;
   final String statusMessage;
+  final bool isBanned;
+  final String? banReason;
 
   const PocketNeighbor({
     required this.id,
@@ -28,6 +32,8 @@ class PocketNeighbor {
     this.isMe = false,
     this.hasActiveShield = true,
     required this.statusMessage,
+    this.isBanned = false,
+    this.banReason,
   });
 }
 
@@ -51,10 +57,12 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
   late final PageController _pageController;
   double _currentPage = 0.0;
   late final List<PocketNeighbor> _neighbors;
+  Set<String> _bannedHouseIds = {'neighbor_cheat'};
 
   @override
   void initState() {
     super.initState();
+    _loadBannedHouses();
     _pageController = PageController(viewportFraction: 0.82);
     _pageController.addListener(() {
       setState(() {
@@ -84,6 +92,18 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
         paletteId: 'royal_gold',
         hasActiveShield: true,
         statusMessage: 'Mastered 600 vocabulary words! 👑',
+      ),
+      const PocketNeighbor(
+        id: 'neighbor_cheat',
+        name: 'ShadowKing_07',
+        day: 62,
+        streak: 1,
+        rank: 'Banned Manor',
+        paletteId: 'charcoal',
+        hasActiveShield: false,
+        statusMessage: '🚫 Banned by Admin Tribunal for fake questions',
+        isBanned: true,
+        banReason: 'Intentionally marked incorrect answers in defense traps.',
       ),
       const PocketNeighbor(
         id: 'neighbor_2',
@@ -126,6 +146,24 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
         statusMessage: '90-Day Fluency Champion! 💎',
       ),
     ];
+  }
+
+  Future<void> _loadBannedHouses() async {
+    final reports = await PocketFortressDefenseService.getDefenseReports();
+    final set = <String>{'neighbor_cheat'};
+    for (final r in reports) {
+      if (r.status == 'banned' || await PocketFortressDefenseService.isHouseBanned(r.houseId)) {
+        set.add(r.houseId);
+      }
+    }
+    if (await PocketFortressDefenseService.isHouseBanned('me')) {
+      set.add('me');
+    }
+    if (mounted) {
+      setState(() {
+        _bannedHouseIds = set;
+      });
+    }
   }
 
   @override
@@ -286,6 +324,28 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
               ],
             ),
             const SizedBox(height: 16),
+            if (neighbor.isBanned || _bannedHouseIds.contains(neighbor.id))
+              Container(
+                margin: const EdgeInsets.only(bottom: 14),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(colors: [Color(0xFF7F1D1D), Color(0xFF450A0A)]),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: Colors.redAccent, width: 1.2),
+                ),
+                child: Row(
+                  children: const [
+                    Text('🚫', style: TextStyle(fontSize: 22)),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'ഈ വീട് ഫേക്ക് / തെറ്റായ ചോദ്യങ്ങൾ നൽകിയതിനാൽ അഡ്മിൻ ബാൻ ചെയ്തിരിക്കുന്നു. റെയ്ഡ് എളുപ്പത്തിൽ ജയിച്ച് ഫ്രീ ലൂട്ട് കരസ്ഥമാക്കാം!',
+                        style: TextStyle(color: Colors.white, fontSize: 11),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
@@ -475,6 +535,35 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
                       ],
                     ),
                   ),
+                  InkWell(
+                    onTap: () async {
+                      await PocketDefenseAdminModal.show(context);
+                      _loadBannedHouses();
+                    },
+                    borderRadius: BorderRadius.circular(10),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.amber.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.amber.shade400, width: 1),
+                      ),
+                      child: Row(
+                        children: [
+                          const Text('⚖️', style: TextStyle(fontSize: 12)),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Admin',
+                            style: GoogleFonts.outfit(
+                              color: Colors.amber.shade200,
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -513,6 +602,7 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
                 itemCount: _neighbors.length,
                 itemBuilder: (context, index) {
                   final neighbor = _neighbors[index];
+                  final isBanned = neighbor.isBanned || _bannedHouseIds.contains(neighbor.id);
 
                   // Parallax scaling calculation
                   final pageDiff = (_currentPage - index).abs();
@@ -653,24 +743,30 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                     decoration: BoxDecoration(
-                                      color: neighbor.hasActiveShield
-                                          ? const Color(0xFF065F46).withValues(alpha: 0.4)
-                                          : const Color(0xFF7F1D1D).withValues(alpha: 0.4),
+                                      color: isBanned
+                                          ? const Color(0xFF7F1D1D).withValues(alpha: 0.6)
+                                          : (neighbor.hasActiveShield
+                                              ? const Color(0xFF065F46).withValues(alpha: 0.4)
+                                              : const Color(0xFF7F1D1D).withValues(alpha: 0.4)),
                                       borderRadius: BorderRadius.circular(10),
                                       border: Border.all(
-                                        color: neighbor.hasActiveShield ? const Color(0xFF10B981) : Colors.redAccent,
+                                        color: isBanned
+                                            ? Colors.redAccent
+                                            : (neighbor.hasActiveShield ? const Color(0xFF10B981) : Colors.redAccent),
                                         width: 0.8,
                                       ),
                                     ),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        Text(neighbor.hasActiveShield ? '🛡️' : '⚠️', style: const TextStyle(fontSize: 11)),
+                                        Text(isBanned ? '🚫' : (neighbor.hasActiveShield ? '🛡️' : '⚠️'), style: const TextStyle(fontSize: 11)),
                                         const SizedBox(width: 4),
                                         Text(
-                                          neighbor.hasActiveShield ? 'Shield' : 'Raidable',
+                                          isBanned ? 'Banned' : (neighbor.hasActiveShield ? 'Shield' : 'Raidable'),
                                           style: TextStyle(
-                                            color: neighbor.hasActiveShield ? const Color(0xFF34D399) : Colors.redAccent,
+                                            color: isBanned
+                                                ? Colors.redAccent
+                                                : (neighbor.hasActiveShield ? const Color(0xFF34D399) : Colors.redAccent),
                                             fontSize: 9.5,
                                             fontWeight: FontWeight.bold,
                                           ),
@@ -694,6 +790,54 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
                                         streak: neighbor.streak,
                                       ),
                                     ),
+                                    // Banned house ribbon seal
+                                    if (isBanned)
+                                      Positioned.fill(
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            color: Colors.black.withValues(alpha: 0.45),
+                                          ),
+                                          child: Center(
+                                            child: Transform.rotate(
+                                              angle: -0.15,
+                                              child: Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                                decoration: BoxDecoration(
+                                                  color: const Color(0xFFDC2626),
+                                                  borderRadius: BorderRadius.circular(10),
+                                                  border: Border.all(color: Colors.white, width: 2),
+                                                  boxShadow: const [
+                                                    BoxShadow(color: Colors.black87, blurRadius: 12),
+                                                  ],
+                                                ),
+                                                child: Column(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  children: [
+                                                    Text(
+                                                      '🚫 BANNED BY ADMIN',
+                                                      style: GoogleFonts.outfit(
+                                                        color: Colors.white,
+                                                        fontWeight: FontWeight.w900,
+                                                        fontSize: 13,
+                                                        letterSpacing: 1.0,
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 2),
+                                                    const Text(
+                                                      'Fake Defense Traps Reported',
+                                                      style: TextStyle(
+                                                        color: Colors.white70,
+                                                        fontSize: 9.5,
+                                                        fontWeight: FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
                                     // Plot Number Tag
                                     Positioned(
                                       bottom: 10,

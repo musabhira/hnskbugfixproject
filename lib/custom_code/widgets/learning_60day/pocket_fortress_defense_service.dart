@@ -499,4 +499,260 @@ class PocketFortressDefenseService {
 
     return pool.take(count).toList();
   }
+
+  // ============================================================
+  // 🚩 FAIR PLAY & ANTI-CHEAT REPORTING & ADMIN BAN SYSTEM
+  // ============================================================
+  static const String _reportsKey = 'pocket_defense_reports_list_v1';
+  static const String _bannedHousesKey = 'pocket_banned_houses_set_v1';
+
+  /// 🚩 File a Defense Question Violation Report against a house
+  static Future<DefenseQuestionReport> fileDefenseReport({
+    required String houseId,
+    required String houseOwnerName,
+    required String questionId,
+    required String questionText,
+    required List<String> options,
+    required int correctIndex,
+    required String reporterId,
+    required String reporterName,
+    required String reason,
+    required String details,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    final report = DefenseQuestionReport(
+      reportId: 'rep_${DateTime.now().millisecondsSinceEpoch}_${math.Random().nextInt(999)}',
+      houseId: houseId,
+      houseOwnerName: houseOwnerName,
+      questionId: questionId,
+      questionText: questionText,
+      options: options,
+      correctIndex: correctIndex,
+      reporterId: reporterId,
+      reporterName: reporterName,
+      reason: reason,
+      details: details,
+      reportedAt: DateTime.now(),
+      status: 'pending',
+    );
+
+    // Save locally
+    final rawList = prefs.getStringList(_reportsKey) ?? [];
+    rawList.insert(0, jsonEncode(report.toJson()));
+    await prefs.setStringList(_reportsKey, rawList);
+
+    // Auto-ban if house receives 3+ pending reports
+    final allReports = await getDefenseReports();
+    final houseReports = allReports.where((r) => r.houseId == houseId && r.status == 'pending').length;
+    if (houseReports >= 3) {
+      await banHouse(houseId, reason: 'Multiple attacking players verified fake/nonsense English defense traps.');
+    }
+
+    return report;
+  }
+
+  /// 📜 Retrieve all reports for Admin Review
+  static Future<List<DefenseQuestionReport>> getDefenseReports() async {
+    final prefs = await SharedPreferences.getInstance();
+    final rawList = prefs.getStringList(_reportsKey);
+
+    // If first time, seed with initial sample reports for testing the admin queue
+    if (rawList == null || rawList.isEmpty) {
+      final sampleReports = [
+        DefenseQuestionReport(
+          reportId: 'rep_seed_1',
+          houseId: 'neighbor_troll',
+          houseOwnerName: 'SpamMaster_X',
+          questionId: 'q_fake_1',
+          questionText: 'asdfghjkl zxcvbnm qwertyuiop ????',
+          options: const ['Option 1', 'Option 2', 'Option 3', 'Option 4'],
+          correctIndex: 0,
+          reporterId: 'scout_alex',
+          reporterName: 'Alex Hunter',
+          reason: 'fake_gibberish',
+          details: 'Keyboard mash question with no English educational value to cheat defense.',
+          reportedAt: DateTime.now().subtract(const Duration(hours: 3)),
+          status: 'pending',
+        ),
+        DefenseQuestionReport(
+          reportId: 'rep_seed_2',
+          houseId: 'neighbor_cheat',
+          houseOwnerName: 'ShadowKing_07',
+          questionId: 'q_fake_2',
+          questionText: 'Which animal flies in the sky?',
+          options: const ['Fish', 'Stone', 'Elephant', 'Tree'],
+          correctIndex: 1,
+          reporterId: 'scout_sarah',
+          reporterName: 'Sarah Jenkins',
+          reason: 'wrong_answer',
+          details: 'Owner intentionally marked "Stone" as correct answer to make defense invincible.',
+          reportedAt: DateTime.now().subtract(const Duration(hours: 1)),
+          status: 'pending',
+        ),
+      ];
+      final jsonStrings = sampleReports.map((r) => jsonEncode(r.toJson())).toList();
+      await prefs.setStringList(_reportsKey, jsonStrings);
+      return sampleReports;
+    }
+
+    final List<DefenseQuestionReport> list = [];
+    for (final raw in rawList) {
+      try {
+        list.add(DefenseQuestionReport.fromJson(jsonDecode(raw)));
+      } catch (_) {}
+    }
+    return list;
+  }
+
+  /// 🚫 Admin Action: Ban House for Fake Questions
+  static Future<void> banHouse(String houseId, {required String reason}) async {
+    final prefs = await SharedPreferences.getInstance();
+    final bannedSet = (prefs.getStringList(_bannedHousesKey) ?? []).toSet();
+    bannedSet.add(houseId);
+    await prefs.setStringList(_bannedHousesKey, bannedSet.toList());
+
+    if (houseId == 'me') {
+      await prefs.setBool(_banKey, true);
+    }
+
+    // Update report status to banned
+    final reports = await getDefenseReports();
+    final updated = reports.map((r) {
+      if (r.houseId == houseId) {
+        return DefenseQuestionReport(
+          reportId: r.reportId,
+          houseId: r.houseId,
+          houseOwnerName: r.houseOwnerName,
+          questionId: r.questionId,
+          questionText: r.questionText,
+          options: r.options,
+          correctIndex: r.correctIndex,
+          reporterId: r.reporterId,
+          reporterName: r.reporterName,
+          reason: r.reason,
+          details: r.details,
+          reportedAt: r.reportedAt,
+          status: 'banned',
+        );
+      }
+      return r;
+    }).toList();
+
+    await prefs.setStringList(_reportsKey, updated.map((r) => jsonEncode(r.toJson())).toList());
+  }
+
+  /// 🔓 Admin Action: Unban House
+  static Future<void> unbanHouse(String houseId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final bannedSet = (prefs.getStringList(_bannedHousesKey) ?? []).toSet();
+    bannedSet.remove(houseId);
+    await prefs.setStringList(_bannedHousesKey, bannedSet.toList());
+
+    if (houseId == 'me') {
+      await prefs.setBool(_banKey, false);
+    }
+  }
+
+  /// ❌ Admin Action: Dismiss Report
+  static Future<void> dismissReport(String reportId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final reports = await getDefenseReports();
+    final updated = reports.map((r) {
+      if (r.reportId == reportId) {
+        return DefenseQuestionReport(
+          reportId: r.reportId,
+          houseId: r.houseId,
+          houseOwnerName: r.houseOwnerName,
+          questionId: r.questionId,
+          questionText: r.questionText,
+          options: r.options,
+          correctIndex: r.correctIndex,
+          reporterId: r.reporterId,
+          reporterName: r.reporterName,
+          reason: r.reason,
+          details: r.details,
+          reportedAt: r.reportedAt,
+          status: 'dismissed',
+        );
+      }
+      return r;
+    }).toList();
+
+    await prefs.setStringList(_reportsKey, updated.map((r) => jsonEncode(r.toJson())).toList());
+  }
+
+  /// 🛡️ Check if any house is currently banned
+  static Future<bool> isHouseBanned(String houseId) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (houseId == 'me') {
+      return prefs.getBool(_banKey) ?? false;
+    }
+    final bannedSet = (prefs.getStringList(_bannedHousesKey) ?? []).toSet();
+    return bannedSet.contains(houseId);
+  }
+}
+
+/// 🚩 Model for Defense Question Violation Report
+class DefenseQuestionReport {
+  final String reportId;
+  final String houseId;
+  final String houseOwnerName;
+  final String questionId;
+  final String questionText;
+  final List<String> options;
+  final int correctIndex;
+  final String reporterId;
+  final String reporterName;
+  final String reason; // 'fake_gibberish' | 'wrong_answer' | 'impossible_trap' | 'offensive_content'
+  final String details;
+  final DateTime reportedAt;
+  final String status; // 'pending' | 'banned' | 'dismissed'
+
+  const DefenseQuestionReport({
+    required this.reportId,
+    required this.houseId,
+    required this.houseOwnerName,
+    required this.questionId,
+    required this.questionText,
+    required this.options,
+    required this.correctIndex,
+    required this.reporterId,
+    required this.reporterName,
+    required this.reason,
+    required this.details,
+    required this.reportedAt,
+    this.status = 'pending',
+  });
+
+  Map<String, dynamic> toJson() => {
+        'reportId': reportId,
+        'houseId': houseId,
+        'houseOwnerName': houseOwnerName,
+        'questionId': questionId,
+        'questionText': questionText,
+        'options': options,
+        'correctIndex': correctIndex,
+        'reporterId': reporterId,
+        'reporterName': reporterName,
+        'reason': reason,
+        'details': details,
+        'reportedAt': reportedAt.toIso8601String(),
+        'status': status,
+      };
+
+  factory DefenseQuestionReport.fromJson(Map<String, dynamic> json) => DefenseQuestionReport(
+        reportId: json['reportId'] ?? '',
+        houseId: json['houseId'] ?? '',
+        houseOwnerName: json['houseOwnerName'] ?? 'House Resident',
+        questionId: json['questionId'] ?? '',
+        questionText: json['questionText'] ?? '',
+        options: List<String>.from(json['options'] ?? []),
+        correctIndex: json['correctIndex'] ?? 0,
+        reporterId: json['reporterId'] ?? '',
+        reporterName: json['reporterName'] ?? 'Attacker Scout',
+        reason: json['reason'] ?? 'fake_gibberish',
+        details: json['details'] ?? '',
+        reportedAt: DateTime.tryParse(json['reportedAt'] ?? '') ?? DateTime.now(),
+        status: json['status'] ?? 'pending',
+      );
 }

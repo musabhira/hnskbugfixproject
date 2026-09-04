@@ -6,11 +6,13 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../avatar/vector_avatar_config.dart';
 import '../avatar/vector_avatar_widget.dart';
+import 'pocket_defense_admin_modal.dart';
 import 'pocket_fortress_defense_service.dart';
 import 'pocket_world_street_page.dart';
 
-/// 🎮 The 10 High-Value English Battle Modes
+/// 🎮 The High-Value English Battle Modes
 enum BattleMode {
+  houseShieldGate, // 🛡️ Defender's Custom House English Gate
   vocabCannonball,
   speechThunderbolt,
   grammarDefusal,
@@ -44,6 +46,15 @@ class BattleModeInfo {
 }
 
 const List<BattleModeInfo> kBattleModes = [
+  BattleModeInfo(
+    mode: BattleMode.houseShieldGate,
+    title: 'Fortress Shield Gate',
+    subtitle: "Defender's Custom English Traps",
+    icon: '🛡️',
+    primaryColor: Color(0xFF0284C7),
+    secondaryColor: Color(0xFF0369A1),
+    description: "Crack the custom English defense questions set by this house owner to breach their front gate!",
+  ),
   BattleModeInfo(
     mode: BattleMode.vocabCannonball,
     title: 'Vocab Cannonball',
@@ -164,6 +175,8 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage> with Sing
   bool _isGameOver = false;
   bool _isBombExploding = false;
   String? _lastDamageText;
+  bool _isDefenderHouseBanned = false;
+  List<HouseShieldQuestion> _defenderShieldQuestions = [];
 
   // Active game states
   Timer? _gameTimer;
@@ -180,6 +193,8 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage> with Sing
     super.initState();
     _initTts();
     _opponentHp = widget.neighbor.hasActiveShield ? 100 : 70;
+    _checkDefenderBanStatus();
+    _loadDefenderShieldTraps();
   }
 
   void _initTts() {
@@ -286,6 +301,486 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage> with Sing
       _isGameOver = true;
       _earnedCoins = lootCoins;
     });
+  }
+
+  Future<void> _checkDefenderBanStatus() async {
+    final banned = await PocketFortressDefenseService.isHouseBanned(widget.neighbor.id);
+    if (mounted && banned) {
+      setState(() {
+        _isDefenderHouseBanned = true;
+        _opponentHp = 0; // Banned house has its defense shattered
+      });
+    }
+  }
+
+  Future<void> _loadDefenderShieldTraps() async {
+    final traps = await PocketFortressDefenseService.loadShieldQuestions(widget.neighbor.day);
+    if (mounted) {
+      setState(() {
+        _defenderShieldQuestions = traps;
+      });
+    }
+  }
+
+  // ============================================================
+  // 🚩 FAIR-PLAY DEFENSE REPORT BUTTON & DIALOG (ATTACKER TOOLS)
+  // ============================================================
+
+  Widget _buildReportButton({
+    required String questionText,
+    required List<String> options,
+    required int correctIndex,
+  }) {
+    return InkWell(
+      onTap: () => _showReportQuestionDialog(
+        questionText: questionText,
+        options: options,
+        correctIndex: correctIndex,
+      ),
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: Colors.red.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.redAccent.withValues(alpha: 0.4), width: 1),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('🚩', style: TextStyle(fontSize: 11)),
+            const SizedBox(width: 4),
+            Text(
+              'Report Fake',
+              style: GoogleFonts.outfit(
+                color: Colors.red.shade300,
+                fontSize: 10.5,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showReportQuestionDialog({
+    required String questionText,
+    required List<String> options,
+    required int correctIndex,
+  }) {
+    String selectedReason = 'fake_gibberish';
+    final detailsCtrl = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDState) {
+          return AlertDialog(
+            backgroundColor: const Color(0xFF0F172A),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+              side: const BorderSide(color: Colors.redAccent, width: 1.5),
+            ),
+            title: Row(
+              children: [
+                const Text('🚩', style: TextStyle(fontSize: 22)),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Report Fake Question',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            content: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Defender: ${widget.neighbor.name} (House ID: ${widget.neighbor.id})',
+                    style: const TextStyle(color: Colors.white60, fontSize: 11),
+                  ),
+                  const SizedBox(height: 10),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1E293B),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: Colors.white12),
+                    ),
+                    child: Text(
+                      '"$questionText"',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Select Violation (ഫെയർ പ്ലേ ലംഘനം):',
+                    style: GoogleFonts.outfit(
+                      color: Colors.amber.shade300,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  _buildReportOptionTile(
+                    title: '⌨️ Fake / Gibberish Question',
+                    subtitle: 'Random letters or keyboard mash with no English meaning',
+                    value: 'fake_gibberish',
+                    groupValue: selectedReason,
+                    onTap: () => setDState(() => selectedReason = 'fake_gibberish'),
+                  ),
+                  _buildReportOptionTile(
+                    title: '❌ Wrong / Fraudulent Answer',
+                    subtitle: 'The marked correct answer is objectively false or wrong',
+                    value: 'wrong_answer',
+                    groupValue: selectedReason,
+                    onTap: () => setDState(() => selectedReason = 'wrong_answer'),
+                  ),
+                  _buildReportOptionTile(
+                    title: '🔒 Impossible Trap',
+                    subtitle: 'Designed to cheat and make defense impossible to breach',
+                    value: 'impossible_trap',
+                    groupValue: selectedReason,
+                    onTap: () => setDState(() => selectedReason = 'impossible_trap'),
+                  ),
+                  _buildReportOptionTile(
+                    title: '⚠️ Offensive / Inappropriate',
+                    subtitle: 'Inappropriate or harmful text in defense trap',
+                    value: 'offensive_content',
+                    groupValue: selectedReason,
+                    onTap: () => setDState(() => selectedReason = 'offensive_content'),
+                  ),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: detailsCtrl,
+                    maxLines: 2,
+                    style: const TextStyle(color: Colors.white, fontSize: 12),
+                    decoration: InputDecoration(
+                      hintText: 'Additional details for Admin Tribunal (optional)...',
+                      hintStyle: const TextStyle(color: Colors.white38, fontSize: 11),
+                      filled: true,
+                      fillColor: const Color(0xFF1E293B),
+                      contentPadding: const EdgeInsets.all(10),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Cancel', style: TextStyle(color: Colors.white60)),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFDC2626),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+                onPressed: () async {
+                  Navigator.pop(ctx);
+                  await _submitQuestionReport(
+                    questionText: questionText,
+                    options: options,
+                    correctIndex: correctIndex,
+                    reason: selectedReason,
+                    details: detailsCtrl.text.trim(),
+                  );
+                },
+                child: const Text(
+                  '🚩 Submit & Bypass (+15 DMG)',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11.5),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildReportOptionTile({
+    required String title,
+    required String subtitle,
+    required String value,
+    required String groupValue,
+    required VoidCallback onTap,
+  }) {
+    final isSelected = value == groupValue;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.redAccent.withValues(alpha: 0.2) : const Color(0xFF1E293B),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isSelected ? Colors.redAccent : Colors.white12,
+            width: isSelected ? 1.4 : 1.0,
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
+              color: isSelected ? Colors.redAccent : Colors.white38,
+              size: 16,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: GoogleFonts.outfit(
+                      color: isSelected ? Colors.white : Colors.white70,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 11.5,
+                    ),
+                  ),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(color: Colors.white38, fontSize: 9.5),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _submitQuestionReport({
+    required String questionText,
+    required List<String> options,
+    required int correctIndex,
+    required String reason,
+    required String details,
+  }) async {
+    HapticFeedback.heavyImpact();
+    await PocketFortressDefenseService.fileDefenseReport(
+      houseId: widget.neighbor.id,
+      houseOwnerName: widget.neighbor.name,
+      questionId: 'q_${DateTime.now().millisecondsSinceEpoch}',
+      questionText: questionText,
+      options: options,
+      correctIndex: correctIndex,
+      reporterId: 'player_attacker',
+      reporterName: 'Attacking Scout',
+      reason: reason,
+      details: details.isEmpty ? 'Reported during live PvP Siege.' : details,
+    );
+
+    // Fair-play bypass: Deal +15 bonus damage and jump to next question
+    _applyDamage(15, isCrit: true);
+    setState(() {
+      _qIndex++;
+    });
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: const Color(0xFF991B1B),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          content: Row(
+            children: const [
+              Text('🚩', style: TextStyle(fontSize: 18)),
+              SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'ചോദ്യം അഡ്മിൻ റിവ്യൂവിലേക്ക് റിപ്പോർട്ട് ചെയ്തു! ഫേക്ക് ചോദ്യം ബൈപാസ് ചെയ്ത് +15 ഡാമേജ് നൽകി.',
+                  style: TextStyle(color: Colors.white, fontSize: 11.5),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+  }
+
+  // ============================================================
+  // 🛡️ DEFENDER'S CUSTOM HOUSE SHIELD GATE GAMEPLAY
+  // ============================================================
+  Widget _buildHouseShieldGateGame() {
+    if (_defenderShieldQuestions.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('🏰', style: TextStyle(fontSize: 40)),
+              const SizedBox(height: 12),
+              Text(
+                'No Custom Defense Traps Armed!',
+                style: GoogleFonts.outfit(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'This defender has not armed custom English questions. Gate breached easily!',
+                style: TextStyle(color: Colors.white.withValues(alpha: 0.65), fontSize: 12),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 18),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF0284C7),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                onPressed: () {
+                  _applyDamage(40, isCrit: true);
+                  setState(() => _activeGame = null);
+                },
+                child: const Text('CLAIM GATE BREACH (40 DMG)', style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final q = _defenderShieldQuestions[_qIndex % _defenderShieldQuestions.length];
+    return Padding(
+      padding: const EdgeInsets.all(18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF0C4A6E), Color(0xFF0F172A)],
+              ),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: const Color(0xFF38BDF8), width: 1.3),
+            ),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0284C7).withValues(alpha: 0.3),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: const Color(0xFF38BDF8)),
+                      ),
+                      child: Text(
+                        '🛡️ DEFENSE TRAP #${(_qIndex % _defenderShieldQuestions.length) + 1} (${q.category.toUpperCase()})',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFF38BDF8),
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    _buildReportButton(
+                      questionText: q.question,
+                      options: q.options,
+                      correctIndex: q.correctIndex,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  q.question,
+                  style: GoogleFonts.outfit(
+                    color: Colors.white,
+                    fontSize: 15.5,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                if (q.explanation.isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                    'Tip: ${q.explanation}',
+                    style: const TextStyle(color: Colors.white54, fontSize: 11),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          Expanded(
+            child: ListView.builder(
+              itemCount: q.options.length,
+              itemBuilder: (ctx, i) {
+                final isCorrect = i == q.correctIndex;
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF1E293B),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      side: const BorderSide(color: Colors.white24),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    ),
+                    onPressed: () {
+                      if (isCorrect) {
+                        _applyDamage(25, isCrit: _comboStreak >= 2);
+                      } else {
+                        _onIncorrect();
+                      }
+                      setState(() => _qIndex++);
+                    },
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 26,
+                          height: 26,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: Colors.white12,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            String.fromCharCode(65 + i),
+                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            q.options[i],
+                            style: GoogleFonts.outfit(fontSize: 13, fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   // ============================================================
@@ -642,6 +1137,34 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage> with Sing
             ],
           ),
           const Spacer(),
+          // Admin Court Tribunal Launcher
+          InkWell(
+            onTap: () => PocketDefenseAdminModal.show(context),
+            borderRadius: BorderRadius.circular(10),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.amber.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.amber.shade400, width: 1),
+              ),
+              child: Row(
+                children: [
+                  const Text('⚖️', style: TextStyle(fontSize: 12)),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Admin',
+                    style: GoogleFonts.outfit(
+                      color: Colors.amber.shade200,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(width: 6),
           // Live Coin & Score Tally
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -759,16 +1282,20 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage> with Sing
               Row(
                 children: [
                   Text(
-                    _opponentHp > 50 ? '🛡️ SHIELD HP' : '⚠️ GATE DAMAGE',
+                    _isDefenderHouseBanned
+                        ? '🚫 HOUSE BANNED'
+                        : (_opponentHp > 50 ? '🛡️ SHIELD HP' : '⚠️ GATE DAMAGE'),
                     style: TextStyle(
-                      color: _opponentHp > 50 ? const Color(0xFF38BDF8) : Colors.redAccent,
+                      color: _isDefenderHouseBanned
+                          ? Colors.redAccent
+                          : (_opponentHp > 50 ? const Color(0xFF38BDF8) : Colors.redAccent),
                       fontSize: 10.5,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const Spacer(),
                   Text(
-                    '$_opponentHp / 100 HP',
+                    _isDefenderHouseBanned ? '0 / 100 HP (SEALED)' : '$_opponentHp / 100 HP',
                     style: GoogleFonts.outfit(
                       color: Colors.white,
                       fontSize: 11,
@@ -781,14 +1308,40 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage> with Sing
               ClipRRect(
                 borderRadius: BorderRadius.circular(6),
                 child: LinearProgressIndicator(
-                  value: _opponentHp / 100.0,
+                  value: _isDefenderHouseBanned ? 0.0 : (_opponentHp / 100.0),
                   minHeight: 8,
                   backgroundColor: const Color(0xFF1E293B),
                   valueColor: AlwaysStoppedAnimation<Color>(
-                    _opponentHp > 50 ? const Color(0xFF10B981) : (_opponentHp > 25 ? Colors.amber : Colors.redAccent),
+                    _isDefenderHouseBanned
+                        ? Colors.redAccent
+                        : (_opponentHp > 50 ? const Color(0xFF10B981) : (_opponentHp > 25 ? Colors.amber : Colors.redAccent)),
                   ),
                 ),
               ),
+
+              if (_isDefenderHouseBanned) ...[
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.redAccent),
+                  ),
+                  child: Row(
+                    children: const [
+                      Text('🚫', style: TextStyle(fontSize: 16)),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'HOUSE BANNED BY ADMIN! ഫേക്ക് ചോദ്യങ്ങൾ നൽകിയതിനാൽ വീട് ബാൻ ചെയ്യപ്പെട്ടു.',
+                          style: TextStyle(color: Colors.redAccent, fontSize: 11, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ],
           ),
         ),
@@ -830,7 +1383,7 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage> with Sing
   }
 
   // ============================================================
-  // 🎮 GAME SELECTION LOBBY (PICK FROM THE 6 BATTLE MODES)
+  // 🎮 GAME SELECTION LOBBY (PICK FROM THE BATTLE MODES)
   // ============================================================
   Widget _buildGameSelectionLobby() {
     return SingleChildScrollView(
@@ -839,6 +1392,52 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage> with Sing
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (_isDefenderHouseBanned)
+            Container(
+              margin: const EdgeInsets.only(bottom: 14),
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(colors: [Color(0xFF7F1D1D), Color(0xFF450A0A)]),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.redAccent, width: 1.5),
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    children: const [
+                      Text('🚫', style: TextStyle(fontSize: 22)),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'PRESIDENTIAL BAN DECREE ACTIVE',
+                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  const Text(
+                    'ഈ വീടിന്റെ സംരക്ഷണത്തിൽ ഫേക്ക് ചോദ്യങ്ങൾ റിപ്പോർട്ട് ചെയ്യപ്പെട്ടതിനാൽ അഡ്മിൻ ട്രിബ്യൂണൽ ഈ വീട് ബാൻ ചെയ്തിരിക്കുന്നു. കോട്ട തകർന്നു!',
+                    style: TextStyle(color: Colors.white70, fontSize: 11),
+                  ),
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.amber.shade600,
+                        foregroundColor: Colors.black,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      icon: const Icon(Icons.stars_rounded, color: Colors.black),
+                      label: const Text('CLAIM UNCONTESTED VICTORY LOOT (75 COINS)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
+                      onPressed: () => _finishGame(won: true),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
           Row(
             children: [
               const Text('⚔️', style: TextStyle(fontSize: 16)),
@@ -996,6 +1595,8 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage> with Sing
           child: Builder(
             builder: (context) {
               switch (_activeGame!) {
+                case BattleMode.houseShieldGate:
+                  return _buildHouseShieldGateGame();
                 case BattleMode.vocabCannonball:
                   return _buildVocabCannonballGame();
                 case BattleMode.speechThunderbolt:
@@ -1044,7 +1645,17 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage> with Sing
             ),
             child: Column(
               children: [
-                const Text('🎯 TARGET WORD', style: TextStyle(color: Color(0xFF818CF8), fontSize: 11, fontWeight: FontWeight.bold)),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('🎯 TARGET WORD', style: TextStyle(color: Color(0xFF818CF8), fontSize: 11, fontWeight: FontWeight.bold)),
+                    _buildReportButton(
+                      questionText: '${q['word']}: ${q['clue']}',
+                      options: List<String>.from(q['options']),
+                      correctIndex: q['correct'],
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 6),
                 Text(
                   q['word'],
@@ -1180,15 +1791,20 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage> with Sing
               borderRadius: BorderRadius.circular(16),
               border: Border.all(color: Colors.amber),
             ),
-            child: const Row(
+            child: Row(
               children: [
-                Text('💣', style: TextStyle(fontSize: 24)),
-                SizedBox(width: 10),
-                Expanded(
+                const Text('💣', style: TextStyle(fontSize: 24)),
+                const SizedBox(width: 10),
+                const Expanded(
                   child: Text(
                     'Tap the INCORRECT word in the sentence below to defuse the bomb!',
                     style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
                   ),
+                ),
+                _buildReportButton(
+                  questionText: words.join(' '),
+                  options: words,
+                  correctIndex: q['wrongIndex'],
                 ),
               ],
             ),
@@ -1316,7 +1932,17 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage> with Sing
             ),
             child: Column(
               children: [
-                const Text('👂 LISTEN CAREFULLY TO THE CLIP', style: TextStyle(color: Color(0xFF34D399), fontSize: 11, fontWeight: FontWeight.bold)),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('👂 LISTEN CAREFULLY TO THE CLIP', style: TextStyle(color: Color(0xFF34D399), fontSize: 11, fontWeight: FontWeight.bold)),
+                    _buildReportButton(
+                      questionText: '${q['prompt']} (${q['fullSpeech']})',
+                      options: List<String>.from(q['options']),
+                      correctIndex: q['correct'],
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 10),
                 Text(
                   q['prompt'],
@@ -1392,7 +2018,17 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage> with Sing
             ),
             child: Column(
               children: [
-                const Text('⚡ REAL-WORLD IDIOM SCENARIO', style: TextStyle(color: Color(0xFFF472B6), fontSize: 11, fontWeight: FontWeight.bold)),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('⚡ REAL-WORLD IDIOM SCENARIO', style: TextStyle(color: Color(0xFFF472B6), fontSize: 11, fontWeight: FontWeight.bold)),
+                    _buildReportButton(
+                      questionText: q['scenario'],
+                      options: List<String>.from(q['options']),
+                      correctIndex: q['correct'],
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 8),
                 Text(
                   q['scenario'],
@@ -1462,9 +2098,19 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage> with Sing
             ),
             child: Column(
               children: [
-                const Text(
-                  '🏹 AIM & SHOOT: CHOOSE THE ACCURATE TENSE',
-                  style: TextStyle(color: Color(0xFF34D399), fontSize: 11, fontWeight: FontWeight.bold),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      '🏹 AIM & SHOOT: CHOOSE ACCURATE TENSE',
+                      style: TextStyle(color: Color(0xFF34D399), fontSize: 11, fontWeight: FontWeight.bold),
+                    ),
+                    _buildReportButton(
+                      questionText: q['sentence'],
+                      options: List<String>.from(q['options']),
+                      correctIndex: q['correct'],
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 10),
                 Text(
@@ -1685,9 +2331,19 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage> with Sing
             ),
             child: Column(
               children: [
-                const Text(
-                  '🔨 BATTERING RAM: NATURAL ENGLISH COLLOCATIONS',
-                  style: TextStyle(color: Color(0xFFFDBA74), fontSize: 11, fontWeight: FontWeight.bold),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      '🔨 BATTERING RAM: COLLOCATIONS',
+                      style: TextStyle(color: Color(0xFFFDBA74), fontSize: 11, fontWeight: FontWeight.bold),
+                    ),
+                    _buildReportButton(
+                      questionText: q['prompt'],
+                      options: List<String>.from(q['options']),
+                      correctIndex: q['correct'],
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 10),
                 Text(
@@ -1761,9 +2417,19 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage> with Sing
             ),
             child: Column(
               children: [
-                const Text(
-                  '🔮 SPHINX ENIGMA (CRITICAL MIND DAMAGE)',
-                  style: TextStyle(color: Color(0xFFD8B4FE), fontSize: 11, fontWeight: FontWeight.bold),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      '🔮 SPHINX ENIGMA (CRITICAL MIND DAMAGE)',
+                      style: TextStyle(color: Color(0xFFD8B4FE), fontSize: 11, fontWeight: FontWeight.bold),
+                    ),
+                    _buildReportButton(
+                      questionText: q['riddle'],
+                      options: List<String>.from(q['options']),
+                      correctIndex: q['correct'],
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 10),
                 Text(
