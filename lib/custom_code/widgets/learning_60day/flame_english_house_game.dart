@@ -10,6 +10,8 @@ import 'pocket_defense_trap_modal.dart';
 import 'pocket_fortress_defense_service.dart';
 import 'pocket_vehicle_garage_modal.dart';
 import 'pocket_world_street_page.dart';
+import 'pocket_arsenal_store_modal.dart';
+import 'day90_vip_master_card_dialog.dart';
 
 /// 🎨 Curated Color Schemes for the English Habit House
 class HousePalette {
@@ -446,6 +448,11 @@ class HouseMasterComponent extends Component {
 
     // 4. Lush Green Bushes & Garden Trees flanking the estate
     _renderBushes(canvas, cx, groundY);
+
+    // 5. 👑 Day 90 VIP Fleet: 24K Sovereign Limousine + 2 Armed Tactical Escorts (Alpha & Bravo)
+    if (day >= 90) {
+      _renderDay90VipMotorcade(canvas, cx, groundY);
+    }
   }
 
   // ============================================================
@@ -1578,6 +1585,71 @@ class HouseMasterComponent extends Component {
       canvas.drawCircle(Offset(startX + p.x, startY + p.y), 4.5 * p.scale, paint);
     }
   }
+
+  void _renderDay90VipMotorcade(Canvas canvas, double cx, double groundY) {
+    final t = animTimer * 7.5;
+    final strobe = math.sin(t) > 0;
+
+    // 🏎️ 24K Gold Sovereign Phantom Limousine
+    final limoX = cx + 42.0;
+    final limoY = groundY - 2.0;
+
+    // Limo Shadow
+    canvas.drawOval(
+      Rect.fromCenter(center: Offset(limoX + 42, limoY + 2), width: 88, height: 8),
+      Paint()..color = Colors.black.withValues(alpha: 0.35),
+    );
+
+    // Limo Lower Body
+    final bodyRect = RRect.fromRectAndRadius(
+      Rect.fromLTWH(limoX, limoY - 14, 84, 13),
+      const Radius.circular(5),
+    );
+    canvas.drawRRect(bodyRect, Paint()..color = const Color(0xFFFFD700));
+    canvas.drawRRect(bodyRect, Paint()..style = PaintingStyle.stroke ..color = const Color(0xFFB45309) ..strokeWidth = 1.0);
+
+    // Limo Roof & Tinted Windows
+    final roofRect = RRect.fromRectAndCorners(
+      Rect.fromLTWH(limoX + 16, limoY - 23, 52, 10),
+      topLeft: const Radius.circular(4),
+      topRight: const Radius.circular(5),
+    );
+    canvas.drawRRect(roofRect, Paint()..color = const Color(0xFF0F172A));
+    canvas.drawRect(
+      Rect.fromLTWH(limoX + 22, limoY - 21, 16, 7),
+      Paint()..color = const Color(0xFF38BDF8).withValues(alpha: 0.7),
+    );
+    canvas.drawRect(
+      Rect.fromLTWH(limoX + 42, limoY - 21, 20, 7),
+      Paint()..color = const Color(0xFF38BDF8).withValues(alpha: 0.7),
+    );
+
+    // Wheels
+    final wheelPaint = Paint()..color = const Color(0xFF1E293B);
+    final rimPaint = Paint()..color = const Color(0xFFFFD700);
+    canvas.drawCircle(Offset(limoX + 16, limoY - 2), 5.5, wheelPaint);
+    canvas.drawCircle(Offset(limoX + 16, limoY - 2), 2.5, rimPaint);
+    canvas.drawCircle(Offset(limoX + 68, limoY - 2), 5.5, wheelPaint);
+    canvas.drawCircle(Offset(limoX + 68, limoY - 2), 2.5, rimPaint);
+
+    // 🏍️ Left Armed Tactical Escort (Alpha)
+    final leftX = limoX - 22.0;
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(Rect.fromLTWH(leftX, limoY - 11, 16, 10), const Radius.circular(3)),
+      Paint()..color = const Color(0xFF1E293B),
+    );
+    final leftStrobe = strobe ? const Color(0xFFEF4444) : const Color(0xFF3B82F6);
+    canvas.drawCircle(Offset(leftX + 8, limoY - 14), 2.8, Paint()..color = leftStrobe);
+
+    // 🏍️ Right Armed Tactical Escort (Bravo)
+    final rightX = limoX + 88.0;
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(Rect.fromLTWH(rightX, limoY - 11, 16, 10), const Radius.circular(3)),
+      Paint()..color = const Color(0xFF1E293B),
+    );
+    final rightStrobe = strobe ? const Color(0xFF3B82F6) : const Color(0xFFEF4444);
+    canvas.drawCircle(Offset(rightX + 8, limoY - 14), 2.8, Paint()..color = rightStrobe);
+  }
 }
 
 class _SmokeParticle {
@@ -1825,13 +1897,17 @@ class _FlameEnglishHouseWidgetState extends State<FlameEnglishHouseWidget> {
             ),
           ),
 
-          // 🏎️ Estate Garage Button (Days 30+)
+          // 🏎️ Estate Garage / 90 VIP Fleet Button
           Positioned(
             top: 6,
             left: 128,
             child: GestureDetector(
               onTap: () {
-                PocketVehicleGarageModal.show(context, widget.currentDay);
+                if (widget.currentDay >= 90) {
+                  Day90VipMasterCardDialog.show(context, userDay: widget.currentDay);
+                } else {
+                  PocketVehicleGarageModal.show(context, widget.currentDay);
+                }
               },
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -1859,13 +1935,13 @@ class _FlameEnglishHouseWidgetState extends State<FlameEnglishHouseWidget> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      widget.currentDay >= 90 ? '🏎️' : (widget.currentDay >= 60 ? '🚙' : (widget.currentDay >= 30 ? '🏍️' : '🔒')),
+                      widget.currentDay >= 90 ? '👑' : (widget.currentDay >= 60 ? '🚙' : (widget.currentDay >= 30 ? '🏍️' : '🔒')),
                       style: const TextStyle(fontSize: 12),
                     ),
                     const SizedBox(width: 5),
                     Text(
                       widget.currentDay >= 90
-                          ? 'Rolls-Royce'
+                          ? '90 VIP FLEET'
                           : (widget.currentDay >= 60 ? 'Grand SUV' : (widget.currentDay >= 30 ? 'Superbike' : 'Garage')),
                       style: GoogleFonts.outfit(
                         color: widget.currentDay >= 90 ? const Color(0xFFFFD700) : Colors.white,
@@ -1973,6 +2049,53 @@ class _FlameEnglishHouseWidgetState extends State<FlameEnglishHouseWidget> {
                         child: const Text('DOME', style: TextStyle(color: Color(0xFF00F0FF), fontSize: 8.5, fontWeight: FontWeight.bold)),
                       ),
                     ],
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          // 🏪 Fortress Arsenal Store Button (Bottom-Left next to HP)
+          Positioned(
+            bottom: 8,
+            left: 124,
+            child: GestureDetector(
+              onTap: () {
+                PocketArsenalStoreModal.show(
+                  context,
+                  currentDay: widget.currentDay,
+                  onPurchased: _loadDefenseStatus,
+                );
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFB45309), Color(0xFFD97706)],
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFFFFD700), width: 1.2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.amber.withValues(alpha: 0.25),
+                      blurRadius: 8,
+                    ),
+                  ],
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text('🏪', style: TextStyle(fontSize: 12)),
+                    SizedBox(width: 4),
+                    Text(
+                      'Store',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
                   ],
                 ),
               ),

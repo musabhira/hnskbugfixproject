@@ -89,6 +89,57 @@ class HouseShieldQuestion {
       );
 }
 
+/// 🚨 Consistency / Focus Loss Result
+class ConsistencyCheckResult {
+  final bool didDowngrade;
+  final int previousDay;
+  final int newDay;
+  final String title;
+  final String message;
+  final String messageMalayalam;
+
+  const ConsistencyCheckResult({
+    required this.didDowngrade,
+    required this.previousDay,
+    required this.newDay,
+    required this.title,
+    required this.message,
+    required this.messageMalayalam,
+  });
+
+  factory ConsistencyCheckResult.none() => const ConsistencyCheckResult(
+        didDowngrade: false,
+        previousDay: 0,
+        newDay: 0,
+        title: '',
+        message: '',
+        messageMalayalam: '',
+      );
+}
+
+/// 🏆 Day 90 Master Card & VIP Fleet Credential
+class Day90MasterCardData {
+  final String cardId;
+  final String title;
+  final String rank;
+  final String limousineName;
+  final String escortSquad;
+  final String issuedDate;
+  final String presidentSignature;
+  final String serialNumber;
+
+  const Day90MasterCardData({
+    required this.cardId,
+    required this.title,
+    required this.rank,
+    required this.limousineName,
+    required this.escortSquad,
+    required this.issuedDate,
+    required this.presidentSignature,
+    required this.serialNumber,
+  });
+}
+
 /// 🏰 House Defense & Fortress Status
 class HouseDefenseStatus {
   final int currentHp;
@@ -97,6 +148,7 @@ class HouseDefenseStatus {
   final int armyKnightsCount;
   final bool hasIronDome;
   final int ironDomeTier; // 1: Bronze, 2: Silver, 3: Obsidian Core
+  final bool hasArmedEscorts; // Dual armed escort bikes/patrols
   final int totalCoins;
   final bool isBanned;
   final String? banReason;
@@ -108,6 +160,7 @@ class HouseDefenseStatus {
     this.armyKnightsCount = 0,
     this.hasIronDome = false,
     this.ironDomeTier = 0,
+    this.hasArmedEscorts = false,
     this.totalCoins = 150,
     this.isBanned = false,
     this.banReason,
@@ -122,8 +175,11 @@ class PocketFortressDefenseService {
   static const String _hpKey = 'user_house_hp';
   static const String _ironDomeKey = 'user_house_iron_dome';
   static const String _armyKey = 'user_house_army_knights';
+  static const String _escortsKey = 'user_house_armed_escorts';
   static const String _coinsKey = 'user_pocket_coins';
   static const String _banKey = 'user_pocket_banned';
+  static const String _lastActiveKey = 'user_pocket_last_active_date';
+  static const String _day90FleetKey = 'user_pocket_day90_vip_fleet';
 
   /// 📐 Calculate max custom questions allowed based on Stage (Day 1 to 90)
   /// - Days 1–2: 2 questions
@@ -142,6 +198,60 @@ class PocketFortressDefenseService {
     if (day <= 60) return 18;
     if (day <= 75) return 22;
     return 25; // Days 76–90: 25 questions!
+  }
+
+  /// 🚨 Inactivity / Consistency Check (Daily Focus Protection)
+  /// If user skips a day, stage downgrades (e.g. Day 6 -> Day 5) with a focus warning!
+  static Future<ConsistencyCheckResult> checkDailyConsistency(int currentDay, int streak) async {
+    final prefs = await SharedPreferences.getInstance();
+    final now = DateTime.now();
+    final todayStr = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+    final lastActiveStr = prefs.getString(_lastActiveKey);
+
+    if (lastActiveStr == null) {
+      await prefs.setString(_lastActiveKey, todayStr);
+      return ConsistencyCheckResult.none();
+    }
+
+    if (lastActiveStr == todayStr) {
+      return ConsistencyCheckResult.none();
+    }
+
+    try {
+      final lastDate = DateTime.parse(lastActiveStr);
+      final differenceInDays = DateTime(now.year, now.month, now.day)
+          .difference(DateTime(lastDate.year, lastDate.month, lastDate.day))
+          .inDays;
+
+      // If missed at least 1 full day (difference >= 2)
+      if (differenceInDays >= 2 && currentDay > 1) {
+        final downgradedDay = currentDay - 1;
+        await prefs.setString(_lastActiveKey, todayStr);
+        // Also apply small house wear & tear penalty on missed days
+        final currentHp = prefs.getInt(_hpKey) ?? 100;
+        await prefs.setInt(_hpKey, math.max(20, currentHp - 15));
+
+        return ConsistencyCheckResult(
+          didDowngrade: true,
+          previousDay: currentDay,
+          newDay: downgradedDay,
+          title: '⚠️ CONSISTENCY DROPPED • FOCUS LOST',
+          message: 'You missed a day of English practice! Your journey was downgraded from Day $currentDay to Day $downgradedDay. Reclaim your focus and practice today!',
+          messageMalayalam: 'നിങ്ങൾ പരിശീലനം മുടക്കിയതിനാൽ നിങ്ങളുടെ സ്റ്റേജ് Day $currentDay-ൽ നിന്ന് Day $downgradedDay-ലേക്ക് ഡൗൺഗ്രേഡ് ആയി! ഫോക്കസ് വീണ്ടെടുക്കാൻ ഇന്നത്തെ മിഷൻ ഉടൻ ചെയ്യുക!',
+        );
+      }
+    } catch (_) {}
+
+    await prefs.setString(_lastActiveKey, todayStr);
+    return ConsistencyCheckResult.none();
+  }
+
+  /// Record active practice today
+  static Future<void> markActiveToday() async {
+    final prefs = await SharedPreferences.getInstance();
+    final now = DateTime.now();
+    final todayStr = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+    await prefs.setString(_lastActiveKey, todayStr);
   }
 
   /// 🎩 President of Pocket World AI Question Validator
@@ -198,6 +308,7 @@ class PocketFortressDefenseService {
     final hasDome = prefs.getBool(_ironDomeKey) ?? false;
     final domeTier = prefs.getInt('${_ironDomeKey}_tier') ?? (hasDome ? 1 : 0);
     final knights = prefs.getInt(_armyKey) ?? 2;
+    final hasEscorts = prefs.getBool(_escortsKey) ?? false;
     final coins = prefs.getInt(_coinsKey) ?? 150;
     final banned = prefs.getBool(_banKey) ?? false;
 
@@ -208,10 +319,48 @@ class PocketFortressDefenseService {
       armyKnightsCount: knights,
       hasIronDome: hasDome,
       ironDomeTier: domeTier,
+      hasArmedEscorts: hasEscorts,
       totalCoins: coins,
       isBanned: banned,
       banReason: banned ? 'Violating Fair Play by publishing fake English questions.' : null,
     );
+  }
+
+  /// 🚗 Check / Unlock Day 90 VIP Fleet & Dual Escort Squad
+  static Future<bool> isDay90FleetUnlocked(int currentDay) async {
+    if (currentDay >= 90) return true;
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_day90FleetKey) ?? false;
+  }
+
+  /// 🏆 Generate Day 90 Master English Victory NFT Card
+  static Day90MasterCardData generateDay90MasterCard() {
+    final now = DateTime.now();
+    final dateStr = '${now.day}/${now.month}/${now.year}';
+    final serial = 'MATE-90-${now.millisecondsSinceEpoch.toString().substring(7)}';
+
+    return Day90MasterCardData(
+      cardId: 'DAY90_NFT_SOVEREIGN_PHANTOM',
+      title: '👑 SUPREME ENGLISH CONQUEROR',
+      rank: 'Level 90 Imperial Citadel Master',
+      limousineName: 'Sovereign Phantom VIP Limousine',
+      escortSquad: 'Dual Armed Tactical Patrol Escorts (Alpha & Bravo)',
+      issuedDate: dateStr,
+      presidentSignature: 'President of Pocket World',
+      serialNumber: serial,
+    );
+  }
+
+  /// Enlist Dual Armed Escort Patrol Vehicles/Bikes
+  static Future<bool> purchaseArmedEscorts({int coinCost = 120}) async {
+    final prefs = await SharedPreferences.getInstance();
+    final currentCoins = prefs.getInt(_coinsKey) ?? 150;
+    if (currentCoins < coinCost) return false;
+
+    await prefs.setInt(_coinsKey, currentCoins - coinCost);
+    await prefs.setBool(_escortsKey, true);
+    await prefs.setBool(_day90FleetKey, true);
+    return true;
   }
 
   /// Repair Damaged House

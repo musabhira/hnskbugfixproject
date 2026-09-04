@@ -12,6 +12,103 @@ import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget
 import 'package:pocket_mates_app/custom_code/widgets/avatar/nft_trading_card_dialog.dart';
 import 'pocket_battle_arena_page.dart';
 import 'pocket_world_street_page.dart';
+import 'pocket_fortress_defense_service.dart';
+import 'pocket_arsenal_store_modal.dart';
+import 'day90_vip_master_card_dialog.dart';
+
+/// 🎯 Model for Minimal Target Roadmaps (Audio Requirement)
+class TargetMilestoneItem {
+  final int stageNumber;
+  final String title;
+  final String rangeText;
+  final int targetDay;
+  final String houseStage;
+  final String houseEmoji;
+  final String rewardSummary;
+  final String defenseSummary;
+  final Color themeColor;
+
+  const TargetMilestoneItem({
+    required this.stageNumber,
+    required this.title,
+    required this.rangeText,
+    required this.targetDay,
+    required this.houseStage,
+    required this.houseEmoji,
+    required this.rewardSummary,
+    required this.defenseSummary,
+    required this.themeColor,
+  });
+}
+
+final List<TargetMilestoneItem> kTargetMilestones = [
+  const TargetMilestoneItem(
+    stageNumber: 1,
+    title: 'Target 1',
+    rangeText: 'Days 1–7',
+    targetDay: 7,
+    houseStage: 'Wooden Cabin',
+    houseEmoji: '🌱',
+    rewardSummary: '+50 Coins • Beginner Pass',
+    defenseSummary: '2 Shield Trap Qs',
+    themeColor: Color(0xFF10B981),
+  ),
+  const TargetMilestoneItem(
+    stageNumber: 2,
+    title: 'Target 2',
+    rangeText: 'Days 8–20',
+    targetDay: 20,
+    houseStage: 'Brick Villa',
+    houseEmoji: '🏡',
+    rewardSummary: '+150 Coins • Habit Anchor',
+    defenseSummary: 'Army Knight Guard',
+    themeColor: Color(0xFF38BDF8),
+  ),
+  const TargetMilestoneItem(
+    stageNumber: 3,
+    title: 'Target 3',
+    rangeText: 'Days 21–45',
+    targetDay: 45,
+    houseStage: 'Stone Fortress',
+    houseEmoji: '🏰',
+    rewardSummary: '+300 Coins • Silver Knight',
+    defenseSummary: 'Iron Dome Shield Core',
+    themeColor: Color(0xFFA855F7),
+  ),
+  const TargetMilestoneItem(
+    stageNumber: 4,
+    title: 'Target 4',
+    rangeText: 'Days 46–70',
+    targetDay: 70,
+    houseStage: 'Imperial Manor',
+    houseEmoji: '🏛️',
+    rewardSummary: '+600 Coins • Gold Sovereign',
+    defenseSummary: '15 Question Shield Traps',
+    themeColor: Color(0xFFF59E0B),
+  ),
+  const TargetMilestoneItem(
+    stageNumber: 5,
+    title: 'Target 5',
+    rangeText: 'Days 71–89',
+    targetDay: 89,
+    houseStage: 'Cyber Citadel',
+    houseEmoji: '💎',
+    rewardSummary: '+1000 Coins • Royal Platoon',
+    defenseSummary: 'Titanium Dome + 22 Qs',
+    themeColor: Color(0xFFEC4899),
+  ),
+  const TargetMilestoneItem(
+    stageNumber: 6,
+    title: 'Target 6 (DAY 90)',
+    rangeText: 'Day 90 Master',
+    targetDay: 90,
+    houseStage: 'Supreme Empire',
+    houseEmoji: '👑',
+    rewardSummary: 'VIP Limousine + 2 Armed Escorts + NFT Card',
+    defenseSummary: 'Max 25 Q Shield + Citadel',
+    themeColor: Color(0xFFFFD700),
+  ),
+];
 
 /// 🎮 90-Day Full English Transformation Gamified Adventure Map
 /// Super Mario World / Candy Crush / Duolingo style snaking level progression trail (Days 1–90)
@@ -91,9 +188,18 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
         _isLoading = false;
       });
 
-      // Auto-scroll to current active day
-      WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Auto-scroll to current active day & check daily consistency
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
         _scrollToDay(prog.currentDay, animate: true);
+
+        // 🚨 Check Daily Consistency (User Audio Directive: Consistency loss / focus loss downgrade)
+        final consistencyRes = await PocketFortressDefenseService.checkDailyConsistency(
+          prog.currentDay,
+          prog.streakDays,
+        );
+        if (consistencyRes.didDowngrade && mounted) {
+          _showConsistencyLossDialog(consistencyRes);
+        }
       });
     }
   }
@@ -913,13 +1019,13 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
       right: 0,
       child: Container(
         padding: EdgeInsets.only(
-          top: MediaQuery.of(context).padding.top + 8,
-          bottom: 12,
-          left: 14,
-          right: 14,
+          top: MediaQuery.of(context).padding.top + 6,
+          bottom: 10,
+          left: 12,
+          right: 12,
         ),
         decoration: BoxDecoration(
-          color: const Color(0xFF0F1524).withValues(alpha: 0.92),
+          color: const Color(0xFF0F1524).withValues(alpha: 0.95),
           border: Border(
             bottom: BorderSide(
               color: Colors.white.withValues(alpha: 0.1),
@@ -928,82 +1034,407 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.35),
+              color: Colors.black.withValues(alpha: 0.45),
               blurRadius: 18,
               offset: const Offset(0, 4),
             ),
           ],
         ),
-        child: Row(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Only show back button if pushed onto navigator stack, NOT on root bottom tab!
-            if (canPop) ...[
-              IconButton(
-                icon: const Icon(Icons.arrow_back_ios_rounded,
-                    color: Colors.white, size: 18),
-                onPressed: () => Navigator.pop(context),
-              ),
-              const SizedBox(width: 4),
-            ],
+            Row(
+              children: [
+                // Only show back button if pushed onto navigator stack, NOT on root bottom tab!
+                if (canPop) ...[
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back_ios_rounded,
+                        color: Colors.white, size: 18),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                  const SizedBox(width: 2),
+                ],
 
-            // Streak Capsule
-            _buildHudCapsule(
-              icon: Icons.local_fire_department_rounded,
-              color: const Color(0xFFFF5722),
-              label: '${prog.streakDays}d',
-            ),
-            const SizedBox(width: 8),
-
-            // Stars Capsule
-            _buildHudCapsule(
-              icon: Icons.star_rounded,
-              color: const Color(0xFFFFD700),
-              label: '$totalStars ⭐',
-            ),
-            const SizedBox(width: 8),
-
-            // Score Capsule
-            _buildHudCapsule(
-              icon: Icons.bolt_rounded,
-              color: const Color(0xFF00E5FF),
-              label: '${prog.totalPoints} XP',
-            ),
-
-            const Spacer(),
-
-            // Rewards Trophy Button
-            GestureDetector(
-              onTap: () {
-                HapticFeedback.lightImpact();
-                _showMilestoneRewardsModal();
-              },
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFFC00).withValues(alpha: 0.16),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                      color: const Color(0xFFFFFC00).withValues(alpha: 0.5)),
+                // Streak Capsule
+                _buildHudCapsule(
+                  icon: Icons.local_fire_department_rounded,
+                  color: const Color(0xFFFF5722),
+                  label: '${prog.streakDays}d',
                 ),
-                child: Row(
-                  children: [
-                    const Text('🏆', style: TextStyle(fontSize: 14)),
-                    const SizedBox(width: 4),
-                    Text(
-                      'Trophies',
-                      style: GoogleFonts.outfit(
-                        color: const Color(0xFFFFFC00),
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                      ),
+                const SizedBox(width: 6),
+
+                // Stars Capsule
+                _buildHudCapsule(
+                  icon: Icons.star_rounded,
+                  color: const Color(0xFFFFD700),
+                  label: '$totalStars ⭐',
+                ),
+                const SizedBox(width: 6),
+
+                // Score Capsule
+                _buildHudCapsule(
+                  icon: Icons.bolt_rounded,
+                  color: const Color(0xFF00E5FF),
+                  label: '${prog.totalPoints} XP',
+                ),
+
+                const Spacer(),
+
+                // 🏪 Arsenal Store Button
+                GestureDetector(
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    PocketArsenalStoreModal.show(
+                      context,
+                      currentDay: prog.currentDay,
+                      onPurchased: () => setState(() {}),
+                    );
+                  },
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: Colors.amber.withValues(alpha: 0.16),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                          color: Colors.amber.withValues(alpha: 0.5)),
                     ),
-                  ],
+                    child: Row(
+                      children: [
+                        const Text('🏪', style: TextStyle(fontSize: 12)),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Store',
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFFFFD700),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 11.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 6),
+
+                // Rewards Trophy Button
+                GestureDetector(
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    _showMilestoneRewardsModal();
+                  },
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFFC00).withValues(alpha: 0.16),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                          color: const Color(0xFFFFFC00).withValues(alpha: 0.5)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Text('🏆', style: TextStyle(fontSize: 12)),
+                        const SizedBox(width: 3),
+                        Text(
+                          'Trophies',
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFFFFFC00),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 11.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 8),
+
+            // 🎯 Minimal Horizontal Target Milestones Bar (Audio Requirement!)
+            _buildTargetMilestonesStrip(prog),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 🎯 Minimal Horizontal Target Milestones Strip (Audio Requirement!)
+  Widget _buildTargetMilestonesStrip(UserLearningProgress prog) {
+    return SizedBox(
+      height: 44,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        itemCount: kTargetMilestones.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 7),
+        itemBuilder: (context, index) {
+          final item = kTargetMilestones[index];
+          final isUnlocked = prog.currentDay >= item.targetDay;
+          final isCurrentTarget = prog.currentDay <= item.targetDay &&
+              (index == 0 || prog.currentDay > kTargetMilestones[index - 1].targetDay);
+
+          return GestureDetector(
+            onTap: () {
+              HapticFeedback.selectionClick();
+              if (item.stageNumber == 6) {
+                Day90VipMasterCardDialog.show(
+                  context,
+                  userDay: prog.currentDay,
+                  isPreview: prog.currentDay < 90,
+                );
+              } else {
+                _showTargetStagePreviewDialog(item, prog.currentDay);
+              }
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+              decoration: BoxDecoration(
+                color: isCurrentTarget
+                    ? item.themeColor.withValues(alpha: 0.20)
+                    : (isUnlocked
+                        ? const Color(0xFF10B981).withValues(alpha: 0.12)
+                        : Colors.white.withValues(alpha: 0.05)),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: isCurrentTarget
+                      ? item.themeColor
+                      : (isUnlocked ? const Color(0xFF10B981) : Colors.white12),
+                  width: isCurrentTarget ? 1.4 : 0.8,
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(item.houseEmoji, style: const TextStyle(fontSize: 15)),
+                  const SizedBox(width: 6),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            item.title,
+                            style: GoogleFonts.outfit(
+                              color: isCurrentTarget
+                                  ? item.themeColor
+                                  : (isUnlocked ? const Color(0xFF10B981) : Colors.white70),
+                              fontWeight: FontWeight.w900,
+                              fontSize: 10.5,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            isUnlocked ? '✓' : (isCurrentTarget ? '🔥' : '🔒'),
+                            style: const TextStyle(fontSize: 9),
+                          ),
+                        ],
+                      ),
+                      Text(
+                        '${item.houseStage} • ${item.defenseSummary}',
+                        style: GoogleFonts.inter(
+                          color: Colors.white54,
+                          fontSize: 9,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  /// 🎯 Milestone Target Detail & House Growth Preview Dialog
+  void _showTargetStagePreviewDialog(TargetMilestoneItem item, int currentDay) {
+    final isUnlocked = currentDay >= item.targetDay;
+    final stageAvatar = VectorAvatarConfig.getEvolutionAvatarForStage(item.targetDay);
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF0F172A),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(22),
+          side: BorderSide(color: item.themeColor, width: 1.5),
+        ),
+        title: Row(
+          children: [
+            Text(item.houseEmoji, style: const TextStyle(fontSize: 24)),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${item.title.toUpperCase()} (${item.rangeText})',
+                    style: GoogleFonts.outfit(
+                      color: item.themeColor,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 14,
+                    ),
+                  ),
+                  Text(
+                    isUnlocked ? '✅ Milestone Achieved' : '🎯 Target In Progress',
+                    style: TextStyle(
+                      color: isUnlocked ? const Color(0xFF10B981) : Colors.amber,
+                      fontSize: 11,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 72,
+                height: 72,
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: item.themeColor, width: 2),
+                ),
+                child: ClipOval(
+                  child: VectorAvatarWidget(config: stageAvatar, size: 68),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.05),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('🏡 House Stage: ${item.houseStage}', style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
+                  const SizedBox(height: 4),
+                  Text('🛡️ Defense Unlock: ${item.defenseSummary}', style: GoogleFonts.inter(color: Colors.white70, fontSize: 11.5)),
+                  const SizedBox(height: 4),
+                  Text('🪙 Rewards: ${item.rewardSummary}', style: GoogleFonts.inter(color: const Color(0xFFFFD700), fontSize: 11.5, fontWeight: FontWeight.bold)),
+                ],
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              'ഈ ടാർഗറ്റ് പൂർത്തിയാക്കുമ്പോൾ നിങ്ങളുടെ വീടിന്റെ ഘടനയും ലേണിങ് അവതാറും വളരുകയും കൂടുതൽ ഡിഫൻസ് ട്രാപ്പുകൾ അൺലോക്ക് ആവുകയും ചെയ്യും.',
+              style: GoogleFonts.inter(color: Colors.white60, fontSize: 11),
+            ),
+          ],
+        ),
+        actions: [
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: item.themeColor,
+              foregroundColor: Colors.black,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('GOT IT', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 🚨 Consistency / Focus Loss Dialog (Audio Requirement!)
+  void _showConsistencyLossDialog(ConsistencyCheckResult res) {
+    HapticFeedback.vibrate();
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF0F172A),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(22),
+          side: const BorderSide(color: Colors.redAccent, width: 1.5),
+        ),
+        title: Row(
+          children: [
+            const Text('⚠️', style: TextStyle(fontSize: 24)),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'CONSISTENCY DROPPED!',
+                style: GoogleFonts.outfit(
+                  color: Colors.redAccent,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 15,
                 ),
               ),
             ),
           ],
         ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.red.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.redAccent.withValues(alpha: 0.3)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Day ${res.previousDay} ➔ Day ${res.newDay}',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 16,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    res.message,
+                    style: GoogleFonts.inter(color: Colors.white70, fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              res.messageMalayalam,
+              style: GoogleFonts.inter(
+                color: const Color(0xFFFFD700),
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFFFFC00),
+              foregroundColor: Colors.black,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(
+              'REGAIN FOCUS 🎯',
+              style: GoogleFonts.outfit(fontWeight: FontWeight.w900),
+            ),
+          ),
+        ],
       ),
     );
   }

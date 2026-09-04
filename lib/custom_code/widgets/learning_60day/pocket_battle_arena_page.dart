@@ -162,6 +162,7 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage> with Sing
   int _score = 0;
   int _earnedCoins = 0;
   bool _isGameOver = false;
+  bool _isBombExploding = false;
   String? _lastDamageText;
 
   // Active game states
@@ -204,6 +205,7 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage> with Sing
       _qIndex = 0;
       _jigsawSelected = [];
       _isGameOver = false;
+      _isBombExploding = false;
     });
 
     _gameTimer?.cancel();
@@ -228,15 +230,23 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage> with Sing
   void _applyDamage(int amount, {bool isCrit = false}) {
     HapticFeedback.heavyImpact();
     setState(() {
+      _isBombExploding = true;
       _comboStreak++;
       final totalDmg = isCrit ? (amount * 1.5).round() : amount;
       _opponentHp = math.max(0, _opponentHp - totalDmg);
       _score += totalDmg * 10;
-      _earnedCoins += (totalDmg * 0.5).round();
-      _lastDamageText = isCrit ? '💥 CRIT -$totalDmg HP!' : '🎯 -$totalDmg HP!';
+      _lastDamageText = isCrit ? '💣 AIRSTRIKE CRIT -$totalDmg HP!' : '💥 BOMB HIT -$totalDmg HP!';
     });
 
-    Future.delayed(const Duration(milliseconds: 900), () {
+    Future.delayed(const Duration(milliseconds: 650), () {
+      if (mounted) {
+        setState(() {
+          _isBombExploding = false;
+        });
+      }
+    });
+
+    Future.delayed(const Duration(milliseconds: 1000), () {
       if (mounted) {
         setState(() {
           _lastDamageText = null;
@@ -267,8 +277,11 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage> with Sing
 
   void _finishGame({required bool won}) {
     HapticFeedback.heavyImpact();
-    final lootCoins = won ? 75 : 25;
-    PocketFortressDefenseService.awardRaidLoot(lootCoins);
+    // In audio: Attacking yields coins looted from opponent. If fail, NO coins lost!
+    final lootCoins = won ? (60 + math.Random().nextInt(30)) : 0;
+    if (lootCoins > 0) {
+      PocketFortressDefenseService.awardRaidLoot(lootCoins);
+    }
     setState(() {
       _isGameOver = true;
       _earnedCoins = lootCoins;
@@ -658,124 +671,161 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage> with Sing
   }
 
   Widget _buildDefenderArenaStage() {
-    return Container(
-      margin: const EdgeInsets.fromLTRB(16, 6, 16, 10),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: const Color(0xFF0F172A),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: _opponentHp > 40 ? const Color(0xFF0284C7) : Colors.redAccent,
-          width: 1.2,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: _opponentHp > 40 ? const Color(0xFF0284C7).withValues(alpha: 0.25) : Colors.red.withValues(alpha: 0.3),
-            blurRadius: 14,
-            offset: const Offset(0, 4),
+    return Stack(
+      children: [
+        Container(
+          margin: const EdgeInsets.fromLTRB(16, 6, 16, 10),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: const Color(0xFF0F172A),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(
+              color: _opponentHp > 40 ? const Color(0xFF0284C7) : Colors.redAccent,
+              width: 1.2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: _opponentHp > 40 ? const Color(0xFF0284C7).withValues(alpha: 0.25) : Colors.red.withValues(alpha: 0.3),
+                blurRadius: 14,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Row(
+          child: Column(
             children: [
-              // Defender Avatar
-              SizedBox(
-                width: 38,
-                height: 38,
-                child: VectorAvatarWidget(
-                  config: VectorAvatarConfig.getEvolutionAvatarForStage(widget.neighbor.day),
-                  size: 38,
-                  borderRadius: BorderRadius.circular(10),
+              Row(
+                children: [
+                  // Defender Avatar
+                  SizedBox(
+                    width: 38,
+                    height: 38,
+                    child: VectorAvatarWidget(
+                      config: VectorAvatarConfig.getEvolutionAvatarForStage(widget.neighbor.day),
+                      size: 38,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.neighbor.name,
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Text(
+                          'Stage ${widget.neighbor.day} • ${widget.neighbor.rank}',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.6),
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Damage text popup
+                  if (_lastDamageText != null)
+                    AnimatedOpacity(
+                      opacity: 1.0,
+                      duration: const Duration(milliseconds: 300),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.75),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.redAccent),
+                        ),
+                        child: Text(
+                          _lastDamageText!,
+                          style: GoogleFonts.outfit(
+                            color: Colors.yellowAccent,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 8),
+
+              // Shield HP Bar (Clash of Clans Style!)
+              Row(
+                children: [
+                  Text(
+                    _opponentHp > 50 ? '🛡️ SHIELD HP' : '⚠️ GATE DAMAGE',
+                    style: TextStyle(
+                      color: _opponentHp > 50 ? const Color(0xFF38BDF8) : Colors.redAccent,
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const Spacer(),
+                  Text(
+                    '$_opponentHp / 100 HP',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(6),
+                child: LinearProgressIndicator(
+                  value: _opponentHp / 100.0,
+                  minHeight: 8,
+                  backgroundColor: const Color(0xFF1E293B),
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    _opponentHp > 50 ? const Color(0xFF10B981) : (_opponentHp > 25 ? Colors.amber : Colors.redAccent),
+                  ),
                 ),
               ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+            ],
+          ),
+        ),
+
+        // 💣 Explosive Airstrike & Bomb Effect on Raid Hit
+        if (_isBombExploding)
+          Positioned.fill(
+            child: Container(
+              margin: const EdgeInsets.fromLTRB(16, 6, 16, 10),
+              decoration: BoxDecoration(
+                color: Colors.red.withValues(alpha: 0.35),
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: Colors.yellowAccent, width: 2),
+              ),
+              child: Center(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
+                    const Text('💣', style: TextStyle(fontSize: 28)),
+                    const SizedBox(width: 8),
                     Text(
-                      widget.neighbor.name,
+                      '💥 BOOM! 💥',
                       style: GoogleFonts.outfit(
-                        color: Colors.white,
-                        fontSize: 13.5,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    Text(
-                      'Stage ${widget.neighbor.day} • ${widget.neighbor.rank}',
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.6),
-                        fontSize: 11,
+                        color: Colors.yellowAccent,
+                        fontSize: 22,
+                        fontWeight: FontWeight.w900,
+                        shadows: [
+                          const Shadow(color: Colors.red, blurRadius: 16),
+                        ],
                       ),
                     ),
                   ],
                 ),
               ),
-              // Damage text popup
-              if (_lastDamageText != null)
-                AnimatedOpacity(
-                  opacity: 1.0,
-                  duration: const Duration(milliseconds: 300),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.75),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.redAccent),
-                    ),
-                    child: Text(
-                      _lastDamageText!,
-                      style: GoogleFonts.outfit(
-                        color: Colors.yellowAccent,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 8),
-
-          // Shield HP Bar (Clash of Clans Style!)
-          Row(
-            children: [
-              Text(
-                _opponentHp > 50 ? '🛡️ SHIELD HP' : '⚠️ GATE DAMAGE',
-                style: TextStyle(
-                  color: _opponentHp > 50 ? const Color(0xFF38BDF8) : Colors.redAccent,
-                  fontSize: 10.5,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const Spacer(),
-              Text(
-                '$_opponentHp / 100 HP',
-                style: GoogleFonts.outfit(
-                  color: Colors.white,
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(6),
-            child: LinearProgressIndicator(
-              value: _opponentHp / 100.0,
-              minHeight: 8,
-              backgroundColor: const Color(0xFF1E293B),
-              valueColor: AlwaysStoppedAnimation<Color>(
-                _opponentHp > 50 ? const Color(0xFF10B981) : (_opponentHp > 25 ? Colors.amber : Colors.redAccent),
-              ),
             ),
           ),
-        ],
-      ),
+      ],
     );
   }
 
@@ -1787,10 +1837,10 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage> with Sing
           Text(won ? '🎉' : '🛡️', style: const TextStyle(fontSize: 48)),
           const SizedBox(height: 10),
           Text(
-            won ? 'HOUSE DEFENSE BREACHED!' : 'TIME UP - RAID COMPLETED',
+            won ? '🏰 OPPONENT FORTRESS BREACHED!' : '🛡️ RAID DEFENSE HELD • NO COINS LOST',
             style: GoogleFonts.outfit(
-              color: Colors.white,
-              fontSize: 20,
+              color: won ? const Color(0xFFFFD700) : Colors.white,
+              fontSize: 19,
               fontWeight: FontWeight.w900,
             ),
             textAlign: TextAlign.center,
@@ -1798,8 +1848,8 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage> with Sing
           const SizedBox(height: 6),
           Text(
             won
-                ? 'You overwhelmed ${widget.neighbor.name}’s house defenses with English fluency!'
-                : 'Great effort! Practice daily to unleash stronger attacks.',
+                ? 'You overwhelmed ${widget.neighbor.name}’s fortress with English fluency and looted $_earnedCoins Coins from their vault!'
+                : 'Defeat in battle carries zero penalty! Keep training and practicing — no coins lost.',
             style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 13),
             textAlign: TextAlign.center,
           ),
