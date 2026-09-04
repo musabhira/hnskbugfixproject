@@ -6,6 +6,7 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../avatar/vector_avatar_config.dart';
 import '../avatar/vector_avatar_widget.dart';
+import 'pocket_fortress_defense_service.dart';
 import 'pocket_world_street_page.dart';
 
 /// 🎮 The 10 High-Value English Battle Modes
@@ -266,9 +267,11 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage> with Sing
 
   void _finishGame({required bool won}) {
     HapticFeedback.heavyImpact();
+    final lootCoins = won ? 75 : 25;
+    PocketFortressDefenseService.awardRaidLoot(lootCoins);
     setState(() {
       _isGameOver = true;
-      _earnedCoins = won ? 50 : 20;
+      _earnedCoins = lootCoins;
     });
   }
 

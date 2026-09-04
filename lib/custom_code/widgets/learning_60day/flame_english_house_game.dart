@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'pocket_defense_trap_modal.dart';
+import 'pocket_fortress_defense_service.dart';
 import 'pocket_vehicle_garage_modal.dart';
 import 'pocket_world_street_page.dart';
 
@@ -1604,16 +1605,23 @@ class FlameEnglishHouseWidget extends StatefulWidget {
 class _FlameEnglishHouseWidgetState extends State<FlameEnglishHouseWidget> {
   late FlameEnglishHouseGame _game;
   HousePalette _currentPalette = HousePalette.presets[0];
+  HouseDefenseStatus _defenseStatus = const HouseDefenseStatus();
 
   @override
   void initState() {
     super.initState();
     _loadSavedPalette();
+    _loadDefenseStatus();
     _game = FlameEnglishHouseGame(
       currentDay: widget.currentDay,
       streak: widget.streak,
       initialPalette: _currentPalette,
     );
+  }
+
+  Future<void> _loadDefenseStatus() async {
+    final s = await PocketFortressDefenseService.getHouseStatus();
+    if (mounted) setState(() => _defenseStatus = s);
   }
 
   Future<void> _loadSavedPalette() async {
@@ -1907,6 +1915,64 @@ class _FlameEnglishHouseWidgetState extends State<FlameEnglishHouseWidget> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          // ❤️ Live House HP & Defense Vault Button (Bottom-Left)
+          Positioned(
+            bottom: 8,
+            left: 14,
+            child: GestureDetector(
+              onTap: () async {
+                PocketDefenseTrapModal.show(context, widget.currentDay);
+                await Future.delayed(const Duration(milliseconds: 500));
+                _loadDefenseStatus();
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0F172A).withValues(alpha: 0.9),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: _defenseStatus.currentHp < 100 ? Colors.redAccent : const Color(0xFF10B981),
+                    width: 1.2,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: (_defenseStatus.currentHp < 100 ? Colors.redAccent : const Color(0xFF10B981))
+                          .withValues(alpha: 0.25),
+                      blurRadius: 8,
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(_defenseStatus.currentHp < 100 ? '💔' : '❤️', style: const TextStyle(fontSize: 12)),
+                    const SizedBox(width: 5),
+                    Text(
+                      '${_defenseStatus.currentHp} HP',
+                      style: GoogleFonts.outfit(
+                        color: _defenseStatus.currentHp < 100 ? Colors.redAccent : const Color(0xFF34D399),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    if (_defenseStatus.hasIronDome) ...[
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF00F0FF).withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(color: const Color(0xFF00F0FF), width: 0.8),
+                        ),
+                        child: const Text('DOME', style: TextStyle(color: Color(0xFF00F0FF), fontSize: 8.5, fontWeight: FontWeight.bold)),
+                      ),
+                    ],
                   ],
                 ),
               ),
