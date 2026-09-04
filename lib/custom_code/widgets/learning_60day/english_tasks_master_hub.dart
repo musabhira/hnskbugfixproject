@@ -9,6 +9,7 @@ import 'package:pocket_mates_app/custom_code/widgets/english_match/stage_peer_ma
 import 'package:pocket_mates_app/custom_code/widgets/english_learning_hub_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/nft_trading_card_dialog.dart';
 import 'pocket_battle_arena_page.dart';
 import 'pocket_world_street_page.dart';
 
@@ -817,7 +818,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                         id: 'rival_fortress',
                         name: 'Lord Sterling',
                         day: prog.currentDay,
-                        streak: prog.streak + 3,
+                        streak: prog.streakDays + 3,
                         rank: 'Rival Fortress',
                         paletteId: 'regal_amethyst',
                         statusMessage: 'Can you breach my English gates?',
@@ -829,7 +830,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                           builder: (_) => PocketBattleArenaPage(
                             neighbor: rival,
                             userDay: prog.currentDay,
-                            userStreak: prog.streak,
+                            userStreak: prog.streakDays,
                           ),
                         ),
                       );
