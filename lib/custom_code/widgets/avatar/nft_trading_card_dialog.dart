@@ -363,6 +363,74 @@ class _NftTradingCardDialogState extends State<NftTradingCardDialog>
                                 ),
                               ],
                             ),
+                            const SizedBox(height: 10),
+
+                            // 🏆 Achievements & Battle Powers (Audio Requirement!)
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF111827),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: rarityColor.withValues(alpha: 0.3),
+                                  width: 1,
+                                ),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      const Text('🏆', style: TextStyle(fontSize: 13)),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        'ACHIEVEMENTS & BATTLE PERKS',
+                                        style: GoogleFonts.outfit(
+                                          color: const Color(0xFFFFD700),
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w900,
+                                          letterSpacing: 0.6,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Row(
+                                    children: [
+                                      const Icon(Icons.bolt_rounded, color: Color(0xFF38BDF8), size: 14),
+                                      const SizedBox(width: 4),
+                                      Expanded(
+                                        child: Text(
+                                          'Gate Breach: +${(widget.day * 1.5).round()}% Raid Impact Power',
+                                          style: GoogleFonts.inter(
+                                            color: Colors.white70,
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    children: [
+                                      const Icon(Icons.shield_rounded, color: Color(0xFF10B981), size: 14),
+                                      const SizedBox(width: 4),
+                                      Expanded(
+                                        child: Text(
+                                          'House Shield: 30s Rapid Anti-Cheat Gate Defense',
+                                          style: GoogleFonts.inter(
+                                            color: Colors.white70,
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -377,7 +445,7 @@ class _NftTradingCardDialogState extends State<NftTradingCardDialog>
                 width: 320,
                 child: Column(
                   children: [
-                    // Equip Avatar Button
+                    // Equip Avatar Button (Owner) OR Locked Milestone Banner (Non-Owner)
                     if (widget.isOwner)
                       SizedBox(
                         width: double.infinity,
@@ -413,6 +481,41 @@ class _NftTradingCardDialogState extends State<NftTradingCardDialog>
                             ),
                             elevation: 6,
                           ),
+                        ),
+                      )
+                    else
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(vertical: 13, horizontal: 16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1E293B),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: const Color(0xFFFFD700).withValues(alpha: 0.6),
+                            width: 1.2,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.3),
+                              blurRadius: 10,
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.lock_rounded, color: Color(0xFFFFD700), size: 18),
+                            const SizedBox(width: 8),
+                            Text(
+                              'LOCKED • REACH DAY ${widget.day} TO CLAIM',
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFFFFD700),
+                                fontWeight: FontWeight.w900,
+                                fontSize: 12.5,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     const SizedBox(height: 10),

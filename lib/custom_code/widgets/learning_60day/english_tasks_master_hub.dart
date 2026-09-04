@@ -897,6 +897,10 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                         // Biome Zone Banners & Scenery Props
                         ..._buildBiomeProps(screenWidth),
 
+                        // 🐾 Minimal Flame Animal Cards in Map Space (Audio Directive!)
+                        for (int day = 1; day <= _totalDays; day++)
+                          _buildMapMiniAnimalCard(day, screenWidth, prog.currentDay),
+
                         // Interactive 3D Level Nodes (Days 1 to 90)
                         for (int day = 1; day <= _totalDays; day++)
                           _buildLevelNode(day, screenWidth, prog.currentDay),
@@ -1656,6 +1660,149 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                     ),
                   ),
                 ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 🐾 Minimal Flame Animal Card in the Open Space Beside Level Nodes (Audio Requirement!)
+  /// Shows the animal avatar, species title, day, and lock/unlock status.
+  /// Tapping opens the deep, holographic NftTradingCardDialog with all traits & achievements!
+  Widget _buildMapMiniAnimalCard(int day, double screenWidth, int currentDay) {
+    final nodeX = _getNodeX(day, screenWidth);
+    final nodeY = _getNodeY(day);
+    final isRightSide = nodeX >= screenWidth / 2;
+    final isUnlocked = day <= currentDay;
+    final config = _getAvatarForDay(day);
+
+    // Position in wide empty space on opposite side of node
+    final double cardWidth = ((screenWidth / 2) - 34.0).clamp(120.0, 165.0);
+    final double cardLeft = isRightSide ? 14.0 : (screenWidth - cardWidth - 14.0);
+    final double cardTop = nodeY - 26.0;
+
+    final speciesTitle = config.species
+        .replaceAll('_', ' ')
+        .split(' ')
+        .map((w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '')
+        .join(' ');
+
+    // Color by rarity
+    final tier = config.rarityTier.toLowerCase();
+    Color rarityColor;
+    if (tier.contains('mythic')) {
+      rarityColor = const Color(0xFF00E5FF);
+    } else if (tier.contains('legendary')) {
+      rarityColor = const Color(0xFFFFD700);
+    } else if (tier.contains('epic')) {
+      rarityColor = const Color(0xFFD946EF);
+    } else if (tier.contains('rare')) {
+      rarityColor = const Color(0xFF38BDF8);
+    } else {
+      rarityColor = const Color(0xFF10B981);
+    }
+
+    return Positioned(
+      left: cardLeft,
+      top: cardTop,
+      child: GestureDetector(
+        onTap: () {
+          HapticFeedback.selectionClick();
+          _openAvatarCard(day);
+        },
+        child: Container(
+          width: cardWidth,
+          height: 52,
+          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 5),
+          decoration: BoxDecoration(
+            color: const Color(0xFF0D1322).withValues(alpha: 0.90),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: isUnlocked
+                  ? rarityColor.withValues(alpha: 0.7)
+                  : Colors.white.withValues(alpha: 0.12),
+              width: isUnlocked ? 1.2 : 0.8,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: isUnlocked
+                    ? rarityColor.withValues(alpha: 0.25)
+                    : Colors.black.withValues(alpha: 0.4),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              // Mini Avatar Preview Circle
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: rarityColor.withValues(alpha: 0.18),
+                  border: Border.all(
+                    color: isUnlocked ? rarityColor : Colors.white24,
+                    width: 1,
+                  ),
+                ),
+                child: ClipOval(
+                  child: VectorAvatarWidget(
+                    config: config,
+                    size: 36,
+                    showAura: false,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 7),
+
+              // Title & Day & Rarity
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      speciesTitle,
+                      style: GoogleFonts.outfit(
+                        color: isUnlocked ? Colors.white : Colors.white70,
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Row(
+                      children: [
+                        Text(
+                          'Day $day',
+                          style: GoogleFonts.inter(
+                            color: isUnlocked ? const Color(0xFFFFFC00) : Colors.white38,
+                            fontSize: 9,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          isUnlocked ? '• 🔓 Claim' : '• 🔒 Target',
+                          style: GoogleFonts.inter(
+                            color: isUnlocked ? const Color(0xFF10B981) : Colors.white38,
+                            fontSize: 8.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                isUnlocked ? Icons.chevron_right_rounded : Icons.lock_outline_rounded,
+                color: isUnlocked ? rarityColor : Colors.white30,
+                size: 14,
+              ),
             ],
           ),
         ),

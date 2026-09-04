@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:math' as math;
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// 🎩 President of Pocket World's Official Decree & Anti-Cheat Verdict
@@ -55,7 +56,8 @@ class HouseShieldQuestion {
   final List<String> options;
   final int correctIndex;
   final String explanation;
-  final String category; // 'vocab', 'grammar', 'idiom', 'comprehension'
+  final String category; // 'vocab', 'grammar', 'idiom', 'comprehension', 'tense', 'syntax'
+  final String trapType; // 'vocab_gate', 'grammar_sentry', 'tense_fortress', 'idiom_maze', 'syntax_wall'
   final bool isPresidentApproved;
 
   const HouseShieldQuestion({
@@ -65,6 +67,7 @@ class HouseShieldQuestion {
     required this.correctIndex,
     required this.explanation,
     this.category = 'vocab',
+    this.trapType = 'vocab_gate',
     this.isPresidentApproved = true,
   });
 
@@ -75,6 +78,7 @@ class HouseShieldQuestion {
         'correctIndex': correctIndex,
         'explanation': explanation,
         'category': category,
+        'trapType': trapType,
         'isPresidentApproved': isPresidentApproved,
       };
 
@@ -85,8 +89,139 @@ class HouseShieldQuestion {
         correctIndex: json['correctIndex'] ?? 0,
         explanation: json['explanation'] ?? '',
         category: json['category'] ?? 'vocab',
+        trapType: json['trapType'] ??
+            (json['category'] == 'grammar'
+                ? 'grammar_sentry'
+                : (json['category'] == 'idiom'
+                    ? 'idiom_maze'
+                    : (json['category'] == 'tense'
+                        ? 'tense_fortress'
+                        : (json['category'] == 'syntax' ? 'syntax_wall' : 'vocab_gate')))),
         isPresidentApproved: json['isPresidentApproved'] ?? true,
       );
+}
+
+/// 🛡️ The 5 Configurable English Defense Challenge Templates
+class DefenseTrapTemplate {
+  final String id;
+  final String title;
+  final String titleMalayalam;
+  final String icon;
+  final String description;
+  final String category;
+  final Color themeColor;
+
+  const DefenseTrapTemplate({
+    required this.id,
+    required this.title,
+    required this.titleMalayalam,
+    required this.icon,
+    required this.description,
+    required this.category,
+    required this.themeColor,
+  });
+}
+
+const List<DefenseTrapTemplate> kDefenseTrapTemplates = [
+  DefenseTrapTemplate(
+    id: 'vocab_gate',
+    title: 'Vocab Gate',
+    titleMalayalam: 'പദാവലി കോട്ട',
+    icon: '🎯',
+    description: 'Rapid vocabulary, synonyms & antonym definitions challenge.',
+    category: 'vocab',
+    themeColor: Color(0xFF0284C7),
+  ),
+  DefenseTrapTemplate(
+    id: 'grammar_sentry',
+    title: 'Grammar Sentry',
+    titleMalayalam: 'വ്യാകരണ കെണി',
+    icon: '💣',
+    description: 'Spot tricky grammatical flaws before bombs detonate.',
+    category: 'grammar',
+    themeColor: Color(0xFFE11D48),
+  ),
+  DefenseTrapTemplate(
+    id: 'tense_fortress',
+    title: 'Tense Fortress',
+    titleMalayalam: 'ടെൻസ് കോട്ട',
+    icon: '🏹',
+    description: 'Past, present, future and conditional tense precision shots.',
+    category: 'tense',
+    themeColor: Color(0xFF8B5CF6),
+  ),
+  DefenseTrapTemplate(
+    id: 'idiom_maze',
+    title: 'Idiom Maze',
+    titleMalayalam: 'ശൈലി ചതുരംഗം',
+    icon: '⚡',
+    description: 'Match native colloquial idioms and contextual expressions.',
+    category: 'idiom',
+    themeColor: Color(0xFFF59E0B),
+  ),
+  DefenseTrapTemplate(
+    id: 'syntax_wall',
+    title: 'Sentence Wall',
+    titleMalayalam: 'വാക്യ മതിൽ',
+    icon: '🧩',
+    description: 'Master inverted syntax, word order, and clause links.',
+    category: 'syntax',
+    themeColor: Color(0xFF10B981),
+  ),
+  DefenseTrapTemplate(
+    id: 'whisper_phantom',
+    title: 'Whisper Phantom',
+    titleMalayalam: 'ശ്രവണ കോട്ട',
+    icon: '👂',
+    description: 'Missing spoken words and live audio-text context deduction.',
+    category: 'listening',
+    themeColor: Color(0xFF6366F1),
+  ),
+  DefenseTrapTemplate(
+    id: 'collocation_ram',
+    title: 'Collocation Ram',
+    titleMalayalam: 'പദക്കൂട്ടം',
+    icon: '🔨',
+    description: 'Natural English collocations, prepositions & phrasal verbs.',
+    category: 'collocation',
+    themeColor: Color(0xFFEC4899),
+  ),
+  DefenseTrapTemplate(
+    id: 'riddle_sphinx',
+    title: 'Riddle Sphinx',
+    titleMalayalam: 'കടങ്കഥ കാവൽ',
+    icon: '🔮',
+    description: 'Clever deduction riddles dealing massive mind-breach defense.',
+    category: 'riddle',
+    themeColor: Color(0xFF14B8A6),
+  ),
+  DefenseTrapTemplate(
+    id: 'phonetic_thunder',
+    title: 'Phonetic Thunder',
+    titleMalayalam: 'ഉച്ചാരണ ഗേറ്റ്',
+    icon: '🎙️',
+    description: 'IPA syllable stress, pronunciation, and homophone guards.',
+    category: 'phonetics',
+    themeColor: Color(0xFFFFD700),
+  ),
+];
+
+/// 🛡️ Active Defender Trap Live State during Attacker Raids
+class DefenderShieldTrapData {
+  final DefenseTrapTemplate template;
+  final List<HouseShieldQuestion> questions;
+  int currentHp;
+  final int maxHp;
+
+  DefenderShieldTrapData({
+    required this.template,
+    required this.questions,
+    this.currentHp = 100,
+    this.maxHp = 100,
+  });
+
+  bool get isDestroyed => currentHp <= 0;
+  double get hpPercent => (currentHp / maxHp).clamp(0.0, 1.0);
 }
 
 /// 🚨 Consistency / Focus Loss Result
@@ -152,6 +287,7 @@ class HouseDefenseStatus {
   final int totalCoins;
   final bool isBanned;
   final String? banReason;
+  final List<String> activeShieldTraps; // 1 up to 9 active defense games
 
   const HouseDefenseStatus({
     this.currentHp = 100,
@@ -164,6 +300,7 @@ class HouseDefenseStatus {
     this.totalCoins = 150,
     this.isBanned = false,
     this.banReason,
+    this.activeShieldTraps = const ['vocab_gate'],
   });
 
   double get hpPercentage => (currentHp / maxHp.toDouble()).clamp(0.0, 1.0);
@@ -172,6 +309,7 @@ class HouseDefenseStatus {
 /// 🛡️ Central Pocket Fortress & Defense Management Service
 class PocketFortressDefenseService {
   static const String _trapsKey = 'user_custom_defense_traps_v2';
+  static const String _activeTrapsKey = 'user_house_active_shield_traps_v2';
   static const String _hpKey = 'user_house_hp';
   static const String _ironDomeKey = 'user_house_iron_dome';
   static const String _armyKey = 'user_house_army_knights';
@@ -181,23 +319,44 @@ class PocketFortressDefenseService {
   static const String _lastActiveKey = 'user_pocket_last_active_date';
   static const String _day90FleetKey = 'user_pocket_day90_vip_fleet';
 
-  /// 📐 Calculate max custom questions allowed based on Stage (Day 1 to 90)
-  /// - Days 1–2: 2 questions
-  /// - Days 3–10: 3–5 questions
-  /// - Days 11–30: 8–10 questions
-  /// - Days 31–60: 15 questions
-  /// - Days 61–90: up to 25 questions!
-  static int getMaxQuestionsForStage(int stage) {
+  /// 🛡️ Number of Unlocked Defense Games based on Stage (1 up to 9 games at Day 90)
+  /// User audio requirement:
+  /// - Day 1: 1 Game (4–5 questions)
+  /// - Days 3–10: 2 Games
+  /// - Days 11–20: 3 Games
+  /// - Days 21–35: 4 Games
+  /// - Days 36–50: 5 Games
+  /// - Days 51–65: 6 Games
+  /// - Days 66–75: 7 Games
+  /// - Days 76–85: 8 Games
+  /// - Day 90: 9 Games (each with 10 questions = 90 Questions Total!)
+  static int getUnlockedGamesCountForStage(int stage) {
     final day = stage.clamp(1, 90);
-    if (day <= 2) return 2;
-    if (day <= 5) return 3;
-    if (day <= 10) return 5;
-    if (day <= 20) return 8;
-    if (day <= 30) return 10;
-    if (day <= 45) return 15;
-    if (day <= 60) return 18;
-    if (day <= 75) return 22;
-    return 25; // Days 76–90: 25 questions!
+    if (day <= 3) return 1;
+    if (day <= 10) return 2;
+    if (day <= 20) return 3;
+    if (day <= 35) return 4;
+    if (day <= 50) return 5;
+    if (day <= 65) return 6;
+    if (day <= 75) return 7;
+    if (day <= 85) return 8;
+    return 9;
+  }
+
+  /// 📐 Allowed questions PER GAME (scales from 5 at Day 1 up to 10 at Day 90)
+  static int getQuestionsPerGameForStage(int stage) {
+    final day = stage.clamp(1, 90);
+    if (day <= 2) return 5; // Day 1: 4–5 questions
+    if (day <= 5) return 6;
+    if (day <= 15) return 7;
+    if (day <= 30) return 8;
+    if (day <= 60) return 9;
+    return 10; // Up to 10 questions per game at Day 90
+  }
+
+  /// 📐 Total questions across all unlocked games (Day 1: 5, Day 90: 9 * 10 = 90 questions!)
+  static int getMaxQuestionsForStage(int stage) {
+    return getUnlockedGamesCountForStage(stage) * getQuestionsPerGameForStage(stage);
   }
 
   /// 🚨 Inactivity / Consistency Check (Daily Focus Protection)
@@ -302,7 +461,7 @@ class PocketFortressDefenseService {
   }
 
   /// Fetch House Status
-  static Future<HouseDefenseStatus> getHouseStatus() async {
+  static Future<HouseDefenseStatus> getHouseStatus([int stage = 1]) async {
     final prefs = await SharedPreferences.getInstance();
     final hp = prefs.getInt(_hpKey) ?? 100;
     final hasDome = prefs.getBool(_ironDomeKey) ?? false;
@@ -311,6 +470,7 @@ class PocketFortressDefenseService {
     final hasEscorts = prefs.getBool(_escortsKey) ?? false;
     final coins = prefs.getInt(_coinsKey) ?? 150;
     final banned = prefs.getBool(_banKey) ?? false;
+    final activeTraps = await getActiveShieldTraps(stage);
 
     return HouseDefenseStatus(
       currentHp: hp,
@@ -323,7 +483,332 @@ class PocketFortressDefenseService {
       totalCoins: coins,
       isBanned: banned,
       banReason: banned ? 'Violating Fair Play by publishing fake English questions.' : null,
+      activeShieldTraps: activeTraps,
     );
+  }
+
+  /// Get active armed shield traps for user (capped by unlocked games count)
+  static Future<List<String>> getActiveShieldTraps(int stage) async {
+    final prefs = await SharedPreferences.getInstance();
+    final unlockedCount = getUnlockedGamesCountForStage(stage);
+    final stored = prefs.getStringList(_activeTrapsKey);
+    if (stored != null && stored.isNotEmpty) {
+      return stored.take(unlockedCount).toList();
+    }
+    // Default unlocked trap IDs
+    final defaultIds = kDefenseTrapTemplates.map((t) => t.id).take(unlockedCount).toList();
+    return defaultIds;
+  }
+
+  /// Save active armed shield traps
+  static Future<void> setActiveShieldTraps(List<String> traps) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(_activeTrapsKey, traps);
+  }
+
+  /// 🛡️ Load all active shield traps and their questions for battle raid
+  static Future<List<DefenderShieldTrapData>> loadDefenderActiveShieldTraps(int stage) async {
+    final activeTrapIds = await getActiveShieldTraps(stage);
+    final allCustomQuestions = await loadShieldQuestions(stage);
+    final qPerTrap = getQuestionsPerGameForStage(stage);
+
+    final List<DefenderShieldTrapData> result = [];
+
+    for (final trapId in activeTrapIds) {
+      final template = kDefenseTrapTemplates.firstWhere(
+        (t) => t.id == trapId,
+        orElse: () => kDefenseTrapTemplates[0],
+      );
+
+      // Match custom questions by trapType or category
+      final matched = allCustomQuestions.where((q) {
+        return q.trapType == trapId || q.category == template.category;
+      }).toList();
+
+      // Fill with curated if needed
+      final curated = getCuratedQuestionsForTrap(trapId);
+      for (final cq in curated) {
+        if (matched.length >= qPerTrap) break;
+        if (!matched.any((m) => m.question == cq.question)) {
+          matched.add(cq);
+        }
+      }
+
+      result.add(
+        DefenderShieldTrapData(
+          template: template,
+          questions: matched.take(qPerTrap).toList(),
+          currentHp: 100,
+          maxHp: 100,
+        ),
+      );
+    }
+
+    return result;
+  }
+
+  /// 9 Diverse English Game Datasets for all 9 Defense Challenge Gates
+  static List<HouseShieldQuestion> getCuratedQuestionsForTrap(String trapType) {
+    switch (trapType) {
+      case 'vocab_gate':
+        return const [
+          HouseShieldQuestion(
+            id: 'cur_vg_1',
+            question: 'What is the exact synonym for "Ephemeral"?',
+            options: ['Lasting for a very short time', 'Permanent & Eternal', 'Ancient & Heavy', 'Violent'],
+            correctIndex: 0,
+            explanation: '"Ephemeral" means lasting for a very short time.',
+            category: 'vocab',
+            trapType: 'vocab_gate',
+          ),
+          HouseShieldQuestion(
+            id: 'cur_vg_2',
+            question: 'What is the direct antonym of "Meticulous"?',
+            options: ['Careless & Hasty', 'Precise & Thorough', 'Cautious', 'Polite'],
+            correctIndex: 0,
+            explanation: '"Careless" is the direct opposite of "Meticulous".',
+            category: 'vocab',
+            trapType: 'vocab_gate',
+          ),
+          HouseShieldQuestion(
+            id: 'cur_vg_3',
+            question: 'Which word describes someone who recovers quickly from hardship?',
+            options: ['Resilient', 'Fragile', 'Vulnerable', 'Hesitant'],
+            correctIndex: 0,
+            explanation: '"Resilient" signifies being tough, adaptive, and quick to bounce back.',
+            category: 'vocab',
+            trapType: 'vocab_gate',
+          ),
+        ];
+      case 'grammar_sentry':
+        return const [
+          HouseShieldQuestion(
+            id: 'cur_gs_1',
+            question: 'Spot the grammatical error: "Neither of the boys were ready for the duel."',
+            options: [
+              '"were" should be "was"',
+              '"Neither" should be "Either"',
+              '"boys" should be "boy"',
+              'The sentence is already correct'
+            ],
+            correctIndex: 0,
+            explanation: '"Neither of" takes a singular verb ("was").',
+            category: 'grammar',
+            trapType: 'grammar_sentry',
+          ),
+          HouseShieldQuestion(
+            id: 'cur_gs_2',
+            question: 'Select the correct pronoun: "The general with his knights _____ defending the fortress."',
+            options: ['is', 'are', 'were', 'have been'],
+            correctIndex: 0,
+            explanation: 'Intervening prepositional phrases do not change singular subject ("The general is").',
+            category: 'grammar',
+            trapType: 'grammar_sentry',
+          ),
+          HouseShieldQuestion(
+            id: 'cur_gs_3',
+            question: 'Choose the correct subjunctive mood formulation:',
+            options: [
+              'The commander demanded that he be present.',
+              'The commander demanded that he was present.',
+              'The commander demanded that he is present.',
+              'The commander demanded that he been present.'
+            ],
+            correctIndex: 0,
+            explanation: 'Subjunctive mood takes the base form "be" after verbs of demand.',
+            category: 'grammar',
+            trapType: 'grammar_sentry',
+          ),
+        ];
+      case 'tense_fortress':
+        return const [
+          HouseShieldQuestion(
+            id: 'cur_tf_1',
+            question: 'Complete the third conditional: "If the attacker _____ earlier, the gate wouldn\'t have fallen."',
+            options: ['had arrived', 'arrived', 'would arrive', 'has arrived'],
+            correctIndex: 0,
+            explanation: 'Third conditional requires "If + past perfect" with "would have + past participle".',
+            category: 'tense',
+            trapType: 'tense_fortress',
+          ),
+          HouseShieldQuestion(
+            id: 'cur_tf_2',
+            question: 'Identify the future perfect tense:',
+            options: [
+              'By next week, the clan will have conquered the territory.',
+              'By next week, the clan will conquer the territory.',
+              'By next week, the clan is conquering the territory.',
+              'By next week, the clan would conquer the territory.'
+            ],
+            correctIndex: 0,
+            explanation: '"will have conquered" expresses an action completed before a specific future time.',
+            category: 'tense',
+            trapType: 'tense_fortress',
+          ),
+          HouseShieldQuestion(
+            id: 'cur_tf_3',
+            question: 'Convert to passive voice: "The blacksmith forged the iron gate yesterday."',
+            options: [
+              'The iron gate was forged by the blacksmith yesterday.',
+              'The iron gate had been forged yesterday.',
+              'The iron gate is forged by the blacksmith.',
+              'The iron gate was forging yesterday.'
+            ],
+            correctIndex: 0,
+            explanation: 'Simple past passive is "was/were + past participle (forged)".',
+            category: 'tense',
+            trapType: 'tense_fortress',
+          ),
+        ];
+      case 'idiom_maze':
+        return const [
+          HouseShieldQuestion(
+            id: 'cur_im_1',
+            question: 'What does the idiom "Bite the bullet" mean?',
+            options: [
+              'Face a difficult or painful situation with courage',
+              'Eat metal ammunition',
+              'Run away from danger',
+              'Argue without any proof'
+            ],
+            correctIndex: 0,
+            explanation: '"Bite the bullet" means enduring an inevitable grim situation bravely.',
+            category: 'idiom',
+            trapType: 'idiom_maze',
+          ),
+          HouseShieldQuestion(
+            id: 'cur_im_2',
+            question: 'What does "Barking up the wrong tree" mean?',
+            options: [
+              'Pursuing a mistaken line of thought or course of action',
+              'Training hunting dogs in a forest',
+              'Cutting down old trees',
+              'Shouting loudly in frustration'
+            ],
+            correctIndex: 0,
+            explanation: '"Barking up the wrong tree" means following a completely false lead.',
+            category: 'idiom',
+            trapType: 'idiom_maze',
+          ),
+        ];
+      case 'syntax_wall':
+        return const [
+          HouseShieldQuestion(
+            id: 'cur_sw_1',
+            question: 'Select the sentence with correct inverted syntax:',
+            options: [
+              'Rarely have I seen such an impregnable defense.',
+              'Rarely I have seen such an impregnable defense.',
+              'I rarely have seen such defense impregnable.',
+              'Have I seen rarely such defense.'
+            ],
+            correctIndex: 0,
+            explanation: 'Negative adverbs like "Rarely" at the start invert auxiliary verb and subject.',
+            category: 'syntax',
+            trapType: 'syntax_wall',
+          ),
+          HouseShieldQuestion(
+            id: 'cur_sw_2',
+            question: 'Which sentence has the correct correlative conjunction pairing?',
+            options: [
+              'Not only was the shield shattered, but the treasury was also looted.',
+              'Not only was the shield shattered, and the treasury was looted.',
+              'Both was the shield shattered, nor the treasury was looted.',
+              'Either the shield shattered, but the treasury looted.'
+            ],
+            correctIndex: 0,
+            explanation: '"Not only... but also" is the correct correlative conjunction.',
+            category: 'syntax',
+            trapType: 'syntax_wall',
+          ),
+        ];
+      case 'whisper_phantom':
+        return const [
+          HouseShieldQuestion(
+            id: 'cur_wp_1',
+            question: 'Fill in the missing spoken connector: "The fortress fell, _______ the defenders fought valiantly."',
+            options: ['yet', 'because', 'so', 'despite'],
+            correctIndex: 0,
+            explanation: '"Yet" expresses contrast between two independent clauses.',
+            category: 'listening',
+            trapType: 'whisper_phantom',
+          ),
+          HouseShieldQuestion(
+            id: 'cur_wp_2',
+            question: 'Which word completes the spoken passage: "He spoke with such _______ that everyone believed him."',
+            options: ['conviction', 'confusion', 'hesitation', 'reluctance'],
+            correctIndex: 0,
+            explanation: '"Conviction" means firmly held belief or persuasive certainty.',
+            category: 'listening',
+            trapType: 'whisper_phantom',
+          ),
+        ];
+      case 'collocation_ram':
+        return const [
+          HouseShieldQuestion(
+            id: 'cur_cr_1',
+            question: 'Complete the collocation: "We must _______ our differences aside and unite."',
+            options: ['put', 'drop', 'throw', 'keep'],
+            correctIndex: 0,
+            explanation: 'The natural English collocation is "put differences aside".',
+            category: 'collocation',
+            trapType: 'collocation_ram',
+          ),
+          HouseShieldQuestion(
+            id: 'cur_cr_2',
+            question: 'Which verb collocates with "a conclusion"?',
+            options: ['draw', 'take', 'do', 'bring'],
+            correctIndex: 0,
+            explanation: 'In standard English we "draw a conclusion" (or reach a conclusion).',
+            category: 'collocation',
+            trapType: 'collocation_ram',
+          ),
+        ];
+      case 'riddle_sphinx':
+        return const [
+          HouseShieldQuestion(
+            id: 'cur_rs_1',
+            question: 'Riddle: "I speak without a mouth and hear without ears. I have no body, but I come alive with wind. What am I?"',
+            options: ['An Echo', 'A Cloud', 'A Shadow', 'A River'],
+            correctIndex: 0,
+            explanation: 'An echo repeats sound without having physical mouth or ears.',
+            category: 'riddle',
+            trapType: 'riddle_sphinx',
+          ),
+          HouseShieldQuestion(
+            id: 'cur_rs_2',
+            question: 'Riddle: "The more of this there is in a dark dungeon, the less you can see. What is it?"',
+            options: ['Darkness', 'Light', 'Fog', 'Silence'],
+            correctIndex: 0,
+            explanation: 'The more darkness there is, the less you can see.',
+            category: 'riddle',
+            trapType: 'riddle_sphinx',
+          ),
+        ];
+      case 'phonetic_thunder':
+        return const [
+          HouseShieldQuestion(
+            id: 'cur_pt_1',
+            question: 'Which word has the primary syllable stress on the second syllable?',
+            options: ['pho-TOG-ra-phy', 'PHO-to-graph', 'COM-fort-a-ble', 'DI-ction-ar-y'],
+            correctIndex: 0,
+            explanation: '"Photography" stresses the second syllable (pho-TOG-ra-phy).',
+            category: 'phonetics',
+            trapType: 'phonetic_thunder',
+          ),
+          HouseShieldQuestion(
+            id: 'cur_pt_2',
+            question: 'Identify the silent letter in "RECEIPT":',
+            options: ['P', 'C', 'T', 'I'],
+            correctIndex: 0,
+            explanation: 'The letter "P" is silent in "receipt" (/rɪˈsiːt/).',
+            category: 'phonetics',
+            trapType: 'phonetic_thunder',
+          ),
+        ];
+      default:
+        return const [];
+    }
   }
 
   /// 🚗 Check / Unlock Day 90 VIP Fleet & Dual Escort Squad

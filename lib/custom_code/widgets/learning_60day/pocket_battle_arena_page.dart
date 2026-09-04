@@ -165,7 +165,8 @@ class PocketBattleArenaPage extends StatefulWidget {
   State<PocketBattleArenaPage> createState() => _PocketBattleArenaPageState();
 }
 
-class _PocketBattleArenaPageState extends State<PocketBattleArenaPage> with SingleTickerProviderStateMixin {
+class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   late FlutterTts _flutterTts;
   BattleMode? _activeGame;
   int _opponentHp = 100;
@@ -177,6 +178,12 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage> with Sing
   String? _lastDamageText;
   bool _isDefenderHouseBanned = false;
   List<HouseShieldQuestion> _defenderShieldQuestions = [];
+  List<DefenderShieldTrapData> _defenderActiveGates = [];
+  int _currentGateIndex = 0;
+  int _gateQuestionIndex = 0;
+  int _qSecondsLeft = 30;
+  Timer? _qTimer;
+  bool _showAntiCheatNotice = false;
 
   // Active game states
   Timer? _gameTimer;
@@ -191,6 +198,7 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage> with Sing
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _initTts();
     _opponentHp = widget.neighbor.hasActiveShield ? 100 : 70;
     _checkDefenderBanStatus();
@@ -205,9 +213,148 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage> with Sing
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _qTimer?.cancel();
     _gameTimer?.cancel();
     _flutterTts.stop();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.hidden) {
+      if (_activeGame == BattleMode.houseShieldGate && !_isGameOver) {
+        _onAppMinimizedCheatDetected();
+      }
+    }
+  }
+
+  void _onAppMinimizedCheatDetected() {
+    HapticFeedback.heavyImpact();
+    setState(() {
+      _qSecondsLeft = math.max(0, _qSecondsLeft - 7);
+      _showAntiCheatNotice = true;
+    });
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: const Color(0xFFDC2626),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 4),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          content: Row(
+            children: const [
+              Text('🚨', style: TextStyle(fontSize: 20)),
+              SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'ANTI-CHEAT: App minimize / ChatGPT copy detected! -7s time penalty applied.',
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11.5),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    Future.delayed(const Duration(seconds: 4), () {
+      if (mounted) {
+        setState(() => _showAntiCheatNotice = false);
+      }
+    });
+  }
+
+  void _startQuestionTimer() {
+    _qTimer?.cancel();
+    _qSecondsLeft = 30;
+    _qTimer = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (!mounted) return;
+      if (_activeGame != BattleMode.houseShieldGate || _isGameOver) {
+        t.cancel();
+        return;
+      }
+      if (_qSecondsLeft <= 1) {
+        t.cancel();
+        _onQuestionTimeExpired();
+      } else {
+        setState(() {
+          _qSecondsLeft--;
+        });
+      }
+    });
+  }
+
+  void _onQuestionTimeExpired() {
+    HapticFeedback.heavyImpact();
+    setState(() {
+      _comboStreak = 0;
+      _lastDamageText = '⏰ 30s TIMEOUT! Gate Defended!';
+    });
+
+    _advanceToNextShieldQuestion(penalizeHp: true);
+  }
+
+  void _advanceToNextShieldQuestion({bool penalizeHp = false}) {
+    if (_defenderActiveGates.isEmpty) {
+      setState(() {
+        _qIndex++;
+      });
+      _startQuestionTimer();
+      return;
+    }
+
+    final currentGate = _defenderActiveGates[_currentGateIndex.clamp(0, _defenderActiveGates.length - 1)];
+    if (_gateQuestionIndex + 1 < currentGate.questions.length) {
+      setState(() {
+        _gateQuestionIndex++;
+      });
+      _startQuestionTimer();
+    } else {
+      // Gate breached!
+      _applyDamage(35, isCrit: true);
+      HapticFeedback.heavyImpact();
+
+      if (_currentGateIndex + 1 < _defenderActiveGates.length) {
+        final nextTmpl = _defenderActiveGates[_currentGateIndex + 1].template;
+        setState(() {
+          _currentGateIndex++;
+          _gateQuestionIndex = 0;
+        });
+        _startQuestionTimer();
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              backgroundColor: const Color(0xFF0284C7),
+              behavior: SnackBarBehavior.floating,
+              duration: const Duration(seconds: 3),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              content: Row(
+                children: [
+                  const Text('💥', style: TextStyle(fontSize: 20)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'GATE $_currentGateIndex BREACHED! Advancing to ${nextTmpl.title} (${nextTmpl.titleMalayalam})!',
+                      style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+      } else {
+        // All Gates breached!
+        _applyDamage(_opponentHp, isCrit: true);
+        _qTimer?.cancel();
+        _finishGame(won: true);
+      }
+    }
   }
 
   void _startBattle(BattleMode mode) {
@@ -218,10 +365,16 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage> with Sing
       _comboStreak = 0;
       _score = 0;
       _qIndex = 0;
+      _currentGateIndex = 0;
+      _gateQuestionIndex = 0;
       _jigsawSelected = [];
       _isGameOver = false;
       _isBombExploding = false;
     });
+
+    if (mode == BattleMode.houseShieldGate) {
+      _startQuestionTimer();
+    }
 
     _gameTimer?.cancel();
     _gameTimer = Timer.periodic(const Duration(seconds: 1), (t) {
@@ -291,6 +444,8 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage> with Sing
   }
 
   void _finishGame({required bool won}) {
+    _qTimer?.cancel();
+    _gameTimer?.cancel();
     HapticFeedback.heavyImpact();
     // In audio: Attacking yields coins looted from opponent. If fail, NO coins lost!
     final lootCoins = won ? (60 + math.Random().nextInt(30)) : 0;
@@ -315,9 +470,11 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage> with Sing
 
   Future<void> _loadDefenderShieldTraps() async {
     final traps = await PocketFortressDefenseService.loadShieldQuestions(widget.neighbor.day);
+    final gates = await PocketFortressDefenseService.loadDefenderActiveShieldTraps(widget.neighbor.day);
     if (mounted) {
       setState(() {
         _defenderShieldQuestions = traps;
+        _defenderActiveGates = gates;
       });
     }
   }
@@ -591,9 +748,13 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage> with Sing
 
     // Fair-play bypass: Deal +15 bonus damage and jump to next question
     _applyDamage(15, isCrit: true);
-    setState(() {
-      _qIndex++;
-    });
+    if (_activeGame == BattleMode.houseShieldGate) {
+      _advanceToNextShieldQuestion();
+    } else {
+      setState(() {
+        _qIndex++;
+      });
+    }
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -622,7 +783,7 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage> with Sing
   // 🛡️ DEFENDER'S CUSTOM HOUSE SHIELD GATE GAMEPLAY
   // ============================================================
   Widget _buildHouseShieldGateGame() {
-    if (_defenderShieldQuestions.isEmpty) {
+    if (_defenderShieldQuestions.isEmpty && _defenderActiveGates.isEmpty) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -660,21 +821,211 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage> with Sing
       );
     }
 
-    final q = _defenderShieldQuestions[_qIndex % _defenderShieldQuestions.length];
+    final activeGates = _defenderActiveGates;
+    final currentGate = activeGates.isNotEmpty
+        ? activeGates[_currentGateIndex.clamp(0, activeGates.length - 1)]
+        : null;
+    final questions = (currentGate != null && currentGate.questions.isNotEmpty)
+        ? currentGate.questions
+        : _defenderShieldQuestions;
+    final q = questions[_gateQuestionIndex.clamp(0, questions.length - 1)];
+    final tmpl = currentGate?.template ?? kDefenseTrapTemplates[0];
+    final gateCount = activeGates.isNotEmpty ? activeGates.length : 1;
+    final curGateNum = _currentGateIndex + 1;
+
+    final timerColor = _qSecondsLeft <= 10
+        ? Colors.redAccent
+        : (_qSecondsLeft <= 18 ? Colors.amber : const Color(0xFF00F0FF));
+
     return Padding(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          // 🏰 Multi-Gate Fortress Track
+          if (activeGates.isNotEmpty)
+            Container(
+              padding: const EdgeInsets.all(10),
+              margin: const EdgeInsets.only(bottom: 10),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0F172A),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: Colors.white12),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        '🏰 STAGE ${widget.neighbor.day} DEFENSE FORTRESS',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white70,
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      const Spacer(),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: tmpl.themeColor.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: tmpl.themeColor),
+                        ),
+                        child: Text(
+                          'GATE $curGateNum / $gateCount',
+                          style: GoogleFonts.outfit(
+                            color: tmpl.themeColor,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    height: 36,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: activeGates.length,
+                      separatorBuilder: (_, __) => const SizedBox(width: 6),
+                      itemBuilder: (context, gIdx) {
+                        final g = activeGates[gIdx];
+                        final isBreached = gIdx < _currentGateIndex;
+                        final isCurrent = gIdx == _currentGateIndex;
+
+                        return Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: isBreached
+                                ? const Color(0xFF065F46).withValues(alpha: 0.4)
+                                : (isCurrent
+                                    ? g.template.themeColor.withValues(alpha: 0.25)
+                                    : const Color(0xFF1E293B)),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: isBreached
+                                  ? const Color(0xFF10B981)
+                                  : (isCurrent ? g.template.themeColor : Colors.white12),
+                              width: isCurrent ? 1.5 : 1,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                isBreached ? '✅' : (isCurrent ? g.template.icon : '🔒'),
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                'G${gIdx + 1}: ${g.template.title}',
+                                style: GoogleFonts.outfit(
+                                  color: isBreached
+                                      ? const Color(0xFF10B981)
+                                      : (isCurrent ? Colors.white : Colors.white38),
+                                  fontSize: 10.5,
+                                  fontWeight: isCurrent ? FontWeight.w800 : FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+          // ⏱️ 30s Rapid Countdown Timer Bar
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            margin: const EdgeInsets.only(bottom: 10),
+            decoration: BoxDecoration(
+              color: const Color(0xFF131D31),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: timerColor.withValues(alpha: 0.4)),
+            ),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.timer_rounded, size: 15, color: timerColor),
+                    const SizedBox(width: 6),
+                    Text(
+                      '⏱️ 30s RAPID DEFENSE TIMER',
+                      style: GoogleFonts.outfit(
+                        color: timerColor,
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const Spacer(),
+                    Text(
+                      '$_qSecondsLeft s',
+                      style: GoogleFonts.outfit(
+                        color: timerColor,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(6),
+                  child: LinearProgressIndicator(
+                    value: (_qSecondsLeft / 30.0).clamp(0.0, 1.0),
+                    minHeight: 5,
+                    backgroundColor: Colors.white10,
+                    valueColor: AlwaysStoppedAnimation<Color>(timerColor),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // 🚨 Anti-Cheat Warning Banner if triggered
+          if (_showAntiCheatNotice)
+            Container(
+              padding: const EdgeInsets.all(8),
+              margin: const EdgeInsets.only(bottom: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFF7F1D1D),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.redAccent, width: 1.5),
+              ),
+              child: Row(
+                children: const [
+                  Text('🚨', style: TextStyle(fontSize: 16)),
+                  SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      'ANTI-CHEAT: App minimize / ChatGPT copy detected! -7s penalty applied.',
+                      style: TextStyle(color: Colors.white, fontSize: 10.5, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+          // 📝 Active Question Card
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF0C4A6E), Color(0xFF0F172A)],
+              gradient: LinearGradient(
+                colors: [
+                  tmpl.themeColor.withValues(alpha: 0.2),
+                  const Color(0xFF0F172A),
+                ],
               ),
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: const Color(0xFF38BDF8), width: 1.3),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: tmpl.themeColor.withValues(alpha: 0.6), width: 1.3),
             ),
             child: Column(
               children: [
@@ -682,16 +1033,16 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage> with Sing
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF0284C7).withValues(alpha: 0.3),
+                        color: tmpl.themeColor.withValues(alpha: 0.25),
                         borderRadius: BorderRadius.circular(6),
-                        border: Border.all(color: const Color(0xFF38BDF8)),
+                        border: Border.all(color: tmpl.themeColor),
                       ),
                       child: Text(
-                        '🛡️ DEFENSE TRAP #${(_qIndex % _defenderShieldQuestions.length) + 1} (${q.category.toUpperCase()})',
+                        '${tmpl.icon} GATE $curGateNum: ${tmpl.title.toUpperCase()} (Q ${_gateQuestionIndex + 1}/${questions.length})',
                         style: GoogleFonts.outfit(
-                          color: const Color(0xFF38BDF8),
+                          color: tmpl.themeColor,
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
                         ),
@@ -709,7 +1060,7 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage> with Sing
                   q.question,
                   style: GoogleFonts.outfit(
                     color: Colors.white,
-                    fontSize: 15.5,
+                    fontSize: 15,
                     fontWeight: FontWeight.bold,
                   ),
                   textAlign: TextAlign.center,
@@ -718,36 +1069,41 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage> with Sing
                   const SizedBox(height: 6),
                   Text(
                     'Tip: ${q.explanation}',
-                    style: const TextStyle(color: Colors.white54, fontSize: 11),
+                    style: const TextStyle(color: Colors.white54, fontSize: 10.5),
                     textAlign: TextAlign.center,
                   ),
                 ],
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
+
+          // 🔠 Options List
           Expanded(
             child: ListView.builder(
               itemCount: q.options.length,
               itemBuilder: (ctx, i) {
                 final isCorrect = i == q.correctIndex;
                 return Container(
-                  margin: const EdgeInsets.only(bottom: 10),
+                  margin: const EdgeInsets.only(bottom: 8),
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF1E293B),
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                       side: const BorderSide(color: Colors.white24),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                     ),
                     onPressed: () {
                       if (isCorrect) {
                         _applyDamage(25, isCrit: _comboStreak >= 2);
+                        _advanceToNextShieldQuestion();
                       } else {
                         _onIncorrect();
+                        setState(() {
+                          _qSecondsLeft = math.max(1, _qSecondsLeft - 5);
+                        });
                       }
-                      setState(() => _qIndex++);
                     },
                     child: Row(
                       children: [
@@ -764,11 +1120,11 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage> with Sing
                             style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 10),
                         Expanded(
                           child: Text(
                             q.options[i],
-                            style: GoogleFonts.outfit(fontSize: 13, fontWeight: FontWeight.w600),
+                            style: GoogleFonts.outfit(fontSize: 12.5, fontWeight: FontWeight.w600),
                           ),
                         ),
                       ],
@@ -777,6 +1133,13 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage> with Sing
                 );
               },
             ),
+          ),
+
+          // Fair-play footer
+          Text(
+            '⚖️ Fair-Play Active • 30s strict timer prevents AI assistance. Tap "Report Fake" to skip invalid questions.',
+            style: TextStyle(color: Colors.white.withValues(alpha: 0.4), fontSize: 9.5),
+            textAlign: TextAlign.center,
           ),
         ],
       ),

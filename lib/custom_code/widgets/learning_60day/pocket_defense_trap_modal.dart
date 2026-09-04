@@ -33,6 +33,8 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   List<HouseShieldQuestion> _questions = [];
+  List<String> _activeTraps = [];
+  int _selectedTrapIdx = 0;
   HouseDefenseStatus _houseStatus = const HouseDefenseStatus();
   bool _isLoading = true;
   bool _isBanned = false;
@@ -51,20 +53,25 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
   }
 
   Future<void> _loadData() async {
-    final status = await PocketFortressDefenseService.getHouseStatus();
+    final status = await PocketFortressDefenseService.getHouseStatus(widget.userDay);
     final qList = await PocketFortressDefenseService.loadShieldQuestions(widget.userDay);
+    final activeTraps = await PocketFortressDefenseService.getActiveShieldTraps(widget.userDay);
     final banned = await PocketFortressDefenseService.isHouseBanned('me');
     if (mounted) {
       setState(() {
         _houseStatus = status;
         _questions = qList;
+        _activeTraps = activeTraps;
+        if (_selectedTrapIdx >= activeTraps.length) {
+          _selectedTrapIdx = 0;
+        }
         _isBanned = banned || status.isBanned;
         _isLoading = false;
       });
     }
   }
 
-  void _openAddEditDialog({int? editIndex}) {
+  void _openAddEditDialog({int? editIndex, String? preselectedTrapType}) {
     if (_isBanned) {
       HapticFeedback.heavyImpact();
       ScaffoldMessenger.of(context).showSnackBar(
@@ -96,7 +103,9 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
       ),
     );
     int selectedCorrect = existing?.correctIndex ?? 0;
-    String category = existing?.category ?? 'vocab';
+    String chosenTrapType = preselectedTrapType ??
+        existing?.trapType ??
+        (_activeTraps.isNotEmpty ? _activeTraps[_selectedTrapIdx.clamp(0, _activeTraps.length - 1)] : 'vocab_gate');
     PresidentVerdict? liveVerdict;
 
     showDialog(
@@ -177,24 +186,28 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
                     ),
                   ],
 
-                  // Category Selector
+                  // Gate Assignment Selector
                   Row(
                     children: [
-                      const Text('Type:', style: TextStyle(color: Colors.white70, fontSize: 12)),
-                      const SizedBox(width: 10),
-                      DropdownButton<String>(
-                        dropdownColor: const Color(0xFF1E293B),
-                        value: category,
-                        style: GoogleFonts.outfit(color: const Color(0xFF38BDF8), fontWeight: FontWeight.bold),
-                        underline: const SizedBox(),
-                        items: const [
-                          DropdownMenuItem(value: 'vocab', child: Text('🎯 Vocabulary')),
-                          DropdownMenuItem(value: 'grammar', child: Text('💣 Grammar')),
-                          DropdownMenuItem(value: 'idiom', child: Text('⚡ Idiom / Slang')),
-                        ],
-                        onChanged: (val) {
-                          if (val != null) setDState(() => category = val);
-                        },
+                      const Text('Gate:', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: DropdownButton<String>(
+                          dropdownColor: const Color(0xFF1E293B),
+                          value: chosenTrapType,
+                          isExpanded: true,
+                          style: GoogleFonts.outfit(color: const Color(0xFF38BDF8), fontWeight: FontWeight.bold, fontSize: 12),
+                          underline: const SizedBox(),
+                          items: kDefenseTrapTemplates.map((tmpl) {
+                            return DropdownMenuItem(
+                              value: tmpl.id,
+                              child: Text('${tmpl.icon} ${tmpl.title} (${tmpl.titleMalayalam})'),
+                            );
+                          }).toList(),
+                          onChanged: (val) {
+                            if (val != null) setDState(() => chosenTrapType = val);
+                          },
+                        ),
                       ),
                     ],
                   ),
@@ -307,13 +320,19 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
                     return;
                   }
 
+                  final tmpl = kDefenseTrapTemplates.firstWhere(
+                    (t) => t.id == chosenTrapType,
+                    orElse: () => kDefenseTrapTemplates[0],
+                  );
+
                   final newQ = HouseShieldQuestion(
                     id: existing?.id ?? 'q_${DateTime.now().millisecondsSinceEpoch}',
                     question: qText,
                     options: ops,
                     correctIndex: selectedCorrect,
                     explanation: expCtrl.text.trim(),
-                    category: category,
+                    category: tmpl.category,
+                    trapType: chosenTrapType,
                     isPresidentApproved: true,
                   );
 
@@ -342,6 +361,65 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
             ],
           );
         },
+      ),
+    );
+  }
+
+  void _showChangeTemplateDialog(int trapIndex) {
+    if (_isBanned) return;
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF0F172A),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: Row(
+          children: [
+            const Text('🔄', style: TextStyle(fontSize: 22)),
+            const SizedBox(width: 8),
+            Text(
+              'Select Gate Game Template',
+              style: GoogleFonts.outfit(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: kDefenseTrapTemplates.length,
+            itemBuilder: (context, i) {
+              final tmpl = kDefenseTrapTemplates[i];
+              final isCurrentlyEquipped = _activeTraps.contains(tmpl.id);
+              return Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                decoration: BoxDecoration(
+                  color: isCurrentlyEquipped ? tmpl.themeColor.withValues(alpha: 0.15) : const Color(0xFF1E293B),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: isCurrentlyEquipped ? tmpl.themeColor : Colors.white12),
+                ),
+                child: ListTile(
+                  leading: Text(tmpl.icon, style: const TextStyle(fontSize: 24)),
+                  title: Text(tmpl.title, style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold)),
+                  subtitle: Text(
+                    '${tmpl.titleMalayalam} • ${tmpl.description}',
+                    style: const TextStyle(color: Colors.white60, fontSize: 11),
+                  ),
+                  trailing: isCurrentlyEquipped
+                      ? const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 20)
+                      : null,
+                  onTap: () async {
+                    Navigator.pop(ctx);
+                    setState(() {
+                      _activeTraps[trapIndex] = tmpl.id;
+                    });
+                    await PocketFortressDefenseService.setActiveShieldTraps(_activeTraps);
+                    HapticFeedback.selectionClick();
+                  },
+                ),
+              );
+            },
+          ),
+        ),
       ),
     );
   }
@@ -474,6 +552,21 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
   // TAB 1: SHIELD QUESTIONS (STAGE-SCALED)
   // ==========================================
   Widget _buildShieldQuestionsTab(int maxAllowed) {
+    final questionsPerGame = PocketFortressDefenseService.getQuestionsPerGameForStage(widget.userDay);
+    final activeCount = _activeTraps.length;
+    final selectedTrapId = _activeTraps.isNotEmpty
+        ? _activeTraps[_selectedTrapIdx.clamp(0, _activeTraps.length - 1)]
+        : 'vocab_gate';
+    final selectedTemplate = kDefenseTrapTemplates.firstWhere(
+      (t) => t.id == selectedTrapId,
+      orElse: () => kDefenseTrapTemplates[0],
+    );
+
+    // Filter questions for currently selected trap
+    final trapQuestions = _questions.where((q) {
+      return q.trapType == selectedTrapId || q.category == selectedTemplate.category;
+    }).toList();
+
     return Column(
       children: [
         // Banned Notice Banner if house is banned
@@ -519,7 +612,7 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
         // Fair-Play Advisory Banner
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          margin: const EdgeInsets.only(bottom: 10),
+          margin: const EdgeInsets.only(bottom: 8),
           decoration: BoxDecoration(
             color: const Color(0xFF1E293B).withValues(alpha: 0.6),
             borderRadius: BorderRadius.circular(12),
@@ -542,55 +635,273 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
           ),
         ),
 
-        // Quota Bar
+        // Stage & Quota Header
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          margin: const EdgeInsets.only(bottom: 8),
           decoration: BoxDecoration(
-            color: const Color(0xFF131D31),
+            gradient: const LinearGradient(
+              colors: [Color(0xFF1E1B4B), Color(0xFF0F172A)],
+            ),
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: Colors.white12),
+            border: Border.all(color: const Color(0xFF6366F1).withValues(alpha: 0.35)),
           ),
-          child: Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Active Defense Questions:',
-                style: GoogleFonts.outfit(color: Colors.white70, fontSize: 12),
+              Row(
+                children: [
+                  Text(
+                    '🛡️ STAGE ${widget.userDay} DEFENSE SYSTEM',
+                    style: GoogleFonts.outfit(
+                      color: const Color(0xFF818CF8),
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  const Spacer(),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
+                    ),
+                    child: Text(
+                      '${_questions.length} / $maxAllowed Total Armed',
+                      style: GoogleFonts.outfit(
+                        color: const Color(0xFFFFD700),
+                        fontWeight: FontWeight.w900,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              const Spacer(),
-              Text(
-                '${_questions.length} / $maxAllowed Allowed',
-                style: GoogleFonts.outfit(
-                  color: const Color(0xFFFFD700),
-                  fontWeight: FontWeight.w900,
-                  fontSize: 13,
-                ),
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  _buildQuotaBadge('🏰 Active Gates', '$activeCount / ${PocketFortressDefenseService.getUnlockedGamesCountForStage(widget.userDay)}'),
+                  const SizedBox(width: 8),
+                  _buildQuotaBadge('🎯 Target / Gate', '$questionsPerGame Qs'),
+                  const SizedBox(width: 8),
+                  _buildQuotaBadge('⏱️ Challenge Time', '30s / Question'),
+                ],
               ),
             ],
           ),
         ),
+
+        // Horizontal Gate Selector Bar
+        SizedBox(
+          height: 64,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: _activeTraps.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 8),
+            itemBuilder: (context, i) {
+              final trapId = _activeTraps[i];
+              final tmpl = kDefenseTrapTemplates.firstWhere(
+                (t) => t.id == trapId,
+                orElse: () => kDefenseTrapTemplates[0],
+              );
+              final isSelected = i == _selectedTrapIdx;
+              final gateQCount = _questions.where((q) => q.trapType == trapId || q.category == tmpl.category).length;
+
+              return InkWell(
+                onTap: () {
+                  setState(() => _selectedTrapIdx = i);
+                  HapticFeedback.selectionClick();
+                },
+                borderRadius: BorderRadius.circular(12),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? tmpl.themeColor.withValues(alpha: 0.22)
+                        : const Color(0xFF1E293B).withValues(alpha: 0.7),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isSelected ? tmpl.themeColor : Colors.white12,
+                      width: isSelected ? 1.8 : 1,
+                    ),
+                    boxShadow: isSelected
+                        ? [
+                            BoxShadow(
+                              color: tmpl.themeColor.withValues(alpha: 0.3),
+                              blurRadius: 8,
+                              spreadRadius: 1,
+                            )
+                          ]
+                        : null,
+                  ),
+                  child: Row(
+                    children: [
+                      Text(tmpl.icon, style: const TextStyle(fontSize: 22)),
+                      const SizedBox(width: 8),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                'GATE ${i + 1}: ${tmpl.title}',
+                                style: GoogleFonts.outfit(
+                                  color: isSelected ? Colors.white : Colors.white70,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              GestureDetector(
+                                onTap: () => _showChangeTemplateDialog(i),
+                                child: Container(
+                                  padding: const EdgeInsets.all(2),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white10,
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: const Icon(Icons.swap_horiz_rounded, size: 14, color: Colors.cyanAccent),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            '$gateQCount / $questionsPerGame Qs Armed',
+                            style: TextStyle(
+                              color: gateQCount >= questionsPerGame ? const Color(0xFF10B981) : Colors.amber.shade300,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
         const SizedBox(height: 10),
 
-        // Questions List
+        // Selected Gate Management Card
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            color: selectedTemplate.themeColor.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: selectedTemplate.themeColor.withValues(alpha: 0.3)),
+          ),
+          child: Row(
+            children: [
+              Text(selectedTemplate.icon, style: const TextStyle(fontSize: 24)),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'GATE ${_selectedTrapIdx + 1}: ${selectedTemplate.title} (${selectedTemplate.titleMalayalam})',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    Text(
+                      selectedTemplate.description,
+                      style: const TextStyle(color: Colors.white60, fontSize: 10),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              // Change template icon
+              TextButton.icon(
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  backgroundColor: Colors.white10,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                icon: const Icon(Icons.tune_rounded, size: 14, color: Colors.amber),
+                label: const Text('Change', style: TextStyle(color: Colors.amber, fontSize: 11)),
+                onPressed: () => _showChangeTemplateDialog(_selectedTrapIdx),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+
+        // Questions List for this Gate
         Expanded(
-          child: _questions.isEmpty
+          child: trapQuestions.isEmpty
               ? Center(
-                  child: Text(
-                    'No custom questions added yet.\nArm your house now!',
-                    style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 13),
-                    textAlign: TextAlign.center,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(selectedTemplate.icon, style: const TextStyle(fontSize: 40)),
+                        const SizedBox(height: 8),
+                        Text(
+                          'No custom questions for ${selectedTemplate.title} yet.',
+                          style: GoogleFonts.outfit(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 4),
+                        const Text(
+                          'Arm this defense gate with custom questions or load high-quality curated challenges below!',
+                          style: TextStyle(color: Colors.white38, fontSize: 11),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 12),
+                        OutlinedButton.icon(
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: const Color(0xFF38BDF8),
+                            side: const BorderSide(color: Color(0xFF38BDF8)),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                          icon: const Icon(Icons.auto_awesome, size: 16),
+                          label: Text(
+                            'LOAD CURATED DEFAULT QUESTIONS',
+                            style: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.bold),
+                          ),
+                          onPressed: () async {
+                            final curated = PocketFortressDefenseService.getCuratedQuestionsForTrap(selectedTrapId);
+                            setState(() {
+                              for (final cq in curated) {
+                                if (!_questions.any((q) => q.question == cq.question)) {
+                                  _questions.add(cq);
+                                }
+                              }
+                            });
+                            await PocketFortressDefenseService.saveShieldQuestions(_questions);
+                            HapticFeedback.mediumImpact();
+                          },
+                        ),
+                      ],
+                    ),
                   ),
                 )
               : ListView.builder(
-                  itemCount: _questions.length,
+                  itemCount: trapQuestions.length,
                   itemBuilder: (context, i) {
-                    final q = _questions[i];
+                    final q = trapQuestions[i];
+                    final originalIdx = _questions.indexOf(q);
+
                     return Container(
-                      margin: const EdgeInsets.only(bottom: 10),
+                      margin: const EdgeInsets.only(bottom: 8),
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: const Color(0xFF0F172A),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.35)),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: selectedTemplate.themeColor.withValues(alpha: 0.3)),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -600,13 +911,13 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF0284C7).withValues(alpha: 0.2),
+                                  color: selectedTemplate.themeColor.withValues(alpha: 0.2),
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: Text(
                                   'TRAP #${i + 1} (${q.category.toUpperCase()})',
                                   style: GoogleFonts.outfit(
-                                    color: const Color(0xFF38BDF8),
+                                    color: selectedTemplate.themeColor,
                                     fontSize: 10,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -617,12 +928,21 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
                               const Spacer(),
                               IconButton(
                                 icon: const Icon(Icons.edit, color: Colors.amber, size: 18),
-                                onPressed: () => _openAddEditDialog(editIndex: i),
+                                onPressed: () => _openAddEditDialog(
+                                  editIndex: originalIdx != -1 ? originalIdx : null,
+                                  preselectedTrapType: selectedTrapId,
+                                ),
                               ),
                               IconButton(
                                 icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 18),
                                 onPressed: () {
-                                  setState(() => _questions.removeAt(i));
+                                  setState(() {
+                                    if (originalIdx != -1) {
+                                      _questions.removeAt(originalIdx);
+                                    } else {
+                                      _questions.remove(q);
+                                    }
+                                  });
                                   PocketFortressDefenseService.saveShieldQuestions(_questions);
                                 },
                               ),
@@ -631,7 +951,7 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
                           const SizedBox(height: 4),
                           Text(
                             q.question,
-                            style: GoogleFonts.outfit(color: Colors.white, fontSize: 13.5, fontWeight: FontWeight.bold),
+                            style: GoogleFonts.outfit(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 4),
                           Text(
@@ -642,7 +962,7 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
                             const SizedBox(height: 2),
                             Text(
                               '💡 ${q.explanation}',
-                              style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 10.5),
+                              style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 10),
                             ),
                           ],
                         ],
@@ -651,27 +971,49 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
                   },
                 ),
         ),
+        const SizedBox(height: 6),
 
-        // Add Button
-        if (_questions.length < maxAllowed)
-          SizedBox(
-            width: double.infinity,
-            height: 46,
-            child: ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF0284C7),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-              icon: const Icon(Icons.shield_rounded, size: 20),
-              label: Text(
-                'ADD DEFENSE QUESTION (${_questions.length}/$maxAllowed)',
-                style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 12),
-              ),
-              onPressed: () => _openAddEditDialog(),
+        // Add Button for This Gate
+        SizedBox(
+          width: double.infinity,
+          height: 44,
+          child: ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: selectedTemplate.themeColor,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
+            icon: const Icon(Icons.add_moderator_rounded, size: 18),
+            label: Text(
+              'ADD QUESTION TO ${selectedTemplate.title.toUpperCase()} (${trapQuestions.length}/$questionsPerGame)',
+              style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 11.5),
+            ),
+            onPressed: () => _openAddEditDialog(preselectedTrapType: selectedTrapId),
           ),
+        ),
       ],
+    );
+  }
+
+  Widget _buildQuotaBadge(String label, String value) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.white10),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(label, style: const TextStyle(color: Colors.white60, fontSize: 10)),
+          const SizedBox(width: 4),
+          Text(
+            value,
+            style: GoogleFonts.outfit(color: Colors.white, fontSize: 10.5, fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
     );
   }
 
