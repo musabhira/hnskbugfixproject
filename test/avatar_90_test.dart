@@ -178,4 +178,33 @@ void main() {
     expect(status4.armyKnightsCount, greaterThanOrEqualTo(2));
     expect(status4.activePerk!.title, contains('Royal Bengal'));
   });
+
+  test('FlameProfileBannerGame generates diverse atmospheric weather types across biomes', () {
+    final weatherCounts = <BannerWeatherType, int>{};
+    for (int day = 1; day <= 90; day++) {
+      final config = VectorAvatarConfig.getEvolutionAvatarForStage(day);
+      final bannerGame = FlameProfileBannerGame(config: config, stage: day);
+      final weather = bannerGame.getWeatherType();
+      weatherCounts[weather] = (weatherCounts[weather] ?? 0) + 1;
+
+      // Ensure game loop runs and renders with active weather particles
+      bannerGame.onGameResize(Vector2(400, 200));
+      bannerGame.onMount();
+      for (int f = 0; f < 10; f++) {
+        bannerGame.update(0.05);
+      }
+      final recorder = PictureRecorder();
+      final canvas = Canvas(recorder);
+      bannerGame.render(canvas);
+      final pic = recorder.endRecording();
+      expect(pic, isNotNull);
+    }
+
+    // Verify multiple diverse weather types are actively used
+    expect(weatherCounts[BannerWeatherType.rain], greaterThan(0));
+    expect(weatherCounts[BannerWeatherType.fireEmbers], greaterThan(0));
+    expect(weatherCounts[BannerWeatherType.sakuraPetals], greaterThan(0));
+    expect(weatherCounts[BannerWeatherType.cosmicStardust], greaterThan(0));
+    expect(weatherCounts[BannerWeatherType.bioluminescentBubbles], greaterThan(0));
+  });
 }

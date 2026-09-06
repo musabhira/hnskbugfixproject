@@ -118,7 +118,7 @@ class FlameProfileBannerGame extends FlameGame with TapCallbacks {
       if (d.x > w + 30) d.x = -20;
     }
 
-    // Update tap & ember particles
+    // Update tap & weather particles
     for (int i = _particles.length - 1; i >= 0; i--) {
       _particles[i].update(dt);
       if (!_particles[i].isAlive) {
@@ -126,24 +126,140 @@ class FlameProfileBannerGame extends FlameGame with TapCallbacks {
       }
     }
 
-    // Ambient floating embers rising from the bottom
-    if (_particles.length < 18 && _random.nextDouble() < 0.35) {
+    // Diverse Atmospheric Weather Simulation (User audio: "ബബിൾസ് മാത്രം വരാതെ ചിലപ്പോൾ റെയിൻ ആക്കുക, ഓരോന്നിനനുസരിച്ച് ഡെക്കറേറ്റ് ആക്കുക")
+    final weather = getWeatherType();
+    final maxParticles = (weather == BannerWeatherType.rain) ? 30 : 18;
+    if (_particles.length < maxParticles && _random.nextDouble() < 0.45) {
       final accent = VectorAvatarConfig.parseHex(
         config.outfitAccentColor,
         fallback: const Color(0xFFFFD700),
       );
-      _particles.add(
-        _BannerParticle(
-          x: _random.nextDouble() * w,
-          y: h + 10,
-          vx: (_random.nextDouble() - 0.5) * 20.0,
-          vy: -30.0 - _random.nextDouble() * 40.0,
-          color: (_random.nextBool()) ? accent : Colors.white.withValues(alpha: 0.9),
-          size: 2.0 + _random.nextDouble() * 3.5,
-          lifespan: 1.2 + _random.nextDouble() * 1.0,
-        ),
-      );
+
+      switch (weather) {
+        case BannerWeatherType.rain:
+          // Rain streaks falling diagonally from the sky with electric cyan/blue glints
+          _particles.add(
+            _BannerParticle(
+              x: _random.nextDouble() * (w + 50),
+              y: -10,
+              vx: -35.0 - _random.nextDouble() * 20.0,
+              vy: 160.0 + _random.nextDouble() * 80.0,
+              color: _random.nextBool() ? const Color(0xFF38BDF8) : const Color(0xFF7DD3FC),
+              size: 1.5,
+              length: 12.0 + _random.nextDouble() * 10.0,
+              lifespan: 1.1 + _random.nextDouble() * 0.4,
+              weatherType: BannerWeatherType.rain,
+            ),
+          );
+          break;
+
+        case BannerWeatherType.fireEmbers:
+          // Fiery glowing embers rising from volcanic/predator aura
+          _particles.add(
+            _BannerParticle(
+              x: _random.nextDouble() * w,
+              y: h + 10,
+              vx: (_random.nextDouble() - 0.5) * 22.0,
+              vy: -35.0 - _random.nextDouble() * 45.0,
+              color: (_random.nextDouble() < 0.4)
+                  ? const Color(0xFFEF4444)
+                  : (_random.nextDouble() < 0.7 ? const Color(0xFFF59E0B) : accent),
+              size: 2.5 + _random.nextDouble() * 3.5,
+              lifespan: 1.3 + _random.nextDouble() * 1.0,
+              weatherType: BannerWeatherType.fireEmbers,
+            ),
+          );
+          break;
+
+        case BannerWeatherType.sakuraPetals:
+          // Gracefully drifting sakura petals/leaves for zen avatars
+          _particles.add(
+            _BannerParticle(
+              x: _random.nextDouble() * w,
+              y: -10,
+              vx: 12.0 + (_random.nextDouble() - 0.3) * 20.0,
+              vy: 24.0 + _random.nextDouble() * 22.0,
+              color: _random.nextBool() ? const Color(0xFFF472B6) : const Color(0xFFFBCFE8),
+              size: 4.0 + _random.nextDouble() * 3.5,
+              rotation: _random.nextDouble() * math.pi * 2,
+              rotationSpeed: (_random.nextDouble() - 0.5) * 2.8,
+              lifespan: 3.5 + _random.nextDouble() * 1.5,
+              weatherType: BannerWeatherType.sakuraPetals,
+            ),
+          );
+          break;
+
+        case BannerWeatherType.cosmicStardust:
+          // Shimmering astral starlight pulses for cosmic / Day 90 avatars
+          _particles.add(
+            _BannerParticle(
+              x: _random.nextDouble() * w,
+              y: _random.nextDouble() * h,
+              vx: (_random.nextDouble() - 0.5) * 8.0,
+              vy: -5.0 - _random.nextDouble() * 10.0,
+              color: (_random.nextDouble() < 0.33)
+                  ? const Color(0xFF00E5FF)
+                  : (_random.nextDouble() < 0.66 ? const Color(0xFFD946EF) : const Color(0xFFFFD700)),
+              size: 3.0 + _random.nextDouble() * 3.5,
+              lifespan: 1.6 + _random.nextDouble() * 1.0,
+              weatherType: BannerWeatherType.cosmicStardust,
+            ),
+          );
+          break;
+
+        case BannerWeatherType.bioluminescentBubbles:
+          // Iridescent underwater bubbles for marine avatars
+          _particles.add(
+            _BannerParticle(
+              x: _random.nextDouble() * w,
+              y: h + 10,
+              vx: (_random.nextDouble() - 0.5) * 14.0,
+              vy: -22.0 - _random.nextDouble() * 24.0,
+              color: _random.nextBool() ? const Color(0xFF38BDF8) : const Color(0xFF2DD4BF),
+              size: 3.8 + _random.nextDouble() * 4.0,
+              lifespan: 2.2 + _random.nextDouble() * 1.2,
+              weatherType: BannerWeatherType.bioluminescentBubbles,
+            ),
+          );
+          break;
+      }
     }
+  }
+
+  BannerWeatherType getWeatherType() {
+    return _getWeatherTypeForSpecies(config.species, stage);
+  }
+
+  static BannerWeatherType _getWeatherTypeForSpecies(String species, int day) {
+    if (day >= 85) return BannerWeatherType.cosmicStardust;
+    final s = species.toLowerCase();
+    if (s.contains('dragon') || s.contains('titan') || s.contains('astral') || s.contains('cosmic') || s.contains('aurora')) {
+      return BannerWeatherType.cosmicStardust;
+    }
+    if (s.contains('cat') || s.contains('tiger') || s.contains('lion') || s.contains('leopard') ||
+        s.contains('cheetah') || s.contains('panther') || s.contains('wolf') || s.contains('hound') ||
+        s.contains('phoenix') || s.contains('hydra') || s.contains('chimera') || s.contains('cerberus')) {
+      return BannerWeatherType.fireEmbers;
+    }
+    if (s.contains('eagle') || s.contains('falcon') || s.contains('hawk') || s.contains('owl') ||
+        s.contains('storm') || s.contains('thunder') || s.contains('electric') || s.contains('crow') ||
+        s.contains('raven') || s.contains('bird') || s.contains('pegasus') || s.contains('roc')) {
+      return BannerWeatherType.rain;
+    }
+    if (s.contains('shark') || s.contains('orca') || s.contains('whale') || s.contains('kraken') ||
+        s.contains('jellyfish') || s.contains('seahorse') || s.contains('ray') || s.contains('walrus') ||
+        s.contains('narwhal') || s.contains('otter')) {
+      return BannerWeatherType.bioluminescentBubbles;
+    }
+    if (s.contains('panda') || s.contains('sloth') || s.contains('bear') || s.contains('fox') ||
+        s.contains('deer') || s.contains('rabbit') || s.contains('koala') || s.contains('ape')) {
+      return BannerWeatherType.sakuraPetals;
+    }
+    final mod = day % 4;
+    if (mod == 0) return BannerWeatherType.rain;
+    if (mod == 1) return BannerWeatherType.fireEmbers;
+    if (mod == 2) return BannerWeatherType.sakuraPetals;
+    return BannerWeatherType.cosmicStardust;
   }
 
   @override
@@ -186,12 +302,72 @@ class FlameProfileBannerGame extends FlameGame with TapCallbacks {
       canvas.restore();
     }
 
-    // 2. Render Flame Particles & Tap Bursts
+    // 2. Render Distinct Atmospheric Weather & Particles
     for (final p in _particles) {
-      final pPaint = Paint()
-        ..color = p.color.withValues(alpha: (p.lifeProgress * 0.85).clamp(0.0, 1.0))
-        ..style = PaintingStyle.fill;
-      canvas.drawCircle(Offset(p.x, p.y), p.size * p.lifeProgress, pPaint);
+      final progress = p.lifeProgress;
+      switch (p.weatherType) {
+        case BannerWeatherType.rain:
+          final rainPaint = Paint()
+            ..color = p.color.withValues(alpha: (progress * 0.75).clamp(0.0, 1.0))
+            ..strokeWidth = 1.6
+            ..strokeCap = StrokeCap.round;
+          canvas.drawLine(
+            Offset(p.x, p.y),
+            Offset(p.x - 3.5, p.y + p.length),
+            rainPaint,
+          );
+          break;
+
+        case BannerWeatherType.fireEmbers:
+          final emberPaint = Paint()
+            ..color = p.color.withValues(alpha: (progress * 0.9).clamp(0.0, 1.0))
+            ..style = PaintingStyle.fill;
+          canvas.drawCircle(Offset(p.x, p.y), p.size * progress, emberPaint);
+          canvas.drawCircle(
+            Offset(p.x, p.y),
+            (p.size * progress * 0.4).clamp(0.5, 2.0),
+            Paint()..color = Colors.white.withValues(alpha: progress),
+          );
+          break;
+
+        case BannerWeatherType.sakuraPetals:
+          canvas.save();
+          canvas.translate(p.x, p.y);
+          canvas.rotate(p.rotation);
+          final petalPaint = Paint()
+            ..color = p.color.withValues(alpha: (progress * 0.8).clamp(0.0, 1.0))
+            ..style = PaintingStyle.fill;
+          final pRect = Rect.fromCenter(
+              center: Offset.zero, width: p.size * 1.5, height: p.size * 0.9);
+          canvas.drawOval(pRect, petalPaint);
+          canvas.restore();
+          break;
+
+        case BannerWeatherType.cosmicStardust:
+          final alpha = (progress * 0.95).clamp(0.0, 1.0);
+          final starPaint = Paint()
+            ..color = p.color.withValues(alpha: alpha)
+            ..style = PaintingStyle.fill;
+          canvas.save();
+          canvas.translate(p.x, p.y);
+          _drawStar(canvas, p.size * (0.6 + 0.4 * math.sin(_elapsedTime * 6.0 + p.x)), starPaint);
+          canvas.restore();
+          break;
+
+        case BannerWeatherType.bioluminescentBubbles:
+          final alpha = (progress * 0.7).clamp(0.0, 1.0);
+          final bPaint = Paint()
+            ..color = p.color.withValues(alpha: alpha)
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 1.4;
+          canvas.drawCircle(Offset(p.x, p.y), p.size, bPaint);
+          canvas.drawCircle(
+            Offset(p.x - p.size * 0.3, p.y - p.size * 0.3),
+            p.size * 0.25,
+            Paint()..color = Colors.white.withValues(alpha: alpha),
+          );
+          break;
+      }
     }
   }
 
@@ -313,6 +489,14 @@ class _BannerDoodle {
   });
 }
 
+enum BannerWeatherType {
+  rain,
+  fireEmbers,
+  sakuraPetals,
+  cosmicStardust,
+  bioluminescentBubbles,
+}
+
 class _BannerParticle {
   double x;
   double y;
@@ -322,6 +506,10 @@ class _BannerParticle {
   double size;
   double lifespan;
   double remainingLife;
+  BannerWeatherType weatherType;
+  double rotation;
+  double rotationSpeed;
+  double length;
 
   _BannerParticle({
     required this.x,
@@ -331,6 +519,10 @@ class _BannerParticle {
     required this.color,
     required this.size,
     required this.lifespan,
+    this.weatherType = BannerWeatherType.fireEmbers,
+    this.rotation = 0.0,
+    this.rotationSpeed = 0.0,
+    this.length = 8.0,
   }) : remainingLife = lifespan;
 
   bool get isAlive => remainingLife > 0;
@@ -339,6 +531,7 @@ class _BannerParticle {
   void update(double dt) {
     x += vx * dt;
     y += vy * dt;
+    rotation += rotationSpeed * dt;
     remainingLife -= dt;
   }
 }

@@ -19,11 +19,11 @@ import 'package:pocket_mates_app/custom_code/widgets/subscription_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/ai_prompt_service.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:url_launcher/url_launcher.dart';
-import 'package:pocket_mates_app/custom_code/widgets/avatar/nft_trading_card_dialog.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/jackie_chan_talisman_service.dart';
-import 'package:pocket_mates_app/custom_code/widgets/avatar/flame_avatar_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/flame_profile_banner_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/flame_english_house_game.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_defense_trap_modal.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortress_defense_service.dart';
 
 class MainProfileWidget extends StatefulWidget {
   final String? userId;
@@ -153,6 +153,29 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     _loadInitialData(); // Instant load strategy
     _fetchThreads();
     _loadEquippedTalisman();
+    _loadFortressDefenseData();
+  }
+
+  // Fortress Citadel & Defense Traps State (User audio: "നിലവിലുള്ള ഡിഫൻസ് എന്തൊക്കെയാണ് എന്നുള്ളത്, എന്തൊക്കെ ക്വസ്റ്റ്യൻസ് ഡിഫൻസ് ഉണ്ട് എന്നുള്ളത് അത് കാണാനും പറ്റണം. അത് നമ്മുടെ മൈ പ്രൊഫൈലില് കാണാൻ പറ്റണം")
+  HouseDefenseStatus? _fortressStatus;
+  List<HouseShieldQuestion> _shieldQuestions = [];
+  bool _isLoadingDefense = false;
+
+  Future<void> _loadFortressDefenseData() async {
+    final day = (_profileData?['learning_day'] as num?)?.toInt() ?? 1;
+    try {
+      final status = await PocketFortressDefenseService.getHouseStatus(day);
+      final questions = await PocketFortressDefenseService.loadShieldQuestions(day, isNeighbor: false);
+      if (mounted) {
+        setState(() {
+          _fortressStatus = status;
+          _shieldQuestions = questions;
+          _isLoadingDefense = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading defense data in profile: $e');
+    }
   }
 
   Future<void> _loadEquippedTalisman() async {
@@ -294,6 +317,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         'learning_day': stage.day,
         'learning_stage': stage.stageNumber,
       }).eq('user_id', userId);
+      _loadFortressDefenseData();
     } catch (e) {
       debugPrint('Error updating learning stage: $e');
     }
@@ -976,6 +1000,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                             currentDay: (_profileData?['learning_day'] as num?)?.toInt() ?? 1,
                             streak: (_profileData?['daily_streak'] as num?)?.toInt() ?? 1,
                           ),
+                          const SizedBox(height: 16),
+                          _buildCitadelDefenseSection(textColor, btnColor, btnTextColor),
                           const SizedBox(height: 32),
                         ],
                       ),
@@ -1055,6 +1081,582 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       ],
                     ),
         ),
+      ),
+    );
+  }
+
+  // 🛡️ House Citadel & Defense Traps Inspection Widget (User audio: "നിലവിലുള്ള ഡിഫൻസ് എന്തൊക്കെയാണ് എന്നുള്ളത്, എന്തൊക്കെ ക്വസ്റ്റ്യൻസ് ഡിഫൻസ് ഉണ്ട് എന്നുള്ളത് അത് കാണാനും പറ്റണം. അത് നമ്മുടെ മൈ പ്രൊഫൈലില് കാണാൻ പറ്റണം")
+  Widget _buildCitadelDefenseSection(Color textColor, Color btnColor, Color btnTextColor) {
+    if (_isLoadingDefense && _fortressStatus == null) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        child: Center(
+          child: CircularProgressIndicator(color: Color(0xFF38BDF8)),
+        ),
+      );
+    }
+
+    final currentDay = (_profileData?['learning_day'] as num?)?.toInt() ?? 1;
+    final status = _fortressStatus ?? const HouseDefenseStatus();
+    final maxSlots = PocketFortressDefenseService.getMaxQuestionsForStage(currentDay);
+    final armedCount = _shieldQuestions.length;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F172A),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: const Color(0xFF38BDF8).withValues(alpha: 0.35),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.3),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Section Header
+          Container(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  const Color(0xFF0284C7).withValues(alpha: 0.15),
+                  const Color(0xFF0F172A),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+              border: Border(
+                bottom: BorderSide(
+                  color: Colors.white.withValues(alpha: 0.08),
+                ),
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0284C7).withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: const Color(0xFF38BDF8).withValues(alpha: 0.4),
+                    ),
+                  ),
+                  child: const Text('🛡️', style: TextStyle(fontSize: 20)),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'CITADEL DEFENSE & ARMED TRAPS',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Day $currentDay Fortress • $armedCount / $maxSlots Questions Armed',
+                        style: GoogleFonts.inter(
+                          color: Colors.white70,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () async {
+                    HapticFeedback.mediumImpact();
+                    PocketDefenseTrapModal.show(context, currentDay);
+                    await Future.delayed(const Duration(milliseconds: 300));
+                    _loadFortressDefenseData();
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF0284C7), Color(0xFF0369A1)],
+                      ),
+                      borderRadius: BorderRadius.circular(10),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF0284C7).withValues(alpha: 0.3),
+                          blurRadius: 6,
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.shield_outlined, color: Colors.white, size: 13),
+                        const SizedBox(width: 4),
+                        Text(
+                          'MANAGE',
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 4-Tile Quick Metric Overview
+                Row(
+                  children: [
+                    // HP Tile
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1E293B),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: status.isDamaged
+                                ? Colors.redAccent.withValues(alpha: 0.5)
+                                : const Color(0xFF10B981).withValues(alpha: 0.3),
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Text(status.isDamaged ? '💔' : '❤️', style: const TextStyle(fontSize: 11)),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'CITADEL HP',
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.white38,
+                                    fontSize: 8.5,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              '${status.currentHp}/${status.maxHp}',
+                              style: GoogleFonts.outfit(
+                                color: status.isDamaged ? Colors.redAccent : const Color(0xFF34D399),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+
+                    // Iron Dome Tile
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1E293B),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: status.hasIronDome
+                                ? const Color(0xFF00F0FF).withValues(alpha: 0.5)
+                                : Colors.white12,
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                const Text('🛡️', style: TextStyle(fontSize: 11)),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'IRON DOME',
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.white38,
+                                    fontSize: 8.5,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              status.hasIronDome ? 'Tier ${status.ironDomeTier}' : 'Inactive',
+                              style: GoogleFonts.outfit(
+                                color: status.hasIronDome ? const Color(0xFF00F0FF) : Colors.white60,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+
+                    // Knights Garrison Tile
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1E293B),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.white12),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                const Text('⚔️', style: TextStyle(fontSize: 11)),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'GARRISON',
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.white38,
+                                    fontSize: 8.5,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              '${status.armyKnightsCount} Knights',
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFFFFD700),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+
+                    // Activity Credits Tile
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1E293B),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.white12),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                const Text('⚡', style: TextStyle(fontSize: 11)),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'CREDITS',
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.white38,
+                                    fontSize: 8.5,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              '${status.activityPoints} FDC',
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFF38BDF8),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+
+                // Active Gates & Defense Questions List (User audio specification!)
+                Text(
+                  'ACTIVE DEFENSE GATES & ARMED QUESTIONS',
+                  style: GoogleFonts.outfit(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0.6,
+                  ),
+                ),
+                const SizedBox(height: 8),
+
+                // List of active gates
+                ...status.activeShieldTraps.map((trapId) {
+                  final template = kDefenseTrapTemplates.firstWhere(
+                    (t) => t.id == trapId,
+                    orElse: () => kDefenseTrapTemplates[0],
+                  );
+                  final gateQuestions = _shieldQuestions.where((q) {
+                    return q.trapType == template.id || q.category == template.category;
+                  }).toList();
+
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF131A2A),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: template.themeColor.withValues(alpha: 0.35),
+                        width: 1.1,
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Gate Header
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(12, 10, 12, 8),
+                          child: Row(
+                            children: [
+                              Text(template.icon, style: const TextStyle(fontSize: 16)),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  template.title,
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.white,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                                decoration: BoxDecoration(
+                                  color: template.themeColor.withValues(alpha: 0.2),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(
+                                    color: template.themeColor.withValues(alpha: 0.5),
+                                  ),
+                                ),
+                                child: Text(
+                                  '${gateQuestions.length} Questions Armed',
+                                  style: GoogleFonts.outfit(
+                                    color: template.themeColor,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        // Configured Questions or Empty Alert
+                        if (gateQuestions.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
+                            child: Column(
+                              children: gateQuestions.map((q) {
+                                return Container(
+                                  margin: const EdgeInsets.only(bottom: 6),
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF1E293B),
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(color: Colors.white10),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            'Q: ',
+                                            style: GoogleFonts.outfit(
+                                              color: template.themeColor,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w900,
+                                            ),
+                                          ),
+                                          Expanded(
+                                            child: Text(
+                                              q.question,
+                                              style: GoogleFonts.inter(
+                                                color: Colors.white,
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Row(
+                                        children: [
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                                              borderRadius: BorderRadius.circular(5),
+                                              border: Border.all(
+                                                color: const Color(0xFF10B981).withValues(alpha: 0.4),
+                                              ),
+                                            ),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 11),
+                                                const SizedBox(width: 4),
+                                                Text(
+                                                  q.options.isNotEmpty && q.correctIndex < q.options.length
+                                                      ? q.options[q.correctIndex]
+                                                      : 'Option 1',
+                                                  style: GoogleFonts.inter(
+                                                    color: const Color(0xFF34D399),
+                                                    fontSize: 10.5,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          const Spacer(),
+                                          const Text(
+                                            '🏅 Verified Authentic',
+                                            style: TextStyle(
+                                              color: Color(0xFFFFD700),
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          )
+                        else
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF451A03).withValues(alpha: 0.35),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                  color: const Color(0xFFF59E0B).withValues(alpha: 0.35),
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.warning_amber_rounded, color: Color(0xFFF59E0B), size: 16),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      'Gate Unarmed! Raiders can breach without answering. Arm a question now.',
+                                      style: GoogleFonts.inter(
+                                        color: const Color(0xFFFDE68A),
+                                        fontSize: 10.5,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  GestureDetector(
+                                    onTap: () async {
+                                      PocketDefenseTrapModal.show(context, currentDay);
+                                      await Future.delayed(const Duration(milliseconds: 300));
+                                      _loadFortressDefenseData();
+                                    },
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFF59E0B),
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: const Text(
+                                        '+ ARM',
+                                        style: TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 9.5,
+                                          fontWeight: FontWeight.w900,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  );
+                }),
+
+                const SizedBox(height: 8),
+
+                // Primary Management CTA Button
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () async {
+                      HapticFeedback.heavyImpact();
+                      PocketDefenseTrapModal.show(context, currentDay);
+                      await Future.delayed(const Duration(milliseconds: 300));
+                      _loadFortressDefenseData();
+                    },
+                    icon: const Icon(Icons.security_rounded, color: Colors.black, size: 18),
+                    label: Text(
+                      'CRAFT & DEPLOY DEFENSE QUESTIONS',
+                      style: GoogleFonts.outfit(
+                        color: Colors.black,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 13,
+                        letterSpacing: 0.4,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFFFFC00),
+                      padding: const EdgeInsets.symmetric(vertical: 13),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      elevation: 4,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -2702,7 +3304,6 @@ class StageBannerArtPainter extends CustomPainter {
     final avatar = VectorAvatarConfig.getEvolutionAvatarForStage(stage);
     final species = avatar.species;
     final accent = VectorAvatarConfig.parseHex(avatar.outfitAccentColor, fallback: baseColor);
-    final fur = VectorAvatarConfig.parseHex(avatar.skinColor, fallback: baseColor);
 
     // 1. Check for Oceanic / Marine Leviathans (12 Species)
     const marineSpecies = {
