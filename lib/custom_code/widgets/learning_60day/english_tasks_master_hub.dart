@@ -5,8 +5,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/learning_models.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/learning_service.dart';
-import 'package:pocket_mates_app/custom_code/widgets/english_match/stage_peer_matchmaker.dart';
-import 'package:pocket_mates_app/custom_code/widgets/english_learning_hub_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/nft_trading_card_dialog.dart';
@@ -16,6 +14,7 @@ import 'pocket_fortress_defense_service.dart';
 import 'pocket_defense_trap_modal.dart';
 import 'pocket_arsenal_store_modal.dart';
 import 'day90_vip_master_card_dialog.dart';
+import 'pocket_daily_mission_page.dart';
 
 /// 🎯 Model for Minimal Target Roadmaps (Audio Requirement)
 class TargetMilestoneItem {
@@ -712,8 +711,10 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) =>
-                                    const StagePeerMatchmakerPage(),
+                                builder: (context) => PocketDailyMissionPage(
+                                  day: day,
+                                  onMissionCompleted: () => _loadData(),
+                                ),
                               ),
                             );
                           },
@@ -764,8 +765,10 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) =>
-                                const EnglishLearningHubPage(),
+                            builder: (context) => PocketDailyMissionPage(
+                              day: day,
+                              onMissionCompleted: () => _loadData(),
+                            ),
                           ),
                         );
                       },
@@ -1004,13 +1007,14 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                     onPressed: () {
                       HapticFeedback.mediumImpact();
                       _scrollToDay(prog.currentDay, animate: true);
+                      _showLevelMissionDialog(prog.currentDay);
                     },
                     backgroundColor: const Color(0xFFFFFC00),
                     elevation: 6,
-                    icon: const Icon(Icons.gps_fixed_rounded,
+                    icon: const Icon(Icons.play_circle_fill_rounded,
                         color: Colors.black, size: 20),
                     label: Text(
-                      'DAY ${prog.currentDay}',
+                      'MISSION DAY ${prog.currentDay}',
                       style: GoogleFonts.outfit(
                         color: Colors.black,
                         fontWeight: FontWeight.w900,
@@ -1167,6 +1171,55 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   ),
                 ),
               ],
+            ),
+
+            const SizedBox(height: 8),
+
+            // 🇬🇧 Prominent 90-Day English Learning Banner (Audio Directive!)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [
+                    Color(0xFF1E1B4B),
+                    Color(0xFF3B0764),
+                    Color(0xFF451A03),
+                  ],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                ),
+                borderRadius: BorderRadius.circular(9),
+                border: Border.all(
+                  color: const Color(0xFFFFD700).withValues(alpha: 0.55),
+                  width: 1.1,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFFF8906).withValues(alpha: 0.2),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('🇬🇧', style: TextStyle(fontSize: 14)),
+                  const SizedBox(width: 8),
+                  Text(
+                    'ENGLISH LEARNING IN 90 DAYS',
+                    style: GoogleFonts.outfit(
+                      color: const Color(0xFFFFFC00),
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 0.8,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  const Text('🔥', style: TextStyle(fontSize: 13)),
+                ],
+              ),
             ),
 
             const SizedBox(height: 8),
