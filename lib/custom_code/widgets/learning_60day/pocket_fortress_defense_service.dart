@@ -285,9 +285,10 @@ class HouseDefenseStatus {
   final int ironDomeTier; // 1: Bronze, 2: Silver, 3: Obsidian Core
   final bool hasArmedEscorts; // Dual armed escort bikes/patrols
   final int totalCoins;
+  final int activityPoints; // ⚡ Fortress Defense Credits (FDC) from voice calls, chats, vibes
   final bool isBanned;
   final String? banReason;
-  final List<String> activeShieldTraps; // 1 up to 9 active defense games
+  final List<String> activeShieldTraps; // 1 up to 9 active defense gates
 
   const HouseDefenseStatus({
     this.currentHp = 100,
@@ -298,6 +299,7 @@ class HouseDefenseStatus {
     this.ironDomeTier = 0,
     this.hasArmedEscorts = false,
     this.totalCoins = 150,
+    this.activityPoints = 80,
     this.isBanned = false,
     this.banReason,
     this.activeShieldTraps = const ['vocab_gate'],
@@ -315,48 +317,34 @@ class PocketFortressDefenseService {
   static const String _armyKey = 'user_house_army_knights';
   static const String _escortsKey = 'user_house_armed_escorts';
   static const String _coinsKey = 'user_pocket_coins';
+  static const String _activityPointsKey = 'user_house_activity_points';
   static const String _banKey = 'user_pocket_banned';
   static const String _lastActiveKey = 'user_pocket_last_active_date';
   static const String _day90FleetKey = 'user_pocket_day90_vip_fleet';
 
-  /// 🛡️ Number of Unlocked Defense Games based on Stage (1 up to 9 games at Day 90)
-  /// User audio requirement:
-  /// - Day 1: 1 Game (4–5 questions)
-  /// - Days 3–10: 2 Games
-  /// - Days 11–20: 3 Games
-  /// - Days 21–35: 4 Games
-  /// - Days 36–50: 5 Games
-  /// - Days 51–65: 6 Games
-  /// - Days 66–75: 7 Games
-  /// - Days 76–85: 8 Games
-  /// - Day 90: 9 Games (each with 10 questions = 90 Questions Total!)
+  /// 🛡️ Unlocked Defense Gates based on Challenge Stage:
+  /// Gate 1: Days 1–10 (Up to 10 questions)
+  /// Gate 2: Days 11–20 (Up to 20 questions across 2 gates)
+  /// ...
+  /// Gate 5: Days 41–50 (Up to 50 questions across 5 gates)
+  /// Gate 9: Days 81–90 (Up to 90 questions across 9 gates - The Ultimate Citadel!)
   static int getUnlockedGamesCountForStage(int stage) {
     final day = stage.clamp(1, 90);
-    if (day <= 3) return 1;
-    if (day <= 10) return 2;
-    if (day <= 20) return 3;
-    if (day <= 35) return 4;
-    if (day <= 50) return 5;
-    if (day <= 65) return 6;
-    if (day <= 75) return 7;
-    if (day <= 85) return 8;
-    return 9;
+    return ((day - 1) ~/ 10) + 1;
   }
 
-  /// 📐 Allowed questions PER GAME (scales from 5 at Day 1 up to 10 at Day 90)
+  /// 📐 Maximum capacity per gate
   static int getQuestionsPerGameForStage(int stage) {
-    final day = stage.clamp(1, 90);
-    if (day <= 2) return 5; // Day 1: 4–5 questions
-    if (day <= 5) return 6;
-    if (day <= 15) return 7;
-    if (day <= 30) return 8;
-    if (day <= 60) return 9;
-    return 10; // Up to 10 questions per game at Day 90
+    return 10;
   }
 
-  /// 📐 Total questions across all unlocked games (Day 1: 5, Day 90: 9 * 10 = 90 questions!)
+  /// 📐 Total question slots rule: EXACTLY 1 Day/Challenge = 1 Defense Question Slot!
+  /// - Day 1: 1 defense question slot
+  /// - Day 10: 10 defense question slots
+  /// - Day 50: 50 defense question slots
+  /// - Day 90: 90 defense question slots
   static int getMaxQuestionsForStage(int stage) {
-    return getUnlockedGamesCountForStage(stage) * getQuestionsPerGameForStage(stage);
+    return stage.clamp(1, 90);
   }
 
   /// 🚨 Inactivity / Consistency Check (Daily Focus Protection)
@@ -396,7 +384,7 @@ class PocketFortressDefenseService {
           newDay: downgradedDay,
           title: '⚠️ CONSISTENCY DROPPED • FOCUS LOST',
           message: 'You missed a day of English practice! Your journey was downgraded from Day $currentDay to Day $downgradedDay. Reclaim your focus and practice today!',
-          messageMalayalam: 'You missed your English practice, so your stage was downgraded from Day $currentDay to Day $downgradedDay! Complete today\'s mission to regain your streak!',
+          messageMalayalam: 'Consistency dropped from Day $currentDay to Day $downgradedDay! Practice today to rebuild momentum.',
         );
       }
     } catch (_) {}
@@ -469,6 +457,7 @@ class PocketFortressDefenseService {
     final knights = prefs.getInt(_armyKey) ?? 2;
     final hasEscorts = prefs.getBool(_escortsKey) ?? false;
     final coins = prefs.getInt(_coinsKey) ?? 150;
+    final fdc = prefs.getInt(_activityPointsKey) ?? 80;
     final banned = prefs.getBool(_banKey) ?? false;
     final activeTraps = await getActiveShieldTraps(stage);
 
@@ -481,6 +470,7 @@ class PocketFortressDefenseService {
       ironDomeTier: domeTier,
       hasArmedEscorts: hasEscorts,
       totalCoins: coins,
+      activityPoints: fdc,
       isBanned: banned,
       banReason: banned ? 'Violating Fair Play by publishing fake English questions.' : null,
       activeShieldTraps: activeTraps,
@@ -507,9 +497,9 @@ class PocketFortressDefenseService {
   }
 
   /// 🛡️ Load all active shield traps and their questions for battle raid
-  static Future<List<DefenderShieldTrapData>> loadDefenderActiveShieldTraps(int stage) async {
+  static Future<List<DefenderShieldTrapData>> loadDefenderActiveShieldTraps(int stage, {bool isNeighbor = false}) async {
     final activeTrapIds = await getActiveShieldTraps(stage);
-    final allCustomQuestions = await loadShieldQuestions(stage);
+    final allCustomQuestions = await loadShieldQuestions(stage, isNeighbor: isNeighbor);
     final qPerTrap = getQuestionsPerGameForStage(stage);
 
     final List<DefenderShieldTrapData> result = [];
@@ -525,12 +515,14 @@ class PocketFortressDefenseService {
         return q.trapType == trapId || q.category == template.category;
       }).toList();
 
-      // Fill with curated if needed
-      final curated = getCuratedQuestionsForTrap(trapId);
-      for (final cq in curated) {
-        if (matched.length >= qPerTrap) break;
-        if (!matched.any((m) => m.question == cq.question)) {
-          matched.add(cq);
+      // For neighbor raids, fill with curated challenges if neighbor has not armed all slots
+      if (isNeighbor && matched.length < qPerTrap) {
+        final curated = getCuratedQuestionsForTrap(trapId);
+        for (final cq in curated) {
+          if (matched.length >= qPerTrap) break;
+          if (!matched.any((m) => m.question == cq.question)) {
+            matched.add(cq);
+          }
         }
       }
 
@@ -848,42 +840,117 @@ class PocketFortressDefenseService {
     return true;
   }
 
-  /// Repair Damaged House
-  static Future<bool> repairHouse({int healAmount = 50, int coinCost = 30}) async {
+  /// ⚡ Activity-Powered Defense Credits (FDC)
+  /// Earned via Anonymous English Voice Calls, Group Chats, Vibe Posts, and Daily Missions.
+  static Future<int> getActivityPoints() async {
     final prefs = await SharedPreferences.getInstance();
-    final currentCoins = prefs.getInt(_coinsKey) ?? 150;
-    if (currentCoins < coinCost) return false;
+    return prefs.getInt(_activityPointsKey) ?? 80;
+  }
+
+  /// 🎙️ Record activity and award Fortress Defense Credits (FDC)
+  static Future<int> recordActivityPoints(String activityType) async {
+    final prefs = await SharedPreferences.getInstance();
+    int gain = 10;
+    switch (activityType) {
+      case 'voice_talk':
+        gain = 20; // Anonymous English Voice Calls
+        break;
+      case 'group_chat':
+        gain = 10; // Group English chats
+        break;
+      case 'vibe_post':
+        gain = 15; // English Vibes posting
+        break;
+      case 'daily_mission':
+        gain = 30; // Completing daily challenges
+        break;
+      default:
+        gain = 10;
+    }
+    final current = prefs.getInt(_activityPointsKey) ?? 80;
+    final updated = current + gain;
+    await prefs.setInt(_activityPointsKey, updated);
+    return updated;
+  }
+
+  /// Repair Damaged House (Using Coins or Activity Credits)
+  static Future<bool> repairHouse({int healAmount = 50, int coinCost = 30, int fdcCost = 40, bool useFdc = false}) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (useFdc) {
+      final currentFdc = prefs.getInt(_activityPointsKey) ?? 80;
+      if (currentFdc < fdcCost) return false;
+      await prefs.setInt(_activityPointsKey, currentFdc - fdcCost);
+    } else {
+      final currentCoins = prefs.getInt(_coinsKey) ?? 150;
+      if (currentCoins < coinCost) return false;
+      await prefs.setInt(_coinsKey, currentCoins - coinCost);
+    }
 
     final currentHp = prefs.getInt(_hpKey) ?? 100;
     final newHp = math.min(100, currentHp + healAmount);
-
-    await prefs.setInt(_coinsKey, currentCoins - coinCost);
     await prefs.setInt(_hpKey, newHp);
     return true;
   }
 
-  /// Upgrade / Purchase Iron Dome
-  static Future<bool> purchaseIronDome({int tier = 1, int coinCost = 75}) async {
+  /// Upgrade / Purchase Iron Dome (Using Coins or FDC from voice/chat/vibe activities)
+  static Future<bool> purchaseIronDome({int tier = 1, int coinCost = 75, int fdcCost = 60, bool useFdc = false}) async {
     final prefs = await SharedPreferences.getInstance();
-    final currentCoins = prefs.getInt(_coinsKey) ?? 150;
-    if (currentCoins < coinCost) return false;
+    if (useFdc) {
+      final currentFdc = prefs.getInt(_activityPointsKey) ?? 80;
+      if (currentFdc < fdcCost) return false;
+      await prefs.setInt(_activityPointsKey, currentFdc - fdcCost);
+    } else {
+      final currentCoins = prefs.getInt(_coinsKey) ?? 150;
+      if (currentCoins < coinCost) return false;
+      await prefs.setInt(_coinsKey, currentCoins - coinCost);
+    }
 
-    await prefs.setInt(_coinsKey, currentCoins - coinCost);
     await prefs.setBool(_ironDomeKey, true);
     await prefs.setInt('${_ironDomeKey}_tier', tier);
     return true;
   }
 
-  /// Enlist Army Knights
-  static Future<bool> enlistArmyKnights({int count = 2, int coinCost = 40}) async {
+  /// Enlist Army Knights (Using Coins or FDC from voice/chat/vibe activities)
+  static Future<bool> enlistArmyKnights({int count = 2, int coinCost = 40, int fdcCost = 35, bool useFdc = false}) async {
     final prefs = await SharedPreferences.getInstance();
-    final currentCoins = prefs.getInt(_coinsKey) ?? 150;
-    if (currentCoins < coinCost) return false;
+    if (useFdc) {
+      final currentFdc = prefs.getInt(_activityPointsKey) ?? 80;
+      if (currentFdc < fdcCost) return false;
+      await prefs.setInt(_activityPointsKey, currentFdc - fdcCost);
+    } else {
+      final currentCoins = prefs.getInt(_coinsKey) ?? 150;
+      if (currentCoins < coinCost) return false;
+      await prefs.setInt(_coinsKey, currentCoins - coinCost);
+    }
 
     final currentKnights = prefs.getInt(_armyKey) ?? 0;
-    await prefs.setInt(_coinsKey, currentCoins - coinCost);
     await prefs.setInt(_armyKey, math.min(10, currentKnights + count));
     return true;
+  }
+
+  /// 💥 Process House Breach after attacker victory
+  /// Damages defender's house, loots coins from vault, and returns breach report
+  static Future<Map<String, dynamic>> processRaidBreach({
+    required String defenderHouseId,
+    int damageHp = 50,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    final currentHp = prefs.getInt(_hpKey) ?? 100;
+    final currentCoins = prefs.getInt(_coinsKey) ?? 150;
+
+    final newHp = math.max(0, currentHp - damageHp);
+    final lootedCoins = math.max(15, (currentCoins * 0.2).round()); // 20% looted from vault
+    final remainingCoins = math.max(0, currentCoins - lootedCoins);
+
+    await prefs.setInt(_hpKey, newHp);
+    await prefs.setInt(_coinsKey, remainingCoins);
+
+    return {
+      'damageDealt': damageHp,
+      'remainingHp': newHp,
+      'lootedCoins': lootedCoins,
+      'isRubbled': newHp <= 0,
+    };
   }
 
   /// Apply damage after a raid
@@ -902,7 +969,10 @@ class PocketFortressDefenseService {
   }
 
   /// Load custom shield questions
-  static Future<List<HouseShieldQuestion>> loadShieldQuestions(int stage) async {
+  /// Note: As per user specification, we DO NOT pre-fill fake questions for the player.
+  /// The player is solely responsible for crafting their own defense questions!
+  /// For neighbor raids, curated questions are provided as fallback if empty.
+  static Future<List<HouseShieldQuestion>> loadShieldQuestions(int stage, {bool isNeighbor = false}) async {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString(_trapsKey);
     final maxAllowed = getMaxQuestionsForStage(stage);
@@ -916,7 +986,11 @@ class PocketFortressDefenseService {
       } catch (_) {}
     }
 
-    // Default curated questions if none saved
+    if (!isNeighbor) {
+      return []; // Self-built defense: User begins with empty unlocked slots!
+    }
+
+    // Default curated questions only for neighbor houses
     return _getDefaultQuestions(maxAllowed);
   }
 
@@ -927,62 +1001,43 @@ class PocketFortressDefenseService {
     await prefs.setString(_trapsKey, jsonStr);
   }
 
-  /// Starter default questions
+  /// Starter default questions (Used strictly for neighbor raids)
   static List<HouseShieldQuestion> _getDefaultQuestions(int count) {
-    final pool = [
-      const HouseShieldQuestion(
-        id: 'q_1',
-        question: 'Choose the most precise synonym for "Pragmatic":',
-        options: ['Realistic & Practical', 'Idealistic', 'Impulsive', 'Careless'],
-        correctIndex: 0,
-        explanation: '"Pragmatic" means dealing with things sensibly and realistically.',
-        category: 'vocab',
-      ),
-      const HouseShieldQuestion(
-        id: 'q_2',
-        question: 'Identify the grammatically correct sentence:',
-        options: [
-          'She had finished the report before the manager requested it.',
-          'She has finished the report before the manager requested it.',
-          'She finishes the report before the manager requested it.',
-          'She was finished the report before the manager requested it.'
-        ],
-        correctIndex: 0,
-        explanation: 'Past Perfect ("had finished") is required for an event prior to another past event.',
-        category: 'grammar',
-      ),
-      const HouseShieldQuestion(
-        id: 'q_3',
-        question: 'What does the native idiom "Cut to the chase" mean?',
-        options: [
-          'Run after someone in a hurry',
-          'Get directly to the main point without wasting time',
-          'Chop wood with an axe',
-          'End a film before the climax'
-        ],
-        correctIndex: 1,
-        explanation: '"Cut to the chase" means getting straight to the core point.',
-        category: 'idiom',
-      ),
-      const HouseShieldQuestion(
-        id: 'q_4',
-        question: 'Complete the collocation: "We must _______ our differences aside and work as a team."',
-        options: ['put', 'drop', 'throw', 'keep'],
-        correctIndex: 0,
-        explanation: 'The natural English collocation is "put differences aside".',
-        category: 'vocab',
-      ),
-      const HouseShieldQuestion(
-        id: 'q_5',
-        question: 'Which word describes someone who recovers quickly from adversity?',
-        options: ['Resilient', 'Fragile', 'Vulnerable', 'Hesitant'],
-        correctIndex: 0,
-        explanation: '"Resilient" signifies being tough, adaptive, and quick to bounce back.',
-        category: 'vocab',
-      ),
-    ];
+    final List<HouseShieldQuestion> allCurated = [];
+    for (final template in kDefenseTrapTemplates) {
+      allCurated.addAll(getCuratedQuestionsForTrap(template.id));
+    }
 
-    return pool.take(count).toList();
+    if (allCurated.isEmpty) {
+      allCurated.add(
+        const HouseShieldQuestion(
+          id: 'q_default_1',
+          question: 'What is the exact synonym for "Ephemeral"?',
+          options: ['Short-lived', 'Permanent', 'Ancient', 'Violent'],
+          correctIndex: 0,
+          explanation: '"Ephemeral" means lasting for a very short time.',
+        ),
+      );
+    }
+
+    final List<HouseShieldQuestion> result = [];
+    int index = 0;
+    while (result.length < count) {
+      final base = allCurated[index % allCurated.length];
+      result.add(
+        HouseShieldQuestion(
+          id: 'def_${result.length + 1}_${base.id}',
+          question: base.question,
+          options: base.options,
+          correctIndex: base.correctIndex,
+          explanation: base.explanation,
+          category: base.category,
+          trapType: base.trapType,
+        ),
+      );
+      index++;
+    }
+    return result;
   }
 
   // ============================================================

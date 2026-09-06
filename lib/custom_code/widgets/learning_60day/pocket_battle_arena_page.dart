@@ -451,6 +451,10 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
     final lootCoins = won ? (60 + math.Random().nextInt(30)) : 0;
     if (lootCoins > 0) {
       PocketFortressDefenseService.awardRaidLoot(lootCoins);
+      PocketFortressDefenseService.processRaidBreach(
+        defenderHouseId: widget.neighbor.id,
+        damageHp: 60,
+      );
     }
     setState(() {
       _isGameOver = true;
@@ -469,8 +473,8 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
   }
 
   Future<void> _loadDefenderShieldTraps() async {
-    final traps = await PocketFortressDefenseService.loadShieldQuestions(widget.neighbor.day);
-    final gates = await PocketFortressDefenseService.loadDefenderActiveShieldTraps(widget.neighbor.day);
+    final traps = await PocketFortressDefenseService.loadShieldQuestions(widget.neighbor.day, isNeighbor: true);
+    final gates = await PocketFortressDefenseService.loadDefenderActiveShieldTraps(widget.neighbor.day, isNeighbor: true);
     if (mounted) {
       setState(() {
         _defenderShieldQuestions = traps;
@@ -2863,7 +2867,7 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(won ? '🎉' : '🛡️', style: const TextStyle(fontSize: 48)),
+          Text(won ? '👑' : '🛡️', style: const TextStyle(fontSize: 48)),
           const SizedBox(height: 10),
           Text(
             won ? '🏰 OPPONENT FORTRESS BREACHED!' : '🛡️ RAID DEFENSE HELD • NO COINS LOST',
@@ -2877,32 +2881,40 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
           const SizedBox(height: 6),
           Text(
             won
-                ? 'You overwhelmed ${widget.neighbor.name}’s fortress with English fluency and looted $_earnedCoins Coins from their vault!'
+                ? 'You overwhelmed ${widget.neighbor.name}’s fortress with English fluency! Their house sustained severe rubble damage and you looted $_earnedCoins Coins & the Champion Trophy from their vault!'
                 : 'Defeat in battle carries zero penalty! Keep training and practicing — no coins lost.',
             style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 13),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
           Container(
-            padding: const EdgeInsets.all(18),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: const Color(0xFF1E293B),
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: Colors.amber),
+              border: Border.all(color: won ? Colors.amber : Colors.white12),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 Column(
                   children: [
-                    const Text('🪙', style: TextStyle(fontSize: 24)),
+                    const Text('🪙', style: TextStyle(fontSize: 22)),
                     const SizedBox(height: 4),
                     Text('+$_earnedCoins Coins', style: GoogleFonts.outfit(color: Colors.amber, fontWeight: FontWeight.bold)),
                   ],
                 ),
+                if (won)
+                  Column(
+                    children: [
+                      const Text('👑', style: TextStyle(fontSize: 22)),
+                      const SizedBox(height: 4),
+                      Text('Crown Plundered', style: GoogleFonts.outfit(color: const Color(0xFFFFD700), fontWeight: FontWeight.bold)),
+                    ],
+                  ),
                 Column(
                   children: [
-                    const Text('🌟', style: TextStyle(fontSize: 24)),
+                    const Text('🌟', style: TextStyle(fontSize: 22)),
                     const SizedBox(height: 4),
                     Text('+${_score ~/ 2} XP', style: GoogleFonts.outfit(color: const Color(0xFF38BDF8), fontWeight: FontWeight.bold)),
                   ],
@@ -2910,7 +2922,29 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
               ],
             ),
           ),
-          const SizedBox(height: 28),
+          if (won) ...[
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.red.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.redAccent.withValues(alpha: 0.4)),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('🏚️', style: TextStyle(fontSize: 16)),
+                  const SizedBox(width: 8),
+                  Text(
+                    '${widget.neighbor.name}\'s house left in rubbles (-60 HP)',
+                    style: GoogleFonts.outfit(color: Colors.red.shade200, fontSize: 11, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+            ),
+          ],
+          const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,
             height: 50,

@@ -149,11 +149,13 @@ class FlameEnglishHouseGame extends FlameGame with TapCallbacks {
   final int currentDay;
   final int streak;
   HousePalette palette;
+  bool isDamaged;
 
   FlameEnglishHouseGame({
     required this.currentDay,
     this.streak = 1,
     HousePalette? initialPalette,
+    this.isDamaged = false,
   }) : palette = initialPalette ?? HousePalette.presets[0];
 
   late HouseMasterComponent houseComponent;
@@ -175,6 +177,7 @@ class FlameEnglishHouseGame extends FlameGame with TapCallbacks {
       day: currentDay,
       streak: streak,
       palette: palette,
+      isDamaged: isDamaged,
     );
     add(houseComponent);
   }
@@ -183,6 +186,13 @@ class FlameEnglishHouseGame extends FlameGame with TapCallbacks {
     palette = newPalette;
     if (isLoaded) {
       houseComponent.palette = newPalette;
+    }
+  }
+
+  void updateDamage(bool damaged) {
+    isDamaged = damaged;
+    if (isLoaded) {
+      houseComponent.isDamaged = damaged;
     }
   }
 
@@ -350,6 +360,7 @@ class HouseMasterComponent extends Component {
   final int day;
   final int streak;
   HousePalette palette;
+  bool isDamaged;
 
   Vector2 canvasSize = Vector2.zero();
   double animTimer = 0;
@@ -360,6 +371,7 @@ class HouseMasterComponent extends Component {
     required this.day,
     required this.streak,
     required this.palette,
+    this.isDamaged = false,
   });
 
   void resize(Vector2 newSize) {
@@ -453,6 +465,46 @@ class HouseMasterComponent extends Component {
     if (day >= 90) {
       _renderDay90VipMotorcade(canvas, cx, groundY);
     }
+
+    // 6. 💥 House Damage & Rubble Visuals (Breach Aftermath)
+    if (isDamaged) {
+      _renderDamageOverlay(canvas, cx, groundY);
+    }
+  }
+
+  void _renderDamageOverlay(Canvas canvas, double cx, double groundY) {
+    // 1. Structural fissure cracks on front walls
+    final crackPaint = Paint()
+      ..color = const Color(0xFF0F172A)
+      ..strokeWidth = 2.4
+      ..style = PaintingStyle.stroke;
+
+    final crack1 = Path()
+      ..moveTo(cx - 45, groundY - 95)
+      ..lineTo(cx - 32, groundY - 70)
+      ..lineTo(cx - 40, groundY - 50)
+      ..lineTo(cx - 24, groundY - 25);
+    canvas.drawPath(crack1, crackPaint);
+
+    final crack2 = Path()
+      ..moveTo(cx + 40, groundY - 110)
+      ..lineTo(cx + 52, groundY - 80)
+      ..lineTo(cx + 42, groundY - 60)
+      ..lineTo(cx + 56, groundY - 35);
+    canvas.drawPath(crack2, crackPaint);
+
+    // 2. Fallen stone & masonry rubble
+    final rubblePaint = Paint()..color = const Color(0xFF475569);
+    canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(cx - 70, groundY - 8, 14, 7), const Radius.circular(2)), rubblePaint);
+    canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(cx + 60, groundY - 10, 16, 8), const Radius.circular(2)), rubblePaint);
+    canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(cx - 15, groundY - 6, 12, 6), const Radius.circular(2)), rubblePaint);
+
+    // 3. Battle smoke & scorch marks
+    final scorchPaint = Paint()
+      ..color = Colors.black.withValues(alpha: 0.35)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
+    canvas.drawCircle(Offset(cx - 35, groundY - 75), 18, scorchPaint);
+    canvas.drawCircle(Offset(cx + 45, groundY - 85), 20, scorchPaint);
   }
 
   // ============================================================
@@ -1692,8 +1744,13 @@ class _FlameEnglishHouseWidgetState extends State<FlameEnglishHouseWidget> {
   }
 
   Future<void> _loadDefenseStatus() async {
-    final s = await PocketFortressDefenseService.getHouseStatus();
-    if (mounted) setState(() => _defenseStatus = s);
+    final s = await PocketFortressDefenseService.getHouseStatus(widget.currentDay);
+    if (mounted) {
+      setState(() {
+        _defenseStatus = s;
+        _game.updateDamage(s.isDamaged);
+      });
+    }
   }
 
   Future<void> _loadSavedPalette() async {
@@ -1840,6 +1897,63 @@ class _FlameEnglishHouseWidgetState extends State<FlameEnglishHouseWidget> {
           Positioned.fill(
             child: GameWidget(game: _game),
           ),
+
+          // 🏚️ Damaged House Alert Ribbon (Visible when breached in a raid)
+          if (_defenseStatus.isDamaged || _defenseStatus.currentHp < 100)
+            Positioned(
+              top: 38,
+              left: 14,
+              right: 14,
+              child: GestureDetector(
+                onTap: () async {
+                  PocketDefenseTrapModal.show(context, widget.currentDay);
+                  await Future.delayed(const Duration(milliseconds: 500));
+                  _loadDefenseStatus();
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF7F1D1D), Color(0xFF991B1B)],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.redAccent, width: 1.2),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.red.withValues(alpha: 0.35),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      const Text('🏚️', style: TextStyle(fontSize: 13)),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          'HOUSE DAMAGED IN RAID (${_defenseStatus.currentHp}/100 HP) • TAP TO REPAIR',
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.white24,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: const Text('REPAIR', style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
 
           // 🌍 Pocket World Button (Top-Left)
           Positioned(

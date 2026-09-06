@@ -424,6 +424,202 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
     );
   }
 
+  void _showDemoTutorialModal() {
+    HapticFeedback.mediumImpact();
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: const Color(0xFF0F172A),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => Container(
+        constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.85),
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 44,
+                  height: 4.5,
+                  decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(3)),
+                ),
+              ),
+              const SizedBox(height: 14),
+              Row(
+                children: [
+                  const Text('🎓', style: TextStyle(fontSize: 26)),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'FORTRESS DEFENSE ARCHITECT TUTORIAL',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E293B),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.3)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '👑 SOLE DEFENSE RESPONSIBILITY',
+                      style: GoogleFonts.outfit(color: const Color(0xFF38BDF8), fontWeight: FontWeight.bold, fontSize: 12),
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      'You are solely responsible for defending your house! The system does NOT supply ready-made answers. You must craft your own English defense traps.',
+                      style: TextStyle(color: Colors.white70, fontSize: 11.5, height: 1.4),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E293B),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '📐 1 CHALLENGE = 1 DEFENSE QUESTION SLOT',
+                      style: GoogleFonts.outfit(color: Colors.amber.shade300, fontWeight: FontWeight.bold, fontSize: 12),
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      '• Day 1: 1 question slot armed\n• Day 10: 10 question slots armed (Gate 1)\n• Day 50: 50 question slots armed (Gates 1–5)\n• Day 90: 90 question slots armed (Ultimate 9-Gate Fortress!)',
+                      style: TextStyle(color: Colors.white70, fontSize: 11.5, height: 1.4),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 10),
+              // Interactive Demo Card
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(colors: [Color(0xFF1E1B4B), Color(0xFF0F172A)]),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: const Color(0xFF818CF8), width: 1.2),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF6366F1).withValues(alpha: 0.25),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: const Text('MODEL DEMO QUESTION', style: TextStyle(color: Color(0xFFA5B4FC), fontSize: 10, fontWeight: FontWeight.bold)),
+                        ),
+                        const Spacer(),
+                        const Text('🏅 Presidential Seal', style: TextStyle(color: Color(0xFF10B981), fontSize: 10, fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Spot the error: "Each of the clan commanders have inspected the fortress."',
+                      style: GoogleFonts.outfit(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    _buildDemoOption('A', '"have" should be "has"', isCorrect: true),
+                    _buildDemoOption('B', '"commanders" should be "commander"'),
+                    _buildDemoOption('C', '"inspected" should be "inspecting"'),
+                    _buildDemoOption('D', 'The sentence is already grammatically correct'),
+                    const SizedBox(height: 6),
+                    const Text(
+                      '💡 Linguistic Rule: "Each of" takes a singular verb ("has inspected"). Crafting questions with subtle grammatical rules makes your house virtually unbreachable!',
+                      style: TextStyle(color: Colors.white60, fontSize: 10.5),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E293B),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.3)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '⚡ ACTIVITY-POWERED REINFORCEMENTS',
+                      style: GoogleFonts.outfit(color: const Color(0xFF34D399), fontWeight: FontWeight.bold, fontSize: 12),
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      'Engage in English Anonymous Voice Calls, Group Chats, and Vibe posts to earn Fortress Defense Credits (FDC). Use FDC to deploy Iron Dome air interceptors and recruit Army guards!',
+                      style: TextStyle(color: Colors.white70, fontSize: 11.5, height: 1.4),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF0284C7),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  onPressed: () => Navigator.pop(ctx),
+                  child: Text('UNDERSTOOD • START CRAFTING DEFENSES', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 12)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDemoOption(String letter, String text, {bool isCorrect = false}) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: isCorrect ? const Color(0xFF059669).withValues(alpha: 0.2) : Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: isCorrect ? const Color(0xFF10B981) : Colors.white10),
+      ),
+      child: Row(
+        children: [
+          Text('$letter) ', style: TextStyle(color: isCorrect ? const Color(0xFF34D399) : Colors.white70, fontWeight: FontWeight.bold, fontSize: 11)),
+          Expanded(
+            child: Text(text, style: TextStyle(color: isCorrect ? Colors.white : Colors.white60, fontSize: 11)),
+          ),
+          if (isCorrect) const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 14),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final maxAllowed = PocketFortressDefenseService.getMaxQuestionsForStage(widget.userDay);
@@ -608,6 +804,71 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
               ],
             ),
           ),
+
+        // 🎓 Interactive Tutorial Demo Banner
+        InkWell(
+          onTap: _showDemoTutorialModal,
+          borderRadius: BorderRadius.circular(14),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            margin: const EdgeInsets.only(bottom: 8),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF064E3B), Color(0xFF0F172A)],
+              ),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.5)),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                  blurRadius: 8,
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                const Text('🎓', style: TextStyle(fontSize: 22)),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            'SELF-BUILT DEFENSE DEMO & RULES',
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFF34D399),
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          const Spacer(),
+                          Text(
+                            'TAP DEMO',
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFF6EE7B7),
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      const Text(
+                        'You are solely responsible for your house defense. Tap to see the model tricky question demo and slot progression rules!',
+                        style: TextStyle(color: Colors.white70, fontSize: 10),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 6),
+                const Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFF34D399), size: 13),
+              ],
+            ),
+          ),
+        ),
 
         // Fair-Play Advisory Banner
         Container(
@@ -850,40 +1111,51 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
                         Text(selectedTemplate.icon, style: const TextStyle(fontSize: 40)),
                         const SizedBox(height: 8),
                         Text(
-                          'No custom questions for ${selectedTemplate.title} yet.',
-                          style: GoogleFonts.outfit(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.bold),
+                          'No Defense Questions Armed for ${selectedTemplate.title}',
+                          style: GoogleFonts.outfit(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 4),
                         const Text(
-                          'Arm this defense gate with custom questions or load high-quality curated challenges below!',
-                          style: TextStyle(color: Colors.white38, fontSize: 11),
+                          'You are solely responsible for defending your house! Design tricky English questions with subtle rules so attackers cannot easily breach your gates.',
+                          style: TextStyle(color: Colors.white60, fontSize: 11, height: 1.4),
                           textAlign: TextAlign.center,
                         ),
-                        const SizedBox(height: 12),
-                        OutlinedButton.icon(
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: const Color(0xFF38BDF8),
-                            side: const BorderSide(color: Color(0xFF38BDF8)),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                          ),
-                          icon: const Icon(Icons.auto_awesome, size: 16),
-                          label: Text(
-                            'LOAD CURATED DEFAULT QUESTIONS',
-                            style: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.bold),
-                          ),
-                          onPressed: () async {
-                            final curated = PocketFortressDefenseService.getCuratedQuestionsForTrap(selectedTrapId);
-                            setState(() {
-                              for (final cq in curated) {
-                                if (!_questions.any((q) => q.question == cq.question)) {
-                                  _questions.add(cq);
-                                }
-                              }
-                            });
-                            await PocketFortressDefenseService.saveShieldQuestions(_questions);
-                            HapticFeedback.mediumImpact();
-                          },
+                        const SizedBox(height: 14),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            OutlinedButton.icon(
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: const Color(0xFF34D399),
+                                side: const BorderSide(color: Color(0xFF34D399)),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                              ),
+                              icon: const Icon(Icons.school_rounded, size: 15),
+                              label: Text(
+                                'VIEW DEMO TUTORIAL',
+                                style: GoogleFonts.outfit(fontSize: 10.5, fontWeight: FontWeight.bold),
+                              ),
+                              onPressed: _showDemoTutorialModal,
+                            ),
+                            const SizedBox(width: 8),
+                            if (_questions.length < maxAllowed)
+                              ElevatedButton.icon(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: selectedTemplate.themeColor,
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                ),
+                                icon: const Icon(Icons.add_moderator_rounded, size: 15),
+                                label: Text(
+                                  'CRAFT QUESTION',
+                                  style: GoogleFonts.outfit(fontSize: 10.5, fontWeight: FontWeight.bold),
+                                ),
+                                onPressed: () => _openAddEditDialog(preselectedTrapType: selectedTrapId),
+                              ),
+                          ],
                         ),
                       ],
                     ),
@@ -973,22 +1245,26 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
         ),
         const SizedBox(height: 6),
 
-        // Add Button for This Gate
+        // Add Button for This Gate (Gated by 1 Day = 1 Slot Rule)
         SizedBox(
           width: double.infinity,
-          height: 44,
+          height: 46,
           child: ElevatedButton.icon(
             style: ElevatedButton.styleFrom(
-              backgroundColor: selectedTemplate.themeColor,
+              backgroundColor: _questions.length < maxAllowed ? selectedTemplate.themeColor : const Color(0xFF334155),
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
-            icon: const Icon(Icons.add_moderator_rounded, size: 18),
+            icon: Icon(_questions.length < maxAllowed ? Icons.add_moderator_rounded : Icons.lock_outline_rounded, size: 18),
             label: Text(
-              'ADD QUESTION TO ${selectedTemplate.title.toUpperCase()} (${trapQuestions.length}/$questionsPerGame)',
+              _questions.length < maxAllowed
+                  ? 'CRAFT DEFENSE QUESTION (${_questions.length}/$maxAllowed SLOTS USED)'
+                  : 'ALL $maxAllowed SLOTS ARMED • COMPLETE DAY ${widget.userDay + 1} TO EXPAND',
               style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 11.5),
             ),
-            onPressed: () => _openAddEditDialog(preselectedTrapType: selectedTrapId),
+            onPressed: _questions.length < maxAllowed
+                ? () => _openAddEditDialog(preselectedTrapType: selectedTrapId)
+                : null,
           ),
         ),
       ],
@@ -1018,11 +1294,67 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
   }
 
   // ==========================================
-  // TAB 2: IRON DOME & ARMY
+  // TAB 2: IRON DOME & ARMY (ACTIVITY POWERED)
   // ==========================================
   Widget _buildIronDomeAndArmyTab() {
     return ListView(
       children: [
+        // ⚡ Activity Points (FDC) Balance Card
+        Container(
+          padding: const EdgeInsets.all(14),
+          margin: const EdgeInsets.only(bottom: 12),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF065F46), Color(0xFF064E3B)],
+            ),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFF34D399), width: 1.2),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                blurRadius: 8,
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Text('⚡', style: TextStyle(fontSize: 20)),
+                  const SizedBox(width: 8),
+                  Text(
+                    'FORTRESS DEFENSE CREDITS (FDC)',
+                    style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 13),
+                  ),
+                  const Spacer(),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: Colors.black38,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: const Color(0xFF6EE7B7)),
+                    ),
+                    child: Text(
+                      '${_houseStatus.activityPoints} FDC',
+                      style: GoogleFonts.outfit(
+                        color: const Color(0xFF6EE7B7),
+                        fontWeight: FontWeight.w900,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              const Text(
+                'Activity Earning Tips: Anonymous English Voice Calls (+20 FDC) • Group English Chat (+10 FDC) • English Vibes (+15 FDC) • Daily Tasks (+30 FDC).',
+                style: TextStyle(color: Colors.white70, fontSize: 10.5, height: 1.3),
+              ),
+            ],
+          ),
+        ),
+
         // House HP Status Card
         Container(
           padding: const EdgeInsets.all(16),
@@ -1062,31 +1394,60 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
               ),
               const SizedBox(height: 10),
               if (_houseStatus.currentHp < 100)
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF059669),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 10),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF059669),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                        ),
+                        icon: const Icon(Icons.build_rounded, size: 14),
+                        label: const Text('REPAIR (30 COINS)', style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold)),
+                        onPressed: () async {
+                          final ok = await PocketFortressDefenseService.repairHouse(coinCost: 30);
+                          if (!mounted) return;
+                          if (ok) {
+                            _loadData();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('✅ House Repaired +50 HP!'), backgroundColor: Color(0xFF059669)),
+                            );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('⚠️ Need 30 Pocket Coins to repair!'), backgroundColor: Colors.orange),
+                            );
+                          }
+                        },
+                      ),
                     ),
-                    icon: const Icon(Icons.build_rounded, size: 16),
-                    label: const Text('REPAIR HOUSE (+50 HP) • 30 COINS', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                    onPressed: () async {
-                      final ok = await PocketFortressDefenseService.repairHouse();
-                      if (!mounted) return;
-                      if (ok) {
-                        _loadData();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('✅ House Repaired +50 HP!'), backgroundColor: Color(0xFF059669)),
-                        );
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('⚠️ Not enough Pocket Coins to repair!'), backgroundColor: Colors.orange),
-                        );
-                      }
-                    },
-                  ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF0D9488),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                        ),
+                        icon: const Icon(Icons.bolt_rounded, size: 14),
+                        label: const Text('REPAIR (40 FDC)', style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold)),
+                        onPressed: () async {
+                          final ok = await PocketFortressDefenseService.repairHouse(fdcCost: 40, useFdc: true);
+                          if (!mounted) return;
+                          if (ok) {
+                            _loadData();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('⚡ Repaired using 40 Activity FDC!'), backgroundColor: Color(0xFF0D9488)),
+                            );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('⚠️ Need 40 FDC! Engage in voice calls or group chat to earn.'), backgroundColor: Colors.orange),
+                            );
+                          }
+                        },
+                      ),
+                    ),
+                  ],
                 )
               else
                 Text('🛡️ House is fully repaired and fortified.', style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 11)),
@@ -1114,12 +1475,12 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('IRON DOME ANTI-RAID SYSTEM',
+                        Text('IRON DOME ANTI-AIR INTERCEPTOR',
                             style: GoogleFonts.outfit(color: const Color(0xFF00F0FF), fontSize: 13, fontWeight: FontWeight.bold)),
                         Text(
                           _houseStatus.hasIronDome
-                              ? 'Active Tier ${_houseStatus.ironDomeTier}: Absorbs raid damage'
-                              : 'Not installed. Install to intercept raids!',
+                              ? 'Active Tier ${_houseStatus.ironDomeTier}: Absorbs raid bomb impacts'
+                              : 'Not active. Install with Coins or Activity FDC!',
                           style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 11),
                         ),
                       ],
@@ -1128,32 +1489,71 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
                 ],
               ),
               const SizedBox(height: 10),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF0284C7),
-                    foregroundColor: Colors.white,
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF0284C7),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 9),
+                      ),
+                      onPressed: () async {
+                        final ok = await PocketFortressDefenseService.purchaseIronDome(
+                          tier: _houseStatus.ironDomeTier + 1,
+                          coinCost: 75,
+                        );
+                        if (!mounted) return;
+                        if (ok) {
+                          _loadData();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('🛡️ Iron Dome Upgraded & Active!'), backgroundColor: Color(0xFF0284C7)),
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('⚠️ Need 75 Coins to upgrade Iron Dome!'), backgroundColor: Colors.orange),
+                          );
+                        }
+                      },
+                      child: Text(
+                        _houseStatus.hasIronDome ? 'UPGRADE (75 COINS)' : 'INSTALL (75 COINS)',
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
+                      ),
+                    ),
                   ),
-                  onPressed: () async {
-                    final ok = await PocketFortressDefenseService.purchaseIronDome(tier: _houseStatus.ironDomeTier + 1);
-                    if (!mounted) return;
-                    if (ok) {
-                      _loadData();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('🛡️ Iron Dome Upgraded & Active!'), backgroundColor: Color(0xFF0284C7)),
-                      );
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('⚠️ Need 75 Coins to upgrade Iron Dome!'), backgroundColor: Colors.orange),
-                      );
-                    }
-                  },
-                  child: Text(
-                    _houseStatus.hasIronDome ? 'UPGRADE IRON DOME (75 COINS)' : 'INSTALL IRON DOME (75 COINS)',
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF0E7490),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 9),
+                      ),
+                      onPressed: () async {
+                        final ok = await PocketFortressDefenseService.purchaseIronDome(
+                          tier: _houseStatus.ironDomeTier + 1,
+                          fdcCost: 60,
+                          useFdc: true,
+                        );
+                        if (!mounted) return;
+                        if (ok) {
+                          _loadData();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('⚡ Iron Dome Upgraded using Activity FDC!'), backgroundColor: Color(0xFF0E7490)),
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('⚠️ Need 60 FDC! Complete voice calls or chat to earn.'), backgroundColor: Colors.orange),
+                          );
+                        }
+                      },
+                      child: Text(
+                        _houseStatus.hasIronDome ? 'UPGRADE (60 FDC)' : 'INSTALL (60 FDC)',
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
             ],
           ),
@@ -1189,29 +1589,58 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
                 ],
               ),
               const SizedBox(height: 10),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFB45309),
-                    foregroundColor: Colors.white,
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFB45309),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 9),
+                      ),
+                      onPressed: () async {
+                        final ok = await PocketFortressDefenseService.enlistArmyKnights(coinCost: 40);
+                        if (!mounted) return;
+                        if (ok) {
+                          _loadData();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('⚔️ +2 Royal Guards Stationed!'), backgroundColor: Color(0xFFB45309)),
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('⚠️ Need 40 Coins to enlist Guards!'), backgroundColor: Colors.orange),
+                          );
+                        }
+                      },
+                      child: const Text('ENLIST (40 COINS)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
+                    ),
                   ),
-                  onPressed: () async {
-                    final ok = await PocketFortressDefenseService.enlistArmyKnights();
-                    if (!mounted) return;
-                    if (ok) {
-                      _loadData();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('⚔️ +2 Royal Guards Stationed!'), backgroundColor: Color(0xFFB45309)),
-                      );
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('⚠️ Need 40 Coins to enlist Guards!'), backgroundColor: Colors.orange),
-                      );
-                    }
-                  },
-                  child: const Text('ENLIST +2 GUARDS (40 COINS)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF92400E),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 9),
+                      ),
+                      onPressed: () async {
+                        final ok = await PocketFortressDefenseService.enlistArmyKnights(fdcCost: 35, useFdc: true);
+                        if (!mounted) return;
+                        if (ok) {
+                          _loadData();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('⚡ +2 Royal Guards Stationed via Activity FDC!'), backgroundColor: Color(0xFF92400E)),
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('⚠️ Need 35 FDC! Join voice calls or group chat to earn.'), backgroundColor: Colors.orange),
+                          );
+                        }
+                      },
+                      child: const Text('ENLIST (35 FDC)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
