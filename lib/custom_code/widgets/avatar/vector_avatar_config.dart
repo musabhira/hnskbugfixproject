@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'avatar_game_perk.dart';
+export 'avatar_game_perk.dart';
 
 /// Configuration model for Pocket Mates Multi-Style Profile Avatars & 1-of-1 NFT Identities
 class VectorAvatarConfig {
@@ -422,6 +424,9 @@ class VectorAvatarConfig {
     (species: 'astral_titan', furColor: '#4338CA', eyeColor: '#FFD700', outfitColor: '#0F172A', outfitAccent: '#818CF8', accessory: 'crown', auraStyle: 'cyber_purple', rarityTier: 'Eternal Astral Titan'),
     (species: 'cosmic_dragon_sovereign', furColor: '#7C3AED', eyeColor: '#00F0FF', outfitColor: '#050B14', outfitAccent: '#FFD700', accessory: 'crown', auraStyle: 'golden_sparks', rarityTier: 'Supreme Cosmic Dragon God (Day 90 Master)'),
   ];
+
+  /// Retrieve the active in-game fortress perk for day 1..90
+  static AvatarGamePerk getAvatarPerkForDay(int stage) => AvatarGamePerk.forDay(stage);
 
   static VectorAvatarConfig getEvolutionAvatarForStage(int stage, {String? talismanId}) {
     final day = stage.clamp(1, 90);

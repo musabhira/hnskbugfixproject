@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../avatar/avatar_game_perk.dart';
 
 /// 🎩 President of Pocket World's Official Decree & Anti-Cheat Verdict
 class PresidentVerdict {
@@ -290,6 +291,7 @@ class HouseDefenseStatus {
   final String? banReason;
   final bool isUnderPresidentInspection;
   final List<String> activeShieldTraps; // 1 up to 9 active defense gates
+  final AvatarGamePerk? activePerk;
 
   const HouseDefenseStatus({
     this.currentHp = 100,
@@ -305,6 +307,7 @@ class HouseDefenseStatus {
     this.banReason,
     this.isUnderPresidentInspection = false,
     this.activeShieldTraps = const ['vocab_gate'],
+    this.activePerk,
   });
 
   double get hpPercentage => (currentHp / maxHp.toDouble()).clamp(0.0, 1.0);
@@ -464,13 +467,21 @@ class PocketFortressDefenseService {
     final underInspection = await isUnderPresidentInspection('me');
     final activeTraps = await getActiveShieldTraps(stage);
 
+    // ⚡ Calculate active companion avatar perk buffs
+    final perk = AvatarGamePerk.forDay(stage);
+    final effectiveHasDome = hasDome || (perk.perkType == PerkType.ironDome);
+    final effectiveDomeTier = math.max(domeTier, (perk.perkType == PerkType.ironDome ? perk.bonusValue : 0));
+    final effectiveKnights = knights + (perk.perkType == PerkType.armyKnights ? perk.bonusValue : 0);
+    final bonusHp = (perk.perkType == PerkType.fortressShield ? perk.bonusValue : 0);
+    final effectiveMaxHp = 100 + bonusHp;
+
     return HouseDefenseStatus(
-      currentHp: hp,
-      maxHp: 100,
-      isDamaged: hp < 100,
-      armyKnightsCount: knights,
-      hasIronDome: hasDome,
-      ironDomeTier: domeTier,
+      currentHp: math.min(hp + bonusHp, effectiveMaxHp),
+      maxHp: effectiveMaxHp,
+      isDamaged: hp < effectiveMaxHp,
+      armyKnightsCount: effectiveKnights,
+      hasIronDome: effectiveHasDome,
+      ironDomeTier: effectiveDomeTier,
       hasArmedEscorts: hasEscorts,
       totalCoins: coins,
       activityPoints: fdc,
@@ -478,6 +489,7 @@ class PocketFortressDefenseService {
       banReason: banned ? 'Condemned by Presidential Decree: Reported fake English defenses.' : null,
       isUnderPresidentInspection: underInspection,
       activeShieldTraps: activeTraps,
+      activePerk: perk,
     );
   }
 
@@ -851,8 +863,8 @@ class PocketFortressDefenseService {
     return prefs.getInt(_activityPointsKey) ?? 80;
   }
 
-  /// 🎙️ Record activity and award Fortress Defense Credits (FDC)
-  static Future<int> recordActivityPoints(String activityType) async {
+  /// 🎙️ Record activity and award Fortress Defense Credits (FDC) with optional companion avatar boost
+  static Future<int> recordActivityPoints(String activityType, {int? stage}) async {
     final prefs = await SharedPreferences.getInstance();
     int gain = 10;
     switch (activityType) {
@@ -871,6 +883,15 @@ class PocketFortressDefenseService {
       default:
         gain = 10;
     }
+
+    // Apply companion avatar FDC boost perk if stage is provided
+    if (stage != null && stage > 0) {
+      final perk = AvatarGamePerk.forDay(stage);
+      if (perk.perkType == PerkType.fdcBoost) {
+        gain += perk.bonusValue;
+      }
+    }
+
     final current = prefs.getInt(_activityPointsKey) ?? 80;
     final updated = current + gain;
     await prefs.setInt(_activityPointsKey, updated);

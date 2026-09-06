@@ -365,71 +365,92 @@ class _NftTradingCardDialogState extends State<NftTradingCardDialog>
                             ),
                             const SizedBox(height: 10),
 
-                            // 🏆 Achievements & Battle Powers (Audio Requirement!)
-                            Container(
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF111827),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: rarityColor.withValues(alpha: 0.3),
-                                  width: 1,
-                                ),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
+                            // ⚡ 90-Day Unique In-Game Fortress Perk (User Audio Specification!)
+                            Builder(
+                              builder: (context) {
+                                final perk = VectorAvatarConfig.getAvatarPerkForDay(widget.day);
+                                return Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        perk.badgeColor.withValues(alpha: 0.18),
+                                        const Color(0xFF111827),
+                                      ],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: perk.badgeColor.withValues(alpha: 0.6),
+                                      width: 1.2,
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: perk.badgeColor.withValues(alpha: 0.15),
+                                        blurRadius: 10,
+                                        spreadRadius: 1,
+                                      ),
+                                    ],
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      const Text('🏆', style: TextStyle(fontSize: 13)),
-                                      const SizedBox(width: 6),
+                                      Row(
+                                        children: [
+                                          Text(perk.icon, style: const TextStyle(fontSize: 14)),
+                                          const SizedBox(width: 6),
+                                          Expanded(
+                                            child: Text(
+                                              'ACTIVE FORTRESS PERK',
+                                              style: GoogleFonts.outfit(
+                                                color: perk.badgeColor,
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.w900,
+                                                letterSpacing: 0.8,
+                                              ),
+                                            ),
+                                          ),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                            decoration: BoxDecoration(
+                                              color: perk.badgeColor.withValues(alpha: 0.2),
+                                              borderRadius: BorderRadius.circular(6),
+                                            ),
+                                            child: Text(
+                                              perk.shortBadgeText,
+                                              style: GoogleFonts.outfit(
+                                                color: Colors.white,
+                                                fontSize: 8.5,
+                                                fontWeight: FontWeight.w800,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 6),
                                       Text(
-                                        'ACHIEVEMENTS & BATTLE PERKS',
+                                        perk.title,
                                         style: GoogleFonts.outfit(
-                                          color: const Color(0xFFFFD700),
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.w900,
-                                          letterSpacing: 0.6,
+                                          color: Colors.white,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 3),
+                                      Text(
+                                        perk.description,
+                                        style: GoogleFonts.inter(
+                                          color: Colors.white70,
+                                          fontSize: 9.5,
+                                          fontWeight: FontWeight.w500,
+                                          height: 1.3,
                                         ),
                                       ),
                                     ],
                                   ),
-                                  const SizedBox(height: 6),
-                                  Row(
-                                    children: [
-                                      const Icon(Icons.bolt_rounded, color: Color(0xFF38BDF8), size: 14),
-                                      const SizedBox(width: 4),
-                                      Expanded(
-                                        child: Text(
-                                          'Gate Breach: +${(widget.day * 1.5).round()}% Raid Impact Power',
-                                          style: GoogleFonts.inter(
-                                            color: Colors.white70,
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Row(
-                                    children: [
-                                      const Icon(Icons.shield_rounded, color: Color(0xFF10B981), size: 14),
-                                      const SizedBox(width: 4),
-                                      Expanded(
-                                        child: Text(
-                                          'House Shield: 30s Rapid Anti-Cheat Gate Defense',
-                                          style: GoogleFonts.inter(
-                                            color: Colors.white70,
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
+                                );
+                              },
                             ),
                           ],
                         ),

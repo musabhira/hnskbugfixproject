@@ -270,7 +270,9 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
 
   void _startQuestionTimer() {
     _qTimer?.cancel();
-    _qSecondsLeft = 30;
+    final attackerPerk = VectorAvatarConfig.getAvatarPerkForDay(widget.userDay);
+    final extraTime = attackerPerk.perkType == PerkType.timeFreeze ? attackerPerk.bonusValue : 0;
+    _qSecondsLeft = 30 + extraTime;
     _qTimer = Timer.periodic(const Duration(seconds: 1), (t) {
       if (!mounted) return;
       if (_activeGame != BattleMode.houseShieldGate || _isGameOver) {
@@ -292,7 +294,7 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
     HapticFeedback.heavyImpact();
     setState(() {
       _comboStreak = 0;
-      _lastDamageText = '⏰ 30s TIMEOUT! Gate Defended!';
+      _lastDamageText = '⏰ TIMEOUT! Gate Defended!';
     });
 
     _advanceToNextShieldQuestion(penalizeHp: true);
@@ -397,13 +399,36 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
 
   void _applyDamage(int amount, {bool isCrit = false}) {
     HapticFeedback.heavyImpact();
+    final attackerPerk = VectorAvatarConfig.getAvatarPerkForDay(widget.userDay);
+    final defenderPerk = VectorAvatarConfig.getAvatarPerkForDay(widget.neighbor.day);
+
+    int siegeBonus = 0;
+    if (attackerPerk.perkType == PerkType.siegeDamage) {
+      siegeBonus = attackerPerk.bonusValue;
+    }
+
+    int baseDmg = isCrit ? (amount * 1.5).round() : amount;
+    int totalDmg = baseDmg + siegeBonus;
+
+    bool deflected = false;
+    // Defender's Iron Dome perk has a 25% chance to deflect/soften missile hits
+    if (defenderPerk.perkType == PerkType.ironDome && _opponentHp > 25 && math.Random().nextDouble() < 0.25) {
+      deflected = true;
+      totalDmg = math.max(10, (totalDmg * 0.5).round());
+    }
+
     setState(() {
       _isBombExploding = true;
       _comboStreak++;
-      final totalDmg = isCrit ? (amount * 1.5).round() : amount;
       _opponentHp = math.max(0, _opponentHp - totalDmg);
       _score += totalDmg * 10;
-      _lastDamageText = isCrit ? '💣 AIRSTRIKE CRIT -$totalDmg HP!' : '💥 BOMB HIT -$totalDmg HP!';
+      if (deflected) {
+        _lastDamageText = '🛡️ [${defenderPerk.title}] INTERCEPTED! -$totalDmg HP';
+      } else if (siegeBonus > 0) {
+        _lastDamageText = '💥 +$siegeBonus DMG [${attackerPerk.title}] -$totalDmg HP!';
+      } else {
+        _lastDamageText = isCrit ? '💣 AIRSTRIKE CRIT -$totalDmg HP!' : '💥 BOMB HIT -$totalDmg HP!';
+      }
     });
 
     Future.delayed(const Duration(milliseconds: 650), () {
@@ -448,7 +473,12 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
     _gameTimer?.cancel();
     HapticFeedback.heavyImpact();
     // In audio: Attacking yields coins looted from opponent. If fail, NO coins lost!
-    final lootCoins = won ? (60 + math.Random().nextInt(30)) : 0;
+    final attackerPerk = VectorAvatarConfig.getAvatarPerkForDay(widget.userDay);
+    int baseLoot = won ? (60 + math.Random().nextInt(30)) : 0;
+    if (won && attackerPerk.perkType == PerkType.vaultLoot) {
+      baseLoot = (baseLoot * (1 + attackerPerk.bonusValue / 100)).round();
+    }
+    final lootCoins = baseLoot;
     if (lootCoins > 0) {
       PocketFortressDefenseService.awardRaidLoot(lootCoins);
       PocketFortressDefenseService.processRaidBreach(
@@ -1697,6 +1727,71 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
                         : (_opponentHp > 50 ? const Color(0xFF10B981) : (_opponentHp > 25 ? Colors.amber : Colors.redAccent)),
                   ),
                 ),
+              ),
+
+              const SizedBox(height: 8),
+
+              // ⚡ Companion Clash Perks
+              Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.06),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: VectorAvatarConfig.getAvatarPerkForDay(widget.userDay).badgeColor.withValues(alpha: 0.5),
+                          width: 0.8,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(VectorAvatarConfig.getAvatarPerkForDay(widget.userDay).icon, style: const TextStyle(fontSize: 11)),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              'YOU: ${VectorAvatarConfig.getAvatarPerkForDay(widget.userDay).title}',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(color: Colors.white70, fontSize: 9.5, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.06),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: VectorAvatarConfig.getAvatarPerkForDay(widget.neighbor.day).badgeColor.withValues(alpha: 0.5),
+                          width: 0.8,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(VectorAvatarConfig.getAvatarPerkForDay(widget.neighbor.day).icon, style: const TextStyle(fontSize: 11)),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              'FOE: ${VectorAvatarConfig.getAvatarPerkForDay(widget.neighbor.day).title}',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(color: Colors.white70, fontSize: 9.5, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
 
               if (_isDefenderHouseBanned) ...[
