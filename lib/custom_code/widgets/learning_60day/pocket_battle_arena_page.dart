@@ -9,6 +9,7 @@ import '../avatar/vector_avatar_widget.dart';
 import 'pocket_defense_admin_modal.dart';
 import 'pocket_fortress_defense_service.dart';
 import 'pocket_world_street_page.dart';
+import '../chat/pocket_ambient_flame_background.dart';
 
 /// 🎮 The High-Value English Battle Modes
 enum BattleMode {
@@ -1833,23 +1834,33 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF070B14),
-      body: SafeArea(
-        child: Column(
-          children: [
-            // --- TOP ARENA APP BAR ---
-            _buildTopArenaHeader(),
-
-            // --- DEFENDER'S HOUSE & LIVE SHIELD HP BAR ---
-            _buildDefenderArenaStage(),
-
-            // --- MAIN BATTLE AREA (GAMEPLAY OR GAME SELECTION) ---
-            Expanded(
-              child: _isGameOver
-                  ? _buildVictoryLootScreen()
-                  : (_activeGame == null ? _buildGameSelectionLobby() : _buildActiveGameView()),
+      body: Stack(
+        children: [
+          const Positioned.fill(
+            child: PocketAmbientFlameBackground(
+              showTopFlameGlow: true,
+              emberDensity: 0.95,
             ),
-          ],
-        ),
+          ),
+          SafeArea(
+            child: Column(
+              children: [
+                // --- TOP ARENA APP BAR ---
+                _buildTopArenaHeader(),
+
+                // --- DEFENDER'S HOUSE & LIVE SHIELD HP BAR ---
+                _buildDefenderArenaStage(),
+
+                // --- MAIN BATTLE AREA (GAMEPLAY OR GAME SELECTION) ---
+                Expanded(
+                  child: _isGameOver
+                      ? _buildVictoryLootScreen()
+                      : (_activeGame == null ? _buildGameSelectionLobby() : _buildActiveGameView()),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

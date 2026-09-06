@@ -1650,17 +1650,18 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   }
 
   VectorAvatarConfig _getNavAvatarConfig() {
-    if (_preloadedProfile != null && _preloadedProfile!['avatar_config'] != null) {
-      try {
-        final map = Map<String, dynamic>.from(_preloadedProfile!['avatar_config']);
-        return VectorAvatarConfig.fromMap(map);
-      } catch (_) {}
-    }
-    return const VectorAvatarConfig();
+    final day = (_preloadedProfile?['learning_day'] as num?)?.toInt() ??
+        (_preloadedProfile?['learning_stage'] as num?)?.toInt() ??
+        1;
+    final talismanId = _preloadedProfile?['equipped_talisman']?.toString() ??
+        _preloadedProfile?['talisman_id']?.toString();
+    return VectorAvatarConfig.getEvolutionAvatarForStage(day, talismanId: talismanId);
   }
 
   Widget _buildProfileNavItem() {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final day = (_preloadedProfile?['learning_day'] as num?)?.toInt() ??
+        (_preloadedProfile?['learning_stage'] as num?)?.toInt() ??
+        1;
     return GestureDetector(
       onTap: () async {
         final isAuthenticated = await AuthAlertBox.checkAuthAndShowAlert(
@@ -1721,10 +1722,61 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       child: material.SizedBox(
         height: 70,
         child: material.Center(
-          child: VectorAvatarWidget(
-            config: _getNavAvatarConfig(),
-            size: 36.0,
-            showAura: true,
+          child: Stack(
+            clipBehavior: Clip.none,
+            alignment: Alignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(2),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    colors: day >= 80
+                        ? const [Color(0xFFFFD700), Color(0xFFEF4444), Color(0xFFA855F7)]
+                        : (day >= 40
+                            ? const [Color(0xFFFF8906), Color(0xFFFFD700)]
+                            : const [Color(0xFFFFFC00), Color(0xFFFFD700)]),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFFF8906).withValues(alpha: 0.35),
+                      blurRadius: 8,
+                      spreadRadius: 1,
+                    ),
+                  ],
+                ),
+                child: ClipOval(
+                  child: VectorAvatarWidget(
+                    config: _getNavAvatarConfig(),
+                    size: 34.0,
+                    showAura: false,
+                  ),
+                ),
+              ),
+              Positioned(
+                bottom: -4,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0F172A),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(
+                      color: const Color(0xFFFFD700),
+                      width: 1,
+                    ),
+                  ),
+                  child: Text(
+                    'D$day',
+                    style: const TextStyle(
+                      color: Color(0xFFFFFC00),
+                      fontSize: 8,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 0.2,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),

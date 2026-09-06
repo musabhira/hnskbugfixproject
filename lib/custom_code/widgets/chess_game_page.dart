@@ -5,6 +5,7 @@ import 'package:flutter_chess_board/flutter_chess_board.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '/backend/supabase/supabase.dart';
 import 'ai_prompt_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chat/pocket_ambient_flame_background.dart';
 
 class ChessMatchmakingPage extends StatefulWidget {
   const ChessMatchmakingPage({super.key});
@@ -143,17 +144,35 @@ class _ChessMatchmakingPageState extends State<ChessMatchmakingPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const ui.Color(0xFF161618),
+      backgroundColor: const ui.Color(0xFF0F172A),
       appBar: AppBar(
-        title: Text('Chess Matchmaking',
-            style: GoogleFonts.outfit(
-                fontWeight: FontWeight.bold, color: Colors.white)),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('🔥 ', style: TextStyle(fontSize: 18)),
+            Text(
+              'Chess Arena',
+              style: GoogleFonts.outfit(
+                fontWeight: FontWeight.bold,
+                color: const ui.Color(0xFFFFFC00),
+              ),
+            ),
+          ],
+        ),
         backgroundColor: Colors.transparent,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: SafeArea(
-        child: Column(
+      body: Stack(
+        children: [
+          const Positioned.fill(
+            child: PocketAmbientFlameBackground(
+              showTopFlameGlow: true,
+              emberDensity: 0.7,
+            ),
+          ),
+          SafeArea(
+            child: Column(
           children: [
             Padding(
               padding: const EdgeInsets.all(20),
@@ -281,6 +300,8 @@ class _ChessMatchmakingPageState extends State<ChessMatchmakingPage> {
             ),
           ],
         ),
+      ),
+        ],
       ),
     );
   }
@@ -527,44 +548,54 @@ class _ChessPlayPageState extends State<ChessPlayPage> {
             ),
         ],
       ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+      body: Stack(
         children: [
-          Text(
-            _getStatusMessage(),
-            style: GoogleFonts.outfit(
-              color: _isAiThinking ? Colors.purpleAccent : Colors.white70,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+          const Positioned.fill(
+            child: PocketAmbientFlameBackground(
+              showTopFlameGlow: true,
+              emberDensity: 0.65,
             ),
           ),
-          const SizedBox(height: 20),
-          Center(
-            child: ChessBoard(
-              controller: _controller,
-              boardColor: BoardColor.brown,
-              boardOrientation:
-                  widget.isWhite ? PlayerColor.white : PlayerColor.black,
-              enableUserMoves: _canMove(),
-              onMove: () {
-                _onMove();
-              },
-            ),
-          ),
-          const SizedBox(height: 40),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 32),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _buildGameButton(Icons.refresh, 'Reset', () {
-                  _controller.resetBoard();
-                }),
-                _buildGameButton(Icons.undo, 'Undo', () {
-                  _controller.undoMove();
-                }),
-              ],
-            ),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                _getStatusMessage(),
+                style: GoogleFonts.outfit(
+                  color: _isAiThinking ? Colors.purpleAccent : Colors.white70,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Center(
+                child: ChessBoard(
+                  controller: _controller,
+                  boardColor: BoardColor.brown,
+                  boardOrientation:
+                      widget.isWhite ? PlayerColor.white : PlayerColor.black,
+                  enableUserMoves: _canMove(),
+                  onMove: () {
+                    _onMove();
+                  },
+                ),
+              ),
+              const SizedBox(height: 40),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _buildGameButton(Icons.refresh, 'Reset', () {
+                      _controller.resetBoard();
+                    }),
+                    _buildGameButton(Icons.undo, 'Undo', () {
+                      _controller.undoMove();
+                    }),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),

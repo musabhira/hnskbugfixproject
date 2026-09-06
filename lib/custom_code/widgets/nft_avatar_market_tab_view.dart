@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pocket_mates_app/custom_code/widgets/doodle_background_painter.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/avatar_uniqueness_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chat/pocket_ambient_flame_background.dart';
 import 'nft_marketplace/nft_models.dart';
 import 'nft_marketplace/nft_card_widget.dart';
 import 'nft_marketplace/nft_creator_studio_page.dart';
@@ -117,6 +118,14 @@ class _NftAvatarMarketTabViewState extends State<NftAvatarMarketTabView> {
               isDark: isDark,
               opacityMultiplier: 0.5,
             ),
+          ),
+        ),
+
+        // Ambient Flame Sparkles & Embers
+        const Positioned.fill(
+          child: PocketAmbientFlameBackground(
+            showTopFlameGlow: true,
+            emberDensity: 0.6,
           ),
         ),
 

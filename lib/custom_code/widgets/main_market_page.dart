@@ -9,6 +9,7 @@ import 'gallery_search_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/ads/pocket_ad_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chat/pocket_ambient_flame_background.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 
 class MainMarketPage extends ConsumerStatefulWidget {
@@ -40,22 +41,36 @@ class _MainMarketPageState extends ConsumerState<MainMarketPage>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
-      body: NestedScrollView(
+      body: Stack(
+        children: [
+          const Positioned.fill(
+            child: PocketAmbientFlameBackground(
+              showTopFlameGlow: true,
+              emberDensity: 0.65,
+            ),
+          ),
+          NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) {
           return [
             SliverAppBar(
               floating: true,
               pinned: true,
               snap: true,
-              backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
-              title: Text(
-                'MARKET',
-                style: TextStyle(
-                  color: FlutterFlowTheme.of(context).primaryText,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 2,
-                  fontSize: 18,
-                ),
+              backgroundColor: FlutterFlowTheme.of(context).primaryBackground.withValues(alpha: 0.85),
+              title: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('🔥 ', style: TextStyle(fontSize: 17)),
+                  Text(
+                    'MARKET',
+                    style: TextStyle(
+                      color: FlutterFlowTheme.of(context).primaryText,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 2,
+                      fontSize: 18,
+                    ),
+                  ),
+                ],
               ),
               centerTitle: true,
               bottom: TabBar(
@@ -107,6 +122,8 @@ class _MainMarketPageState extends ConsumerState<MainMarketPage>
             MarketFollowingTabView(),
           ],
         ),
+      ),
+        ],
       ),
     );
   }
