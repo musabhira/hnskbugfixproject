@@ -270,5 +270,42 @@ void main() {
       expect(v2.isApproved, isTrue);
     });
   });
+
+  group('Attacker Lifelines & Citadel Progression Rules (User Audio Request)', () {
+    test('Early levels (Days 1–24) grant 0 lifelines to attackers', () {
+      expect(PocketFortressDefenseService.getAttackerLifelinesForNeighborDay(1), equals(0));
+      expect(PocketFortressDefenseService.getAttackerLifelinesForNeighborDay(10), equals(0));
+      expect(PocketFortressDefenseService.getAttackerLifelinesForNeighborDay(24), equals(0));
+    });
+
+    test('Mid-level fortified houses (Days 25–49) grant 1 lifeline', () {
+      expect(PocketFortressDefenseService.getAttackerLifelinesForNeighborDay(25), equals(1));
+      expect(PocketFortressDefenseService.getAttackerLifelinesForNeighborDay(30), equals(1));
+      expect(PocketFortressDefenseService.getAttackerLifelinesForNeighborDay(49), equals(1));
+    });
+
+    test('High-level citadels (Days 50–79) grant 2 lifelines', () {
+      expect(PocketFortressDefenseService.getAttackerLifelinesForNeighborDay(50), equals(2));
+      expect(PocketFortressDefenseService.getAttackerLifelinesForNeighborDay(65), equals(2));
+      expect(PocketFortressDefenseService.getAttackerLifelinesForNeighborDay(79), equals(2));
+    });
+
+    test('Imperial Palace Citadels (Days 80–90) grant 3 lifelines', () {
+      expect(PocketFortressDefenseService.getAttackerLifelinesForNeighborDay(80), equals(3));
+      expect(PocketFortressDefenseService.getAttackerLifelinesForNeighborDay(85), equals(3));
+      expect(PocketFortressDefenseService.getAttackerLifelinesForNeighborDay(90), equals(3));
+    });
+
+    test('9 Gates scale with exactly 10 questions per gate up to 90 total questions on Day 90', () {
+      for (int day = 1; day <= 90; day++) {
+        final totalQuestions = PocketFortressDefenseService.getMaxQuestionsForStage(day);
+        final gateCount = PocketFortressDefenseService.getUnlockedGamesCountForStage(day);
+        expect(totalQuestions, equals(day));
+        expect(gateCount, equals(((day - 1) ~/ 10) + 1));
+      }
+      expect(PocketFortressDefenseService.getUnlockedGamesCountForStage(90), equals(9));
+      expect(PocketFortressDefenseService.getMaxQuestionsForStage(90), equals(90));
+    });
+  });
 }
 

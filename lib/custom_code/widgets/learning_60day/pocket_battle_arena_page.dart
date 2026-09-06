@@ -186,6 +186,10 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
   Timer? _qTimer;
   bool _showAntiCheatNotice = false;
 
+  // 💖 Attacker Lifeline states for Level 25+ citadels
+  int _lifelinesRemaining = 0;
+  int _initialLifelines = 0;
+
   // Active game states
   Timer? _gameTimer;
   int _secondsLeft = 45;
@@ -206,6 +210,8 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
     WidgetsBinding.instance.addObserver(this);
     _initTts();
     _opponentHp = widget.neighbor.hasActiveShield ? 100 : 70;
+    _initialLifelines = PocketFortressDefenseService.getAttackerLifelinesForNeighborDay(widget.neighbor.day);
+    _lifelinesRemaining = _initialLifelines;
     _checkDefenderBanStatus();
     _loadDefenderShieldTraps();
   }
@@ -295,7 +301,46 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
     });
   }
 
+  bool _tryUseLifeline({required String reason}) {
+    if (_lifelinesRemaining <= 0) return false;
+    HapticFeedback.heavyImpact();
+    setState(() {
+      _lifelinesRemaining--;
+      _qSecondsLeft = 30;
+      _gateScrambleInput = [];
+      _gateJigsawSelected = [];
+      _lastDamageText = '💖 LIFELINE ACTIVATED! 30s Restored';
+    });
+    _startQuestionTimer();
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: const Color(0xFFE11D48),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 3),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          content: Row(
+            children: [
+              const Text('💖', style: TextStyle(fontSize: 22)),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'PHOENIX LIFELINE ACTIVATED! ($reason forgiven) $_lifelinesRemaining left. Timer reset to 30s!',
+                  style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11.5),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+    return true;
+  }
+
   void _onQuestionTimeExpired() {
+    if (_activeGame == BattleMode.houseShieldGate && _tryUseLifeline(reason: 'Timeout')) {
+      return;
+    }
     HapticFeedback.heavyImpact();
     setState(() {
       _comboStreak = 0;
@@ -384,6 +429,8 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
       _gateJigsawSelected = [];
       _isGameOver = false;
       _isBombExploding = false;
+      _initialLifelines = PocketFortressDefenseService.getAttackerLifelinesForNeighborDay(widget.neighbor.day);
+      _lifelinesRemaining = _initialLifelines;
     });
 
     if (mode == BattleMode.houseShieldGate) {
@@ -465,7 +512,10 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
     }
   }
 
-  void _onIncorrect() {
+  bool _onIncorrect() {
+    if (_activeGame == BattleMode.houseShieldGate && _tryUseLifeline(reason: 'Incorrect Answer')) {
+      return true;
+    }
     HapticFeedback.vibrate();
     setState(() {
       _comboStreak = 0;
@@ -478,6 +528,7 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
         });
       }
     });
+    return false;
   }
 
   void _finishGame({required bool won}) {
@@ -1000,6 +1051,65 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
               ),
             ),
 
+          // 💖 Phoenix Attacker Lifelines HUD (when raiding Level 25+ citadels)
+          if (_initialLifelines > 0)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+              margin: const EdgeInsets.only(bottom: 8),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    const Color(0xFF881337).withValues(alpha: 0.6),
+                    const Color(0xFFBE123C).withValues(alpha: 0.4),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFFB7185).withValues(alpha: 0.6)),
+              ),
+              child: Row(
+                children: [
+                  const Text('💖', style: TextStyle(fontSize: 16)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'PHOENIX ATTACKER LIFELINES',
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFFFECDD3),
+                            fontSize: 10,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 0.6,
+                          ),
+                        ),
+                        Text(
+                          'Level ${widget.neighbor.day}+ Citadel • Auto-resets 30s timer on error',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.65),
+                            fontSize: 9,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: List.generate(_initialLifelines, (i) {
+                      final active = i < _lifelinesRemaining;
+                      return Padding(
+                        padding: const EdgeInsets.only(left: 3),
+                        child: Text(
+                          active ? '💖' : '🖤',
+                          style: const TextStyle(fontSize: 15),
+                        ),
+                      );
+                    }),
+                  ),
+                ],
+              ),
+            ),
+
           // ⏱️ 30s Rapid Countdown Timer Bar
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -1228,9 +1338,11 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
                                         _applyDamage(30, isCrit: _comboStreak >= 2);
                                         _advanceToNextShieldQuestion();
                                       } else {
-                                        _onIncorrect();
+                                        final usedLifeline = _onIncorrect();
                                         setState(() {
-                                          _qSecondsLeft = math.max(1, _qSecondsLeft - 5);
+                                          if (!usedLifeline) {
+                                            _qSecondsLeft = math.max(1, _qSecondsLeft - 5);
+                                          }
                                           _gateScrambleInput = [];
                                         });
                                       }
@@ -1326,9 +1438,11 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
                                         _applyDamage(35, isCrit: true);
                                         _advanceToNextShieldQuestion();
                                       } else {
-                                        _onIncorrect();
+                                        final usedLifeline = _onIncorrect();
                                         setState(() {
-                                          _qSecondsLeft = math.max(1, _qSecondsLeft - 5);
+                                          if (!usedLifeline) {
+                                            _qSecondsLeft = math.max(1, _qSecondsLeft - 5);
+                                          }
                                           _gateJigsawSelected = [];
                                         });
                                       }
@@ -1394,10 +1508,12 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
                                     _applyDamage(30, isCrit: true);
                                     _advanceToNextShieldQuestion();
                                   } else {
-                                    _onIncorrect();
-                                    setState(() {
-                                      _qSecondsLeft = math.max(1, _qSecondsLeft - 5);
-                                    });
+                                    final usedLifeline = _onIncorrect();
+                                    if (!usedLifeline) {
+                                      setState(() {
+                                        _qSecondsLeft = math.max(1, _qSecondsLeft - 5);
+                                      });
+                                    }
                                   }
                                 },
                                 child: Row(
@@ -1461,10 +1577,12 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
                                     _applyDamage(25, isCrit: _comboStreak >= 2);
                                     _advanceToNextShieldQuestion();
                                   } else {
-                                    _onIncorrect();
-                                    setState(() {
-                                      _qSecondsLeft = math.max(1, _qSecondsLeft - 5);
-                                    });
+                                    final usedLifeline = _onIncorrect();
+                                    if (!usedLifeline) {
+                                      setState(() {
+                                        _qSecondsLeft = math.max(1, _qSecondsLeft - 5);
+                                      });
+                                    }
                                   }
                                 },
                                 child: Text(q.options[i], style: GoogleFonts.outfit(fontSize: 13, fontWeight: FontWeight.w600)),
@@ -1497,10 +1615,12 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
                             _applyDamage(25, isCrit: _comboStreak >= 2);
                             _advanceToNextShieldQuestion();
                           } else {
-                            _onIncorrect();
-                            setState(() {
-                              _qSecondsLeft = math.max(1, _qSecondsLeft - 5);
-                            });
+                            final usedLifeline = _onIncorrect();
+                            if (!usedLifeline) {
+                              setState(() {
+                                _qSecondsLeft = math.max(1, _qSecondsLeft - 5);
+                              });
+                            }
                           }
                         },
                         child: Row(

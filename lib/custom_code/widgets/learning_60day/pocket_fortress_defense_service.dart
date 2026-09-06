@@ -408,6 +408,19 @@ class PocketFortressDefenseService {
     return stage.clamp(1, 90);
   }
 
+  /// 💖 Attacker Lifelines for Raiding High-Level Citadels (User Audio Request)
+  /// When an attacker sieges a well-fortified neighbor house:
+  /// - Level 1–24: 0 Lifelines
+  /// - Level 25–49: 1 Lifeline (forgiving 1 mistake or timeout, resetting timer)
+  /// - Level 50–79: 2 Lifelines
+  /// - Level 80–90: 3 Lifelines
+  static int getAttackerLifelinesForNeighborDay(int neighborDay) {
+    if (neighborDay >= 80) return 3;
+    if (neighborDay >= 50) return 2;
+    if (neighborDay >= 25) return 1;
+    return 0;
+  }
+
   /// 🚨 Inactivity / Consistency Check (Daily Focus Protection)
   /// If user skips a day, stage downgrades (e.g. Day 6 -> Day 5) with a focus warning!
   static Future<ConsistencyCheckResult> checkDailyConsistency(int currentDay, int streak) async {
