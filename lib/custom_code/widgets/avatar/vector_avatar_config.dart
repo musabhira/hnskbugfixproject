@@ -302,355 +302,140 @@ class VectorAvatarConfig {
   ///
   /// Also includes Jackie Chan's 12 Legendary Zodiac Talismans (ജാക്കി ചാന്റെ മാന്ത്രിക കല്ലുകൾ):
   /// Rabbit, Dragon, Ox, Horse, Dog, Snake, Rooster, Monkey, Sheep, Rat, Tiger, Pig.
+  /// 🌟 90 COMPLETELY UNIQUE ANIMAL SPECIES (1 UNIQUE ANIMAL FOR EVERY SINGLE DAY FROM 1 TO 90)
+  /// Designed for Flame/Vector rendering with tailored biomes, accessories, and rarity tiers.
+  static const List<({
+    String species,
+    String furColor,
+    String eyeColor,
+    String outfitColor,
+    String outfitAccent,
+    String accessory,
+    String auraStyle,
+    String rarityTier,
+  })> _k90DayAnimals = [
+    // 🐱 1–10: Urban Cyber Predators (Genesis Tier)
+    (species: 'cyber_cat', furColor: '#F59E0B', eyeColor: '#10B981', outfitColor: '#1E293B', outfitAccent: '#FFFC00', accessory: 'none', auraStyle: 'neon_yellow', rarityTier: 'Neon Cyber Cat'),
+    (species: 'cyber_fox', furColor: '#F97316', eyeColor: '#FFD700', outfitColor: '#7F1D1D', outfitAccent: '#F97316', accessory: 'none', auraStyle: 'sunset_orange', rarityTier: 'Mystic Kitsune Fox'),
+    (species: 'shadow_wolf', furColor: '#334155', eyeColor: '#00F0FF', outfitColor: '#0F172A', outfitAccent: '#38BDF8', accessory: 'headphones', auraStyle: 'electric_blue', rarityTier: 'Midnight Shadow Wolf'),
+    (species: 'royal_tiger', furColor: '#FB923C', eyeColor: '#FACC15', outfitColor: '#1E1B4B', outfitAccent: '#FFD700', accessory: 'none', auraStyle: 'golden_sparks', rarityTier: 'Royal Bengal Tiger'),
+    (species: 'golden_lion', furColor: '#F59E0B', eyeColor: '#38BDF8', outfitColor: '#451A03', outfitAccent: '#FFD700', accessory: 'gold_chain', auraStyle: 'golden_sparks', rarityTier: '24K Golden Lion'),
+    (species: 'mighty_elephant', furColor: '#64748B', eyeColor: '#10B981', outfitColor: '#064E3B', outfitAccent: '#34D399', accessory: 'none', auraStyle: 'neon_green', rarityTier: 'Colossal Tusker'),
+    (species: 'ninja_panda', furColor: '#F8FAFC', eyeColor: '#38BDF8', outfitColor: '#1E1E24', outfitAccent: '#22C55E', accessory: 'samurai_headband', auraStyle: 'neon_green', rarityTier: 'Shaolin Ninja Panda'),
+    (species: 'noble_bear', furColor: '#78350F', eyeColor: '#FDE047', outfitColor: '#1C1917', outfitAccent: '#F59E0B', accessory: 'cap', auraStyle: 'sunset_orange', rarityTier: 'Armored Kodiak Bear'),
+    (species: 'bored_ape', furColor: '#8D5B4C', eyeColor: '#FFD700', outfitColor: '#0F172A', outfitAccent: '#FF007A', accessory: 'crown', auraStyle: 'cyber_purple', rarityTier: 'Cyber Primate Ape'),
+    (species: 'majestic_eagle', furColor: '#CBD5E1', eyeColor: '#F59E0B', outfitColor: '#1E3A8A', outfitAccent: '#FFD700', accessory: 'cool_sunglasses', auraStyle: 'golden_sparks', rarityTier: 'Imperial Storm Eagle'),
+
+    // 🐺 11–20: Wild Hunters & Agile Spirits
+    (species: 'shadow_leopard', furColor: '#F59E0B', eyeColor: '#10B981', outfitColor: '#18181B', outfitAccent: '#F59E0B', accessory: 'gold_chain', auraStyle: 'neon_green', rarityTier: 'Shadow Leopard'),
+    (species: 'cosmic_unicorn', furColor: '#FAE8FF', eyeColor: '#00F0FF', outfitColor: '#4C1D95', outfitAccent: '#38BDF8', accessory: 'crown', auraStyle: 'cyber_purple', rarityTier: 'Starlight Unicorn'),
+    (species: 'solar_phoenix', furColor: '#EF4444', eyeColor: '#FFD700', outfitColor: '#7F1D1D', outfitAccent: '#FFD700', accessory: 'crown', auraStyle: 'golden_sparks', rarityTier: 'Solar Crimson Phoenix'),
+    (species: 'armored_rhino', furColor: '#64748B', eyeColor: '#DC2626', outfitColor: '#1E293B', outfitAccent: '#EF4444', accessory: 'cyber_visor', auraStyle: 'electric_blue', rarityTier: 'Titan Battle Rhino'),
+    (species: 'thunder_bison', furColor: '#78350F', eyeColor: '#38BDF8', outfitColor: '#18181B', outfitAccent: '#FACC15', accessory: 'gold_chain', auraStyle: 'golden_sparks', rarityTier: 'Thunder Bison'),
+    (species: 'mystic_croc', furColor: '#065F46', eyeColor: '#FACC15', outfitColor: '#0F172A', outfitAccent: '#10B981', accessory: 'pirate_eyepatch', auraStyle: 'neon_green', rarityTier: 'Prehistoric Croc'),
+    (species: 'abyssal_shark', furColor: '#0284C7', eyeColor: '#00F0FF', outfitColor: '#0C4A6E', outfitAccent: '#38BDF8', accessory: 'cyber_visor', auraStyle: 'electric_blue', rarityTier: 'Abyssal Megalodon'),
+    (species: 'wisdom_owl', furColor: '#92400E', eyeColor: '#FFD700', outfitColor: '#3B0764', outfitAccent: '#A855F7', accessory: 'round_glasses', auraStyle: 'cyber_purple', rarityTier: 'Astral Wisdom Owl'),
+    (species: 'astral_stag', furColor: '#B45309', eyeColor: '#10B981', outfitColor: '#134E4A', outfitAccent: '#2DD4BF', accessory: 'crown', auraStyle: 'cherry_blossom', rarityTier: 'Celestial Forest Stag'),
+    (species: 'silverback_titan', furColor: '#1E293B', eyeColor: '#EA580C', outfitColor: '#09090B', outfitAccent: '#F97316', accessory: 'gold_chain', auraStyle: 'sunset_orange', rarityTier: 'Silverback Titan'),
+
+    // 🎯 21–30: Habit Anchors & Rare Sovereigns
+    (species: 'imperial_cobra', furColor: '#059669', eyeColor: '#DC2626', outfitColor: '#0F172A', outfitAccent: '#F59E0B', accessory: 'crown', auraStyle: 'neon_green', rarityTier: 'Day 21 Habit Anchor Cobra'),
+    (species: 'pegasus_stallion', furColor: '#E2E8F0', eyeColor: '#0284C7', outfitColor: '#1E3A8A', outfitAccent: '#60A5FA', accessory: 'samurai_headband', auraStyle: 'electric_blue', rarityTier: 'Winged Pegasus'),
+    (species: 'royal_peacock', furColor: '#0284C7', eyeColor: '#8B5CF6', outfitColor: '#312E81', outfitAccent: '#38BDF8', accessory: 'crown', auraStyle: 'cyber_purple', rarityTier: 'Prismatic Peacock'),
+    (species: 'combat_kangaroo', furColor: '#D97706', eyeColor: '#78350F', outfitColor: '#18181B', outfitAccent: '#EF4444', accessory: 'samurai_headband', auraStyle: 'sunset_orange', rarityTier: 'Outback Boxer'),
+    (species: 'nightfang_bat', furColor: '#1E1E24', eyeColor: '#EF4444', outfitColor: '#0F172A', outfitAccent: '#DC2626', accessory: 'ninja_mask', auraStyle: 'cyber_purple', rarityTier: 'Nightfang Vampire Bat'),
+    (species: 'zen_sloth', furColor: '#64748B', eyeColor: '#854D0E', outfitColor: '#27272A', outfitAccent: '#10B981', accessory: 'headphones', auraStyle: 'cherry_blossom', rarityTier: 'Zen Forest Sloth'),
+    (species: 'celestial_hound', furColor: '#F59E0B', eyeColor: '#38BDF8', outfitColor: '#0F172A', outfitAccent: '#F59E0B', accessory: 'cool_sunglasses', auraStyle: 'golden_sparks', rarityTier: 'Celestial Anubis Hound'),
+    (species: 'astral_rabbit', furColor: '#FFFFFF', eyeColor: '#EC4899', outfitColor: '#312E81', outfitAccent: '#F472B6', accessory: 'cyber_visor', auraStyle: 'electric_blue', rarityTier: 'Astral Moon Rabbit'),
+    (species: 'abyssal_kraken', furColor: '#831843', eyeColor: '#FACC15', outfitColor: '#0F172A', outfitAccent: '#F43F5E', accessory: 'pirate_eyepatch', auraStyle: 'cyber_purple', rarityTier: 'Abyssal Deep Kraken'),
+    (species: 'cosmic_dragon', furColor: '#7C3AED', eyeColor: '#FFD700', outfitColor: '#050B14', outfitAccent: '#F97316', accessory: 'crown', auraStyle: 'golden_sparks', rarityTier: 'Day 30 Celestial Dragon'),
+
+    // 🐆 31–40: Swift Nomads & Arctic Wanderers
+    (species: 'golden_cheetah', furColor: '#F59E0B', eyeColor: '#065F46', outfitColor: '#18181B', outfitAccent: '#FBBF24', accessory: 'cool_sunglasses', auraStyle: 'neon_yellow', rarityTier: 'Hyper-Speed Cheetah'),
+    (species: 'polar_bear', furColor: '#E0F2FE', eyeColor: '#0284C7', outfitColor: '#0F172A', outfitAccent: '#38BDF8', accessory: 'beanie', auraStyle: 'electric_blue', rarityTier: 'Arctic Polar Bear'),
+    (species: 'wild_boar', furColor: '#57534E', eyeColor: '#DC2626', outfitColor: '#292524', outfitAccent: '#EA580C', accessory: 'gold_chain', auraStyle: 'sunset_orange', rarityTier: 'Razorback Boar'),
+    (species: 'electric_ray', furColor: '#0284C7', eyeColor: '#00F0FF', outfitColor: '#0C4A6E', outfitAccent: '#00F0FF', accessory: 'cyber_visor', auraStyle: 'electric_blue', rarityTier: 'Volt Manta Ray'),
+    (species: 'cyber_chameleon', furColor: '#10B981', eyeColor: '#EC4899', outfitColor: '#064E3B', outfitAccent: '#A7F3D0', accessory: 'cool_sunglasses', auraStyle: 'neon_green', rarityTier: 'Prismatic Chameleon'),
+    (species: 'armored_armadillo', furColor: '#78716C', eyeColor: '#F59E0B', outfitColor: '#1C1917', outfitAccent: '#EAB308', accessory: 'cap', auraStyle: 'minimal_dark', rarityTier: 'Steel Armadillo'),
+    (species: 'red_panda', furColor: '#EA580C', eyeColor: '#78350F', outfitColor: '#451A03', outfitAccent: '#FDBA74', accessory: 'samurai_headband', auraStyle: 'cherry_blossom', rarityTier: 'Mystic Red Panda'),
+    (species: 'peregrine_falcon', furColor: '#475569', eyeColor: '#FACC15', outfitColor: '#1E293B', outfitAccent: '#FDE047', accessory: 'cyber_visor', auraStyle: 'electric_blue', rarityTier: 'Supersonic Falcon'),
+    (species: 'iron_wolverine', furColor: '#451A03', eyeColor: '#38BDF8', outfitColor: '#18181B', outfitAccent: '#F59E0B', accessory: 'gold_chain', auraStyle: 'sunset_orange', rarityTier: 'Iron Wolverine'),
+    (species: 'tundra_lynx', furColor: '#CBD5E1', eyeColor: '#00F0FF', outfitColor: '#1E293B', outfitAccent: '#93C5FD', accessory: 'headphones', auraStyle: 'electric_blue', rarityTier: 'Tundra Lynx'),
+
+    // 🌊 41–50: Deep Ocean & Savanna Titans
+    (species: 'colossal_walrus', furColor: '#78716C', eyeColor: '#38BDF8', outfitColor: '#1C1917', outfitAccent: '#CBD5E1', accessory: 'pirate_eyepatch', auraStyle: 'minimal_dark', rarityTier: 'Colossal Walrus'),
+    (species: 'apex_orca', furColor: '#0F172A', eyeColor: '#38BDF8', outfitColor: '#0284C7', outfitAccent: '#FFFFFF', accessory: 'cool_sunglasses', auraStyle: 'electric_blue', rarityTier: 'Apex Orca Titan'),
+    (species: 'honey_badger', furColor: '#1E293B', eyeColor: '#EF4444', outfitColor: '#0F172A', outfitAccent: '#FFFFFF', accessory: 'samurai_headband', auraStyle: 'sunset_orange', rarityTier: 'Fearless Honey Badger'),
+    (species: 'spotted_hyena', furColor: '#B45309', eyeColor: '#F59E0B', outfitColor: '#292524', outfitAccent: '#FDE047', accessory: 'gold_chain', auraStyle: 'sunset_orange', rarityTier: 'Savanna Hyena'),
+    (species: 'armored_hippo', furColor: '#64748B', eyeColor: '#EC4899', outfitColor: '#1E293B', outfitAccent: '#F43F5E', accessory: 'beanie', auraStyle: 'neon_green', rarityTier: 'River Hippo Titan'),
+    (species: 'savanna_giraffe', furColor: '#D97706', eyeColor: '#78350F', outfitColor: '#451A03', outfitAccent: '#FDE047', accessory: 'round_glasses', auraStyle: 'neon_yellow', rarityTier: 'Savanna Giraffe'),
+    (species: 'tree_viper', furColor: '#059669', eyeColor: '#EF4444', outfitColor: '#064E3B', outfitAccent: '#34D399', accessory: 'ninja_mask', auraStyle: 'neon_green', rarityTier: 'Emerald Tree Viper'),
+    (species: 'horned_ram', furColor: '#78350F', eyeColor: '#FACC15', outfitColor: '#1C1917', outfitAccent: '#F59E0B', accessory: 'samurai_headband', auraStyle: 'golden_sparks', rarityTier: 'Bighorn Ram'),
+    (species: 'emperor_penguin', furColor: '#1E293B', eyeColor: '#F59E0B', outfitColor: '#0F172A', outfitAccent: '#FDE047', accessory: 'crown', auraStyle: 'electric_blue', rarityTier: 'Emperor Penguin'),
+    (species: 'golden_jaguar', furColor: '#F59E0B', eyeColor: '#10B981', outfitColor: '#1C1917', outfitAccent: '#FFD700', accessory: 'gold_chain', auraStyle: 'golden_sparks', rarityTier: 'Golden Jaguar'),
+
+    // 🌴 51–60: Jungle Lords & Prehistoric Behemoths
+    (species: 'sea_otter', furColor: '#92400E', eyeColor: '#38BDF8', outfitColor: '#1E3A8A', outfitAccent: '#67E8F9', accessory: 'headphones', auraStyle: 'cherry_blossom', rarityTier: 'River Sea Otter'),
+    (species: 'giant_anteater', furColor: '#475569', eyeColor: '#F59E0B', outfitColor: '#1E293B', outfitAccent: '#CBD5E1', accessory: 'cap', auraStyle: 'minimal_dark', rarityTier: 'Giant Anteater'),
+    (species: 'woolly_mammoth', furColor: '#78350F', eyeColor: '#38BDF8', outfitColor: '#1C1917', outfitAccent: '#FACC15', accessory: 'gold_chain', auraStyle: 'sunset_orange', rarityTier: 'Woolly Mammoth'),
+    (species: 'swordfish', furColor: '#0284C7', eyeColor: '#00F0FF', outfitColor: '#0C4A6E', outfitAccent: '#38BDF8', accessory: 'cyber_visor', auraStyle: 'electric_blue', rarityTier: 'Ocean Swordfish'),
+    (species: 'komodo_titan', furColor: '#3F3F46', eyeColor: '#EAB308', outfitColor: '#18181B', outfitAccent: '#84CC16', accessory: 'samurai_headband', auraStyle: 'neon_green', rarityTier: 'Komodo Titan'),
+    (species: 'rainforest_toucan', furColor: '#0F172A', eyeColor: '#38BDF8', outfitColor: '#1E293B', outfitAccent: '#F59E0B', accessory: 'cool_sunglasses', auraStyle: 'neon_yellow', rarityTier: 'Rainforest Toucan'),
+    (species: 'crimson_flamingo', furColor: '#F43F5E', eyeColor: '#FFD700', outfitColor: '#881337', outfitAccent: '#FDA4AF', accessory: 'crown', auraStyle: 'cherry_blossom', rarityTier: 'Crimson Flamingo'),
+    (species: 'cyber_meerkat', furColor: '#D97706', eyeColor: '#00F0FF', outfitColor: '#18181B', outfitAccent: '#38BDF8', accessory: 'headphones', auraStyle: 'neon_yellow', rarityTier: 'Sentinel Meerkat'),
+    (species: 'shadow_manticore', furColor: '#7F1D1D', eyeColor: '#EF4444', outfitColor: '#450A0A', outfitAccent: '#DC2626', accessory: 'ninja_mask', auraStyle: 'cyber_purple', rarityTier: 'Shadow Manticore'),
+    (species: 'golden_griffin', furColor: '#F59E0B', eyeColor: '#FFD700', outfitColor: '#451A03', outfitAccent: '#FFD700', accessory: 'crown', auraStyle: 'golden_sparks', rarityTier: 'Day 60 Golden Griffin'),
+
+    // 🔥 61–70: Mythic Beasts & Elemental Guardians
+    (species: 'volcanic_salamander', furColor: '#DC2626', eyeColor: '#FACC15', outfitColor: '#1C1917', outfitAccent: '#F97316', accessory: 'cyber_visor', auraStyle: 'sunset_orange', rarityTier: 'Volcanic Salamander'),
+    (species: 'oceanic_narwhal', furColor: '#0284C7', eyeColor: '#00F0FF', outfitColor: '#075985', outfitAccent: '#E0F2FE', accessory: 'crown', auraStyle: 'electric_blue', rarityTier: 'Oceanic Narwhal'),
+    (species: 'snow_leopard', furColor: '#E2E8F0', eyeColor: '#00F0FF', outfitColor: '#0F172A', outfitAccent: '#94A3B8', accessory: 'cool_sunglasses', auraStyle: 'electric_blue', rarityTier: 'Ghost Snow Leopard'),
+    (species: 'fennec_fox', furColor: '#FDE047', eyeColor: '#78350F', outfitColor: '#451A03', outfitAccent: '#FBBF24', accessory: 'headphones', auraStyle: 'neon_yellow', rarityTier: 'Desert Fennec Fox'),
+    (species: 'cyber_mantis', furColor: '#10B981', eyeColor: '#00F0FF', outfitColor: '#064E3B', outfitAccent: '#6EE7B7', accessory: 'ninja_mask', auraStyle: 'neon_green', rarityTier: 'Cyber Mantis'),
+    (species: 'ghost_jellyfish', furColor: '#A855F7', eyeColor: '#00F0FF', outfitColor: '#3B0764', outfitAccent: '#C084FC', accessory: 'crown', auraStyle: 'cyber_purple', rarityTier: 'Ghost Jellyfish'),
+    (species: 'armored_pangolin', furColor: '#D97706', eyeColor: '#10B981', outfitColor: '#1C1917', outfitAccent: '#FDE047', accessory: 'gold_chain', auraStyle: 'golden_sparks', rarityTier: 'Armored Pangolin'),
+    (species: 'black_panther', furColor: '#18181B', eyeColor: '#A855F7', outfitColor: '#09090B', outfitAccent: '#C084FC', accessory: 'ninja_mask', auraStyle: 'cyber_purple', rarityTier: 'Obsidian Black Panther'),
+    (species: 'sky_thunderbird', furColor: '#1E3A8A', eyeColor: '#FACC15', outfitColor: '#172554', outfitAccent: '#FDE047', accessory: 'cyber_visor', auraStyle: 'electric_blue', rarityTier: 'Sky Thunderbird'),
+    (species: 'cerberus_hound', furColor: '#450A0A', eyeColor: '#EF4444', outfitColor: '#18181B', outfitAccent: '#DC2626', accessory: 'gold_chain', auraStyle: 'sunset_orange', rarityTier: 'Nether Cerberus'),
+
+    // 👑 71–80: Enchanted & Prismatic Monarchs
+    (species: 'reef_seahorse', furColor: '#0284C7', eyeColor: '#FACC15', outfitColor: '#0C4A6E', outfitAccent: '#38BDF8', accessory: 'crown', auraStyle: 'electric_blue', rarityTier: 'Imperial Seahorse'),
+    (species: 'gorilla_king', furColor: '#1E293B', eyeColor: '#FFD700', outfitColor: '#0F172A', outfitAccent: '#FFD700', accessory: 'crown', auraStyle: 'golden_sparks', rarityTier: 'Gorilla Sovereign King'),
+    (species: 'cyber_chimera', furColor: '#7C3AED', eyeColor: '#F59E0B', outfitColor: '#1E1B4B', outfitAccent: '#EC4899', accessory: 'samurai_headband', auraStyle: 'cyber_purple', rarityTier: 'Cyber Chimera'),
+    (species: 'tree_frog', furColor: '#2563EB', eyeColor: '#F59E0B', outfitColor: '#1E3A8A', outfitAccent: '#60A5FA', accessory: 'cool_sunglasses', auraStyle: 'electric_blue', rarityTier: 'Poison Dart Frog'),
+    (species: 'monarch_butterfly', furColor: '#EA580C', eyeColor: '#38BDF8', outfitColor: '#431407', outfitAccent: '#FDE047', accessory: 'crown', auraStyle: 'cherry_blossom', rarityTier: 'Monarch Queen'),
+    (species: 'musk_ox', furColor: '#44403C', eyeColor: '#38BDF8', outfitColor: '#1C1917', outfitAccent: '#CBD5E1', accessory: 'beanie', auraStyle: 'minimal_dark', rarityTier: 'Arctic Musk Ox'),
+    (species: 'chameleon_king', furColor: '#8B5CF6', eyeColor: '#00F0FF', outfitColor: '#3B0764', outfitAccent: '#F43F5E', accessory: 'crown', auraStyle: 'cyber_purple', rarityTier: 'Prism Chameleon King'),
+    (species: 'horned_lizard', furColor: '#B45309', eyeColor: '#DC2626', outfitColor: '#292524', outfitAccent: '#F59E0B', accessory: 'ninja_mask', auraStyle: 'sunset_orange', rarityTier: 'Desert Horned Lizard'),
+    (species: 'angler_leviathan', furColor: '#0F172A', eyeColor: '#00F0FF', outfitColor: '#0284C7', outfitAccent: '#FACC15', accessory: 'cyber_visor', auraStyle: 'electric_blue', rarityTier: 'Abyssal Angler Leviathan'),
+    (species: 'mecha_wolf', furColor: '#334155', eyeColor: '#00F0FF', outfitColor: '#0F172A', outfitAccent: '#38BDF8', accessory: 'cyber_visor', auraStyle: 'electric_blue', rarityTier: 'Mecha Cyber Wolf Alpha'),
+
+    // 🌌 81–90: Celestial Sovereigns & Cosmic Grandmasters
+    (species: 'kitsune_emperor', furColor: '#FF6D00', eyeColor: '#FFD700', outfitColor: '#7F1D1D', outfitAccent: '#FFD700', accessory: 'crown', auraStyle: 'golden_sparks', rarityTier: 'Celestial Kitsune Emperor'),
+    (species: 'solar_lion', furColor: '#F59E0B', eyeColor: '#38BDF8', outfitColor: '#451A03', outfitAccent: '#FFD700', accessory: 'crown', auraStyle: 'golden_sparks', rarityTier: 'Solar Sovereign Lion'),
+    (species: 'sea_dragon', furColor: '#0284C7', eyeColor: '#00F0FF', outfitColor: '#082F49', outfitAccent: '#38BDF8', accessory: 'crown', auraStyle: 'electric_blue', rarityTier: 'Mythic Sea Dragon'),
+    (species: 'thunder_roc', furColor: '#1E3A8A', eyeColor: '#FFD700', outfitColor: '#172554', outfitAccent: '#FFD700', accessory: 'crown', auraStyle: 'golden_sparks', rarityTier: 'Tempest Roc Apex'),
+    (species: 'obsidian_basilisk', furColor: '#18181B', eyeColor: '#10B981', outfitColor: '#09090B', outfitAccent: '#10B981', accessory: 'crown', auraStyle: 'neon_green', rarityTier: 'Obsidian Basilisk'),
+    (species: 'celestial_phoenix', furColor: '#EF4444', eyeColor: '#FFD700', outfitColor: '#7F1D1D', outfitAccent: '#FFD700', accessory: 'crown', auraStyle: 'golden_sparks', rarityTier: '24K Celestial Phoenix'),
+    (species: 'cosmic_hydra', furColor: '#6B21A8', eyeColor: '#00F0FF', outfitColor: '#3B0764', outfitAccent: '#C084FC', accessory: 'crown', auraStyle: 'cyber_purple', rarityTier: 'Astral Void Hydra'),
+    (species: 'chrono_dragon', furColor: '#D97706', eyeColor: '#00F0FF', outfitColor: '#1E1B4B', outfitAccent: '#FFD700', accessory: 'crown', auraStyle: 'golden_sparks', rarityTier: 'Chrono Time Dragon'),
+    (species: 'astral_titan', furColor: '#4338CA', eyeColor: '#FFD700', outfitColor: '#0F172A', outfitAccent: '#818CF8', accessory: 'crown', auraStyle: 'cyber_purple', rarityTier: 'Eternal Astral Titan'),
+    (species: 'cosmic_dragon_sovereign', furColor: '#7C3AED', eyeColor: '#00F0FF', outfitColor: '#050B14', outfitAccent: '#FFD700', accessory: 'crown', auraStyle: 'golden_sparks', rarityTier: 'Supreme Cosmic Dragon God (Day 90 Master)'),
+  ];
+
   static VectorAvatarConfig getEvolutionAvatarForStage(int stage, {String? talismanId}) {
     final day = stage.clamp(1, 90);
+    final animal = _k90DayAnimals[day - 1];
 
-    // 🌟 30 UNIQUE ANIMAL SPECIES (3 DAYS PER SPECIES)
-    final int speciesIndex = ((day - 1) ~/ 3).clamp(0, 29);
-    final int dayInSpecies = (day - 1) % 3; // 0: Rookie, 1: Evolved, 2: Apex Champion
-
-    String species = 'cyber_cat';
-    String furColor = '#F59E0B';
-    String eyeColor = '#10B981';
-    String outfitColor = '#1E293B';
-    String outfitAccent = '#FFFC00';
-    String accessory = 'none';
-    String auraStyle = 'minimal_dark';
-    String rarityTier = 'Common';
-    String hairStyle = 'short_crop';
-
-    switch (speciesIndex) {
-      case 0: // 🐱 1. Cyber Cat (Days 1–3)
-        species = 'cyber_cat';
-        furColor = ['#F59E0B', '#EC4899', '#00F0FF'][dayInSpecies];
-        eyeColor = '#10B981';
-        outfitColor = '#1E293B';
-        outfitAccent = '#FFFC00';
-        accessory = dayInSpecies == 2 ? 'cool_sunglasses' : 'none';
-        auraStyle = dayInSpecies == 2 ? 'neon_yellow' : 'minimal_dark';
-        rarityTier = dayInSpecies == 2 ? 'Cat Apex Champion' : (dayInSpecies == 1 ? 'Cyber Cat Hunter' : 'Kitten Rookie');
-        break;
-
-      case 1: // 🦊 2. Mystic Fox (Days 4–6)
-        species = 'cyber_fox';
-        furColor = ['#F97316', '#EA580C', '#FF6D00'][dayInSpecies];
-        eyeColor = '#FFD700';
-        outfitColor = '#7F1D1D';
-        outfitAccent = '#F97316';
-        accessory = dayInSpecies == 2 ? 'samurai_headband' : 'none';
-        auraStyle = dayInSpecies == 2 ? 'cyber_purple' : 'minimal_dark';
-        rarityTier = dayInSpecies == 2 ? 'Nine-Tails Kitsune Apex' : (dayInSpecies == 1 ? 'Mystic Fox' : 'Wild Fox Pup');
-        break;
-
-      case 2: // 🐺 3. Shadow Wolf (Days 7–9)
-        species = 'shadow_wolf';
-        furColor = ['#334155', '#1E293B', '#0F172A'][dayInSpecies];
-        eyeColor = '#00F0FF';
-        outfitColor = '#0F172A';
-        outfitAccent = '#38BDF8';
-        accessory = dayInSpecies == 2 ? 'headphones' : 'none';
-        auraStyle = dayInSpecies == 2 ? 'electric_blue' : 'minimal_dark';
-        rarityTier = dayInSpecies == 2 ? 'Shadow Wolf Alpha' : (dayInSpecies == 1 ? 'Timber Wolf' : 'Wolf Scout');
-        break;
-
-      case 3: // 🐯 4. Royal Tiger (Days 10–12)
-        species = 'royal_tiger';
-        furColor = ['#FB923C', '#F97316', '#EA580C'][dayInSpecies];
-        eyeColor = '#FACC15';
-        outfitColor = '#1E1B4B';
-        outfitAccent = '#FFD700';
-        accessory = dayInSpecies == 2 ? 'gold_chain' : 'none';
-        auraStyle = dayInSpecies == 2 ? 'golden_sparks' : 'neon_yellow';
-        rarityTier = dayInSpecies == 2 ? 'Royal Tiger Sovereign' : (dayInSpecies == 1 ? 'Saber Tiger' : 'Bengal Tiger');
-        break;
-
-      case 4: // 🦁 5. Golden Lion (Days 13–15)
-        species = 'golden_lion';
-        furColor = ['#F59E0B', '#EAB308', '#FFD700'][dayInSpecies];
-        eyeColor = '#38BDF8';
-        outfitColor = '#451A03';
-        outfitAccent = '#FFD700';
-        accessory = dayInSpecies == 2 ? 'crown' : (dayInSpecies == 1 ? 'gold_chain' : 'none');
-        auraStyle = 'golden_sparks';
-        rarityTier = dayInSpecies == 2 ? '24K Lion Emperor' : (dayInSpecies == 1 ? 'Pride Alpha Lion' : 'Savannah Lion');
-        break;
-
-      case 5: // 🐘 6. Mighty Elephant (Days 16–18)
-        species = 'mighty_elephant';
-        furColor = ['#64748B', '#475569', '#334155'][dayInSpecies];
-        eyeColor = '#10B981';
-        outfitColor = '#064E3B';
-        outfitAccent = '#34D399';
-        accessory = dayInSpecies == 2 ? 'beanie' : 'none';
-        auraStyle = dayInSpecies == 2 ? 'neon_green' : 'minimal_dark';
-        rarityTier = dayInSpecies == 2 ? 'Colossal Mastodon Titan' : (dayInSpecies == 1 ? 'War Tusker' : 'Gentle Giant Elephant');
-        break;
-
-      case 6: // 🐼 7. Ninja Panda (Days 19–21)
-        species = 'ninja_panda';
-        furColor = ['#FFFFFF', '#1E1E24', '#F8FAFC'][dayInSpecies];
-        eyeColor = '#38BDF8';
-        outfitColor = '#1E1E24';
-        outfitAccent = '#22C55E';
-        accessory = dayInSpecies == 2 ? 'samurai_headband' : 'none';
-        auraStyle = dayInSpecies == 2 ? 'neon_green' : 'minimal_dark';
-        rarityTier = dayInSpecies == 2 ? 'Grandmaster Ninja Panda' : (dayInSpecies == 1 ? 'Shaolin Warrior Panda' : 'Bamboo Panda Cub');
-        break;
-
-      case 7: // 🐻 8. Noble Bear (Days 22–24)
-        species = 'noble_bear';
-        furColor = ['#78350F', '#854D0E', '#451A03'][dayInSpecies];
-        eyeColor = '#FDE047';
-        outfitColor = '#1C1917';
-        outfitAccent = '#F59E0B';
-        accessory = dayInSpecies == 2 ? 'cap' : 'none';
-        auraStyle = dayInSpecies == 2 ? 'sunset_orange' : 'minimal_dark';
-        rarityTier = dayInSpecies == 2 ? 'Armored Kodiak Champion' : (dayInSpecies == 1 ? 'Grizzly Brawler' : 'Brown Bear Scout');
-        break;
-
-      case 8: // 🐵 9. Cyber Ape / Primate (Days 25–27)
-        species = 'bored_ape';
-        furColor = ['#8D5B4C', '#FF007A', '#1E293B'][dayInSpecies];
-        eyeColor = '#FFD700';
-        outfitColor = '#0F172A';
-        outfitAccent = '#FF007A';
-        accessory = dayInSpecies == 2 ? 'crown' : (dayInSpecies == 1 ? 'headphones' : 'none');
-        auraStyle = 'cyber_purple';
-        rarityTier = dayInSpecies == 2 ? 'Bored Ape 1-of-1 VIP' : (dayInSpecies == 1 ? 'Cyber Primate' : 'Jungle Chimp');
-        break;
-
-      case 9: // 🦅 10. Majestic Eagle (Days 28–30)
-        species = 'majestic_eagle';
-        furColor = ['#CBD5E1', '#78350F', '#FFFFFF'][dayInSpecies];
-        eyeColor = '#F59E0B';
-        outfitColor = '#1E3A8A';
-        outfitAccent = '#FFD700';
-        accessory = dayInSpecies == 2 ? 'cool_sunglasses' : 'none';
-        auraStyle = 'golden_sparks';
-        rarityTier = dayInSpecies == 2 ? 'Imperial Storm Eagle' : (dayInSpecies == 1 ? 'Golden Eagle' : 'Sky Falcon');
-        break;
-
-      case 10: // 🐆 11. Shadow Leopard (Days 31–33)
-        species = 'shadow_leopard';
-        furColor = ['#F59E0B', '#B45309', '#18181B'][dayInSpecies];
-        eyeColor = '#10B981';
-        outfitColor = '#18181B';
-        outfitAccent = '#F59E0B';
-        accessory = dayInSpecies == 2 ? 'gold_chain' : 'none';
-        auraStyle = dayInSpecies == 2 ? 'neon_green' : 'minimal_dark';
-        rarityTier = dayInSpecies == 2 ? 'Shadow Panther Monarch' : (dayInSpecies == 1 ? 'Spotted Leopard' : 'Swift Cheetah');
-        break;
-
-      case 11: // 🦄 12. Cosmic Unicorn (Days 34–36)
-        species = 'cosmic_unicorn';
-        furColor = ['#FFFFFF', '#FAE8FF', '#DDD6FE'][dayInSpecies];
-        eyeColor = '#00F0FF';
-        outfitColor = '#4C1D95';
-        outfitAccent = '#38BDF8';
-        accessory = dayInSpecies == 2 ? 'crown' : 'none';
-        auraStyle = 'cyber_purple';
-        rarityTier = dayInSpecies == 2 ? 'Celestial Unicorn Sovereign' : (dayInSpecies == 1 ? 'Crystal Horn Pegasus' : 'Starlight Pony');
-        break;
-
-      case 12: // 🕊️ 13. Solar Phoenix (Days 37–39)
-        species = 'solar_phoenix';
-        furColor = ['#EF4444', '#F97316', '#FF0055'][dayInSpecies];
-        eyeColor = '#FFD700';
-        outfitColor = '#7F1D1D';
-        outfitAccent = '#FFD700';
-        accessory = dayInSpecies == 2 ? 'crown' : 'none';
-        auraStyle = 'golden_sparks';
-        rarityTier = dayInSpecies == 2 ? 'Immortal Phoenix Sovereign' : (dayInSpecies == 1 ? 'Crimson Firebird' : 'Ember Bird');
-        break;
-
-      case 13: // 🦏 14. Armored Rhino (Days 40–42)
-        species = 'armored_rhino';
-        furColor = ['#64748B', '#475569', '#1E293B'][dayInSpecies];
-        eyeColor = '#DC2626';
-        outfitColor = '#1E293B';
-        outfitAccent = '#EF4444';
-        accessory = dayInSpecies == 2 ? 'cyber_visor' : 'none';
-        auraStyle = 'electric_blue';
-        rarityTier = dayInSpecies == 2 ? 'Titan Battle Rhino' : (dayInSpecies == 1 ? 'Steel Horn Rhino' : 'Savannah Rhino');
-        break;
-
-      case 14: // 🦬 15. Thunder Bison (Days 43–45)
-        species = 'thunder_bison';
-        furColor = ['#78350F', '#451A03', '#1C1917'][dayInSpecies];
-        eyeColor = '#38BDF8';
-        outfitColor = '#18181B';
-        outfitAccent = '#FACC15';
-        accessory = dayInSpecies == 2 ? 'gold_chain' : 'none';
-        auraStyle = 'golden_sparks';
-        rarityTier = dayInSpecies == 2 ? 'Thunder Minotaur Titan' : (dayInSpecies == 1 ? 'Raging Bull' : 'Prairie Bison');
-        break;
-
-      case 15: // 🐊 16. Mystic Croc (Days 46–48)
-        species = 'mystic_croc';
-        furColor = ['#065F46', '#047857', '#064E3B'][dayInSpecies];
-        eyeColor = '#FACC15';
-        outfitColor = '#0F172A';
-        outfitAccent = '#10B981';
-        accessory = dayInSpecies == 2 ? 'pirate_eyepatch' : 'none';
-        auraStyle = 'neon_green';
-        rarityTier = dayInSpecies == 2 ? 'Prehistoric Sarcosuchus' : (dayInSpecies == 1 ? 'Armored Gator' : 'Swamp Croc');
-        break;
-
-      case 16: // 🦈 17. Abyssal Shark (Days 49–51)
-        species = 'abyssal_shark';
-        furColor = ['#0284C7', '#0369A1', '#0F172A'][dayInSpecies];
-        eyeColor = '#00F0FF';
-        outfitColor = '#0C4A6E';
-        outfitAccent = '#38BDF8';
-        accessory = dayInSpecies == 2 ? 'cyber_visor' : 'none';
-        auraStyle = 'electric_blue';
-        rarityTier = dayInSpecies == 2 ? 'Abyssal Megalodon Titan' : (dayInSpecies == 1 ? 'Great White Shark' : 'Reef Shark');
-        break;
-
-      case 17: // 🦉 18. Wisdom Owl (Days 52–54)
-        species = 'wisdom_owl';
-        furColor = ['#92400E', '#6B21A8', '#F8FAFC'][dayInSpecies];
-        eyeColor = '#FFD700';
-        outfitColor = '#3B0764';
-        outfitAccent = '#A855F7';
-        accessory = dayInSpecies == 2 ? 'round_glasses' : 'none';
-        auraStyle = 'cyber_purple';
-        rarityTier = dayInSpecies == 2 ? 'Grand Astral Sage Owl' : (dayInSpecies == 1 ? 'Snowy Arch-Owl' : 'Barn Owl');
-        break;
-
-      case 18: // 🦌 19. Astral Stag (Days 55–57)
-        species = 'astral_stag';
-        furColor = ['#B45309', '#0D9488', '#F1F5F9'][dayInSpecies];
-        eyeColor = '#10B981';
-        outfitColor = '#134E4A';
-        outfitAccent = '#2DD4BF';
-        accessory = dayInSpecies == 2 ? 'crown' : 'none';
-        auraStyle = 'cherry_blossom';
-        rarityTier = dayInSpecies == 2 ? 'Celestial 10-Point Stag' : (dayInSpecies == 1 ? 'Crowned Forest Elk' : 'Woodland Deer');
-        break;
-
-      case 19: // 🦍 20. Silverback Titan (Days 58–60)
-        species = 'silverback_titan';
-        furColor = ['#1E293B', '#475569', '#0F172A'][dayInSpecies];
-        eyeColor = '#EA580C';
-        outfitColor = '#09090B';
-        outfitAccent = '#F97316';
-        accessory = dayInSpecies == 2 ? 'gold_chain' : 'none';
-        auraStyle = 'sunset_orange';
-        rarityTier = dayInSpecies == 2 ? 'Titan Kong Sovereign' : (dayInSpecies == 1 ? 'Silverback Brute' : 'Mountain Ape');
-        break;
-
-      case 20: // 🐍 21. Imperial Cobra (Days 61–63)
-        species = 'imperial_cobra';
-        furColor = ['#059669', '#D97706', '#7C3AED'][dayInSpecies];
-        eyeColor = '#DC2626';
-        outfitColor = '#0F172A';
-        outfitAccent = '#F59E0B';
-        accessory = dayInSpecies == 2 ? 'crown' : 'none';
-        auraStyle = 'neon_green';
-        rarityTier = dayInSpecies == 2 ? 'Basilisk Emperor Cobra' : (dayInSpecies == 1 ? 'Hooded King Cobra' : 'Desert Viper');
-        break;
-
-      case 21: // 🐎 22. Pegasus Stallion (Days 64–66)
-        species = 'pegasus_stallion';
-        furColor = ['#854D0E', '#E2E8F0', '#38BDF8'][dayInSpecies];
-        eyeColor = '#0284C7';
-        outfitColor = '#1E3A8A';
-        outfitAccent = '#60A5FA';
-        accessory = dayInSpecies == 2 ? 'samurai_headband' : 'none';
-        auraStyle = 'electric_blue';
-        rarityTier = dayInSpecies == 2 ? 'Winged Pegasus Sovereign' : (dayInSpecies == 1 ? 'Royal War Stallion' : 'Wild Mustang');
-        break;
-
-      case 22: // 🦚 23. Royal Peacock (Days 67–69)
-        species = 'royal_peacock';
-        furColor = ['#0284C7', '#059669', '#6366F1'][dayInSpecies];
-        eyeColor = '#8B5CF6';
-        outfitColor = '#312E81';
-        outfitAccent = '#38BDF8';
-        accessory = dayInSpecies == 2 ? 'crown' : 'none';
-        auraStyle = 'cyber_purple';
-        rarityTier = dayInSpecies == 2 ? 'Imperial Prism Peacock' : (dayInSpecies == 1 ? 'Emerald Peacock' : 'Azure Peacock');
-        break;
-
-      case 23: // 🦘 24. Combat Kangaroo (Days 70–72)
-        species = 'combat_kangaroo';
-        furColor = ['#D97706', '#B45309', '#EA580C'][dayInSpecies];
-        eyeColor = '#78350F';
-        outfitColor = '#18181B';
-        outfitAccent = '#EF4444';
-        accessory = dayInSpecies == 2 ? 'samurai_headband' : 'none';
-        auraStyle = 'sunset_orange';
-        rarityTier = dayInSpecies == 2 ? 'Champion Kickboxer Titan' : (dayInSpecies == 1 ? 'Boxer Kangaroo' : 'Outback Joey');
-        break;
-
-      case 24: // 🦇 25. Nightfang Bat (Days 73–75)
-        species = 'nightfang_bat';
-        furColor = ['#1E1E24', '#581C87', '#991B1B'][dayInSpecies];
-        eyeColor = '#EF4444';
-        outfitColor = '#0F172A';
-        outfitAccent = '#DC2626';
-        accessory = dayInSpecies == 2 ? 'ninja_mask' : 'none';
-        auraStyle = 'cyber_purple';
-        rarityTier = dayInSpecies == 2 ? 'Lord Dracula Nightfang' : (dayInSpecies == 1 ? 'Shadow Vampire Bat' : 'Cave Fruit Bat');
-        break;
-
-      case 25: // 🦥 26. Zen Sloth (Days 76–78)
-        species = 'zen_sloth';
-        furColor = ['#64748B', '#A8A29E', '#EAB308'][dayInSpecies];
-        eyeColor = '#854D0E';
-        outfitColor = '#27272A';
-        outfitAccent = '#10B981';
-        accessory = dayInSpecies == 2 ? 'headphones' : 'none';
-        auraStyle = 'cherry_blossom';
-        rarityTier = dayInSpecies == 2 ? 'Enlightened Forest Sage' : (dayInSpecies == 1 ? 'Zen Master Koala' : 'Peaceful Sloth');
-        break;
-
-      case 26: // 🐕 27. Celestial Hound (Days 79–81)
-        species = 'celestial_hound';
-        furColor = ['#F59E0B', '#1E293B', '#FFD700'][dayInSpecies];
-        eyeColor = '#38BDF8';
-        outfitColor = '#0F172A';
-        outfitAccent = '#F59E0B';
-        accessory = dayInSpecies == 2 ? 'cool_sunglasses' : 'none';
-        auraStyle = 'golden_sparks';
-        rarityTier = dayInSpecies == 2 ? 'Celestial Anubis Guardian' : (dayInSpecies == 1 ? 'Cyber Shepherd' : 'Loyal Companion Dog');
-        break;
-
-      case 27: // 🐇 28. Astral Rabbit (Days 82–84)
-        species = 'astral_rabbit';
-        furColor = ['#FFFFFF', '#E0E7FF', '#F472B6'][dayInSpecies];
-        eyeColor = '#EC4899';
-        outfitColor = '#312E81';
-        outfitAccent = '#F472B6';
-        accessory = dayInSpecies == 2 ? 'cyber_visor' : 'none';
-        auraStyle = 'electric_blue';
-        rarityTier = dayInSpecies == 2 ? 'Astral Chrono Rabbit' : (dayInSpecies == 1 ? 'Supersonic Hare' : 'Moon Bunny');
-        break;
-
-      case 28: // 🐙 29. Abyssal Kraken (Days 85–87)
-        species = 'abyssal_kraken';
-        furColor = ['#831843', '#701A75', '#0284C7'][dayInSpecies];
-        eyeColor = '#FACC15';
-        outfitColor = '#0F172A';
-        outfitAccent = '#F43F5E';
-        accessory = dayInSpecies == 2 ? 'pirate_eyepatch' : 'none';
-        auraStyle = 'cyber_purple';
-        rarityTier = dayInSpecies == 2 ? 'Abyssal Ocean Leviathan' : (dayInSpecies == 1 ? 'Giant Deep Octopus' : 'Abyssal Squid');
-        break;
-
-      case 29: // 🐉 30. Cosmic Dragon Sovereign (Days 88–90)
-      default:
-        species = 'cosmic_dragon';
-        furColor = ['#7C3AED', '#D97706', '#FFD700'][dayInSpecies];
-        eyeColor = day == 90 ? '#00F0FF' : '#FFD700';
-        outfitColor = '#050B14';
-        outfitAccent = day == 90 ? '#FFD700' : '#F97316';
-        accessory = 'crown';
-        auraStyle = day == 90 ? 'golden_sparks' : 'cyber_purple';
-        rarityTier = day == 90 ? 'Supreme Cosmic Dragon 1-of-1' : (day == 89 ? 'Imperial Celestial Dragon' : 'Wyvern Hatchling');
-        break;
-    }
+    final species = animal.species;
+    final furColor = animal.furColor;
+    final eyeColor = animal.eyeColor;
+    final outfitColor = animal.outfitColor;
+    final outfitAccent = animal.outfitAccent;
+    final accessory = animal.accessory;
+    final auraStyle = animal.auraStyle;
+    final rarityTier = animal.rarityTier;
+    const hairStyle = 'short_crop';
 
     // Determine highest unlocked Jackie Chan Talisman stone if not explicitly passed
     String? assignedTalisman = talismanId;

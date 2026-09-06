@@ -1063,7 +1063,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     final avatar = VectorAvatarConfig.getEvolutionAvatarForStage(day);
     final bannerUrl = _profileData?['banner_image_url'] ?? _profileData?['banner_url'];
 
-    if (bannerUrl != null && bannerUrl.toString().isNotEmpty) {
+    // 🐾 In My Accounts (isMe), dynamically render the current day's active animal avatar banner!
+    // For other users' public profiles (!isMe), use uploaded custom banner if available.
+    if (!isMe && bannerUrl != null && bannerUrl.toString().isNotEmpty) {
       return CachedNetworkImage(
         imageUrl: bannerUrl.toString(),
         fit: BoxFit.cover,
@@ -1083,7 +1085,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       child: Stack(
         fit: StackFit.expand,
         children: [
-          // Rich Vector Art / Constellations background
+          // Rich Vector Art / Animal Biome background
           CustomPaint(
             painter: StageBannerArtPainter(
               stage: day,
@@ -1133,14 +1135,29 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 ),
                 child: Row(
                   children: [
+                    // Dynamic Animal Avatar Preview
                     Container(
-                      padding: const EdgeInsets.all(8),
+                      width: 44,
+                      height: 44,
                       decoration: BoxDecoration(
                         color: stage.buttonColor.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: stage.buttonColor.withValues(alpha: 0.5)),
                       ),
-                      child: Text(stage.emoji, style: const TextStyle(fontSize: 20)),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(11),
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            VectorAvatarWidget(config: avatar, size: 40),
+                            Positioned(
+                              bottom: 1,
+                              right: 1,
+                              child: Text(stage.emoji, style: const TextStyle(fontSize: 10)),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -1151,7 +1168,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                           Row(
                             children: [
                               Text(
-                                'STAGE $day/90',
+                                'DAY $day/90',
                                 style: GoogleFonts.outfit(
                                   color: stage.buttonColor,
                                   fontSize: 11,
@@ -2866,29 +2883,60 @@ class StageBannerArtPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final avatar = VectorAvatarConfig.getEvolutionAvatarForStage(stage);
+    final species = avatar.species;
+    final accent = VectorAvatarConfig.parseHex(avatar.outfitAccentColor, fallback: baseColor);
+    final fur = VectorAvatarConfig.parseHex(avatar.skinColor, fallback: baseColor);
 
-    final basePaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.08)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.2
-      ..strokeCap = StrokeCap.round;
+    // 1. Check for Oceanic / Marine Leviathans (12 Species)
+    const marineSpecies = {
+      'abyssal_shark', 'abyssal_kraken', 'electric_ray', 'apex_orca',
+      'colossal_walrus', 'swordfish', 'sea_otter', 'oceanic_narwhal',
+      'ghost_jellyfish', 'reef_seahorse', 'sea_dragon', 'angler_leviathan'
+    };
 
-    final fillPaint = Paint()
-      ..color = baseColor.withValues(alpha: 0.12)
-      ..style = PaintingStyle.fill;
+    // 2. Check for Felines & Savanna Predators (9 Species)
+    const felineSpecies = {
+      'cyber_cat', 'royal_tiger', 'golden_lion', 'shadow_leopard',
+      'golden_cheetah', 'golden_jaguar', 'black_panther', 'snow_leopard', 'solar_lion'
+    };
 
-    if (stage >= 80 || avatar.species == 'cosmic_dragon') {
+    // 3. Check for Canines & Nocturnal Hunters (9 Species)
+    const canineSpecies = {
+      'cyber_fox', 'shadow_wolf', 'noble_bear', 'celestial_hound',
+      'mecha_wolf', 'kitsune_emperor', 'cerberus_hound', 'fennec_fox', 'spotted_hyena'
+    };
+
+    // 4. Check for Avians & Winged Sky Lords (13 Species)
+    const avianSpecies = {
+      'majestic_eagle', 'solar_phoenix', 'wisdom_owl', 'pegasus_stallion',
+      'royal_peacock', 'peregrine_falcon', 'emperor_penguin', 'rainforest_toucan',
+      'crimson_flamingo', 'golden_griffin', 'sky_thunderbird', 'thunder_roc', 'celestial_phoenix'
+    };
+
+    // 5. Check for Serpents & Reptiles (8 Species)
+    const reptileSpecies = {
+      'imperial_cobra', 'mystic_croc', 'tree_viper', 'komodo_titan',
+      'volcanic_salamander', 'chameleon_king', 'horned_lizard', 'cyber_chameleon'
+    };
+
+    // 6. Check for Celestial Dragons & Astral Mythics (13 Species)
+    const dragonCosmicSpecies = {
+      'bored_ape', 'cosmic_unicorn', 'cosmic_dragon', 'shadow_manticore',
+      'cyber_chimera', 'obsidian_basilisk', 'cosmic_hydra', 'chrono_dragon',
+      'astral_titan', 'cosmic_dragon_sovereign'
+    };
+
+    if (dragonCosmicSpecies.contains(species) || stage >= 85) {
       // ==========================================
-      // 🐉 ERA 5 (Days 80–90): THE DRAGON REALM & COSMIC GRANDMASTER
+      // 🐉 ASTRAL DRAGON REALM & COSMIC GRANDMASTER
       // ==========================================
-      final dragonColor = VectorAvatarConfig.parseHex(avatar.outfitAccentColor, fallback: const Color(0xFF00F0FF));
       final dragonPaint = Paint()
-        ..color = dragonColor.withValues(alpha: stage == 90 ? 0.30 : 0.18)
+        ..color = accent.withValues(alpha: stage == 90 ? 0.35 : 0.22)
         ..style = PaintingStyle.stroke
         ..strokeWidth = stage == 90 ? 2.0 : 1.5;
 
-      // 1. Dragon Scale Tessellation
-      const scaleSize = 28.0;
+      // Dragon Scale Tessellation
+      const scaleSize = 26.0;
       for (double y = -10; y < size.height + 20; y += scaleSize * 0.75) {
         final offsetX = ((y ~/ (scaleSize * 0.75)) % 2 == 0) ? 0.0 : (scaleSize * 0.5);
         for (double x = -10 + offsetX; x < size.width + 20; x += scaleSize) {
@@ -2899,85 +2947,143 @@ class StageBannerArtPainter extends CustomPainter {
         }
       }
 
-      // 2. Cosmic Astral Constellation / Dragon Horn Glyphs
+      // Astral Constellation & Star Glyphs
+      final center = Offset(size.width * 0.82, size.height * 0.45);
       final glyphPaint = Paint()
-        ..color = (stage == 90 ? const Color(0xFFFFFC00) : dragonColor).withValues(alpha: 0.35)
+        ..color = (stage == 90 ? const Color(0xFFFFFC00) : accent).withValues(alpha: 0.40)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.8;
 
-      final center = Offset(size.width * 0.82, size.height * 0.5);
       for (int i = 0; i < 8; i++) {
         final angle = (i * math.pi) / 4;
-        final x2 = center.dx + math.cos(angle) * (size.width * 0.18);
+        final x2 = center.dx + math.cos(angle) * (size.width * 0.20);
         final y2 = center.dy + math.sin(angle) * (size.height * 0.45);
         canvas.drawLine(center, Offset(x2, y2), glyphPaint);
-        canvas.drawCircle(Offset(x2, y2), stage == 90 ? 3.5 : 2.5, Paint()..color = (stage == 90 ? const Color(0xFFFFFC00) : dragonColor).withValues(alpha: 0.6));
+        canvas.drawCircle(Offset(x2, y2), stage == 90 ? 3.5 : 2.5, Paint()..color = (stage == 90 ? const Color(0xFFFFFC00) : accent).withValues(alpha: 0.7));
       }
 
-    } else if (stage >= 61 || avatar.species == 'golden_monarch' || avatar.species == 'mystic_phoenix' || avatar.species == 'astral_mage') {
+    } else if (marineSpecies.contains(species)) {
       // ==========================================
-      // 👑 ERA 4 (Days 61–79): ASTRAL BEINGS & 24K GOLDEN MONARCHS
+      // 🌊 ABYSSAL OCEAN CURRENTS & SONAR RIPPLES
       // ==========================================
-      final center = Offset(size.width * 0.78, size.height * 0.5);
+      final wavePaint = Paint()
+        ..color = accent.withValues(alpha: 0.20)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.8;
+
+      for (int w = 0; w < 3; w++) {
+        final wavePath = Path();
+        final startY = size.height * (0.3 + w * 0.25);
+        wavePath.moveTo(0, startY);
+        for (double x = 0; x <= size.width; x += 30) {
+          final y = startY + math.sin((x / 50) + (w * 1.5)) * 12;
+          wavePath.lineTo(x, y);
+        }
+        canvas.drawPath(wavePath, wavePaint);
+      }
+
+      // Sonar Pulses
+      final sonarCenter = Offset(size.width * 0.85, size.height * 0.5);
+      for (int r = 1; r <= 3; r++) {
+        canvas.drawCircle(sonarCenter, r * 22.0, wavePaint..color = fur.withValues(alpha: 0.15));
+      }
+
+    } else if (felineSpecies.contains(species)) {
+      // ==========================================
+      // 🐆 PREDATOR CLAW SLASHES & SAVANNA SUNBURST
+      // ==========================================
+      final slashPaint = Paint()
+        ..color = fur.withValues(alpha: 0.22)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.4
+        ..strokeCap = StrokeCap.round;
+
+      for (int i = 0; i < 3; i++) {
+        final slash = Path()
+          ..moveTo(size.width * (0.65 + i * 0.08), 8)
+          ..quadraticBezierTo(size.width * (0.70 + i * 0.08), size.height * 0.5, size.width * (0.75 + i * 0.08), size.height - 8);
+        canvas.drawPath(slash, slashPaint);
+      }
+
+      // Savanna Sunburst
+      final sunCenter = Offset(size.width * 0.82, size.height * 0.5);
       final rayPaint = Paint()
-        ..color = const Color(0xFFFFD700).withValues(alpha: 0.18)
+        ..color = const Color(0xFFFFD700).withValues(alpha: 0.14)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.4;
-
-      for (int i = 0; i < 20; i++) {
-        final angle = (i * math.pi) / 10;
-        final x2 = center.dx + math.cos(angle) * (size.width * 0.45);
-        final y2 = center.dy + math.sin(angle) * (size.height * 0.85);
-        canvas.drawLine(center, Offset(x2, y2), rayPaint);
+      for (int i = 0; i < 12; i++) {
+        final angle = (i * math.pi) / 6;
+        canvas.drawLine(sunCenter, Offset(sunCenter.dx + math.cos(angle) * 45, sunCenter.dy + math.sin(angle) * 45), rayPaint);
       }
 
-      // Royal Solar Crest Rings
-      canvas.drawCircle(center, size.height * 0.35, rayPaint);
-      canvas.drawCircle(center, size.height * 0.20, rayPaint..strokeWidth = 2.0);
-
-    } else if (stage >= 41) {
+    } else if (canineSpecies.contains(species)) {
       // ==========================================
-      // 🦁 ERA 3 (Days 41–60): MECHA BEASTS & MYTHIC PREDATORS
+      // 🐺 MOONLIGHT PEAKS & CANINE CONSTELLATIONS
       // ==========================================
-      final circuitPaint = Paint()
-        ..color = baseColor.withValues(alpha: 0.20)
+      final mountainPaint = Paint()
+        ..color = fur.withValues(alpha: 0.18)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.6;
 
-      for (double x = 20; x < size.width; x += 70) {
-        final path = Path()
-          ..moveTo(x, 10)
-          ..lineTo(x + 25, 40)
-          ..lineTo(x + 60, 40)
-          ..lineTo(x + 85, size.height - 10);
-        canvas.drawPath(path, circuitPaint);
-        canvas.drawRect(Rect.fromCenter(center: Offset(x + 25, 40), width: 6, height: 6), Paint()..color = baseColor.withValues(alpha: 0.4));
+      final mtnPath = Path()
+        ..moveTo(size.width * 0.50, size.height)
+        ..lineTo(size.width * 0.68, size.height * 0.20)
+        ..lineTo(size.width * 0.82, size.height * 0.55)
+        ..lineTo(size.width * 0.92, size.height * 0.15)
+        ..lineTo(size.width, size.height * 0.40);
+      canvas.drawPath(mtnPath, mountainPaint);
+
+      // Lunar Crescent
+      final moonCenter = Offset(size.width * 0.84, size.height * 0.32);
+      canvas.drawCircle(moonCenter, 16, Paint()..color = accent.withValues(alpha: 0.22));
+      canvas.drawCircle(Offset(moonCenter.dx + 6, moonCenter.dy - 4), 14, Paint()..color = const Color(0xFF0F172A));
+
+    } else if (avianSpecies.contains(species)) {
+      // ==========================================
+      // 🦅 SKY SLIPSTREAMS & AERO FEATHER QUILLS
+      // ==========================================
+      final aeroPaint = Paint()
+        ..color = accent.withValues(alpha: 0.22)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.6;
+
+      for (int i = 0; i < 4; i++) {
+        final wingPath = Path()
+          ..moveTo(size.width * 0.55, size.height * (0.2 + i * 0.18))
+          ..quadraticBezierTo(size.width * 0.75, size.height * (0.1 + i * 0.18), size.width * 0.95, size.height * (0.3 + i * 0.18));
+        canvas.drawPath(wingPath, aeroPaint);
       }
 
-    } else if (stage >= 21) {
+    } else if (reptileSpecies.contains(species)) {
       // ==========================================
-      // 🕹️ ERA 2 (Days 21–40): ARCADE ANIMALS & RETRO PIXEL BEASTS
+      // 🐍 REPTILIAN BIO-SCALES & NEON MATRIX
       // ==========================================
-      final gridPath = Path();
-      for (double x = 0; x <= size.width; x += 28) {
-        gridPath.moveTo(x, size.height);
-        gridPath.lineTo(size.width / 2 + (x - size.width / 2) * 0.35, 0);
+      final scalePaint = Paint()
+        ..color = fur.withValues(alpha: 0.18)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.4;
+
+      for (double y = 10; y < size.height; y += 18) {
+        for (double x = size.width * 0.55; x < size.width; x += 22) {
+          canvas.drawRect(Rect.fromCenter(center: Offset(x, y), width: 14, height: 10), scalePaint);
+        }
       }
-      for (double y = 0; y <= size.height; y += 20) {
-        gridPath.moveTo(0, y);
-        gridPath.lineTo(size.width, y);
-      }
-      canvas.drawPath(gridPath, basePaint..color = baseColor.withValues(alpha: 0.18));
 
     } else {
       // ==========================================
-      // 🧑 ERA 1 (Days 1–20): HUMAN STARTERS & MINIMAL URBAN PARTICLES
+      // 🌲 FOREST TITANS & SAVANNA BEHEMOTHS
       // ==========================================
-      for (double x = 20; x < size.width; x += 50) {
-        for (double y = 15; y < size.height; y += 40) {
-          canvas.drawCircle(Offset(x, y), 2.5, fillPaint);
-          canvas.drawLine(Offset(x - 6, y), Offset(x + 6, y), basePaint);
-        }
+      final earthPaint = Paint()
+        ..color = accent.withValues(alpha: 0.18)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.5;
+
+      for (double x = size.width * 0.55; x < size.width; x += 36) {
+        final shockPath = Path()
+          ..moveTo(x, 10)
+          ..lineTo(x + 18, 40)
+          ..lineTo(x, size.height - 10);
+        canvas.drawPath(shockPath, earthPaint);
       }
     }
   }

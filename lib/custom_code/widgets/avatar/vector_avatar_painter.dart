@@ -1228,6 +1228,294 @@ class VectorAvatarPainter extends CustomPainter {
           ..close();
         canvas.drawPath(tentacle, Paint()..color = const Color(0xFF831843));
       }
+    } else if (config.species == 'golden_cheetah') {
+      // 🐆 Cheetah teardrop eye tracks & rounded ears
+      canvas.drawCircle(Offset(size.width * 0.26, size.height * 0.22), size.width * 0.07, Paint()..color = const Color(0xFFF59E0B));
+      canvas.drawCircle(Offset(size.width * 0.74, size.height * 0.22), size.width * 0.07, Paint()..color = const Color(0xFFF59E0B));
+      final tearPaint = Paint()..color = const Color(0xFF18181B)..strokeWidth = 2.0;
+      canvas.drawLine(Offset(size.width * 0.38, size.height * 0.42), Offset(size.width * 0.36, size.height * 0.52), tearPaint);
+      canvas.drawLine(Offset(size.width * 0.62, size.height * 0.42), Offset(size.width * 0.64, size.height * 0.52), tearPaint);
+    } else if (config.species == 'polar_bear') {
+      // 🐻‍❄️ Frosty Arctic Bear Ears
+      canvas.drawCircle(Offset(size.width * 0.26, size.height * 0.24), size.width * 0.08, Paint()..color = const Color(0xFFE0F2FE));
+      canvas.drawCircle(Offset(size.width * 0.26, size.height * 0.24), size.width * 0.04, Paint()..color = const Color(0xFFBAE6FD));
+      canvas.drawCircle(Offset(size.width * 0.74, size.height * 0.24), size.width * 0.08, Paint()..color = const Color(0xFFE0F2FE));
+      canvas.drawCircle(Offset(size.width * 0.74, size.height * 0.24), size.width * 0.04, Paint()..color = const Color(0xFFBAE6FD));
+    } else if (config.species == 'wild_boar') {
+      // 🐗 Boar Curved Snout Tusks & Crest
+      final leftTusk = Path()..moveTo(size.width * 0.38, size.height * 0.56)..quadraticBezierTo(size.width * 0.30, size.height * 0.50, size.width * 0.34, size.height * 0.44)..close();
+      final rightTusk = Path()..moveTo(size.width * 0.62, size.height * 0.56)..quadraticBezierTo(size.width * 0.70, size.height * 0.50, size.width * 0.66, size.height * 0.44)..close();
+      canvas.drawPath(leftTusk, Paint()..color = const Color(0xFFF5F5F4));
+      canvas.drawPath(rightTusk, Paint()..color = const Color(0xFFF5F5F4));
+    } else if (config.species == 'electric_ray') {
+      // ⚡ Manta Ray Wings & Horns
+      final wingLeft = Path()..moveTo(size.width * 0.24, size.height * 0.35)..lineTo(size.width * 0.06, size.height * 0.40)..lineTo(size.width * 0.22, size.height * 0.55)..close();
+      final wingRight = Path()..moveTo(size.width * 0.76, size.height * 0.35)..lineTo(size.width * 0.94, size.height * 0.40)..lineTo(size.width * 0.78, size.height * 0.55)..close();
+      canvas.drawPath(wingLeft, Paint()..color = const Color(0xFF0284C7));
+      canvas.drawPath(wingRight, Paint()..color = const Color(0xFF0284C7));
+    } else if (config.species == 'cyber_chameleon') {
+      // 🦎 Chameleon Crest & Turret Eyes
+      canvas.drawArc(Rect.fromCenter(center: Offset(size.width * 0.5, size.height * 0.18), width: size.width * 0.35, height: size.height * 0.20), math.pi, math.pi, true, Paint()..color = const Color(0xFF10B981));
+    } else if (config.species == 'armored_armadillo') {
+      // 🛡️ Armadillo Segmented Head Shield
+      final shield = Path()..moveTo(size.width * 0.35, size.height * 0.20)..lineTo(size.width * 0.50, size.height * 0.12)..lineTo(size.width * 0.65, size.height * 0.20)..close();
+      canvas.drawPath(shield, Paint()..color = const Color(0xFF78716C));
+    } else if (config.species == 'red_panda') {
+      // 🐾 Red Panda White Ear Ruffs
+      canvas.drawCircle(Offset(size.width * 0.26, size.height * 0.24), size.width * 0.08, Paint()..color = const Color(0xFFEA580C));
+      canvas.drawCircle(Offset(size.width * 0.26, size.height * 0.24), size.width * 0.04, Paint()..color = Colors.white);
+      canvas.drawCircle(Offset(size.width * 0.74, size.height * 0.24), size.width * 0.08, Paint()..color = const Color(0xFFEA580C));
+      canvas.drawCircle(Offset(size.width * 0.74, size.height * 0.24), size.width * 0.04, Paint()..color = Colors.white);
+    } else if (config.species == 'peregrine_falcon') {
+      // 🦅 Falcon Brow & Raptor Crest
+      final crest = Path()..moveTo(size.width * 0.46, size.height * 0.20)..lineTo(size.width * 0.50, size.height * 0.08)..lineTo(size.width * 0.54, size.height * 0.20)..close();
+      canvas.drawPath(crest, Paint()..color = const Color(0xFF475569));
+    } else if (config.species == 'iron_wolverine') {
+      // 🦡 Wolverine Iron Brow Plate
+      canvas.drawRect(Rect.fromCenter(center: Offset(size.width * 0.5, size.height * 0.24), width: size.width * 0.32, height: 6), Paint()..color = const Color(0xFFF59E0B));
+    } else if (config.species == 'tundra_lynx') {
+      // 🐱 Tundra Lynx Ear Tufts
+      final leftEar = Path()..moveTo(size.width * 0.28, size.height * 0.32)..lineTo(size.width * 0.20, size.height * 0.12)..lineTo(size.width * 0.40, size.height * 0.24)..close();
+      final rightEar = Path()..moveTo(size.width * 0.72, size.height * 0.32)..lineTo(size.width * 0.80, size.height * 0.12)..lineTo(size.width * 0.60, size.height * 0.24)..close();
+      canvas.drawPath(leftEar, Paint()..color = const Color(0xFFCBD5E1));
+      canvas.drawPath(rightEar, Paint()..color = const Color(0xFFCBD5E1));
+      canvas.drawLine(Offset(size.width * 0.20, size.height * 0.12), Offset(size.width * 0.18, size.height * 0.06), Paint()..color = Colors.black..strokeWidth = 2.5);
+      canvas.drawLine(Offset(size.width * 0.80, size.height * 0.12), Offset(size.width * 0.82, size.height * 0.06), Paint()..color = Colors.black..strokeWidth = 2.5);
+    } else if (config.species == 'colossal_walrus') {
+      // 🦭 Walrus Long Ivory Downward Tusks
+      canvas.drawLine(Offset(size.width * 0.42, size.height * 0.52), Offset(size.width * 0.40, size.height * 0.68), Paint()..color = Colors.white..strokeWidth = 4.0..strokeCap = StrokeCap.round);
+      canvas.drawLine(Offset(size.width * 0.58, size.height * 0.52), Offset(size.width * 0.60, size.height * 0.68), Paint()..color = Colors.white..strokeWidth = 4.0..strokeCap = StrokeCap.round);
+    } else if (config.species == 'apex_orca') {
+      // 🐋 Orca White Eye Patches & Tall Fin
+      canvas.drawOval(Rect.fromCenter(center: Offset(size.width * 0.28, size.height * 0.38), width: 14, height: 8), Paint()..color = Colors.white);
+      canvas.drawOval(Rect.fromCenter(center: Offset(size.width * 0.72, size.height * 0.38), width: 14, height: 8), Paint()..color = Colors.white);
+      final dorsal = Path()..moveTo(size.width * 0.47, size.height * 0.24)..lineTo(size.width * 0.50, size.height * 0.08)..lineTo(size.width * 0.53, size.height * 0.24)..close();
+      canvas.drawPath(dorsal, Paint()..color = const Color(0xFF0F172A));
+    } else if (config.species == 'honey_badger') {
+      // 🦡 Honey Badger Forehead Mantle
+      final mantle = Path()..moveTo(size.width * 0.42, size.height * 0.14)..lineTo(size.width * 0.50, size.height * 0.38)..lineTo(size.width * 0.58, size.height * 0.14)..close();
+      canvas.drawPath(mantle, Paint()..color = Colors.white);
+    } else if (config.species == 'spotted_hyena') {
+      // 🐺 Hyena Broad Rounded Ears
+      canvas.drawCircle(Offset(size.width * 0.24, size.height * 0.26), size.width * 0.085, Paint()..color = const Color(0xFFB45309));
+      canvas.drawCircle(Offset(size.width * 0.76, size.height * 0.26), size.width * 0.085, Paint()..color = const Color(0xFFB45309));
+    } else if (config.species == 'armored_hippo') {
+      // 🦛 Hippo Broad Snout
+      canvas.drawCircle(Offset(size.width * 0.24, size.height * 0.28), size.width * 0.06, Paint()..color = const Color(0xFF64748B));
+      canvas.drawCircle(Offset(size.width * 0.76, size.height * 0.28), size.width * 0.06, Paint()..color = const Color(0xFF64748B));
+      canvas.drawCircle(Offset(size.width * 0.42, size.height * 0.54), 5, Paint()..color = const Color(0xFF334155));
+      canvas.drawCircle(Offset(size.width * 0.58, size.height * 0.54), 5, Paint()..color = const Color(0xFF334155));
+    } else if (config.species == 'savanna_giraffe') {
+      // 🦒 Giraffe Ossicones (Horn Nubs)
+      canvas.drawLine(Offset(size.width * 0.42, size.height * 0.22), Offset(size.width * 0.38, size.height * 0.08), Paint()..color = const Color(0xFFD97706)..strokeWidth = 4.0..strokeCap = StrokeCap.round);
+      canvas.drawCircle(Offset(size.width * 0.38, size.height * 0.08), 5, Paint()..color = const Color(0xFF78350F));
+      canvas.drawLine(Offset(size.width * 0.58, size.height * 0.22), Offset(size.width * 0.62, size.height * 0.08), Paint()..color = const Color(0xFFD97706)..strokeWidth = 4.0..strokeCap = StrokeCap.round);
+      canvas.drawCircle(Offset(size.width * 0.62, size.height * 0.08), 5, Paint()..color = const Color(0xFF78350F));
+    } else if (config.species == 'tree_viper') {
+      // 🐍 Emerald Viper Head Scales
+      final viperHead = Path()..moveTo(size.width * 0.32, size.height * 0.22)..lineTo(size.width * 0.50, size.height * 0.12)..lineTo(size.width * 0.68, size.height * 0.22)..close();
+      canvas.drawPath(viperHead, Paint()..color = const Color(0xFF059669));
+    } else if (config.species == 'horned_ram') {
+      // 🐏 Bighorn Ram Grand Spiral Horns
+      final leftSpiral = Path()..moveTo(size.width * 0.34, size.height * 0.28)..quadraticBezierTo(size.width * 0.12, size.height * 0.18, size.width * 0.14, size.height * 0.36)..close();
+      final rightSpiral = Path()..moveTo(size.width * 0.66, size.height * 0.28)..quadraticBezierTo(size.width * 0.88, size.height * 0.18, size.width * 0.86, size.height * 0.36)..close();
+      canvas.drawPath(leftSpiral, Paint()..color = const Color(0xFF78350F));
+      canvas.drawPath(rightSpiral, Paint()..color = const Color(0xFF78350F));
+    } else if (config.species == 'emperor_penguin') {
+      // 🐧 Emperor Penguin Golden Collar
+      canvas.drawArc(Rect.fromCenter(center: Offset(size.width * 0.5, size.height * 0.38), width: size.width * 0.44, height: size.height * 0.30), 0, math.pi, true, Paint()..color = const Color(0xFFFDE047).withValues(alpha: 0.4));
+    } else if (config.species == 'golden_jaguar') {
+      // 🐆 Jaguar Rosettes
+      canvas.drawCircle(Offset(size.width * 0.26, size.height * 0.24), size.width * 0.075, Paint()..color = const Color(0xFFF59E0B));
+      canvas.drawCircle(Offset(size.width * 0.74, size.height * 0.24), size.width * 0.075, Paint()..color = const Color(0xFFF59E0B));
+      canvas.drawCircle(Offset(size.width * 0.5, size.height * 0.22), 3, Paint()..color = const Color(0xFF1C1917));
+    } else if (config.species == 'sea_otter') {
+      // 🦦 Sea Otter Button Snout
+      canvas.drawCircle(Offset(size.width * 0.24, size.height * 0.28), size.width * 0.05, Paint()..color = const Color(0xFF92400E));
+      canvas.drawCircle(Offset(size.width * 0.76, size.height * 0.28), size.width * 0.05, Paint()..color = const Color(0xFF92400E));
+    } else if (config.species == 'giant_anteater') {
+      // 🦔 Anteater Tubular Snout
+      final snout = Path()..moveTo(size.width * 0.44, size.height * 0.46)..lineTo(size.width * 0.50, size.height * 0.64)..lineTo(size.width * 0.56, size.height * 0.46)..close();
+      canvas.drawPath(snout, Paint()..color = const Color(0xFF475569));
+    } else if (config.species == 'woolly_mammoth') {
+      // 🦣 Mammoth Grand Curved Tusks
+      final leftTusk = Path()..moveTo(size.width * 0.36, size.height * 0.52)..quadraticBezierTo(size.width * 0.16, size.height * 0.60, size.width * 0.20, size.height * 0.40)..close();
+      final rightTusk = Path()..moveTo(size.width * 0.64, size.height * 0.52)..quadraticBezierTo(size.width * 0.84, size.height * 0.60, size.width * 0.80, size.height * 0.40)..close();
+      canvas.drawPath(leftTusk, Paint()..color = const Color(0xFFFACC15));
+      canvas.drawPath(rightTusk, Paint()..color = const Color(0xFFFACC15));
+    } else if (config.species == 'swordfish') {
+      // 🐟 Swordfish Projecting Bill
+      final bill = Path()..moveTo(size.width * 0.48, size.height * 0.42)..lineTo(size.width * 0.50, size.height * 0.70)..lineTo(size.width * 0.52, size.height * 0.42)..close();
+      canvas.drawPath(bill, Paint()..color = const Color(0xFF00F0FF));
+    } else if (config.species == 'komodo_titan') {
+      // 🦎 Komodo Titan Throat Dewlap
+      canvas.drawArc(Rect.fromCenter(center: Offset(size.width * 0.5, size.height * 0.50), width: size.width * 0.40, height: size.height * 0.24), 0, math.pi, true, Paint()..color = const Color(0xFF3F3F46));
+    } else if (config.species == 'rainforest_toucan') {
+      // 🦜 Toucan Oversized Rainbow Bill
+      final beak = Path()..moveTo(size.width * 0.44, size.height * 0.42)..quadraticBezierTo(size.width * 0.72, size.height * 0.46, size.width * 0.50, size.height * 0.64)..close();
+      canvas.drawPath(beak, Paint()..color = const Color(0xFFF59E0B));
+    } else if (config.species == 'crimson_flamingo') {
+      // 🦩 Flamingo Curved Bill
+      final flamingoCrest = Path()..moveTo(size.width * 0.48, size.height * 0.20)..lineTo(size.width * 0.50, size.height * 0.08)..lineTo(size.width * 0.52, size.height * 0.20)..close();
+      canvas.drawPath(flamingoCrest, Paint()..color = const Color(0xFFF43F5E));
+    } else if (config.species == 'cyber_meerkat') {
+      // 🐾 Meerkat Sentinel Goggles
+      canvas.drawOval(Rect.fromCenter(center: Offset(size.width * 0.36, size.height * 0.42), width: 14, height: 10), Paint()..color = const Color(0xFF18181B));
+      canvas.drawOval(Rect.fromCenter(center: Offset(size.width * 0.64, size.height * 0.42), width: 14, height: 10), Paint()..color = const Color(0xFF18181B));
+    } else if (config.species == 'shadow_manticore') {
+      // 🦂 Manticore Scorpion Stinger & Wings
+      final stinger = Path()..moveTo(size.width * 0.48, size.height * 0.22)..quadraticBezierTo(size.width * 0.50, size.height * 0.04, size.width * 0.56, size.height * 0.08)..close();
+      canvas.drawPath(stinger, Paint()..color = const Color(0xFFDC2626));
+    } else if (config.species == 'golden_griffin') {
+      // 🦅 Griffin Crown & Wings
+      final leftWing = Path()..moveTo(size.width * 0.30, size.height * 0.28)..lineTo(size.width * 0.10, size.height * 0.12)..lineTo(size.width * 0.35, size.height * 0.20)..close();
+      final rightWing = Path()..moveTo(size.width * 0.70, size.height * 0.28)..lineTo(size.width * 0.90, size.height * 0.12)..lineTo(size.width * 0.65, size.height * 0.20)..close();
+      canvas.drawPath(leftWing, Paint()..color = const Color(0xFFFFD700));
+      canvas.drawPath(rightWing, Paint()..color = const Color(0xFFFFD700));
+    } else if (config.species == 'volcanic_salamander') {
+      // 🌋 Magma Frills
+      for (int i = 0; i < 4; i++) {
+        canvas.drawCircle(Offset(size.width * (0.30 + i * 0.13), size.height * 0.18), 5, Paint()..color = const Color(0xFFF97316));
+      }
+    } else if (config.species == 'oceanic_narwhal') {
+      // 🦄 Narwhal Spiral Ocean Tusk
+      final tusk = Path()..moveTo(size.width * 0.48, size.height * 0.24)..lineTo(size.width * 0.50, size.height * 0.02)..lineTo(size.width * 0.52, size.height * 0.24)..close();
+      canvas.drawPath(tusk, Paint()..color = const Color(0xFFE0F2FE));
+    } else if (config.species == 'snow_leopard') {
+      // 🐆 Snow Leopard Frosted Ears
+      canvas.drawCircle(Offset(size.width * 0.26, size.height * 0.24), size.width * 0.075, Paint()..color = const Color(0xFFE2E8F0));
+      canvas.drawCircle(Offset(size.width * 0.74, size.height * 0.24), size.width * 0.075, Paint()..color = const Color(0xFFE2E8F0));
+    } else if (config.species == 'fennec_fox') {
+      // 🦊 Gigantic Fennec Radar Ears
+      final leftEar = Path()..moveTo(size.width * 0.30, size.height * 0.34)..lineTo(size.width * 0.12, size.height * 0.06)..lineTo(size.width * 0.44, size.height * 0.24)..close();
+      final rightEar = Path()..moveTo(size.width * 0.70, size.height * 0.34)..lineTo(size.width * 0.88, size.height * 0.06)..lineTo(size.width * 0.56, size.height * 0.24)..close();
+      canvas.drawPath(leftEar, Paint()..color = const Color(0xFFFDE047));
+      canvas.drawPath(rightEar, Paint()..color = const Color(0xFFFDE047));
+    } else if (config.species == 'cyber_mantis') {
+      // 🦗 Mantis Scythe Blades
+      canvas.drawLine(Offset(size.width * 0.30, size.height * 0.25), Offset(size.width * 0.18, size.height * 0.10), Paint()..color = const Color(0xFF10B981)..strokeWidth = 3.5);
+      canvas.drawLine(Offset(size.width * 0.70, size.height * 0.25), Offset(size.width * 0.82, size.height * 0.10), Paint()..color = const Color(0xFF10B981)..strokeWidth = 3.5);
+    } else if (config.species == 'ghost_jellyfish') {
+      // 🎐 Jellyfish Bioluminescent Dome
+      canvas.drawArc(Rect.fromCenter(center: Offset(size.width * 0.5, size.height * 0.22), width: size.width * 0.50, height: size.height * 0.24), math.pi, math.pi, true, Paint()..color = const Color(0xFFC084FC).withValues(alpha: 0.4));
+    } else if (config.species == 'armored_pangolin') {
+      // 🛡️ Pangolin Scale Rings
+      for (int i = 0; i < 3; i++) {
+        canvas.drawCircle(Offset(size.width * (0.38 + i * 0.12), size.height * 0.20), 6, Paint()..color = const Color(0xFFD97706));
+      }
+    } else if (config.species == 'black_panther') {
+      // 🐈‍⬛ Obsidian Panther Sleek Silhouette
+      canvas.drawCircle(Offset(size.width * 0.26, size.height * 0.24), size.width * 0.075, Paint()..color = const Color(0xFF18181B));
+      canvas.drawCircle(Offset(size.width * 0.74, size.height * 0.24), size.width * 0.075, Paint()..color = const Color(0xFF18181B));
+    } else if (config.species == 'sky_thunderbird') {
+      // ⚡ Thunderbird Lightning Plumes
+      canvas.drawLine(Offset(size.width * 0.46, size.height * 0.22), Offset(size.width * 0.38, size.height * 0.06), Paint()..color = const Color(0xFFFDE047)..strokeWidth = 3.0);
+      canvas.drawLine(Offset(size.width * 0.54, size.height * 0.22), Offset(size.width * 0.62, size.height * 0.06), Paint()..color = const Color(0xFFFDE047)..strokeWidth = 3.0);
+    } else if (config.species == 'cerberus_hound') {
+      // 🐕 Nether Cerberus Fiery Horns
+      final leftHorn = Path()..moveTo(size.width * 0.30, size.height * 0.28)..lineTo(size.width * 0.20, size.height * 0.10)..lineTo(size.width * 0.38, size.height * 0.22)..close();
+      final rightHorn = Path()..moveTo(size.width * 0.70, size.height * 0.28)..lineTo(size.width * 0.80, size.height * 0.10)..lineTo(size.width * 0.62, size.height * 0.22)..close();
+      canvas.drawPath(leftHorn, Paint()..color = const Color(0xFFDC2626));
+      canvas.drawPath(rightHorn, Paint()..color = const Color(0xFFDC2626));
+    } else if (config.species == 'reef_seahorse') {
+      // 🌊 Seahorse Spined Coronet
+      for (int i = 0; i < 4; i++) {
+        canvas.drawCircle(Offset(size.width * (0.35 + i * 0.10), size.height * 0.16), 4, Paint()..color = const Color(0xFF38BDF8));
+      }
+    } else if (config.species == 'gorilla_king') {
+      // 👑 Gorilla Sovereign 24K Crown
+      canvas.drawOval(Rect.fromCenter(center: Offset(size.width * 0.5, size.height * 0.24), width: size.width * 0.40, height: 10), Paint()..color = const Color(0xFFFFD700));
+    } else if (config.species == 'cyber_chimera') {
+      // 🐉 Chimera Horns & Frills
+      canvas.drawLine(Offset(size.width * 0.34, size.height * 0.26), Offset(size.width * 0.22, size.height * 0.08), Paint()..color = const Color(0xFFEC4899)..strokeWidth = 3.5);
+      canvas.drawLine(Offset(size.width * 0.66, size.height * 0.26), Offset(size.width * 0.78, size.height * 0.08), Paint()..color = const Color(0xFFEC4899)..strokeWidth = 3.5);
+    } else if (config.species == 'tree_frog') {
+      // 🐸 Poison Dart Frog Bulging Eyes
+      canvas.drawCircle(Offset(size.width * 0.32, size.height * 0.24), 10, Paint()..color = const Color(0xFF2563EB));
+      canvas.drawCircle(Offset(size.width * 0.68, size.height * 0.24), 10, Paint()..color = const Color(0xFF2563EB));
+    } else if (config.species == 'monarch_butterfly') {
+      // 🦋 Monarch Butterfly Wings
+      final wingLeft = Path()..moveTo(size.width * 0.30, size.height * 0.32)..quadraticBezierTo(size.width * 0.05, size.height * 0.10, size.width * 0.18, size.height * 0.48)..close();
+      final wingRight = Path()..moveTo(size.width * 0.70, size.height * 0.32)..quadraticBezierTo(size.width * 0.95, size.height * 0.10, size.width * 0.82, size.height * 0.48)..close();
+      canvas.drawPath(wingLeft, Paint()..color = const Color(0xFFEA580C));
+      canvas.drawPath(wingRight, Paint()..color = const Color(0xFFEA580C));
+    } else if (config.species == 'musk_ox') {
+      // 🐂 Musk Ox Drooped Horn Boss Helmet
+      canvas.drawLine(Offset(size.width * 0.30, size.height * 0.22), Offset(size.width * 0.70, size.height * 0.22), Paint()..color = const Color(0xFFCBD5E1)..strokeWidth = 8.0..strokeCap = StrokeCap.round);
+    } else if (config.species == 'chameleon_king') {
+      // 👑 Triple Chameleon Horns
+      canvas.drawLine(Offset(size.width * 0.42, size.height * 0.24), Offset(size.width * 0.38, size.height * 0.10), Paint()..color = const Color(0xFF8B5CF6)..strokeWidth = 3.0);
+      canvas.drawLine(Offset(size.width * 0.50, size.height * 0.22), Offset(size.width * 0.50, size.height * 0.06), Paint()..color = const Color(0xFF00F0FF)..strokeWidth = 3.5);
+      canvas.drawLine(Offset(size.width * 0.58, size.height * 0.24), Offset(size.width * 0.62, size.height * 0.10), Paint()..color = const Color(0xFF8B5CF6)..strokeWidth = 3.0);
+    } else if (config.species == 'horned_lizard') {
+      // 🦎 Desert Horned Lizard Spiny Crown
+      for (int i = 0; i < 5; i++) {
+        final hx = size.width * (0.28 + i * 0.11);
+        canvas.drawLine(Offset(hx, size.height * 0.24), Offset(hx, size.height * 0.12), Paint()..color = const Color(0xFFB45309)..strokeWidth = 2.5);
+      }
+    } else if (config.species == 'angler_leviathan') {
+      // 💡 Angler Stalk & Bioluminescent Lure
+      final stalk = Path()..moveTo(size.width * 0.50, size.height * 0.22)..quadraticBezierTo(size.width * 0.50, size.height * 0.04, size.width * 0.54, size.height * 0.12);
+      canvas.drawPath(stalk, Paint()..color = const Color(0xFF00F0FF)..style = PaintingStyle.stroke..strokeWidth = 2.0);
+      canvas.drawCircle(Offset(size.width * 0.54, size.height * 0.12), 4, Paint()..color = const Color(0xFFFACC15));
+    } else if (config.species == 'mecha_wolf') {
+      // 🤖 Mecha Wolf Titanium Plating
+      final leftEar = Path()..moveTo(size.width * 0.28, size.height * 0.34)..lineTo(size.width * 0.20, size.height * 0.12)..lineTo(size.width * 0.42, size.height * 0.26)..close();
+      final rightEar = Path()..moveTo(size.width * 0.72, size.height * 0.34)..lineTo(size.width * 0.80, size.height * 0.12)..lineTo(size.width * 0.58, size.height * 0.26)..close();
+      canvas.drawPath(leftEar, Paint()..color = const Color(0xFF38BDF8));
+      canvas.drawPath(rightEar, Paint()..color = const Color(0xFF38BDF8));
+    } else if (config.species == 'kitsune_emperor') {
+      // 🦊 Kitsune Nine-Tails Mask & Aura
+      final leftEar = Path()..moveTo(size.width * 0.26, size.height * 0.32)..lineTo(size.width * 0.16, size.height * 0.08)..lineTo(size.width * 0.40, size.height * 0.26)..close();
+      final rightEar = Path()..moveTo(size.width * 0.74, size.height * 0.32)..lineTo(size.width * 0.84, size.height * 0.08)..lineTo(size.width * 0.60, size.height * 0.26)..close();
+      canvas.drawPath(leftEar, Paint()..color = const Color(0xFFFF6D00));
+      canvas.drawPath(rightEar, Paint()..color = const Color(0xFFFF6D00));
+      canvas.drawCircle(Offset(size.width * 0.5, size.height * 0.18), size.width * 0.22, Paint()..color = const Color(0xFFFFD700).withValues(alpha: 0.35)..style = PaintingStyle.stroke..strokeWidth = 2.5);
+    } else if (config.species == 'solar_lion') {
+      // ☀️ Solar Lion Radiant Halo
+      final haloPaint = Paint()..color = const Color(0xFFFFD700)..style = PaintingStyle.stroke..strokeWidth = 3.0;
+      canvas.drawCircle(Offset(size.width * 0.5, size.height * 0.40), size.width * 0.42, haloPaint);
+    } else if (config.species == 'sea_dragon') {
+      // 🐉 Sea Dragon Aquatic Frills
+      for (int i = 0; i < 3; i++) {
+        canvas.drawCircle(Offset(size.width * 0.18, size.height * (0.30 + i * 0.10)), 6, Paint()..color = const Color(0xFF00F0FF));
+        canvas.drawCircle(Offset(size.width * 0.82, size.height * (0.30 + i * 0.10)), 6, Paint()..color = const Color(0xFF00F0FF));
+      }
+    } else if (config.species == 'thunder_roc') {
+      // ⚡ Thunder Roc Avian Lightning Crown
+      final crown = Path()..moveTo(size.width * 0.44, size.height * 0.22)..lineTo(size.width * 0.50, size.height * 0.04)..lineTo(size.width * 0.56, size.height * 0.22)..close();
+      canvas.drawPath(crown, Paint()..color = const Color(0xFFFFD700));
+    } else if (config.species == 'obsidian_basilisk') {
+      // 🐍 Obsidian Basilisk Jagged Crown
+      for (int i = 0; i < 5; i++) {
+        final bx = size.width * (0.30 + i * 0.10);
+        final spire = Path()..moveTo(bx - 3, size.height * 0.24)..lineTo(bx, size.height * 0.10)..lineTo(bx + 3, size.height * 0.24)..close();
+        canvas.drawPath(spire, Paint()..color = const Color(0xFF10B981));
+      }
+    } else if (config.species == 'celestial_phoenix') {
+      // 🕊️ 24K Celestial Phoenix Halo
+      canvas.drawCircle(Offset(size.width * 0.5, size.height * 0.20), size.width * 0.22, Paint()..color = const Color(0xFFFFD700).withValues(alpha: 0.45)..style = PaintingStyle.stroke..strokeWidth = 3.5);
+    } else if (config.species == 'cosmic_hydra') {
+      // 🌌 Cosmic Hydra Triple Crests
+      canvas.drawLine(Offset(size.width * 0.38, size.height * 0.24), Offset(size.width * 0.28, size.height * 0.08), Paint()..color = const Color(0xFFC084FC)..strokeWidth = 3.0);
+      canvas.drawLine(Offset(size.width * 0.50, size.height * 0.22), Offset(size.width * 0.50, size.height * 0.05), Paint()..color = const Color(0xFF00F0FF)..strokeWidth = 3.5);
+      canvas.drawLine(Offset(size.width * 0.62, size.height * 0.24), Offset(size.width * 0.72, size.height * 0.08), Paint()..color = const Color(0xFFC084FC)..strokeWidth = 3.0);
+    } else if (config.species == 'chrono_dragon') {
+      // ⏳ Chrono Dragon Gear Horns
+      final leftHorn = Path()..moveTo(size.width * 0.32, size.height * 0.28)..quadraticBezierTo(size.width * 0.14, size.height * 0.14, size.width * 0.20, size.height * 0.06)..close();
+      final rightHorn = Path()..moveTo(size.width * 0.68, size.height * 0.28)..quadraticBezierTo(size.width * 0.86, size.height * 0.14, size.width * 0.80, size.height * 0.06)..close();
+      canvas.drawPath(leftHorn, Paint()..color = const Color(0xFFFFD700));
+      canvas.drawPath(rightHorn, Paint()..color = const Color(0xFFFFD700));
+    } else if (config.species == 'astral_titan') {
+      // 🪐 Astral Titan Celestial Orbit Ring
+      canvas.drawOval(Rect.fromCenter(center: Offset(size.width * 0.5, size.height * 0.20), width: size.width * 0.65, height: 16), Paint()..color = const Color(0xFF818CF8).withValues(alpha: 0.5)..style = PaintingStyle.stroke..strokeWidth = 2.5);
+    } else if (config.species == 'cosmic_dragon_sovereign') {
+      // 👑 Supreme Cosmic Dragon Sovereign Divine Quad Horns & Halo
+      final leftHorn = Path()..moveTo(size.width * 0.30, size.height * 0.26)..quadraticBezierTo(size.width * 0.08, size.height * 0.14, size.width * 0.14, size.height * 0.02)..close();
+      final rightHorn = Path()..moveTo(size.width * 0.70, size.height * 0.26)..quadraticBezierTo(size.width * 0.92, size.height * 0.14, size.width * 0.86, size.height * 0.02)..close();
+      canvas.drawPath(leftHorn, Paint()..color = const Color(0xFFFFD700));
+      canvas.drawPath(rightHorn, Paint()..color = const Color(0xFFFFD700));
+      canvas.drawCircle(Offset(size.width * 0.5, size.height * 0.18), size.width * 0.26, Paint()..color = const Color(0xFF00F0FF).withValues(alpha: 0.5)..style = PaintingStyle.stroke..strokeWidth = 3.5);
     }
   }
 
