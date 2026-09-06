@@ -32,6 +32,8 @@ import 'package:pocket_mates_app/custom_code/widgets/conversation_tile.dart';
 import 'package:pocket_mates_app/custom_code/widgets/voice_assistant/pocket_mates_voice_button.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/english_learning_group_chat.dart';
 import 'package:pocket_mates_app/custom_code/widgets/doodle_background_painter.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_mission_timer_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_daily_mission_page.dart';
 
 // Aliases for WhatsApp Groups Provider to avoid naming conflicts
 typedef ChatConversation = groups_provider.ChatConversation;
@@ -334,6 +336,10 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       if (profileResponse != null) {
         await prefs.setString(
             'cached_profile_$userId', jsonEncode(profileResponse));
+        final day = (profileResponse['learning_day'] as num?)?.toInt() ??
+            (profileResponse['learning_stage'] as num?)?.toInt() ??
+            1;
+        PocketMissionTimerService.instance.initForDay(day);
       }
 
       final statsMap = {
@@ -1462,54 +1468,223 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         ? material.Colors.black.withValues(alpha: 0.4)
         : material.Colors.grey.withValues(alpha: 0.1);
 
-    return Container(
-      height: 65 + bottomPadding,
-      padding: EdgeInsets.only(bottom: bottomPadding),
-      decoration: BoxDecoration(
-        color: navBgColor,
-        border: Border(
-          top: BorderSide(
-            color: borderColor,
-            width: 1.5,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _buildDailyPracticeTimerStrip(context),
+        Container(
+          height: 65 + bottomPadding,
+          padding: EdgeInsets.only(bottom: bottomPadding),
+          decoration: BoxDecoration(
+            color: navBgColor,
+            border: Border(
+              top: BorderSide(
+                color: borderColor,
+                width: 1.5,
+              ),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: shadowColor,
+                blurRadius: 20,
+                offset: const Offset(0, -4),
+              ),
+            ],
+          ),
+          child: material.Material(
+            color: Colors.transparent,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildNavItem(
+                  icon: material.Icons.storefront_rounded,
+                  isSelected: _currentIndex == 0,
+                  onTap: () => setState(() => _currentIndex = 0),
+                ),
+                _buildNavItem(
+                  icon: material.Icons.chat_bubble_rounded,
+                  isSelected: _currentIndex == 1,
+                  onTap: () => setState(() => _currentIndex = 1),
+                ),
+                _buildNavItem(
+                  icon: material.Icons.group_rounded,
+                  isSelected: _currentIndex == 2,
+                  onTap: () => setState(() => _currentIndex = 2),
+                ),
+                _buildNavItem(
+                  icon: material.Icons.track_changes_rounded,
+                  isSelected: _currentIndex == 3,
+                  onTap: () => setState(() => _currentIndex = 3),
+                ),
+                _buildProfileNavItem(),
+              ],
+            ),
           ),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: shadowColor,
-            blurRadius: 20,
-            offset: const Offset(0, -4),
+      ],
+    );
+  }
+
+  /// ⏱️ Persistent In-App Daily Practice Timer Strip
+  /// Allows learners to see their 60-min practice progress while using chats, calls, or games.
+  Widget _buildDailyPracticeTimerStrip(BuildContext context) {
+    return ListenableBuilder(
+      listenable: PocketMissionTimerService.instance,
+      builder: (context, _) {
+        final timer = PocketMissionTimerService.instance;
+        if (timer.elapsedSeconds == 0 && !timer.isRunning) {
+          return const SizedBox.shrink();
+        }
+
+        final isRunning = timer.isRunning;
+        final isTargetMet = timer.hasReachedTarget;
+
+        return GestureDetector(
+          onTap: () {
+            HapticFeedback.selectionClick();
+            Navigator.push(
+              context,
+              material.MaterialPageRoute(
+                builder: (_) => PocketDailyMissionPage(day: timer.day),
+              ),
+            );
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: isTargetMet
+                    ? const [Color(0xFF064E3B), Color(0xFF0F172A)]
+                    : (isRunning
+                        ? const [Color(0xFF1E1B4B), Color(0xFF0F172A)]
+                        : const [Color(0xFF1E293B), Color(0xFF0F172A)]),
+              ),
+              border: Border(
+                top: BorderSide(
+                  color: isTargetMet
+                      ? const Color(0xFF10B981)
+                      : (isRunning ? const Color(0xFFFFD700) : Colors.white24),
+                  width: 1.0,
+                ),
+                bottom: BorderSide(
+                  color: isTargetMet
+                      ? const Color(0xFF10B981).withValues(alpha: 0.3)
+                      : (isRunning
+                          ? const Color(0xFFFFD700).withValues(alpha: 0.3)
+                          : Colors.white12),
+                  width: 0.5,
+                ),
+              ),
+            ),
+            child: Row(
+              children: [
+                Text(
+                  isTargetMet ? '🏆' : (isRunning ? '🔥' : '⏸️'),
+                  style: const TextStyle(fontSize: 14),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Row(
+                    children: [
+                      Text(
+                        'Day ${timer.day}: ',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFFFFFC00),
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        timer.formatTime(),
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                      Text(
+                        ' / ${timer.formatTime(timer.targetSeconds)}',
+                        style: GoogleFonts.inter(
+                          color: Colors.white54,
+                          fontSize: 10.5,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                        decoration: BoxDecoration(
+                          color: isRunning
+                              ? Colors.green.withValues(alpha: 0.25)
+                              : (isTargetMet
+                                  ? const Color(0xFF10B981).withValues(alpha: 0.25)
+                                  : Colors.white10),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          isRunning
+                              ? 'RECORDING'
+                              : (isTargetMet ? 'GOAL MET' : 'PAUSED'),
+                          style: TextStyle(
+                            color: isRunning
+                                ? Colors.greenAccent
+                                : (isTargetMet ? const Color(0xFF10B981) : Colors.white60),
+                            fontSize: 8.5,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                  icon: Icon(
+                    isRunning
+                        ? Icons.pause_circle_filled_rounded
+                        : (isTargetMet
+                            ? Icons.check_circle_rounded
+                            : Icons.play_circle_fill_rounded),
+                    color: isTargetMet
+                        ? const Color(0xFF10B981)
+                        : const Color(0xFFFFFC00),
+                    size: 20,
+                  ),
+                  onPressed: () {
+                    HapticFeedback.lightImpact();
+                    if (isTargetMet) {
+                      Navigator.push(
+                        context,
+                        material.MaterialPageRoute(
+                          builder: (_) => PocketDailyMissionPage(day: timer.day),
+                        ),
+                      );
+                    } else {
+                      timer.toggleTimer();
+                    }
+                  },
+                ),
+                const SizedBox(width: 4),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFFC00),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    'MISSION ➔',
+                    style: GoogleFonts.outfit(
+                      color: Colors.black,
+                      fontSize: 9,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ],
-      ),
-      child: material.Material(
-        color: Colors.transparent,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            _buildNavItem(
-              icon: material.Icons.storefront_rounded,
-              isSelected: _currentIndex == 0,
-              onTap: () => setState(() => _currentIndex = 0),
-            ),
-            _buildNavItem(
-              icon: material.Icons.chat_bubble_rounded,
-              isSelected: _currentIndex == 1,
-              onTap: () => setState(() => _currentIndex = 1),
-            ),
-            _buildNavItem(
-              icon: material.Icons.group_rounded,
-              isSelected: _currentIndex == 2,
-              onTap: () => setState(() => _currentIndex = 2),
-            ),
-            _buildNavItem(
-              icon: material.Icons.track_changes_rounded,
-              isSelected: _currentIndex == 3,
-              onTap: () => setState(() => _currentIndex = 3),
-            ),
-            _buildProfileNavItem(),
-          ],
-        ),
-      ),
+        );
+      },
     );
   }
 

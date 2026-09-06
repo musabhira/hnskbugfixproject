@@ -13,6 +13,7 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/learning_ser
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortress_defense_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_defense_trap_modal.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_battle_arena_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_mission_timer_service.dart';
 
 /// 📚 Model for Daily 10 Vocabulary Words to Memorize
 class DailyVocabItem {
@@ -51,11 +52,8 @@ class PocketDailyMissionPage extends StatefulWidget {
 class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   final FlutterTts _tts = FlutterTts();
 
-  // ⏱️ 60-Minute Daily Practice Timer State
-  static const int _targetSeconds = 3600; // 60 minutes
-  int _elapsedSeconds = 0;
-  bool _isTimerRunning = false;
-  Timer? _studyTimer;
+  // ⏱️ Shared 60-Minute Daily Practice Timer Service
+  final PocketMissionTimerService _timerService = PocketMissionTimerService.instance;
 
   // Checklist Subtasks Progress
   bool _hubChatVerified = false;
@@ -77,7 +75,13 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     super.initState();
     _initTts();
     _loadVocabForDay();
+    _timerService.initForDay(widget.day);
+    _timerService.addListener(_onTimerStateChanged);
     _loadSavedMissionState();
+  }
+
+  void _onTimerStateChanged() {
+    if (mounted) setState(() {});
   }
 
   void _initTts() {
@@ -92,8 +96,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
   @override
   void dispose() {
-    _studyTimer?.cancel();
-    _saveTimerState();
+    _timerService.removeListener(_onTimerStateChanged);
     super.dispose();
   }
 
@@ -187,7 +190,6 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     final prefs = await SharedPreferences.getInstance();
     final dayKey = 'pocket_mission_day_${widget.day}';
     setState(() {
-      _elapsedSeconds = prefs.getInt('${dayKey}_elapsed_sec') ?? 0;
       _hubChatVerified = prefs.getBool('${dayKey}_hub_chat') ?? false;
       _peerCallVerified = prefs.getBool('${dayKey}_peer_call') ?? false;
       _vocabMemorized = prefs.getBool('${dayKey}_vocab_mem') ?? false;
@@ -198,45 +200,11 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     });
   }
 
-  Future<void> _saveTimerState() async {
-    final prefs = await SharedPreferences.getInstance();
-    final dayKey = 'pocket_mission_day_${widget.day}';
-    await prefs.setInt('${dayKey}_elapsed_sec', _elapsedSeconds);
-  }
-
   Future<void> _saveSubtask(String key, bool value) async {
     final prefs = await SharedPreferences.getInstance();
     final dayKey = 'pocket_mission_day_${widget.day}';
     await prefs.setBool('${dayKey}_$key', value);
   }
-
-  void _toggleTimer() {
-    HapticFeedback.mediumImpact();
-    if (_isTimerRunning) {
-      _studyTimer?.cancel();
-      setState(() => _isTimerRunning = false);
-      _saveTimerState();
-    } else {
-      setState(() => _isTimerRunning = true);
-      _studyTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-        if (!mounted) return;
-        setState(() {
-          _elapsedSeconds++;
-        });
-        if (_elapsedSeconds % 10 == 0) {
-          _saveTimerState();
-        }
-      });
-    }
-  }
-
-  String _formatTimer(int seconds) {
-    final mins = seconds ~/ 60;
-    final secs = seconds % 60;
-    return '${mins.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
-  }
-
-  double get _timerProgress => (_elapsedSeconds / _targetSeconds).clamp(0.0, 1.0);
 
   int get _completedSubtasksCount {
     int count = 0;
@@ -251,6 +219,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   }
 
   bool get _isAllCompleted => _completedSubtasksCount >= 7;
+  bool get _isTimerCompleted => _timerService.hasReachedTarget;
+  bool get _canClaimAndAdvance => _isTimerCompleted && _isAllCompleted;
 
   @override
   Widget build(BuildContext context) {
@@ -544,6 +514,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
   // --- ⏱️ 60-MINUTE PRACTICE TIMER CARD ---
   Widget _buildDailyStudyTimerCard() {
+    final isRunning = _timerService.isRunning;
+    final isTargetMet = _timerService.hasReachedTarget;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -554,13 +527,21 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         ),
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: _isTimerRunning ? const Color(0xFFFFD700) : Colors.white12,
-          width: _isTimerRunning ? 1.5 : 1.0,
+          color: isRunning
+              ? const Color(0xFFFFD700)
+              : (isTargetMet ? const Color(0xFF10B981) : Colors.white12),
+          width: (isRunning || isTargetMet) ? 1.5 : 1.0,
         ),
         boxShadow: [
-          if (_isTimerRunning)
+          if (isRunning)
             BoxShadow(
               color: const Color(0xFFFF8906).withValues(alpha: 0.25),
+              blurRadius: 16,
+              spreadRadius: 2,
+            ),
+          if (isTargetMet)
+            BoxShadow(
+              color: const Color(0xFF10B981).withValues(alpha: 0.2),
               blurRadius: 16,
               spreadRadius: 2,
             ),
@@ -590,13 +571,23 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: _isTimerRunning ? Colors.green.withValues(alpha: 0.2) : Colors.white10,
+                  color: isRunning
+                      ? Colors.green.withValues(alpha: 0.2)
+                      : (isTargetMet
+                          ? const Color(0xFF10B981).withValues(alpha: 0.2)
+                          : Colors.white10),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
-                  _isTimerRunning ? 'ACTIVE RECORDING' : 'PAUSED',
+                  isRunning
+                      ? 'ACTIVE RECORDING'
+                      : (isTargetMet
+                          ? 'TARGET REACHED'
+                          : _timerService.pauseReason.toUpperCase()),
                   style: TextStyle(
-                    color: _isTimerRunning ? Colors.greenAccent : Colors.white54,
+                    color: isRunning
+                        ? Colors.greenAccent
+                        : (isTargetMet ? const Color(0xFF10B981) : Colors.white54),
                     fontSize: 9.5,
                     fontWeight: FontWeight.bold,
                   ),
@@ -606,7 +597,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           ),
           const SizedBox(height: 10),
           Text(
-            'Rule: You must spend at least 60 minutes practicing English daily (across chat, voice calls, vocabulary & drills) to complete the stage.',
+            'Rule: You must spend at least 60 minutes practicing English daily (across chat, voice calls, vocabulary & drills) to complete the stage. Timer automatically pauses when leaving the app.',
             style: GoogleFonts.inter(
               color: Colors.white70,
               fontSize: 12,
@@ -624,7 +615,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          _formatTimer(_elapsedSeconds),
+                          _timerService.formatTime(),
                           style: GoogleFonts.outfit(
                             color: Colors.white,
                             fontSize: 26,
@@ -632,7 +623,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                           ),
                         ),
                         Text(
-                          '/ 60:00 Mins Target',
+                          '/ ${_timerService.formatTime(_timerService.targetSeconds)} Target',
                           style: GoogleFonts.inter(
                             color: Colors.white54,
                             fontSize: 12,
@@ -644,11 +635,13 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                     ClipRRect(
                       borderRadius: BorderRadius.circular(4),
                       child: LinearProgressIndicator(
-                        value: _timerProgress,
+                        value: _timerService.progress,
                         minHeight: 8,
                         backgroundColor: Colors.white12,
                         valueColor: AlwaysStoppedAnimation<Color>(
-                          _elapsedSeconds >= _targetSeconds ? const Color(0xFF10B981) : const Color(0xFFFFFC00),
+                          isTargetMet
+                              ? const Color(0xFF10B981)
+                              : const Color(0xFFFFFC00),
                         ),
                       ),
                     ),
@@ -657,20 +650,130 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               ),
               const SizedBox(width: 16),
               ElevatedButton.icon(
-                onPressed: _toggleTimer,
-                icon: Icon(_isTimerRunning ? Icons.pause_rounded : Icons.play_arrow_rounded, color: Colors.black),
+                onPressed: () {
+                  if (isTargetMet) {
+                    _timerService.addAnotherHourPractice();
+                  } else {
+                    _timerService.toggleTimer();
+                  }
+                },
+                icon: Icon(
+                  isRunning
+                      ? Icons.pause_rounded
+                      : (isTargetMet ? Icons.add_alarm_rounded : Icons.play_arrow_rounded),
+                  color: Colors.black,
+                ),
                 label: Text(
-                  _isTimerRunning ? 'PAUSE' : 'START',
-                  style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: Colors.black),
+                  isRunning
+                      ? 'PAUSE'
+                      : (isTargetMet ? '+60m' : 'START'),
+                  style: GoogleFonts.outfit(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: _isTimerRunning ? Colors.amberAccent : const Color(0xFFFFFC00),
+                  backgroundColor: isRunning
+                      ? Colors.amberAccent
+                      : (isTargetMet ? const Color(0xFF10B981) : const Color(0xFFFFFC00)),
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
               ),
             ],
           ),
+
+          // ⚠️ Extra Hour Prompt Banner when 60 minutes are met but subtasks remain
+          if (isTargetMet && !_isAllCompleted) ...[
+            const SizedBox(height: 14),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFEF3C7).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.amberAccent.withValues(alpha: 0.4)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.info_outline_rounded, color: Colors.amberAccent, size: 18),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          '60-Min Target Reached! (${7 - _completedSubtasksCount} subtasks pending)',
+                          style: GoogleFonts.outfit(
+                            color: Colors.amberAccent,
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Practice timer automatically stopped at 60:00. You must complete all 7 subtasks to advance to Day ${widget.day + 1}. Complete the tasks below, or add an extra 1-hour practice session.',
+                    style: GoogleFonts.inter(
+                      color: Colors.white70,
+                      fontSize: 11.5,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () {
+                            HapticFeedback.mediumImpact();
+                            _timerService.addAnotherHourPractice();
+                          },
+                          icon: const Icon(Icons.add_alarm_rounded, size: 16, color: Color(0xFFFFFC00)),
+                          label: Text(
+                            '+ ADD 1-HR PRACTICE',
+                            style: GoogleFonts.outfit(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFFFFFC00),
+                            ),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(color: Color(0xFFFFFC00)),
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () {
+                            HapticFeedback.mediumImpact();
+                            _timerService.restartPracticeSession();
+                          },
+                          icon: const Icon(Icons.refresh_rounded, size: 16, color: Colors.white70),
+                          label: Text(
+                            'RESTART 1-HR RUN',
+                            style: GoogleFonts.outfit(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(color: Colors.white24),
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -1214,17 +1317,47 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
   // --- 🏆 FINAL CLAIM & ADVANCE BUTTON ---
   Widget _buildFinalClaimButton() {
+    final isTimerMet = _isTimerCompleted;
+    final isSubtasksMet = _isAllCompleted;
+    final canClaim = _canClaimAndAdvance;
+
+    String headerTitle;
+    String description;
+    String buttonText;
+
+    if (canClaim) {
+      headerTitle = '🎉 MISSION COMPLETED!';
+      description =
+          '60-Minute practice target met & all 7 subtasks verified! Claim +100 XP, +40 Fortress Defense Coins and unlock Day ${widget.day + 1}!';
+      buttonText = 'CLAIM DAY ${widget.day} REWARDS & ADVANCE 🚀';
+    } else if (isTimerMet && !isSubtasksMet) {
+      headerTitle = '⚠️ ${7 - _completedSubtasksCount} SUBTASKS REMAINING';
+      description =
+          'Practice time target (60m) completed! You must complete all 7 subtasks below before unlocking Day ${widget.day + 1}.';
+      buttonText = 'FINISH ${7 - _completedSubtasksCount} MORE SUBTASKS TO ADVANCE';
+    } else if (!isTimerMet && isSubtasksMet) {
+      headerTitle = '⏱️ PRACTICE TIME TARGET PENDING';
+      description =
+          'All 7 subtasks are verified! Practice for ${_timerService.formatTime(_timerService.remainingSeconds)} more minutes in app chats, drills, or calls to complete the 60-min target.';
+      buttonText = 'PRACTICE ${_timerService.formatTime(_timerService.remainingSeconds)} MORE TO ADVANCE';
+    } else {
+      headerTitle = 'PRACTICE TARGET & SUBTASKS PENDING';
+      description =
+          'Progress: ${_timerService.formatTime()}/${_timerService.formatTime(_timerService.targetSeconds)} practice time • $_completedSubtasksCount/7 subtasks verified.';
+      buttonText = '${7 - _completedSubtasksCount} SUBTASKS & ${_timerService.formatTime(_timerService.remainingSeconds)} REMAINING';
+    }
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: _isAllCompleted
+          colors: canClaim
               ? const [Color(0xFF10B981), Color(0xFF047857)]
               : const [Color(0xFF1E293B), Color(0xFF0F172A)],
         ),
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
-          if (_isAllCompleted)
+          if (canClaim)
             BoxShadow(
               color: const Color(0xFF10B981).withValues(alpha: 0.4),
               blurRadius: 20,
@@ -1235,19 +1368,18 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
       child: Column(
         children: [
           Text(
-            _isAllCompleted ? '🎉 MISSION COMPLETED!' : 'COMPLETE ALL 7 SUBTASKS TO ADVANCE',
+            headerTitle,
             style: GoogleFonts.outfit(
-              color: _isAllCompleted ? Colors.white : Colors.white60,
+              color: canClaim ? Colors.white : Colors.white70,
               fontSize: 14,
               fontWeight: FontWeight.w900,
               letterSpacing: 0.8,
             ),
+            textAlign: TextAlign.center,
           ),
           const SizedBox(height: 6),
           Text(
-            _isAllCompleted
-                ? 'Claim +100 XP, +40 Fortress Defense Coins and unlock Day ${widget.day + 1}!'
-                : 'Progress: $_completedSubtasksCount/7 subtasks completed. Keep learning!',
+            description,
             style: GoogleFonts.inter(
               color: Colors.white70,
               fontSize: 12,
@@ -1258,20 +1390,27 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: _isAllCompleted
+              onPressed: canClaim
                   ? () async {
                       HapticFeedback.heavyImpact();
                       final uid = SupaFlow.client.auth.currentUser?.id;
                       if (uid != null) {
-                        await Learning60DayService().completeTask(userId: uid, taskId: 'day_${widget.day}_mission');
-                        await PocketFortressDefenseService.recordActivityPoints('daily_mission');
+                        await Learning60DayService().completeTask(
+                          userId: uid,
+                          taskId: 'day_${widget.day}_mission',
+                        );
+                        await PocketFortressDefenseService.recordActivityPoints(
+                          'daily_mission',
+                        );
                       }
                       widget.onMissionCompleted?.call();
                       if (mounted) {
                         Navigator.pop(context);
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text('🎉 Day ${widget.day} English Mission Complete! +100 XP • Day ${widget.day + 1} Unlocked!'),
+                            content: Text(
+                              '🎉 Day ${widget.day} English Mission Complete! +100 XP • Day ${widget.day + 1} Unlocked!',
+                            ),
                             backgroundColor: const Color(0xFF10B981),
                           ),
                         );
@@ -1282,15 +1421,18 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                 backgroundColor: const Color(0xFFFFFC00),
                 disabledBackgroundColor: Colors.white12,
                 padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
               ),
               child: Text(
-                _isAllCompleted ? 'CLAIM DAY ${widget.day} REWARDS & ADVANCE 🚀' : '${7 - _completedSubtasksCount} SUBTASKS REMAINING',
+                buttonText,
                 style: GoogleFonts.outfit(
-                  color: _isAllCompleted ? Colors.black : Colors.white38,
+                  color: canClaim ? Colors.black : Colors.white38,
                   fontWeight: FontWeight.bold,
                   fontSize: 14,
                 ),
+                textAlign: TextAlign.center,
               ),
             ),
           ),
