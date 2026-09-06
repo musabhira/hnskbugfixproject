@@ -1523,6 +1523,25 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                           Container(
                                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                             decoration: BoxDecoration(
+                                              color: const Color(0xFF0284C7).withValues(alpha: 0.15),
+                                              borderRadius: BorderRadius.circular(5),
+                                              border: Border.all(
+                                                color: const Color(0xFF0284C7).withValues(alpha: 0.4),
+                                              ),
+                                            ),
+                                            child: Text(
+                                              '${DefenseGameFormat.getIcon(q.gameFormat)} ${DefenseGameFormat.getTitle(q.gameFormat)}',
+                                              style: GoogleFonts.outfit(
+                                                color: const Color(0xFF38BDF8),
+                                                fontSize: 9.5,
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 6),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                            decoration: BoxDecoration(
                                               color: const Color(0xFF10B981).withValues(alpha: 0.15),
                                               borderRadius: BorderRadius.circular(5),
                                               border: Border.all(

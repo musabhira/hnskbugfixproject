@@ -50,6 +50,58 @@ class PresidentVerdict {
       );
 }
 
+/// 🎮 Defense Game Formats available for House Shields
+class DefenseGameFormat {
+  static const String mcq = 'mcq';
+  static const String wordScramble = 'word_scramble';
+  static const String sentenceJigsaw = 'sentence_jigsaw';
+  static const String spotError = 'spot_error';
+  static const String listeningWhisper = 'listening_whisper';
+
+  static const List<Map<String, String>> allFormats = [
+    {
+      'id': mcq,
+      'title': 'Quiz (MCQ)',
+      'icon': '🎯',
+      'desc': '4-choice English puzzle',
+    },
+    {
+      'id': wordScramble,
+      'title': 'Word Scramble',
+      'icon': '🔠',
+      'desc': 'Unscramble letters from clue',
+    },
+    {
+      'id': sentenceJigsaw,
+      'title': 'Sentence Jigsaw',
+      'icon': '🧩',
+      'desc': 'Reassemble syntax tiles',
+    },
+    {
+      'id': spotError,
+      'title': 'Spot Error',
+      'icon': '💣',
+      'desc': 'Defuse grammatical error',
+    },
+    {
+      'id': listeningWhisper,
+      'title': 'Audio Whisper',
+      'icon': '👂',
+      'desc': 'Listen to speech & fill blank',
+    },
+  ];
+
+  static String getTitle(String formatId) {
+    final item = allFormats.firstWhere((f) => f['id'] == formatId, orElse: () => allFormats.first);
+    return item['title']!;
+  }
+
+  static String getIcon(String formatId) {
+    final item = allFormats.firstWhere((f) => f['id'] == formatId, orElse: () => allFormats.first);
+    return item['icon']!;
+  }
+}
+
 /// 🛡️ Model for a Custom House Shield Question
 class HouseShieldQuestion {
   final String id;
@@ -59,6 +111,7 @@ class HouseShieldQuestion {
   final String explanation;
   final String category; // 'vocab', 'grammar', 'idiom', 'comprehension', 'tense', 'syntax'
   final String trapType; // 'vocab_gate', 'grammar_sentry', 'tense_fortress', 'idiom_maze', 'syntax_wall'
+  final String gameFormat; // 'mcq', 'word_scramble', 'sentence_jigsaw', 'spot_error', 'listening_whisper'
   final bool isPresidentApproved;
 
   const HouseShieldQuestion({
@@ -69,6 +122,7 @@ class HouseShieldQuestion {
     required this.explanation,
     this.category = 'vocab',
     this.trapType = 'vocab_gate',
+    this.gameFormat = 'mcq',
     this.isPresidentApproved = true,
   });
 
@@ -80,6 +134,7 @@ class HouseShieldQuestion {
         'explanation': explanation,
         'category': category,
         'trapType': trapType,
+        'gameFormat': gameFormat,
         'isPresidentApproved': isPresidentApproved,
       };
 
@@ -98,6 +153,7 @@ class HouseShieldQuestion {
                     : (json['category'] == 'tense'
                         ? 'tense_fortress'
                         : (json['category'] == 'syntax' ? 'syntax_wall' : 'vocab_gate')))),
+        gameFormat: json['gameFormat'] ?? 'mcq',
         isPresidentApproved: json['isPresidentApproved'] ?? true,
       );
 }
@@ -407,17 +463,38 @@ class PocketFortressDefenseService {
   }
 
   /// 🎩 President of Pocket World AI Question Validator
-  static PresidentVerdict validateQuestion(String question, List<String> options, int correctIdx) {
+  static PresidentVerdict validateQuestion(
+    String question,
+    List<String> options,
+    int correctIdx, {
+    String gameFormat = 'mcq',
+    List<HouseShieldQuestion>? existingQuestions,
+    String? currentQuestionId,
+  }) {
     final q = question.trim();
 
-    // 1. Minimum length check
-    if (q.length < 10) {
+    // 1. Anti-duplicate check across all user's armed defense traps
+    final normQ = q.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
+    if (existingQuestions != null && normQ.isNotEmpty) {
+      for (final eq in existingQuestions) {
+        if (currentQuestionId != null && eq.id == currentQuestionId) continue;
+        final normEq = eq.question.trim().toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
+        if (normQ == normEq) {
+          return PresidentVerdict.threat(
+            'Duplicate question detected! Every defense trap must be a unique English challenge. Identical questions violate fair-play and are blocked by Presidential Decree.',
+          );
+        }
+      }
+    }
+
+    // 2. Minimum length check
+    if (q.length < 8) {
       return PresidentVerdict.threat(
         'Question is suspiciously short (${q.length} chars). Trivial spam questions violate Pocket World fair-play and lead to account bans.',
       );
     }
 
-    // 2. Gibberish / keyboard mash detector
+    // 3. Gibberish / keyboard mash detector
     final cleanAlpha = q.replaceAll(RegExp(r'[^a-zA-Z]'), '');
     if (cleanAlpha.length > 8) {
       final repeatingChars = RegExp(r'(.)\1{3,}');
@@ -428,7 +505,46 @@ class PocketFortressDefenseService {
       }
     }
 
-    // 3. Options validation
+    // 4. Format-specific validation
+    if (gameFormat == 'word_scramble') {
+      if (options.isEmpty || options[0].trim().length < 3) {
+        return PresidentVerdict.warning(
+          'Word Scramble requires a target word of at least 3 letters in the Answer Word field.',
+        );
+      }
+      final target = options[0].trim();
+      if (RegExp(r'[^a-zA-Z]').hasMatch(target)) {
+        return PresidentVerdict.warning('Target scramble word must contain only English letters.');
+      }
+      return PresidentVerdict.approved();
+    }
+
+    if (gameFormat == 'sentence_jigsaw') {
+      final words = q.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).toList();
+      if (words.length < 3) {
+        return PresidentVerdict.warning(
+          'Sentence Jigsaw requires a sentence with at least 3 words to reassemble.',
+        );
+      }
+      return PresidentVerdict.approved();
+    }
+
+    if (gameFormat == 'spot_error') {
+      if (options.length < 2) {
+        return PresidentVerdict.warning(
+          'Spot the Error requires dividing the sentence into at least 2 or 4 segments.',
+        );
+      }
+      if (options.any((o) => o.trim().isEmpty)) {
+        return PresidentVerdict.warning('All sentence segments must be filled.');
+      }
+      if (correctIdx < 0 || correctIdx >= options.length) {
+        return PresidentVerdict.warning('Select the segment that contains the grammatical error.');
+      }
+      return PresidentVerdict.approved();
+    }
+
+    // 5. Options validation for standard 4-choice MCQ & Listening Whisper
     if (options.length < 4) {
       return PresidentVerdict.warning('Every defense question must have 4 distinct choices.');
     }
@@ -439,12 +555,12 @@ class PocketFortressDefenseService {
       return PresidentVerdict.warning('Duplicate answer options detected. Please write 4 unique, educational answers.');
     }
 
-    // 4. Empty option check
+    // 6. Empty option check
     if (trimmedOptions.any((o) => o.isEmpty)) {
       return PresidentVerdict.warning('Options cannot be empty.');
     }
 
-    // 5. Correct index in range
+    // 7. Correct index in range
     if (correctIdx < 0 || correctIdx >= options.length) {
       return PresidentVerdict.warning('Select a valid correct answer option.');
     }

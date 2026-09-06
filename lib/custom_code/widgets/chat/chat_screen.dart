@@ -16,6 +16,7 @@ import 'package:timeago/timeago.dart' as timeago;
 import '../index.dart';
 import 'chat_models.dart';
 import 'chat_provider.dart';
+import 'pocket_ambient_flame_background.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/voice_player.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
@@ -305,78 +306,88 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       ),
       body: ColoredBox(
         color: const Color(0xFF0D1418),
-        child: Column(
+        child: Stack(
           children: [
-            Expanded(
-              child: messagesAsync.when(
-                data: (messages) {
-                  if (messages.isEmpty) {
-                    return const Center(
-                      child: Text(
-                        'No messages yet. Start the conversation!',
-                        style: TextStyle(color: Colors.grey),
-                      ),
-                    );
-                  }
-
-                  return ListView.builder(
-                    controller: _scrollController,
-                    reverse: true,
-                    cacheExtent: 500,
-                    itemCount: messages.length + (_isLoadingMore ? 1 : 0),
-                    itemBuilder: (context, index) {
-                      if (index == messages.length) {
-                        return const Padding(
-                          padding: EdgeInsets.all(16.0),
-                          child: Center(
-                            child: SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            ),
+            const Positioned.fill(
+              child: PocketAmbientFlameBackground(
+                showTopFlameGlow: true,
+                emberDensity: 0.65,
+              ),
+            ),
+            Column(
+              children: [
+                Expanded(
+                  child: messagesAsync.when(
+                    data: (messages) {
+                      if (messages.isEmpty) {
+                        return const Center(
+                          child: Text(
+                            'No messages yet. Start the conversation!',
+                            style: TextStyle(color: Colors.grey),
                           ),
                         );
                       }
 
-                      final msg = messages[index];
-                      final isMe = msg.senderId == currentUser;
+                      return ListView.builder(
+                        controller: _scrollController,
+                        reverse: true,
+                        cacheExtent: 500,
+                        itemCount: messages.length + (_isLoadingMore ? 1 : 0),
+                        itemBuilder: (context, index) {
+                          if (index == messages.length) {
+                            return const Padding(
+                              padding: EdgeInsets.all(16.0),
+                              child: Center(
+                                child: SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                ),
+                              ),
+                            );
+                          }
 
-                      return _MessageBubble(
-                        key: ValueKey(msg.id),
-                        message: msg,
-                        isMe: isMe,
-                        onSwipe: () {
-                          setState(() {
-                            _replyingTo = msg;
-                          });
+                          final msg = messages[index];
+                          final isMe = msg.senderId == currentUser;
+
+                          return _MessageBubble(
+                            key: ValueKey(msg.id),
+                            message: msg,
+                            isMe: isMe,
+                            onSwipe: () {
+                              setState(() {
+                                _replyingTo = msg;
+                              });
+                            },
+                          );
                         },
                       );
                     },
-                  );
-                },
-                error: (err, stack) => Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.error, color: Colors.red, size: 48),
-                      const SizedBox(height: 16),
-                      const Text("Error loading messages",
-                          style: TextStyle(color: Colors.white)),
-                      const SizedBox(height: 8),
-                      ElevatedButton(
-                        onPressed: () => ref
-                            .invalidate(chatMessagesProvider(widget.groupId)),
-                        child: const Text('Retry'),
+                    error: (err, stack) => Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.error, color: Colors.red, size: 48),
+                          const SizedBox(height: 16),
+                          const Text("Error loading messages",
+                              style: TextStyle(color: Colors.white)),
+                          const SizedBox(height: 8),
+                          ElevatedButton(
+                            onPressed: () => ref
+                                .invalidate(chatMessagesProvider(widget.groupId)),
+                            child: const Text('Retry'),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
+                    loading: () => const Center(child: CircularProgressIndicator()),
                   ),
                 ),
-                loading: () => const Center(child: CircularProgressIndicator()),
-              ),
+                if (_replyingTo != null) _buildReplyPreview(),
+                _buildInputArea(),
+                if (_showEmojiPicker && !_isRecording) _buildEmojiPicker(),
+              ],
             ),
-            if (_replyingTo != null) _buildReplyPreview(),
-            _buildInputArea(),
-            if (_showEmojiPicker && !_isRecording) _buildEmojiPicker(),
           ],
         ),
       ),

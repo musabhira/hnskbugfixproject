@@ -143,4 +143,132 @@ void main() {
       expect(questions, isEmpty); // Wiped clean to start over from Day 1
     });
   });
+
+  group('Anti-Duplicate Defense Trap Rules', () {
+    final existingTrap = HouseShieldQuestion(
+      id: 'trap_1',
+      question: 'Which of the following sentences uses the past continuous tense correctly?',
+      options: const ['I was reading', 'I read', 'I have read', 'I am reading'],
+      correctIndex: 0,
+      explanation: 'Action ongoing in the past',
+      gameFormat: 'mcq',
+    );
+
+    test('Rejects exact duplicate question text', () {
+      final verdict = PocketFortressDefenseService.validateQuestion(
+        'Which of the following sentences uses the past continuous tense correctly?',
+        const ['A', 'B', 'C', 'D'],
+        0,
+        existingQuestions: [existingTrap],
+      );
+      expect(verdict.isApproved, isFalse);
+      expect(verdict.isBanThreat, isTrue);
+      expect(verdict.feedback, contains('Duplicate question detected'));
+    });
+
+    test('Rejects normalized duplicate (differing only in case or punctuation)', () {
+      final verdict = PocketFortressDefenseService.validateQuestion(
+        'WHICH of the following SENTENCES uses the past continuous tense correctly?!?',
+        const ['A', 'B', 'C', 'D'],
+        0,
+        existingQuestions: [existingTrap],
+      );
+      expect(verdict.isApproved, isFalse);
+      expect(verdict.isBanThreat, isTrue);
+      expect(verdict.feedback, contains('Duplicate question detected'));
+    });
+
+    test('Allows editing an existing question when currentQuestionId is provided', () {
+      final verdict = PocketFortressDefenseService.validateQuestion(
+        'Which of the following sentences uses the past continuous tense correctly?',
+        const ['I was reading', 'I read', 'I have read', 'I am reading'],
+        0,
+        currentQuestionId: 'trap_1',
+        existingQuestions: [existingTrap],
+      );
+      expect(verdict.isApproved, isTrue);
+    });
+
+    test('Allows unique, brand new question text', () {
+      final verdict = PocketFortressDefenseService.validateQuestion(
+        'Identify the subjunctive mood in this sentence:',
+        const ['If I were you', 'If I was you', 'If I am you', 'If I will be you'],
+        0,
+        existingQuestions: [existingTrap],
+      );
+      expect(verdict.isApproved, isTrue);
+    });
+  });
+
+  group('Diverse Defense Game Formats Validation', () {
+    test('Validates Word Scramble requirements', () {
+      // Missing target word
+      final v1 = PocketFortressDefenseService.validateQuestion(
+        'Unscramble the word meaning a grand entrance:',
+        const [''],
+        0,
+        gameFormat: 'word_scramble',
+      );
+      expect(v1.isApproved, isFalse);
+
+      // Target word with special chars
+      final v2 = PocketFortressDefenseService.validateQuestion(
+        'Unscramble the word meaning a grand entrance:',
+        const ['P0RT@L'],
+        0,
+        gameFormat: 'word_scramble',
+      );
+      expect(v2.isApproved, isFalse);
+
+      // Valid scramble
+      final v3 = PocketFortressDefenseService.validateQuestion(
+        'Unscramble the word meaning a grand entrance:',
+        const ['PORTAL'],
+        0,
+        gameFormat: 'word_scramble',
+      );
+      expect(v3.isApproved, isTrue);
+    });
+
+    test('Validates Sentence Jigsaw requirements', () {
+      // Too few words
+      final v1 = PocketFortressDefenseService.validateQuestion(
+        'Go away',
+        const [],
+        0,
+        gameFormat: 'sentence_jigsaw',
+      );
+      expect(v1.isApproved, isFalse);
+
+      // Valid sentence jigsaw
+      final v2 = PocketFortressDefenseService.validateQuestion(
+        'The courageous knight defended the stone citadel with honor',
+        const [],
+        0,
+        gameFormat: 'sentence_jigsaw',
+      );
+      expect(v2.isApproved, isTrue);
+    });
+
+    test('Validates Spot the Error segments requirements', () {
+      // Missing segments
+      final v1 = PocketFortressDefenseService.validateQuestion(
+        'Find the grammatical error in this sentence:',
+        const ['She do not know', ''],
+        0,
+        gameFormat: 'spot_error',
+      );
+      expect(v1.isApproved, isFalse);
+
+      // Valid segments and selected error index
+      final v2 = PocketFortressDefenseService.validateQuestion(
+        'Find the grammatical error in this sentence:',
+        const ['Neither of the boys', 'were present', 'at the ceremony', 'yesterday'],
+        1,
+        gameFormat: 'spot_error',
+      );
+      expect(v2.isApproved, isTrue);
+    });
+  });
 }
+

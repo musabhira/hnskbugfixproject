@@ -50,6 +50,7 @@ import 'package:pocket_mates_app/custom_code/widgets/courses_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/english_learning_hub_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/ads/pocket_ad_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/snap/snap_view_dialog.dart';
+import 'pocket_ambient_flame_background.dart';
 
 import 'package:pocket_mates_app/flutter_flow/flutter_flow_theme.dart';
 import 'package:pocket_mates_app/auth/auth_helper.dart';
@@ -142,9 +143,10 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
             _messageController.text = val.recognizedWords;
           });
         },
-        localeId: 'en_US',
-        listenFor: const Duration(seconds: 30),
-        pauseFor: const Duration(seconds: 3),
+        listenOptions: stt.SpeechListenOptions(
+          listenMode: stt.ListenMode.dictation,
+          pauseFor: const Duration(seconds: 3),
+        ),
       );
     } else {
       if (mounted) {
@@ -156,6 +158,291 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
         );
       }
     }
+  }
+
+  void _showEnglishTopicStartersModal() {
+    final topics = [
+      '🌟 What is the most exciting goal you are working towards this year?',
+      '🎬 If you could only rewatch one movie for the rest of your life, which one and why?',
+      '🌍 What is the most interesting place you have ever visited or dream of exploring?',
+      '💡 What is a valuable lesson you learned recently that changed your thinking?',
+      '☕ Are you a morning person or a night owl? What does your ideal productive day look like?',
+      '🚀 If you were given \$1,000,000 to start any business tomorrow, what would you build?',
+      '📚 What is an English idiom or phrase you recently discovered and found fascinating?',
+      '🎧 What music, podcast, or creator inspires you the most when studying or working?',
+      '🍲 What is your absolute favorite comfort food, and what memories does it bring back?',
+      '🏆 What is an accomplishment you are proud of, whether big or small?',
+    ];
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF0F172A),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+      ),
+      builder: (ctx) => Container(
+        padding: const EdgeInsets.fromLTRB(18, 14, 18, 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 38,
+                height: 4,
+                decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2)),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                const Text('💡', style: TextStyle(fontSize: 20)),
+                const SizedBox(width: 8),
+                Text(
+                  'ENGLISH TOPIC STARTERS',
+                  style: GoogleFonts.outfit(
+                    color: Colors.amberAccent,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  'Tap to insert',
+                  style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 11),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Flexible(
+              child: ListView.separated(
+                shrinkWrap: true,
+                itemCount: topics.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 8),
+                itemBuilder: (context, i) {
+                  final t = topics[i];
+                  return InkWell(
+                    borderRadius: BorderRadius.circular(12),
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      safeSetState(() {
+                        _messageController.text = t;
+                      });
+                      _focusNode.requestFocus();
+                      HapticFeedback.lightImpact();
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1E293B),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.white12),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              t,
+                              style: GoogleFonts.inter(
+                                color: Colors.white,
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          const Icon(Icons.arrow_forward_ios_rounded, color: Colors.amberAccent, size: 12),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEnglishHubHeaderRibbon() {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [
+            Color(0xFF1E1B4B),
+            Color(0xFF451A03),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        border: Border(
+          bottom: BorderSide(
+            color: const Color(0xFFFFD700).withValues(alpha: 0.35),
+            width: 1.2,
+          ),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFFF8906).withValues(alpha: 0.12),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.fromLTRB(14, 8, 14, 8),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFFFD700), Color(0xFFFF8906)],
+                  ),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text('👑', style: TextStyle(fontSize: 11)),
+                    const SizedBox(width: 4),
+                    Text(
+                      'ENGLISH HUB 🔥',
+                      style: GoogleFonts.outfit(
+                        color: Colors.black,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 10.5,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Global English Fluency Arena • English Only',
+                  style: GoogleFonts.inter(
+                    color: Colors.white70,
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.5)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: const [
+                    Icon(Icons.circle, color: Color(0xFF10B981), size: 7),
+                    SizedBox(width: 4),
+                    Text(
+                      'ACTIVE',
+                      style: TextStyle(color: Color(0xFF10B981), fontSize: 9.5, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 7),
+          // Quick Action Tools
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                _buildHubRibbonChip(
+                  icon: Icons.lightbulb_outline_rounded,
+                  label: 'Topic Starters',
+                  color: const Color(0xFFFFD700),
+                  onTap: _showEnglishTopicStartersModal,
+                ),
+                const SizedBox(width: 6),
+                _buildHubRibbonChip(
+                  icon: Icons.psychology_alt_rounded,
+                  label: 'AI Tutor',
+                  color: const Color(0xFF38BDF8),
+                  onTap: () {
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
+                      builder: (context) => const AIEnglishTutorSheet(),
+                    );
+                  },
+                ),
+                const SizedBox(width: 6),
+                _buildHubRibbonChip(
+                  icon: _isSttListening ? Icons.mic_rounded : Icons.mic_none_rounded,
+                  label: _isSttListening ? 'Listening...' : 'Voice Dictation',
+                  color: _isSttListening ? Colors.redAccent : const Color(0xFF10B981),
+                  onTap: _toggleEnglishSpeechDictation,
+                ),
+                const SizedBox(width: 6),
+                _buildHubRibbonChip(
+                  icon: Icons.record_voice_over_rounded,
+                  label: 'Pronunciation & Drills',
+                  color: const Color(0xFFA855F7),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const EnglishLearningHubPage()),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHubRibbonChip({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.lightImpact();
+        onTap();
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: color.withValues(alpha: 0.5), width: 1),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: color, size: 13),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: GoogleFonts.outfit(
+                color: Colors.white,
+                fontSize: 10.5,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Future<void> _checkEnglishHubAdminBlock() async {
@@ -1014,9 +1301,19 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                     ),
                   ),
                 ),
+                // Ambient Glowing Flame & Ember System
+                Positioned.fill(
+                  child: PocketAmbientFlameBackground(
+                    isEnglishHub: widget.groupName == 'English Hub',
+                    showTopFlameGlow: true,
+                    emberDensity: widget.groupName == 'English Hub' ? 0.95 : 0.65,
+                  ),
+                ),
                 Column(
                   children: [
-                  if (!widget.groupId.startsWith('p:'))
+                  if (widget.groupName == 'English Hub')
+                    _buildEnglishHubHeaderRibbon()
+                  else if (!widget.groupId.startsWith('p:'))
                     Container(
                       width: double.infinity,
                       decoration: BoxDecoration(

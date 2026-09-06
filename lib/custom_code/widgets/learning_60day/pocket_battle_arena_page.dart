@@ -195,6 +195,10 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
   // Jigsaw game state
   List<String> _jigsawSelected = [];
 
+  // Gate interactive states
+  List<String> _gateScrambleInput = [];
+  List<String> _gateJigsawSelected = [];
+
   @override
   void initState() {
     super.initState();
@@ -301,6 +305,11 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
   }
 
   void _advanceToNextShieldQuestion({bool penalizeHp = false}) {
+    setState(() {
+      _gateScrambleInput = [];
+      _gateJigsawSelected = [];
+    });
+
     if (_defenderActiveGates.isEmpty) {
       setState(() {
         _qIndex++;
@@ -370,6 +379,8 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
       _currentGateIndex = 0;
       _gateQuestionIndex = 0;
       _jigsawSelected = [];
+      _gateScrambleInput = [];
+      _gateJigsawSelected = [];
       _isGameOver = false;
       _isBombExploding = false;
     });
@@ -1125,58 +1136,399 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
           ),
           const SizedBox(height: 12),
 
-          // 🔠 Options List
+          // 🎮 Interactive Gameplay by Defense Game Format
           Expanded(
-            child: ListView.builder(
-              itemCount: q.options.length,
-              itemBuilder: (ctx, i) {
-                final isCorrect = i == q.correctIndex;
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF1E293B),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                      side: const BorderSide(color: Colors.white24),
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                    ),
-                    onPressed: () {
-                      if (isCorrect) {
-                        _applyDamage(25, isCrit: _comboStreak >= 2);
-                        _advanceToNextShieldQuestion();
-                      } else {
-                        _onIncorrect();
-                        setState(() {
-                          _qSecondsLeft = math.max(1, _qSecondsLeft - 5);
-                        });
-                      }
-                    },
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 26,
-                          height: 26,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: Colors.white12,
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            String.fromCharCode(65 + i),
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
-                          ),
+            child: Builder(
+              builder: (context) {
+                // 1. 🔠 WORD SCRAMBLE INTERACTIVE RUNES
+                if (q.gameFormat == 'word_scramble') {
+                  final targetWord = (q.options.isNotEmpty ? q.options[0] : 'ENGLISH').toUpperCase();
+                  final scrambled = targetWord.split('')..shuffle(math.Random(q.id.hashCode));
+
+                  return Column(
+                    children: [
+                      // Letter Slot Tray
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1E293B),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.5)),
                         ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            q.options[i],
-                            style: GoogleFonts.outfit(fontSize: 12.5, fontWeight: FontWeight.w600),
-                          ),
+                        child: Column(
+                          children: [
+                            Text(
+                              'UNSCRAMBLE THE RUNES (${_gateScrambleInput.length}/${targetWord.length})',
+                              style: GoogleFonts.outfit(color: const Color(0xFF38BDF8), fontSize: 10.5, fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 8),
+                            Wrap(
+                              spacing: 6,
+                              runSpacing: 6,
+                              alignment: WrapAlignment.center,
+                              children: List.generate(targetWord.length, (idx) {
+                                final hasLetter = idx < _gateScrambleInput.length;
+                                return Container(
+                                  width: 32,
+                                  height: 36,
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    color: hasLetter ? const Color(0xFF0284C7) : Colors.black26,
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(color: hasLetter ? Colors.cyanAccent : Colors.white24),
+                                  ),
+                                  child: Text(
+                                    hasLetter ? _gateScrambleInput[idx] : '_',
+                                    style: GoogleFonts.outfit(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                );
+                              }),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                  ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Scrambled Letter Bank
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        alignment: WrapAlignment.center,
+                        children: List.generate(scrambled.length, (i) {
+                          final letter = scrambled[i];
+                          final countInInput = _gateScrambleInput.where((l) => l == letter).length;
+                          final countInScrambled = scrambled.take(i + 1).where((l) => l == letter).length;
+                          final isUsed = countInInput >= countInScrambled;
+
+                          return ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: isUsed ? const Color(0xFF334155) : const Color(0xFF1E293B),
+                              foregroundColor: isUsed ? Colors.white24 : Colors.white,
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              side: BorderSide(color: isUsed ? Colors.white10 : const Color(0xFF38BDF8)),
+                            ),
+                            onPressed: isUsed
+                                ? null
+                                : () {
+                                    HapticFeedback.selectionClick();
+                                    setState(() {
+                                      _gateScrambleInput.add(letter);
+                                    });
+
+                                    // Check complete
+                                    if (_gateScrambleInput.length == targetWord.length) {
+                                      if (_gateScrambleInput.join('') == targetWord) {
+                                        _applyDamage(30, isCrit: _comboStreak >= 2);
+                                        _advanceToNextShieldQuestion();
+                                      } else {
+                                        _onIncorrect();
+                                        setState(() {
+                                          _qSecondsLeft = math.max(1, _qSecondsLeft - 5);
+                                          _gateScrambleInput = [];
+                                        });
+                                      }
+                                    }
+                                  },
+                            child: Text(letter, style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold)),
+                          );
+                        }),
+                      ),
+                      const Spacer(),
+                      if (_gateScrambleInput.isNotEmpty)
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            TextButton.icon(
+                              icon: const Icon(Icons.backspace_outlined, color: Colors.redAccent, size: 16),
+                              label: const Text('BACKSPACE', style: TextStyle(color: Colors.redAccent, fontSize: 11)),
+                              onPressed: () {
+                                setState(() {
+                                  _gateScrambleInput.removeLast();
+                                });
+                              },
+                            ),
+                            const SizedBox(width: 12),
+                            TextButton.icon(
+                              icon: const Icon(Icons.refresh_rounded, color: Colors.amberAccent, size: 16),
+                              label: const Text('RESET', style: TextStyle(color: Colors.amberAccent, fontSize: 11)),
+                              onPressed: () => setState(() => _gateScrambleInput = []),
+                            ),
+                          ],
+                        ),
+                    ],
+                  );
+                }
+
+                // 2. 🧩 SENTENCE JIGSAW (SYNTAX REASSEMBLY)
+                if (q.gameFormat == 'sentence_jigsaw') {
+                  final words = q.question.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).toList();
+                  final scrambled = List<String>.from(words)..shuffle(math.Random(q.id.hashCode));
+
+                  return Column(
+                    children: [
+                      Container(
+                        width: double.infinity,
+                        constraints: const BoxConstraints(minHeight: 56),
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1E293B),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.5)),
+                        ),
+                        child: _gateJigsawSelected.isEmpty
+                            ? Center(
+                                child: Text(
+                                  'Tap word chips below in correct grammatical order...',
+                                  style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 11),
+                                ),
+                              )
+                            : Wrap(
+                                spacing: 6,
+                                runSpacing: 6,
+                                children: _gateJigsawSelected
+                                    .map((w) => Chip(
+                                          backgroundColor: const Color(0xFF065F46),
+                                          label: Text(w, style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+                                        ))
+                                    .toList(),
+                              ),
+                      ),
+                      const SizedBox(height: 12),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        alignment: WrapAlignment.center,
+                        children: scrambled.map((w) {
+                          final isUsed = _gateJigsawSelected.contains(w);
+                          return ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: isUsed ? const Color(0xFF334155) : const Color(0xFF1E293B),
+                              foregroundColor: isUsed ? Colors.white24 : Colors.white,
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              side: BorderSide(color: isUsed ? Colors.white10 : const Color(0xFF10B981)),
+                            ),
+                            onPressed: isUsed
+                                ? null
+                                : () {
+                                    HapticFeedback.selectionClick();
+                                    setState(() => _gateJigsawSelected.add(w));
+
+                                    if (_gateJigsawSelected.length == words.length) {
+                                      if (_gateJigsawSelected.join(' ') == words.join(' ')) {
+                                        _applyDamage(35, isCrit: true);
+                                        _advanceToNextShieldQuestion();
+                                      } else {
+                                        _onIncorrect();
+                                        setState(() {
+                                          _qSecondsLeft = math.max(1, _qSecondsLeft - 5);
+                                          _gateJigsawSelected = [];
+                                        });
+                                      }
+                                    }
+                                  },
+                            child: Text(w, style: GoogleFonts.outfit(fontSize: 12.5, fontWeight: FontWeight.bold)),
+                          );
+                        }).toList(),
+                      ),
+                      const Spacer(),
+                      if (_gateJigsawSelected.isNotEmpty)
+                        TextButton.icon(
+                          icon: const Icon(Icons.refresh_rounded, color: Colors.amberAccent, size: 16),
+                          label: const Text('RESET SENTENCE', style: TextStyle(color: Colors.amberAccent, fontSize: 11)),
+                          onPressed: () => setState(() => _gateJigsawSelected = []),
+                        ),
+                    ],
+                  );
+                }
+
+                // 3. 💣 SPOT ERROR DEFUSAL
+                if (q.gameFormat == 'spot_error') {
+                  return Column(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF451A03),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: Colors.amber),
+                        ),
+                        child: Row(
+                          children: const [
+                            Text('💣', style: TextStyle(fontSize: 18)),
+                            SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Tap the segment containing the GRAMMATICAL ERROR to defuse!',
+                                style: TextStyle(color: Colors.amber, fontSize: 11, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Expanded(
+                        child: ListView.builder(
+                          itemCount: q.options.length,
+                          itemBuilder: (ctx, i) {
+                            final isCorrect = i == q.correctIndex;
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 8),
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF1E293B),
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  side: BorderSide(color: Colors.amber.withValues(alpha: 0.3)),
+                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                ),
+                                onPressed: () {
+                                  if (isCorrect) {
+                                    _applyDamage(30, isCrit: true);
+                                    _advanceToNextShieldQuestion();
+                                  } else {
+                                    _onIncorrect();
+                                    setState(() {
+                                      _qSecondsLeft = math.max(1, _qSecondsLeft - 5);
+                                    });
+                                  }
+                                },
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                      decoration: BoxDecoration(color: Colors.amber.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(4)),
+                                      child: Text('PART ${i + 1}', style: const TextStyle(color: Colors.amber, fontSize: 10, fontWeight: FontWeight.bold)),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Text(
+                                        q.options[i],
+                                        style: GoogleFonts.outfit(fontSize: 13, fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  );
+                }
+
+                // 4. 👂 AUDIO WHISPER (SPEECH PROMPT)
+                if (q.gameFormat == 'listening_whisper') {
+                  return Column(
+                    children: [
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF6366F1),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        icon: const Icon(Icons.volume_up_rounded, color: Colors.white),
+                        label: Text('REPLAY SPOKEN PROMPT', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 12)),
+                        onPressed: () => _flutterTts.speak(q.question),
+                      ),
+                      const SizedBox(height: 10),
+                      Expanded(
+                        child: ListView.builder(
+                          itemCount: q.options.length,
+                          itemBuilder: (ctx, i) {
+                            final isCorrect = i == q.correctIndex;
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 8),
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF1E293B),
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                  side: const BorderSide(color: Colors.white24),
+                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                ),
+                                onPressed: () {
+                                  if (isCorrect) {
+                                    _applyDamage(25, isCrit: _comboStreak >= 2);
+                                    _advanceToNextShieldQuestion();
+                                  } else {
+                                    _onIncorrect();
+                                    setState(() {
+                                      _qSecondsLeft = math.max(1, _qSecondsLeft - 5);
+                                    });
+                                  }
+                                },
+                                child: Text(q.options[i], style: GoogleFonts.outfit(fontSize: 13, fontWeight: FontWeight.w600)),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  );
+                }
+
+                // 5. 🎯 STANDARD 4-CHOICE MCQ
+                return ListView.builder(
+                  itemCount: q.options.length,
+                  itemBuilder: (ctx, i) {
+                    final isCorrect = i == q.correctIndex;
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF1E293B),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          side: const BorderSide(color: Colors.white24),
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                        ),
+                        onPressed: () {
+                          if (isCorrect) {
+                            _applyDamage(25, isCrit: _comboStreak >= 2);
+                            _advanceToNextShieldQuestion();
+                          } else {
+                            _onIncorrect();
+                            setState(() {
+                              _qSecondsLeft = math.max(1, _qSecondsLeft - 5);
+                            });
+                          }
+                        },
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 26,
+                              height: 26,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: Colors.white12,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                String.fromCharCode(65 + i),
+                                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                q.options[i],
+                                style: GoogleFonts.outfit(fontSize: 12.5, fontWeight: FontWeight.w600),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
                 );
               },
             ),

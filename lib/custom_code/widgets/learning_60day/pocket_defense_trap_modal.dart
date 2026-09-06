@@ -277,6 +277,7 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
       ),
     );
     int selectedCorrect = existing?.correctIndex ?? 0;
+    String selectedGameFormat = existing?.gameFormat ?? DefenseGameFormat.mcq;
     String chosenTrapType = preselectedTrapType ??
         existing?.trapType ??
         (_activeTraps.isNotEmpty ? _activeTraps[_selectedTrapIdx.clamp(0, _activeTraps.length - 1)] : 'vocab_gate');
@@ -290,7 +291,14 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
             final qText = qCtrl.text.trim();
             final ops = opCtrls.map((c) => c.text.trim()).toList();
             setDState(() {
-              liveVerdict = PocketFortressDefenseService.validateQuestion(qText, ops, selectedCorrect);
+              liveVerdict = PocketFortressDefenseService.validateQuestion(
+                qText,
+                ops,
+                selectedCorrect,
+                gameFormat: selectedGameFormat,
+                existingQuestions: _questions,
+                currentQuestionId: existing?.id,
+              );
             });
           }
 
@@ -360,6 +368,57 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
                     ),
                   ],
 
+                  // 🎮 Defense Game Format Selector
+                  const Text('Defense Gameplay Format:', style: TextStyle(color: Colors.white70, fontSize: 11)),
+                  const SizedBox(height: 6),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: DefenseGameFormat.allFormats.map((fmt) {
+                        final isSelected = selectedGameFormat == fmt['id'];
+                        return GestureDetector(
+                          onTap: () {
+                            setDState(() {
+                              selectedGameFormat = fmt['id']!;
+                              if (selectedGameFormat == 'word_scramble') {
+                                selectedCorrect = 0;
+                              }
+                            });
+                            runPresidentCheck();
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.only(right: 6),
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: isSelected ? const Color(0xFF0284C7) : const Color(0xFF1E293B),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color: isSelected ? const Color(0xFF38BDF8) : Colors.white12,
+                                width: 1.2,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(fmt['icon']!, style: const TextStyle(fontSize: 13)),
+                                const SizedBox(width: 5),
+                                Text(
+                                  fmt['title']!,
+                                  style: GoogleFonts.outfit(
+                                    color: isSelected ? Colors.white : Colors.white70,
+                                    fontSize: 11,
+                                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+
                   // Gate Assignment Selector
                   Row(
                     children: [
@@ -387,9 +446,19 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
                   ),
                   const SizedBox(height: 6),
 
-                  // Question Input
-                  const Text('English Defense Question (30s Challenge):',
-                      style: TextStyle(color: Colors.white70, fontSize: 11)),
+                  // Dynamic Question / Challenge Input based on Game Format
+                  Text(
+                    selectedGameFormat == 'word_scramble'
+                        ? 'Vocabulary Clue / Meaning (Attacker unscrambles word):'
+                        : (selectedGameFormat == 'sentence_jigsaw'
+                            ? 'Complete English Sentence (Attacker reassembles jigsaw):'
+                            : (selectedGameFormat == 'spot_error'
+                                ? 'Full Sentence with a Grammatical Error:'
+                                : (selectedGameFormat == 'listening_whisper'
+                                    ? 'Spoken Prompt Sentence (Use "___" for missing word):'
+                                    : 'English Defense Question (30s Challenge):'))),
+                    style: const TextStyle(color: Colors.white70, fontSize: 11),
+                  ),
                   const SizedBox(height: 4),
                   TextField(
                     controller: qCtrl,
@@ -397,7 +466,13 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
                     style: const TextStyle(color: Colors.white, fontSize: 13),
                     onChanged: (_) => runPresidentCheck(),
                     decoration: InputDecoration(
-                      hintText: 'e.g., What is the exact antonym of "Meticulous"?',
+                      hintText: selectedGameFormat == 'word_scramble'
+                          ? 'e.g., A large natural elevation of the earth surface'
+                          : (selectedGameFormat == 'sentence_jigsaw'
+                              ? 'e.g., She always speaks fluent English in presentations'
+                              : (selectedGameFormat == 'spot_error'
+                                  ? 'e.g., Neither of the candidates were qualified for the job'
+                                  : 'e.g., What is the exact antonym of "Meticulous"?')),
                       hintStyle: const TextStyle(color: Colors.white38, fontSize: 12),
                       filled: true,
                       fillColor: const Color(0xFF1E293B),
@@ -407,46 +482,129 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
                   ),
                   const SizedBox(height: 12),
 
-                  // 4 Options
-                  const Text('4 Answer Options (Tap radio to mark correct answer):',
-                      style: TextStyle(color: Colors.white70, fontSize: 11)),
-                  const SizedBox(height: 6),
-                  ...List.generate(4, (i) {
-                    final isCorrect = selectedCorrect == i;
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 6),
+                  // Dynamic Options according to gameFormat
+                  if (selectedGameFormat == 'word_scramble') ...[
+                    const Text('Answer Word (Target word that will be scrambled):',
+                        style: TextStyle(color: Colors.white70, fontSize: 11)),
+                    const SizedBox(height: 4),
+                    TextField(
+                      controller: opCtrls[0],
+                      style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
+                      onChanged: (_) {
+                        selectedCorrect = 0;
+                        runPresidentCheck();
+                      },
+                      decoration: InputDecoration(
+                        hintText: 'e.g., MOUNTAIN',
+                        hintStyle: const TextStyle(color: Colors.white30, fontSize: 12),
+                        filled: true,
+                        fillColor: const Color(0xFF1E293B),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                      ),
+                    ),
+                  ] else if (selectedGameFormat == 'sentence_jigsaw') ...[
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1E293B),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.3)),
+                      ),
                       child: Row(
                         children: [
-                          IconButton(
-                            icon: Icon(
-                              isCorrect ? Icons.radio_button_checked : Icons.radio_button_off,
-                              color: isCorrect ? const Color(0xFF10B981) : Colors.white38,
-                              size: 20,
-                            ),
-                            onPressed: () {
-                              setDState(() => selectedCorrect = i);
-                              runPresidentCheck();
-                            },
-                          ),
+                          const Text('🧩', style: TextStyle(fontSize: 18)),
+                          const SizedBox(width: 8),
                           Expanded(
-                            child: TextField(
-                              controller: opCtrls[i],
-                              style: const TextStyle(color: Colors.white, fontSize: 12),
-                              onChanged: (_) => runPresidentCheck(),
-                              decoration: InputDecoration(
-                                hintText: 'Option ${i + 1}',
-                                hintStyle: const TextStyle(color: Colors.white30, fontSize: 11),
-                                filled: true,
-                                fillColor: const Color(0xFF1E293B),
-                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                              ),
+                            child: Text(
+                              'The words in your sentence above will be automatically shuffled into jigsaw rune tiles for the attacker to reassemble!',
+                              style: TextStyle(color: Colors.greenAccent.shade200, fontSize: 11),
                             ),
                           ),
                         ],
                       ),
-                    );
-                  }),
+                    ),
+                  ] else if (selectedGameFormat == 'spot_error') ...[
+                    const Text('Sentence Segments (Tap radio on the segment with the error):',
+                        style: TextStyle(color: Colors.white70, fontSize: 11)),
+                    const SizedBox(height: 6),
+                    ...List.generate(4, (i) {
+                      final isCorrect = selectedCorrect == i;
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 6),
+                        child: Row(
+                          children: [
+                            IconButton(
+                              icon: Icon(
+                                isCorrect ? Icons.error_outline_rounded : Icons.radio_button_off,
+                                color: isCorrect ? Colors.redAccent : Colors.white38,
+                                size: 20,
+                              ),
+                              onPressed: () {
+                                setDState(() => selectedCorrect = i);
+                                runPresidentCheck();
+                              },
+                            ),
+                            Expanded(
+                              child: TextField(
+                                controller: opCtrls[i],
+                                style: const TextStyle(color: Colors.white, fontSize: 12),
+                                onChanged: (_) => runPresidentCheck(),
+                                decoration: InputDecoration(
+                                  hintText: 'Segment ${i + 1} ${isCorrect ? '(Contains Error 💣)' : ''}',
+                                  hintStyle: const TextStyle(color: Colors.white30, fontSize: 11),
+                                  filled: true,
+                                  fillColor: const Color(0xFF1E293B),
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
+                  ] else ...[
+                    const Text('4 Answer Options (Tap radio to mark correct answer):',
+                        style: TextStyle(color: Colors.white70, fontSize: 11)),
+                    const SizedBox(height: 6),
+                    ...List.generate(4, (i) {
+                      final isCorrect = selectedCorrect == i;
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 6),
+                        child: Row(
+                          children: [
+                            IconButton(
+                              icon: Icon(
+                                isCorrect ? Icons.radio_button_checked : Icons.radio_button_off,
+                                color: isCorrect ? const Color(0xFF10B981) : Colors.white38,
+                                size: 20,
+                              ),
+                              onPressed: () {
+                                setDState(() => selectedCorrect = i);
+                                runPresidentCheck();
+                              },
+                            ),
+                            Expanded(
+                              child: TextField(
+                                controller: opCtrls[i],
+                                style: const TextStyle(color: Colors.white, fontSize: 12),
+                                onChanged: (_) => runPresidentCheck(),
+                                decoration: InputDecoration(
+                                  hintText: 'Option ${i + 1}',
+                                  hintStyle: const TextStyle(color: Colors.white30, fontSize: 11),
+                                  filled: true,
+                                  fillColor: const Color(0xFF1E293B),
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
+                  ],
                   const SizedBox(height: 6),
 
                   // Explanation
@@ -481,7 +639,14 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
                 onPressed: () async {
                   final qText = qCtrl.text.trim();
                   final ops = opCtrls.map((c) => c.text.trim()).toList();
-                  final verdict = PocketFortressDefenseService.validateQuestion(qText, ops, selectedCorrect);
+                  final verdict = PocketFortressDefenseService.validateQuestion(
+                    qText,
+                    ops,
+                    selectedCorrect,
+                    gameFormat: selectedGameFormat,
+                    existingQuestions: _questions,
+                    currentQuestionId: existing?.id,
+                  );
 
                   if (verdict.isBanThreat) {
                     HapticFeedback.vibrate();
@@ -489,6 +654,7 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
                       SnackBar(
                         content: Text('🚨 PRESIDENT REJECTED: ${verdict.feedback}', style: GoogleFonts.outfit()),
                         backgroundColor: Colors.redAccent,
+                        duration: const Duration(seconds: 4),
                       ),
                     );
                     return;
@@ -507,6 +673,7 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
                     explanation: expCtrl.text.trim(),
                     category: tmpl.category,
                     trapType: chosenTrapType,
+                    gameFormat: selectedGameFormat,
                     isPresidentApproved: true,
                   );
 
@@ -1434,6 +1601,23 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
                                   style: GoogleFonts.outfit(
                                     color: selectedTemplate.themeColor,
                                     fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF0284C7).withValues(alpha: 0.2),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.4)),
+                                ),
+                                child: Text(
+                                  '${DefenseGameFormat.getIcon(q.gameFormat)} ${DefenseGameFormat.getTitle(q.gameFormat)}',
+                                  style: GoogleFonts.outfit(
+                                    color: const Color(0xFF38BDF8),
+                                    fontSize: 9.5,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
