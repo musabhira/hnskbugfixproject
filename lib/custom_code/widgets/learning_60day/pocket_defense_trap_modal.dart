@@ -82,7 +82,7 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
               Icon(Icons.gavel_rounded, color: Colors.white),
               SizedBox(width: 8),
               Expanded(
-                child: Text('🚫 നിങ്ങളുടെ വീട് അഡ്മിൻ ബാൻ ചെയ്തിരിക്കുന്നു! ചോദ്യങ്ങൾ മാറ്റാൻ കഴിയില്ല.'),
+                child: Text('🚫 Your house has been banned by Admin! Defense questions cannot be modified.'),
               ),
             ],
           ),
@@ -201,7 +201,7 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
                           items: kDefenseTrapTemplates.map((tmpl) {
                             return DropdownMenuItem(
                               value: tmpl.id,
-                              child: Text('${tmpl.icon} ${tmpl.title} (${tmpl.titleMalayalam})'),
+                              child: Text('${tmpl.icon} ${tmpl.title}'),
                             );
                           }).toList(),
                           onChanged: (val) {
@@ -401,7 +401,7 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
                   leading: Text(tmpl.icon, style: const TextStyle(fontSize: 24)),
                   title: Text(tmpl.title, style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold)),
                   subtitle: Text(
-                    '${tmpl.titleMalayalam} • ${tmpl.description}',
+                    tmpl.description,
                     style: const TextStyle(color: Colors.white60, fontSize: 11),
                   ),
                   trailing: isCurrentlyEquipped
@@ -599,7 +599,7 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
                       ),
                       const SizedBox(height: 2),
                       const Text(
-                        'ഫേക്ക് അല്ലെങ്കിൽ തെറ്റായ ചോദ്യങ്ങൾ റിപ്പോർട്ട് ചെയ്യപ്പെട്ടതിനാൽ നിങ്ങളുടെ വീട് അഡ്മിൻ ബാൻ ചെയ്തിരിക്കുന്നു. കോട്ട സംരക്ഷണം താൽക്കാലികമായി റദ്ദാക്കി.',
+                        'Your house has been banned by Admin due to reports of invalid defense questions. Fortress protection is temporarily suspended.',
                         style: TextStyle(color: Colors.white70, fontSize: 10.5),
                       ),
                     ],
@@ -624,7 +624,7 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'ഫെയർ പ്ലേ: യഥാർത്ഥ ചോദ്യങ്ങൾ മാത്രം നൽകുക. എതിരാളികൾക്ക് ഫേക്ക് ചോദ്യങ്ങൾ റിപ്പോർട്ട് ചെയ്യാം; അഡ്മിൻ റിവ്യൂവിൽ വീട് ബാൻ ചെയ്യപ്പെടും!',
+                  'Fair Play: Provide valid English learning questions. Opponents can report invalid questions, and reported houses will be banned upon Admin review!',
                   style: GoogleFonts.outfit(
                     color: Colors.amber.shade200,
                     fontSize: 10.5,
@@ -806,7 +806,7 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'GATE ${_selectedTrapIdx + 1}: ${selectedTemplate.title} (${selectedTemplate.titleMalayalam})',
+                      'GATE ${_selectedTrapIdx + 1}: ${selectedTemplate.title}',
                       style: GoogleFonts.outfit(
                         color: Colors.white,
                         fontSize: 12,

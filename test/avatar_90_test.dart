@@ -7,6 +7,7 @@ import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_painter.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/main_profile_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortress_defense_service.dart';
 
 void main() {
   test('All 90 days have unique animal species and valid configs', () {
@@ -70,6 +71,15 @@ void main() {
       painter.paint(canvas, const Size(400, 200));
       final picture = recorder.endRecording();
       expect(picture, isNotNull);
+    }
+  });
+
+  test('Fortress defense trap templates contain 100% English and zero Malayalam', () {
+    final malayalamRegex = RegExp(r'[\u0D00-\u0D7F]');
+    for (final trap in kDefenseTrapTemplates) {
+      expect(malayalamRegex.hasMatch(trap.title), isFalse, reason: 'Trap title must be English: ${trap.title}');
+      expect(malayalamRegex.hasMatch(trap.titleMalayalam), isFalse, reason: 'Trap descriptor must be English: ${trap.titleMalayalam}');
+      expect(malayalamRegex.hasMatch(trap.description), isFalse, reason: 'Trap description must be English: ${trap.description}');
     }
   });
 }

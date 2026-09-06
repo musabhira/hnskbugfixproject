@@ -1336,7 +1336,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
             ),
             const SizedBox(height: 10),
             Text(
-              'ഈ ടാർഗറ്റ് പൂർത്തിയാക്കുമ്പോൾ നിങ്ങളുടെ വീടിന്റെ ഘടനയും ലേണിങ് അവതാറും വളരുകയും കൂടുതൽ ഡിഫൻസ് ട്രാപ്പുകൾ അൺലോക്ക് ആവുകയും ചെയ്യും.',
+              'Completing this daily target upgrades your house architecture, evolves your learning avatar, and unlocks advanced fortress defense traps.',
               style: GoogleFonts.inter(color: Colors.white60, fontSize: 11),
             ),
           ],

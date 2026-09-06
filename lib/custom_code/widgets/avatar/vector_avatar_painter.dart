@@ -146,18 +146,12 @@ class VectorAvatarPainter extends CustomPainter {
   }
 
   // ==========================================
-  // ✨ 1. MODERN 2D VECTOR
+  // ✨ 1. MODERN 2D VECTOR & REALISTIC 3D SHADED ANIMAL CHARACTERS
   // ==========================================
   void _paintVectorAvatar(Canvas canvas, Size size) {
-    // 🌟 1-of-1 Full Animal Characters across the 3 Iconic Eras
-    if (config.species == 'cyber_cat') {
-      _paintCatCharacter(canvas, size);
-      return;
-    } else if (config.species == 'bored_ape') {
-      _paintApeCharacter(canvas, size);
-      return;
-    } else if (config.species == 'cosmic_dragon') {
-      _paintCartoonDragonSideView(canvas, size);
+    // 🐾 1-of-1 Genuine Realistic Animal Characters across all 90 Species
+    if (config.species.isNotEmpty && config.species != 'human') {
+      _paintRealisticAnimalCharacter(canvas, size);
       return;
     }
 
@@ -1959,6 +1953,742 @@ class VectorAvatarPainter extends CustomPainter {
 
     // 7. Accessories / Crown for higher tiers
     _paintAccessories(canvas, size, null);
+  }
+
+  // ==========================================
+  // 🦁 GENUINE REALISTIC ANIMAL CHARACTER DISPATCHER
+  // ==========================================
+  void _paintRealisticAnimalCharacter(Canvas canvas, Size size) {
+    final species = config.species.toLowerCase();
+
+    // 1. Canine & Lupine Archetype
+    const canineSpecies = {
+      'cyber_fox', 'shadow_wolf', 'fennec_fox', 'mecha_wolf', 'kitsune_emperor',
+      'cerberus_hound', 'celestial_hound', 'spotted_hyena', 'red_fox', 'arctic_fox',
+      'coyote_wanderer', 'timber_wolf', 'golden_jackal', 'dhole_hunter', 'maned_wolf',
+    };
+
+    // 2. Feline & Big Cat Predators
+    const felineSpecies = {
+      'cyber_cat', 'royal_tiger', 'golden_lion', 'shadow_leopard', 'golden_cheetah',
+      'golden_jaguar', 'black_panther', 'snow_leopard', 'solar_lion', 'sabertooth_tiger',
+      'caracal_monarch', 'lynx_stalker', 'cougar_phantom', 'ocelot_prince', 'clouded_leopard',
+    };
+
+    // 3. Avian & Winged Raptors / Sky Mythics
+    const avianSpecies = {
+      'majestic_eagle', 'solar_phoenix', 'wisdom_owl', 'pegasus_stallion', 'royal_peacock',
+      'peregrine_falcon', 'emperor_penguin', 'rainforest_toucan', 'crimson_flamingo',
+      'golden_griffin', 'sky_thunderbird', 'thunder_roc', 'celestial_phoenix', 'harpy_eagle',
+      'barn_owl', 'raven_sovereign', 'osprey_diver', 'albatross_glider', 'kingfisher_dart',
+    };
+
+    // 4. Draconian & Mythic Reptilian
+    const dragonReptileSpecies = {
+      'cosmic_dragon', 'chrono_dragon', 'cosmic_dragon_sovereign', 'cosmic_hydra',
+      'obsidian_basilisk', 'cyber_chimera', 'imperial_cobra', 'mystic_croc', 'tree_viper',
+      'komodo_titan', 'volcanic_salamander', 'chameleon_king', 'horned_lizard', 'cyber_chameleon',
+      'gila_monster', 'emerald_boa', 'thorny_devil', 'shadow_manticore',
+    };
+
+    // 5. Marine & Oceanic Leviathans
+    const marineSpecies = {
+      'abyssal_shark', 'abyssal_kraken', 'electric_ray', 'apex_orca', 'colossal_walrus',
+      'swordfish', 'sea_otter', 'oceanic_narwhal', 'ghost_jellyfish', 'reef_seahorse',
+      'sea_dragon', 'angler_leviathan', 'hammerhead_titan', 'manta_sovereign', 'axolotl_sprite',
+    };
+
+    // 6. Great Horned Beasts & Primates
+    const greatBeastSpecies = {
+      'bored_ape', 'gorilla_king', 'noble_bear', 'polar_bear', 'grizzly_titan',
+      'majestic_stag', 'iron_bull', 'golden_ram', 'woolly_mammoth', 'rhino_juggernaut',
+      'musk_ox', 'silverback_prime', 'bison_colossus', 'moose_emperor', 'hippo_behemoth',
+      'astral_titan', 'cosmic_unicorn',
+    };
+
+    if (canineSpecies.contains(species)) {
+      _paintCanineCharacter(canvas, size);
+    } else if (felineSpecies.contains(species)) {
+      _paintFelineCharacter(canvas, size);
+    } else if (avianSpecies.contains(species)) {
+      _paintAvianCharacter(canvas, size);
+    } else if (dragonReptileSpecies.contains(species) || species.contains('dragon')) {
+      _paintDragonReptileCharacter(canvas, size);
+    } else if (marineSpecies.contains(species)) {
+      _paintMarineCharacter(canvas, size);
+    } else if (greatBeastSpecies.contains(species)) {
+      _paintGreatBeastCharacter(canvas, size);
+    } else {
+      _paintWoodlandCharacter(canvas, size);
+    }
+  }
+
+  // -------------------------------------------------------------
+  // 🐺 1. CANINE & LUPINE CHARACTER (Wedge Muzzle, Alert Upright Ears)
+  // -------------------------------------------------------------
+  void _paintCanineCharacter(Canvas canvas, Size size) {
+    final furColor = VectorAvatarConfig.parseHex(config.skinColor, fallback: const Color(0xFFC2410C));
+    final muzzleColor = Color.lerp(furColor, Colors.white, 0.35) ?? const Color(0xFFFDE68A);
+    final outfitColor = VectorAvatarConfig.parseHex(config.outfitColor, fallback: const Color(0xFF0F172A));
+    final eyeColor = VectorAvatarConfig.parseHex(config.eyeColor, fallback: const Color(0xFFF59E0B));
+
+    // 1. Shoulders & Torso with Directional 3D Lighting
+    final bodyPath = Path()
+      ..moveTo(size.width * 0.08, size.height)
+      ..quadraticBezierTo(size.width * 0.16, size.height * 0.72, size.width * 0.34, size.height * 0.70)
+      ..lineTo(size.width * 0.66, size.height * 0.70)
+      ..quadraticBezierTo(size.width * 0.84, size.height * 0.72, size.width * 0.92, size.height)
+      ..close();
+    final bodyShader = LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: [_lighten(outfitColor, 0.12), outfitColor, _darken(outfitColor, 0.20)],
+    ).createShader(Rect.fromLTWH(0, size.height * 0.68, size.width, size.height * 0.32));
+    canvas.drawPath(bodyPath, Paint()..shader = bodyShader);
+
+    // Chest Fur Fluff
+    final chestPath = Path()
+      ..moveTo(size.width * 0.40, size.height * 0.70)
+      ..lineTo(size.width * 0.50, size.height * 0.84)
+      ..lineTo(size.width * 0.60, size.height * 0.70)
+      ..close();
+    canvas.drawPath(chestPath, Paint()..color = muzzleColor.withValues(alpha: 0.9));
+
+    // 2. Alert Pointed Upright Ears with Depth Shadow
+    void drawCanineEar(bool isLeft) {
+      final earPath = Path();
+      final sign = isLeft ? 1.0 : -1.0;
+      final bx = isLeft ? size.width * 0.26 : size.width * 0.74;
+      final tx = isLeft ? size.width * 0.20 : size.width * 0.80;
+      final ix = isLeft ? size.width * 0.38 : size.width * 0.62;
+
+      earPath.moveTo(bx, size.height * 0.42);
+      earPath.lineTo(tx, size.height * 0.12);
+      earPath.lineTo(ix, size.height * 0.30);
+      earPath.close();
+
+      final earShader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [_lighten(furColor, 0.15), furColor, _darken(furColor, 0.25)],
+      ).createShader(Rect.fromLTWH(0, size.height * 0.12, size.width, size.height * 0.30));
+      canvas.drawPath(earPath, Paint()..shader = earShader);
+
+      // Inner Ear Depth
+      final innerEar = Path()
+        ..moveTo(bx + sign * 4, size.height * 0.40)
+        ..lineTo(tx + sign * 2, size.height * 0.17)
+        ..lineTo(ix - sign * 4, size.height * 0.30)
+        ..close();
+      canvas.drawPath(innerEar, Paint()..color = _darken(furColor, 0.35));
+    }
+    drawCanineEar(true);
+    drawCanineEar(false);
+
+    // 3. Wedge Skull with Volumetric 3D Shading
+    final skullPath = Path()
+      ..moveTo(size.width * 0.22, size.height * 0.44)
+      ..quadraticBezierTo(size.width * 0.14, size.height * 0.58, size.width * 0.30, size.height * 0.68)
+      ..quadraticBezierTo(size.width * 0.50, size.height * 0.78, size.width * 0.70, size.height * 0.68)
+      ..quadraticBezierTo(size.width * 0.86, size.height * 0.58, size.width * 0.78, size.height * 0.44)
+      ..quadraticBezierTo(size.width * 0.50, size.height * 0.26, size.width * 0.22, size.height * 0.44)
+      ..close();
+
+    final skullRect = Rect.fromCenter(center: Offset(size.width * 0.5, size.height * 0.52), width: size.width * 0.68, height: size.height * 0.52);
+    final skullShader = RadialGradient(
+      center: const Alignment(-0.25, -0.35),
+      radius: 0.85,
+      colors: [_lighten(furColor, 0.25), furColor, _darken(furColor, 0.30)],
+      stops: const [0.0, 0.55, 1.0],
+    ).createShader(skullRect);
+    canvas.drawPath(skullPath, Paint()..shader = skullShader);
+
+    // 4. Protruding 3D Snout & Muzzle
+    final snoutRect = Rect.fromCenter(center: Offset(size.width * 0.5, size.height * 0.62), width: size.width * 0.42, height: size.height * 0.26);
+    final snoutShader = LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: [_lighten(muzzleColor, 0.15), muzzleColor, _darken(muzzleColor, 0.22)],
+    ).createShader(snoutRect);
+    canvas.drawOval(snoutRect, Paint()..shader = snoutShader);
+
+    // Leather Nose Pad with Nostrils
+    final nosePath = Path()
+      ..moveTo(size.width * 0.42, size.height * 0.55)
+      ..lineTo(size.width * 0.58, size.height * 0.55)
+      ..quadraticBezierTo(size.width * 0.50, size.height * 0.62, size.width * 0.42, size.height * 0.55)
+      ..close();
+    canvas.drawPath(nosePath, Paint()..color = const Color(0xFF18181B));
+    canvas.drawCircle(Offset(size.width * 0.46, size.height * 0.58), 1.8, Paint()..color = Colors.black);
+    canvas.drawCircle(Offset(size.width * 0.54, size.height * 0.58), 1.8, Paint()..color = Colors.black);
+
+    // Split Smile
+    final mouthPaint = Paint()..color = const Color(0xFF1E1E24)..style = PaintingStyle.stroke..strokeWidth = 2.0..strokeCap = StrokeCap.round;
+    canvas.drawLine(Offset(size.width * 0.50, size.height * 0.59), Offset(size.width * 0.50, size.height * 0.65), mouthPaint);
+    final smileLeft = Path()..moveTo(size.width * 0.50, size.height * 0.65)..quadraticBezierTo(size.width * 0.44, size.height * 0.68, size.width * 0.38, size.height * 0.65);
+    final smileRight = Path()..moveTo(size.width * 0.50, size.height * 0.65)..quadraticBezierTo(size.width * 0.56, size.height * 0.68, size.width * 0.62, size.height * 0.65);
+    canvas.drawPath(smileLeft, mouthPaint);
+    canvas.drawPath(smileRight, mouthPaint);
+
+    // 5. Piercing Almond Predator Eyes with Dual Specular Highlights
+    void drawCanineEye(double cx, double cy, bool isLeft) {
+      final eyeRect = Rect.fromCenter(center: Offset(cx, cy), width: size.width * 0.14, height: size.height * 0.10);
+      canvas.drawOval(eyeRect, Paint()..color = Colors.white);
+
+      final irisRect = Rect.fromCenter(center: Offset(cx, cy), width: size.width * 0.09, height: size.height * 0.09);
+      final irisShader = RadialGradient(
+        colors: [_lighten(eyeColor, 0.35), eyeColor, _darken(eyeColor, 0.45)],
+      ).createShader(irisRect);
+      canvas.drawOval(irisRect, Paint()..shader = irisShader);
+
+      // Pupil
+      canvas.drawCircle(Offset(cx, cy), size.width * 0.026, Paint()..color = Colors.black);
+
+      // Dual Specular Glass Catchlights
+      canvas.drawCircle(Offset(cx - 3, cy - 2.5), 2.6, Paint()..color = Colors.white);
+      canvas.drawCircle(Offset(cx + 2, cy + 2.0), 1.2, Paint()..color = Colors.white.withValues(alpha: 0.85));
+
+      // Predator Eyeliner
+      final linerPaint = Paint()..color = const Color(0xFF09090B)..style = PaintingStyle.stroke..strokeWidth = 2.2;
+      canvas.drawArc(eyeRect.inflate(0.5), isLeft ? math.pi * 1.1 : math.pi * 1.1, math.pi * 0.8, false, linerPaint);
+    }
+    drawCanineEye(size.width * 0.35, size.height * 0.47, true);
+    drawCanineEye(size.width * 0.65, size.height * 0.47, false);
+
+    // 6. Species Traits & Accessories
+    _paintSpeciesFeatures(canvas, size, null);
+    _paintAccessories(canvas, size, null);
+  }
+
+  // -------------------------------------------------------------
+  // 🐆 2. FELINE CHARACTER (Rounded Cheekbones, Whisker Muzzle Pads)
+  // -------------------------------------------------------------
+  void _paintFelineCharacter(Canvas canvas, Size size) {
+    final furColor = VectorAvatarConfig.parseHex(config.skinColor, fallback: const Color(0xFFF59E0B));
+    final muzzleColor = Color.lerp(furColor, Colors.white, 0.45) ?? const Color(0xFFFEF3C7);
+    final outfitColor = VectorAvatarConfig.parseHex(config.outfitColor, fallback: const Color(0xFF1E293B));
+    final eyeColor = VectorAvatarConfig.parseHex(config.eyeColor, fallback: const Color(0xFF10B981));
+    final isLion = config.species.contains('lion');
+    final isTiger = config.species.contains('tiger');
+
+    // 1. Royal Mane (if Lion) Behind Head
+    if (isLion) {
+      final maneRect = Rect.fromCenter(center: Offset(size.width * 0.5, size.height * 0.48), width: size.width * 0.88, height: size.height * 0.84);
+      final maneShader = RadialGradient(
+        colors: [const Color(0xFFD97706), const Color(0xFF92400E), const Color(0xFF451A03)],
+      ).createShader(maneRect);
+      canvas.drawOval(maneRect, Paint()..shader = maneShader);
+    }
+
+    // 2. Muscular Torso & Outfit
+    final bodyPath = Path()
+      ..moveTo(size.width * 0.10, size.height)
+      ..quadraticBezierTo(size.width * 0.18, size.height * 0.70, size.width * 0.35, size.height * 0.68)
+      ..lineTo(size.width * 0.65, size.height * 0.68)
+      ..quadraticBezierTo(size.width * 0.82, size.height * 0.70, size.width * 0.90, size.height)
+      ..close();
+    canvas.drawPath(bodyPath, Paint()..color = outfitColor);
+
+    // 3. Rounded Feline Ears with Inner Depth
+    void drawCatEar(double cx, double cy, bool isLeft) {
+      final earRect = Rect.fromCenter(center: Offset(cx, cy), width: size.width * 0.20, height: size.height * 0.22);
+      final earShader = RadialGradient(
+        colors: [_lighten(furColor, 0.2), furColor, _darken(furColor, 0.25)],
+      ).createShader(earRect);
+      canvas.drawOval(earRect, Paint()..shader = earShader);
+      canvas.drawOval(Rect.fromCenter(center: Offset(cx, cy), width: size.width * 0.11, height: size.height * 0.13), Paint()..color = const Color(0xFFF472B6).withValues(alpha: 0.6));
+    }
+    drawCatEar(size.width * 0.24, size.height * 0.32, true);
+    drawCatEar(size.width * 0.76, size.height * 0.32, false);
+
+    // 4. Broad Predatory Skull with 3D Radial Shading
+    final skullRect = Rect.fromCenter(center: Offset(size.width * 0.5, size.height * 0.50), width: size.width * 0.66, height: size.height * 0.52);
+    final skullShader = RadialGradient(
+      center: const Alignment(-0.25, -0.35),
+      radius: 0.85,
+      colors: [_lighten(furColor, 0.28), furColor, _darken(furColor, 0.28)],
+      stops: const [0.0, 0.55, 1.0],
+    ).createShader(skullRect);
+    canvas.drawOval(skullRect, Paint()..shader = skullShader);
+
+    // Tiger Stripes if applicable
+    if (isTiger) {
+      final stripePaint = Paint()..color = const Color(0xFF18181B)..style = PaintingStyle.stroke..strokeWidth = 3.2..strokeCap = StrokeCap.round;
+      canvas.drawLine(Offset(size.width * 0.22, size.height * 0.44), Offset(size.width * 0.30, size.height * 0.46), stripePaint);
+      canvas.drawLine(Offset(size.width * 0.20, size.height * 0.50), Offset(size.width * 0.28, size.height * 0.52), stripePaint);
+      canvas.drawLine(Offset(size.width * 0.78, size.height * 0.44), Offset(size.width * 0.70, size.height * 0.46), stripePaint);
+      canvas.drawLine(Offset(size.width * 0.80, size.height * 0.50), Offset(size.width * 0.72, size.height * 0.52), stripePaint);
+    }
+
+    // 5. Twin Bulbous Whisker Muzzle Pads
+    final leftPad = Rect.fromCenter(center: Offset(size.width * 0.43, size.height * 0.62), width: size.width * 0.19, height: size.height * 0.16);
+    final rightPad = Rect.fromCenter(center: Offset(size.width * 0.57, size.height * 0.62), width: size.width * 0.19, height: size.height * 0.16);
+    canvas.drawOval(leftPad, Paint()..color = muzzleColor);
+    canvas.drawOval(rightPad, Paint()..color = muzzleColor);
+
+    // Whisker dots
+    for (int i = 0; i < 3; i++) {
+      canvas.drawCircle(Offset(size.width * (0.39 + i * 0.03), size.height * (0.60 + (i % 2) * 0.03)), 1.5, Paint()..color = const Color(0xFF4B5563));
+      canvas.drawCircle(Offset(size.width * (0.58 + i * 0.03), size.height * (0.60 + (i % 2) * 0.03)), 1.5, Paint()..color = const Color(0xFF4B5563));
+    }
+
+    // Triangular Pink/Dark Nose Pad
+    final nosePath = Path()
+      ..moveTo(size.width * 0.44, size.height * 0.56)
+      ..lineTo(size.width * 0.56, size.height * 0.56)
+      ..lineTo(size.width * 0.50, size.height * 0.61)
+      ..close();
+    canvas.drawPath(nosePath, Paint()..color = const Color(0xFFFB7185));
+
+    // Whiskers
+    final whiskerPaint = Paint()..color = const Color(0xFF374151)..strokeWidth = 1.4..strokeCap = StrokeCap.round;
+    for (int i = 0; i < 3; i++) {
+      final yOff = (i - 1) * 4.0;
+      canvas.drawLine(Offset(size.width * 0.35, size.height * 0.62 + yOff), Offset(size.width * 0.12, size.height * 0.60 + yOff * 2), whiskerPaint);
+      canvas.drawLine(Offset(size.width * 0.65, size.height * 0.62 + yOff), Offset(size.width * 0.88, size.height * 0.60 + yOff * 2), whiskerPaint);
+    }
+
+    // 6. Sleek Slit-Pupil Feline Eyes
+    void drawCatEye(double cx, double cy) {
+      final eyeRect = Rect.fromCenter(center: Offset(cx, cy), width: size.width * 0.14, height: size.height * 0.12);
+      canvas.drawOval(eyeRect, Paint()..color = Colors.white);
+
+      final irisRect = Rect.fromCenter(center: Offset(cx, cy), width: size.width * 0.10, height: size.height * 0.11);
+      canvas.drawOval(irisRect, Paint()..shader = RadialGradient(colors: [_lighten(eyeColor, 0.3), eyeColor, _darken(eyeColor, 0.4)]).createShader(irisRect));
+
+      // Slit Pupil
+      canvas.drawOval(Rect.fromCenter(center: Offset(cx, cy), width: size.width * 0.032, height: size.height * 0.09), Paint()..color = Colors.black);
+
+      // Specular Glass Dots
+      canvas.drawCircle(Offset(cx - 2.5, cy - 2.5), 2.5, Paint()..color = Colors.white);
+      canvas.drawCircle(Offset(cx + 2.0, cy + 2.0), 1.2, Paint()..color = Colors.white.withValues(alpha: 0.85));
+    }
+    drawCatEye(size.width * 0.36, size.height * 0.46);
+    drawCatEye(size.width * 0.64, size.height * 0.46);
+
+    _paintSpeciesFeatures(canvas, size, null);
+    _paintAccessories(canvas, size, null);
+  }
+
+  // -------------------------------------------------------------
+  // 🦅 3. AVIAN & RAPTOR CHARACTER (Streamlined Skull, Curved Beak, Crest)
+  // -------------------------------------------------------------
+  void _paintAvianCharacter(Canvas canvas, Size size) {
+    final featherColor = VectorAvatarConfig.parseHex(config.skinColor, fallback: const Color(0xFF0284C7));
+    final beakColor = VectorAvatarConfig.parseHex(config.hairColor, fallback: const Color(0xFFF59E0B));
+    final outfitColor = VectorAvatarConfig.parseHex(config.outfitColor, fallback: const Color(0xFF0F172A));
+    final eyeColor = VectorAvatarConfig.parseHex(config.eyeColor, fallback: const Color(0xFFFFD700));
+
+    // 1. Wing Plumage Mantle
+    final bodyPath = Path()
+      ..moveTo(size.width * 0.06, size.height)
+      ..quadraticBezierTo(size.width * 0.18, size.height * 0.68, size.width * 0.36, size.height * 0.68)
+      ..lineTo(size.width * 0.64, size.height * 0.68)
+      ..quadraticBezierTo(size.width * 0.82, size.height * 0.68, size.width * 0.94, size.height)
+      ..close();
+    canvas.drawPath(bodyPath, Paint()..color = outfitColor);
+
+    // Layered Wing Feathers on Shoulders
+    final featherLinePaint = Paint()..color = _lighten(featherColor, 0.2)..style = PaintingStyle.stroke..strokeWidth = 2.0..strokeCap = StrokeCap.round;
+    for (int i = 0; i < 4; i++) {
+      canvas.drawLine(Offset(size.width * (0.12 + i * 0.06), size.height * 0.74), Offset(size.width * (0.16 + i * 0.06), size.height * 0.86), featherLinePaint);
+      canvas.drawLine(Offset(size.width * (0.88 - i * 0.06), size.height * 0.74), Offset(size.width * (0.84 - i * 0.06), size.height * 0.86), featherLinePaint);
+    }
+
+    // 2. Majestic Crown Plumes / Feathery Crest
+    final crestPath = Path()
+      ..moveTo(size.width * 0.44, size.height * 0.32)
+      ..quadraticBezierTo(size.width * 0.36, size.height * 0.12, size.width * 0.40, size.height * 0.06)
+      ..quadraticBezierTo(size.width * 0.50, size.height * 0.16, size.width * 0.50, size.height * 0.30)
+      ..quadraticBezierTo(size.width * 0.58, size.height * 0.12, size.width * 0.62, size.height * 0.08)
+      ..quadraticBezierTo(size.width * 0.56, size.height * 0.24, size.width * 0.56, size.height * 0.32)
+      ..close();
+    final crestShader = LinearGradient(
+      begin: Alignment.bottomCenter,
+      end: Alignment.topCenter,
+      colors: [featherColor, _lighten(featherColor, 0.35), const Color(0xFFFFD700)],
+    ).createShader(Rect.fromLTWH(0, size.height * 0.06, size.width, size.height * 0.26));
+    canvas.drawPath(crestPath, Paint()..shader = crestShader);
+
+    // 3. Aerodynamic Raptor Skull
+    final headRect = Rect.fromCenter(center: Offset(size.width * 0.5, size.height * 0.48), width: size.width * 0.58, height: size.height * 0.50);
+    final headShader = RadialGradient(
+      center: const Alignment(-0.25, -0.35),
+      radius: 0.85,
+      colors: [_lighten(featherColor, 0.28), featherColor, _darken(featherColor, 0.30)],
+    ).createShader(headRect);
+    canvas.drawOval(headRect, Paint()..shader = headShader);
+
+    // 4. Sharp Curved Raptor Beak with 3D Shading
+    final beakPath = Path()
+      ..moveTo(size.width * 0.38, size.height * 0.52)
+      ..lineTo(size.width * 0.62, size.height * 0.52)
+      ..lineTo(size.width * 0.56, size.height * 0.65)
+      ..quadraticBezierTo(size.width * 0.50, size.height * 0.76, size.width * 0.48, size.height * 0.76)
+      ..quadraticBezierTo(size.width * 0.44, size.height * 0.65, size.width * 0.38, size.height * 0.52)
+      ..close();
+
+    final beakShader = LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: [_lighten(beakColor, 0.3), beakColor, _darken(beakColor, 0.25)],
+    ).createShader(Rect.fromLTWH(size.width * 0.38, size.height * 0.52, size.width * 0.24, size.height * 0.24));
+    canvas.drawPath(beakPath, Paint()..shader = beakShader);
+
+    // Beak centerline and nostrils
+    canvas.drawLine(Offset(size.width * 0.49, size.height * 0.52), Offset(size.width * 0.49, size.height * 0.74), Paint()..color = _darken(beakColor, 0.35)..strokeWidth = 1.4);
+    canvas.drawOval(Rect.fromCenter(center: Offset(size.width * 0.44, size.height * 0.55), width: 4, height: 2), Paint()..color = const Color(0xFF1E293B));
+    canvas.drawOval(Rect.fromCenter(center: Offset(size.width * 0.56, size.height * 0.55), width: 4, height: 2), Paint()..color = const Color(0xFF1E293B));
+
+    // 5. Piercing Forward-Facing Raptor Eyes
+    void drawAvianEye(double cx, double cy) {
+      final eyeRect = Rect.fromCenter(center: Offset(cx, cy), width: size.width * 0.15, height: size.height * 0.12);
+      canvas.drawOval(eyeRect, Paint()..color = const Color(0xFF0F172A)); // Dark mask
+      canvas.drawOval(Rect.fromCenter(center: Offset(cx, cy), width: size.width * 0.12, height: size.height * 0.09), Paint()..color = Colors.white);
+
+      final irisRect = Rect.fromCenter(center: Offset(cx, cy), width: size.width * 0.08, height: size.height * 0.08);
+      canvas.drawOval(irisRect, Paint()..shader = RadialGradient(colors: [_lighten(eyeColor, 0.4), eyeColor, _darken(eyeColor, 0.3)]).createShader(irisRect));
+      canvas.drawCircle(Offset(cx, cy), size.width * 0.024, Paint()..color = Colors.black);
+      canvas.drawCircle(Offset(cx - 2.5, cy - 2), 2.4, Paint()..color = Colors.white);
+    }
+    drawAvianEye(size.width * 0.32, size.height * 0.45);
+    drawAvianEye(size.width * 0.68, size.height * 0.45);
+
+    _paintSpeciesFeatures(canvas, size, null);
+    _paintAccessories(canvas, size, null);
+  }
+
+  // -------------------------------------------------------------
+  // 🐉 4. DRACONIAN & MYTHIC REPTILIAN (Horns, Scaled Brow, Slit Eyes)
+  // -------------------------------------------------------------
+  void _paintDragonReptileCharacter(Canvas canvas, Size size) {
+    final scaleColor = VectorAvatarConfig.parseHex(config.skinColor, fallback: const Color(0xFF8B5CF6));
+    final hornColor = VectorAvatarConfig.parseHex(config.hairColor, fallback: const Color(0xFFFFD700));
+    final bellyColor = VectorAvatarConfig.parseHex(config.outfitAccentColor, fallback: const Color(0xFF00F0FF));
+    final eyeColor = VectorAvatarConfig.parseHex(config.eyeColor, fallback: const Color(0xFFFF0055));
+
+    // 1. Armored Shoulders with Scale Ridges
+    final bodyPath = Path()
+      ..moveTo(size.width * 0.06, size.height)
+      ..quadraticBezierTo(size.width * 0.16, size.height * 0.70, size.width * 0.35, size.height * 0.68)
+      ..lineTo(size.width * 0.65, size.height * 0.68)
+      ..quadraticBezierTo(size.width * 0.84, size.height * 0.70, size.width * 0.94, size.height)
+      ..close();
+    canvas.drawPath(bodyPath, Paint()..color = _darken(scaleColor, 0.25));
+
+    // Segmented Underbelly Throat Plates
+    for (int i = 0; i < 4; i++) {
+      final y = size.height * (0.68 + i * 0.07);
+      canvas.drawLine(Offset(size.width * 0.40, y), Offset(size.width * 0.60, y), Paint()..color = bellyColor.withValues(alpha: 0.75)..strokeWidth = 3.0..strokeCap = StrokeCap.round);
+    }
+
+    // 2. Swept-Back Curved Horns with Segments
+    void drawDragonHorn(bool isLeft) {
+      final hornPath = Path();
+      final sign = isLeft ? -1.0 : 1.0;
+      final bx = isLeft ? size.width * 0.32 : size.width * 0.68;
+      final tx = isLeft ? size.width * 0.14 : size.width * 0.86;
+
+      hornPath.moveTo(bx, size.height * 0.36);
+      hornPath.quadraticBezierTo(bx + sign * size.width * 0.10, size.height * 0.18, tx, size.height * 0.08);
+      hornPath.quadraticBezierTo(bx, size.height * 0.22, bx + sign * size.width * 0.04, size.height * 0.38);
+      hornPath.close();
+
+      final hornShader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [_lighten(hornColor, 0.3), hornColor, _darken(hornColor, 0.3)],
+      ).createShader(Rect.fromLTWH(0, size.height * 0.08, size.width, size.height * 0.30));
+      canvas.drawPath(hornPath, Paint()..shader = hornShader);
+    }
+    drawDragonHorn(true);
+    drawDragonHorn(false);
+
+    // 3. Sculpted Reptilian Wedge Skull with Brow Ridges
+    final skullPath = Path()
+      ..moveTo(size.width * 0.28, size.height * 0.36)
+      ..lineTo(size.width * 0.72, size.height * 0.36)
+      ..quadraticBezierTo(size.width * 0.78, size.height * 0.52, size.width * 0.64, size.height * 0.70)
+      ..lineTo(size.width * 0.36, size.height * 0.70)
+      ..quadraticBezierTo(size.width * 0.22, size.height * 0.52, size.width * 0.28, size.height * 0.36)
+      ..close();
+
+    final skullRect = Rect.fromCenter(center: Offset(size.width * 0.5, size.height * 0.50), width: size.width * 0.65, height: size.height * 0.48);
+    final skullShader = RadialGradient(
+      center: const Alignment(-0.25, -0.35),
+      radius: 0.85,
+      colors: [_lighten(scaleColor, 0.28), scaleColor, _darken(scaleColor, 0.32)],
+      stops: const [0.0, 0.55, 1.0],
+    ).createShader(skullRect);
+    canvas.drawPath(skullPath, Paint()..shader = skullShader);
+
+    // Armored Brow Ridge
+    final browPath = Path()
+      ..moveTo(size.width * 0.28, size.height * 0.42)
+      ..quadraticBezierTo(size.width * 0.50, size.height * 0.46, size.width * 0.72, size.height * 0.42);
+    canvas.drawPath(browPath, Paint()..color = _lighten(scaleColor, 0.25)..style = PaintingStyle.stroke..strokeWidth = 4.0..strokeCap = StrokeCap.round);
+
+    // Dragon Nostril Slits
+    canvas.drawLine(Offset(size.width * 0.44, size.height * 0.62), Offset(size.width * 0.42, size.height * 0.65), Paint()..color = Colors.black..strokeWidth = 2.4);
+    canvas.drawLine(Offset(size.width * 0.56, size.height * 0.62), Offset(size.width * 0.58, size.height * 0.65), Paint()..color = Colors.black..strokeWidth = 2.4);
+
+    // 4. Glowing Vertical Slit Dragon Eyes
+    void drawDragonEye(double cx, double cy) {
+      final eyeRect = Rect.fromCenter(center: Offset(cx, cy), width: size.width * 0.15, height: size.height * 0.10);
+      canvas.drawOval(eyeRect, Paint()..color = const Color(0xFF0F172A));
+
+      final glowShader = RadialGradient(colors: [_lighten(eyeColor, 0.4), eyeColor]).createShader(eyeRect);
+      canvas.drawOval(eyeRect.deflate(1.5), Paint()..shader = glowShader);
+
+      // Slit Pupil
+      canvas.drawOval(Rect.fromCenter(center: Offset(cx, cy), width: size.width * 0.026, height: size.height * 0.085), Paint()..color = Colors.black);
+      canvas.drawCircle(Offset(cx - 2.5, cy - 2.0), 2.0, Paint()..color = Colors.white);
+    }
+    drawDragonEye(size.width * 0.36, size.height * 0.48);
+    drawDragonEye(size.width * 0.64, size.height * 0.48);
+
+    _paintSpeciesFeatures(canvas, size, null);
+    _paintAccessories(canvas, size, null);
+  }
+
+  // -------------------------------------------------------------
+  // 🌊 5. MARINE & OCEANIC LEVIATHAN (Hydrodynamic Contour, Dorsal/Gills)
+  // -------------------------------------------------------------
+  void _paintMarineCharacter(Canvas canvas, Size size) {
+    final skinColor = VectorAvatarConfig.parseHex(config.skinColor, fallback: const Color(0xFF0284C7));
+    final bellyColor = Color.lerp(skinColor, Colors.white, 0.65) ?? const Color(0xFFE0F2FE);
+    final accentColor = VectorAvatarConfig.parseHex(config.outfitAccentColor, fallback: const Color(0xFF38BDF8));
+    final isOrca = config.species.contains('orca');
+    final isAxolotl = config.species.contains('axolotl');
+    final isShark = config.species.contains('shark');
+
+    // 1. Hydrodynamic Aquatic Torso
+    final bodyPath = Path()
+      ..moveTo(size.width * 0.12, size.height)
+      ..quadraticBezierTo(size.width * 0.18, size.height * 0.70, size.width * 0.35, size.height * 0.68)
+      ..lineTo(size.width * 0.65, size.height * 0.68)
+      ..quadraticBezierTo(size.width * 0.82, size.height * 0.70, size.width * 0.88, size.height)
+      ..close();
+    canvas.drawPath(bodyPath, Paint()..color = _darken(skinColor, 0.2));
+
+    // 2. Dorsal Fin or Axolotl Branching Gills
+    if (isAxolotl) {
+      // 6 Feathery External Gills
+      for (int side = -1; side <= 1; side += 2) {
+        final cx = side == -1 ? size.width * 0.18 : size.width * 0.82;
+        for (int g = 0; g < 3; g++) {
+          final gy = size.height * (0.34 + g * 0.10);
+          final stalk = Path()
+            ..moveTo(size.width * (0.5 + side * 0.24), gy)
+            ..quadraticBezierTo(cx, gy - 6, cx + side * 14, gy - 4);
+          canvas.drawPath(stalk, Paint()..color = const Color(0xFFF472B6)..style = PaintingStyle.stroke..strokeWidth = 4.0..strokeCap = StrokeCap.round);
+          canvas.drawCircle(Offset(cx + side * 14, gy - 4), 3.5, Paint()..color = const Color(0xFFFB7185));
+        }
+      }
+    } else if (isShark || isOrca) {
+      // Dorsal Fin on Crown
+      final fin = Path()
+        ..moveTo(size.width * 0.44, size.height * 0.30)
+        ..lineTo(size.width * 0.50, size.height * 0.12)
+        ..lineTo(size.width * 0.58, size.height * 0.32)
+        ..close();
+      canvas.drawPath(fin, Paint()..color = _darken(skinColor, 0.15));
+    }
+
+    // 3. Streamlined Aquatic Head with 3D Shading
+    final headRect = Rect.fromCenter(center: Offset(size.width * 0.5, size.height * 0.50), width: size.width * 0.68, height: size.height * 0.52);
+    final headShader = RadialGradient(
+      center: const Alignment(-0.25, -0.35),
+      radius: 0.85,
+      colors: [_lighten(skinColor, 0.28), skinColor, _darken(skinColor, 0.28)],
+      stops: const [0.0, 0.55, 1.0],
+    ).createShader(headRect);
+    canvas.drawOval(headRect, Paint()..shader = headShader);
+
+    // Counter-Shading Belly / Chin
+    final chinRect = Rect.fromCenter(center: Offset(size.width * 0.5, size.height * 0.64), width: size.width * 0.44, height: size.height * 0.22);
+    canvas.drawOval(chinRect, Paint()..color = bellyColor);
+
+    // Orca Eye Patch if applicable
+    if (isOrca) {
+      canvas.drawOval(Rect.fromCenter(center: Offset(size.width * 0.28, size.height * 0.44), width: size.width * 0.14, height: size.height * 0.07), Paint()..color = Colors.white);
+      canvas.drawOval(Rect.fromCenter(center: Offset(size.width * 0.72, size.height * 0.44), width: size.width * 0.14, height: size.height * 0.07), Paint()..color = Colors.white);
+    }
+
+    // 4. Glossy Deep Aquatic Eyes
+    void drawMarineEye(double cx, double cy) {
+      canvas.drawCircle(Offset(cx, cy), size.width * 0.055, Paint()..color = const Color(0xFF09090B));
+      canvas.drawCircle(Offset(cx, cy), size.width * 0.040, Paint()..color = accentColor);
+      canvas.drawCircle(Offset(cx, cy), size.width * 0.024, Paint()..color = Colors.black);
+      canvas.drawCircle(Offset(cx - 2.5, cy - 2.5), 2.5, Paint()..color = Colors.white);
+    }
+    drawMarineEye(size.width * 0.35, size.height * 0.48);
+    drawMarineEye(size.width * 0.65, size.height * 0.48);
+
+    _paintSpeciesFeatures(canvas, size, null);
+    _paintAccessories(canvas, size, null);
+  }
+
+  // -------------------------------------------------------------
+  // 🐂 6. GREAT HORNED BEAST & PRIMATE (Branching Antlers/Horns, Deep Muzzle)
+  // -------------------------------------------------------------
+  void _paintGreatBeastCharacter(Canvas canvas, Size size) {
+    final furColor = VectorAvatarConfig.parseHex(config.skinColor, fallback: const Color(0xFF78350F));
+    final hornColor = VectorAvatarConfig.parseHex(config.hairColor, fallback: const Color(0xFFE2E8F0));
+    final muzzleColor = Color.lerp(furColor, Colors.white, 0.30) ?? const Color(0xFFD6D3D1);
+    final isStag = config.species.contains('stag') || config.species.contains('deer');
+    final isBull = config.species.contains('bull') || config.species.contains('bison');
+
+    // 1. Massive Shoulders
+    final bodyPath = Path()
+      ..moveTo(size.width * 0.04, size.height)
+      ..quadraticBezierTo(size.width * 0.14, size.height * 0.68, size.width * 0.34, size.height * 0.66)
+      ..lineTo(size.width * 0.66, size.height * 0.66)
+      ..quadraticBezierTo(size.width * 0.86, size.height * 0.68, size.width * 0.96, size.height)
+      ..close();
+    canvas.drawPath(bodyPath, Paint()..color = _darken(furColor, 0.25));
+
+    // 2. Branching Antlers (Stag) or Curved Horns (Bull/Ram)
+    if (isStag) {
+      void drawAntler(bool isLeft) {
+        final sign = isLeft ? -1.0 : 1.0;
+        final bx = isLeft ? size.width * 0.32 : size.width * 0.68;
+        final p = Path()
+          ..moveTo(bx, size.height * 0.32)
+          ..quadraticBezierTo(bx + sign * 20, size.height * 0.18, bx + sign * 35, size.height * 0.08)
+          ..moveTo(bx + sign * 18, size.height * 0.20)
+          ..lineTo(bx + sign * 8, size.height * 0.12)
+          ..moveTo(bx + sign * 26, size.height * 0.14)
+          ..lineTo(bx + sign * 40, size.height * 0.16);
+        canvas.drawPath(p, Paint()..color = hornColor..style = PaintingStyle.stroke..strokeWidth = 4.0..strokeCap = StrokeCap.round);
+      }
+      drawAntler(true);
+      drawAntler(false);
+    } else if (isBull) {
+      void drawBullHorn(bool isLeft) {
+        final sign = isLeft ? -1.0 : 1.0;
+        final bx = isLeft ? size.width * 0.28 : size.width * 0.72;
+        final horn = Path()
+          ..moveTo(bx, size.height * 0.34)
+          ..quadraticBezierTo(bx + sign * 36, size.height * 0.32, bx + sign * 40, size.height * 0.14)
+          ..lineTo(bx + sign * 32, size.height * 0.18)
+          ..quadraticBezierTo(bx + sign * 26, size.height * 0.30, bx, size.height * 0.34)
+          ..close();
+        canvas.drawPath(horn, Paint()..color = hornColor);
+      }
+      drawBullHorn(true);
+      drawBullHorn(false);
+    }
+
+    // 3. Broad Beast Skull
+    final skullRect = Rect.fromCenter(center: Offset(size.width * 0.5, size.height * 0.48), width: size.width * 0.66, height: size.height * 0.50);
+    final skullShader = RadialGradient(
+      center: const Alignment(-0.25, -0.35),
+      radius: 0.85,
+      colors: [_lighten(furColor, 0.25), furColor, _darken(furColor, 0.30)],
+    ).createShader(skullRect);
+    canvas.drawOval(skullRect, Paint()..shader = skullShader);
+
+    // 4. Heavy Barrel Muzzle with Large Nostrils
+    final muzzleRect = Rect.fromCenter(center: Offset(size.width * 0.5, size.height * 0.62), width: size.width * 0.44, height: size.height * 0.26);
+    canvas.drawRRect(RRect.fromRectAndRadius(muzzleRect, Radius.circular(size.width * 0.12)), Paint()..color = muzzleColor);
+    canvas.drawOval(Rect.fromCenter(center: Offset(size.width * 0.43, size.height * 0.62), width: 7, height: 5), Paint()..color = Colors.black);
+    canvas.drawOval(Rect.fromCenter(center: Offset(size.width * 0.57, size.height * 0.62), width: 7, height: 5), Paint()..color = Colors.black);
+
+    // 5. Calm Mighty Eyes
+    void drawBeastEye(double cx, double cy) {
+      canvas.drawCircle(Offset(cx, cy), size.width * 0.045, Paint()..color = Colors.white);
+      canvas.drawCircle(Offset(cx, cy), size.width * 0.032, Paint()..color = const Color(0xFF271A14));
+      canvas.drawCircle(Offset(cx - 2, cy - 2), 1.8, Paint()..color = Colors.white);
+    }
+    drawBeastEye(size.width * 0.34, size.height * 0.44);
+    drawBeastEye(size.width * 0.66, size.height * 0.44);
+
+    _paintSpeciesFeatures(canvas, size, null);
+    _paintAccessories(canvas, size, null);
+  }
+
+  // -------------------------------------------------------------
+  // 🐼 7. WOODLAND & SMALL CRITTER (Puffed Cheek Pouches, Soft Cute Muzzle)
+  // -------------------------------------------------------------
+  void _paintWoodlandCharacter(Canvas canvas, Size size) {
+    final furColor = VectorAvatarConfig.parseHex(config.skinColor, fallback: const Color(0xFFEA580C));
+    final muzzleColor = const Color(0xFFFFFBEB);
+    final eyeColor = VectorAvatarConfig.parseHex(config.eyeColor, fallback: const Color(0xFF1E293B));
+    final isRabbit = config.species.contains('rabbit');
+
+    // 1. Soft Torso
+    final bodyPath = Path()
+      ..moveTo(size.width * 0.14, size.height)
+      ..quadraticBezierTo(size.width * 0.20, size.height * 0.72, size.width * 0.36, size.height * 0.70)
+      ..lineTo(size.width * 0.64, size.height * 0.70)
+      ..quadraticBezierTo(size.width * 0.80, size.height * 0.72, size.width * 0.86, size.height)
+      ..close();
+    canvas.drawPath(bodyPath, Paint()..color = _darken(furColor, 0.15));
+
+    // 2. Ears: Tall Rabbit or Round Fluffy Panda Ears
+    if (isRabbit) {
+      void drawRabbitEar(double cx) {
+        final ear = Rect.fromCenter(center: Offset(cx, size.height * 0.18), width: size.width * 0.15, height: size.height * 0.36);
+        canvas.drawOval(ear, Paint()..color = furColor);
+        canvas.drawOval(ear.deflate(size.width * 0.025), Paint()..color = const Color(0xFFFBCFE8));
+      }
+      drawRabbitEar(size.width * 0.36);
+      drawRabbitEar(size.width * 0.64);
+    } else {
+      void drawPandaEar(double cx, double cy) {
+        canvas.drawCircle(Offset(cx, cy), size.width * 0.10, Paint()..color = const Color(0xFF18181B));
+        canvas.drawCircle(Offset(cx, cy), size.width * 0.05, Paint()..color = Colors.white);
+      }
+      drawPandaEar(size.width * 0.24, size.height * 0.32);
+      drawPandaEar(size.width * 0.76, size.height * 0.32);
+    }
+
+    // 3. Chubby Round Head with Puffed Cheek Pouches
+    final headRect = Rect.fromCenter(center: Offset(size.width * 0.5, size.height * 0.52), width: size.width * 0.72, height: size.height * 0.52);
+    final headShader = RadialGradient(
+      center: const Alignment(-0.25, -0.35),
+      radius: 0.85,
+      colors: [_lighten(furColor, 0.25), furColor, _darken(furColor, 0.25)],
+    ).createShader(headRect);
+    canvas.drawOval(headRect, Paint()..shader = headShader);
+
+    // 4. White Muzzle & Cute Button Nose
+    final muzzleRect = Rect.fromCenter(center: Offset(size.width * 0.5, size.height * 0.63), width: size.width * 0.36, height: size.height * 0.22);
+    canvas.drawOval(muzzleRect, Paint()..color = muzzleColor);
+
+    // Heart Button Nose
+    canvas.drawCircle(Offset(size.width * 0.5, size.height * 0.59), 4.5, Paint()..color = const Color(0xFF09090B));
+
+    // Cute :3 Smile
+    final mouthPaint = Paint()..color = const Color(0xFF1E293B)..style = PaintingStyle.stroke..strokeWidth = 1.8..strokeCap = StrokeCap.round;
+    final leftSmile = Path()..moveTo(size.width * 0.5, size.height * 0.62)..quadraticBezierTo(size.width * 0.45, size.height * 0.66, size.width * 0.40, size.height * 0.63);
+    final rightSmile = Path()..moveTo(size.width * 0.5, size.height * 0.62)..quadraticBezierTo(size.width * 0.55, size.height * 0.66, size.width * 0.60, size.height * 0.63);
+    canvas.drawPath(leftSmile, mouthPaint);
+    canvas.drawPath(rightSmile, mouthPaint);
+
+    // 5. Large Expressive Storybook Eyes with Dual Catchlights
+    void drawStoryEye(double cx, double cy) {
+      final eyeRect = Rect.fromCenter(center: Offset(cx, cy), width: size.width * 0.15, height: size.height * 0.15);
+      canvas.drawOval(eyeRect, Paint()..color = Colors.white);
+      canvas.drawCircle(Offset(cx, cy), size.width * 0.055, Paint()..color = eyeColor);
+      canvas.drawCircle(Offset(cx, cy), size.width * 0.038, Paint()..color = Colors.black);
+
+      // Dual Specular Glass Catchlights
+      canvas.drawCircle(Offset(cx - 3, cy - 3), 3.0, Paint()..color = Colors.white);
+      canvas.drawCircle(Offset(cx + 2.5, cy + 2.5), 1.5, Paint()..color = Colors.white.withValues(alpha: 0.9));
+    }
+    drawStoryEye(size.width * 0.34, size.height * 0.47);
+    drawStoryEye(size.width * 0.66, size.height * 0.47);
+
+    _paintSpeciesFeatures(canvas, size, null);
+    _paintAccessories(canvas, size, null);
+  }
+
+  Color _lighten(Color c, [double percent = .1]) {
+    final hsl = HSLColor.fromColor(c);
+    final hslLight = hsl.withLightness((hsl.lightness + percent).clamp(0.0, 1.0));
+    return hslLight.toColor();
   }
 
   Color _darken(Color c, [double percent = .1]) {

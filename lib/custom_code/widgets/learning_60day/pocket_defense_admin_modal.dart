@@ -63,7 +63,7 @@ class _PocketDefenseAdminModalState extends State<PocketDefenseAdminModal> {
             const SizedBox(width: 10),
             Expanded(
               child: Text(
-                '🚫 ${report.houseOwnerName}-ന്റെ വീട് ബാൻ ചെയ്തു! Presidential Ban Seal applied.',
+                '🚫 ${report.houseOwnerName}\'s house has been banned! Presidential Ban Seal applied.',
                 style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
               ),
             ),
@@ -82,7 +82,7 @@ class _PocketDefenseAdminModalState extends State<PocketDefenseAdminModal> {
       SnackBar(
         backgroundColor: const Color(0xFF10B981),
         behavior: SnackBarBehavior.floating,
-        content: Text('🔓 ${report.houseOwnerName}-ന്റെ ബാൻ നീക്കം ചെയ്തു.'),
+        content: Text('🔓 Ban lifted for ${report.houseOwnerName}\'s house.'),
       ),
     );
     _loadReports();
@@ -96,7 +96,7 @@ class _PocketDefenseAdminModalState extends State<PocketDefenseAdminModal> {
       const SnackBar(
         backgroundColor: Color(0xFF334155),
         behavior: SnackBarBehavior.floating,
-        content: Text('✅ റിപ്പോർട്ട് നിരസിച്ചു (Dismissed).'),
+        content: Text('✅ Report dismissed.'),
       ),
     );
     _loadReports();
@@ -265,7 +265,7 @@ class _PocketDefenseAdminModalState extends State<PocketDefenseAdminModal> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'ഫേക്ക് ചോദ്യങ്ങളോ തെറ്റായ ഉത്തരങ്ങളോ നൽകി ഡിഫൻസ് നടത്തുന്ന വീടുകൾ ബാൻ ചെയ്യപ്പെടും. അറ്റാക്ക് ചെയ്തവർ നൽകിയ റിപ്പോർട്ടുകൾ താഴെ റിവ്യൂ ചെയ്യുക.',
+                    'Houses deploying fake or deceptive English defense questions will be penalized. Review player reports below.',
                     style: TextStyle(
                       color: Colors.amber.shade200,
                       fontSize: 11,

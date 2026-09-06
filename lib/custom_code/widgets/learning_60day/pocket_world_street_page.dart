@@ -339,7 +339,7 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
                     SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        'ഈ വീട് ഫേക്ക് / തെറ്റായ ചോദ്യങ്ങൾ നൽകിയതിനാൽ അഡ്മിൻ ബാൻ ചെയ്തിരിക്കുന്നു. റെയ്ഡ് എളുപ്പത്തിൽ ജയിച്ച് ഫ്രീ ലൂട്ട് കരസ്ഥമാക്കാം!',
+                        'This house has been banned by Admin for invalid defense questions. Raid easily to claim free loot!',
                         style: TextStyle(color: Colors.white, fontSize: 11),
                       ),
                     ),

@@ -339,7 +339,7 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'GATE $_currentGateIndex BREACHED! Advancing to ${nextTmpl.title} (${nextTmpl.titleMalayalam})!',
+                      'GATE $_currentGateIndex BREACHED! Advancing to ${nextTmpl.title}!',
                       style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
                     ),
                   ),
@@ -584,7 +584,7 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'Select Violation (ഫെയർ പ്ലേ ലംഘനം):',
+                    'Select Violation (Fair Play Rule):',
                     style: GoogleFonts.outfit(
                       color: Colors.amber.shade300,
                       fontSize: 12,
@@ -768,7 +768,7 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
               SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'ചോദ്യം അഡ്മിൻ റിവ്യൂവിലേക്ക് റിപ്പോർട്ട് ചെയ്തു! ഫേക്ക് ചോദ്യം ബൈപാസ് ചെയ്ത് +15 ഡാമേജ് നൽകി.',
+                  'Question reported for admin review! Deceptive trap bypassed with +15 bonus damage.',
                   style: TextStyle(color: Colors.white, fontSize: 11.5),
                 ),
               ),
@@ -1697,7 +1697,7 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
                       SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          'HOUSE BANNED BY ADMIN! ഫേക്ക് ചോദ്യങ്ങൾ നൽകിയതിനാൽ വീട് ബാൻ ചെയ്യപ്പെട്ടു.',
+                          'HOUSE BANNED BY ADMIN! Trap disqualified due to invalid English questions.',
                           style: TextStyle(color: Colors.redAccent, fontSize: 11, fontWeight: FontWeight.bold),
                         ),
                       ),
@@ -1780,7 +1780,7 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
                   ),
                   const SizedBox(height: 6),
                   const Text(
-                    'ഈ വീടിന്റെ സംരക്ഷണത്തിൽ ഫേക്ക് ചോദ്യങ്ങൾ റിപ്പോർട്ട് ചെയ്യപ്പെട്ടതിനാൽ അഡ്മിൻ ട്രിബ്യൂണൽ ഈ വീട് ബാൻ ചെയ്തിരിക്കുന്നു. കോട്ട തകർന്നു!',
+                    'This house has been banned by the Admin Tribunal for deploying invalid defense questions. Fortress protection bypassed!',
                     style: TextStyle(color: Colors.white70, fontSize: 11),
                   ),
                   const SizedBox(height: 10),

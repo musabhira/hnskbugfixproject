@@ -21,6 +21,7 @@ import 'package:timeago/timeago.dart' as timeago;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/nft_trading_card_dialog.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/jackie_chan_talisman_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/flame_avatar_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/flame_english_house_game.dart';
 
 class MainProfileWidget extends StatefulWidget {
@@ -1080,12 +1081,18 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   }
 
   Widget _buildStageFallbackBanner(int day, LearningMilestoneStage stage, VectorAvatarConfig avatar) {
+    final speciesTitle = avatar.species
+        .replaceAll('_', ' ')
+        .split(' ')
+        .map((w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '')
+        .join(' ');
+
     return Container(
       decoration: VectorAvatarConfig.getEvolutionBannerDecoration(day),
       child: Stack(
         fit: StackFit.expand,
         children: [
-          // Rich Vector Art / Animal Biome background
+          // 🎨 Rich Scenic Biome Landscape Art
           CustomPaint(
             painter: StageBannerArtPainter(
               stage: day,
@@ -1093,10 +1100,63 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             ),
           ),
 
-          // Prominent Frosted Glassmorphic Stage Card ("കട്ട")
+          // 👑 Top Companion Milestone Pill
           Positioned(
-            left: 16,
-            right: 16,
+            top: 14,
+            right: 14,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.55),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: stage.buttonColor.withValues(alpha: 0.6),
+                  width: 1.0,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: stage.buttonColor.withValues(alpha: 0.25),
+                    blurRadius: 10,
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 7,
+                    height: 7,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF10B981),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF10B981).withValues(alpha: 0.7),
+                          blurRadius: 6,
+                          spreadRadius: 1,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    'ACTIVE COMPANION • DAY $day',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 0.8,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // 💎 Luxury Holographic Showcase Pedestal Card
+          Positioned(
+            left: 14,
+            right: 14,
             bottom: 12,
             child: GestureDetector(
               onTap: () {
@@ -1114,52 +1174,62 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      Colors.black.withValues(alpha: 0.78),
-                      Colors.black.withValues(alpha: 0.62),
+                      Colors.black.withValues(alpha: 0.88),
+                      const Color(0xFF0F172A).withValues(alpha: 0.82),
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(18),
                   border: Border.all(
-                    color: stage.buttonColor.withValues(alpha: 0.5),
-                    width: 1.2,
+                    color: stage.buttonColor.withValues(alpha: 0.75),
+                    width: 1.4,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: stage.buttonColor.withValues(alpha: 0.22),
-                      blurRadius: 16,
+                      color: stage.buttonColor.withValues(alpha: 0.35),
+                      blurRadius: 20,
                       offset: const Offset(0, 4),
                     ),
                   ],
                 ),
                 child: Row(
                   children: [
-                    // Dynamic Animal Avatar Preview
+                    // 🐾 Live Flame Engine Animated Avatar Preview
                     Container(
-                      width: 44,
-                      height: 44,
+                      width: 56,
+                      height: 56,
                       decoration: BoxDecoration(
-                        color: stage.buttonColor.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: stage.buttonColor.withValues(alpha: 0.5)),
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(11),
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            VectorAvatarWidget(config: avatar, size: 40),
-                            Positioned(
-                              bottom: 1,
-                              right: 1,
-                              child: Text(stage.emoji, style: const TextStyle(fontSize: 10)),
-                            ),
+                        shape: BoxShape.circle,
+                        gradient: RadialGradient(
+                          colors: [
+                            stage.buttonColor.withValues(alpha: 0.35),
+                            Colors.transparent,
                           ],
+                        ),
+                        border: Border.all(
+                          color: stage.buttonColor.withValues(alpha: 0.8),
+                          width: 1.5,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: stage.buttonColor.withValues(alpha: 0.35),
+                            blurRadius: 12,
+                          ),
+                        ],
+                      ),
+                      child: ClipOval(
+                        child: FlameAvatarWidget(
+                          config: avatar,
+                          size: 52,
+                          showAura: true,
+                          isInteractive: false,
                         ),
                       ),
                     ),
                     const SizedBox(width: 12),
+
+                    // Avatar Details & Milestones
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1171,7 +1241,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                 'DAY $day/90',
                                 style: GoogleFonts.outfit(
                                   color: stage.buttonColor,
-                                  fontSize: 11,
+                                  fontSize: 11.5,
                                   fontWeight: FontWeight.w900,
                                   letterSpacing: 0.5,
                                 ),
@@ -1180,7 +1250,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.12),
+                                  color: Colors.white.withValues(alpha: 0.15),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Text(
@@ -1196,83 +1266,113 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            avatar.species.toUpperCase().replaceAll('_', ' '),
+                            speciesTitle,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: GoogleFonts.outfit(
                               color: Colors.white,
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () async {
-                        HapticFeedback.mediumImpact();
-                        await JackieChanTalismanVaultModal.show(context, currentDay: day);
-                        final talisman = await JackieChanTalismanService.getEquippedTalisman();
-                        if (mounted) setState(() => _equippedTalismanId = talisman.id);
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFFDC2626), Color(0xFFD97706)],
-                          ),
-                          borderRadius: BorderRadius.circular(10),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFFF59E0B).withValues(alpha: 0.4),
-                              blurRadius: 6,
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              kJackieChanTalismans.firstWhere(
-                                (t) => t.id == (_equippedTalismanId ?? 'rabbit'),
-                                orElse: () => kJackieChanTalismans.first,
-                              ).emoji,
-                              style: const TextStyle(fontSize: 13),
-                            ),
-                            const SizedBox(width: 4),
-                            const Text(
-                              'മാന്ത്രിക കല്ല്',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 10.5,
-                                fontWeight: FontWeight.w900,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: stage.buttonColor,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: const [
-                          Icon(Icons.style_rounded, color: Colors.black, size: 13),
-                          SizedBox(width: 4),
-                          Text(
-                            'NFT Card',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 11,
+                              fontSize: 14,
                               fontWeight: FontWeight.w900,
+                              letterSpacing: 0.4,
                             ),
                           ),
                         ],
                       ),
+                    ),
+
+                    // Action Buttons: NFT Card & Talisman
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // View NFT Button
+                        GestureDetector(
+                          onTap: () {
+                            HapticFeedback.mediumImpact();
+                            NftTradingCardDialog.show(
+                              context,
+                              day: day,
+                              config: avatar,
+                              userId: userId,
+                              isOwner: isMe,
+                            );
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                            margin: const EdgeInsets.only(right: 6),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  stage.buttonColor.withValues(alpha: 0.85),
+                                  const Color(0xFF0284C7),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: const [
+                                Text('💎', style: TextStyle(fontSize: 12)),
+                                SizedBox(width: 4),
+                                Text(
+                                  'NFT',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        // Zodiac Talisman Button (100% English)
+                        GestureDetector(
+                          onTap: () async {
+                            HapticFeedback.mediumImpact();
+                            await JackieChanTalismanVaultModal.show(context, currentDay: day);
+                            final talisman = await JackieChanTalismanService.getEquippedTalisman();
+                            if (mounted) setState(() => _equippedTalismanId = talisman.id);
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFFDC2626), Color(0xFFD97706)],
+                              ),
+                              borderRadius: BorderRadius.circular(10),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFFF59E0B).withValues(alpha: 0.4),
+                                  blurRadius: 6,
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  kJackieChanTalismans.firstWhere(
+                                    (t) => t.id == (_equippedTalismanId ?? 'rabbit'),
+                                    orElse: () => kJackieChanTalismans.first,
+                                  ).emoji,
+                                  style: const TextStyle(fontSize: 12),
+                                ),
+                                const SizedBox(width: 4),
+                                const Text(
+                                  'TALISMAN',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -2930,160 +3030,333 @@ class StageBannerArtPainter extends CustomPainter {
       // ==========================================
       // 🐉 ASTRAL DRAGON REALM & COSMIC GRANDMASTER
       // ==========================================
-      final dragonPaint = Paint()
-        ..color = accent.withValues(alpha: stage == 90 ? 0.35 : 0.22)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = stage == 90 ? 2.0 : 1.5;
+      // 1. Cosmic Nebula Sky
+      final nebulaRect = Rect.fromLTWH(0, 0, size.width, size.height);
+      final nebulaShader = RadialGradient(
+        center: const Alignment(0.65, -0.2),
+        radius: 0.9,
+        colors: [
+          const Color(0xFFC026D3).withValues(alpha: 0.45),
+          const Color(0xFF4F46E5).withValues(alpha: 0.35),
+          Colors.transparent,
+        ],
+      ).createShader(nebulaRect);
+      canvas.drawRect(nebulaRect, Paint()..shader = nebulaShader);
 
-      // Dragon Scale Tessellation
-      const scaleSize = 26.0;
-      for (double y = -10; y < size.height + 20; y += scaleSize * 0.75) {
-        final offsetX = ((y ~/ (scaleSize * 0.75)) % 2 == 0) ? 0.0 : (scaleSize * 0.5);
-        for (double x = -10 + offsetX; x < size.width + 20; x += scaleSize) {
-          final path = Path()
-            ..moveTo(x, y)
-            ..quadraticBezierTo(x + scaleSize * 0.5, y + scaleSize, x + scaleSize, y);
-          canvas.drawPath(path, dragonPaint);
+      // 2. Twin Celestial Ringed Moons
+      final moonCenter = Offset(size.width * 0.78, size.height * 0.32);
+      canvas.drawCircle(moonCenter, 28, Paint()..color = (stage == 90 ? const Color(0xFFFFFC00) : accent).withValues(alpha: 0.3));
+      canvas.drawCircle(moonCenter, 22, Paint()..color = (stage == 90 ? const Color(0xFFFFFC00) : accent).withValues(alpha: 0.6));
+      // Ring
+      canvas.drawOval(
+        Rect.fromCenter(center: moonCenter, width: 70, height: 16),
+        Paint()..color = Colors.white.withValues(alpha: 0.4)..style = PaintingStyle.stroke..strokeWidth = 2.0,
+      );
+
+      // 3. Shimmering Star Field
+      final starPaint = Paint()..color = Colors.white;
+      for (int i = 0; i < 18; i++) {
+        final sx = (size.width * (0.05 + ((i * 37) % 90) / 100));
+        final sy = (size.height * (0.08 + ((i * 53) % 80) / 100));
+        final sRadius = (i % 3 == 0) ? 2.5 : 1.2;
+        canvas.drawCircle(Offset(sx, sy), sRadius, starPaint..color = Colors.white.withValues(alpha: 0.75));
+        if (i % 4 == 0) {
+          // 4-Point Star Flare
+          canvas.drawLine(Offset(sx - 5, sy), Offset(sx + 5, sy), Paint()..color = Colors.white.withValues(alpha: 0.8)..strokeWidth = 1.0);
+          canvas.drawLine(Offset(sx, sy - 5), Offset(sx, sy + 5), Paint()..color = Colors.white.withValues(alpha: 0.8)..strokeWidth = 1.0);
         }
       }
 
-      // Astral Constellation & Star Glyphs
-      final center = Offset(size.width * 0.82, size.height * 0.45);
-      final glyphPaint = Paint()
-        ..color = (stage == 90 ? const Color(0xFFFFFC00) : accent).withValues(alpha: 0.40)
+      // 4. Layered Jagged Astral Crystal Peaks
+      final peakPaint = Paint()..color = const Color(0xFF0F172A).withValues(alpha: 0.85);
+      final peaks = Path()
+        ..moveTo(size.width * 0.35, size.height)
+        ..lineTo(size.width * 0.52, size.height * 0.45)
+        ..lineTo(size.width * 0.68, size.height * 0.65)
+        ..lineTo(size.width * 0.82, size.height * 0.38)
+        ..lineTo(size.width * 0.94, size.height * 0.55)
+        ..lineTo(size.width, size.height * 0.42)
+        ..lineTo(size.width, size.height)
+        ..close();
+      canvas.drawPath(peaks, peakPaint);
+
+      final peakEdgePaint = Paint()
+        ..color = accent.withValues(alpha: 0.5)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.8;
-
-      for (int i = 0; i < 8; i++) {
-        final angle = (i * math.pi) / 4;
-        final x2 = center.dx + math.cos(angle) * (size.width * 0.20);
-        final y2 = center.dy + math.sin(angle) * (size.height * 0.45);
-        canvas.drawLine(center, Offset(x2, y2), glyphPaint);
-        canvas.drawCircle(Offset(x2, y2), stage == 90 ? 3.5 : 2.5, Paint()..color = (stage == 90 ? const Color(0xFFFFFC00) : accent).withValues(alpha: 0.7));
-      }
+      canvas.drawPath(peaks, peakEdgePaint);
 
     } else if (marineSpecies.contains(species)) {
       // ==========================================
-      // 🌊 ABYSSAL OCEAN CURRENTS & SONAR RIPPLES
+      // 🌊 ABYSSAL OCEAN CURRENTS & UNDERWATER BIOME
       // ==========================================
-      final wavePaint = Paint()
-        ..color = accent.withValues(alpha: 0.20)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.8;
+      // 1. Shimmering Sunbeams / Light Caustics from surface
+      final beamPaint = Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            const Color(0xFF38BDF8).withValues(alpha: 0.30),
+            Colors.transparent,
+          ],
+        ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
 
-      for (int w = 0; w < 3; w++) {
-        final wavePath = Path();
-        final startY = size.height * (0.3 + w * 0.25);
-        wavePath.moveTo(0, startY);
-        for (double x = 0; x <= size.width; x += 30) {
-          final y = startY + math.sin((x / 50) + (w * 1.5)) * 12;
-          wavePath.lineTo(x, y);
-        }
-        canvas.drawPath(wavePath, wavePaint);
+      for (int b = 0; b < 5; b++) {
+        final bx = size.width * (0.35 + b * 0.14);
+        final beamPath = Path()
+          ..moveTo(bx, 0)
+          ..lineTo(bx + 30, 0)
+          ..lineTo(bx - 20, size.height)
+          ..lineTo(bx - 50, size.height)
+          ..close();
+        canvas.drawPath(beamPath, beamPaint);
       }
 
-      // Sonar Pulses
-      final sonarCenter = Offset(size.width * 0.85, size.height * 0.5);
-      for (int r = 1; r <= 3; r++) {
-        canvas.drawCircle(sonarCenter, r * 22.0, wavePaint..color = fur.withValues(alpha: 0.15));
+      // 2. Layered Seabed Trench & Coral Reef Silhouette
+      final reefPath = Path()
+        ..moveTo(size.width * 0.40, size.height)
+        ..quadraticBezierTo(size.width * 0.55, size.height * 0.60, size.width * 0.70, size.height * 0.75)
+        ..quadraticBezierTo(size.width * 0.85, size.height * 0.50, size.width, size.height * 0.65)
+        ..lineTo(size.width, size.height)
+        ..close();
+      canvas.drawPath(reefPath, Paint()..color = const Color(0xFF031926).withValues(alpha: 0.85));
+
+      // 3. Bioluminescent Floating Jellyfish
+      final jellyCenter = Offset(size.width * 0.80, size.height * 0.36);
+      canvas.drawArc(
+        Rect.fromCenter(center: jellyCenter, width: 34, height: 26),
+        math.pi,
+        math.pi,
+        true,
+        Paint()..color = const Color(0xFF67E8F9).withValues(alpha: 0.6),
+      );
+      // Tentacles
+      final tentaclePaint = Paint()..color = const Color(0xFF38BDF8).withValues(alpha: 0.5)..style = PaintingStyle.stroke..strokeWidth = 1.4;
+      for (int t = -2; t <= 2; t++) {
+        final tp = Path()
+          ..moveTo(jellyCenter.dx + t * 6, jellyCenter.dy)
+          ..quadraticBezierTo(jellyCenter.dx + t * 8, jellyCenter.dy + 15, jellyCenter.dx + t * 4, jellyCenter.dy + 26);
+        canvas.drawPath(tp, tentaclePaint);
+      }
+
+      // Rising Bubbles
+      for (int i = 0; i < 8; i++) {
+        final bubX = size.width * (0.50 + (i * 17 % 45) / 100);
+        final bubY = size.height * (0.2 + (i * 23 % 70) / 100);
+        canvas.drawCircle(Offset(bubX, bubY), (i % 3 + 1.5) * 1.5, Paint()..color = Colors.white.withValues(alpha: 0.45));
       }
 
     } else if (felineSpecies.contains(species)) {
       // ==========================================
-      // 🐆 PREDATOR CLAW SLASHES & SAVANNA SUNBURST
+      // 🐆 SAVANNA SUNSET & GOLDEN TWILIGHT
       // ==========================================
-      final slashPaint = Paint()
-        ..color = fur.withValues(alpha: 0.22)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.4
-        ..strokeCap = StrokeCap.round;
+      // 1. Radiant Glowing Golden Sun on Horizon
+      final sunCenter = Offset(size.width * 0.78, size.height * 0.46);
+      final sunShader = RadialGradient(
+        colors: [
+          const Color(0xFFFDE047),
+          const Color(0xFFEA580C).withValues(alpha: 0.75),
+          const Color(0xFF991B1B).withValues(alpha: 0.2),
+          Colors.transparent,
+        ],
+        stops: const [0.0, 0.45, 0.8, 1.0],
+      ).createShader(Rect.fromCircle(center: sunCenter, radius: 65));
+      canvas.drawCircle(sunCenter, 65, Paint()..shader = sunShader);
+      canvas.drawCircle(sunCenter, 22, Paint()..color = const Color(0xFFFEF08A));
 
-      for (int i = 0; i < 3; i++) {
-        final slash = Path()
-          ..moveTo(size.width * (0.65 + i * 0.08), 8)
-          ..quadraticBezierTo(size.width * (0.70 + i * 0.08), size.height * 0.5, size.width * (0.75 + i * 0.08), size.height - 8);
-        canvas.drawPath(slash, slashPaint);
-      }
+      // 2. Layered Savanna Ridges
+      final savannaBack = Path()
+        ..moveTo(size.width * 0.30, size.height)
+        ..quadraticBezierTo(size.width * 0.60, size.height * 0.60, size.width, size.height * 0.68)
+        ..lineTo(size.width, size.height)
+        ..close();
+      canvas.drawPath(savannaBack, Paint()..color = const Color(0xFF451A03).withValues(alpha: 0.75));
 
-      // Savanna Sunburst
-      final sunCenter = Offset(size.width * 0.82, size.height * 0.5);
-      final rayPaint = Paint()
-        ..color = const Color(0xFFFFD700).withValues(alpha: 0.14)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.4;
-      for (int i = 0; i < 12; i++) {
-        final angle = (i * math.pi) / 6;
-        canvas.drawLine(sunCenter, Offset(sunCenter.dx + math.cos(angle) * 45, sunCenter.dy + math.sin(angle) * 45), rayPaint);
+      final savannaFore = Path()
+        ..moveTo(size.width * 0.45, size.height)
+        ..quadraticBezierTo(size.width * 0.75, size.height * 0.72, size.width, size.height * 0.58)
+        ..lineTo(size.width, size.height)
+        ..close();
+      canvas.drawPath(savannaFore, Paint()..color = const Color(0xFF1C0A00).withValues(alpha: 0.90));
+
+      // 3. Acacia Tree Silhouette
+      final treeX = size.width * 0.65;
+      final treeBase = size.height * 0.68;
+      final treePath = Path()
+        ..moveTo(treeX, treeBase)
+        ..lineTo(treeX - 2, treeBase - 28)
+        ..lineTo(treeX + 3, treeBase - 28)
+        ..close();
+      canvas.drawPath(treePath, Paint()..color = const Color(0xFF1C0A00)..strokeWidth = 3);
+      // Flat Acacia Canopy
+      canvas.drawOval(
+        Rect.fromCenter(center: Offset(treeX, treeBase - 30), width: 36, height: 10),
+        Paint()..color = const Color(0xFF1C0A00),
+      );
+      canvas.drawOval(
+        Rect.fromCenter(center: Offset(treeX + 10, treeBase - 34), width: 26, height: 8),
+        Paint()..color = const Color(0xFF1C0A00),
+      );
+
+      // Warm Floating Embers
+      for (int i = 0; i < 10; i++) {
+        final ex = size.width * (0.50 + (i * 29 % 45) / 100);
+        final ey = size.height * (0.15 + (i * 31 % 65) / 100);
+        canvas.drawCircle(Offset(ex, ey), 1.8, Paint()..color = const Color(0xFFFDE047).withValues(alpha: 0.7));
       }
 
     } else if (canineSpecies.contains(species)) {
       // ==========================================
-      // 🐺 MOONLIGHT PEAKS & CANINE CONSTELLATIONS
+      // 🐺 MOONLIT MOUNTAINS & AURORA BOREALIS
       // ==========================================
-      final mountainPaint = Paint()
-        ..color = fur.withValues(alpha: 0.18)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.6;
+      // 1. Waving Aurora Borealis Curtains
+      final auroraShader = LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          const Color(0xFF10B981).withValues(alpha: 0.35),
+          const Color(0xFF06B6D4).withValues(alpha: 0.25),
+          Colors.transparent,
+        ],
+      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height * 0.6));
+      final auroraPath = Path()
+        ..moveTo(size.width * 0.40, 0)
+        ..quadraticBezierTo(size.width * 0.65, size.height * 0.35, size.width, size.height * 0.15)
+        ..lineTo(size.width, 0)
+        ..close();
+      canvas.drawPath(auroraPath, Paint()..shader = auroraShader);
 
-      final mtnPath = Path()
-        ..moveTo(size.width * 0.50, size.height)
-        ..lineTo(size.width * 0.68, size.height * 0.20)
-        ..lineTo(size.width * 0.82, size.height * 0.55)
-        ..lineTo(size.width * 0.92, size.height * 0.15)
-        ..lineTo(size.width, size.height * 0.40);
-      canvas.drawPath(mtnPath, mountainPaint);
+      // 2. Glowing Full Moon with Halo
+      final moonCenter = Offset(size.width * 0.82, size.height * 0.28);
+      canvas.drawCircle(moonCenter, 32, Paint()..color = Colors.white.withValues(alpha: 0.18));
+      canvas.drawCircle(moonCenter, 18, Paint()..color = const Color(0xFFF1F5F9));
 
-      // Lunar Crescent
-      final moonCenter = Offset(size.width * 0.84, size.height * 0.32);
-      canvas.drawCircle(moonCenter, 16, Paint()..color = accent.withValues(alpha: 0.22));
-      canvas.drawCircle(Offset(moonCenter.dx + 6, moonCenter.dy - 4), 14, Paint()..color = const Color(0xFF0F172A));
+      // 3. Layered Midnight Mountain Ridges
+      final distantMtn = Path()
+        ..moveTo(size.width * 0.35, size.height)
+        ..lineTo(size.width * 0.58, size.height * 0.38)
+        ..lineTo(size.width * 0.76, size.height * 0.58)
+        ..lineTo(size.width * 0.90, size.height * 0.32)
+        ..lineTo(size.width, size.height * 0.48)
+        ..lineTo(size.width, size.height)
+        ..close();
+      canvas.drawPath(distantMtn, Paint()..color = const Color(0xFF1E293B).withValues(alpha: 0.8));
+
+      final foreMtn = Path()
+        ..moveTo(size.width * 0.48, size.height)
+        ..lineTo(size.width * 0.70, size.height * 0.52)
+        ..lineTo(size.width * 0.88, size.height * 0.70)
+        ..lineTo(size.width, size.height * 0.56)
+        ..lineTo(size.width, size.height)
+        ..close();
+      canvas.drawPath(foreMtn, Paint()..color = const Color(0xFF090D16).withValues(alpha: 0.95));
+
+      // Pine Tree Silhouettes
+      for (int i = 0; i < 5; i++) {
+        final px = size.width * (0.62 + i * 0.08);
+        final py = size.height * (0.60 + (i % 2) * 0.08);
+        final pine = Path()
+          ..moveTo(px, py - 14)
+          ..lineTo(px - 6, py)
+          ..lineTo(px + 6, py)
+          ..close();
+        canvas.drawPath(pine, Paint()..color = const Color(0xFF020617));
+      }
 
     } else if (avianSpecies.contains(species)) {
       // ==========================================
-      // 🦅 SKY SLIPSTREAMS & AERO FEATHER QUILLS
+      // 🦅 HEAVENLY CLOUD REALM & SUNBEAMS
       // ==========================================
-      final aeroPaint = Paint()
-        ..color = accent.withValues(alpha: 0.22)
+      // 1. Radiant Golden Sunbeams
+      final sunbeamCenter = Offset(size.width * 0.85, size.height * 0.15);
+      final rayPaint = Paint()
+        ..color = const Color(0xFFFDE047).withValues(alpha: 0.18)
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.6;
+        ..strokeWidth = 2.4;
+      for (int i = 0; i < 8; i++) {
+        final angle = (i * math.pi) / 4;
+        canvas.drawLine(sunbeamCenter, Offset(sunbeamCenter.dx + math.cos(angle) * 75, sunbeamCenter.dy + math.sin(angle) * 75), rayPaint);
+      }
+      canvas.drawCircle(sunbeamCenter, 20, Paint()..color = const Color(0xFFFFFC00).withValues(alpha: 0.7));
 
-      for (int i = 0; i < 4; i++) {
-        final wingPath = Path()
-          ..moveTo(size.width * 0.55, size.height * (0.2 + i * 0.18))
-          ..quadraticBezierTo(size.width * 0.75, size.height * (0.1 + i * 0.18), size.width * 0.95, size.height * (0.3 + i * 0.18));
-        canvas.drawPath(wingPath, aeroPaint);
+      // 2. Soaring Cloud Banks
+      void drawCloud(Offset c, double radius) {
+        final cloudPaint = Paint()..color = Colors.white.withValues(alpha: 0.35);
+        canvas.drawCircle(c, radius, cloudPaint);
+        canvas.drawCircle(Offset(c.dx - radius * 0.6, c.dy + radius * 0.2), radius * 0.7, cloudPaint);
+        canvas.drawCircle(Offset(c.dx + radius * 0.6, c.dy + radius * 0.2), radius * 0.7, cloudPaint);
+      }
+      drawCloud(Offset(size.width * 0.65, size.height * 0.55), 24);
+      drawCloud(Offset(size.width * 0.88, size.height * 0.65), 30);
+
+      // 3. Distant Flying Flock Silhouettes
+      for (int i = 0; i < 3; i++) {
+        final fx = size.width * (0.52 + i * 0.08);
+        final fy = size.height * (0.25 + (i % 2) * 0.06);
+        final bird = Path()
+          ..moveTo(fx - 7, fy + 3)
+          ..quadraticBezierTo(fx - 3, fy - 3, fx, fy)
+          ..quadraticBezierTo(fx + 3, fy - 3, fx + 7, fy + 3);
+        canvas.drawPath(bird, Paint()..color = const Color(0xFF0F172A)..style = PaintingStyle.stroke..strokeWidth = 1.8);
       }
 
     } else if (reptileSpecies.contains(species)) {
       // ==========================================
-      // 🐍 REPTILIAN BIO-SCALES & NEON MATRIX
+      // 🐍 VOLCANIC REALM & PREHISTORIC JUNGLE
       // ==========================================
-      final scalePaint = Paint()
-        ..color = fur.withValues(alpha: 0.18)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.4;
+      // 1. Magma Fissure Glow
+      final magmaRect = Rect.fromLTWH(size.width * 0.4, size.height * 0.5, size.width * 0.6, size.height * 0.5);
+      final magmaShader = RadialGradient(
+        colors: [const Color(0xFFEF4444).withValues(alpha: 0.5), Colors.transparent],
+      ).createShader(magmaRect);
+      canvas.drawRect(magmaRect, Paint()..shader = magmaShader);
 
-      for (double y = 10; y < size.height; y += 18) {
-        for (double x = size.width * 0.55; x < size.width; x += 22) {
-          canvas.drawRect(Rect.fromCenter(center: Offset(x, y), width: 14, height: 10), scalePaint);
-        }
-      }
+      // 2. Volcanic Crag
+      final crag = Path()
+        ..moveTo(size.width * 0.42, size.height)
+        ..lineTo(size.width * 0.62, size.height * 0.48)
+        ..lineTo(size.width * 0.78, size.height * 0.68)
+        ..lineTo(size.width * 0.92, size.height * 0.40)
+        ..lineTo(size.width, size.height * 0.55)
+        ..lineTo(size.width, size.height)
+        ..close();
+      canvas.drawPath(crag, Paint()..color = const Color(0xFF18181B).withValues(alpha: 0.95));
+
+      // Magma River
+      final river = Path()
+        ..moveTo(size.width * 0.62, size.height * 0.48)
+        ..quadraticBezierTo(size.width * 0.70, size.height * 0.72, size.width * 0.85, size.height);
+      canvas.drawPath(river, Paint()..color = const Color(0xFFF97316)..style = PaintingStyle.stroke..strokeWidth = 3.5);
 
     } else {
       // ==========================================
-      // 🌲 FOREST TITANS & SAVANNA BEHEMOTHS
+      // 🌲 ENCHANTED WOODLAND & FOREST CANOPY
       // ==========================================
-      final earthPaint = Paint()
-        ..color = accent.withValues(alpha: 0.18)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.5;
+      // 1. Rolling Forest Hills
+      final hill1 = Path()
+        ..moveTo(size.width * 0.35, size.height)
+        ..quadraticBezierTo(size.width * 0.65, size.height * 0.55, size.width, size.height * 0.62)
+        ..lineTo(size.width, size.height)
+        ..close();
+      canvas.drawPath(hill1, Paint()..color = const Color(0xFF064E3B).withValues(alpha: 0.85));
 
-      for (double x = size.width * 0.55; x < size.width; x += 36) {
-        final shockPath = Path()
-          ..moveTo(x, 10)
-          ..lineTo(x + 18, 40)
-          ..lineTo(x, size.height - 10);
-        canvas.drawPath(shockPath, earthPaint);
+      final hill2 = Path()
+        ..moveTo(size.width * 0.50, size.height)
+        ..quadraticBezierTo(size.width * 0.75, size.height * 0.68, size.width, size.height * 0.52)
+        ..lineTo(size.width, size.height)
+        ..close();
+      canvas.drawPath(hill2, Paint()..color = const Color(0xFF022C22).withValues(alpha: 0.95));
+
+      // 2. Ancient Tree Canopies
+      canvas.drawCircle(Offset(size.width * 0.72, size.height * 0.48), 28, Paint()..color = const Color(0xFF065F46));
+      canvas.drawCircle(Offset(size.width * 0.86, size.height * 0.42), 34, Paint()..color = const Color(0xFF047857));
+
+      // 3. Magical Floating Fireflies
+      for (int i = 0; i < 9; i++) {
+        final fx = size.width * (0.50 + (i * 23 % 45) / 100);
+        final fy = size.height * (0.20 + (i * 37 % 60) / 100);
+        canvas.drawCircle(Offset(fx, fy), 2.2, Paint()..color = const Color(0xFF6EE7B7));
+        canvas.drawCircle(Offset(fx, fy), 5.0, Paint()..color = const Color(0xFF34D399).withValues(alpha: 0.25));
       }
     }
   }

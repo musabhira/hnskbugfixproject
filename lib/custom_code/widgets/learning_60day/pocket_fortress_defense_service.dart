@@ -126,7 +126,7 @@ const List<DefenseTrapTemplate> kDefenseTrapTemplates = [
   DefenseTrapTemplate(
     id: 'vocab_gate',
     title: 'Vocab Gate',
-    titleMalayalam: 'പദാവലി കോട്ട',
+    titleMalayalam: 'Vocabulary Bastion',
     icon: '🎯',
     description: 'Rapid vocabulary, synonyms & antonym definitions challenge.',
     category: 'vocab',
@@ -135,7 +135,7 @@ const List<DefenseTrapTemplate> kDefenseTrapTemplates = [
   DefenseTrapTemplate(
     id: 'grammar_sentry',
     title: 'Grammar Sentry',
-    titleMalayalam: 'വ്യാകരണ കെണി',
+    titleMalayalam: 'Grammar Sentry',
     icon: '💣',
     description: 'Spot tricky grammatical flaws before bombs detonate.',
     category: 'grammar',
@@ -144,7 +144,7 @@ const List<DefenseTrapTemplate> kDefenseTrapTemplates = [
   DefenseTrapTemplate(
     id: 'tense_fortress',
     title: 'Tense Fortress',
-    titleMalayalam: 'ടെൻസ് കോട്ട',
+    titleMalayalam: 'Tense Citadel',
     icon: '🏹',
     description: 'Past, present, future and conditional tense precision shots.',
     category: 'tense',
@@ -153,7 +153,7 @@ const List<DefenseTrapTemplate> kDefenseTrapTemplates = [
   DefenseTrapTemplate(
     id: 'idiom_maze',
     title: 'Idiom Maze',
-    titleMalayalam: 'ശൈലി ചതുരംഗം',
+    titleMalayalam: 'Idiom Labyrinth',
     icon: '⚡',
     description: 'Match native colloquial idioms and contextual expressions.',
     category: 'idiom',
@@ -162,7 +162,7 @@ const List<DefenseTrapTemplate> kDefenseTrapTemplates = [
   DefenseTrapTemplate(
     id: 'syntax_wall',
     title: 'Sentence Wall',
-    titleMalayalam: 'വാക്യ മതിൽ',
+    titleMalayalam: 'Syntax Bulwark',
     icon: '🧩',
     description: 'Master inverted syntax, word order, and clause links.',
     category: 'syntax',
@@ -171,7 +171,7 @@ const List<DefenseTrapTemplate> kDefenseTrapTemplates = [
   DefenseTrapTemplate(
     id: 'whisper_phantom',
     title: 'Whisper Phantom',
-    titleMalayalam: 'ശ്രവണ കോട്ട',
+    titleMalayalam: 'Acoustic Keep',
     icon: '👂',
     description: 'Missing spoken words and live audio-text context deduction.',
     category: 'listening',
@@ -180,7 +180,7 @@ const List<DefenseTrapTemplate> kDefenseTrapTemplates = [
   DefenseTrapTemplate(
     id: 'collocation_ram',
     title: 'Collocation Ram',
-    titleMalayalam: 'പദക്കൂട്ടം',
+    titleMalayalam: 'Phrasal Battering Ram',
     icon: '🔨',
     description: 'Natural English collocations, prepositions & phrasal verbs.',
     category: 'collocation',
@@ -189,7 +189,7 @@ const List<DefenseTrapTemplate> kDefenseTrapTemplates = [
   DefenseTrapTemplate(
     id: 'riddle_sphinx',
     title: 'Riddle Sphinx',
-    titleMalayalam: 'കടങ്കഥ കാവൽ',
+    titleMalayalam: 'Riddle Sphinx',
     icon: '🔮',
     description: 'Clever deduction riddles dealing massive mind-breach defense.',
     category: 'riddle',
@@ -198,7 +198,7 @@ const List<DefenseTrapTemplate> kDefenseTrapTemplates = [
   DefenseTrapTemplate(
     id: 'phonetic_thunder',
     title: 'Phonetic Thunder',
-    titleMalayalam: 'ഉച്ചാരണ ഗേറ്റ്',
+    titleMalayalam: 'Phonetic Portal',
     icon: '🎙️',
     description: 'IPA syllable stress, pronunciation, and homophone guards.',
     category: 'phonetics',
@@ -396,7 +396,7 @@ class PocketFortressDefenseService {
           newDay: downgradedDay,
           title: '⚠️ CONSISTENCY DROPPED • FOCUS LOST',
           message: 'You missed a day of English practice! Your journey was downgraded from Day $currentDay to Day $downgradedDay. Reclaim your focus and practice today!',
-          messageMalayalam: 'നിങ്ങൾ പരിശീലനം മുടക്കിയതിനാൽ നിങ്ങളുടെ സ്റ്റേജ് Day $currentDay-ൽ നിന്ന് Day $downgradedDay-ലേക്ക് ഡൗൺഗ്രേഡ് ആയി! ഫോക്കസ് വീണ്ടെടുക്കാൻ ഇന്നത്തെ മിഷൻ ഉടൻ ചെയ്യുക!',
+          messageMalayalam: 'You missed your English practice, so your stage was downgraded from Day $currentDay to Day $downgradedDay! Complete today\'s mission to regain your streak!',
         );
       }
     } catch (_) {}
