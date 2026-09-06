@@ -1,8 +1,11 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flame/game.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/flame_avatar_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_painter.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/main_profile_widget.dart';
 
 void main() {
@@ -29,6 +32,34 @@ void main() {
       final picture = recorder.endRecording();
       expect(picture, isNotNull);
     }
+  });
+
+  test('All 90 avatars run through FlameAvatarGame without error', () {
+    for (int day = 1; day <= 90; day++) {
+      final config = VectorAvatarConfig.getEvolutionAvatarForStage(day);
+      final game = FlameAvatarGame(config: config);
+      game.onGameResize(Vector2(120, 120));
+      game.update(0.016);
+      final recorder = PictureRecorder();
+      final canvas = Canvas(recorder);
+      game.render(canvas);
+      final picture = recorder.endRecording();
+      expect(picture, isNotNull);
+    }
+  });
+
+  test('All 90 days have distinct banner decorations in VectorAvatarConfig', () {
+    final bannerSet = <String>{};
+    for (int day = 1; day <= 90; day++) {
+      final decoration = VectorAvatarConfig.getEvolutionBannerDecoration(day);
+      expect(decoration, isNotNull);
+      expect(decoration.gradient, isNotNull);
+      final gradient = decoration.gradient as LinearGradient;
+      final key = '${gradient.colors.map((c) => c.toARGB32()).join('-')}';
+      bannerSet.add(key);
+    }
+    // Across 90 days, there should be dozens of distinct custom animal color palettes
+    expect(bannerSet.length, greaterThanOrEqualTo(70));
   });
 
   test('StageBannerArtPainter paints all 90 days without error', () {

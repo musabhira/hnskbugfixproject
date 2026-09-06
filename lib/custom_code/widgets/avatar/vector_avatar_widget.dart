@@ -1,10 +1,12 @@
 import 'dart:convert';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'flame_avatar_widget.dart';
 import 'vector_avatar_config.dart';
 import 'vector_avatar_painter.dart';
 
 /// Reusable Widget for rendering 2D Vector Avatars & Network/Drawn Avatars
+/// Automatically leverages the Flame Game Engine for interactive animations and aura particles!
 class VectorAvatarWidget extends StatelessWidget {
   final VectorAvatarConfig? config;
   final double size;
@@ -12,6 +14,7 @@ class VectorAvatarWidget extends StatelessWidget {
   final VoidCallback? onTap;
   final bool isInteractive;
   final BorderRadius? borderRadius;
+  final bool? useFlame;
 
   const VectorAvatarWidget({
     super.key,
@@ -21,6 +24,7 @@ class VectorAvatarWidget extends StatelessWidget {
     this.onTap,
     this.isInteractive = false,
     this.borderRadius,
+    this.useFlame,
   });
 
   @override
@@ -109,14 +113,26 @@ class VectorAvatarWidget extends StatelessWidget {
         );
       }
     } else {
-      innerContent = CustomPaint(
-        size: Size(size, size),
-        painter: VectorAvatarPainter(
+      final shouldUseFlame = useFlame ?? (size >= 44);
+      if (shouldUseFlame) {
+        innerContent = FlameAvatarWidget(
           config: effectiveConfig,
-          showBackgroundAura: showAura,
+          size: size,
+          showAura: showAura,
+          onTap: onTap,
+          isInteractive: isInteractive,
           borderRadius: borderRadius,
-        ),
-      );
+        );
+      } else {
+        innerContent = CustomPaint(
+          size: Size(size, size),
+          painter: VectorAvatarPainter(
+            config: effectiveConfig,
+            showBackgroundAura: showAura,
+            borderRadius: borderRadius,
+          ),
+        );
+      }
     }
 
     Widget avatarWidget = isImageBased

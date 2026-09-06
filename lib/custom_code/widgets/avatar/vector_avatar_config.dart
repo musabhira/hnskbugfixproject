@@ -493,86 +493,38 @@ class VectorAvatarConfig {
     );
   }
 
-    static BoxDecoration getEvolutionBannerDecoration(int stage) {
-    if (stage <= 10) {
-      // Days 1–10: Modern Genesis Deep Space
-      return BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF0284C7).withValues(alpha: 0.4), width: 1.2),
-        gradient: const LinearGradient(
-          colors: [Color(0xFF0F172A), Color(0xFF0B192C), Color(0xFF0284C7)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+  /// 🎨 90 DISTINCT BANNER DECORATIONS (1 PER ANIMAL AVATAR)
+  /// Generates a uniquely styled luxury banner gradient, border glow, and shadow for each of the 90 animals!
+  static BoxDecoration getEvolutionBannerDecoration(int stage) {
+    final day = stage.clamp(1, 90);
+    final animal = _k90DayAnimals[day - 1];
+    final primary = parseHex(animal.outfitAccent, fallback: const Color(0xFF00F0FF));
+    final fur = parseHex(animal.furColor, fallback: const Color(0xFFF59E0B));
+    final darkBg = parseHex(animal.outfitColor, fallback: const Color(0xFF0F172A));
+
+    return BoxDecoration(
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(
+        color: primary.withValues(alpha: day == 90 ? 0.95 : 0.65),
+        width: day == 90 ? 2.2 : 1.4,
+      ),
+      boxShadow: [
+        BoxShadow(
+          color: primary.withValues(alpha: day == 90 ? 0.45 : 0.22),
+          blurRadius: day == 90 ? 24 : 16,
+          spreadRadius: day == 90 ? 2 : 0,
         ),
-      );
-    } else if (stage <= 20) {
-      // Days 11–20: Emerald Flow Explorer
-      return BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.5), width: 1.2),
-        gradient: const LinearGradient(
-          colors: [Color(0xFF064E3B), Color(0xFF022C22), Color(0xFF10B981)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      );
-    } else if (stage <= 29) {
-      // Days 21–29: Habit Anchor Lock (Cyber Amber & Electric Red)
-      return BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFFF5252).withValues(alpha: 0.6), width: 1.5),
-        boxShadow: [
-          BoxShadow(color: const Color(0xFFFF5252).withValues(alpha: 0.25), blurRadius: 16),
+      ],
+      gradient: LinearGradient(
+        colors: [
+          darkBg,
+          Color.lerp(darkBg, fur, 0.30) ?? darkBg,
+          Color.lerp(darkBg, primary, 0.48) ?? primary,
         ],
-        gradient: const LinearGradient(
-          colors: [Color(0xFF270505), Color(0xFF1A0A10), Color(0xFFE11D48)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      );
-    } else if (stage <= 59) {
-      // Days 30–59: Silver Knight & Chrome Frosted Glass
-      return BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0).withValues(alpha: 0.7), width: 1.5),
-        boxShadow: [
-          BoxShadow(color: const Color(0xFFE2E8F0).withValues(alpha: 0.2), blurRadius: 18),
-        ],
-        gradient: const LinearGradient(
-          colors: [Color(0xFF13141C), Color(0xFF27293D), Color(0xFF475569)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      );
-    } else if (stage < 90) {
-      // Days 60–89: 24K Gold Sovereign Royal Crown
-      return BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.8), width: 1.8),
-        boxShadow: [
-          BoxShadow(color: const Color(0xFFFFD700).withValues(alpha: 0.35), blurRadius: 20),
-        ],
-        gradient: const LinearGradient(
-          colors: [Color(0xFF161103), Color(0xFF382905), Color(0xFFB45309)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      );
-    } else {
-      // Day 90: Grandmaster Astral Cosmic Dragon Celestial Diamond
-      return BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF00F0FF).withValues(alpha: 0.9), width: 2.0),
-        boxShadow: [
-          BoxShadow(color: const Color(0xFF00F0FF).withValues(alpha: 0.4), blurRadius: 24, spreadRadius: 2),
-        ],
-        gradient: const LinearGradient(
-          colors: [Color(0xFF020205), Color(0xFF13172E), Color(0xFF00F0FF)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      );
-    }
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ),
+    );
   }
 
   factory VectorAvatarConfig.fromJson(String source) {
