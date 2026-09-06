@@ -705,11 +705,10 @@ class _FlameProfileBannerWidgetState extends State<FlameProfileBannerWidget> {
             ),
           ),
 
-          // 3. Luxury Holographic Showcase Pedestal Card (Bottom)
+          // 3. Subtle Interactive Tap Hint on Banner (Bottom-Right)
           Positioned(
-            left: 14,
+            bottom: 10,
             right: 14,
-            bottom: 12,
             child: GestureDetector(
               onTap: () {
                 HapticFeedback.mediumImpact();
@@ -722,205 +721,302 @@ class _FlameProfileBannerWidgetState extends State<FlameProfileBannerWidget> {
                 );
               },
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4.5),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.black.withValues(alpha: 0.90),
-                      const Color(0xFF0F172A).withValues(alpha: 0.85),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(18),
+                  color: Colors.black.withValues(alpha: 0.65),
+                  borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: widget.stage.buttonColor.withValues(alpha: 0.8),
-                    width: 1.4,
+                    color: const Color(0xFFFFD700).withValues(alpha: 0.6),
+                    width: 1.0,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: widget.stage.buttonColor.withValues(alpha: 0.35),
-                      blurRadius: 18,
-                      offset: const Offset(0, 4),
+                      color: Colors.black.withValues(alpha: 0.4),
+                      blurRadius: 8,
                     ),
                   ],
                 ),
                 child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Live Flame Engine Animated Avatar Preview
-                    Container(
-                      width: 54,
-                      height: 54,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: widget.stage.buttonColor.withValues(alpha: 0.85),
-                          width: 1.5,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: widget.stage.buttonColor.withValues(alpha: 0.4),
-                            blurRadius: 12,
-                          ),
-                        ],
+                    const Text('💎', style: TextStyle(fontSize: 11)),
+                    const SizedBox(width: 4),
+                    Text(
+                      '3D NFT CARD',
+                      style: GoogleFonts.outfit(
+                        color: const Color(0xFFFFFC00),
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.5,
                       ),
-                      child: ClipOval(
-                        child: FlameAvatarWidget(
-                          config: widget.avatar,
-                          size: 50,
-                          showAura: true,
-                          isInteractive: false,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-
-                    // Companion Name, Tier & Perk
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Row(
-                            children: [
-                              Text(
-                                widget.stage.fluencyTier,
-                                style: GoogleFonts.outfit(
-                                  color: widget.stage.buttonColor,
-                                  fontSize: 10.5,
-                                  fontWeight: FontWeight.w900,
-                                ),
-                              ),
-                              const SizedBox(width: 6),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
-                                decoration: BoxDecoration(
-                                  color: perk.badgeColor.withValues(alpha: 0.2),
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: Text(
-                                  perk.title,
-                                  style: TextStyle(
-                                    color: perk.badgeColor,
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            speciesTitle,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.outfit(
-                              color: Colors.white,
-                              fontSize: 13.5,
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    // Quick Actions: NFT Card & Jackie Chan Talisman
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // View NFT Button
-                        GestureDetector(
-                          onTap: () {
-                            HapticFeedback.mediumImpact();
-                            NftTradingCardDialog.show(
-                              context,
-                              day: widget.day,
-                              config: widget.avatar,
-                              userId: widget.userId,
-                              isOwner: widget.isMe,
-                            );
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                            margin: const EdgeInsets.only(right: 6),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  widget.stage.buttonColor.withValues(alpha: 0.85),
-                                  const Color(0xFF0284C7),
-                                ],
-                              ),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: const [
-                                Text('💎', style: TextStyle(fontSize: 12)),
-                                SizedBox(width: 4),
-                                Text(
-                                  'NFT',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w900,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-
-                        // Zodiac Talisman Button
-                        GestureDetector(
-                          onTap: () async {
-                            HapticFeedback.mediumImpact();
-                            await JackieChanTalismanVaultModal.show(context, currentDay: widget.day);
-                            final talisman = await JackieChanTalismanService.getEquippedTalisman();
-                            widget.onTalismanChanged?.call(talisman.id);
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [Color(0xFFDC2626), Color(0xFFD97706)],
-                              ),
-                              borderRadius: BorderRadius.circular(10),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: const Color(0xFFF59E0B).withValues(alpha: 0.4),
-                                  blurRadius: 6,
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  kJackieChanTalismans.firstWhere(
-                                    (t) => t.id == (widget.equippedTalismanId ?? 'rabbit'),
-                                    orElse: () => kJackieChanTalismans.first,
-                                  ).emoji,
-                                  style: const TextStyle(fontSize: 12),
-                                ),
-                                const SizedBox(width: 3),
-                                const Text(
-                                  'VAULT',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 9.5,
-                                    fontWeight: FontWeight.w900,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
                     ),
                   ],
                 ),
               ),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// 🐾 Clean Pedestal Showcase Card placed BELOW the banner in profile content
+/// Shows the companion avatar, fluency tier, species, perk, NFT viewer, and Jackie Chan Talisman vault!
+class FlameCompanionShowcaseCard extends StatelessWidget {
+  final int day;
+  final LearningMilestoneStage stage;
+  final VectorAvatarConfig avatar;
+  final String? userId;
+  final bool isMe;
+  final String? equippedTalismanId;
+  final Function(String talismanId)? onTalismanChanged;
+
+  const FlameCompanionShowcaseCard({
+    super.key,
+    required this.day,
+    required this.stage,
+    required this.avatar,
+    this.userId,
+    this.isMe = false,
+    this.equippedTalismanId,
+    this.onTalismanChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final speciesTitle = avatar.species
+        .replaceAll('_', ' ')
+        .split(' ')
+        .map((w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '')
+        .join(' ');
+
+    final perk = VectorAvatarConfig.getAvatarPerkForDay(day);
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            const Color(0xFF0F172A),
+            const Color(0xFF1E1B4B),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: stage.buttonColor.withValues(alpha: 0.75),
+          width: 1.4,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: stage.buttonColor.withValues(alpha: 0.25),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          // Live Flame Animated Avatar Preview
+          GestureDetector(
+            onTap: () {
+              HapticFeedback.mediumImpact();
+              NftTradingCardDialog.show(
+                context,
+                day: day,
+                config: avatar,
+                userId: userId,
+                isOwner: isMe,
+              );
+            },
+            child: Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: stage.buttonColor.withValues(alpha: 0.85),
+                  width: 1.5,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: stage.buttonColor.withValues(alpha: 0.4),
+                    blurRadius: 10,
+                  ),
+                ],
+              ),
+              child: ClipOval(
+                child: FlameAvatarWidget(
+                  config: avatar,
+                  size: 48,
+                  showAura: true,
+                  isInteractive: false,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+
+          // Companion details: Tier, species, perk
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      stage.fluencyTier,
+                      style: GoogleFonts.outfit(
+                        color: stage.buttonColor,
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                      decoration: BoxDecoration(
+                        color: perk.badgeColor.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        perk.title,
+                        style: TextStyle(
+                          color: perk.badgeColor,
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  speciesTitle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.outfit(
+                    color: Colors.white,
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  perk.description,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.inter(
+                    color: Colors.white60,
+                    fontSize: 10,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Action buttons: NFT Card & Talisman Vault
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // 💎 NFT Card Button
+              GestureDetector(
+                onTap: () {
+                  HapticFeedback.mediumImpact();
+                  NftTradingCardDialog.show(
+                    context,
+                    day: day,
+                    config: avatar,
+                    userId: userId,
+                    isOwner: isMe,
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 7),
+                  margin: const EdgeInsets.only(right: 6),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        stage.buttonColor.withValues(alpha: 0.85),
+                        const Color(0xFF0284C7),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: [
+                      BoxShadow(
+                        color: stage.buttonColor.withValues(alpha: 0.3),
+                        blurRadius: 6,
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: const [
+                      Text('💎', style: TextStyle(fontSize: 12)),
+                      SizedBox(width: 4),
+                      Text(
+                        'NFT',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // 🔮 Zodiac Talisman Vault Button
+              GestureDetector(
+                onTap: () async {
+                  HapticFeedback.mediumImpact();
+                  await JackieChanTalismanVaultModal.show(context, currentDay: day);
+                  final talisman = await JackieChanTalismanService.getEquippedTalisman();
+                  onTalismanChanged?.call(talisman.id);
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 7),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFFDC2626), Color(0xFFD97706)],
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFF59E0B).withValues(alpha: 0.4),
+                        blurRadius: 6,
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        kJackieChanTalismans.firstWhere(
+                          (t) => t.id == (equippedTalismanId ?? 'rabbit'),
+                          orElse: () => kJackieChanTalismans.first,
+                        ).emoji,
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                      const SizedBox(width: 3),
+                      const Text(
+                        'VAULT',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),

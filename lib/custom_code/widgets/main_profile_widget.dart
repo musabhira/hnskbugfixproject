@@ -1814,6 +1814,18 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (isMe) _buildDualProfileSegmentSwitcher(textColor, btnColor, btnTextColor, isDark),
+        if (!_isPublicProfileView)
+          FlameCompanionShowcaseCard(
+            day: day,
+            stage: activeStage,
+            avatar: VectorAvatarConfig.getEvolutionAvatarForStage(day),
+            userId: userId,
+            isMe: isMe,
+            equippedTalismanId: _equippedTalismanId,
+            onTalismanChanged: (talismanId) {
+              if (mounted) setState(() => _equippedTalismanId = talismanId);
+            },
+          ),
         headerContent,
         if (!_isPublicProfileView) ...[
           Learning60DayProfileCard(userId: userId),
