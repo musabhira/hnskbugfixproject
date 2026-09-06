@@ -25,6 +25,121 @@ class PocketDefenseTrapModal extends StatefulWidget {
     );
   }
 
+  /// 🛡️ Instant Prompt when a task/challenge is completed:
+  /// As specified by user: "ഒരു ടാസ്ക് കഴിഞ്ഞു കഴിഞ്ഞാൽ അപ്പോ തന്നെ കാണിക്കും നിങ്ങൾക് ക്വസ്റ്റ്യൻ എഴുതാനുള്ള, ക്വസ്റ്റ്യനും ഓപ്ഷനും എഴുതാനുള്ളത് ചോദിക്കും"
+  static Future<void> showShieldUnlockPrompt(
+    BuildContext context, {
+    required int day,
+    int coins = 100,
+  }) async {
+    final maxAllowed = PocketFortressDefenseService.getMaxQuestionsForStage(day);
+    return showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        padding: const EdgeInsets.fromLTRB(20, 14, 20, 24),
+        decoration: const BoxDecoration(
+          color: Color(0xFF0F172A),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          border: Border(top: BorderSide(color: Color(0xFFFFFC00), width: 2)),
+        ),
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 44,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.white24,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
+                  border: Border.all(color: const Color(0xFFFFFC00), width: 1.5),
+                ),
+                child: const Text('🛡️', style: TextStyle(fontSize: 32)),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Day $day Defense Shield Slot Unlocked!',
+                style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'You completed a challenge! You now have $maxAllowed total defense slots. Craft your tricky English question and 4 options now to defend your house against raiders in Pocket World!',
+                style: GoogleFonts.outfit(
+                  color: Colors.white70,
+                  fontSize: 13,
+                  height: 1.4,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.white70,
+                        side: const BorderSide(color: Colors.white24),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      onPressed: () => Navigator.pop(ctx),
+                      child: Text(
+                        'Deploy Later',
+                        style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    flex: 2,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFFFFC00),
+                        foregroundColor: Colors.black,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                        PocketDefenseTrapModal.show(context, day);
+                      },
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.shield_outlined, size: 18),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Craft Shield Now',
+                            style: GoogleFonts.outfit(fontWeight: FontWeight.w900),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   State<PocketDefenseTrapModal> createState() => _PocketDefenseTrapModalState();
 }
@@ -38,6 +153,7 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
   HouseDefenseStatus _houseStatus = const HouseDefenseStatus();
   bool _isLoading = true;
   bool _isBanned = false;
+  bool _isUnderPresidentInspection = false;
 
   @override
   void initState() {
@@ -57,6 +173,7 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
     final qList = await PocketFortressDefenseService.loadShieldQuestions(widget.userDay);
     final activeTraps = await PocketFortressDefenseService.getActiveShieldTraps(widget.userDay);
     final banned = await PocketFortressDefenseService.isHouseBanned('me');
+    final underInspection = await PocketFortressDefenseService.isUnderPresidentInspection('me');
     if (mounted) {
       setState(() {
         _houseStatus = status;
@@ -66,9 +183,66 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
           _selectedTrapIdx = 0;
         }
         _isBanned = banned || status.isBanned;
+        _isUnderPresidentInspection = underInspection || status.isUnderPresidentInspection;
         _isLoading = false;
       });
     }
+  }
+
+  void _showRebuildConfirmDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF0F172A),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: const BorderSide(color: Colors.amberAccent, width: 1.5),
+        ),
+        title: Row(
+          children: [
+            const Text('🔨', style: TextStyle(fontSize: 22)),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Rebuild Fortress from Day 1',
+                style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          'Demolish your condemned house and wipe previous fraudulent defenses? You will regain full access to Pocket World with 100 HP and restart your defense journey with clean, fair-play English questions.',
+          style: GoogleFonts.outfit(color: Colors.white70, fontSize: 12, height: 1.4),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel', style: TextStyle(color: Colors.white60)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.amberAccent,
+              foregroundColor: Colors.black,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await PocketFortressDefenseService.rebuildHouseFromScratch('me');
+              await _loadData();
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('🔨 House rebuilt from scratch! Banned decree cleared. Start crafting fair defenses!'),
+                    backgroundColor: Color(0xFF10B981),
+                  ),
+                );
+              }
+            },
+            child: const Text('Demolish & Rebuild', style: TextStyle(fontWeight: FontWeight.w900)),
+          ),
+        ],
+      ),
+    );
   }
 
   void _openAddEditDialog({int? editIndex, String? preselectedTrapType}) {
@@ -777,25 +951,94 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
               borderRadius: BorderRadius.circular(14),
               border: Border.all(color: Colors.redAccent, width: 1.5),
             ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Text('🚫', style: TextStyle(fontSize: 22)),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'HOUSE CONDEMNED BY PRESIDENTIAL DECREE',
+                            style: GoogleFonts.outfit(
+                              color: Colors.red.shade200,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          const Text(
+                            'Your house was reported via President Call and audited. Due to fraudulent/fake defense traps, your house is banned. You must demolish and rebuild to play again.',
+                            style: TextStyle(color: Colors.white70, fontSize: 10.5),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.amberAccent,
+                      foregroundColor: Colors.black,
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    onPressed: _showRebuildConfirmDialog,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text('🔨', style: TextStyle(fontSize: 14)),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Demolish & Rebuild Fortress from Day 1',
+                          style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 11.5),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+        // ⚖️ President Call Pending Inspection Banner
+        if (_isUnderPresidentInspection && !_isBanned)
+          Container(
+            padding: const EdgeInsets.all(12),
+            margin: const EdgeInsets.only(bottom: 10),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF78350F), Color(0xFF451A03)],
+              ),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: Colors.amberAccent, width: 1.5),
+            ),
             child: Row(
               children: [
-                const Text('🚫', style: TextStyle(fontSize: 22)),
+                const Text('⚖️', style: TextStyle(fontSize: 22)),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'PRESIDENTIAL BAN IN EFFECT',
+                        'PRESIDENT CALL ACTIVE • INSPECTION PENDING',
                         style: GoogleFonts.outfit(
-                          color: Colors.red.shade200,
+                          color: Colors.amber.shade200,
                           fontSize: 12,
                           fontWeight: FontWeight.w900,
                         ),
                       ),
                       const SizedBox(height: 2),
                       const Text(
-                        'Your house has been banned by Admin due to reports of invalid defense questions. Fortress protection is temporarily suspended.',
+                        'A raider filed a President Call against your house. President Zoyarex is reviewing your defense questions for fair play!',
                         style: TextStyle(color: Colors.white70, fontSize: 10.5),
                       ),
                     ],

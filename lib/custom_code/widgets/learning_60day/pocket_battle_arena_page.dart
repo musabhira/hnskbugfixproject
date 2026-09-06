@@ -484,7 +484,7 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
   }
 
   // ============================================================
-  // 🚩 FAIR-PLAY DEFENSE REPORT BUTTON & DIALOG (ATTACKER TOOLS)
+  // 📞 FAIR-PLAY DEFENSE PRESIDENT CALL (ATTACKER AUDIT TOOLS)
   // ============================================================
 
   Widget _buildReportButton({
@@ -502,17 +502,17 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
-          color: Colors.red.withValues(alpha: 0.15),
+          color: Colors.red.withValues(alpha: 0.18),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.redAccent.withValues(alpha: 0.4), width: 1),
+          border: Border.all(color: Colors.redAccent.withValues(alpha: 0.5), width: 1),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('🚩', style: TextStyle(fontSize: 11)),
+            const Text('📞', style: TextStyle(fontSize: 11)),
             const SizedBox(width: 4),
             Text(
-              'Report Fake',
+              'President Call',
               style: GoogleFonts.outfit(
                 color: Colors.red.shade300,
                 fontSize: 10.5,
@@ -545,16 +545,29 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
             ),
             title: Row(
               children: [
-                const Text('🚩', style: TextStyle(fontSize: 22)),
+                const Text('📞', style: TextStyle(fontSize: 22)),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: Text(
-                    'Report Fake Question',
-                    style: GoogleFonts.outfit(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'PRESIDENT CALL',
+                        style: GoogleFonts.outfit(
+                          color: Colors.redAccent,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      Text(
+                        'Summon Presidential Inspection for Fake Shield',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white70,
+                          fontSize: 11,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -663,7 +676,7 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
                   );
                 },
                 child: const Text(
-                  '🚩 Submit & Bypass (+15 DMG)',
+                  '📞 Dispatch President Call (+15 DMG)',
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11.5),
                 ),
               ),
@@ -747,7 +760,7 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
       reporterId: 'player_attacker',
       reporterName: 'Attacking Scout',
       reason: reason,
-      details: details.isEmpty ? 'Reported during live PvP Siege.' : details,
+      details: details.isEmpty ? 'Reported during live PvP Siege via President Call.' : details,
     );
 
     // Fair-play bypass: Deal +15 bonus damage and jump to next question
@@ -768,11 +781,11 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           content: Row(
             children: const [
-              Text('🚩', style: TextStyle(fontSize: 18)),
+              Text('📞', style: TextStyle(fontSize: 18)),
               SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'Question reported for admin review! Deceptive trap bypassed with +15 bonus damage.',
+                  'PRESIDENT CALL DISPATCHED! Presidential inspection scheduled. Deceptive trap bypassed with +15 damage!',
                   style: TextStyle(color: Colors.white, fontSize: 11.5),
                 ),
               ),

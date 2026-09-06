@@ -13,6 +13,7 @@ import 'package:pocket_mates_app/custom_code/widgets/avatar/nft_trading_card_dia
 import 'pocket_battle_arena_page.dart';
 import 'pocket_world_street_page.dart';
 import 'pocket_fortress_defense_service.dart';
+import 'pocket_defense_trap_modal.dart';
 import 'pocket_arsenal_store_modal.dart';
 import 'day90_vip_master_card_dialog.dart';
 
@@ -289,6 +290,17 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
           behavior: SnackBarBehavior.floating,
         ),
       );
+
+      // Prompt to craft Day's Defense Shield immediately
+      Future.delayed(const Duration(milliseconds: 700), () {
+        if (mounted) {
+          PocketDefenseTrapModal.showShieldUnlockPrompt(
+            context,
+            day: _progress?.currentDay ?? 1,
+            coins: _progress?.totalPoints ?? 100,
+          );
+        }
+      });
     }
   }
 

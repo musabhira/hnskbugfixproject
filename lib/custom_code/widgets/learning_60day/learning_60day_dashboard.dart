@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'learning_models.dart';
 import 'learning_service.dart';
 import 'pocket_fortress_defense_service.dart';
+import 'pocket_defense_trap_modal.dart';
 
 /// Interactive Sheet & Dashboard for the 90-Day English Transformation & Profile Palette System
 class Learning60DayDashboardSheet extends StatefulWidget {
@@ -84,6 +85,17 @@ class _Learning60DayDashboardSheetState extends State<Learning60DayDashboardShee
           behavior: SnackBarBehavior.floating,
         ),
       );
+
+      // Prompt to craft Defense Shield immediately upon completing challenge
+      Future.delayed(const Duration(milliseconds: 700), () {
+        if (mounted) {
+          PocketDefenseTrapModal.showShieldUnlockPrompt(
+            context,
+            day: updated.currentDay,
+            coins: updated.totalPoints,
+          );
+        }
+      });
     }
   }
 

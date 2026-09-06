@@ -94,4 +94,53 @@ void main() {
       expect(status.isDamaged, isFalse);
     });
   });
+
+  group('President Call & House Condemnation/Rebuild Mechanics', () {
+    test('Filing President Call places house under Presidential Inspection', () async {
+      await PocketFortressDefenseService.fileDefenseReport(
+        houseId: 'suspect_house_1',
+        houseOwnerName: 'FakeTroll',
+        questionId: 'q_fake_99',
+        questionText: 'asdfg hjkl qwerty ???',
+        options: const ['A', 'B', 'C', 'D'],
+        correctIndex: 0,
+        reporterId: 'attacker_hero',
+        reporterName: 'Scout Scout',
+        reason: 'fake_gibberish',
+        details: 'Reported via President Call during live PvP Siege.',
+      );
+
+      final underInspection = await PocketFortressDefenseService.isUnderPresidentInspection('suspect_house_1');
+      expect(underInspection, isTrue);
+    });
+
+    test('Presidential Decree bans condemned house', () async {
+      await PocketFortressDefenseService.banHouse(
+        'suspect_house_1',
+        reason: 'Presidential Decree: Fraudulent / Fake English Defenses',
+      );
+
+      final isBanned = await PocketFortressDefenseService.isHouseBanned('suspect_house_1');
+      expect(isBanned, isTrue);
+    });
+
+    test('Player can rebuild condemned house from scratch to restart from Day 1', () async {
+      // Ban player's house
+      await PocketFortressDefenseService.banHouse('me', reason: 'Presidential Decree');
+      expect(await PocketFortressDefenseService.isHouseBanned('me'), isTrue);
+
+      // Rebuild from scratch
+      await PocketFortressDefenseService.rebuildHouseFromScratch('me');
+
+      // Verify ban is cleared, house status restored to 100 HP, questions wiped
+      expect(await PocketFortressDefenseService.isHouseBanned('me'), isFalse);
+      final status = await PocketFortressDefenseService.getHouseStatus(1);
+      expect(status.isBanned, isFalse);
+      expect(status.currentHp, 100);
+      expect(status.isDamaged, isFalse);
+
+      final questions = await PocketFortressDefenseService.loadShieldQuestions(1);
+      expect(questions, isEmpty); // Wiped clean to start over from Day 1
+    });
+  });
 }

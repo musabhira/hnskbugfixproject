@@ -288,6 +288,7 @@ class HouseDefenseStatus {
   final int activityPoints; // ⚡ Fortress Defense Credits (FDC) from voice calls, chats, vibes
   final bool isBanned;
   final String? banReason;
+  final bool isUnderPresidentInspection;
   final List<String> activeShieldTraps; // 1 up to 9 active defense gates
 
   const HouseDefenseStatus({
@@ -302,6 +303,7 @@ class HouseDefenseStatus {
     this.activityPoints = 80,
     this.isBanned = false,
     this.banReason,
+    this.isUnderPresidentInspection = false,
     this.activeShieldTraps = const ['vocab_gate'],
   });
 
@@ -459,6 +461,7 @@ class PocketFortressDefenseService {
     final coins = prefs.getInt(_coinsKey) ?? 150;
     final fdc = prefs.getInt(_activityPointsKey) ?? 80;
     final banned = prefs.getBool(_banKey) ?? false;
+    final underInspection = await isUnderPresidentInspection('me');
     final activeTraps = await getActiveShieldTraps(stage);
 
     return HouseDefenseStatus(
@@ -472,7 +475,8 @@ class PocketFortressDefenseService {
       totalCoins: coins,
       activityPoints: fdc,
       isBanned: banned,
-      banReason: banned ? 'Violating Fair Play by publishing fake English questions.' : null,
+      banReason: banned ? 'Condemned by Presidential Decree: Reported fake English defenses.' : null,
+      isUnderPresidentInspection: underInspection,
       activeShieldTraps: activeTraps,
     );
   }
@@ -1229,6 +1233,52 @@ class PocketFortressDefenseService {
     }
     final bannedSet = (prefs.getStringList(_bannedHousesKey) ?? []).toSet();
     return bannedSet.contains(houseId);
+  }
+
+  /// ⚖️ Check if a house is under active Presidential inspection (unresolved President Call)
+  static Future<bool> isUnderPresidentInspection(String houseId) async {
+    final reports = await getDefenseReports();
+    return reports.any((r) => r.houseId == houseId && r.status == 'pending');
+  }
+
+  /// 🔨 Rebuild House from Scratch after a Presidential Ban/Condemnation
+  /// As specified by user: "ബാൻ ആക്കിക്കഴിഞ്ഞു കഴിഞ്ഞാൽ അവർക്ക് ആ വീട് യൂസ് ചെയ്യാൻ പറ്റില്ല, പിന്നെ ഫസ്റ്റ്ട്ട് തുടങ്ങണം"
+  static Future<void> rebuildHouseFromScratch(String houseId) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    // 1. Remove ban status
+    await unbanHouse(houseId);
+
+    // 2. If player's own house, wipe all defense questions and restore full health
+    if (houseId == 'me') {
+      await saveShieldQuestions([]);
+      await prefs.setInt(_hpKey, 100);
+      await prefs.setBool(_banKey, false);
+    }
+
+    // 3. Clear/dismiss pending reports for this house
+    final reports = await getDefenseReports();
+    final updated = reports.map((r) {
+      if (r.houseId == houseId) {
+        return DefenseQuestionReport(
+          reportId: r.reportId,
+          houseId: r.houseId,
+          houseOwnerName: r.houseOwnerName,
+          questionId: r.questionId,
+          questionText: r.questionText,
+          options: r.options,
+          correctIndex: r.correctIndex,
+          reporterId: r.reporterId,
+          reporterName: r.reporterName,
+          reason: r.reason,
+          details: r.details,
+          reportedAt: r.reportedAt,
+          status: 'dismissed',
+        );
+      }
+      return r;
+    }).toList();
+    await prefs.setStringList(_reportsKey, updated.map((r) => jsonEncode(r.toJson())).toList());
   }
 }
 

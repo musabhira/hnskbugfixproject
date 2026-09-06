@@ -1898,8 +1898,101 @@ class _FlameEnglishHouseWidgetState extends State<FlameEnglishHouseWidget> {
             child: GameWidget(game: _game),
           ),
 
+          // 🚫 Condemned by Presidential Decree Banner
+          if (_defenseStatus.isBanned)
+            Positioned(
+              top: 38,
+              left: 14,
+              right: 14,
+              child: GestureDetector(
+                onTap: () async {
+                  PocketDefenseTrapModal.show(context, widget.currentDay);
+                  await Future.delayed(const Duration(milliseconds: 500));
+                  _loadDefenseStatus();
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF450A0A), Color(0xFF7F1D1D)],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.redAccent, width: 1.5),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.red.withValues(alpha: 0.5),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      const Text('🚫', style: TextStyle(fontSize: 14)),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          'CONDEMNED BY PRESIDENTIAL DECREE • TAP TO REBUILD',
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontSize: 9.5,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: Colors.amberAccent,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: const Text(
+                          'REBUILD',
+                          style: TextStyle(color: Colors.black, fontSize: 9, fontWeight: FontWeight.w900),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            )
+          // ⚖️ President Call Pending Inspection Banner
+          else if (_defenseStatus.isUnderPresidentInspection)
+            Positioned(
+              top: 38,
+              left: 14,
+              right: 14,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF78350F), Color(0xFF92400E)],
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.amberAccent, width: 1.2),
+                ),
+                child: Row(
+                  children: [
+                    const Text('⚖️', style: TextStyle(fontSize: 13)),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        'PRESIDENT CALL PENDING • AUDIT IN PROGRESS',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )
           // 🏚️ Damaged House Alert Ribbon (Visible when breached in a raid)
-          if (_defenseStatus.isDamaged || _defenseStatus.currentHp < 100)
+          else if (_defenseStatus.isDamaged || _defenseStatus.currentHp < 100)
             Positioned(
               top: 38,
               left: 14,
