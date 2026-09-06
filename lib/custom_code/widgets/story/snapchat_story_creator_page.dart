@@ -11,6 +11,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:image/image.dart' as img;
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortress_defense_service.dart';
 
 class StoryStickerItem {
   final String id;
@@ -639,6 +640,9 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
 
       await supabase.from('statuses').insert(statusData).timeout(const Duration(seconds: 10));
 
+      // Record activity points for Fortress Defense Credits
+      PocketFortressDefenseService.recordActivityPoints('vibe_post');
+
       setState(() => _uploadProgress = 1.0);
 
       if (mounted) {
@@ -648,9 +652,13 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
               children: [
                 const Icon(Icons.check_circle, color: Colors.black),
                 const SizedBox(width: 8),
-                Text(
-                  _isPrivateStory ? '🔒 Shared to Pocket Mates Story!' : '🌟 Shared to Public Vibes!',
-                  style: GoogleFonts.outfit(color: Colors.black, fontWeight: FontWeight.bold),
+                Expanded(
+                  child: Text(
+                    _isPrivateStory
+                        ? '🔒 Shared to Pocket Mates Story! (+15 FDC)'
+                        : '🌟 Shared to Public Vibes! (+15 FDC)',
+                    style: GoogleFonts.outfit(color: Colors.black, fontWeight: FontWeight.bold),
+                  ),
                 ),
               ],
             ),

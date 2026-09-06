@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'learning_models.dart';
 import 'learning_service.dart';
+import 'pocket_fortress_defense_service.dart';
 
 /// Interactive Sheet & Dashboard for the 90-Day English Transformation & Profile Palette System
 class Learning60DayDashboardSheet extends StatefulWidget {
@@ -59,6 +60,7 @@ class _Learning60DayDashboardSheetState extends State<Learning60DayDashboardShee
       userId: widget.userId,
       taskId: task.id,
     );
+    PocketFortressDefenseService.recordActivityPoints('daily_mission');
     if (mounted) {
       setState(() {
         _progress = updated;
@@ -72,7 +74,7 @@ class _Learning60DayDashboardSheetState extends State<Learning60DayDashboardShee
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'Completed "${task.title}"! +${task.points} Points 🎉',
+                  'Completed "${task.title}"! +${task.points} Points • +30 FDC 🎉',
                   style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: Colors.white),
                 ),
               ),

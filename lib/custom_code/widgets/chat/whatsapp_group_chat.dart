@@ -53,6 +53,7 @@ import 'package:pocket_mates_app/custom_code/widgets/snap/snap_view_dialog.dart'
 
 import 'package:pocket_mates_app/flutter_flow/flutter_flow_theme.dart';
 import 'package:pocket_mates_app/auth/auth_helper.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortress_defense_service.dart';
 
 class WhatsAppGroupChat extends ConsumerStatefulWidget {
   final double? width;
@@ -494,6 +495,10 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
         int currentPoints = prefs.getInt('english_hub_points') ?? 0;
         int pointsToAdd = messageType == 'voice' ? 5 : 1;
         await prefs.setInt('english_hub_points', currentPoints + pointsToAdd);
+      }
+
+      if (message != null) {
+        PocketFortressDefenseService.recordActivityPoints('group_chat');
       }
 
       return message?.id;

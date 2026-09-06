@@ -265,6 +265,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     for (var task in _progress!.todayTasks) {
       await Learning60DayService().completeTask(userId: uid, taskId: task.id);
     }
+    await PocketFortressDefenseService.recordActivityPoints('daily_mission');
 
     await _loadData();
 
@@ -277,7 +278,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'Today\'s English Missions Complete! +70 Pocket Score Awarded.',
+                  'Today\'s English Missions Complete! +70 Score • +30 FDC Awarded.',
                   style: GoogleFonts.outfit(
                       fontWeight: FontWeight.bold, color: Colors.white),
                 ),

@@ -9,6 +9,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'dart:ui' as ui;
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter/services.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortress_defense_service.dart';
 
 class NativeWebRTCCallScreen extends StatefulWidget {
   final String mode; // 'Video', 'Voice', or 'Text'
@@ -54,6 +55,7 @@ class _NativeWebRTCCallScreenState extends State<NativeWebRTCCallScreen> {
   final TextEditingController _roomController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final ScrollController _chatScrollController = ScrollController();
+  bool _fdcAwardedForCall = false;
 
   final Map<String, dynamic> _configuration = {
     'iceServers': [
@@ -225,6 +227,7 @@ class _NativeWebRTCCallScreenState extends State<NativeWebRTCCallScreen> {
         isConnected = true;
         isSearching = false;
       });
+      _awardCallFdcPoints();
     }
   }
 
@@ -293,6 +296,7 @@ class _NativeWebRTCCallScreenState extends State<NativeWebRTCCallScreen> {
           _statusText = 'Connected';
         });
         _connectionTimeoutTimer?.cancel();
+        _awardCallFdcPoints();
       }
     };
 
@@ -442,7 +446,39 @@ class _NativeWebRTCCallScreenState extends State<NativeWebRTCCallScreen> {
     Navigator.pop(context);
   }
 
+  Future<void> _awardCallFdcPoints() async {
+    if (_fdcAwardedForCall) return;
+    _fdcAwardedForCall = true;
+    try {
+      final total = await PocketFortressDefenseService.recordActivityPoints('voice_talk');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.shield_rounded, color: Color(0xFFFFFC00)),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    '+20 Fortress Defense Credits (FDC) earned! Total: $total FDC',
+                    style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: const Color(0xFF0F172A),
+            duration: const Duration(seconds: 3),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Error awarding FDC points: $e');
+    }
+  }
+
   Future<void> _cleanupRoom() async {
+    _fdcAwardedForCall = false;
     _connectionTimeoutTimer?.cancel();
     _matchingLoopTimer?.cancel();
     
