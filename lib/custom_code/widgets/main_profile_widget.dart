@@ -2000,12 +2000,14 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               const SizedBox(width: 14),
               Expanded(
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    _buildStatItem("Friends", _friendsCount, textColor, activeStage),
-                    _buildStatItem("Followers", _followersCount, textColor, activeStage),
-                    _buildStatItem("Following", _followingCount, textColor, activeStage),
-                    _buildAchievementsStatItem(textColor, activeStage, activeStage.day),
+                    Expanded(child: FittedBox(fit: BoxFit.scaleDown, child: _buildStatItem("Friends", _friendsCount, textColor, activeStage))),
+                    const SizedBox(width: 4),
+                    Expanded(child: FittedBox(fit: BoxFit.scaleDown, child: _buildStatItem("Followers", _followersCount, textColor, activeStage))),
+                    const SizedBox(width: 4),
+                    Expanded(child: FittedBox(fit: BoxFit.scaleDown, child: _buildStatItem("Following", _followingCount, textColor, activeStage))),
+                    const SizedBox(width: 4),
+                    Expanded(child: FittedBox(fit: BoxFit.scaleDown, child: _buildAchievementsStatItem(textColor, activeStage, activeStage.day))),
                   ],
                 ),
               ),
@@ -2053,12 +2055,14 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             children: [
               Expanded(
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    _buildStatItem("Friends", _friendsCount, textColor, activeStage),
-                    _buildStatItem("Followers", _followersCount, textColor, activeStage),
-                    _buildStatItem("Following", _followingCount, textColor, activeStage),
-                    _buildAchievementsStatItem(textColor, activeStage, activeStage.day),
+                    Expanded(child: FittedBox(fit: BoxFit.scaleDown, child: _buildStatItem("Friends", _friendsCount, textColor, activeStage))),
+                    const SizedBox(width: 4),
+                    Expanded(child: FittedBox(fit: BoxFit.scaleDown, child: _buildStatItem("Followers", _followersCount, textColor, activeStage))),
+                    const SizedBox(width: 4),
+                    Expanded(child: FittedBox(fit: BoxFit.scaleDown, child: _buildStatItem("Following", _followingCount, textColor, activeStage))),
+                    const SizedBox(width: 4),
+                    Expanded(child: FittedBox(fit: BoxFit.scaleDown, child: _buildAchievementsStatItem(textColor, activeStage, activeStage.day))),
                   ],
                 ),
               ),
@@ -2253,12 +2257,14 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               const SizedBox(width: 14),
               Expanded(
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    _buildStatItem("Friends", _friendsCount, textColor, activeStage),
-                    _buildStatItem("Followers", _followersCount, textColor, activeStage),
-                    _buildStatItem("Following", _followingCount, textColor, activeStage),
-                    _buildAchievementsStatItem(textColor, activeStage, activeStage.day),
+                    Expanded(child: FittedBox(fit: BoxFit.scaleDown, child: _buildStatItem("Friends", _friendsCount, textColor, activeStage))),
+                    const SizedBox(width: 4),
+                    Expanded(child: FittedBox(fit: BoxFit.scaleDown, child: _buildStatItem("Followers", _followersCount, textColor, activeStage))),
+                    const SizedBox(width: 4),
+                    Expanded(child: FittedBox(fit: BoxFit.scaleDown, child: _buildStatItem("Following", _followingCount, textColor, activeStage))),
+                    const SizedBox(width: 4),
+                    Expanded(child: FittedBox(fit: BoxFit.scaleDown, child: _buildAchievementsStatItem(textColor, activeStage, activeStage.day))),
                   ],
                 ),
               ),
@@ -2558,103 +2564,106 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: isMe
-          ? Row(
-              children: [
-                // Edit Profile Button
-                Expanded(
-                  flex: 4,
-                  child: Container(
-                    height: 38,
-                    decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF262626) : const Color(0xFFEFEFEF),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: InkWell(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ProfileCustomWidget(
-                              width: MediaQuery.of(context).size.width,
-                              height: MediaQuery.of(context).size.height,
-                            ),
+          ? LayoutBuilder(
+              builder: (context, constraints) {
+                final isCompact = constraints.maxWidth < 390;
+
+                Widget buildEditProfileBtn() => Container(
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF262626) : const Color(0xFFEFEFEF),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ProfileCustomWidget(
+                            width: MediaQuery.of(context).size.width,
+                            height: MediaQuery.of(context).size.height,
                           ),
-                        ).then((_) => _loadInitialData());
-                      },
-                      borderRadius: BorderRadius.circular(10),
-                      child: Center(
-                        child: Text(
-                          "Edit Profile",
-                          style: GoogleFonts.outfit(
-                            color: textColor,
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
+                        ),
+                      ).then((_) => _loadInitialData());
+                    },
+                    borderRadius: BorderRadius.circular(10),
+                    child: Center(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          child: Text(
+                            "Edit Profile",
+                            style: GoogleFonts.outfit(
+                              color: textColor,
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 8),
+                );
 
-                // Avatar Studio Button
-                Expanded(
-                  flex: 5,
-                  child: Container(
-                    height: 38,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFFFC00),
-                      borderRadius: BorderRadius.circular(10),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFFFFFC00).withValues(alpha: 0.25),
-                          blurRadius: 8,
-                        ),
-                      ],
-                    ),
-                    child: InkWell(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => VectorAvatarStudioPage(
-                              initialConfig: _getAvatarConfig(),
-                              onAvatarSaved: (newCfg) {
-                                setState(() {
-                                  _profileData ??= {};
-                                  _profileData!['avatar_config'] = newCfg.toMap();
-                                  _showAvatarMode = true;
-                                });
-                              },
-                            ),
+                Widget buildAvatarStudioBtn() => Container(
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFFC00),
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFFFFC00).withValues(alpha: 0.25),
+                        blurRadius: 8,
+                      ),
+                    ],
+                  ),
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => VectorAvatarStudioPage(
+                            initialConfig: _getAvatarConfig(),
+                            onAvatarSaved: (newCfg) {
+                              setState(() {
+                                _profileData ??= {};
+                                _profileData!['avatar_config'] = newCfg.toMap();
+                                _showAvatarMode = true;
+                              });
+                            },
                           ),
-                        ).then((_) => _loadInitialData());
-                      },
-                      borderRadius: BorderRadius.circular(10),
-                      child: Center(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.auto_awesome, size: 15, color: Colors.black),
-                            const SizedBox(width: 6),
-                            Text(
-                              "Avatar Studio",
-                              style: GoogleFonts.outfit(
-                                color: Colors.black,
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold,
+                        ),
+                      ).then((_) => _loadInitialData());
+                    },
+                    borderRadius: BorderRadius.circular(10),
+                    child: Center(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.auto_awesome, size: 15, color: Colors.black),
+                              const SizedBox(width: 5),
+                              Text(
+                                "Avatar Studio",
+                                style: GoogleFonts.outfit(
+                                  color: Colors.black,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 8),
+                );
 
-                // VIP Ad-Free Button (₹199)
-                Container(
+                Widget buildVipBtn() => Container(
                   height: 38,
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
@@ -2678,30 +2687,33 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       ).then((_) => _loadInitialData());
                     },
                     borderRadius: BorderRadius.circular(10),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.workspace_premium_rounded, size: 16, color: Colors.white),
-                          const SizedBox(width: 4),
-                          Text(
-                            "VIP ₹199",
-                            style: GoogleFonts.outfit(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
+                    child: Center(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.workspace_premium_rounded, size: 15, color: Colors.white),
+                              const SizedBox(width: 4),
+                              Text(
+                                "VIP ₹199",
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 8),
+                );
 
-                // Stickers Quick Button
-                Container(
+                Widget buildStickersBtn() => Container(
                   height: 38,
                   width: 42,
                   decoration: BoxDecoration(
@@ -2715,8 +2727,42 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       child: Icon(Icons.auto_awesome_mosaic, size: 18, color: Color(0xFFFFFC00)),
                     ),
                   ),
-                ),
-              ],
+                );
+
+                if (isCompact) {
+                  return Column(
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(child: buildEditProfileBtn()),
+                          const SizedBox(width: 8),
+                          Expanded(child: buildAvatarStudioBtn()),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Expanded(child: buildVipBtn()),
+                          const SizedBox(width: 8),
+                          buildStickersBtn(),
+                        ],
+                      ),
+                    ],
+                  );
+                }
+
+                return Row(
+                  children: [
+                    Expanded(flex: 4, child: buildEditProfileBtn()),
+                    const SizedBox(width: 8),
+                    Expanded(flex: 5, child: buildAvatarStudioBtn()),
+                    const SizedBox(width: 8),
+                    Expanded(flex: 4, child: buildVipBtn()),
+                    const SizedBox(width: 8),
+                    buildStickersBtn(),
+                  ],
+                );
+              },
             )
           : Row(
               children: [

@@ -166,11 +166,12 @@ class _NftTradingCardDialogState extends State<NftTradingCardDialog>
     final mintId = widget.config.mintId ?? '#MATE-DAY${widget.day}';
 
     final screenWidth = MediaQuery.of(context).size.width;
-    final cardWidth = (screenWidth - 28).clamp(320.0, 390.0);
+    final screenHeight = MediaQuery.of(context).size.height;
+    final cardWidth = (screenWidth - 24).clamp(280.0, 390.0);
 
     return Dialog(
       backgroundColor: Colors.transparent,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       child: Center(
         child: Container(
           width: cardWidth,
@@ -201,9 +202,15 @@ class _NftTradingCardDialogState extends State<NftTradingCardDialog>
               color: const Color(0xFF0B0F19),
               borderRadius: BorderRadius.circular(21),
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxHeight: screenHeight * 0.88,
+              ),
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
                 // Card Header Bar: Rarity, Mint ID, and Close Button
                 Padding(
                   padding: const EdgeInsets.fromLTRB(14, 10, 10, 8),
@@ -531,35 +538,40 @@ class _NftTradingCardDialogState extends State<NftTradingCardDialog>
                           const SizedBox(width: 8),
 
                           // View Profile Button (Integrated into card header/deck as requested)
-                          OutlinedButton.icon(
-                            onPressed: () {
-                              final uid = widget.userId ??
-                                  SupaFlow.client.auth.currentUser?.id;
-                              if (uid == null) return;
-                              Navigator.pop(context);
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      MainProfileWidget(userId: uid),
+                          Flexible(
+                            child: OutlinedButton.icon(
+                              onPressed: () {
+                                final uid = widget.userId ??
+                                    SupaFlow.client.auth.currentUser?.id;
+                                if (uid == null) return;
+                                Navigator.pop(context);
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        MainProfileWidget(userId: uid),
+                                  ),
+                                );
+                              },
+                              icon: const Icon(Icons.person_rounded,
+                                  color: Colors.white, size: 14),
+                              label: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Text(
+                                  'PROFILE',
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 11,
+                                  ),
                                 ),
-                              );
-                            },
-                            icon: const Icon(Icons.person_rounded,
-                                color: Colors.white, size: 15),
-                            label: Text(
-                              'PROFILE',
-                              style: GoogleFonts.outfit(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 11.5,
                               ),
-                            ),
-                            style: OutlinedButton.styleFrom(
-                              side: const BorderSide(color: Colors.white30),
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                              style: OutlinedButton.styleFrom(
+                                side: const BorderSide(color: Colors.white30),
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
                               ),
                             ),
                           ),
@@ -588,8 +600,10 @@ class _NftTradingCardDialogState extends State<NftTradingCardDialog>
           ),
         ),
       ),
-    );
-  }
+    ),
+  ),
+);
+}
 
   Widget _buildTraitPill({
     required String label,
@@ -598,7 +612,7 @@ class _NftTradingCardDialogState extends State<NftTradingCardDialog>
   }) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 6),
         decoration: BoxDecoration(
           color: const Color(0xFF131A2A),
           borderRadius: BorderRadius.circular(10),
@@ -607,24 +621,31 @@ class _NftTradingCardDialogState extends State<NftTradingCardDialog>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              label,
-              style: GoogleFonts.outfit(
-                color: Colors.white38,
-                fontWeight: FontWeight.w900,
-                fontSize: 8.5,
-                letterSpacing: 0.5,
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                label,
+                style: GoogleFonts.outfit(
+                  color: Colors.white38,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 8.5,
+                  letterSpacing: 0.5,
+                ),
               ),
             ),
             const SizedBox(height: 2),
-            Text(
-              value,
-              style: GoogleFonts.outfit(
-                color: color,
-                fontWeight: FontWeight.bold,
-                fontSize: 11,
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                value,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.outfit(
+                  color: color,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 10.5,
+                ),
               ),
-              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),

@@ -2598,306 +2598,316 @@ class _FlameEnglishHouseWidgetState extends State<FlameEnglishHouseWidget> {
               ),
             ),
 
-          // 🌍 Pocket World Button (Top-Left)
+          // 🎮 Top Floating Controls (Pocket World, Garage, Theme Switcher)
           Positioned(
             top: 6,
-            left: 14,
-            child: GestureDetector(
-              onTap: () {
-                HapticFeedback.mediumImpact();
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => PocketWorldStreetPage(
-                      currentDay: widget.currentDay,
-                      streak: widget.streak,
-                    ),
-                  ),
-                );
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 5),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF0284C7), Color(0xFF0369A1)],
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: const Color(0xFF38BDF8),
-                    width: 1.2,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF0284C7).withValues(alpha: 0.4),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text('🌍', style: TextStyle(fontSize: 12)),
-                    SizedBox(width: 5),
-                    Text(
-                      'Pocket World',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 0.3,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-
-          // 🏎️ Estate Garage / 90 VIP Fleet Button
-          Positioned(
-            top: 6,
-            left: 128,
-            child: GestureDetector(
-              onTap: () {
-                if (widget.currentDay >= 90) {
-                  Day90VipMasterCardDialog.show(context, userDay: widget.currentDay);
-                } else {
-                  PocketVehicleGarageModal.show(context, widget.currentDay);
-                }
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: widget.currentDay >= 90
-                        ? [const Color(0xFFB45309), const Color(0xFF78350F)]
-                        : [const Color(0xFF1E293B), const Color(0xFF0F172A)],
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: widget.currentDay >= 90 ? const Color(0xFFFFD700) : Colors.white24,
-                    width: 1.2,
-                  ),
-                  boxShadow: [
-                    if (widget.currentDay >= 90)
-                      BoxShadow(
-                        color: Colors.amber.withValues(alpha: 0.35),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      widget.currentDay >= 90 ? '👑' : (widget.currentDay >= 60 ? '🚙' : (widget.currentDay >= 30 ? '🏍️' : '🔒')),
-                      style: const TextStyle(fontSize: 12),
-                    ),
-                    const SizedBox(width: 5),
-                    Text(
-                      widget.currentDay >= 90
-                          ? '90 VIP FLEET'
-                          : (widget.currentDay >= 60 ? 'Grand SUV' : (widget.currentDay >= 30 ? 'Superbike' : 'Garage')),
-                      style: GoogleFonts.outfit(
-                        color: widget.currentDay >= 90 ? const Color(0xFFFFD700) : Colors.white,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 0.3,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-
-          // 🎨 Discreet Floating Theme Switcher Button
-          Positioned(
-            top: 6,
-            right: 14,
-            child: GestureDetector(
-              onTap: _openPalettePicker,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.65),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: _currentPalette.accentColor.withValues(alpha: 0.65),
-                    width: 1.2,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: _currentPalette.accentColor.withValues(alpha: 0.25),
-                      blurRadius: 8,
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text('🎨', style: TextStyle(fontSize: 12)),
-                    const SizedBox(width: 5),
-                    Text(
-                      _currentPalette.name.split(' ').sublist(1).join(' '),
-                      style: TextStyle(
-                        color: _currentPalette.accentColor,
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-
-          // ❤️ Live House HP & Defense Vault Button (Bottom-Left)
-          Positioned(
-            bottom: 8,
-            left: 14,
-            child: GestureDetector(
-              onTap: () async {
-                PocketDefenseTrapModal.show(context, widget.currentDay);
-                await Future.delayed(const Duration(milliseconds: 500));
-                _loadDefenseStatus();
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF0F172A).withValues(alpha: 0.9),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: _defenseStatus.currentHp < 100 ? Colors.redAccent : const Color(0xFF10B981),
-                    width: 1.2,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: (_defenseStatus.currentHp < 100 ? Colors.redAccent : const Color(0xFF10B981))
-                          .withValues(alpha: 0.25),
-                      blurRadius: 8,
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(_defenseStatus.currentHp < 100 ? '💔' : '❤️', style: const TextStyle(fontSize: 12)),
-                    const SizedBox(width: 5),
-                    Text(
-                      '${_defenseStatus.currentHp} HP',
-                      style: GoogleFonts.outfit(
-                        color: _defenseStatus.currentHp < 100 ? Colors.redAccent : const Color(0xFF34D399),
-                        fontSize: 11,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    if (_defenseStatus.hasIronDome) ...[
-                      const SizedBox(width: 6),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF00F0FF).withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(4),
-                          border: Border.all(color: const Color(0xFF00F0FF), width: 0.8),
+            left: 10,
+            right: 10,
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // 🌍 Pocket World Button
+                  GestureDetector(
+                    onTap: () {
+                      HapticFeedback.mediumImpact();
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => PocketWorldStreetPage(
+                            currentDay: widget.currentDay,
+                            streak: widget.streak,
+                          ),
                         ),
-                        child: const Text('DOME', style: TextStyle(color: Color(0xFF00F0FF), fontSize: 8.5, fontWeight: FontWeight.bold)),
+                      );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 5),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF0284C7), Color(0xFF0369A1)],
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: const Color(0xFF38BDF8),
+                          width: 1.2,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF0284C7).withValues(alpha: 0.4),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
-                    ],
-                  ],
-                ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text('🌍', style: TextStyle(fontSize: 12)),
+                          SizedBox(width: 5),
+                          Text(
+                            'Pocket World',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+
+                  // 🏎️ Estate Garage / 90 VIP Fleet Button
+                  GestureDetector(
+                    onTap: () {
+                      if (widget.currentDay >= 90) {
+                        Day90VipMasterCardDialog.show(context, userDay: widget.currentDay);
+                      } else {
+                        PocketVehicleGarageModal.show(context, widget.currentDay);
+                      }
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: widget.currentDay >= 90
+                              ? [const Color(0xFFB45309), const Color(0xFF78350F)]
+                              : [const Color(0xFF1E293B), const Color(0xFF0F172A)],
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: widget.currentDay >= 90 ? const Color(0xFFFFD700) : Colors.white24,
+                          width: 1.2,
+                        ),
+                        boxShadow: [
+                          if (widget.currentDay >= 90)
+                            BoxShadow(
+                              color: Colors.amber.withValues(alpha: 0.35),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            widget.currentDay >= 90 ? '👑' : (widget.currentDay >= 60 ? '🚙' : (widget.currentDay >= 30 ? '🏍️' : '🔒')),
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                          const SizedBox(width: 5),
+                          Text(
+                            widget.currentDay >= 90
+                                ? '90 VIP FLEET'
+                                : (widget.currentDay >= 60 ? 'Grand SUV' : (widget.currentDay >= 30 ? 'Superbike' : 'Garage')),
+                            style: GoogleFonts.outfit(
+                              color: widget.currentDay >= 90 ? const Color(0xFFFFD700) : Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+
+                  // 🎨 Discreet Floating Theme Switcher Button
+                  GestureDetector(
+                    onTap: _openPalettePicker,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.65),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: _currentPalette.accentColor.withValues(alpha: 0.65),
+                          width: 1.2,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: _currentPalette.accentColor.withValues(alpha: 0.25),
+                            blurRadius: 8,
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text('🎨', style: TextStyle(fontSize: 12)),
+                          const SizedBox(width: 5),
+                          Text(
+                            _currentPalette.name.split(' ').sublist(1).join(' '),
+                            style: TextStyle(
+                              color: _currentPalette.accentColor,
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
 
-          // 🏪 Fortress Arsenal Store Button (Bottom-Left next to HP)
+          // 🛡️ Bottom Floating Controls (Live House HP, Arsenal Store, Defense Traps)
           Positioned(
             bottom: 8,
-            left: 124,
-            child: GestureDetector(
-              onTap: () {
-                PocketArsenalStoreModal.show(
-                  context,
-                  currentDay: widget.currentDay,
-                  onPurchased: _loadDefenseStatus,
-                );
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFB45309), Color(0xFFD97706)],
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFFFFD700), width: 1.2),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.amber.withValues(alpha: 0.25),
-                      blurRadius: 8,
-                    ),
-                  ],
-                ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text('🏪', style: TextStyle(fontSize: 12)),
-                    SizedBox(width: 4),
-                    Text(
-                      'Store',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 0.3,
+            left: 10,
+            right: 10,
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // ❤️ Live House HP & Defense Vault Button
+                  GestureDetector(
+                    onTap: () async {
+                      PocketDefenseTrapModal.show(context, widget.currentDay);
+                      await Future.delayed(const Duration(milliseconds: 500));
+                      _loadDefenseStatus();
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0F172A).withValues(alpha: 0.9),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: _defenseStatus.currentHp < 100 ? Colors.redAccent : const Color(0xFF10B981),
+                          width: 1.2,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: (_defenseStatus.currentHp < 100 ? Colors.redAccent : const Color(0xFF10B981))
+                                .withValues(alpha: 0.25),
+                            blurRadius: 8,
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(_defenseStatus.currentHp < 100 ? '💔' : '❤️', style: const TextStyle(fontSize: 12)),
+                          const SizedBox(width: 5),
+                          Text(
+                            '${_defenseStatus.currentHp} HP',
+                            style: GoogleFonts.outfit(
+                              color: _defenseStatus.currentHp < 100 ? Colors.redAccent : const Color(0xFF34D399),
+                              fontSize: 11,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                          if (_defenseStatus.hasIronDome) ...[
+                            const SizedBox(width: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF00F0FF).withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(4),
+                                border: Border.all(color: const Color(0xFF00F0FF), width: 0.8),
+                              ),
+                              child: const Text('DOME', style: TextStyle(color: Color(0xFF00F0FF), fontSize: 8.5, fontWeight: FontWeight.bold)),
+                            ),
+                          ],
+                        ],
                       ),
                     ),
-                  ],
-                ),
-              ),
-            ),
-          ),
+                  ),
+                  const SizedBox(width: 8),
 
-          // 🛡️ House Defense Traps Button
-          Positioned(
-            bottom: 8,
-            right: 14,
-            child: GestureDetector(
-              onTap: () {
-                PocketDefenseTrapModal.show(context, widget.currentDay);
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF0F172A).withValues(alpha: 0.85),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: const Color(0xFF38BDF8).withValues(alpha: 0.6),
-                    width: 1.1,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF0284C7).withValues(alpha: 0.25),
-                      blurRadius: 8,
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text('🛡️', style: TextStyle(fontSize: 12)),
-                    const SizedBox(width: 5),
-                    Text(
-                      'Defense Traps',
-                      style: GoogleFonts.outfit(
-                        color: const Color(0xFF38BDF8),
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
+                  // 🏪 Fortress Arsenal Store Button
+                  GestureDetector(
+                    onTap: () {
+                      PocketArsenalStoreModal.show(
+                        context,
+                        currentDay: widget.currentDay,
+                        onPurchased: _loadDefenseStatus,
+                      );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFB45309), Color(0xFFD97706)],
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: const Color(0xFFFFD700), width: 1.2),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.amber.withValues(alpha: 0.25),
+                            blurRadius: 8,
+                          ),
+                        ],
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text('🏪', style: TextStyle(fontSize: 12)),
+                          SizedBox(width: 4),
+                          Text(
+                            'Store',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(width: 8),
+
+                  // 🛡️ House Defense Traps Button
+                  GestureDetector(
+                    onTap: () {
+                      PocketDefenseTrapModal.show(context, widget.currentDay);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0F172A).withValues(alpha: 0.85),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: const Color(0xFF38BDF8).withValues(alpha: 0.6),
+                          width: 1.1,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF0284C7).withValues(alpha: 0.25),
+                            blurRadius: 8,
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text('🛡️', style: TextStyle(fontSize: 12)),
+                          const SizedBox(width: 5),
+                          Text(
+                            'Defense Traps',
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFF38BDF8),
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
