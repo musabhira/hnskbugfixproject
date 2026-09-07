@@ -5556,7 +5556,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     if (canClaim) {
       headerTitle = '🎉 MISSION COMPLETED!';
       description =
-          '60-Minute practice target met & all $total subtasks verified! Claim +100 XP, +40 Fortress Defense Coins and unlock Day ${widget.day + 1}!';
+          '60-Minute practice target met & all $total subtasks verified! 100 Pass Mark reached • +50 Bonus Coins awarded to your Vault Store! Day ${widget.day + 1} unlocks tomorrow!';
       buttonText = 'CLAIM DAY ${widget.day} REWARDS & ADVANCE 🚀';
     } else if (isTimerMet && !isSubtasksMet) {
       headerTitle = '⚠️ $remaining SUBTASKS REMAINING';
@@ -5636,6 +5636,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                           'daily_mission',
                         );
                       }
+                      // Award 50 bonus coins to vault store (Audio directive: 100 pass mark + 50 bonus coins)
+                      await PocketFortressDefenseService.awardRaidLoot(50);
+
                       // Save today's completion date to enforce daily pacing
                       final prefs = await SharedPreferences.getInstance();
                       final todayStr = '${DateTime.now().year}-${DateTime.now().month}-${DateTime.now().day}';
@@ -5648,7 +5651,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(
-                              '🎉 Day ${widget.day} English Mission Complete! +100 XP Points Earned • Day ${widget.day + 1} Unlocks Tomorrow!',
+                              '🎉 Day ${widget.day} English Mission Complete! 100 Pass Marks + 50 Bonus Coins added to your Store Vault! Day ${widget.day + 1} Unlocks Tomorrow!',
                             ),
                             backgroundColor: const Color(0xFF10B981),
                           ),

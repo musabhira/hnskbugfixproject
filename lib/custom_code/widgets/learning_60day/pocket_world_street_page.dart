@@ -287,8 +287,10 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
     );
   }
 
-  void _openEnglishDuelDialog(PocketNeighbor neighbor) {
+  Future<void> _openEnglishDuelDialog(PocketNeighbor neighbor) async {
     HapticFeedback.selectionClick();
+    final inCooldown = await PocketFortressDefenseService.isTargetInCooldown(neighbor.id);
+    if (!mounted) return;
     showModalBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF0F172A),
@@ -334,6 +336,42 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
               ],
             ),
             const SizedBox(height: 16),
+            if (inCooldown)
+              Container(
+                margin: const EdgeInsets.only(bottom: 14),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(colors: [Color(0xFF334155), Color(0xFF1E293B)]),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: Colors.amber.shade400, width: 1.2),
+                ),
+                child: Row(
+                  children: [
+                    const Text('⏳', style: TextStyle(fontSize: 22)),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '24h Peace Treaty Active',
+                            style: GoogleFonts.outfit(
+                              color: Colors.amber.shade300,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          const Text(
+                            'You raided this fortress recently! Attack cooldown is locked for 24 hours. Choose another neighbor on the street to duel.',
+                            style: TextStyle(color: Colors.white70, fontSize: 11),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             if (neighbor.isBanned || _bannedHouseIds.contains(neighbor.id))
               Container(
                 margin: const EdgeInsets.only(bottom: 14),
@@ -426,41 +464,43 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
               height: 48,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF0284C7),
-                  foregroundColor: Colors.white,
+                  backgroundColor: inCooldown ? Colors.white12 : const Color(0xFF0284C7),
+                  foregroundColor: inCooldown ? Colors.white38 : Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
-                  elevation: 6,
+                  elevation: inCooldown ? 0 : 6,
                 ),
-                onPressed: () {
-                  Navigator.pop(ctx);
-                  if (!PocketFortressDefenseService.isRaidTargetValid(widget.currentDay, neighbor.day)) {
-                    final escalatedRival = PocketFortressDefenseService.generateRivalForUser(
-                      widget.currentDay,
-                      userStreak: widget.streak,
-                    );
-                    _showGrowthMatchmakingDialog(neighbor, escalatedRival);
-                    return;
-                  }
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => PocketBattleArenaPage(
-                        neighbor: neighbor,
-                        userDay: widget.currentDay,
-                        userStreak: widget.streak,
-                      ),
-                    ),
-                  );
-                },
+                onPressed: inCooldown
+                    ? null
+                    : () {
+                        Navigator.pop(ctx);
+                        if (!PocketFortressDefenseService.isRaidTargetValid(widget.currentDay, neighbor.day)) {
+                          final escalatedRival = PocketFortressDefenseService.generateRivalForUser(
+                            widget.currentDay,
+                            userStreak: widget.streak,
+                          );
+                          _showGrowthMatchmakingDialog(neighbor, escalatedRival);
+                          return;
+                        }
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => PocketBattleArenaPage(
+                              neighbor: neighbor,
+                              userDay: widget.currentDay,
+                              userStreak: widget.streak,
+                            ),
+                          ),
+                        );
+                      },
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text('🚀', style: TextStyle(fontSize: 16)),
+                    Text(inCooldown ? '⏳' : '🚀', style: const TextStyle(fontSize: 16)),
                     const SizedBox(width: 8),
                     Text(
-                      'START 1v1 DUEL',
+                      inCooldown ? 'PEACE TREATY IN EFFECT' : 'START 1v1 DUEL',
                       style: GoogleFonts.outfit(
                         fontWeight: FontWeight.w900,
                         fontSize: 14,

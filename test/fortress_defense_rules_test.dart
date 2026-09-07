@@ -326,6 +326,90 @@ void main() {
       expect(PocketFortressDefenseService.isRaidTargetValid(4, 4), isFalse);
       expect(PocketFortressDefenseService.isRaidTargetValid(4, 3), isFalse);
     });
+
+    test('Store purchases and Lifelines management', () async {
+      SharedPreferences.setMockInitialValues({
+        'pocket_house_coins': 200,
+        'pocket_house_lifelines': 1,
+      });
+
+      // Buy Lifeline for 30 coins
+      final boughtLifeline = await PocketFortressDefenseService.purchaseLifeline(coinCost: 30);
+      expect(boughtLifeline, isTrue);
+      expect(await PocketFortressDefenseService.getLifelinesCount(), equals(2));
+
+      // Consume Lifeline
+      final consumed = await PocketFortressDefenseService.consumeLifeline();
+      expect(consumed, isTrue);
+      expect(await PocketFortressDefenseService.getLifelinesCount(), equals(1));
+
+      // Buy Wall Repairs for 20 coins
+      final repaired = await PocketFortressDefenseService.repairHouse(useFdc: false);
+      expect(repaired, isTrue);
+
+      // Buy Army Knights for 40 coins
+      final enlisted = await PocketFortressDefenseService.enlistArmyKnights(useFdc: false);
+      expect(enlisted, isTrue);
+
+      // Buy Iron Dome for 50 coins
+      final domeBought = await PocketFortressDefenseService.purchaseIronDome(useFdc: false);
+      expect(domeBought, isTrue);
+    });
+
+    test('Target attack cooldown enforces 24-hour peace treaty', () async {
+      SharedPreferences.setMockInitialValues({});
+      const targetId = 'target_user_42';
+
+      expect(await PocketFortressDefenseService.isTargetInCooldown(targetId), isFalse);
+
+      await PocketFortressDefenseService.recordTargetAttacked(targetId);
+      expect(await PocketFortressDefenseService.isTargetInCooldown(targetId), isTrue);
+    });
+
+    test('Breach loots exactly 45 coins when Iron Dome is absent', () async {
+      SharedPreferences.setMockInitialValues({
+        'pocket_house_hp': 100,
+        'pocket_house_coins': 150,
+        'pocket_house_iron_dome': false,
+      });
+
+      final result = await PocketFortressDefenseService.processRaidBreach(
+        defenderHouseId: 'me',
+        damageHp: 60,
+        attackerName: 'Shadow Raider',
+        attackerAvatar: '⚔️',
+      );
+
+      expect(result['damageDealt'], equals(60));
+      expect(result['remainingHp'], equals(40));
+      expect(result['lootedCoins'], equals(45));
+      expect(result['ironDomeBlocked'], isFalse);
+    });
+
+    test('Iron Dome absorbs breach completely: 0 damage, 0 coins looted, dome consumed', () async {
+      SharedPreferences.setMockInitialValues({
+        'pocket_house_hp': 100,
+        'pocket_house_coins': 150,
+        'user_house_iron_dome': true,
+      });
+
+      final result = await PocketFortressDefenseService.processRaidBreach(
+        defenderHouseId: 'me',
+        damageHp: 60,
+        attackerName: 'Shadow Raider',
+        attackerAvatar: '⚔️',
+      );
+
+      expect(result['damageDealt'], equals(0));
+      expect(result['remainingHp'], equals(100));
+      expect(result['lootedCoins'], equals(0));
+      expect(result['ironDomeBlocked'], isTrue);
+
+      // Verify dome is consumed
+      final status = await PocketFortressDefenseService.getHouseStatus();
+      expect(status.hasIronDome, isFalse);
+    });
   });
 }
+
 

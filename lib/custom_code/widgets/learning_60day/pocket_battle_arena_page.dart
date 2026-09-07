@@ -186,9 +186,11 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
   Timer? _qTimer;
   bool _showAntiCheatNotice = false;
 
-  // 💖 Attacker Lifeline states for Level 25+ citadels
+  // 💖 Attacker Lifeline states for Level 15+ citadels (User Audio: 1 lifeline per game max, purchased with coins)
   int _lifelinesRemaining = 0;
   int _initialLifelines = 0;
+  int _userPurchasedLifelines = 0;
+  bool _lifelineUsedThisMatch = false;
 
   // Active game states
   Timer? _gameTimer;
@@ -210,10 +212,20 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
     WidgetsBinding.instance.addObserver(this);
     _initTts();
     _opponentHp = widget.neighbor.hasActiveShield ? 100 : 70;
-    _initialLifelines = PocketFortressDefenseService.getAttackerLifelinesForNeighborDay(widget.neighbor.day);
-    _lifelinesRemaining = _initialLifelines;
     _checkDefenderBanStatus();
     _loadDefenderShieldTraps();
+    _loadUserLifelines();
+  }
+
+  Future<void> _loadUserLifelines() async {
+    final count = await PocketFortressDefenseService.getLifelinesCount();
+    if (mounted) {
+      setState(() {
+        _userPurchasedLifelines = count;
+        _initialLifelines = widget.neighbor.day >= 15 ? count : 0;
+        _lifelinesRemaining = _initialLifelines;
+      });
+    }
   }
 
   void _initTts() {
@@ -302,22 +314,34 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
   }
 
   bool _tryUseLifeline({required String reason}) {
-    if (_lifelinesRemaining <= 0) return false;
+    // Audio Rule 1: Only available when attacking Level 15+ citadels
+    if (widget.neighbor.day < 15) return false;
+
+    // Audio Rule 2: Single use per battle game ("ഒരു ഗെയിമിൽ ഒരുവട്ടമേ യൂസ് ചെയ്യാൻ പറ്റുള്ളൂ, ഒറ്റ ലൈഫ് ലൈനേ ഉള്ളൂ")
+    if (_lifelineUsedThisMatch) return false;
+
+    // Audio Rule 3: Must have purchased lifelines in inventory
+    if (_userPurchasedLifelines <= 0) return false;
+
     HapticFeedback.heavyImpact();
     setState(() {
-      _lifelinesRemaining--;
+      _lifelineUsedThisMatch = true;
+      _userPurchasedLifelines--;
+      _lifelinesRemaining = _userPurchasedLifelines;
       _qSecondsLeft = 30;
       _gateScrambleInput = [];
       _gateJigsawSelected = [];
-      _lastDamageText = '💖 LIFELINE ACTIVATED! 30s Restored';
+      _lastDamageText = '💖 COMBAT LIFELINE ACTIVATED! Retry Granted';
     });
+    PocketFortressDefenseService.consumeLifeline();
     _startQuestionTimer();
+
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           backgroundColor: const Color(0xFFE11D48),
           behavior: SnackBarBehavior.floating,
-          duration: const Duration(seconds: 3),
+          duration: const Duration(seconds: 4),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           content: Row(
             children: [
@@ -325,7 +349,7 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'PHOENIX LIFELINE ACTIVATED! ($reason forgiven) $_lifelinesRemaining left. Timer reset to 30s!',
+                  'COMBAT LIFELINE USED! ($reason forgiven) Retry this question now! (1 use per match)',
                   style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11.5),
                 ),
               ),
@@ -429,8 +453,8 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
       _gateJigsawSelected = [];
       _isGameOver = false;
       _isBombExploding = false;
-      _initialLifelines = PocketFortressDefenseService.getAttackerLifelinesForNeighborDay(widget.neighbor.day);
-      _lifelinesRemaining = _initialLifelines;
+      _lifelineUsedThisMatch = false;
+      _lifelinesRemaining = widget.neighbor.day >= 15 ? _userPurchasedLifelines : 0;
     });
 
     if (mode == BattleMode.houseShieldGate) {
@@ -531,28 +555,45 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
     return false;
   }
 
-  void _finishGame({required bool won}) {
+  bool _isIronDomeBlockedOnBreach = false;
+
+  void _finishGame({required bool won}) async {
     _qTimer?.cancel();
     _gameTimer?.cancel();
     HapticFeedback.heavyImpact();
-    // In audio: Attacking yields coins looted from opponent. If fail, NO coins lost!
-    final attackerPerk = VectorAvatarConfig.getAvatarPerkForDay(widget.userDay);
-    int baseLoot = won ? (60 + math.Random().nextInt(30)) : 0;
-    if (won && attackerPerk.perkType == PerkType.vaultLoot) {
-      baseLoot = (baseLoot * (1 + attackerPerk.bonusValue / 100)).round();
-    }
-    final lootCoins = baseLoot;
-    if (lootCoins > 0) {
-      PocketFortressDefenseService.awardRaidLoot(lootCoins);
-      PocketFortressDefenseService.processRaidBreach(
+
+    int lootCoins = 0;
+    bool ironDomeBlocked = false;
+
+    if (won) {
+      // 🛡️ Process House Breach with Defender's Iron Dome Check (Audio Rule)
+      final breachReport = await PocketFortressDefenseService.processRaidBreach(
         defenderHouseId: widget.neighbor.id,
         damageHp: 60,
+        attackerName: 'Attacker Lvl ${widget.userDay}',
+        attackerAvatar: '⚔️',
+        defenderHasIronDome: widget.neighbor.hasActiveShield,
       );
+
+      ironDomeBlocked = breachReport['ironDomeBlocked'] ?? false;
+      if (ironDomeBlocked) {
+        lootCoins = 0; // Iron Dome blocked the raid completely!
+      } else {
+        lootCoins = PocketFortressDefenseService.kRaidBreachLootCoins; // exactly 45 coins (Audio Directive)
+        await PocketFortressDefenseService.awardRaidLoot(lootCoins);
+      }
+
+      // Record target attack cooldown (Audio Directive: cannot immediately re-attack the same user)
+      await PocketFortressDefenseService.recordTargetAttacked(widget.neighbor.id);
     }
-    setState(() {
-      _isGameOver = true;
-      _earnedCoins = lootCoins;
-    });
+
+    if (mounted) {
+      setState(() {
+        _isGameOver = true;
+        _isIronDomeBlockedOnBreach = ironDomeBlocked;
+        _earnedCoins = lootCoins;
+      });
+    }
   }
 
   Future<void> _checkDefenderBanStatus() async {
@@ -2148,66 +2189,110 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
                 ),
               ),
 
+              // ⚔️ Clash of Avatars Header (User Directive: show both avatars and their perks prominently underneath)
               Row(
                 children: [
-                  // Defender Avatar
-                  SizedBox(
-                    width: 38,
-                    height: 38,
-                    child: VectorAvatarWidget(
-                      config: VectorAvatarConfig.getEvolutionAvatarForStage(widget.neighbor.day),
-                      size: 38,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
+                  // Attacker Avatar (You)
                   Expanded(
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        SizedBox(
+                          width: 44,
+                          height: 44,
+                          child: VectorAvatarWidget(
+                            config: VectorAvatarConfig.getEvolutionAvatarForStage(widget.userDay),
+                            size: 44,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
                         Text(
-                          widget.neighbor.name,
+                          'You (Lvl ${widget.userDay})',
                           style: GoogleFonts.outfit(
                             color: Colors.white,
-                            fontSize: 13.5,
+                            fontSize: 12,
                             fontWeight: FontWeight.bold,
                           ),
+                          maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                        ),
-                        Text(
-                          'Stage ${widget.neighbor.day} • ${widget.neighbor.rank}',
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.6),
-                            fontSize: 11,
-                          ),
                         ),
                       ],
                     ),
                   ),
-                  // Damage text popup
-                  if (_lastDamageText != null)
-                    AnimatedOpacity(
-                      opacity: 1.0,
-                      duration: const Duration(milliseconds: 300),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.75),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.redAccent),
-                        ),
-                        child: Text(
-                          _lastDamageText!,
-                          style: GoogleFonts.outfit(
-                            color: Colors.yellowAccent,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
+
+                  // VS Badge
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(colors: [Color(0xFFDC2626), Color(0xFF991B1B)]),
+                      borderRadius: BorderRadius.circular(10),
+                      boxShadow: [
+                        BoxShadow(color: Colors.red.withValues(alpha: 0.4), blurRadius: 8),
+                      ],
+                    ),
+                    child: Text(
+                      'VS',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 1.0,
                       ),
                     ),
+                  ),
+
+                  // Defender Avatar (Opponent)
+                  Expanded(
+                    child: Column(
+                      children: [
+                        SizedBox(
+                          width: 44,
+                          height: 44,
+                          child: VectorAvatarWidget(
+                            config: VectorAvatarConfig.getEvolutionAvatarForStage(widget.neighbor.day),
+                            size: 44,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          widget.neighbor.name,
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
+
+              // Damage text popup
+              if (_lastDamageText != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 6),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.85),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.redAccent),
+                    ),
+                    child: Text(
+                      _lastDamageText!,
+                      style: GoogleFonts.outfit(
+                        color: Colors.yellowAccent,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ),
+                ),
+
               const SizedBox(height: 8),
 
               // Shield HP Bar (Clash of Clans Style!)
@@ -2216,7 +2301,7 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
                   Text(
                     _isDefenderHouseBanned
                         ? '🚫 HOUSE BANNED'
-                        : (_opponentHp > 50 ? '🛡️ SHIELD HP' : '⚠️ GATE DAMAGE'),
+                        : (_opponentHp > 50 ? '🛡️ GATE HP' : '⚠️ BREACH IMMINENT'),
                     style: TextStyle(
                       color: _isDefenderHouseBanned
                           ? Colors.redAccent
@@ -2253,61 +2338,87 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
 
               const SizedBox(height: 8),
 
-              // ⚡ Companion Clash Perks
+              // ⚡ Companion Avatar Perks Display (Audio directive: "ഓരോ അവതാറുകൾക്കും ഓരോ പ്രത്യേകതകളുണ്ട്. ആ പ്രത്യേകതകളാണ് അവതാറിന്റെ അടിയിൽ എഴുതി വെച്ചിട്ടുണ്ടാകും")
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Attacker Perk
                   Expanded(
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+                      padding: const EdgeInsets.all(7),
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.06),
-                        borderRadius: BorderRadius.circular(8),
+                        color: const Color(0xFF0284C7).withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(10),
                         border: Border.all(
-                          color: VectorAvatarConfig.getAvatarPerkForDay(widget.userDay).badgeColor.withValues(alpha: 0.5),
+                          color: const Color(0xFF38BDF8).withValues(alpha: 0.4),
                           width: 0.8,
                         ),
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(VectorAvatarConfig.getAvatarPerkForDay(widget.userDay).icon, style: const TextStyle(fontSize: 11)),
-                          const SizedBox(width: 4),
-                          Expanded(
-                            child: Text(
-                              'YOU: ${VectorAvatarConfig.getAvatarPerkForDay(widget.userDay).title}',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(color: Colors.white70, fontSize: 9.5, fontWeight: FontWeight.bold),
-                            ),
+                          Row(
+                            children: [
+                              Text(VectorAvatarConfig.getAvatarPerkForDay(widget.userDay).icon, style: const TextStyle(fontSize: 12)),
+                              const SizedBox(width: 4),
+                              Expanded(
+                                child: Text(
+                                  VectorAvatarConfig.getAvatarPerkForDay(widget.userDay).title,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: GoogleFonts.outfit(color: const Color(0xFF38BDF8), fontSize: 10, fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            VectorAvatarConfig.getAvatarPerkForDay(widget.userDay).advantageText,
+                            style: GoogleFonts.inter(color: Colors.white70, fontSize: 9.5),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),
                     ),
                   ),
-                  const SizedBox(width: 6),
+                  const SizedBox(width: 8),
+
+                  // Defender Perk
                   Expanded(
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+                      padding: const EdgeInsets.all(7),
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.06),
-                        borderRadius: BorderRadius.circular(8),
+                        color: const Color(0xFFE11D48).withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(10),
                         border: Border.all(
-                          color: VectorAvatarConfig.getAvatarPerkForDay(widget.neighbor.day).badgeColor.withValues(alpha: 0.5),
+                          color: const Color(0xFFFB7185).withValues(alpha: 0.4),
                           width: 0.8,
                         ),
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(VectorAvatarConfig.getAvatarPerkForDay(widget.neighbor.day).icon, style: const TextStyle(fontSize: 11)),
-                          const SizedBox(width: 4),
-                          Expanded(
-                            child: Text(
-                              'FOE: ${VectorAvatarConfig.getAvatarPerkForDay(widget.neighbor.day).title}',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(color: Colors.white70, fontSize: 9.5, fontWeight: FontWeight.bold),
-                            ),
+                          Row(
+                            children: [
+                              Text(VectorAvatarConfig.getAvatarPerkForDay(widget.neighbor.day).icon, style: const TextStyle(fontSize: 12)),
+                              const SizedBox(width: 4),
+                              Expanded(
+                                child: Text(
+                                  VectorAvatarConfig.getAvatarPerkForDay(widget.neighbor.day).title,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: GoogleFonts.outfit(color: const Color(0xFFFB7185), fontSize: 10, fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            VectorAvatarConfig.getAvatarPerkForDay(widget.neighbor.day).advantageText,
+                            style: GoogleFonts.inter(color: Colors.white70, fontSize: 9.5),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),
@@ -3538,17 +3649,23 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
   // ============================================================
   Widget _buildVictoryLootScreen() {
     final won = _opponentHp <= 0;
+    final isDomeBlocked = won && _isIronDomeBlockedOnBreach;
+
     return Padding(
       padding: const EdgeInsets.all(24),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(won ? '👑' : '🛡️', style: const TextStyle(fontSize: 48)),
+          Text(isDomeBlocked ? '🛡️' : (won ? '👑' : '🛡️'), style: const TextStyle(fontSize: 48)),
           const SizedBox(height: 10),
           Text(
-            won ? '🏰 OPPONENT FORTRESS BREACHED!' : '🛡️ RAID DEFENSE HELD • NO COINS LOST',
+            isDomeBlocked
+                ? '🛡️ DEFENDER\'S IRON DOME BLOCKED RAID!'
+                : (won ? '🏰 OPPONENT FORTRESS BREACHED!' : '🛡️ RAID DEFENSE HELD • NO COINS LOST'),
             style: GoogleFonts.outfit(
-              color: won ? const Color(0xFFFFD700) : Colors.white,
+              color: isDomeBlocked
+                  ? const Color(0xFF00F0FF)
+                  : (won ? const Color(0xFFFFD700) : Colors.white),
               fontSize: 19,
               fontWeight: FontWeight.w900,
             ),
@@ -3556,9 +3673,11 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
           ),
           const SizedBox(height: 6),
           Text(
-            won
-                ? 'You overwhelmed ${widget.neighbor.name}’s fortress with English fluency! Their house sustained severe rubble damage and you looted $_earnedCoins Coins & the Champion Trophy from their vault!'
-                : 'Defeat in battle carries zero penalty! Keep training and practicing — no coins lost.',
+            isDomeBlocked
+                ? 'Defender ${widget.neighbor.name}\'s Iron Dome completely absorbed your assault! 0 Coins were looted and 0 HP damage was dealt, but their Iron Dome shield has now collapsed.'
+                : (won
+                    ? 'You overwhelmed ${widget.neighbor.name}’s fortress with English fluency! You looted $_earnedCoins Coins from their vault!'
+                    : 'Defeat in battle carries zero penalty! Keep training and practicing — no coins lost.'),
             style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 13),
             textAlign: TextAlign.center,
           ),
@@ -3568,7 +3687,7 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
             decoration: BoxDecoration(
               color: const Color(0xFF1E293B),
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: won ? Colors.amber : Colors.white12),
+              border: Border.all(color: isDomeBlocked ? const Color(0xFF00F0FF) : (won ? Colors.amber : Colors.white12)),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -3577,10 +3696,16 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
                   children: [
                     const Text('🪙', style: TextStyle(fontSize: 22)),
                     const SizedBox(height: 4),
-                    Text('+$_earnedCoins Coins', style: GoogleFonts.outfit(color: Colors.amber, fontWeight: FontWeight.bold)),
+                    Text(
+                      isDomeBlocked ? '+0 Coins (Dome Blocked)' : '+$_earnedCoins Coins',
+                      style: GoogleFonts.outfit(
+                        color: isDomeBlocked ? const Color(0xFF00F0FF) : Colors.amber,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ],
                 ),
-                if (won)
+                if (won && !isDomeBlocked)
                   Column(
                     children: [
                       const Text('👑', style: TextStyle(fontSize: 22)),

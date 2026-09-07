@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import '../avatar/avatar_game_perk.dart';
 import 'pocket_world_street_page.dart';
 
@@ -333,6 +334,49 @@ class Day90MasterCardData {
   });
 }
 
+/// 📜 Raid Log Entry (Tracking attackers on user's citadel)
+class CitadelRaidLogEntry {
+  final String id;
+  final String attackerName;
+  final String attackerAvatar;
+  final DateTime timestamp;
+  final bool breached;
+  final int coinsLooted;
+  final bool ironDomeBlocked;
+
+  const CitadelRaidLogEntry({
+    required this.id,
+    required this.attackerName,
+    required this.attackerAvatar,
+    required this.timestamp,
+    required this.breached,
+    required this.coinsLooted,
+    this.ironDomeBlocked = false,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'attackerName': attackerName,
+        'attackerAvatar': attackerAvatar,
+        'timestamp': timestamp.toIso8601String(),
+        'breached': breached,
+        'coinsLooted': coinsLooted,
+        'ironDomeBlocked': ironDomeBlocked,
+      };
+
+  factory CitadelRaidLogEntry.fromJson(Map<String, dynamic> json) => CitadelRaidLogEntry(
+        id: json['id'] ?? '',
+        attackerName: json['attackerName'] ?? 'Rival Raider',
+        attackerAvatar: json['attackerAvatar'] ?? '⚔️',
+        timestamp: json['timestamp'] != null
+            ? DateTime.tryParse(json['timestamp']) ?? DateTime.now()
+            : DateTime.now(),
+        breached: json['breached'] ?? false,
+        coinsLooted: json['coinsLooted'] ?? 0,
+        ironDomeBlocked: json['ironDomeBlocked'] ?? false,
+      );
+}
+
 /// 🏰 House Defense & Fortress Status
 class HouseDefenseStatus {
   final int currentHp;
@@ -344,6 +388,7 @@ class HouseDefenseStatus {
   final bool hasArmedEscorts; // Dual armed escort bikes/patrols
   final int totalCoins;
   final int activityPoints; // ⚡ Fortress Defense Credits (FDC) from voice calls, chats, vibes
+  final int lifelinesCount; // 💖 Combat Lifelines for high-level raids
   final bool isBanned;
   final String? banReason;
   final bool isUnderPresidentInspection;
@@ -360,6 +405,7 @@ class HouseDefenseStatus {
     this.hasArmedEscorts = false,
     this.totalCoins = 150,
     this.activityPoints = 80,
+    this.lifelinesCount = 0,
     this.isBanned = false,
     this.banReason,
     this.isUnderPresidentInspection = false,
@@ -372,6 +418,7 @@ class HouseDefenseStatus {
 
 /// 🛡️ Central Pocket Fortress & Defense Management Service
 class PocketFortressDefenseService {
+  static const int kRaidBreachLootCoins = 45; // ⚔️ Breaching citadel loots exactly 45 coins (Audio Directive)
   static const String _trapsKey = 'user_custom_defense_traps_v2';
   static const String _activeTrapsKey = 'user_house_active_shield_traps_v2';
   static const String _hpKey = 'user_house_hp';
@@ -383,6 +430,9 @@ class PocketFortressDefenseService {
   static const String _banKey = 'user_pocket_banned';
   static const String _lastActiveKey = 'user_pocket_last_active_date';
   static const String _day90FleetKey = 'user_pocket_day90_vip_fleet';
+  static const String _lifelinesKey = 'user_combat_lifelines_count';
+  static const String _raidLogKey = 'user_citadel_raid_logs_v2';
+  static const String _targetCooldownKey = 'user_target_attack_cooldown_';
 
   /// 🛡️ Unlocked Defense Gates based on Challenge Stage:
   /// Gate 1: Days 1–10 (Up to 10 questions)
@@ -698,6 +748,7 @@ class PocketFortressDefenseService {
     final coins = prefs.getInt(_coinsKey) ?? 150;
     final fdc = prefs.getInt(_activityPointsKey) ?? 80;
     final banned = prefs.getBool(_banKey) ?? false;
+    final lifelines = prefs.getInt(_lifelinesKey) ?? 1;
     final underInspection = await isUnderPresidentInspection('me');
     final activeTraps = await getActiveShieldTraps(stage);
 
@@ -719,6 +770,7 @@ class PocketFortressDefenseService {
       hasArmedEscorts: hasEscorts,
       totalCoins: coins,
       activityPoints: fdc,
+      lifelinesCount: lifelines,
       isBanned: banned,
       banReason: banned ? 'Condemned by Presidential Decree: Reported fake English defenses.' : null,
       isUnderPresidentInspection: underInspection,
@@ -1133,7 +1185,7 @@ class PocketFortressDefenseService {
   }
 
   /// Repair Damaged House (Using Coins or Activity Credits)
-  static Future<bool> repairHouse({int healAmount = 50, int coinCost = 30, int fdcCost = 40, bool useFdc = false}) async {
+  static Future<bool> repairHouse({int healAmount = 50, int coinCost = 20, int fdcCost = 40, bool useFdc = false}) async {
     final prefs = await SharedPreferences.getInstance();
     if (useFdc) {
       final currentFdc = prefs.getInt(_activityPointsKey) ?? 80;
@@ -1151,8 +1203,9 @@ class PocketFortressDefenseService {
     return true;
   }
 
-  /// Upgrade / Purchase Iron Dome (Using Coins or FDC from voice/chat/vibe activities)
-  static Future<bool> purchaseIronDome({int tier = 1, int coinCost = 75, int fdcCost = 60, bool useFdc = false}) async {
+  /// Upgrade / Purchase Iron Dome (Using 50 Coins or 60 FDC from activities)
+  /// As specified in audio: Daily mission awards 50 bonus coins, which can be spent in the Store on Iron Dome!
+  static Future<bool> purchaseIronDome({int tier = 1, int coinCost = 50, int fdcCost = 60, bool useFdc = false}) async {
     final prefs = await SharedPreferences.getInstance();
     if (useFdc) {
       final currentFdc = prefs.getInt(_activityPointsKey) ?? 80;
@@ -1187,27 +1240,204 @@ class PocketFortressDefenseService {
     return true;
   }
 
+  /// 💖 Combat Lifelines (Audio Directive):
+  /// Purchased in Store with coins, used during high-level citadel raids (Level 15+).
+  static Future<int> getLifelinesCount() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt(_lifelinesKey) ?? 1;
+  }
+
+  static Future<bool> purchaseLifeline({int coinCost = 30}) async {
+    final prefs = await SharedPreferences.getInstance();
+    final currentCoins = prefs.getInt(_coinsKey) ?? 150;
+    if (currentCoins < coinCost) return false;
+    await prefs.setInt(_coinsKey, currentCoins - coinCost);
+    final count = prefs.getInt(_lifelinesKey) ?? 1;
+    await prefs.setInt(_lifelinesKey, count + 1);
+    return true;
+  }
+
+  static Future<bool> consumeLifeline() async {
+    final prefs = await SharedPreferences.getInstance();
+    final count = prefs.getInt(_lifelinesKey) ?? 1;
+    if (count <= 0) return false;
+    await prefs.setInt(_lifelinesKey, count - 1);
+    return true;
+  }
+
+  /// ⏳ Target Attack Cooldown / Peace Treaty (Audio Directive):
+  /// "Oraale attack cheythu kazhinjal pinne aa userine thanne pinne attack cheyyaan pattilla."
+  static Future<bool> isTargetInCooldown(String targetId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final timeStr = prefs.getString('$_targetCooldownKey$targetId');
+    if (timeStr == null) return false;
+    final last = DateTime.tryParse(timeStr);
+    if (last == null) return false;
+    final diff = DateTime.now().difference(last);
+    return diff.inHours < 24; // 24h peace treaty
+  }
+
+  static Future<void> recordTargetAttacked(String targetId) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('$_targetCooldownKey$targetId', DateTime.now().toIso8601String());
+  }
+
+  /// 📜 Save Citadel Raid Log & Sync to Supabase
+  static Future<void> recordRaidLog(CitadelRaidLogEntry entry) async {
+    final prefs = await SharedPreferences.getInstance();
+    final existing = await getRecentRaids();
+    final updated = [entry, ...existing.where((e) => e.id != entry.id)].take(30).toList();
+    await prefs.setString(_raidLogKey, jsonEncode(updated.map((e) => e.toJson()).toList()));
+
+    try {
+      final myId = SupaFlow.client.auth.currentUser?.id;
+      if (myId != null) {
+        await SupaFlow.client.from('citadel_raids').insert({
+          'defender_id': myId,
+          'attacker_name': entry.attackerName,
+          'attacker_avatar': entry.attackerAvatar,
+          'breached': entry.breached,
+          'coins_looted': entry.coinsLooted,
+          'iron_dome_blocked': entry.ironDomeBlocked,
+          'created_at': entry.timestamp.toIso8601String(),
+        });
+      }
+    } catch (e) {
+      debugPrint('Supabase raid log sync: $e');
+    }
+  }
+
+  /// 📜 Retrieve Recent Citadel Raid Logs (Supabase + Local Cache)
+  static Future<List<CitadelRaidLogEntry>> getRecentRaids() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    // 1. Try Supabase
+    try {
+      final myId = SupaFlow.client.auth.currentUser?.id;
+      if (myId != null) {
+        final res = await SupaFlow.client
+            .from('citadel_raids')
+            .select()
+            .eq('defender_id', myId)
+            .order('created_at', ascending: false)
+            .limit(20);
+        if (res.isNotEmpty) {
+          final entries = res.map((r) => CitadelRaidLogEntry(
+            id: r['id']?.toString() ?? '',
+            attackerName: r['attacker_name'] ?? 'Rival Raider',
+            attackerAvatar: r['attacker_avatar'] ?? '⚔️',
+            timestamp: r['created_at'] != null ? DateTime.tryParse(r['created_at']) ?? DateTime.now() : DateTime.now(),
+            breached: r['breached'] ?? false,
+            coinsLooted: (r['coins_looted'] as num?)?.toInt() ?? 0,
+            ironDomeBlocked: r['iron_dome_blocked'] ?? false,
+          )).toList();
+          await prefs.setString(_raidLogKey, jsonEncode(entries.map((e) => e.toJson()).toList()));
+          return entries;
+        }
+      }
+    } catch (_) {}
+
+    // 2. Local cache
+    final raw = prefs.getString(_raidLogKey);
+    if (raw != null && raw.isNotEmpty) {
+      try {
+        final list = (jsonDecode(raw) as List).map((e) => CitadelRaidLogEntry.fromJson(e)).toList();
+        if (list.isNotEmpty) return list;
+      } catch (_) {}
+    }
+
+    // Seed raid entries so users see how recent attacks appear
+    return [
+      CitadelRaidLogEntry(
+        id: 'seed_raid_1',
+        attackerName: 'Vanguard Kaelen',
+        attackerAvatar: '⚔️',
+        timestamp: DateTime.now().subtract(const Duration(hours: 4)),
+        breached: false,
+        coinsLooted: 0,
+        ironDomeBlocked: true,
+      ),
+      CitadelRaidLogEntry(
+        id: 'seed_raid_2',
+        attackerName: 'Shadow Raider Lvl 8',
+        attackerAvatar: '🏹',
+        timestamp: DateTime.now().subtract(const Duration(hours: 18)),
+        breached: true,
+        coinsLooted: 45,
+        ironDomeBlocked: false,
+      ),
+    ];
+  }
+
   /// 💥 Process House Breach after attacker victory
-  /// Damages defender's house, loots coins from vault, and returns breach report
+  /// User Audio Rule:
+  /// - If defender has active Iron Dome: breach absorbed completely! (0 HP loss, 0 coins looted, dome consumed)
+  /// - Else: Breached! Deals 60 HP damage, loots exactly 45 coins from vault.
   static Future<Map<String, dynamic>> processRaidBreach({
     required String defenderHouseId,
-    int damageHp = 50,
+    int damageHp = 60,
+    String attackerName = 'Rival Raider',
+    String attackerAvatar = '⚔️',
+    bool defenderHasIronDome = false,
   }) async {
     final prefs = await SharedPreferences.getInstance();
     final currentHp = prefs.getInt(_hpKey) ?? 100;
     final currentCoins = prefs.getInt(_coinsKey) ?? 150;
+    final isSelfDefender = defenderHouseId == 'me';
+    final hasDome = isSelfDefender ? (prefs.getBool(_ironDomeKey) ?? false) : defenderHasIronDome;
 
+    if (hasDome) {
+      if (isSelfDefender) {
+        await prefs.setBool(_ironDomeKey, false);
+        await prefs.setInt('${_ironDomeKey}_tier', 0);
+      }
+
+      final entry = CitadelRaidLogEntry(
+        id: 'raid_${DateTime.now().millisecondsSinceEpoch}',
+        attackerName: attackerName,
+        attackerAvatar: attackerAvatar,
+        timestamp: DateTime.now(),
+        breached: false,
+        coinsLooted: 0,
+        ironDomeBlocked: true,
+      );
+      await recordRaidLog(entry);
+
+      return {
+        'damageDealt': 0,
+        'remainingHp': currentHp,
+        'lootedCoins': 0,
+        'ironDomeBlocked': true,
+        'isRubbled': false,
+      };
+    }
+
+    // Breached: Loot exactly 45 coins
+    const lootedCoins = kRaidBreachLootCoins;
     final newHp = math.max(0, currentHp - damageHp);
-    final lootedCoins = math.max(15, (currentCoins * 0.2).round()); // 20% looted from vault
     final remainingCoins = math.max(0, currentCoins - lootedCoins);
 
-    await prefs.setInt(_hpKey, newHp);
-    await prefs.setInt(_coinsKey, remainingCoins);
+    if (isSelfDefender) {
+      await prefs.setInt(_hpKey, newHp);
+      await prefs.setInt(_coinsKey, remainingCoins);
+    }
+
+    final entry = CitadelRaidLogEntry(
+      id: 'raid_${DateTime.now().millisecondsSinceEpoch}',
+      attackerName: attackerName,
+      attackerAvatar: attackerAvatar,
+      timestamp: DateTime.now(),
+      breached: true,
+      coinsLooted: lootedCoins,
+      ironDomeBlocked: false,
+    );
+    await recordRaidLog(entry);
 
     return {
       'damageDealt': damageHp,
       'remainingHp': newHp,
       'lootedCoins': lootedCoins,
+      'ironDomeBlocked': false,
       'isRubbled': newHp <= 0,
     };
   }

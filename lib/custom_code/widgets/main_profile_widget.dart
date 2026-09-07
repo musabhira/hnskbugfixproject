@@ -160,6 +160,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   // Fortress Citadel & Defense Traps State (User audio: "നിലവിലുള്ള ഡിഫൻസ് എന്തൊക്കെയാണ് എന്നുള്ളത്, എന്തൊക്കെ ക്വസ്റ്റ്യൻസ് ഡിഫൻസ് ഉണ്ട് എന്നുള്ളത് അത് കാണാനും പറ്റണം. അത് നമ്മുടെ മൈ പ്രൊഫൈലില് കാണാൻ പറ്റണം")
   HouseDefenseStatus? _fortressStatus;
   List<HouseShieldQuestion> _shieldQuestions = [];
+  List<CitadelRaidLogEntry> _recentRaids = [];
   bool _isLoadingDefense = false;
 
   Future<void> _loadFortressDefenseData() async {
@@ -167,10 +168,12 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     try {
       final status = await PocketFortressDefenseService.getHouseStatus(day);
       final questions = await PocketFortressDefenseService.loadShieldQuestions(day, isNeighbor: false);
+      final raids = await PocketFortressDefenseService.getRecentRaids();
       if (mounted) {
         setState(() {
           _fortressStatus = status;
           _shieldQuestions = questions;
+          _recentRaids = raids;
           _isLoadingDefense = false;
         });
       }
@@ -1025,6 +1028,10 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                           ),
                           const SizedBox(height: 16),
                           _buildCitadelDefenseSection(textColor, btnColor, btnTextColor),
+                          const SizedBox(height: 16),
+                          _buildFortressArmoryStoreSection(_fortressStatus ?? const HouseDefenseStatus()),
+                          const SizedBox(height: 16),
+                          _buildRecentAttackersSection(),
                           const SizedBox(height: 32),
                         ],
                       ),
@@ -1707,6 +1714,600 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 ),
               ],
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 🏪 Citadel Armory & Defense Store (User audio directive: "ഒരു സ്റ്റോർ കാണിക്കണം. ആ സ്റ്റോറിൽ നിന്ന് നമുക്ക് അയൺ ഡോംസോ എന്ത് വേണമെങ്കിലും പർച്ചേസ് ചെയ്യാം")
+  Widget _buildFortressArmoryStoreSection(HouseDefenseStatus status) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F172A),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: const Color(0xFFFFD700).withValues(alpha: 0.35),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.3),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Store Header
+          Container(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  const Color(0xFFFFD700).withValues(alpha: 0.15),
+                  const Color(0xFF0F172A),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+              border: Border(
+                bottom: BorderSide(
+                  color: Colors.white.withValues(alpha: 0.08),
+                ),
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFD700).withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: const Color(0xFFFFD700).withValues(alpha: 0.5),
+                    ),
+                  ),
+                  child: const Text('🏪', style: TextStyle(fontSize: 20)),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'CITADEL ARMORY & DEFENSE STORE',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Vault: ${status.totalCoins} Coins • ${status.activityPoints} FDC Credits',
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFFFFD700),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          Padding(
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              children: [
+                // Item 1: Iron Dome Shield
+                _buildStoreItemTile(
+                  icon: '🛡️',
+                  title: 'Iron Dome Shield',
+                  subtitle: 'Absorbs 1st enemy breach completely (0 HP damage, 0 coins looted)',
+                  costCoins: 50,
+                  costFdc: 60,
+                  actionLabel: status.hasIronDome ? 'ACTIVE ✓' : 'BUY SHIELD',
+                  isActive: status.hasIronDome,
+                  badgeText: status.hasIronDome ? 'Tier ${status.ironDomeTier}' : null,
+                  badgeColor: const Color(0xFF00F0FF),
+                  onPurchase: status.hasIronDome
+                      ? null
+                      : () async {
+                          HapticFeedback.heavyImpact();
+                          final success = await PocketFortressDefenseService.purchaseIronDome(coinCost: 50);
+                          if (success) {
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('🛡️ Iron Dome Shield Activated! Your vault & citadel are protected.'),
+                                  backgroundColor: Color(0xFF0284C7),
+                                ),
+                              );
+                            }
+                            _loadFortressDefenseData();
+                          } else {
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('⚠️ Not enough coins! Complete daily missions to earn 50 bonus coins.'),
+                                  backgroundColor: Colors.redAccent,
+                                ),
+                              );
+                            }
+                          }
+                        },
+                ),
+                const SizedBox(height: 10),
+
+                // Item 2: Combat Lifeline
+                _buildStoreItemTile(
+                  icon: '💖',
+                  title: 'Combat Lifeline',
+                  subtitle: 'Single-use retry on 1 wrong answer during Level 15+ citadel raids',
+                  costCoins: 30,
+                  actionLabel: 'BUY LIFELINE',
+                  badgeText: 'Owned: ${status.lifelinesCount}',
+                  badgeColor: const Color(0xFFE11D48),
+                  onPurchase: () async {
+                    HapticFeedback.heavyImpact();
+                    final success = await PocketFortressDefenseService.purchaseLifeline(coinCost: 30);
+                    if (success) {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('💖 Combat Lifeline purchased! Ready for Level 15+ raids.'),
+                            backgroundColor: Color(0xFFE11D48),
+                          ),
+                        );
+                      }
+                      _loadFortressDefenseData();
+                    } else {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('⚠️ Not enough coins!'),
+                            backgroundColor: Colors.redAccent,
+                          ),
+                        );
+                      }
+                    }
+                  },
+                ),
+                const SizedBox(height: 10),
+
+                // Item 3: Citadel Wall Repairs
+                _buildStoreItemTile(
+                  icon: '🔨',
+                  title: 'Citadel Wall Repairs',
+                  subtitle: 'Restores +50 Citadel Wall HP using coins or Activity Credits',
+                  costCoins: 20,
+                  costFdc: 40,
+                  actionLabel: status.currentHp >= status.maxHp ? 'FULL HP ✓' : 'REPAIR WALLS',
+                  isActive: status.currentHp >= status.maxHp,
+                  badgeText: 'HP: ${status.currentHp}/${status.maxHp}',
+                  badgeColor: const Color(0xFF10B981),
+                  onPurchase: status.currentHp >= status.maxHp
+                      ? null
+                      : () async {
+                          HapticFeedback.heavyImpact();
+                          final success = await PocketFortressDefenseService.repairHouse(healAmount: 50, coinCost: 20);
+                          if (success) {
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('🔨 Citadel walls repaired (+50 HP)!'),
+                                  backgroundColor: Color(0xFF10B981),
+                                ),
+                              );
+                            }
+                            _loadFortressDefenseData();
+                          } else {
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('⚠️ Not enough coins!'),
+                                  backgroundColor: Colors.redAccent,
+                                ),
+                              );
+                            }
+                          }
+                        },
+                ),
+                const SizedBox(height: 10),
+
+                // Item 4: Army Knights Garrison
+                _buildStoreItemTile(
+                  icon: '⚔️',
+                  title: 'Army Knights Garrison',
+                  subtitle: 'Enlist +2 Elite Army Knights to defend gate against raiders',
+                  costCoins: 40,
+                  costFdc: 35,
+                  actionLabel: 'ENLIST KNIGHTS',
+                  badgeText: '${status.armyKnightsCount} Knights',
+                  badgeColor: const Color(0xFFFFD700),
+                  onPurchase: () async {
+                    HapticFeedback.heavyImpact();
+                    final success = await PocketFortressDefenseService.enlistArmyKnights(count: 2, coinCost: 40);
+                    if (success) {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('⚔️ +2 Army Knights enlisted to your garrison!'),
+                            backgroundColor: Color(0xFFD97706),
+                          ),
+                        );
+                      }
+                      _loadFortressDefenseData();
+                    } else {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('⚠️ Not enough coins!'),
+                            backgroundColor: Colors.redAccent,
+                          ),
+                        );
+                      }
+                    }
+                  },
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStoreItemTile({
+    required String icon,
+    required String title,
+    required String subtitle,
+    required int costCoins,
+    int? costFdc,
+    required String actionLabel,
+    bool isActive = false,
+    String? badgeText,
+    Color? badgeColor,
+    VoidCallback? onPurchase,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E293B),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isActive ? (badgeColor ?? const Color(0xFFFFD700)).withValues(alpha: 0.6) : Colors.white12,
+          width: isActive ? 1.4 : 1.0,
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: (badgeColor ?? const Color(0xFFFFD700)).withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(icon, style: const TextStyle(fontSize: 22)),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        title,
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    if (badgeText != null) ...[
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: (badgeColor ?? Colors.amber).withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: (badgeColor ?? Colors.amber).withValues(alpha: 0.5)),
+                        ),
+                        child: Text(
+                          badgeText,
+                          style: TextStyle(
+                            color: badgeColor ?? Colors.amber,
+                            fontSize: 9.5,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  subtitle,
+                  style: GoogleFonts.inter(
+                    color: Colors.white60,
+                    fontSize: 10.5,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    Text(
+                      '🪙 $costCoins Coins',
+                      style: GoogleFonts.outfit(
+                        color: const Color(0xFFFFD700),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    if (costFdc != null) ...[
+                      const SizedBox(width: 6),
+                      Text(
+                        '/ ⚡ $costFdc FDC',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFF38BDF8),
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          ElevatedButton(
+            onPressed: onPurchase,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: isActive
+                  ? const Color(0xFF334155)
+                  : const Color(0xFFFFFC00),
+              foregroundColor: isActive ? Colors.white70 : Colors.black,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              elevation: isActive ? 0 : 2,
+            ),
+            child: Text(
+              actionLabel,
+              style: GoogleFonts.outfit(
+                fontSize: 10.5,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ⚔️ Recent Citadel Attackers (Audio directive: "ആരെങ്കിലും അറ്റാക്ക് ചെയ്തിട്ടുണ്ടെങ്കിൽ അറ്റാക്ക് ചെയ്ത ആൾക്കാരുടെ ലിസ്റ്റ് കാണിക്കണം... സുപ്പർബേസ് ആയിട്ടുള്ള ഇന്റഗ്രേഷൻ ചെയ്തു വെക്കണം")
+  Widget _buildRecentAttackersSection() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F172A),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: const Color(0xFFEF4444).withValues(alpha: 0.35),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.3),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Attackers Header
+          Container(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  const Color(0xFFEF4444).withValues(alpha: 0.15),
+                  const Color(0xFF0F172A),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+              border: Border(
+                bottom: BorderSide(
+                  color: Colors.white.withValues(alpha: 0.08),
+                ),
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEF4444).withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: const Color(0xFFEF4444).withValues(alpha: 0.5),
+                    ),
+                  ),
+                  child: const Text('⚔️', style: TextStyle(fontSize: 20)),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'RECENT CITADEL ATTACKERS (RAID LOG)',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Supabase Sync • ${_recentRaids.length} Sieges Recorded',
+                        style: GoogleFonts.inter(
+                          color: Colors.white70,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          Padding(
+            padding: const EdgeInsets.all(14),
+            child: _recentRaids.isEmpty
+                ? Container(
+                    padding: const EdgeInsets.all(16),
+                    alignment: Alignment.center,
+                    child: Text(
+                      '🛡️ No recent attacks on your citadel! Your defense questions stand firm.',
+                      style: GoogleFonts.inter(color: Colors.white60, fontSize: 12),
+                      textAlign: TextAlign.center,
+                    ),
+                  )
+                : Column(
+                    children: _recentRaids.map((entry) {
+                      final timeDiff = DateTime.now().difference(entry.timestamp);
+                      final timeText = timeDiff.inHours < 1
+                          ? '${timeDiff.inMinutes.clamp(1, 60)}m ago'
+                          : (timeDiff.inHours < 24
+                              ? '${timeDiff.inHours}h ago'
+                              : '${timeDiff.inDays}d ago');
+
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1E293B),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: entry.ironDomeBlocked
+                                ? const Color(0xFF00F0FF).withValues(alpha: 0.3)
+                                : (entry.breached
+                                    ? Colors.redAccent.withValues(alpha: 0.3)
+                                    : const Color(0xFF10B981).withValues(alpha: 0.3)),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: Colors.black26,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(entry.attackerAvatar, style: const TextStyle(fontSize: 16)),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    entry.attackerName,
+                                    style: GoogleFonts.outfit(
+                                      color: Colors.white,
+                                      fontSize: 12.5,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Text(
+                                    timeText,
+                                    style: GoogleFonts.inter(
+                                      color: Colors.white54,
+                                      fontSize: 10,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            if (entry.ironDomeBlocked)
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF00F0FF).withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(color: const Color(0xFF00F0FF).withValues(alpha: 0.4)),
+                                ),
+                                child: Text(
+                                  '🛡️ DOME BLOCKED (0 Lost)',
+                                  style: GoogleFonts.outfit(
+                                    color: const Color(0xFF00F0FF),
+                                    fontSize: 9.5,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
+                              )
+                            else if (entry.breached)
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: Colors.red.withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(color: Colors.redAccent.withValues(alpha: 0.4)),
+                                ),
+                                child: Text(
+                                  '💥 BREACHED (-${entry.coinsLooted} Coins)',
+                                  style: GoogleFonts.outfit(
+                                    color: const Color(0xFFF87171),
+                                    fontSize: 9.5,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
+                              )
+                            else
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.4)),
+                                ),
+                                child: Text(
+                                  '🛡️ DEFENSE HELD',
+                                  style: GoogleFonts.outfit(
+                                    color: const Color(0xFF34D399),
+                                    fontSize: 9.5,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                  ),
           ),
         ],
       ),
