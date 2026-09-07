@@ -14,6 +14,7 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortr
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_defense_trap_modal.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_battle_arena_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_mission_timer_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/pocket_library_page.dart';
 
 /// 📚 Model for Daily 10 Vocabulary Words to Memorize
 class DailyVocabItem {
@@ -267,7 +268,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                         stepNumber: '1',
                         icon: '💬',
                         title: 'English Hub Group Practice',
-                        description: 'Enter the active English Hub and send at least 3 English messages to fellow learners.',
+                        description: 'Enter the active English Hub and send at least 10–15 English messages to fellow learners to build active muscle memory.',
                         isVerified: _hubChatVerified,
                         actionLabel: 'OPEN ENGLISH HUB CHAT',
                         actionColor: const Color(0xFFFFFC00),
@@ -306,6 +307,10 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                         actionLabel: 'FIND 1-ON-1 PEERS',
                         actionColor: const Color(0xFF00E5FF),
                         onAction: () {
+                          // Auto-start 60-min practice timer as instructed in audio
+                          if (!_timerService.isRunning && !_timerService.hasReachedTarget) {
+                            _timerService.toggleTimer();
+                          }
                           Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -346,10 +351,10 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                       _buildSubtaskCard(
                         stepNumber: '6',
                         icon: '🛡️',
-                        title: 'Craft Day 1 Citadel Defense Trap',
-                        description: 'Arm your front gate with an authentic English challenge to defend your house from raiders.',
+                        title: 'Add Day ${widget.day} Citadel Defense Shield',
+                        description: 'Arm your front gate with 1 authentic English challenge to defend your house from raiders. (Shield Slot ${widget.day} of ${widget.day})',
                         isVerified: _defenseTrapArmed,
-                        actionLabel: 'CRAFT DEFENSE TRAP',
+                        actionLabel: _defenseTrapArmed ? 'EDIT DEFENSE SHIELD 🛡️' : 'ADD DEFENSE SHIELD 🛡️',
                         actionColor: const Color(0xFF8B5CF6),
                         onAction: () {
                           PocketDefenseTrapModal.show(context, widget.day);
@@ -406,7 +411,12 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                         },
                       ),
 
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 20),
+
+                      // 🛡️ House Defense Shield Banner (Audio Directive: Show right inside Day 1!)
+                      _buildShieldUnlockBanner(),
+
+                      const SizedBox(height: 10),
 
                       // 🏆 Final Mission Completion Button
                       _buildFinalClaimButton(),
@@ -1180,25 +1190,67 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
             ),
           ),
           const SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              onPressed: () {
-                setState(() => _readingNotesCompleted = true);
-                _saveSubtask('reading', true);
-                HapticFeedback.lightImpact();
-              },
-              icon: Icon(_readingNotesCompleted ? Icons.check_circle_rounded : Icons.menu_book_rounded, color: const Color(0xFFFFFC00)),
-              label: Text(
-                _readingNotesCompleted ? 'NOTES & PASSAGE READ ✓' : 'I FINISHED READING ALOUD',
-                style: GoogleFonts.outfit(color: const Color(0xFFFFFC00), fontWeight: FontWeight.bold),
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    HapticFeedback.lightImpact();
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const PocketLibraryPage()),
+                    ).then((_) {
+                      if (mounted) {
+                        setState(() => _readingNotesCompleted = true);
+                        _saveSubtask('reading', true);
+                      }
+                    });
+                  },
+                  icon: const Icon(Icons.auto_stories_rounded, color: Colors.black, size: 16),
+                  label: Text(
+                    'READ BOOKS 📚',
+                    style: GoogleFonts.outfit(
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFFD700),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                ),
               ),
-              style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: Color(0xFFFFFC00)),
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              const SizedBox(width: 8),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () {
+                    setState(() => _readingNotesCompleted = true);
+                    _saveSubtask('reading', true);
+                    HapticFeedback.lightImpact();
+                  },
+                  icon: Icon(
+                    _readingNotesCompleted ? Icons.check_circle_rounded : Icons.check_rounded,
+                    color: const Color(0xFFFFFC00),
+                    size: 16,
+                  ),
+                  label: Text(
+                    _readingNotesCompleted ? 'READ ALOUD ✓' : 'FINISHED READING',
+                    style: GoogleFonts.outfit(
+                      color: const Color(0xFFFFFC00),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: Color(0xFFFFFC00)),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
         ],
       ),
@@ -1322,6 +1374,148 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     );
   }
 
+  // --- 🛡️ HOUSE DEFENSE SHIELD UNLOCK BANNER ---
+  Widget _buildShieldUnlockBanner() {
+    final allSubtasksDone = _completedSubtasksCount >= 7;
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: _defenseTrapArmed
+              ? [const Color(0xFF1E1B4B), const Color(0xFF0F172A)]
+              : (allSubtasksDone
+                  ? [const Color(0xFF3B0764), const Color(0xFF1E1B4B)]
+                  : [const Color(0xFF1E293B), const Color(0xFF0F172A)]),
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: _defenseTrapArmed
+              ? const Color(0xFF10B981)
+              : (allSubtasksDone ? const Color(0xFFFFD700) : Colors.white12),
+          width: 1.5,
+        ),
+        boxShadow: [
+          if (allSubtasksDone && !_defenseTrapArmed)
+            BoxShadow(
+              color: const Color(0xFFFF8906).withValues(alpha: 0.3),
+              blurRadius: 14,
+              spreadRadius: 1,
+            ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: _defenseTrapArmed
+                  ? const Color(0xFF10B981).withValues(alpha: 0.2)
+                  : const Color(0xFFFFFC00).withValues(alpha: 0.15),
+              border: Border.all(
+                color: _defenseTrapArmed
+                    ? const Color(0xFF10B981)
+                    : const Color(0xFFFFFC00),
+                width: 1.2,
+              ),
+            ),
+            child: Text(
+              _defenseTrapArmed ? '🛡️' : '⚔️',
+              style: const TextStyle(fontSize: 22),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      'DAY ${widget.day} DEFENSE SHIELD',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 13,
+                        letterSpacing: 0.4,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 1.5,
+                      ),
+                      decoration: BoxDecoration(
+                        color: _defenseTrapArmed
+                            ? const Color(0xFF10B981).withValues(alpha: 0.2)
+                            : Colors.white10,
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      child: Text(
+                        _defenseTrapArmed ? 'ACTIVE ✓' : 'SLOT READY',
+                        style: TextStyle(
+                          color: _defenseTrapArmed
+                              ? const Color(0xFF10B981)
+                              : Colors.amberAccent,
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  _defenseTrapArmed
+                      ? 'House protection active! Question ${widget.day} is guarding your gate against raiders.'
+                      : 'Craft 1 tricky English question to arm your house shield against raiders in Pocket World!',
+                  style: GoogleFonts.inter(
+                    color: Colors.white70,
+                    fontSize: 11,
+                    height: 1.3,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          ElevatedButton(
+            onPressed: () {
+              HapticFeedback.lightImpact();
+              PocketDefenseTrapModal.show(context, widget.day);
+              setState(() => _defenseTrapArmed = true);
+              _saveSubtask('defense', true);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _defenseTrapArmed
+                  ? const Color(0xFF10B981)
+                  : const Color(0xFFFFFC00),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 10,
+                vertical: 8,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            child: Text(
+              _defenseTrapArmed ? 'EDIT 🛡️' : 'ADD SHIELD',
+              style: GoogleFonts.outfit(
+                color: Colors.black,
+                fontWeight: FontWeight.w900,
+                fontSize: 11,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   // --- 🏆 FINAL CLAIM & ADVANCE BUTTON ---
   Widget _buildFinalClaimButton() {
     final isTimerMet = _isTimerCompleted;
@@ -1400,6 +1594,11 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               onPressed: canClaim
                   ? () async {
                       HapticFeedback.heavyImpact();
+                      if (!_defenseTrapArmed) {
+                        PocketDefenseTrapModal.show(context, widget.day);
+                        setState(() => _defenseTrapArmed = true);
+                        _saveSubtask('defense', true);
+                      }
                       final uid = SupaFlow.client.auth.currentUser?.id;
                       if (uid != null) {
                         await Learning60DayService().completeTask(
