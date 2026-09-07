@@ -10,6 +10,7 @@ import 'pocket_defense_admin_modal.dart';
 import 'pocket_fortress_defense_service.dart';
 import 'pocket_world_street_page.dart';
 import '../chat/pocket_ambient_flame_background.dart';
+import '/backend/supabase/supabase.dart';
 
 /// 🎮 The High-Value English Battle Modes
 enum BattleMode {
@@ -568,8 +569,10 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
     if (won) {
       // 🛡️ Process House Breach with Defender's Iron Dome Check (Audio Rule)
       final attackerPerk = VectorAvatarConfig.getAvatarPerkForDay(widget.userDay);
+      final myUid = SupaFlow.client.auth.currentUser?.id ?? '';
       final breachReport = await PocketFortressDefenseService.processRaidBreach(
         defenderHouseId: widget.neighbor.id,
+        attackerId: myUid,
         damageHp: 60,
         attackerName: 'Attacker Lvl ${widget.userDay}',
         attackerAvatar: '⚔️',
@@ -584,6 +587,13 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
         lootCoins = PocketFortressDefenseService.kRaidBreachLootCoins; // exactly 45 coins (Audio Directive)
         await PocketFortressDefenseService.awardRaidLoot(lootCoins);
       }
+
+      // Audio 15 directive: "വലിയ ടീമിനെ അറ്റാക്ക് ചെയ്താൽ കൂടുതൽ പോക്കറ്റ് സ്കോർ, ചെറിയ ടീമിനെയാണെങ്കിൽ ചെറിയ രീതിയിൽ!"
+      final earnedPocketScore = 20 + (widget.neighbor.day * 6);
+      await PocketFortressDefenseService.recordActivityPoints('raid_breach', customPoints: earnedPocketScore);
+
+      // Record daily attack quota usage (1-2 attacks limit)
+      await PocketFortressDefenseService.recordAttackLaunchedToday();
 
       // Record target attack cooldown (Audio Directive: cannot immediately re-attack the same user)
       await PocketFortressDefenseService.recordTargetAttacked(widget.neighbor.id);

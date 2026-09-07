@@ -18,7 +18,7 @@ class PocketMissionTimerService extends ChangeNotifier with WidgetsBindingObserv
     WidgetsBinding.instance.addObserver(this);
   }
 
-  static const int defaultTargetSeconds = 3600; // 60 minutes
+  static const int defaultTargetSeconds = 2400; // 40 minutes (Audio Directive)
 
   int _day = 1;
   int _elapsedSeconds = 0;
@@ -118,7 +118,7 @@ class PocketMissionTimerService extends ChangeNotifier with WidgetsBindingObserv
         _ticker?.cancel();
         _ticker = null;
         _isRunning = false;
-        _pauseReason = 'Daily 60-Min Practice Target Reached!';
+        _pauseReason = 'Daily 40-Min Practice Target Reached!';
         _saveState();
         HapticFeedback.heavyImpact();
         notifyListeners();

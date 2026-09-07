@@ -1094,119 +1094,6 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   ),
                 ),
 
-                // Floating Persistent 60-Minute Practice Timer Banner
-                Positioned(
-                  left: 18,
-                  right: 18,
-                  bottom: 84,
-                  child: ListenableBuilder(
-                    listenable: PocketMissionTimerService.instance,
-                    builder: (context, _) {
-                      final timer = PocketMissionTimerService.instance;
-                      if (timer.elapsedSeconds == 0 && !timer.isRunning) {
-                        return const SizedBox.shrink();
-                      }
-
-                      final isRunning = timer.isRunning;
-                      final isTargetMet = timer.hasReachedTarget;
-
-                      return GestureDetector(
-                        onTap: () => _navigateToMissionPage(timer.day),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: isTargetMet
-                                  ? const [Color(0xFF064E3B), Color(0xFF0F172A)]
-                                  : (isRunning
-                                      ? const [Color(0xFF1E1B4B), Color(0xFF0F172A)]
-                                      : const [Color(0xFF1E293B), Color(0xFF0F172A)]),
-                            ),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: isTargetMet
-                                  ? const Color(0xFF10B981)
-                                  : (isRunning ? const Color(0xFFFFD700) : Colors.white24),
-                              width: 1.2,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: (isRunning
-                                        ? const Color(0xFFFFD700)
-                                        : (isTargetMet ? const Color(0xFF10B981) : Colors.black))
-                                    .withValues(alpha: 0.3),
-                                blurRadius: 10,
-                                offset: const Offset(0, 3),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            children: [
-                              Text(
-                                isTargetMet ? '🏆' : (isRunning ? '🔥' : '⏸️'),
-                                style: const TextStyle(fontSize: 16),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Text(
-                                          'DAY ${timer.day} PRACTICE: ',
-                                          style: GoogleFonts.outfit(
-                                            color: const Color(0xFFFFFC00),
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                        Text(
-                                          '${timer.formatTime()} / ${timer.formatTime(timer.targetSeconds)}',
-                                          style: GoogleFonts.outfit(
-                                            color: Colors.white,
-                                            fontSize: 12.5,
-                                            fontWeight: FontWeight.w900,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    Text(
-                                      isRunning
-                                          ? 'Practice timer active • Runs while you explore!'
-                                          : (isTargetMet ? 'Target complete! Tap to claim' : 'Timer paused • Tap to continue'),
-                                      style: GoogleFonts.inter(
-                                        color: isRunning ? const Color(0xFF6EE7B7) : Colors.white60,
-                                        fontSize: 10,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFFFFC00),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Text(
-                                  'MISSION ➔',
-                                  style: GoogleFonts.outfit(
-                                    color: Colors.black,
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w900,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
 
                 // Right: 🎯 Jump to Today Button (Direct entry into Mission Page)
                 Positioned(
@@ -1289,58 +1176,35 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   const SizedBox(width: 6),
                 ],
 
-                // Minimal 90-Day Target Badge
+                // Minimal Day Badge
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFD700).withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(6),
+                    borderRadius: BorderRadius.circular(8),
                     border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.4), width: 0.8),
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text('🇬🇧', style: TextStyle(fontSize: 10)),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Day ${prog.currentDay}/90',
-                        style: GoogleFonts.outfit(
-                          color: const Color(0xFFFFD700),
-                          fontSize: 11,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                    ],
+                  child: Text(
+                    'Day ${prog.currentDay}',
+                    style: GoogleFonts.outfit(
+                      color: const Color(0xFFFFD700),
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w900,
+                    ),
                   ),
                 ),
-                const SizedBox(width: 6),
+                const SizedBox(width: 8),
 
-                // Streak Capsule
-                _buildHudCapsule(
-                  icon: Icons.local_fire_department_rounded,
-                  color: const Color(0xFFFF5722),
-                  label: '${prog.streakDays}d',
-                ),
-                const SizedBox(width: 4),
-
-                // Stars Capsule
-                _buildHudCapsule(
-                  icon: Icons.star_rounded,
-                  color: const Color(0xFFFFD700),
-                  label: '$totalStars ⭐',
-                ),
-                const SizedBox(width: 4),
-
-                // Score Capsule
+                // Pocket Score Capsule (User directive: "അതിൽ 'Day 1' എന്ന് കൊടുത്തോ, പിന്നെ 'Pocket Score'. ഇത്ര മാത്രം മതി")
                 _buildHudCapsule(
                   icon: Icons.bolt_rounded,
                   color: const Color(0xFF00E5FF),
-                  label: '${prog.totalPoints}',
+                  label: 'Pocket Score: ${prog.totalPoints}',
                 ),
 
                 const Spacer(),
 
-                // 🏪 Arsenal Store Button
+                // 🏪 Minimal Store Button
                 GestureDetector(
                   onTap: () {
                     HapticFeedback.lightImpact();
@@ -1351,57 +1215,23 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                     );
                   },
                   child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 7, vertical: 3.5),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: Colors.amber.withValues(alpha: 0.16),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                          color: Colors.amber.withValues(alpha: 0.4)),
+                      border: Border.all(color: Colors.amber.withValues(alpha: 0.4)),
                     ),
                     child: Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         const Text('🏪', style: TextStyle(fontSize: 11)),
-                        const SizedBox(width: 3),
+                        const SizedBox(width: 4),
                         Text(
                           'Store',
                           style: GoogleFonts.outfit(
                             color: const Color(0xFFFFD700),
                             fontWeight: FontWeight.bold,
-                            fontSize: 10.5,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 5),
-
-                // Rewards Trophy Button
-                GestureDetector(
-                  onTap: () {
-                    HapticFeedback.lightImpact();
-                    _showMilestoneRewardsModal();
-                  },
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 7, vertical: 3.5),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFFFC00).withValues(alpha: 0.16),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                          color: const Color(0xFFFFFC00).withValues(alpha: 0.4)),
-                    ),
-                    child: Row(
-                      children: [
-                        const Text('🏆', style: TextStyle(fontSize: 11)),
-                        const SizedBox(width: 3),
-                        Text(
-                          'Trophies',
-                          style: GoogleFonts.outfit(
-                            color: const Color(0xFFFFD700),
-                            fontWeight: FontWeight.bold,
-                            fontSize: 10.5,
+                            fontSize: 11,
                           ),
                         ),
                       ],

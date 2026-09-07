@@ -337,6 +337,7 @@ class Day90MasterCardData {
 /// 📜 Raid Log Entry (Tracking attackers on user's citadel)
 class CitadelRaidLogEntry {
   final String id;
+  final String attackerId;
   final String attackerName;
   final String attackerAvatar;
   final String attackerWeapon; // ⚔️ Avatar Combat Weapon / Tool (Audio directive: Cannons, Blasters, Shields)
@@ -347,6 +348,7 @@ class CitadelRaidLogEntry {
 
   const CitadelRaidLogEntry({
     required this.id,
+    this.attackerId = '',
     required this.attackerName,
     required this.attackerAvatar,
     this.attackerWeapon = '💥 Heavy Cannon',
@@ -358,6 +360,7 @@ class CitadelRaidLogEntry {
 
   Map<String, dynamic> toJson() => {
         'id': id,
+        'attackerId': attackerId,
         'attackerName': attackerName,
         'attackerAvatar': attackerAvatar,
         'attackerWeapon': attackerWeapon,
@@ -369,15 +372,16 @@ class CitadelRaidLogEntry {
 
   factory CitadelRaidLogEntry.fromJson(Map<String, dynamic> json) => CitadelRaidLogEntry(
         id: json['id'] ?? '',
-        attackerName: json['attackerName'] ?? 'Rival Raider',
-        attackerAvatar: json['attackerAvatar'] ?? '⚔️',
-        attackerWeapon: json['attackerWeapon'] ?? '💥 Heavy Cannon',
+        attackerId: json['attackerId'] ?? json['attacker_id'] ?? '',
+        attackerName: json['attackerName'] ?? json['attacker_name'] ?? 'Rival Raider',
+        attackerAvatar: json['attackerAvatar'] ?? json['attacker_avatar'] ?? '⚔️',
+        attackerWeapon: json['attackerWeapon'] ?? json['attacker_weapon'] ?? '💥 Heavy Cannon',
         timestamp: json['timestamp'] != null
             ? DateTime.tryParse(json['timestamp']) ?? DateTime.now()
-            : DateTime.now(),
+            : (json['created_at'] != null ? DateTime.tryParse(json['created_at']) ?? DateTime.now() : DateTime.now()),
         breached: json['breached'] ?? false,
-        coinsLooted: json['coinsLooted'] ?? 0,
-        ironDomeBlocked: json['ironDomeBlocked'] ?? false,
+        coinsLooted: (json['coinsLooted'] ?? json['coins_looted'] as num?)?.toInt() ?? 0,
+        ironDomeBlocked: json['ironDomeBlocked'] ?? json['iron_dome_blocked'] ?? false,
       );
 }
 
@@ -1182,24 +1186,26 @@ class PocketFortressDefenseService {
   }
 
   /// 🎙️ Record activity and award Fortress Defense Credits (FDC) with optional companion avatar boost
-  static Future<int> recordActivityPoints(String activityType, {int? stage}) async {
+  static Future<int> recordActivityPoints(String activityType, {int? stage, int? customPoints}) async {
     final prefs = await SharedPreferences.getInstance();
-    int gain = 10;
-    switch (activityType) {
-      case 'voice_talk':
-        gain = 20; // Anonymous English Voice Calls
-        break;
-      case 'group_chat':
-        gain = 10; // Group English chats
-        break;
-      case 'vibe_post':
-        gain = 15; // English Vibes posting
-        break;
-      case 'daily_mission':
-        gain = 30; // Completing daily challenges
-        break;
-      default:
-        gain = 10;
+    int gain = customPoints ?? 10;
+    if (customPoints == null) {
+      switch (activityType) {
+        case 'voice_talk':
+          gain = 20; // Anonymous English Voice Calls
+          break;
+        case 'group_chat':
+          gain = 10; // Group English chats
+          break;
+        case 'vibe_post':
+          gain = 15; // English Vibes posting
+          break;
+        case 'daily_mission':
+          gain = 30; // Completing daily challenges
+          break;
+        default:
+          gain = 10;
+      }
     }
 
     // Apply companion avatar FDC boost perk if stage is provided
@@ -1314,6 +1320,39 @@ class PocketFortressDefenseService {
     await prefs.setString('$_targetCooldownKey$targetId', DateTime.now().toIso8601String());
   }
 
+  /// ⚔️ Daily Attack Limit (Audio 15 Directive: "ഡെയിലി ഒരാൾക്ക് 1 അല്ലെങ്കിൽ 2 അറ്റാക്ക് ആണ് ലിമിറ്റ്")
+  static const int kDailyMaxAttacks = 2;
+
+  static String _safeCurrentUserId([String? fallback]) {
+    try {
+      final authUser = SupaFlow.client.auth.currentUser;
+      if (authUser?.id != null) return authUser!.id;
+    } catch (_) {}
+    return fallback ?? 'me';
+  }
+
+  static Future<int> getDailyAttacksUsedToday([String? userId]) async {
+    final prefs = await SharedPreferences.getInstance();
+    final now = DateTime.now();
+    final uid = _safeCurrentUserId(userId);
+    final key = 'daily_raids_count_${uid}_${now.year}_${now.month}_${now.day}';
+    return prefs.getInt(key) ?? 0;
+  }
+
+  static Future<bool> canLaunchAttackToday([String? userId]) async {
+    final used = await getDailyAttacksUsedToday(userId);
+    return used < kDailyMaxAttacks;
+  }
+
+  static Future<void> recordAttackLaunchedToday([String? userId]) async {
+    final prefs = await SharedPreferences.getInstance();
+    final now = DateTime.now();
+    final uid = _safeCurrentUserId(userId);
+    final key = 'daily_raids_count_${uid}_${now.year}_${now.month}_${now.day}';
+    final current = prefs.getInt(key) ?? 0;
+    await prefs.setInt(key, current + 1);
+  }
+
   /// 📜 Save Citadel Raid Log & Sync to Supabase
   static Future<void> recordRaidLog(CitadelRaidLogEntry entry) async {
     final prefs = await SharedPreferences.getInstance();
@@ -1326,6 +1365,7 @@ class PocketFortressDefenseService {
       if (myId != null) {
         await SupaFlow.client.from('citadel_raids').insert({
           'defender_id': myId,
+          if (entry.attackerId.isNotEmpty) 'attacker_id': entry.attackerId,
           'attacker_name': entry.attackerName,
           'attacker_avatar': entry.attackerAvatar,
           'attacker_weapon': entry.attackerWeapon,
@@ -1357,6 +1397,7 @@ class PocketFortressDefenseService {
         if (res.isNotEmpty) {
           final entries = res.map((r) => CitadelRaidLogEntry(
             id: r['id']?.toString() ?? '',
+            attackerId: r['attacker_id']?.toString() ?? '',
             attackerName: r['attacker_name'] ?? 'Rival Raider',
             attackerAvatar: r['attacker_avatar'] ?? '⚔️',
             attackerWeapon: r['attacker_weapon'] ?? '💥 Heavy Cannon',
@@ -1380,29 +1421,8 @@ class PocketFortressDefenseService {
       } catch (_) {}
     }
 
-    // Seed raid entries so users see how recent attacks appear
-    return [
-      CitadelRaidLogEntry(
-        id: 'seed_raid_1',
-        attackerName: 'Vanguard Kaelen',
-        attackerAvatar: '⚔️',
-        attackerWeapon: '💥 Royal Siege Cannon',
-        timestamp: DateTime.now().subtract(const Duration(hours: 4)),
-        breached: false,
-        coinsLooted: 0,
-        ironDomeBlocked: true,
-      ),
-      CitadelRaidLogEntry(
-        id: 'seed_raid_2',
-        attackerName: 'Shadow Raider Lvl 8',
-        attackerAvatar: '🏹',
-        attackerWeapon: '🔫 Plasma Blaster Gun',
-        timestamp: DateTime.now().subtract(const Duration(hours: 18)),
-        breached: true,
-        coinsLooted: 45,
-        ironDomeBlocked: false,
-      ),
-    ];
+    // No dummy seed data per user directive: "സൂപ്പർബേസ് ആയിട്ട് ബാക്ക് എൻഡ് വേണം, ഡമ്മി പറ്റൂല്ല"
+    return [];
   }
 
   /// 💥 Process House Breach after attacker victory
@@ -1411,6 +1431,7 @@ class PocketFortressDefenseService {
   /// - Else: Breached! Deals 60 HP damage, loots exactly 45 coins from vault.
   static Future<Map<String, dynamic>> processRaidBreach({
     required String defenderHouseId,
+    String attackerId = '',
     int damageHp = 60,
     String attackerName = 'Rival Raider',
     String attackerAvatar = '⚔️',
@@ -1431,6 +1452,7 @@ class PocketFortressDefenseService {
 
       final entry = CitadelRaidLogEntry(
         id: 'raid_${DateTime.now().millisecondsSinceEpoch}',
+        attackerId: attackerId,
         attackerName: attackerName,
         attackerAvatar: attackerAvatar,
         attackerWeapon: attackerWeapon,
@@ -1462,6 +1484,7 @@ class PocketFortressDefenseService {
 
     final entry = CitadelRaidLogEntry(
       id: 'raid_${DateTime.now().millisecondsSinceEpoch}',
+      attackerId: attackerId,
       attackerName: attackerName,
       attackerAvatar: attackerAvatar,
       attackerWeapon: attackerWeapon,

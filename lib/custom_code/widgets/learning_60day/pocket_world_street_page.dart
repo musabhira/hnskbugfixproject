@@ -292,16 +292,19 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
     final inCooldown = await PocketFortressDefenseService.isTargetInCooldown(neighbor.id);
     final isTargetJailed = await PocketFortressDefenseService.isHouseJailed(neighbor.id);
     final isPlayerJailed = await PocketFortressDefenseService.isHouseJailed('me');
-    final cannotAttack = inCooldown || isTargetJailed || isPlayerJailed;
+    final attacksUsed = await PocketFortressDefenseService.getDailyAttacksUsedToday();
+    final isDailyLimitReached = attacksUsed >= PocketFortressDefenseService.kDailyMaxAttacks;
+    final cannotAttack = inCooldown || isTargetJailed || isPlayerJailed || isDailyLimitReached;
     if (!mounted) return;
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       backgroundColor: const Color(0xFF0F172A),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (ctx) => Padding(
-        padding: const EdgeInsets.fromLTRB(22, 20, 22, 32),
+        padding: const EdgeInsets.fromLTRB(22, 16, 22, 28),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -315,7 +318,7 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'English Battle Challenge',
+                        'Citadel Siege Inspection',
                         style: GoogleFonts.outfit(
                           color: Colors.white,
                           fontSize: 18,
@@ -323,7 +326,7 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
                         ),
                       ),
                       Text(
-                        'Challenge ${neighbor.name}’s House Defenses',
+                        'Target: ${neighbor.name} (Level ${neighbor.day})',
                         style: TextStyle(
                           color: Colors.white.withValues(alpha: 0.6),
                           fontSize: 12.5,
@@ -332,13 +335,53 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
                     ],
                   ),
                 ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: isDailyLimitReached
+                        ? Colors.red.withValues(alpha: 0.15)
+                        : const Color(0xFF0284C7).withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: isDailyLimitReached ? Colors.redAccent.withValues(alpha: 0.4) : const Color(0xFF38BDF8).withValues(alpha: 0.4),
+                    ),
+                  ),
+                  child: Text(
+                    '⚔️ $attacksUsed / ${PocketFortressDefenseService.kDailyMaxAttacks} Today',
+                    style: TextStyle(
+                      color: isDailyLimitReached ? Colors.redAccent : const Color(0xFF38BDF8),
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 6),
                 IconButton(
                   icon: const Icon(Icons.close, color: Colors.white60),
                   onPressed: () => Navigator.pop(ctx),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
+
+            // 🏡 Full-Screen House Canvas (Audio 15: "സെലക്ട് ചെയ്ത ഉടനെ തന്നെ ആ വീട് ഫുൾസ്ക്രീൻ ആകും!")
+            Container(
+              height: 210,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: const Color(0xFF1E293B),
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: Colors.white12),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(18),
+                child: FlameEnglishHouseWidget(
+                  currentDay: neighbor.day,
+                  streak: neighbor.streak,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
             if (isTargetJailed)
               Container(
                 margin: const EdgeInsets.only(bottom: 14),
@@ -575,11 +618,13 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
                     Text(cannotAttack ? '🔒' : '🚀', style: const TextStyle(fontSize: 16)),
                     const SizedBox(width: 8),
                     Text(
-                      isTargetJailed
-                          ? 'TARGET IS IN JAIL ⛓️'
-                          : (isPlayerJailed
-                              ? 'YOU ARE IN JAIL ⛓️'
-                              : (inCooldown ? 'PEACE TREATY IN EFFECT ⏳' : 'START 1v1 DUEL')),
+                      isDailyLimitReached
+                          ? 'DAILY LIMIT (2/2) REACHED 🔒'
+                          : (isTargetJailed
+                              ? 'TARGET IS IN JAIL ⛓️'
+                              : (isPlayerJailed
+                                  ? 'YOU ARE IN JAIL ⛓️'
+                                  : (inCooldown ? 'PEACE TREATY IN EFFECT ⏳' : 'ATTACK CITADEL ⚔️'))),
                       style: GoogleFonts.outfit(
                         fontWeight: FontWeight.w900,
                         fontSize: 14,

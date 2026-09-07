@@ -487,6 +487,24 @@ void main() {
       final raids = await PocketFortressDefenseService.getRecentRaids();
       expect(raids.first.attackerWeapon, equals('💥 Royal Siege Cannon'));
     });
+
+    test('Daily Attack Limit enforces maximum 2 attacks per day (Audio 15 Directive)', () async {
+      SharedPreferences.setMockInitialValues({});
+
+      expect(await PocketFortressDefenseService.getDailyAttacksUsedToday(), equals(0));
+      expect(await PocketFortressDefenseService.canLaunchAttackToday(), isTrue);
+
+      // Attack 1
+      await PocketFortressDefenseService.recordAttackLaunchedToday();
+      expect(await PocketFortressDefenseService.getDailyAttacksUsedToday(), equals(1));
+      expect(await PocketFortressDefenseService.canLaunchAttackToday(), isTrue);
+
+      // Attack 2
+      await PocketFortressDefenseService.recordAttackLaunchedToday();
+      expect(await PocketFortressDefenseService.getDailyAttacksUsedToday(), equals(2));
+      // Reached limit
+      expect(await PocketFortressDefenseService.canLaunchAttackToday(), isFalse);
+    });
   });
 }
 

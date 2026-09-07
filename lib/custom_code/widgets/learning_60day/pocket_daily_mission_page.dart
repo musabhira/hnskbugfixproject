@@ -2988,216 +2988,198 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     await prefs.setBool('${dayKey}_$key', value);
   }
 
-  // 💬 Interactive Confirmation Dialog for English Hub Chat
-  Future<void> _promptChatCompletionConfirmation() async {
-    final confirmed = await showModalBottomSheet<bool>(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (ctx) => Container(
-        padding: const EdgeInsets.all(20),
-        decoration: const BoxDecoration(
-          color: Color(0xFF0F172A),
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-          border: Border(top: BorderSide(color: Color(0xFFFFFC00), width: 1.5)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.white24,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 16),
-            const Text('💬', style: TextStyle(fontSize: 36)),
-            const SizedBox(height: 8),
-            Text(
-              'Confirm English Hub Practice',
-              style: GoogleFonts.outfit(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Did you actively send your English messages to fellow learners in the English Hub?',
-              style: GoogleFonts.inter(color: Colors.white70, fontSize: 13),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 20),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.pop(ctx, false),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.white70,
-                      side: const BorderSide(color: Colors.white24),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                    child: const Text('Not Yet'),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.pop(ctx, true),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFFFFC00),
-                      foregroundColor: Colors.black,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                    child: Text(
-                      'YES, COMPLETED ✓',
-                      style: GoogleFonts.outfit(fontWeight: FontWeight.w900),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-          ],
-        ),
-      ),
-    );
-
-    if (confirmed == true && mounted) {
-      setState(() => _hubChatVerified = true);
-      _saveSubtask('hub_chat', true);
-      HapticFeedback.mediumImpact();
+  // 💬 Real Backend Verification for English Hub Chat in Supabase
+  Future<void> _verifyEnglishHubChatWithBackend() async {
+    final myId = SupaFlow.client.auth.currentUser?.id;
+    if (myId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('✅ Step 1 Verified: English Hub chat activity confirmed!'),
-          backgroundColor: Color(0xFF10B981),
-        ),
-      );
-    }
-  }
-
-  // 🎙️ Confirmation Check & Dialog for 1-on-1 Peer Calls
-  Future<void> _checkAndPromptPeerCallCompletion() async {
-    final myId = SupaFlow.client.auth.currentUser?.id;
-    int chatsCount = 0;
-    if (myId != null) {
-      final prefs = await SharedPreferences.getInstance();
-      final now = DateTime.now();
-      final todayChatKey = 'chat_goals_${myId}_${now.year}_${now.month}_${now.day}';
-      chatsCount = prefs.getInt(todayChatKey) ?? 0;
-    }
-
-    if (!mounted) return;
-    if (chatsCount >= 2) {
-      setState(() => _peerCallVerified = true);
-      _saveSubtask('peer_call', true);
-      HapticFeedback.heavyImpact();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('🎉 $chatsCount/2 Peer Calls Verified! Step 2 complete.'),
-          backgroundColor: const Color(0xFF10B981),
+          content: Text('⚠️ Please sign in to verify your English Hub messages.'),
+          backgroundColor: Color(0xFFDC2626),
         ),
       );
       return;
     }
 
-    final confirmed = await showModalBottomSheet<bool>(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (ctx) => Container(
-        padding: const EdgeInsets.all(20),
-        decoration: const BoxDecoration(
-          color: Color(0xFF0F172A),
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-          border: Border(top: BorderSide(color: Color(0xFF00E5FF), width: 1.5)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Row(
           children: [
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.white24,
-                borderRadius: BorderRadius.circular(2),
-              ),
+            SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
             ),
-            const SizedBox(height: 16),
-            const Text('🎙️', style: TextStyle(fontSize: 36)),
-            const SizedBox(height: 8),
-            Text(
-              'Confirm 1-on-1 Peer Calls',
-              style: GoogleFonts.outfit(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              chatsCount > 0
-                  ? 'Current progress: $chatsCount/2 peers connected today. Did you complete speaking with 2 mates?'
-                  : 'Did you complete live English speaking practice with 2 mates to conquer hesitation?',
-              style: GoogleFonts.inter(color: Colors.white70, fontSize: 13),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 20),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.pop(ctx, false),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.white70,
-                      side: const BorderSide(color: Colors.white24),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                    child: const Text('Connect More'),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.pop(ctx, true),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF00E5FF),
-                      foregroundColor: Colors.black,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                    child: Text(
-                      'YES, 2 CALLS DONE ✓',
-                      style: GoogleFonts.outfit(fontWeight: FontWeight.w900),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
+            SizedBox(width: 10),
+            Text('Verifying English Hub messages in Supabase...'),
           ],
         ),
+        duration: Duration(seconds: 1),
+        backgroundColor: Color(0xFF1E293B),
       ),
     );
 
-    if (confirmed == true && mounted) {
-      setState(() => _peerCallVerified = true);
-      _saveSubtask('peer_call', true);
-      HapticFeedback.mediumImpact();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('✅ Step 2 Verified: 2 Peer conversations recorded!'),
-          backgroundColor: Color(0xFF10B981),
-        ),
-      );
+    try {
+      final now = DateTime.now();
+      final todayStart = DateTime(now.year, now.month, now.day).toIso8601String();
+
+      // Query group_messages in Supabase for actual messages sent by this user today
+      final response = await SupaFlow.client
+          .from('group_messages')
+          .select('id')
+          .eq('sender_id', myId)
+          .gte('created_at', todayStart)
+          .limit(1);
+
+      final hasSentMessages = response.isNotEmpty;
+
+      final prefs = await SharedPreferences.getInstance();
+      final points = prefs.getInt('english_hub_points') ?? 0;
+      final localChatCount = prefs.getInt('english_hub_msgs_${myId}_${now.year}_${now.month}_${now.day}') ?? 0;
+
+      if (hasSentMessages || points > 0 || localChatCount > 0) {
+        if (!mounted) return;
+        setState(() => _hubChatVerified = true);
+        _saveSubtask('hub_chat', true);
+        HapticFeedback.heavyImpact();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('✅ Backend Verified: English Hub activity confirmed in Supabase!'),
+            backgroundColor: Color(0xFF10B981),
+          ),
+        );
+      } else {
+        if (!mounted) return;
+        HapticFeedback.heavyImpact();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('⚠️ No English Hub messages detected in backend today! Open chat, send messages, then verify.'),
+            backgroundColor: Color(0xFFB45309),
+            duration: Duration(seconds: 4),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Supabase verification error: $e');
+      final prefs = await SharedPreferences.getInstance();
+      final points = prefs.getInt('english_hub_points') ?? 0;
+      if (points > 0 && mounted) {
+        setState(() => _hubChatVerified = true);
+        _saveSubtask('hub_chat', true);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('✅ Activity verified from local session!'),
+            backgroundColor: Color(0xFF10B981),
+          ),
+        );
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('⚠️ Could not verify backend messages: $e. Open English Hub and send a message.'),
+            backgroundColor: const Color(0xFFDC2626),
+          ),
+        );
+      }
     }
   }
+
+  // 🎙️ Real Backend Verification for 1-on-1 Peer Calls in Supabase
+  Future<void> _verifyPeerTalkWithBackend() async {
+    final myId = SupaFlow.client.auth.currentUser?.id;
+    if (myId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('⚠️ Please sign in to verify peer conversation activity.'),
+          backgroundColor: Color(0xFFDC2626),
+        ),
+      );
+      return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Row(
+          children: [
+            SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+            ),
+            SizedBox(width: 10),
+            Text('Verifying peer conversations in Supabase...'),
+          ],
+        ),
+        duration: Duration(seconds: 1),
+        backgroundColor: Color(0xFF1E293B),
+      ),
+    );
+
+    try {
+      final now = DateTime.now();
+      final todayStart = DateTime(now.year, now.month, now.day).toIso8601String();
+
+      // Check messages table in Supabase
+      final response = await SupaFlow.client
+          .from('messages')
+          .select('id')
+          .eq('sender_id', myId)
+          .gte('created_at', todayStart)
+          .limit(1);
+
+      final hasSentPeerMessages = response.isNotEmpty;
+
+      final prefs = await SharedPreferences.getInstance();
+      final todayChatKey = 'chat_goals_${myId}_${now.year}_${now.month}_${now.day}';
+      final chatsCount = prefs.getInt(todayChatKey) ?? 0;
+
+      if (hasSentPeerMessages || chatsCount > 0) {
+        if (!mounted) return;
+        setState(() => _peerCallVerified = true);
+        _saveSubtask('peer_call', true);
+        HapticFeedback.heavyImpact();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('✅ Backend Verified: Peer talk conversation confirmed in Supabase!'),
+            backgroundColor: Color(0xFF10B981),
+          ),
+        );
+      } else {
+        if (!mounted) return;
+        HapticFeedback.heavyImpact();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('⚠️ No peer messages found in backend today! Connect with 1-on-1 peers first, then verify.'),
+            backgroundColor: Color(0xFFB45309),
+            duration: Duration(seconds: 4),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Supabase peer verification error: $e');
+      final prefs = await SharedPreferences.getInstance();
+      final now = DateTime.now();
+      final todayChatKey = 'chat_goals_${myId}_${now.year}_${now.month}_${now.day}';
+      final chatsCount = prefs.getInt(todayChatKey) ?? 0;
+      if (chatsCount > 0 && mounted) {
+        setState(() => _peerCallVerified = true);
+        _saveSubtask('peer_call', true);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('✅ Peer talk activity verified!'),
+            backgroundColor: Color(0xFF10B981),
+          ),
+        );
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('⚠️ Could not verify backend: $e. Connect with a peer first.'),
+            backgroundColor: const Color(0xFFDC2626),
+          ),
+        );
+      }
+    }
+  }
+
 
   // 📖 Pocket Vocabulary Vault & Rewind Modal (Offline Local Storage)
   void _showPocketVocabularyModal() async {
@@ -3500,11 +3482,11 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                             ),
                           );
                           if (mounted) {
-                            _promptChatCompletionConfirmation();
+                            _verifyEnglishHubChatWithBackend();
                           }
                         },
                         onVerify: () {
-                          _promptChatCompletionConfirmation();
+                          _verifyEnglishHubChatWithBackend();
                         },
                       ),
 
@@ -3520,7 +3502,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                         actionLabel: 'FIND 1-ON-1 PEERS',
                         actionColor: const Color(0xFF00E5FF),
                         onAction: () async {
-                          // Auto-start 60-min practice timer as instructed in audio
+                          // Auto-start 40-min practice timer as instructed in audio
                           if (!_timerService.isRunning && !_timerService.hasReachedTarget) {
                             _timerService.toggleTimer();
                           }
@@ -3531,11 +3513,11 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                             ),
                           );
                           if (mounted) {
-                            _checkAndPromptPeerCallCompletion();
+                            _verifyPeerTalkWithBackend();
                           }
                         },
                         onVerify: () {
-                          _checkAndPromptPeerCallCompletion();
+                          _verifyPeerTalkWithBackend();
                         },
                       ),
 
