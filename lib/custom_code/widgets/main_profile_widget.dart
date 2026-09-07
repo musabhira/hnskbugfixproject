@@ -23,6 +23,7 @@ import 'package:pocket_mates_app/custom_code/widgets/avatar/jackie_chan_talisman
 import 'package:pocket_mates_app/custom_code/widgets/avatar/flame_profile_banner_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/flame_english_house_game.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortress_defense_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_defense_trap_modal.dart';
 import 'package:pocket_mates_app/custom_code/widgets/pocket_snap_flame_refresh.dart';
 
 class MainProfileWidget extends StatefulWidget {
@@ -1218,6 +1219,21 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                             ],
                           ],
                         ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.edit_note_rounded, color: Color(0xFF38BDF8), size: 20),
+                        tooltip: 'Edit Question',
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        onPressed: () async {
+                          final day = (_profileData?['learning_day'] as num?)?.toInt() ?? 1;
+                          await PocketDefenseTrapModal.show(
+                            context,
+                            day,
+                            editingQuestion: q,
+                          );
+                          _loadFortressDefenseData();
+                        },
                       ),
                     ],
                   );
