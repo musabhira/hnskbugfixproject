@@ -412,11 +412,17 @@ class VectorAvatarPainter extends CustomPainter {
       p(10, yOff - 3, const Color(0xFFFFD700), 2, 1);
       p(13, yOff - 3, const Color(0xFFFFD700), 2, 1);
     } else if (config.accessory == 'cyber_visor') {
-      p(6, yOff + 4, const Color(0xFF00FF66), 10, 3);
+      p(6, yOff + 4, const Color(0xFF0F172A), 10, 3);
+      p(6, yOff + 4, const Color(0xFF00F0FF), 10, 1);
+      p(8, yOff + 5, Colors.white, 2, 1);
     } else if (config.accessory == 'cool_sunglasses') {
-      p(7, yOff + 5, const Color(0xFF111111), 8, 2);
+      p(7, yOff + 5, const Color(0xFF18181B), 3, 2);
+      p(12, yOff + 5, const Color(0xFF18181B), 3, 2);
+      p(10, yOff + 5, const Color(0xFF334155), 2, 1);
+      p(8, yOff + 5, Colors.white, 1, 1);
+      p(13, yOff + 5, Colors.white, 1, 1);
     } else if (config.accessory == 'ninja_mask') {
-      p(7, yOff + 7, const Color(0xFF111111), 8, 4);
+      p(7, yOff + 7, const Color(0xFF18181B), 8, 4);
     }
   }
 
@@ -907,21 +913,84 @@ class VectorAvatarPainter extends CustomPainter {
       canvas.drawCircle(Offset(size.width * 0.59, size.height * 0.45), size.width * 0.065, gPaint);
       canvas.drawLine(Offset(size.width * 0.475, size.height * 0.45), Offset(size.width * 0.525, size.height * 0.45), gPaint);
     } else if (config.accessory == 'cool_sunglasses') {
-      final shadePaint = Paint()..color = const Color(0xFF111111);
-      canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromCenter(center: Offset(size.width * 0.40, size.height * 0.45), width: size.width * 0.16, height: size.height * 0.085), const Radius.circular(6)), shadePaint);
-      canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromCenter(center: Offset(size.width * 0.60, size.height * 0.45), width: size.width * 0.16, height: size.height * 0.085), const Radius.circular(6)), shadePaint);
+      // 🕶️ Sleek Dark Designer Sunglasses with Metallic Bridge & Specular Glint
+      final leftLens = Rect.fromCenter(center: Offset(size.width * 0.40, size.height * 0.45), width: size.width * 0.16, height: size.height * 0.085);
+      final rightLens = Rect.fromCenter(center: Offset(size.width * 0.60, size.height * 0.45), width: size.width * 0.16, height: size.height * 0.085);
+      final lensPaint = Paint()..shader = const LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [Color(0xFF1F2430), Color(0xFF090A0F)],
+      ).createShader(Rect.fromLTRB(leftLens.left, leftLens.top, rightLens.right, leftLens.bottom));
+      
+      canvas.drawRRect(RRect.fromRectAndRadius(leftLens, const Radius.circular(5)), lensPaint);
+      canvas.drawRRect(RRect.fromRectAndRadius(rightLens, const Radius.circular(5)), lensPaint);
+
+      // Sunglasses Frame & Bridge
+      final framePaint = Paint()
+        ..color = const Color(0xFF0F172A)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.8;
+      canvas.drawRRect(RRect.fromRectAndRadius(leftLens, const Radius.circular(5)), framePaint);
+      canvas.drawRRect(RRect.fromRectAndRadius(rightLens, const Radius.circular(5)), framePaint);
+      canvas.drawLine(Offset(size.width * 0.47, size.height * 0.44), Offset(size.width * 0.53, size.height * 0.44), Paint()..color = const Color(0xFF475569)..strokeWidth = 2.5..strokeCap = StrokeCap.round);
+
+      // Crisp Specular Reflection Lines
+      final glintPaint = Paint()
+        ..color = Colors.white.withValues(alpha: 0.55)
+        ..strokeWidth = 1.3
+        ..strokeCap = StrokeCap.round;
+      canvas.drawLine(Offset(size.width * 0.35, size.height * 0.42), Offset(size.width * 0.38, size.height * 0.47), glintPaint);
+      canvas.drawLine(Offset(size.width * 0.55, size.height * 0.42), Offset(size.width * 0.58, size.height * 0.47), glintPaint);
     } else if (config.accessory == 'cyber_visor') {
-      final visorPaint = Paint()..color = const Color(0xFF00FF66);
-      canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromCenter(center: Offset(size.width * 0.5, size.height * 0.45), width: size.width * 0.46, height: size.height * 0.10), const Radius.circular(4)), visorPaint);
+      // ⚡ High-Tech Holographic Cyber Visor (Obsidian glass with glowing cyan-purple neon rim & glint)
+      final visorRect = Rect.fromCenter(center: Offset(size.width * 0.5, size.height * 0.45), width: size.width * 0.46, height: size.height * 0.095);
+      final rrect = RRect.fromRectAndRadius(visorRect, const Radius.circular(6));
+
+      // Visor Tinted Glass Fill
+      final glassPaint = Paint()
+        ..shader = const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xEE0B0F19), Color(0xDD1E1B4B)],
+        ).createShader(visorRect);
+      canvas.drawRRect(rrect, glassPaint);
+
+      // Neon Holographic Glowing Border
+      final neonBorder = Paint()
+        ..shader = const LinearGradient(
+          colors: [Color(0xFF00F0FF), Color(0xFF8B5CF6), Color(0xFF00F0FF)],
+        ).createShader(visorRect)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.0;
+      canvas.drawRRect(rrect, neonBorder);
+
+      // Diagonal Specular Glass Reflection
+      final glintPaint = Paint()
+        ..color = Colors.white.withValues(alpha: 0.45)
+        ..strokeWidth = 1.6
+        ..strokeCap = StrokeCap.round;
+      canvas.drawLine(Offset(size.width * 0.32, size.height * 0.42), Offset(size.width * 0.48, size.height * 0.48), glintPaint);
+      
+      // Cyber Side Temples
+      canvas.drawCircle(Offset(size.width * 0.27, size.height * 0.45), 2.5, Paint()..color = const Color(0xFF00F0FF));
+      canvas.drawCircle(Offset(size.width * 0.73, size.height * 0.45), 2.5, Paint()..color = const Color(0xFF8B5CF6));
     } else if (config.accessory == 'ninja_mask') {
-      final maskPaint = Paint()..color = const Color(0xFF111111);
+      // 🥷 Contoured Fabric Ninja Mask
+      final maskPaint = Paint()..color = const Color(0xFF18181B);
       final maskPath = Path();
-      maskPath.moveTo(size.width * 0.30, size.height * 0.52);
-      maskPath.lineTo(size.width * 0.70, size.height * 0.52);
-      maskPath.lineTo(size.width * 0.60, size.height * 0.70);
-      maskPath.lineTo(size.width * 0.40, size.height * 0.70);
+      maskPath.moveTo(size.width * 0.32, size.height * 0.54);
+      maskPath.quadraticBezierTo(size.width * 0.50, size.height * 0.52, size.width * 0.68, size.height * 0.54);
+      maskPath.quadraticBezierTo(size.width * 0.64, size.height * 0.68, size.width * 0.50, size.height * 0.71);
+      maskPath.quadraticBezierTo(size.width * 0.36, size.height * 0.68, size.width * 0.32, size.height * 0.54);
       maskPath.close();
       canvas.drawPath(maskPath, maskPaint);
+
+      final foldPaint = Paint()
+        ..color = const Color(0xFF27272A)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.2;
+      canvas.drawPath(maskPath, foldPaint);
+      canvas.drawLine(Offset(size.width * 0.42, size.height * 0.60), Offset(size.width * 0.58, size.height * 0.60), foldPaint);
     } else if (config.accessory == 'earring') {
       canvas.drawCircle(Offset(size.width * 0.24, size.height * 0.54), size.width * 0.025, Paint()..color = const Color(0xFFFFD700)..style = PaintingStyle.stroke..strokeWidth = 2.5);
     }
@@ -2247,6 +2316,38 @@ class VectorAvatarPainter extends CustomPainter {
       canvas.drawLine(Offset(size.width * 0.35, size.height * 0.62 + yOff), Offset(size.width * 0.12, size.height * 0.60 + yOff * 2), whiskerPaint);
       canvas.drawLine(Offset(size.width * 0.65, size.height * 0.62 + yOff), Offset(size.width * 0.88, size.height * 0.60 + yOff * 2), whiskerPaint);
     }
+
+    // Feline Mouth Curves & Sharp Pearl Fangs
+    final mouthPaint = Paint()
+      ..color = const Color(0xFF1F2937)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.8
+      ..strokeCap = StrokeCap.round;
+    // Philtrum from nose tip downwards
+    canvas.drawLine(Offset(size.width * 0.50, size.height * 0.61), Offset(size.width * 0.50, size.height * 0.64), mouthPaint);
+    // Left & Right muzzle smiles
+    final leftSmile = Path()
+      ..moveTo(size.width * 0.50, size.height * 0.64)
+      ..quadraticBezierTo(size.width * 0.44, size.height * 0.665, size.width * 0.40, size.height * 0.635);
+    final rightSmile = Path()
+      ..moveTo(size.width * 0.50, size.height * 0.64)
+      ..quadraticBezierTo(size.width * 0.56, size.height * 0.665, size.width * 0.60, size.height * 0.635);
+    canvas.drawPath(leftSmile, mouthPaint);
+    canvas.drawPath(rightSmile, mouthPaint);
+    // Subtle feline pearly canine fangs
+    final fangPaint = Paint()..color = Colors.white;
+    final leftFang = Path()
+      ..moveTo(size.width * 0.435, size.height * 0.645)
+      ..lineTo(size.width * 0.455, size.height * 0.645)
+      ..lineTo(size.width * 0.445, size.height * 0.672)
+      ..close();
+    final rightFang = Path()
+      ..moveTo(size.width * 0.545, size.height * 0.645)
+      ..lineTo(size.width * 0.565, size.height * 0.645)
+      ..lineTo(size.width * 0.555, size.height * 0.672)
+      ..close();
+    canvas.drawPath(leftFang, fangPaint);
+    canvas.drawPath(rightFang, fangPaint);
 
     // 6. Sleek Slit-Pupil Feline Eyes
     void drawCatEye(double cx, double cy) {
