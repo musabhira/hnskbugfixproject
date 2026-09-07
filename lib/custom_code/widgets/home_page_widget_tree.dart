@@ -11,6 +11,7 @@ import 'package:pocket_mates_app/custom_code/widgets/settings_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/contacts_sync_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/material.dart' as material;
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/whats_app_groups_provider.dart'
@@ -66,7 +67,6 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   // final scaffoldKey = GlobalKey<ScaffoldState>(); // Removed ScaffoldKey
   int _currentIndex = 2;
   String? profileId;
-  String? _profileImageUrl;
   bool _isVerified = false;
   bool _isLoading = true;
 
@@ -267,7 +267,6 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         safeSetState(() {
           _preloadedProfile = profileMap;
           profileId = profileMap['id']?.toString();
-          _profileImageUrl = profileMap['profile_image_url'];
           _isVerified = profileMap['verified'] ?? false;
           _isLoading = false; // Show UI immediately from cache
         });
@@ -317,7 +316,6 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         _preloadedProfile = profileResponse;
         if (profileResponse != null) {
           profileId = profileResponse['id']?.toString();
-          _profileImageUrl = profileResponse['profile_image_url'];
           _isVerified = profileResponse['verified'] ?? false;
         }
 
@@ -466,7 +464,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: const Icon(material.Icons.system_update_rounded,
-                          color: const Color(0xFFFFFC00), size: 28),
+                          color: Color(0xFFFFFC00), size: 28),
                     ),
                     const Spacer(),
                     Container(
@@ -510,7 +508,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                   const Text(
                     "What's New:",
                     style: TextStyle(
-                      color: const Color(0xFFF59E0B),
+                      color: Color(0xFFF59E0B),
                       fontWeight: FontWeight.bold,
                       fontSize: 14,
                     ),
@@ -528,7 +526,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                           children: [
                             const Text("•",
                                 style:
-                                    TextStyle(color: const Color(0xFFFFFC00))),
+                                    TextStyle(color: Color(0xFFFFFC00))),
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
@@ -1204,8 +1202,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                           ),
                                         ),
                                       ).then((_) {
-                                        ref.refresh(
-                                            conversationsProvider.future);
+                                        ref.invalidate(conversationsProvider);
                                       });
                                     },
                                     child: Container(
@@ -1685,142 +1682,6 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
           ),
         );
       },
-    );
-  }
-
-  void _showElearningComingSoonDialog(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final themeYellow =
-        isDark ? const Color(0xFFFFFC00) : const Color(0xFFFFFC00);
-    showDialog(
-      context: context,
-      builder: (context) => material.Dialog(
-        backgroundColor: material.Colors.transparent,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(28),
-          child: BackdropFilter(
-            filter: ui.ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-            child: Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: isDark
-                    ? material.Colors.black.withOpacity(0.75)
-                    : material.Colors.white.withOpacity(0.95),
-                borderRadius: BorderRadius.circular(28),
-                border: Border.all(
-                    color: themeYellow.withOpacity(0.25), width: 1.5),
-                boxShadow: [
-                  BoxShadow(
-                    color: isDark
-                        ? material.Colors.black.withOpacity(0.6)
-                        : material.Colors.grey.withOpacity(0.3),
-                    blurRadius: 40,
-                    offset: const Offset(0, 20),
-                  ),
-                  BoxShadow(
-                    color: themeYellow.withOpacity(0.08),
-                    blurRadius: 45,
-                    spreadRadius: -5,
-                  ),
-                ],
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(18),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          themeYellow.withOpacity(0.15),
-                          themeYellow.withOpacity(0.05),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                          color: themeYellow.withOpacity(0.3), width: 1.5),
-                    ),
-                    child: Icon(
-                      material.Icons.school_rounded,
-                      color: themeYellow,
-                      size: 44,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  Text(
-                    'Coming Soon!',
-                    style: GoogleFonts.outfit(
-                      fontSize: 26,
-                      fontWeight: FontWeight.w900,
-                      color: isDark
-                          ? material.Colors.white
-                          : material.Colors.black87,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Handskill E-Learning Academy will be fully unlocked in the 2nd or 3rd build. Stay tuned for expert masterclasses, video tutorials, and interactive learning modules!',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(
-                      fontSize: 14,
-                      color: isDark
-                          ? material.Colors.white.withOpacity(0.8)
-                          : material.Colors.black.withOpacity(0.8),
-                      height: 1.6,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  Container(
-                    width: double.infinity,
-                    height: 52,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          themeYellow,
-                          themeYellow.withOpacity(0.8),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(18),
-                      boxShadow: [
-                        BoxShadow(
-                          color: themeYellow.withOpacity(0.3),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: material.ElevatedButton(
-                      style: material.ElevatedButton.styleFrom(
-                        backgroundColor: material.Colors.transparent,
-                        foregroundColor: material.Colors.black,
-                        shadowColor: material.Colors.transparent,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(18),
-                        ),
-                        elevation: 0,
-                      ),
-                      onPressed: () => Navigator.pop(context),
-                      child: Text(
-                        'Got It',
-                        style: GoogleFonts.outfit(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
     );
   }
 
@@ -2473,80 +2334,6 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     );
   }
 
-  Widget _buildPersonResultTile(Map<String, dynamic> person) {
-    return material.Material(
-      color: material.Colors.transparent,
-      child: material.InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            material.MaterialPageRoute(
-              builder: (context) => MainProfileWidget(
-                userId: person['user_id'] ?? '',
-              ),
-            ),
-          );
-        },
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-          decoration: BoxDecoration(
-            border: Border(
-              bottom: BorderSide(
-                color: material.Colors.white.withValues(alpha: 0.03),
-                width: 1,
-              ),
-            ),
-          ),
-          child: Row(
-            children: [
-              CircularProfileImage(
-                profileImageUrl: person['profile_image_url'],
-                radius: 28,
-                isVerified: person['verified'] ?? false,
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      person['name'] ?? person['shop_name'] ?? 'Unknown',
-                      style: GoogleFonts.outfit(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w600,
-                        color: material.Colors.white,
-                        letterSpacing: 0.2,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      person['bio'] != null &&
-                              person['bio'].toString().isNotEmpty
-                          ? person['bio']
-                          : 'Hey there! I am using Pocketmates.',
-                      style: GoogleFonts.outfit(
-                        fontSize: 13,
-                        color: material.Colors.white.withValues(alpha: 0.5),
-                        height: 1.2,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-              ),
-              Icon(
-                Icons.chevron_right,
-                size: 12,
-                color: material.Colors.white.withValues(alpha: 0.2),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildProductResultTile(Map<String, dynamic> product) {
     final profile = product['profile'] as Map<String, dynamic>?;
     final bool isService = product['type'] == 'service';
@@ -2696,7 +2483,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         title: Row(
           children: [
             const Icon(material.Icons.notifications_active,
-                color: const Color(0xFFFFFC00), size: 28),
+                color: Color(0xFFFFFC00), size: 28),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
@@ -3261,65 +3048,6 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildMatchCard(
-    BuildContext context, {
-    required String label,
-    required IconData icon,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardBgColor = isDark
-        ? material.Colors.white.withValues(alpha: 0.05)
-        : material.Colors.black.withValues(alpha: 0.03);
-    final borderColor = isDark
-        ? material.Colors.white.withValues(alpha: 0.08)
-        : material.Colors.black.withValues(alpha: 0.06);
-    final textColor = isDark ? material.Colors.white : material.Colors.black87;
-
-    return Expanded(
-      child: material.Material(
-        color: material.Colors.transparent,
-        child: material.InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(30),
-          child: Container(
-            height: 56,
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            decoration: BoxDecoration(
-              color: cardBgColor,
-              borderRadius: BorderRadius.circular(30),
-              border: Border.all(color: borderColor),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _buildMatchIcon(icon, color),
-                const SizedBox(width: 8),
-                Text(label,
-                    style: GoogleFonts.outfit(
-                        color: textColor,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600)),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMatchIcon(IconData icon, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        shape: BoxShape.circle,
-      ),
-      child: Icon(icon, color: color, size: 20),
     );
   }
 
