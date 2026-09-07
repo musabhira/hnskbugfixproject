@@ -296,347 +296,725 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
     final isDailyLimitReached = attacksUsed >= PocketFortressDefenseService.kDailyMaxAttacks;
     final cannotAttack = inCooldown || isTargetJailed || isPlayerJailed || isDailyLimitReached;
     if (!mounted) return;
-    showModalBottomSheet(
+
+    // Load actual defense trap questions for this neighbor
+    final defenseQuestions = await PocketFortressDefenseService.loadShieldQuestions(neighbor.day, isNeighbor: true);
+
+    int raidStep = 0; // 0: Zoomed House, 1: Defense Question, 2: Gate Breached, 3: Victory Result, -1: Trap Failed
+    int selectedOption = -1;
+    bool isStriking = false;
+    Map<String, dynamic>? breachResult;
+    int currentQIdx = 0;
+
+    await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: const Color(0xFF0F172A),
+      backgroundColor: const Color(0xFF070B14),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (ctx) => Padding(
-        padding: const EdgeInsets.fromLTRB(22, 16, 22, 28),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setModalState) {
+          final currentQ = defenseQuestions.isNotEmpty
+              ? defenseQuestions[currentQIdx % defenseQuestions.length]
+              : null;
+
+          return Container(
+            height: MediaQuery.of(context).size.height * 0.94,
+            padding: const EdgeInsets.fromLTRB(18, 12, 18, 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('⚔️', style: TextStyle(fontSize: 24)),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Citadel Siege Inspection',
-                        style: GoogleFonts.outfit(
-                          color: Colors.white,
-                          fontSize: 18,
+                // Handle bar
+                Center(
+                  child: Container(
+                    width: 36,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.white24,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+
+                // --- TOP TARGET RESIDENT HEADER ---
+                Row(
+                  children: [
+                    SizedBox(
+                      width: 44,
+                      height: 44,
+                      child: VectorAvatarWidget(
+                        config: VectorAvatarConfig.getEvolutionAvatarForStage(neighbor.day),
+                        size: 44,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  neighbor.name,
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: neighbor.hasActiveShield
+                                      ? const Color(0xFF065F46).withValues(alpha: 0.5)
+                                      : const Color(0xFF7F1D1D).withValues(alpha: 0.5),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(
+                                    color: neighbor.hasActiveShield ? const Color(0xFF10B981) : Colors.redAccent,
+                                    width: 0.8,
+                                  ),
+                                ),
+                                child: Text(
+                                  neighbor.hasActiveShield ? '🛡️ Shielded' : '⚠️ Unshielded',
+                                  style: TextStyle(
+                                    color: neighbor.hasActiveShield ? const Color(0xFF34D399) : Colors.redAccent,
+                                    fontSize: 9.5,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Level ${neighbor.day} Citadel • 🔥 ${neighbor.streak} Days Streak • ${neighbor.rank}',
+                            style: GoogleFonts.inter(
+                              color: Colors.white60,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: isDailyLimitReached
+                            ? Colors.red.withValues(alpha: 0.15)
+                            : const Color(0xFF0284C7).withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: isDailyLimitReached
+                              ? Colors.redAccent.withValues(alpha: 0.4)
+                              : const Color(0xFF38BDF8).withValues(alpha: 0.4),
+                        ),
+                      ),
+                      child: Text(
+                        '⚔️ $attacksUsed / ${PocketFortressDefenseService.kDailyMaxAttacks} Today',
+                        style: TextStyle(
+                          color: isDailyLimitReached ? Colors.redAccent : const Color(0xFF38BDF8),
+                          fontSize: 10.5,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      Text(
-                        'Target: ${neighbor.name} (Level ${neighbor.day})',
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.6),
-                          fontSize: 12.5,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: isDailyLimitReached
-                        ? Colors.red.withValues(alpha: 0.15)
-                        : const Color(0xFF0284C7).withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: isDailyLimitReached ? Colors.redAccent.withValues(alpha: 0.4) : const Color(0xFF38BDF8).withValues(alpha: 0.4),
                     ),
-                  ),
-                  child: Text(
-                    '⚔️ $attacksUsed / ${PocketFortressDefenseService.kDailyMaxAttacks} Today',
-                    style: TextStyle(
-                      color: isDailyLimitReached ? Colors.redAccent : const Color(0xFF38BDF8),
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
+                    const SizedBox(width: 4),
+                    IconButton(
+                      icon: const Icon(Icons.close_rounded, color: Colors.white70, size: 22),
+                      onPressed: () => Navigator.pop(ctx),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
                     ),
-                  ),
+                  ],
                 ),
-                const SizedBox(width: 6),
-                IconButton(
-                  icon: const Icon(Icons.close, color: Colors.white60),
-                  onPressed: () => Navigator.pop(ctx),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
+                const SizedBox(height: 12),
 
-            // 🏡 Full-Screen House Canvas (Audio 15: "സെലക്ട് ചെയ്ത ഉടനെ തന്നെ ആ വീട് ഫുൾസ്ക്രീൻ ആകും!")
-            Container(
-              height: 210,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: const Color(0xFF1E293B),
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: Colors.white12),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(18),
-                child: FlameEnglishHouseWidget(
-                  currentDay: neighbor.day,
-                  streak: neighbor.streak,
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            if (isTargetJailed)
-              Container(
-                margin: const EdgeInsets.only(bottom: 14),
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(colors: [Color(0xFF3B0764), Color(0xFF1E1B4B)]),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: const Color(0xFFA855F7), width: 1.2),
-                ),
-                child: Row(
-                  children: [
-                    const Text('⛓️', style: TextStyle(fontSize: 22)),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'House Imprisoned in Jail',
-                            style: GoogleFonts.outfit(
-                              color: const Color(0xFFD8B4FE),
-                              fontWeight: FontWeight.bold,
-                              fontSize: 13,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          const Text(
-                            'This house is serving a Presidential Jail sentence for fake defenses. Raids against jailed houses are locked.',
-                            style: TextStyle(color: Colors.white70, fontSize: 11),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            if (isPlayerJailed)
-              Container(
-                margin: const EdgeInsets.only(bottom: 14),
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(colors: [Color(0xFF3B0764), Color(0xFF1E1B4B)]),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: const Color(0xFFA855F7), width: 1.2),
-                ),
-                child: Row(
-                  children: [
-                    const Text('⛓️', style: TextStyle(fontSize: 22)),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Your House is in Jail',
-                            style: GoogleFonts.outfit(
-                              color: const Color(0xFFD8B4FE),
-                              fontWeight: FontWeight.bold,
-                              fontSize: 13,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          const Text(
-                            'You cannot raid other citadels while serving your Presidential Jail sentence.',
-                            style: TextStyle(color: Colors.white70, fontSize: 11),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            if (inCooldown)
-              Container(
-                margin: const EdgeInsets.only(bottom: 14),
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(colors: [Color(0xFF334155), Color(0xFF1E293B)]),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: Colors.amber.shade400, width: 1.2),
-                ),
-                child: Row(
-                  children: [
-                    const Text('⏳', style: TextStyle(fontSize: 22)),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '24h Peace Treaty Active',
-                            style: GoogleFonts.outfit(
-                              color: Colors.amber.shade300,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 13,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          const Text(
-                            'You raided this fortress recently! Attack cooldown is locked for 24 hours. Choose another neighbor on the street to duel.',
-                            style: TextStyle(color: Colors.white70, fontSize: 11),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            if (neighbor.isBanned || _bannedHouseIds.contains(neighbor.id))
-              Container(
-                margin: const EdgeInsets.only(bottom: 14),
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(colors: [Color(0xFF7F1D1D), Color(0xFF450A0A)]),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: Colors.redAccent, width: 1.2),
-                ),
-                child: Row(
-                  children: const [
-                    Text('🚫', style: TextStyle(fontSize: 22)),
-                    SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        'This house has been banned by Admin for invalid defense questions. Raid easily to claim free loot!',
-                        style: TextStyle(color: Colors.white, fontSize: 11),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: const Color(0xFF1E293B),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: neighbor.hasActiveShield ? Colors.amber.shade400 : Colors.redAccent,
-                  width: 1.2,
-                ),
-              ),
-              child: Row(
-                children: [
-                  Text(
-                    neighbor.hasActiveShield ? '🛡️' : '⚠️',
-                    style: const TextStyle(fontSize: 28),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                // --- 🏡 ZOOMED FULL-SCREEN HOUSE CANVAS ---
+                // User Audio: "ആ വീട് ജസ്റ്റ് ഇങ്ങനെ സൂം ആയിട്ട് ഫുൾ സ്ക്രീൻ ആയിട്ട് ആ വീട് കാണിക്കുന്നു. ആ വീടിന്റെ ബാക്ഗ്രൗണ്ട് ഒക്കെ ആയിട്ട് വീട് കാണിക്കുന്നു."
+                Expanded(
+                  flex: 5,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: Stack(
                       children: [
-                        Text(
-                          neighbor.hasActiveShield
-                              ? 'Golden Shield Active (Streak: ${neighbor.streak} Days)'
-                              : 'Shield Down! (Daily Task Pending)',
-                          style: GoogleFonts.outfit(
-                            color: Colors.white,
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
+                        Positioned.fill(
+                          child: FlameEnglishHouseWidget(
+                            currentDay: neighbor.day,
+                            streak: neighbor.streak,
                           ),
                         ),
-                        const SizedBox(height: 3),
-                        Text(
-                          neighbor.hasActiveShield
-                              ? 'Friendly Practice Match: Earn +25 XP without risking defense HP.'
-                              : 'Vulnerable to friendly raid: Win duel to claim study coins!',
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.7),
-                            fontSize: 11.5,
+                        // House status banner at top of canvas
+                        Positioned(
+                          top: 10,
+                          left: 12,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.7),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: Colors.white12),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  neighbor.hasActiveShield ? '🛡️ House HP: 100/100' : '⚠️ House HP: 70/100',
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.white,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
+                        // Attack strike flash animation
+                        if (isStriking)
+                          Positioned.fill(
+                            child: Container(
+                              color: Colors.red.withValues(alpha: 0.35),
+                              child: const Center(
+                                child: Text('💥 STRIKE! ⚔️', style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: Colors.white)),
+                              ),
+                            ),
+                          ),
                       ],
                     ),
                   ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              '🎮 45-Second Rapid Vocab Duel',
-              style: GoogleFonts.outfit(
-                color: const Color(0xFF38BDF8),
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Pronounce 5 words correctly & solve 3 grammar puzzles against the clock. Higher accuracy wins the duel!',
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.7),
-                fontSize: 12,
-              ),
-            ),
-            const SizedBox(height: 22),
-            SizedBox(
-              width: double.infinity,
-              height: 48,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: cannotAttack ? Colors.white12 : const Color(0xFF0284C7),
-                  foregroundColor: cannotAttack ? Colors.white38 : Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  elevation: cannotAttack ? 0 : 6,
                 ),
-                onPressed: cannotAttack
-                    ? null
-                    : () {
-                        Navigator.pop(ctx);
-                        if (!PocketFortressDefenseService.isRaidTargetValid(widget.currentDay, neighbor.day)) {
-                          final escalatedRival = PocketFortressDefenseService.generateRivalForUser(
-                            widget.currentDay,
-                            userStreak: widget.streak,
-                          );
-                          _showGrowthMatchmakingDialog(neighbor, escalatedRival);
-                          return;
-                        }
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => PocketBattleArenaPage(
-                              neighbor: neighbor,
-                              userDay: widget.currentDay,
-                              userStreak: widget.streak,
+                const SizedBox(height: 12),
+
+                // --- INTERACTIVE BOTTOM RAID FLOW ---
+                // User Audio Directive:
+                // "എന്നിട്ട് 'അറ്റാക്ക്' എന്ന് അടിയിൽ ഇങ്ങനെ സിംപിൾ ആയിട്ട് ഒരു ബട്ടൺ കാണിക്കുന്നു.
+                // അറ്റാക്ക് കൊടുക്കുന്ന സമയത്ത് ഡിഫൻസ് വരും. ഡിഫൻസ് അവര് ഉണ്ടാക്കിയ ക്വസ്റ്റ്യൻസ് വരും.
+                // അത് കറക്റ്റ് കൊടുത്ത് ടിക്ക് ഒക്കെ കൊടുത്തു കഴിഞ്ഞുകഴിഞ്ഞാൽ ഇവർക്ക് 'അറ്റാക്ക്' എന്നൊരു ബട്ടൺ കൊടുക്കും.
+                // അറ്റാക്ക് എന്ന് പറയുമ്പോൾ ഇവര് അറ്റാക്ക് ചെയ്യുന്നു."
+                Expanded(
+                  flex: 4,
+                  child: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // --- STEP 0: INITIAL VIEW (Simple "ATTACK CITADEL" button) ---
+                        if (raidStep == 0) ...[
+                          if (isTargetJailed)
+                            _buildNoticeCard('⛓️ Target is serving a Presidential Jail sentence. Raids are blocked.')
+                          else if (isPlayerJailed)
+                            _buildNoticeCard('⛓️ You cannot raid citadels while serving your Presidential Jail sentence.')
+                          else if (inCooldown)
+                            _buildNoticeCard('⏳ 24h Peace Treaty active! You attacked this fortress recently.')
+                          else if (isDailyLimitReached)
+                            _buildNoticeCard('🔒 Daily limit reached! You have completed 2/2 citadel raids today.')
+                          else
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF1E293B),
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(color: Colors.white12),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Text('⚔️', style: TextStyle(fontSize: 20)),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Citadel Siege Duel',
+                                          style: GoogleFonts.outfit(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 13,
+                                          ),
+                                        ),
+                                        Text(
+                                          'Crack ${neighbor.name}\'s authentic defense questions to breach their gates & claim +45 study coins!',
+                                          style: const TextStyle(color: Colors.white70, fontSize: 11),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          const SizedBox(height: 12),
+                          SizedBox(
+                            width: double.infinity,
+                            height: 48,
+                            child: ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: cannotAttack ? Colors.white12 : const Color(0xFFDC2626),
+                                foregroundColor: cannotAttack ? Colors.white38 : Colors.white,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                elevation: cannotAttack ? 0 : 6,
+                              ),
+                              onPressed: cannotAttack
+                                  ? null
+                                  : () {
+                                      if (widget.currentDay < 4) {
+                                        showDialog(
+                                          context: context,
+                                          builder: (dCtx) => AlertDialog(
+                                            backgroundColor: const Color(0xFF0F172A),
+                                            title: const Text('🔒 Citadel Raids Locked', style: TextStyle(color: Colors.white)),
+                                            content: const Text(
+                                              'Raid warfare unlocks at Level 4. Advance through your daily learning challenges to unlock combat!',
+                                              style: TextStyle(color: Colors.white70),
+                                            ),
+                                            actions: [
+                                              TextButton(
+                                                onPressed: () => Navigator.pop(dCtx),
+                                                child: const Text('OK', style: TextStyle(color: Color(0xFF38BDF8))),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                        return;
+                                      }
+                                      HapticFeedback.heavyImpact();
+                                      setModalState(() {
+                                        raidStep = 1; // Move to defense question
+                                        selectedOption = -1;
+                                      });
+                                    },
+                              icon: const Icon(Icons.flash_on_rounded, size: 18),
+                              label: Text(
+                                cannotAttack
+                                    ? (isDailyLimitReached
+                                        ? 'DAILY LIMIT (2/2) REACHED 🔒'
+                                        : (inCooldown ? 'PEACE TREATY IN EFFECT ⏳' : 'RAID LOCKED 🔒'))
+                                    : 'ATTACK CITADEL ⚔️',
+                                style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 14, letterSpacing: 0.6),
+                              ),
                             ),
                           ),
-                        );
-                      },
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(cannotAttack ? '🔒' : '🚀', style: const TextStyle(fontSize: 16)),
-                    const SizedBox(width: 8),
-                    Text(
-                      isDailyLimitReached
-                          ? 'DAILY LIMIT (2/2) REACHED 🔒'
-                          : (isTargetJailed
-                              ? 'TARGET IS IN JAIL ⛓️'
-                              : (isPlayerJailed
-                                  ? 'YOU ARE IN JAIL ⛓️'
-                                  : (inCooldown ? 'PEACE TREATY IN EFFECT ⏳' : 'ATTACK CITADEL ⚔️'))),
-                      style: GoogleFonts.outfit(
-                        fontWeight: FontWeight.w900,
-                        fontSize: 14,
-                        letterSpacing: 0.8,
-                      ),
+                        ]
+
+                        // --- STEP 1: DEFENSE QUESTION POPUP ("ഡിഫൻസ് അവര് ഉണ്ടാക്കിയ ക്വസ്റ്റ്യൻസ് വരും") ---
+                        else if (raidStep == 1 && currentQ != null) ...[
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF1E293B),
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.5)),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF0284C7).withValues(alpha: 0.25),
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: Text(
+                                        '🛡️ DEFENSE GATE: ${currentQ.trapType.toUpperCase()}',
+                                        style: const TextStyle(
+                                          color: Color(0xFF38BDF8),
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                    const Spacer(),
+                                    Text(
+                                      'Question ${currentQIdx + 1} of ${defenseQuestions.length}',
+                                      style: const TextStyle(color: Colors.white54, fontSize: 10),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  currentQ.question,
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.white,
+                                    fontSize: 13.5,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                ...List.generate(currentQ.options.length, (optIdx) {
+                                  final letter = String.fromCharCode(65 + optIdx);
+                                  final isSelected = selectedOption == optIdx;
+
+                                  return GestureDetector(
+                                    onTap: () {
+                                      setModalState(() => selectedOption = optIdx);
+                                      HapticFeedback.selectionClick();
+                                    },
+                                    child: Container(
+                                      margin: const EdgeInsets.only(bottom: 6),
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                      decoration: BoxDecoration(
+                                        color: isSelected ? const Color(0xFF0284C7).withValues(alpha: 0.2) : const Color(0xFF0F172A),
+                                        borderRadius: BorderRadius.circular(10),
+                                        border: Border.all(
+                                          color: isSelected ? const Color(0xFF38BDF8) : Colors.white12,
+                                          width: isSelected ? 1.5 : 1,
+                                        ),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Container(
+                                            width: 22,
+                                            height: 22,
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color: isSelected ? const Color(0xFF38BDF8) : Colors.white10,
+                                            ),
+                                            child: Center(
+                                              child: Text(
+                                                letter,
+                                                style: GoogleFonts.outfit(
+                                                  color: isSelected ? Colors.black : Colors.white70,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 10,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                            child: Text(
+                                              currentQ.options[optIdx],
+                                              style: TextStyle(
+                                                color: isSelected ? Colors.white : Colors.white70,
+                                                fontSize: 12,
+                                                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                              ),
+                                            ),
+                                          ),
+                                          if (isSelected)
+                                            const Icon(Icons.check_circle_rounded, color: Color(0xFF38BDF8), size: 16),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                }),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          SizedBox(
+                            width: double.infinity,
+                            height: 46,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: selectedOption == -1 ? Colors.white12 : const Color(0xFF0284C7),
+                                foregroundColor: selectedOption == -1 ? Colors.white38 : Colors.white,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              ),
+                              onPressed: selectedOption == -1
+                                  ? null
+                                  : () {
+                                      HapticFeedback.mediumImpact();
+                                      if (selectedOption == currentQ.correctIndex) {
+                                        // Answer is correct -> Move to Step 2 to give the "ATTACK" button!
+                                        setModalState(() => raidStep = 2);
+                                      } else {
+                                        // Trap triggered -> Defender defended!
+                                        setModalState(() => raidStep = -1);
+                                      }
+                                    },
+                              child: Text(
+                                'CONFIRM DEFENSE ANSWER ✓',
+                                style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 13),
+                              ),
+                            ),
+                          ),
+                        ]
+
+                        // --- STEP 2: GATE BREACHED -> "ATTACK" BUTTON ENABLED ---
+                        // User Audio: "അത് കറക്റ്റ് കൊടുത്ത് ടിക്ക് ഒക്കെ കൊടുത്തു കഴിഞ്ഞുകഴിഞ്ഞാൽ ഇവർക്ക് 'അറ്റാക്ക്' എന്നൊരു ബട്ടൺ കൊടുക്കും. അറ്റാക്ക് എന്ന് പറയുമ്പോൾ ഇവര് അറ്റാക്ക് ചെയ്യുന്നു."
+                        else if (raidStep == 2 && currentQ != null) ...[
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(color: const Color(0xFF10B981)),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    const Text('🎯', style: TextStyle(fontSize: 20)),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        'DEFENSE CODE CRACKED! GATE BREACHED!',
+                                        style: GoogleFonts.outfit(
+                                          color: const Color(0xFF34D399),
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 13,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  '✓ Answer Correct: ${currentQ.options[currentQ.correctIndex]}',
+                                  style: const TextStyle(color: Colors.white, fontSize: 11.5, fontWeight: FontWeight.w600),
+                                ),
+                                if (currentQ.explanation.isNotEmpty) ...[
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    currentQ.explanation,
+                                    style: const TextStyle(color: Colors.white70, fontSize: 10.5),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          SizedBox(
+                            width: double.infinity,
+                            height: 50,
+                            child: ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFDC2626),
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                elevation: 8,
+                              ),
+                              onPressed: isStriking
+                                  ? null
+                                  : () async {
+                                      setModalState(() => isStriking = true);
+                                      HapticFeedback.heavyImpact();
+
+                                      final perk = VectorAvatarConfig.getAvatarPerkForDay(widget.currentDay);
+                                      final result = await PocketFortressDefenseService.processRaidBreach(
+                                        defenderHouseId: neighbor.id,
+                                        attackerId: 'me',
+                                        damageHp: 60,
+                                        attackerName: 'You',
+                                        attackerWeapon: perk.combatWeaponName,
+                                        defenderHasIronDome: neighbor.hasActiveShield,
+                                      );
+
+                                      await PocketFortressDefenseService.recordTargetAttacked(neighbor.id);
+                                      await PocketFortressDefenseService.recordAttackLaunchedToday();
+
+                                      final looted = (result['lootedCoins'] as num? ?? 0).toInt();
+                                      if (looted > 0) {
+                                        await PocketFortressDefenseService.awardRaidLoot(looted);
+                                      }
+
+                                      await Future.delayed(const Duration(milliseconds: 600));
+
+                                      if (mounted) {
+                                        setModalState(() {
+                                          isStriking = false;
+                                          breachResult = result;
+                                          raidStep = 3; // Show victory
+                                        });
+                                      }
+                                    },
+                              icon: isStriking
+                                  ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                                  : const Icon(Icons.flash_on_rounded, size: 20),
+                              label: Text(
+                                isStriking ? 'STRIKING CITADEL...' : 'ATTACK CITADEL NOW! 💥',
+                                style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 15, letterSpacing: 0.8),
+                              ),
+                            ),
+                          ),
+                        ]
+
+                        // --- STEP 3: ATTACK RESULT / VICTORY ---
+                        else if (raidStep == 3) ...[
+                          Container(
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFF065F46), Color(0xFF0F172A)],
+                              ),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: const Color(0xFF10B981), width: 1.5),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    const Text('🏆', style: TextStyle(fontSize: 24)),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            'CITADEL BREACHED & LOOTED!',
+                                            style: GoogleFonts.outfit(
+                                              color: const Color(0xFF34D399),
+                                              fontWeight: FontWeight.w900,
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                          Text(
+                                            'Target: ${neighbor.name} (Level ${neighbor.day})',
+                                            style: const TextStyle(color: Colors.white70, fontSize: 11),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 10),
+                                Text(
+                                  '💥 ${breachResult?['damageDealt'] ?? 60} HP Damage Dealt to Citadel',
+                                  style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(height: 3),
+                                Text(
+                                  breachResult?['ironDomeBlocked'] == true
+                                      ? '🛡️ Iron Dome Absorbed Breach (0 Coins Looted)'
+                                      : '🪙 +${breachResult?['lootedCoins'] ?? 45} Coins Looted from Vault!',
+                                  style: TextStyle(
+                                    color: breachResult?['ironDomeBlocked'] == true ? Colors.amber : const Color(0xFF34D399),
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          SizedBox(
+                            width: double.infinity,
+                            height: 46,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF059669),
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              ),
+                              onPressed: () {
+                                Navigator.pop(ctx);
+                                HapticFeedback.selectionClick();
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('🏆 Citadel Raid Victory against ${neighbor.name}! +${breachResult?['lootedCoins'] ?? 45} coins claimed!'),
+                                    backgroundColor: const Color(0xFF059669),
+                                    behavior: SnackBarBehavior.floating,
+                                  ),
+                                );
+                              },
+                              child: Text(
+                                'CLAIM LOOT & RETURN 🏆',
+                                style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 13),
+                              ),
+                            ),
+                          ),
+                        ]
+
+                        // --- STEP -1: TRAP TRIGGERED / ATTACK FAILED ---
+                        else if (raidStep == -1) ...[
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFDC2626).withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(color: const Color(0xFFDC2626)),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    const Text('💥', style: TextStyle(fontSize: 20)),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        'TRAP TRIGGERED! ATTACK REPELLED!',
+                                        style: GoogleFonts.outfit(
+                                          color: const Color(0xFFF87171),
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 13,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                const Text(
+                                  'You failed to crack the defender\'s English shield. Their house defense holds firm!',
+                                  style: TextStyle(color: Colors.white70, fontSize: 11),
+                                ),
+                                if (currentQ != null && currentQ.explanation.isNotEmpty) ...[
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Explanation: ${currentQ.explanation}',
+                                    style: const TextStyle(color: Colors.white60, fontSize: 10.5, fontStyle: FontStyle.italic),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          SizedBox(
+                            width: double.infinity,
+                            height: 46,
+                            child: OutlinedButton(
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: Colors.white70,
+                                side: const BorderSide(color: Colors.white24),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              ),
+                              onPressed: () => Navigator.pop(ctx),
+                              child: const Text('RETREAT 🛡️', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5)),
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
-                  ],
+                  ),
                 ),
-              ),
+              ],
             ),
-          ],
-        ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildNoticeCard(String msg) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E293B),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white12),
+      ),
+      child: Row(
+        children: [
+          const Text('ℹ️', style: TextStyle(fontSize: 16)),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              msg,
+              style: const TextStyle(color: Colors.white70, fontSize: 11),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -1212,8 +1590,10 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
 
                             // --- 🏡 THE INTERACTIVE HOUSE CANVAS ---
                             Expanded(
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(16),
+                              child: GestureDetector(
+                                onTap: neighbor.isMe ? null : () => _openEnglishDuelDialog(neighbor),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(16),
                                 child: Stack(
                                   children: [
                                     Positioned.fill(
@@ -1294,6 +1674,7 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
                                   ],
                                 ),
                               ),
+                            ),
                             ),
 
                             // --- BOTTOM INTERACTION BUTTONS ---

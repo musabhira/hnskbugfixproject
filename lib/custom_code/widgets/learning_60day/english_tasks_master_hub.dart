@@ -9,6 +9,7 @@ import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/nft_trading_card_dialog.dart';
 import 'pocket_battle_arena_page.dart';
+import 'pocket_world_street_page.dart';
 import 'pocket_fortress_defense_service.dart';
 import 'pocket_defense_trap_modal.dart';
 import 'pocket_arsenal_store_modal.dart';
@@ -877,35 +878,30 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                 // 2. Sticky Glassmorphism Top HUD (Without Back button on tab navigation!)
                 _buildTopHUD(prog),
 
-                // 3. ⚔️ Unobtrusive Testing Action Button (Audio Directive: For testing only)
+                // 3. ⚔️ Pocket Battle Action Button (User audio: "Battle Arena എന്ന് പറയില്ലല്ലോ, 'Pocket Battle' എന്ന് സിംപിൾ ആയി കൊടുത്താൽ മതി. അതൊന്ന് ഡയറക്റ്റ് പോക്കറ്റ് ഹോമിൽ പോകുന്നു.")
                 Positioned(
                   left: 18,
                   bottom: 24,
                   child: InkWell(
                     onTap: () {
                       HapticFeedback.mediumImpact();
-                      final rival = PocketFortressDefenseService.generateRivalForUser(
-                        prog.currentDay,
-                        userStreak: prog.streakDays,
-                      );
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => PocketBattleArenaPage(
-                            neighbor: rival,
-                            userDay: prog.currentDay,
-                            userStreak: prog.streakDays,
+                          builder: (_) => PocketWorldStreetPage(
+                            currentDay: prog.currentDay,
+                            streak: prog.streakDays,
                           ),
                         ),
                       );
                     },
                     borderRadius: BorderRadius.circular(20),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
                       decoration: BoxDecoration(
                         color: const Color(0xFF1E293B).withValues(alpha: 0.9),
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: Colors.redAccent.withValues(alpha: 0.4), width: 1),
+                        border: Border.all(color: Colors.redAccent.withValues(alpha: 0.5), width: 1.2),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withValues(alpha: 0.3),
@@ -918,15 +914,13 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           const Text('⚔️', style: TextStyle(fontSize: 12)),
-                          const SizedBox(width: 4),
+                          const SizedBox(width: 5),
                           Text(
-                            prog.currentDay < 20
-                                ? 'Raid Lvl ${PocketFortressDefenseService.getRaidTargetDay(prog.currentDay)}'
-                                : 'Battle Arena',
+                            'Pocket Battle',
                             style: GoogleFonts.outfit(
-                              color: Colors.white70,
+                              color: Colors.white,
                               fontWeight: FontWeight.w700,
-                              fontSize: 11,
+                              fontSize: 11.5,
                             ),
                           ),
                         ],
