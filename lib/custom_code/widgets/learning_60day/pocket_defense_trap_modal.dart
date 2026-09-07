@@ -32,6 +32,12 @@ class PocketDefenseTrapModal extends StatefulWidget {
     );
   }
 
+  static Future<void> showShieldUnlockPrompt(
+    BuildContext context, {
+    required int day,
+    int? coins,
+  }) => show(context, day);
+
   @override
   State<PocketDefenseTrapModal> createState() => _PocketDefenseTrapModalState();
 }

@@ -9,13 +9,11 @@ import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/nft_trading_card_dialog.dart';
 import 'pocket_battle_arena_page.dart';
-import 'pocket_world_street_page.dart';
 import 'pocket_fortress_defense_service.dart';
 import 'pocket_defense_trap_modal.dart';
 import 'pocket_arsenal_store_modal.dart';
 import 'day90_vip_master_card_dialog.dart';
 import 'pocket_daily_mission_page.dart';
-import 'pocket_mission_timer_service.dart';
 
 /// 🎯 Model for Minimal Target Roadmaps (Audio Requirement)
 class TargetMilestoneItem {
@@ -294,170 +292,13 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
       // Prompt to craft Day's Defense Shield immediately
       Future.delayed(const Duration(milliseconds: 700), () {
         if (mounted) {
-          PocketDefenseTrapModal.showShieldUnlockPrompt(
+          PocketDefenseTrapModal.show(
             context,
-            day: _progress?.currentDay ?? 1,
-            coins: _progress?.totalPoints ?? 100,
+            _progress?.currentDay ?? 1,
           );
         }
       });
     }
-  }
-
-  void _showMilestoneRewardsModal() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: const Color(0xFF0F111A),
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (ctx) {
-        return Container(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 30),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: Colors.white24,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  const Text('🏆', style: TextStyle(fontSize: 22)),
-                  const SizedBox(width: 10),
-                  Text(
-                    '90-Day Milestone Rewards Showcase',
-                    style: GoogleFonts.outfit(
-                        color: Colors.white,
-                        fontSize: 17,
-                        fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 6),
-              Text(
-                'Exclusive trophies, visual unlocks & certificates earned along your English journey:',
-                style: GoogleFonts.inter(color: Colors.white60, fontSize: 12),
-              ),
-              const SizedBox(height: 18),
-              _buildRewardTile(
-                emoji: '🎯',
-                title: 'Day 21 Habit Anchor Lock',
-                desc:
-                    'Unlocks permanent English habit status, Red Anchor Verified Tick, and Shadow Wolf Cyber-Visor NFT Avatar (#MATE-DAY21).',
-                borderCol: const Color(0xFFFF5252),
-                avatarConfig:
-                    LearningMilestoneStage.getStageForDay(21).avatarReward,
-              ),
-              const SizedBox(height: 10),
-              _buildRewardTile(
-                emoji: '🥈',
-                title: 'Day 30 Silver Knight Shield',
-                desc:
-                    'Unlocks Metallic Silver Profile Theme, Silver Platinum Verified Tick, and Retro Arcade Ape Crown NFT (#MATE-DAY30).',
-                borderCol: const Color(0xFFE2E8F0),
-                avatarConfig:
-                    LearningMilestoneStage.getStageForDay(30).avatarReward,
-              ),
-              const SizedBox(height: 10),
-              _buildRewardTile(
-                emoji: '👑',
-                title: 'Day 60 Gold Sovereign Crown',
-                desc:
-                    'Unlocks 24K Gold Sovereign Profile Theme, Pure Gold Verified Tick, and Celestial Lion Emperor NFT (#MATE-DAY60).',
-                borderCol: const Color(0xFFFFD700),
-                avatarConfig:
-                    LearningMilestoneStage.getStageForDay(60).avatarReward,
-              ),
-              const SizedBox(height: 10),
-              _buildRewardTile(
-                emoji: '💎',
-                title: 'Day 90 Supreme Grand Master',
-                desc:
-                    'The highest English honor. Unlocks Obsidian Holographic Diamond Theme, Cyan Radiant Tick, and Supreme Astral Cosmic Dragon NFT (#MATE-DAY90-DRAGON).',
-                borderCol: const Color(0xFF00E5FF),
-                avatarConfig:
-                    LearningMilestoneStage.getStageForDay(90).avatarReward,
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildRewardTile({
-    required String emoji,
-    required String title,
-    required String desc,
-    required Color borderCol,
-    VectorAvatarConfig? avatarConfig,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: const Color(0xFF161928),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: borderCol.withValues(alpha: 0.5), width: 1.2),
-      ),
-      child: Row(
-        children: [
-          if (avatarConfig != null)
-            Padding(
-              padding: const EdgeInsets.only(right: 12),
-              child: Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: borderCol, width: 1.5),
-                ),
-                child: ClipOval(
-                  child: VectorAvatarWidget(
-                    config: avatarConfig,
-                    size: 44,
-                    showAura: false,
-                  ),
-                ),
-              ),
-            )
-          else
-            Padding(
-              padding: const EdgeInsets.only(right: 12),
-              child: Text(emoji, style: const TextStyle(fontSize: 24)),
-            ),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: GoogleFonts.outfit(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  desc,
-                  style:
-                      GoogleFonts.inter(color: Colors.white70, fontSize: 11.5),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   void _navigateToMissionPage(int day) {
@@ -1127,8 +968,6 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   }
 
   Widget _buildTopHUD(UserLearningProgress prog) {
-    final completedCount = (prog.currentDay - 1).clamp(0, 90);
-    final totalStars = completedCount * 3;
     final canPop = Navigator.of(context).canPop();
 
     return Positioned(
