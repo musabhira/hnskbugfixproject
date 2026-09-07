@@ -6,6 +6,7 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../avatar/vector_avatar_config.dart';
 import '../avatar/vector_avatar_widget.dart';
+import '../avatar/avatar_game_perk.dart';
 import 'pocket_defense_admin_modal.dart';
 import 'pocket_fortress_defense_service.dart';
 import 'pocket_world_street_page.dart';
@@ -2109,6 +2110,45 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
           ),
           child: Column(
             children: [
+              // ⚔️ Matchmaking Tier Banner (Audio Directive: Under Lvl 20 vs Lvl 20+)
+              Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: widget.userDay < 20
+                      ? const Color(0xFFEF4444).withValues(alpha: 0.15)
+                      : const Color(0xFF10B981).withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: widget.userDay < 20
+                        ? const Color(0xFFEF4444).withValues(alpha: 0.4)
+                        : const Color(0xFF10B981).withValues(alpha: 0.4),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Text(
+                      widget.userDay < 20 ? '⚔️ TACTICAL GROWTH RAID' : '👑 SOVEREIGN DUEL',
+                      style: GoogleFonts.outfit(
+                        color: widget.userDay < 20 ? const Color(0xFFF87171) : const Color(0xFF34D399),
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.6,
+                      ),
+                    ),
+                    const Spacer(),
+                    Text(
+                      'Lvl ${widget.userDay} vs Lvl ${widget.neighbor.day}',
+                      style: GoogleFonts.inter(
+                        color: Colors.white70,
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
               Row(
                 children: [
                   // Defender Avatar
@@ -2275,6 +2315,52 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
                     ),
                   ),
                 ],
+              ),
+              const SizedBox(height: 6),
+              // 🧬 Avatar Trait Details: Gunam (Advantage) & Dosham (Tradeoff)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.white10),
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('🟢 ', style: TextStyle(fontSize: 10)),
+                        Expanded(
+                          child: Text(
+                            VectorAvatarConfig.getAvatarPerkForDay(widget.userDay).advantageText,
+                            style: GoogleFonts.inter(
+                              color: const Color(0xFF6EE7B7),
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 3),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('🔴 ', style: TextStyle(fontSize: 10)),
+                        Expanded(
+                          child: Text(
+                            VectorAvatarConfig.getAvatarPerkForDay(widget.userDay).challengeText,
+                            style: GoogleFonts.inter(
+                              color: const Color(0xFFFCA5A5),
+                              fontSize: 10,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
 
               if (_isDefenderHouseBanned) ...[

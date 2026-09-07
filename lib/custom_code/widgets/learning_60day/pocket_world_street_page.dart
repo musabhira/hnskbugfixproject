@@ -425,6 +425,14 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
                 ),
                 onPressed: () {
                   Navigator.pop(ctx);
+                  if (!PocketFortressDefenseService.isRaidTargetValid(widget.currentDay, neighbor.day)) {
+                    final escalatedRival = PocketFortressDefenseService.generateRivalForUser(
+                      widget.currentDay,
+                      userStreak: widget.streak,
+                    );
+                    _showGrowthMatchmakingDialog(neighbor, escalatedRival);
+                    return;
+                  }
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -455,6 +463,99 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showGrowthMatchmakingDialog(PocketNeighbor requested, PocketNeighbor escalated) {
+    showDialog(
+      context: context,
+      builder: (dlgCtx) => AlertDialog(
+        backgroundColor: const Color(0xFF0F172A),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: const BorderSide(color: Color(0xFFEF4444), width: 1.5),
+        ),
+        title: Row(
+          children: [
+            const Text('⚔️ ', style: TextStyle(fontSize: 22)),
+            Expanded(
+              child: Text(
+                'Combat Growth Rule',
+                style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Before Level 20, challenging same-level or lower houses (${requested.name} Lvl ${requested.day}) is locked because true English fluency requires tougher combat pressure!',
+              style: GoogleFonts.inter(color: Colors.white70, fontSize: 13, height: 1.4),
+            ),
+            const SizedBox(height: 14),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1E293B),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.4)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '⚡ ESCALATED CITADEL TARGET:',
+                    style: GoogleFonts.outfit(color: const Color(0xFF38BDF8), fontSize: 11, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${escalated.name} (Level ${escalated.day} Citadel)',
+                    style: GoogleFonts.outfit(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w900),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    '+${escalated.day - widget.currentDay} Levels higher • Rewards +50 Bonus Coins on breach!',
+                    style: GoogleFonts.inter(color: Colors.amber, fontSize: 11),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dlgCtx),
+            child: Text('Cancel', style: GoogleFonts.inter(color: Colors.white60)),
+          ),
+          ElevatedButton.icon(
+            onPressed: () {
+              Navigator.pop(dlgCtx);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => PocketBattleArenaPage(
+                    neighbor: escalated,
+                    userDay: widget.currentDay,
+                    userStreak: widget.streak,
+                  ),
+                ),
+              );
+            },
+            icon: const Icon(Icons.flash_on_rounded, color: Colors.white, size: 16),
+            label: Text(
+              'RAID LVL ${escalated.day} CITADEL ⚔️',
+              style: GoogleFonts.outfit(fontWeight: FontWeight.w900, color: Colors.white),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFDC2626),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+          ),
+        ],
       ),
     );
   }

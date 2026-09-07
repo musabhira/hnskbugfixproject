@@ -21,6 +21,8 @@ class AvatarGamePerk {
   final PerkType perkType;
   final int bonusValue;
   final Color badgeColor;
+  final String? advantage;
+  final String? challenge;
 
   const AvatarGamePerk({
     required this.day,
@@ -30,7 +32,46 @@ class AvatarGamePerk {
     required this.perkType,
     required this.bonusValue,
     required this.badgeColor,
+    this.advantage,
+    this.challenge,
   });
+
+  /// 🟢 Gunam (Tactical Advantage / Buff)
+  String get advantageText {
+    if (advantage != null && advantage!.isNotEmpty) return advantage!;
+    switch (perkType) {
+      case PerkType.ironDome:
+        return 'Tier $bonusValue Iron Dome: Deflects enemy missile breach damage by $bonusValue%.';
+      case PerkType.armyKnights:
+        return 'Guard Cadre: Stations +$bonusValue armored knights to fortify house defense.';
+      case PerkType.fdcBoost:
+        return 'Fluency Surge: Awards +$bonusValue bonus Fortress Defense Credits on calls and chats.';
+      case PerkType.siegeDamage:
+        return 'Breach Force: Deals +$bonusValue% destruction damage on fortress raids.';
+      case PerkType.timeFreeze:
+        return 'Chrono Focus: Grants +${bonusValue}s extra time on raid challenge questions.';
+      case PerkType.vaultLoot:
+        return 'Vault Raider: Loots +$bonusValue% extra coins upon victorious gate breach.';
+      case PerkType.fortressShield:
+        return 'Fortress Integrity: Boosts max house structure by +$bonusValue HP.';
+    }
+  }
+
+  /// 🔴 Dosham (Tactical Tradeoff / Challenge)
+  String get challengeText {
+    if (challenge != null && challenge!.isNotEmpty) return challenge!;
+    if (day < 15) {
+      return 'Early Cadet: 0 lifelines available during fortress combat sieges.';
+    } else if (day < 30) {
+      return 'Heavy Armor: -2s countdown in rapid speech pronunciation duels.';
+    } else if (day < 50) {
+      return 'High Friction: -10% vault defense recovery speed if breached.';
+    } else if (day < 70) {
+      return 'High Stakes: Incorrect answers deduct -5s from remaining time.';
+    } else {
+      return 'Imperial Pressure: Sovereign citadel duels demand 95%+ precision.';
+    }
+  }
 
   String get perkCategoryCode {
     switch (perkType) {

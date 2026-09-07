@@ -37,7 +37,7 @@ void main() {
       expect(find.textContaining('DIALECTIC OF CONTRADICTION'), findsWidgets);
       expect(find.textContaining('Rule 12: Formal Subjunctive'), findsWidgets);
       expect(find.textContaining('RAPID COMBAT ATTACK'), findsWidgets);
-      expect(find.textContaining('Union Master Rowan Lvl 12'), findsWidgets);
+      expect(find.textContaining('Highland Warlord Lvl 16'), findsWidgets);
     });
 
     testWidgets('Day 13 renders Alchemy of Intellect & Negative Inversion Rule', (tester) async {
@@ -58,7 +58,7 @@ void main() {
       expect(find.textContaining('DAY 13'), findsWidgets);
       expect(find.textContaining('ALCHEMY OF INTELLECT'), findsWidgets);
       expect(find.textContaining('Rule 13: Negative & Restrictive Inversion'), findsWidgets);
-      expect(find.textContaining('Cambridge Epistemist Lvl 13'), findsWidgets);
+      expect(find.textContaining('Bastion Tactician Lvl 17'), findsWidgets);
     });
 
     testWidgets('Day 14 Milestone renders Citadel of Rhetoric & Fronting Rule', (tester) async {
@@ -79,7 +79,7 @@ void main() {
       expect(find.textContaining('DAY 14 MILESTONE'), findsWidgets);
       expect(find.textContaining('CITADEL OF RHETORIC'), findsWidgets);
       expect(find.textContaining('Rule 14: Rhetorical Fronting'), findsWidgets);
-      expect(find.textContaining('Geneva Treaty Envoy Lvl 14'), findsWidgets);
+      expect(find.textContaining('Citadel Archon Lvl 18'), findsWidgets);
     });
   });
 }

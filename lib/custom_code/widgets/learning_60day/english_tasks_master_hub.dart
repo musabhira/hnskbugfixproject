@@ -1043,15 +1043,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   child: InkWell(
                     onTap: () {
                       HapticFeedback.mediumImpact();
-                      final rival = PocketNeighbor(
-                        id: 'rival_fortress',
-                        name: 'Lord Sterling',
-                        day: prog.currentDay,
-                        streak: prog.streakDays + 3,
-                        rank: 'Rival Fortress',
-                        paletteId: 'regal_amethyst',
-                        statusMessage: 'Can you breach my English gates?',
-                        hasActiveShield: true,
+                      final rival = PocketFortressDefenseService.generateRivalForUser(
+                        prog.currentDay,
+                        userStreak: prog.streakDays,
                       );
                       Navigator.push(
                         context,
@@ -1085,7 +1079,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                           const Text('⚔️', style: TextStyle(fontSize: 12)),
                           const SizedBox(width: 4),
                           Text(
-                            'Test Arena',
+                            prog.currentDay < 20
+                                ? 'Raid Lvl ${PocketFortressDefenseService.getRaidTargetDay(prog.currentDay)}'
+                                : 'Battle Arena',
                             style: GoogleFonts.outfit(
                               color: Colors.white70,
                               fontWeight: FontWeight.w700,

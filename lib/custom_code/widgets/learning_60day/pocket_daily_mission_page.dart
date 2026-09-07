@@ -2938,35 +2938,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   }
 
   PocketNeighbor _getRivalCitadelForDay(int day) {
-    final names = {
-      1: 'Novice Duelist Lvl 1',
-      2: 'Habit Sentinel Lvl 2',
-      3: 'Cathedral Guardian Lvl 3',
-      4: 'Town Council Envoy Lvl 4',
-      5: 'Citadel Sea Vanguard Lvl 5',
-      6: 'Alveron Syndicate Lvl 6',
-      7: 'Lysander Academician Lvl 7',
-      8: 'Geneva Ethicist Lvl 8',
-      9: 'Oxford Dialectician Lvl 9',
-      10: 'Hague High Chancellor Lvl 10',
-      11: 'Aegean Philosopher Lvl 11',
-      12: 'Union Master Rowan Lvl 12',
-      13: 'Cambridge Epistemist Lvl 13',
-      14: 'Geneva Treaty Envoy Lvl 14',
-    };
-    final name = names[day] ?? 'Citadel Guardian Lvl $day';
-    final rank = day >= 10 ? 'Imperial Fortress Citadel' : (day >= 5 ? 'Fortified Manor' : 'Rival House');
-    final palette = day >= 10 ? 'regal_amethyst' : (day >= 5 ? 'midnight_emerald' : 'rustic_oak');
-    return PocketNeighbor(
-      id: 'rival_citadel_day_$day',
-      name: name,
-      day: day,
-      streak: day + 3,
-      rank: rank,
-      paletteId: palette,
-      statusMessage: 'Can your Day $day English breach my citadel defense shields?',
-      hasActiveShield: true,
-    );
+    return PocketFortressDefenseService.generateRivalForUser(day, userStreak: day);
   }
 
   Future<void> _saveSubtask(String key, bool value) async {
@@ -3147,7 +3119,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                         stepNumber: '7',
                         icon: '⚔️',
                         title: 'Day ${widget.day} Citadel Siege Raid (${_getRivalCitadelForDay(widget.day).name})',
-                        description: 'Launch your tactical siege raid against a Level ${widget.day} Neighbor Citadel in the Battle Arena to test your combat English under fire!',
+                        description: 'Launch your tactical siege raid against a Level ${_getRivalCitadelForDay(widget.day).day} Neighbor Citadel in the Battle Arena to test your combat English under fire!',
                         isVerified: _trialRaidLaunched,
                         actionLabel: 'LAUNCH BATTLE ARENA RAID ⚔️',
                         actionColor: const Color(0xFFEF4444),

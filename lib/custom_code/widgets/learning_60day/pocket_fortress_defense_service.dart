@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../avatar/avatar_game_perk.dart';
+import 'pocket_world_street_page.dart';
 
 /// 🎩 President of Pocket World's Official Decree & Anti-Cheat Verdict
 class PresidentVerdict {
@@ -419,6 +420,90 @@ class PocketFortressDefenseService {
     if (neighborDay >= 50) return 2;
     if (neighborDay >= 25) return 1;
     return 0;
+  }
+
+  /// ⚔️ Raid Opponent Target Level Matchmaking Rule (User Audio Directive):
+  /// "Oraale attack cheyyumbol same levelil ulla aalukare attack cheyyaruthu.
+  ///  Same levelil ulla aalukare attack cheyyalokke oru 20-nu shesham.
+  ///  20-nu munpu higher level aayirikkanam (e.g. Lvl 5 faces Lvl 9 or 10)."
+  ///
+  /// - Before Level 20 (Days 1–19): Users MUST NOT attack same-level peers.
+  ///   They must attack higher-level / tougher citadels (+4 to +5 levels higher)
+  ///   e.g. Day 1 -> Day 5, Day 5 -> Day 9, Day 12 -> Day 16, Day 14 -> Day 18.
+  ///   This forces rapid English learning and vocabulary application under pressure.
+  /// - Level 20+ (Days 20–90): Users have demonstrated proven mastery and can attack
+  ///   same-level peers or freely select targets.
+  static int getRaidTargetDay(int userDay) {
+    final day = userDay.clamp(1, 90);
+    if (day < 20) {
+      return math.min(90, day + 4);
+    } else {
+      return day;
+    }
+  }
+
+  /// Check whether an attack target is valid for user's level
+  static bool isRaidTargetValid(int userDay, int targetDay) {
+    if (userDay < 20) {
+      return targetDay > userDay; // Under Level 20: Target must be higher level
+    }
+    return true; // Level 20+: Can attack anyone
+  }
+
+  static String getRivalNameForDay(int day) {
+    const names = {
+      1: 'Novice Duelist Lvl 1',
+      2: 'Habit Sentinel Lvl 2',
+      3: 'Cathedral Guardian Lvl 3',
+      4: 'Town Council Envoy Lvl 4',
+      5: 'Citadel Sea Vanguard Lvl 5',
+      6: 'Alveron Syndicate Lvl 6',
+      7: 'Lysander Academician Lvl 7',
+      8: 'Geneva Ethicist Lvl 8',
+      9: 'Oxford Dialectician Lvl 9',
+      10: 'Hague High Chancellor Lvl 10',
+      11: 'Aegean Philosopher Lvl 11',
+      12: 'Union Master Rowan Lvl 12',
+      13: 'Cambridge Epistemist Lvl 13',
+      14: 'Geneva Treaty Envoy Lvl 14',
+      15: 'Knight Commander Lvl 15',
+      16: 'Highland Warlord Lvl 16',
+      17: 'Bastion Tactician Lvl 17',
+      18: 'Citadel Archon Lvl 18',
+      19: 'Imperial Aegis Lvl 19',
+      20: 'Citadel Sovereign Lvl 20',
+    };
+    return names[day] ?? 'Citadel Guardian Lvl $day';
+  }
+
+  static PocketNeighbor generateRivalForUser(int userDay, {int userStreak = 1}) {
+    final targetDay = getRaidTargetDay(userDay);
+    final name = getRivalNameForDay(targetDay);
+    final rank = targetDay >= 70
+        ? 'Imperial Palace Citadel'
+        : (targetDay >= 50
+            ? 'High-Level Citadel'
+            : (targetDay >= 25
+                ? 'Fortified Manor'
+                : (targetDay >= 10 ? 'Fortress Keep' : 'Rival House')));
+    final palette = targetDay >= 70
+        ? 'mirror_glass'
+        : (targetDay >= 20
+            ? 'royal_gold'
+            : (targetDay >= 10 ? 'regal_amethyst' : 'midnight_emerald'));
+
+    return PocketNeighbor(
+      id: 'rival_citadel_lvl_$targetDay',
+      name: name,
+      day: targetDay,
+      streak: targetDay + 2,
+      rank: rank,
+      paletteId: palette,
+      statusMessage: userDay < 20
+          ? '⚔️ Growth Target! Level $userDay warrior raiding Level $targetDay gates (+${targetDay - userDay} Lvls)!'
+          : 'Can your English breach my Level $targetDay defense gates?',
+      hasActiveShield: true,
+    );
   }
 
   /// 🚨 Inactivity / Consistency Check (Daily Focus Protection)
