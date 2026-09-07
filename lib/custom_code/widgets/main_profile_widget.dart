@@ -24,6 +24,7 @@ import 'package:pocket_mates_app/custom_code/widgets/avatar/flame_profile_banner
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/flame_english_house_game.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortress_defense_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_defense_trap_modal.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_world_street_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/pocket_snap_flame_refresh.dart';
 
 class MainProfileWidget extends StatefulWidget {
@@ -167,7 +168,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     final day = (_profileData?['learning_day'] as num?)?.toInt() ?? 1;
     try {
       final status = await PocketFortressDefenseService.getHouseStatus(day);
-      final questions = await PocketFortressDefenseService.loadShieldQuestions(day, isNeighbor: false);
+      final questions = await PocketFortressDefenseService.loadShieldQuestions(day, isNeighbor: !isMe);
       final raids = await PocketFortressDefenseService.getRecentRaids();
       if (mounted) {
         setState(() {
@@ -955,7 +956,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   _buildProfileHeader(textColor, btnColor, btnTextColor, isMe),
             ),
             if (!(_profileData?['is_private'] == true && !_isFollowing && !isMe) &&
-                (_isPublicProfileView || !isMe))
+                _isPublicProfileView)
               material.SliverPersistentHeader(
                 pinned: true,
                 delegate: _SliverAppBarDelegate(
@@ -980,65 +981,105 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         },
         body: Container(
           color: bgColor,
-          child: (_profileData?['is_private'] == true && !_isFollowing && !isMe)
-              ? Center(
+          child: !_isPublicProfileView
+              ? SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(24),
-                        decoration: BoxDecoration(
-                          color: btnColor.withValues(alpha: 0.1),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          material.Icons.lock_outline_rounded,
-                          size: 48,
-                          color: btnColor,
-                        ),
+                      FlameEnglishHouseWidget(
+                        currentDay: (_profileData?['learning_day'] as num?)?.toInt() ?? 1,
+                        streak: (_profileData?['daily_streak'] as num?)?.toInt() ?? 1,
                       ),
+                      if (!isMe) ...[
+                        const SizedBox(height: 12),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: SizedBox(
+                            width: double.infinity,
+                            height: 46,
+                            child: ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFDC2626),
+                                foregroundColor: Colors.white,
+                                elevation: 6,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                              ),
+                              onPressed: () {
+                                final day = (_profileData?['learning_day'] as num?)?.toInt() ?? 1;
+                                final streak = (_profileData?['daily_streak'] as num?)?.toInt() ?? 1;
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => PocketWorldStreetPage(
+                                      currentDay: day,
+                                      streak: streak,
+                                    ),
+                                  ),
+                                );
+                              },
+                              icon: const Icon(Icons.flash_on_rounded, size: 20),
+                              label: Text(
+                                'VISIT ON STREET & RAID CITADEL ⚔️',
+                                style: GoogleFonts.outfit(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13.5,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 16),
-                      Text(
-                        "This account is private",
-                        style: TextStyle(
-                          color: textColor,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        "Follow this account to see their photos and updates.",
-                        style: TextStyle(
-                          color: textColor.withValues(alpha: 0.6),
-                          fontSize: 13,
-                        ),
-                      ),
+                      if (_fortressStatus?.presidentNotice != null) ...[
+                        _buildPresidentNoticeBanner(),
+                        const SizedBox(height: 16),
+                      ],
+                      if (_fortressStatus?.isJailed == true) ...[
+                        _buildJailSentenceBanner(),
+                        const SizedBox(height: 16),
+                      ],
+                      _buildMinimalDefenseSection(textColor, btnColor),
+                      const SizedBox(height: 16),
+                      _buildMinimalAttackersSection(),
+                      const SizedBox(height: 32),
                     ],
                   ),
                 )
-              : (isMe && !_isPublicProfileView)
-                  ? SingleChildScrollView(
-                      physics: const BouncingScrollPhysics(),
+              : (_profileData?['is_private'] == true && !_isFollowing && !isMe)
+                  ? Center(
                       child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          FlameEnglishHouseWidget(
-                            currentDay: (_profileData?['learning_day'] as num?)?.toInt() ?? 1,
-                            streak: (_profileData?['daily_streak'] as num?)?.toInt() ?? 1,
+                          Container(
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              color: btnColor.withValues(alpha: 0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              material.Icons.lock_outline_rounded,
+                              size: 48,
+                              color: btnColor,
+                            ),
                           ),
                           const SizedBox(height: 16),
-                          if (_fortressStatus?.presidentNotice != null) ...[
-                            _buildPresidentNoticeBanner(),
-                            const SizedBox(height: 16),
-                          ],
-                          if (_fortressStatus?.isJailed == true) ...[
-                            _buildJailSentenceBanner(),
-                            const SizedBox(height: 16),
-                          ],
-                          _buildMinimalDefenseSection(textColor, btnColor),
-                          const SizedBox(height: 16),
-                          _buildMinimalAttackersSection(),
-                          const SizedBox(height: 32),
+                          Text(
+                            "This account is private",
+                            style: TextStyle(
+                              color: textColor,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            "Follow this account to see their photos and updates.",
+                            style: TextStyle(
+                              color: textColor.withValues(alpha: 0.6),
+                              fontSize: 13,
+                            ),
+                          ),
                         ],
                       ),
                     )
@@ -1180,8 +1221,12 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
           ),
           subtitle: Text(
             hasQuestions
-                ? 'Active defense questions guarding your house'
-                : 'Defenses unlock as you advance in levels',
+                ? (isMe
+                    ? 'Active defense questions guarding your house'
+                    : 'Active defense questions guarding this citadel')
+                : (isMe
+                    ? 'Defenses unlock as you advance in levels'
+                    : 'No active defenses set yet'),
             style: GoogleFonts.inter(color: Colors.white54, fontSize: 11),
           ),
           children: [
@@ -1210,31 +1255,43 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                               q.question,
                               style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500),
                             ),
-                            if (q.options.isNotEmpty && q.correctIndex < q.options.length) ...[
+                            if (isMe && q.options.isNotEmpty && q.correctIndex < q.options.length) ...[
                               const SizedBox(height: 2),
                               Text(
                                 'Answer: ${q.options[q.correctIndex]}',
                                 style: const TextStyle(color: Color(0xFF34D399), fontSize: 10.5, fontWeight: FontWeight.w600),
                               ),
+                            ] else if (!isMe) ...[
+                              const SizedBox(height: 2),
+                              Text(
+                                '${q.options.length} guarded options 🛡️',
+                                style: const TextStyle(color: Colors.white54, fontSize: 10.5, fontWeight: FontWeight.w500),
+                              ),
                             ],
                           ],
                         ),
                       ),
-                      IconButton(
-                        icon: const Icon(Icons.edit_note_rounded, color: Color(0xFF38BDF8), size: 20),
-                        tooltip: 'Edit Question',
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                        onPressed: () async {
-                          final day = (_profileData?['learning_day'] as num?)?.toInt() ?? 1;
-                          await PocketDefenseTrapModal.show(
-                            context,
-                            day,
-                            editingQuestion: q,
-                          );
-                          _loadFortressDefenseData();
-                        },
-                      ),
+                      if (isMe)
+                        IconButton(
+                          icon: const Icon(Icons.edit_note_rounded, color: Color(0xFF38BDF8), size: 20),
+                          tooltip: 'Edit Question',
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          onPressed: () async {
+                            final day = (_profileData?['learning_day'] as num?)?.toInt() ?? 1;
+                            await PocketDefenseTrapModal.show(
+                              context,
+                              day,
+                              editingQuestion: q,
+                            );
+                            _loadFortressDefenseData();
+                          },
+                        )
+                      else
+                        const Padding(
+                          padding: EdgeInsets.only(top: 2),
+                          child: Icon(Icons.lock_rounded, color: Colors.white30, size: 16),
+                        ),
                     ],
                   );
                 },
@@ -1620,12 +1677,11 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   Widget _buildBanner() {
     final day = (_profileData?['learning_day'] as num?)?.toInt() ?? 1;
     final stage = LearningMilestoneStage.getStageForDay(day);
-    final avatar = VectorAvatarConfig.getEvolutionAvatarForStage(day);
+    final avatar = _getAvatarConfig();
     final bannerUrl = _profileData?['banner_image_url'] ?? _profileData?['banner_url'];
 
-    // 🐾 In My Accounts (isMe), dynamically render the current day's active animal avatar banner!
-    // For other users' public profiles (!isMe), use uploaded custom banner if available.
-    if (!isMe && bannerUrl != null && bannerUrl.toString().isNotEmpty) {
+    // If viewing Public Profile and user has custom banner uploaded, display it:
+    if (_isPublicProfileView && bannerUrl != null && bannerUrl.toString().isNotEmpty) {
       return CachedNetworkImage(
         imageUrl: bannerUrl.toString(),
         fit: BoxFit.cover,
@@ -1636,6 +1692,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       );
     }
 
+    // In Account view (both for My Account and for searched user's Account), dynamically render the stage Flame animal avatar banner!
     return _buildStageFallbackBanner(day, stage, avatar);
   }
 
@@ -1750,7 +1807,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (isMe) _buildDualProfileSegmentSwitcher(textColor, btnColor, btnTextColor, isDark),
+        _buildDualProfileSegmentSwitcher(textColor, btnColor, btnTextColor, isDark),
         headerContent,
         if (!_isPublicProfileView) ...[
           Learning60DayProfileCard(userId: userId),
@@ -1810,7 +1867,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       const Text('👤', style: TextStyle(fontSize: 13)),
                       const SizedBox(width: 6),
                       Text(
-                        'My Account',
+                        isMe ? 'My Account' : 'Account',
                         style: GoogleFonts.outfit(
                           color: !_isPublicProfileView
                               ? btnTextColor
@@ -2737,6 +2794,50 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                     ),
                   ),
                 ],
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Container(
+                    height: 38,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFDC2626).withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: const Color(0xFFDC2626).withValues(alpha: 0.5)),
+                    ),
+                    child: InkWell(
+                      onTap: () {
+                        final day = (_profileData?['learning_day'] as num?)?.toInt() ?? 1;
+                        final streak = (_profileData?['daily_streak'] as num?)?.toInt() ?? 1;
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => PocketWorldStreetPage(
+                              currentDay: day,
+                              streak: streak,
+                            ),
+                          ),
+                        );
+                      },
+                      borderRadius: BorderRadius.circular(8),
+                      child: Center(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text('⚔️', style: TextStyle(fontSize: 12)),
+                            const SizedBox(width: 4),
+                            Text(
+                              "Raid",
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFFF87171),
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
     );
