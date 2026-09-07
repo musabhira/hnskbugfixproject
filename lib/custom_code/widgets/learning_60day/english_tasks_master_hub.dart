@@ -804,29 +804,96 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                     ),
                   ),
                 ] else ...[
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.05),
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.lock_rounded,
-                            color: Colors.white54, size: 16),
-                        const SizedBox(width: 6),
-                        Text(
-                          'Locked • Complete Day ${prog.currentDay} to Unlock',
-                          style: GoogleFonts.outfit(
-                              color: Colors.white54,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 13),
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.05),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.white12),
                         ),
-                      ],
-                    ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.lock_rounded,
+                                color: Colors.white54, size: 15),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Locked • Complete Day ${prog.currentDay} to Unlock',
+                              style: GoogleFonts.outfit(
+                                  color: Colors.white54,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12.5),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+
+                      // 🧪 Testing Purpose: Direct Mission Entrance
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            Navigator.pop(ctx);
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => PocketDailyMissionPage(
+                                  day: day,
+                                  onMissionCompleted: () => _loadData(),
+                                ),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.science_rounded,
+                              color: Colors.black, size: 18),
+                          label: Text(
+                            'ENTER DAY $day MISSION (TESTING 🧪)',
+                            style: GoogleFonts.outfit(
+                              color: Colors.black,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 13,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF00E5FF),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14)),
+                            elevation: 4,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+
+                      // 🔓 Fast-Forward / Unlock Day for Testing
+                      TextButton.icon(
+                        onPressed: () async {
+                          Navigator.pop(ctx);
+                          final uid = _currentUserId ?? SupaFlow.client.auth.currentUser?.id;
+                          if (uid != null) {
+                            await Learning60DayService().jumpToDay(uid, day);
+                            await _loadData();
+                          }
+                        },
+                        icon: const Icon(Icons.lock_open_rounded,
+                            color: Color(0xFFFFD700), size: 15),
+                        label: Text(
+                          'Fast-Forward / Unlock Day $day for Testing 🔓',
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFFFFD700),
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ],

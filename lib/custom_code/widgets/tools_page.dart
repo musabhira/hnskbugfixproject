@@ -26,6 +26,7 @@ import '/custom_code/widgets/courses_widget.dart';
 import '/custom_code/widgets/english_learning_hub_page.dart';
 import '/custom_code/widgets/learning_60day/english_tasks_master_hub.dart';
 import '/custom_code/widgets/pocket_library_page.dart';
+import '/custom_code/widgets/voice_accent_coach_page.dart';
 import '/custom_code/widgets/business_pos_page.dart';
 import '/custom_code/widgets/subscription_page.dart';
 
@@ -1281,6 +1282,26 @@ class _TaskManagerScreenState extends State<ToolsPage> {
             context,
             MaterialPageRoute(
                 builder: (context) => const PocketLibraryPage())),
+      },
+      {
+        'title': 'AI Voice & Accent Coach',
+        'subtitle': 'Pronunciation Practice & Speaking Drills',
+        'icon': Icons.record_voice_over_rounded,
+        'category': 'Language',
+        'color': const Color(0xFF00E5FF),
+        'gradient': [const Color(0xFF00E5FF), const Color(0xFF3B82F6)],
+        'avatar': const VectorAvatarConfig(
+          species: 'cyber_fox',
+          artStyle: 'cyberpunk',
+          outfitStyle: 'hacker_hood',
+          auraStyle: 'electric_blue',
+          hairStyle: 'anime_spiky',
+          hairColor: '#00F0FF',
+        ),
+        'onTap': () => Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => const VoiceAccentCoachPage())),
       },
       {
         'title': 'Avatar Studio & NFT',

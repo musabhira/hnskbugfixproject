@@ -219,6 +219,24 @@ class Learning60DayService {
     return fetchProgress(userId);
   }
 
+  /// Sets a specific day for testing / fast-forwarding
+  Future<void> jumpToDay(String userId, int targetDay) async {
+    final prefs = await SharedPreferences.getInstance();
+    final clamped = targetDay.clamp(1, 90);
+    final stage = LearningMilestoneStage.getStageForDay(clamped);
+
+    await prefs.setInt('learning_day_$userId', clamped);
+    try {
+      await _supabase.from('profile').update({
+        'learning_day': clamped,
+        'learning_stage': stage.stageNumber,
+        'updated_at': DateTime.now().toIso8601String(),
+      }).eq('user_id', userId);
+    } catch (e) {
+      debugPrint('jumpToDay error: $e');
+    }
+  }
+
   /// Sets a specific stage for testing / fast-forwarding
   Future<void> applyStagePaletteToProfile(String userId, int stageNumber) async {
     final stage = LearningMilestoneStage.getStageForDay(stageNumber);

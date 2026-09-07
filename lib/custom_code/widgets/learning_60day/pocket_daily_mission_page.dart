@@ -118,6 +118,19 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
       '🚀 Part 4: The First Step\n'
       'The student took a deep breath, spoke his first sentence with courage, and stepped fearlessly onto his 90-day path.';
 
+  static const String _kDay2StoryText =
+      'Marcus was an ambitious learner who struggled to find time for English. Every evening he felt exhausted and postponed his speaking practice to tomorrow. One day, his grandfather handed him an empty notebook with golden edges. Marcus, the old man said gently, we do not decide our future. We decide our daily habits, and our habits decide our future. Dedicate the very first sixty minutes of your sunrise to what you wish to master. Marcus accepted the wisdom. He placed the notebook on his desk and woke up thirty minutes earlier each dawn. In the quiet morning, he read aloud, spoke to the mirror, and practiced his vocabulary sentences. Within weeks, what once felt impossible became effortless. Marcus realized that mastery does not require giant leaps, only unbroken daily rituals.';
+
+  static const String _kDay2StoryFormatted =
+      '🌅 Part 1: The Evening Struggle\n'
+      'Marcus was an ambitious learner who struggled to find time for English. Every evening he felt exhausted and postponed his speaking practice to tomorrow.\n\n'
+      '📖 Part 2: The Golden Notebook\n'
+      'One day, his grandfather handed him an empty notebook with golden edges. "Marcus," the old man said gently, "we do not decide our future. We decide our daily habits, and our habits decide our future."\n\n'
+      '☀️ Part 3: The Sunrise Rule\n'
+      '"Dedicate the very first sixty minutes of your sunrise to what you wish to master." Marcus accepted the wisdom. He woke up thirty minutes earlier each dawn to read aloud and speak vocabulary sentences.\n\n'
+      '🏆 Part 4: Unbroken Rituals\n'
+      'Within weeks, what once felt impossible became effortless. Marcus realized that mastery does not require giant leaps, only unbroken daily rituals.';
+
   late final List<DailyVocabItem> _vocabList;
 
   @override
@@ -166,6 +179,22 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   }
 
   String _getGrammarRuleExplanation(String lang) {
+    if (widget.day == 2) {
+      switch (lang.toLowerCase()) {
+        case 'tamil':
+          return 'செயல் எவ்வளவு முறை நடக்கிறது என்பதைக் குறிக்க Adverbs of Frequency பயன்படுகின்றன. இவை பொதுவாக முதன்மை வினைச்சொல்லுக்கு (main verb) முன்னால் வரும்.\n• சரியான வாக்கியம்: "I always practice English in the morning."\n• தமிழில்: "நான் எப்போதும் காலையில் பயிற்சி செய்கிறேன்." main verb-க்கு முன் "always, usually" வைக்க நினைவில் கொள்ளுங்கள்!';
+        case 'hindi':
+          return 'Adverbs of Frequency बताते हैं कि कोई काम कितनी बार होता है। ये मुख्य क्रिया (main verb) से ठीक पहले आते हैं।\n• सही वाक्य: "I always practice English in the morning."\n• हिंदी में: "मैं हमेशा सुबह अभ्यास करता हूँ।" Main verb से पहले always, usually का प्रयोग करें!';
+        case 'telugu':
+          return 'ఒక పని ఎంత తరచుగా జరుగుతుందో తెలిపేందుకు Adverbs of Frequency వాడతారు. ఇవి సాధారణంగా ప్రధాన క్రియకు (main verb) ముందే వస్తాయి.\n• సరైనది: "I always practice English in the morning."\n• తెలుగులో: "నేను ఎల్లప్పుడూ ఉదయం సాధన చేస్తాను." Main verb కు ముందుగా వీటిని ఉంచండి!';
+        case 'kannada':
+          return 'ಒಂದು ಕೆಲಸ ಎಷ್ಟು ಬಾರಿ ನಡೆಯುತ್ತದೆ ಎಂಬುದನ್ನು ತಿಳಿಸಲು Adverbs of Frequency ಬಳಸಲಾಗುತ್ತದೆ. ಇವು ಸಾಮಾನ್ಯವಾಗಿ ಮುಖ್ಯ ಕ್ರಿಯಾಪದದ ಮುಂಚೆ ಬರುತ್ತವೆ.\n• ಸರಿಯಾದ ವಾಕ್ಯ: "I always practice English in the morning."\n• ಕನ್ನಡದಲ್ಲಿ: "ನಾನು ಯಾವಾಗಲೂ ಬೆಳಗ್ಗೆ ಅಭ್ಯಾಸ ಮಾಡುತ್ತೇನೆ." Main verb ಗಿಂತ ಮೊದಲು ಇರಿಸಿ!';
+        case 'malayalam':
+        default:
+          return 'Adverbs of Frequency show how often an action happens. They usually go BEFORE the main verb, but AFTER the verb "to be".\n• Correct: "I always practice English in the morning."\n• Correct with "be": "He is usually punctual."\n• In Malayalam: "ഞാൻ എപ്പോഴും രാവിലെ ഇംഗ്ലീഷ് പരിശീലിക്കുന്നു." പ്രധാന ക്രിയയ്ക്ക് (verb) തൊട്ടുമുമ്പായി "always, often, usually" ചേർക്കുക!';
+      }
+    }
+
     switch (lang.toLowerCase()) {
       case 'tamil':
         return 'ஆங்கிலத்தில் வாக்கிய அமைப்பு: எழுவாய் (Subject) + வினைச்சொல் (Verb) + செயப்படுபொருள் (Object).\n• சரியான வாக்கியம்: "She reads books."\n• தமிழில்: "அவள் புத்தகம் படிக்கிறாள்" (Subject + Object + Verb). ஆங்கிலத்தில் பேசுவதற்கு முன் வினையை (Verb) பொருளுக்கு முன்னால் வைக்க நினைவில் கொள்ளுங்கள்!';
@@ -182,6 +211,22 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   }
 
   String _getStorySummary(String lang) {
+    if (widget.day == 2) {
+      switch (lang.toLowerCase()) {
+        case 'tamil':
+          return '💡 நீதி: "நமது பழக்கவழக்கங்களே நமது எதிர்காலத்தை உருவாக்குகின்றன." தினமும் விடாமல் செய்யும் சிறிய பயிற்சியே மாபெரும் வெற்றியைத் தரும்.';
+        case 'hindi':
+          return '💡 सीख: "हमारी आदतें ही हमारा भविष्य तय करती हैं।" प्रतिदिन का छोटा लेकिन अटूट अभ्यास ही महान सफलता की कुंजी है।';
+        case 'telugu':
+          return '💡 నీతి: "మన అలవాట్లే మన భవిష్యత్తును నిర్ణయిస్తాయి." ప్రతిరోజూ చేసే క్రమశిక్షణతో కూడిన సాధనే గొప్ప ఫలితాన్ని ఇస్తుంది.';
+        case 'kannada':
+          return '💡 ನೀತಿ: "ನಮ್ಮ ಅಭ್ಯಾಸಗಳೇ ನಮ್ಮ ಭವಿಷ್ಯವನ್ನು ನಿರ್ಧರಿಸುತ್ತವೆ." ಪ್ರತಿದಿನ ಮಾಡುವ ಸಣ್ಣ ಸತತ ಪ್ರಯತ್ನವೇ ದೊಡ್ಡ ಯಶಸ್ಸಿಗೆ ಕಾರಣವಾಗುತ್ತದೆ.';
+        case 'malayalam':
+        default:
+          return '💡 സന്ദേശം: "നമ്മുടെ ശീലങ്ങളാണ് നമ്മുടെ ഭാവിയെ നിർണയിക്കുന്നത്." ദിവസേനയുള്ള ചെറിയ ചിട്ടയായ പരിശീലനം വലിയ മാറ്റങ്ങൾ സൃഷ്ടിക്കും.';
+      }
+    }
+
     switch (lang.toLowerCase()) {
       case 'tamil':
         return '💡 நீதி: நமது ஆங்கிலப் பயிற்சி மூங்கில் விதை போன்றது. ஆரம்பத்தில் வெளியே தெரியாவிட்டாலும் உள்ளுக்குள் ஆழமான வேர்கள் உருவாகின்றன. 90 நாட்கள் தொடர் பயிற்சியால் உங்கள் சரளத்தன்மை வானளவிற்கு உயரும்.';
@@ -205,6 +250,133 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   }
 
   void _loadVocabForDay() {
+    if (widget.day == 2) {
+      // 10 high-impact vocabulary words for Day 2 (Habits & Daily Routines) with Multilingual translations
+      _vocabList = const [
+        DailyVocabItem(
+          word: 'Routine',
+          partOfSpeech: 'noun',
+          definition: 'A sequence of actions regularly followed.',
+          malayalamMeaning: 'നിത്യകർമ്മം / ചിട്ടയായ ശീലം',
+          tamilMeaning: 'வழக்கமான நடைமுறை',
+          hindiMeaning: 'दिनचर्या / नियम',
+          teluguMeaning: 'దినచర్య / నిత్యకృత్యం',
+          kannadaMeaning: 'ದಿನಚರಿ / ವಾಡಿಕೆ',
+          exampleSentence: 'A morning routine gives you focus for the entire day.',
+          phonetic: '/ruːˈtiːn/',
+        ),
+        DailyVocabItem(
+          word: 'Habit',
+          partOfSpeech: 'noun',
+          definition: 'A settled or regular tendency or practice.',
+          malayalamMeaning: 'ശീലം / പതിവ്',
+          tamilMeaning: 'பழக்கம் / வழக்கம்',
+          hindiMeaning: 'आदत / स्वभाव',
+          teluguMeaning: 'అలవాటు',
+          kannadaMeaning: 'ಅಭ್ಯಾಸ / ರೂಢಿ',
+          exampleSentence: 'Speaking English daily will soon become a natural habit.',
+          phonetic: '/ˈhæb.ɪt/',
+        ),
+        DailyVocabItem(
+          word: 'Chronological',
+          partOfSpeech: 'adjective',
+          definition: 'Arranged in the order of time of occurrence.',
+          malayalamMeaning: 'കാലക്രമത്തിലുള്ള',
+          tamilMeaning: 'காலவரிசைப்படி',
+          hindiMeaning: 'कालक्रमानुसार',
+          teluguMeaning: 'కాలక్రమానుసారమైన',
+          kannadaMeaning: 'ಕಾಲಾನುಕ್ರಮದ',
+          exampleSentence: 'Describe your daily activities in chronological order.',
+          phonetic: '/ˌkrɒn.əˈlɒdʒ.ɪ.kəl/',
+        ),
+        DailyVocabItem(
+          word: 'Frequently',
+          partOfSpeech: 'adverb',
+          definition: 'Regularly or with little time in between; often.',
+          malayalamMeaning: 'അടിക്കടി / പലപ്പോഴും',
+          tamilMeaning: 'அடிக்கடி',
+          hindiMeaning: 'बार-बार / अक्सर',
+          teluguMeaning: 'తరచుగా',
+          kannadaMeaning: 'ಆಗಾಗ್ಗೆ / ಪದೇ ಪದೇ',
+          exampleSentence: 'He frequently speaks with language mates to gain fluency.',
+          phonetic: '/ˈfriː.kwənt.li/',
+        ),
+        DailyVocabItem(
+          word: 'Seldom',
+          partOfSpeech: 'adverb',
+          definition: 'Not often; rarely.',
+          malayalamMeaning: 'വല്ലപ്പോഴും മാത്രം / അപൂർവ്വമായി',
+          tamilMeaning: 'எப்போதாவது / அரிதாக',
+          hindiMeaning: 'कभी-कभार / शायद ही कभी',
+          teluguMeaning: 'అరుదుగా',
+          kannadaMeaning: 'ಅಪರೂಪವಾಗಿ',
+          exampleSentence: 'Confident speakers seldom worry about little mistakes.',
+          phonetic: '/ˈsel.dəm/',
+        ),
+        DailyVocabItem(
+          word: 'Accomplish',
+          partOfSpeech: 'verb',
+          definition: 'To achieve or complete successfully.',
+          malayalamMeaning: 'നിർവഹിക്കുക / പൂർത്തിയാക്കുക',
+          tamilMeaning: 'சாதித்தல் / நிறைவேற்றுதல்',
+          hindiMeaning: 'पूरा करना / हासिल करना',
+          teluguMeaning: 'సాధించు / పూర్తిచేయు',
+          kannadaMeaning: 'ಸಾಧಿಸು / ಪೂರೈಸು',
+          exampleSentence: 'You will accomplish great fluency in 90 days.',
+          phonetic: '/əˈkʌm.plɪʃ/',
+        ),
+        DailyVocabItem(
+          word: 'Schedule',
+          partOfSpeech: 'noun',
+          definition: 'A plan of events or actions with specified times.',
+          malayalamMeaning: 'സമയപ്പട്ടിക / നിശ്ചയിച്ച സമയം',
+          tamilMeaning: 'கால அட்டவணை',
+          hindiMeaning: 'समय सारणी / योजना',
+          teluguMeaning: 'సమయ పట్టిక',
+          kannadaMeaning: 'ವೇಳಾಪಟ್ಟಿ',
+          exampleSentence: 'Set a daily schedule for reading and speaking practice.',
+          phonetic: '/ˈʃedʒ.uːl/',
+        ),
+        DailyVocabItem(
+          word: 'Prioritize',
+          partOfSpeech: 'verb',
+          definition: 'To designate or treat as more important than other things.',
+          malayalamMeaning: 'മുൻഗണന നൽകുക',
+          tamilMeaning: 'முன்னுரிமை அளித்தல்',
+          hindiMeaning: 'प्राथमिकता देना',
+          teluguMeaning: 'ప్రాధాన్యత ఇచ్చు',
+          kannadaMeaning: 'ಆದ್ಯತೆ ನೀಡು',
+          exampleSentence: 'Prioritize speaking over silent grammar memorization.',
+          phonetic: '/praɪˈɒr.ɪ.taɪz/',
+        ),
+        DailyVocabItem(
+          word: 'Productive',
+          partOfSpeech: 'adjective',
+          definition: 'Achieving or producing a significant or useful result.',
+          malayalamMeaning: 'ഫലപ്രദമായ / കാര്യക്ഷമമായ',
+          tamilMeaning: 'பയനുള്ള / ஆக்கபூர்வமான',
+          hindiMeaning: 'उत्पादक / फलदायी',
+          teluguMeaning: 'ఉత్పాదకమైన / ఉపయోగకరమైన',
+          kannadaMeaning: 'ಉತ್ಪಾದಕ / ಪ್ರಯೋಜನಕಾರಿ',
+          exampleSentence: 'Joining the audio call made my evening truly productive.',
+          phonetic: '/prəˈdʌk.tɪv/',
+        ),
+        DailyVocabItem(
+          word: 'Reflect',
+          partOfSpeech: 'verb',
+          definition: 'To think deeply or carefully about something.',
+          malayalamMeaning: 'ചിന്തിച്ചുനോക്കുക / വിലയിരുത്തുക',
+          tamilMeaning: 'ஆழமாக யோசித்தல் / பரிசீலித்தல்',
+          hindiMeaning: 'विचार करना / मंथन करना',
+          teluguMeaning: 'ఆలోచించు / సమీక్షించు',
+          kannadaMeaning: 'ಆಲೋಚಿಸು / ಪರಿಶೀಲಿಸು',
+          exampleSentence: 'Reflect on what you learned at the end of each mission.',
+          phonetic: '/rɪˈflekt/',
+        ),
+      ];
+      return;
+    }
+
     // 10 high-impact vocabulary words for Day 1 with Multilingual translations
     _vocabList = const [
       DailyVocabItem(
@@ -1414,7 +1586,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                     const Icon(Icons.school_rounded, color: Colors.amberAccent, size: 16),
                     const SizedBox(width: 6),
                     Text(
-                      'Rule 1: Sentence Structure (S + V + O)',
+                      widget.day == 2
+                          ? 'Rule 2: Adverbs of Frequency (Always, Usually, Often...)'
+                          : 'Rule 1: Sentence Structure (S + V + O)',
                       style: GoogleFonts.outfit(color: Colors.amberAccent, fontWeight: FontWeight.bold, fontSize: 13),
                     ),
                   ],
@@ -1445,14 +1619,16 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               children: [
                 Row(
                   children: [
-                    const Text('🎋', style: TextStyle(fontSize: 18)),
+                    Text(widget.day == 2 ? '⏰' : '🎋', style: const TextStyle(fontSize: 18)),
                     const SizedBox(width: 6),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'DAY 1 STORY: THE SEED OF CONFIDENCE',
+                            widget.day == 2
+                                ? 'DAY 2 STORY: THE MORNING RITUAL OF CHAMPIONS'
+                                : 'DAY 1 STORY: THE SEED OF CONFIDENCE',
                             style: GoogleFonts.outfit(
                               color: const Color(0xFF00E5FF),
                               fontWeight: FontWeight.w900,
@@ -1460,7 +1636,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                             ),
                           ),
                           Text(
-                            'Aloud Reading & Pronunciation Practice',
+                            widget.day == 2
+                                ? 'The Power of Habits & Morning Routine Practice'
+                                : 'Aloud Reading & Pronunciation Practice',
                             style: GoogleFonts.inter(color: Colors.white54, fontSize: 10.5),
                           ),
                         ],
@@ -1473,13 +1651,15 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                         size: 22,
                       ),
                       tooltip: _isStorySpeaking ? 'Stop Reading' : 'Read Aloud (TTS)',
-                      onPressed: () => _speakStory(_kDay1StoryText),
+                      onPressed: () => _speakStory(widget.day == 2 ? _kDay2StoryText : _kDay1StoryText),
                     ),
                   ],
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  '"A young student once stood by a tall bamboo tree, hesitant to practice speaking English. He was afraid of making mistakes in front of others. A wise mentor approached him: \'For four years, the bamboo roots grow deep underground in silence. Then, in the fifth year, it shoots up eighty feet into the sky! Your daily English practice is just like that seed...\'"',
+                  widget.day == 2
+                      ? '"Marcus was an ambitious learner who struggled to find time for English. Every evening he felt exhausted and postponed his speaking practice to tomorrow. One day, his grandfather handed him an empty notebook with golden edges: \'We do not decide our future. We decide our daily habits, and our habits decide our future...\'"'
+                      : '"A young student once stood by a tall bamboo tree, hesitant to practice speaking English. He was afraid of making mistakes in front of others. A wise mentor approached him: \'For four years, the bamboo roots grow deep underground in silence. Then, in the fifth year, it shoots up eighty feet into the sky! Your daily English practice is just like that seed...\'"',
                   style: GoogleFonts.inter(
                     color: Colors.white,
                     fontSize: 12,
@@ -1630,7 +1810,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'DAY ${widget.day} STORY: THE SEED OF CONFIDENCE',
+                            widget.day == 2
+                                ? 'DAY 2 STORY: THE MORNING RITUAL OF CHAMPIONS'
+                                : 'DAY 1 STORY: THE SEED OF CONFIDENCE',
                             style: GoogleFonts.outfit(
                               color: Colors.white,
                               fontWeight: FontWeight.w900,
@@ -1639,7 +1821,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                             ),
                           ),
                           Text(
-                            'Authentic Short Story Reading & Pronunciation Guide',
+                            widget.day == 2
+                                ? 'The Power of Habits & Morning Routine Guide'
+                                : 'Authentic Short Story Reading & Pronunciation Guide',
                             style: GoogleFonts.inter(color: Colors.white60, fontSize: 11),
                           ),
                         ],
@@ -1682,7 +1866,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                                 setState(() => _isStorySpeaking = false);
                               }
                             });
-                            _tts.speak(_kDay1StoryText);
+                            _tts.speak(widget.day == 2 ? _kDay2StoryText : _kDay1StoryText);
                           }
                         },
                         icon: Icon(
@@ -1737,7 +1921,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                             border: Border.all(color: Colors.white12),
                           ),
                           child: Text(
-                            _kDay1StoryFormatted,
+                            widget.day == 2 ? _kDay2StoryFormatted : _kDay1StoryFormatted,
                             style: GoogleFonts.inter(
                               color: Colors.white,
                               fontSize: 14,
@@ -1850,16 +2034,24 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           ),
           const SizedBox(height: 10),
           Text(
-            'Q: Which sentence follows the correct English "Subject + Verb + Object" order?',
+            widget.day == 2
+                ? 'Q: Which sentence uses the adverb of frequency correctly?'
+                : 'Q: Which sentence follows the correct English "Subject + Verb + Object" order?',
             style: GoogleFonts.outfit(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 10),
           ...List.generate(3, (i) {
-            final options = [
-              'She reads books diligently.',
-              'She books reads diligently.',
-              'Reads she books diligently.',
-            ];
+            final options = widget.day == 2
+                ? [
+                    'I always practice speaking in the morning.',
+                    'I practice always speaking in the morning.',
+                    'Always I practice in the morning speaking.',
+                  ]
+                : [
+                    'She reads books diligently.',
+                    'She books reads diligently.',
+                    'Reads she books diligently.',
+                  ];
             final isCorrect = i == 0;
             final isSelected = _selectedQuizAnswer == i;
 
