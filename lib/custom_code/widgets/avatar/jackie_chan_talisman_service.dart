@@ -438,7 +438,7 @@ class _JackieChanTalismanVaultModalState extends State<JackieChanTalismanVaultMo
                                   Row(
                                     children: [
                                       Text(
-                                        '${t.zodiacAnimal} (${t.malName})',
+                                        t.zodiacAnimal,
                                         style: GoogleFonts.outfit(
                                           color: isUnlocked ? Colors.white : Colors.white54,
                                           fontWeight: FontWeight.bold,
@@ -501,10 +501,11 @@ class _JackieChanTalismanVaultModalState extends State<JackieChanTalismanVaultMo
                                   ),
                                   const SizedBox(height: 3),
                                   Text(
-                                    t.malDescription,
+                                    t.powerDescription,
                                     style: GoogleFonts.inter(
-                                      color: Colors.white54,
-                                      fontSize: 10,
+                                      color: Colors.white70,
+                                      fontSize: 10.5,
+                                      height: 1.3,
                                     ),
                                   ),
                                   if (isUnlocked && !isEquipped) ...[

@@ -144,13 +144,10 @@ class PocketDefenseTrapModal extends StatefulWidget {
   State<PocketDefenseTrapModal> createState() => _PocketDefenseTrapModalState();
 }
 
-class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal> {
   List<HouseShieldQuestion> _questions = [];
   List<String> _activeTraps = [];
   int _selectedTrapIdx = 0;
-  HouseDefenseStatus _houseStatus = const HouseDefenseStatus();
   bool _isLoading = true;
   bool _isBanned = false;
   bool _isUnderPresidentInspection = false;
@@ -158,14 +155,7 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
     _loadData();
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
   }
 
   Future<void> _loadData() async {
@@ -176,7 +166,6 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
     final underInspection = await PocketFortressDefenseService.isUnderPresidentInspection('me');
     if (mounted) {
       setState(() {
-        _houseStatus = status;
         _questions = qList;
         _activeTraps = activeTraps;
         if (_selectedTrapIdx >= activeTraps.length) {
@@ -946,8 +935,6 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: isCorrect ? const Color(0xFF059669).withValues(alpha: 0.2) : Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: isCorrect ? const Color(0xFF10B981) : Colors.white10),
       ),
       child: Row(
         children: [
@@ -964,133 +951,7 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
   @override
   Widget build(BuildContext context) {
     final maxAllowed = PocketFortressDefenseService.getMaxQuestionsForStage(widget.userDay);
-
-    return Container(
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.88,
-      ),
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Drag Handle
-          Center(
-            child: Container(
-              width: 44,
-              height: 4.5,
-              decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(3)),
-            ),
-          ),
-          const SizedBox(height: 14),
-
-          // Header
-          Row(
-            children: [
-              const Text('🏰', style: TextStyle(fontSize: 26)),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'POCKET FORTRESS DEFENSE VAULT',
-                      style: GoogleFonts.outfit(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 0.6,
-                      ),
-                    ),
-                    Text(
-                      'Day ${widget.userDay} • $maxAllowed Max Shield Question Slots • Iron Dome & Army',
-                      style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 11),
-                    ),
-                  ],
-                ),
-              ),
-              InkWell(
-                onTap: () => PocketDefenseAdminModal.show(context),
-                borderRadius: BorderRadius.circular(10),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF854D0E), Color(0xFF713F12)],
-                    ),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.amber.shade400, width: 1.2),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.amber.withValues(alpha: 0.2),
-                        blurRadius: 6,
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      const Text('⚖️', style: TextStyle(fontSize: 13)),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Admin Court',
-                        style: GoogleFonts.outfit(
-                          color: Colors.amber.shade200,
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(width: 4),
-              IconButton(
-                icon: const Icon(Icons.close_rounded, color: Colors.white70),
-                onPressed: () => Navigator.pop(context),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-
-          // Tab Bar
-          TabBar(
-            controller: _tabController,
-            indicatorColor: const Color(0xFF0284C7),
-            indicatorWeight: 3,
-            labelColor: const Color(0xFF38BDF8),
-            unselectedLabelColor: Colors.white60,
-            labelStyle: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 12),
-            tabs: const [
-              Tab(text: '🛡️ Shield Slots'),
-              Tab(text: '⚡ Iron Dome & Army'),
-              Tab(text: '🎩 President Decree'),
-            ],
-          ),
-          const SizedBox(height: 12),
-
-          if (_isLoading)
-            const Expanded(child: Center(child: CircularProgressIndicator()))
-          else
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  _buildShieldQuestionsTab(maxAllowed),
-                  _buildIronDomeAndArmyTab(),
-                  _buildPresidentDecreeTab(),
-                ],
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  // ==========================================
-  // TAB 1: SHIELD QUESTIONS (STAGE-SCALED)
-  // ==========================================
-  Widget _buildShieldQuestionsTab(int maxAllowed) {
     final questionsPerGame = PocketFortressDefenseService.getQuestionsPerGameForStage(widget.userDay);
-    final activeCount = _activeTraps.length;
     final selectedTrapId = _activeTraps.isNotEmpty
         ? _activeTraps[_selectedTrapIdx.clamp(0, _activeTraps.length - 1)]
         : 'vocab_gate';
@@ -1104,597 +965,493 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
       return q.trapType == selectedTrapId || q.category == selectedTemplate.category;
     }).toList();
 
-    return Column(
-      children: [
-        // Banned Notice Banner if house is banned
-        if (_isBanned)
-          Container(
-            padding: const EdgeInsets.all(12),
-            margin: const EdgeInsets.only(bottom: 10),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF7F1D1D), Color(0xFF450A0A)],
+    return SafeArea(
+      child: Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.90,
+        ),
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Drag Handle
+            Center(
+              child: Container(
+                width: 44,
+                height: 4.5,
+                decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(3)),
               ),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: Colors.redAccent, width: 1.5),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    const Text('🚫', style: TextStyle(fontSize: 22)),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'HOUSE CONDEMNED BY PRESIDENTIAL DECREE',
-                            style: GoogleFonts.outfit(
-                              color: Colors.red.shade200,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          const Text(
-                            'Your house was reported via President Call and audited. Due to fraudulent/fake defense traps, your house is banned. You must demolish and rebuild to play again.',
-                            style: TextStyle(color: Colors.white70, fontSize: 10.5),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.amberAccent,
-                      foregroundColor: Colors.black,
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    ),
-                    onPressed: _showRebuildConfirmDialog,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text('🔨', style: TextStyle(fontSize: 14)),
-                        const SizedBox(width: 6),
-                        Text(
-                          'Demolish & Rebuild Fortress from Day 1',
-                          style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 11.5),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+            const SizedBox(height: 12),
 
-        // ⚖️ President Call Pending Inspection Banner
-        if (_isUnderPresidentInspection && !_isBanned)
-          Container(
-            padding: const EdgeInsets.all(12),
-            margin: const EdgeInsets.only(bottom: 10),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF78350F), Color(0xFF451A03)],
-              ),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: Colors.amberAccent, width: 1.5),
-            ),
-            child: Row(
+            // Header
+            Row(
               children: [
-                const Text('⚖️', style: TextStyle(fontSize: 22)),
+                const Text('🛡️', style: TextStyle(fontSize: 26)),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'PRESIDENT CALL ACTIVE • INSPECTION PENDING',
+                        'ADD DEFENSE SHIELD',
                         style: GoogleFonts.outfit(
-                          color: Colors.amber.shade200,
-                          fontSize: 12,
+                          color: Colors.white,
+                          fontSize: 16,
                           fontWeight: FontWeight.w900,
+                          letterSpacing: 0.5,
                         ),
                       ),
-                      const SizedBox(height: 2),
-                      const Text(
-                        'A raider filed a President Call against your house. President Zoyarex is reviewing your defense questions for fair play!',
-                        style: TextStyle(color: Colors.white70, fontSize: 10.5),
+                      Text(
+                        'Day ${widget.userDay} • Armed: ${_questions.length} / $maxAllowed Slots',
+                        style: TextStyle(color: Colors.white.withValues(alpha: 0.65), fontSize: 11.5),
                       ),
                     ],
                   ),
                 ),
-              ],
-            ),
-          ),
-
-        // 🎓 Interactive Tutorial Demo Banner
-        InkWell(
-          onTap: _showDemoTutorialModal,
-          borderRadius: BorderRadius.circular(14),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            margin: const EdgeInsets.only(bottom: 8),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF064E3B), Color(0xFF0F172A)],
-              ),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.5)),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF10B981).withValues(alpha: 0.15),
-                  blurRadius: 8,
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                const Text('🎓', style: TextStyle(fontSize: 22)),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Text(
-                            'SELF-BUILT DEFENSE DEMO & RULES',
-                            style: GoogleFonts.outfit(
-                              color: const Color(0xFF34D399),
-                              fontSize: 11.5,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                          const Spacer(),
-                          Text(
-                            'TAP DEMO',
-                            style: GoogleFonts.outfit(
-                              color: const Color(0xFF6EE7B7),
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 2),
-                      const Text(
-                        'You are solely responsible for your house defense. Tap to see the model tricky question demo and slot progression rules!',
-                        style: TextStyle(color: Colors.white70, fontSize: 10),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 6),
-                const Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFF34D399), size: 13),
-              ],
-            ),
-          ),
-        ),
-
-        // Fair-Play Advisory Banner
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          margin: const EdgeInsets.only(bottom: 8),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1E293B).withValues(alpha: 0.6),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
-          ),
-          child: Row(
-            children: [
-              const Text('⚖️', style: TextStyle(fontSize: 16)),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  'Fair Play: Provide valid English learning questions. Opponents can report invalid questions, and reported houses will be banned upon Admin review!',
-                  style: GoogleFonts.outfit(
-                    color: Colors.amber.shade200,
-                    fontSize: 10.5,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-
-        // Stage & Quota Header
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          margin: const EdgeInsets.only(bottom: 8),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFF1E1B4B), Color(0xFF0F172A)],
-            ),
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: const Color(0xFF6366F1).withValues(alpha: 0.35)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Text(
-                    '🛡️ STAGE ${widget.userDay} DEFENSE SYSTEM',
-                    style: GoogleFonts.outfit(
-                      color: const Color(0xFF818CF8),
-                      fontSize: 11.5,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                  const Spacer(),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                InkWell(
+                  onTap: () => PocketDefenseAdminModal.show(context),
+                  borderRadius: BorderRadius.circular(10),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFFD700).withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
-                    ),
-                    child: Text(
-                      '${_questions.length} / $maxAllowed Total Armed',
-                      style: GoogleFonts.outfit(
-                        color: const Color(0xFFFFD700),
-                        fontWeight: FontWeight.w900,
-                        fontSize: 11,
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF854D0E), Color(0xFF713F12)],
                       ),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: Colors.amber.shade400, width: 1.2),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 6),
-              Row(
-                children: [
-                  _buildQuotaBadge('🏰 Active Gates', '$activeCount / ${PocketFortressDefenseService.getUnlockedGamesCountForStage(widget.userDay)}'),
-                  const SizedBox(width: 8),
-                  _buildQuotaBadge('🎯 Target / Gate', '$questionsPerGame Qs'),
-                  const SizedBox(width: 8),
-                  _buildQuotaBadge('⏱️ Challenge Time', '30s / Question'),
-                ],
-              ),
-            ],
-          ),
-        ),
-
-        // Horizontal Gate Selector Bar
-        SizedBox(
-          height: 64,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            itemCount: _activeTraps.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 8),
-            itemBuilder: (context, i) {
-              final trapId = _activeTraps[i];
-              final tmpl = kDefenseTrapTemplates.firstWhere(
-                (t) => t.id == trapId,
-                orElse: () => kDefenseTrapTemplates[0],
-              );
-              final isSelected = i == _selectedTrapIdx;
-              final gateQCount = _questions.where((q) => q.trapType == trapId || q.category == tmpl.category).length;
-
-              return InkWell(
-                onTap: () {
-                  setState(() => _selectedTrapIdx = i);
-                  HapticFeedback.selectionClick();
-                },
-                borderRadius: BorderRadius.circular(12),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? tmpl.themeColor.withValues(alpha: 0.22)
-                        : const Color(0xFF1E293B).withValues(alpha: 0.7),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: isSelected ? tmpl.themeColor : Colors.white12,
-                      width: isSelected ? 1.8 : 1,
-                    ),
-                    boxShadow: isSelected
-                        ? [
-                            BoxShadow(
-                              color: tmpl.themeColor.withValues(alpha: 0.3),
-                              blurRadius: 8,
-                              spreadRadius: 1,
-                            )
-                          ]
-                        : null,
-                  ),
-                  child: Row(
-                    children: [
-                      Text(tmpl.icon, style: const TextStyle(fontSize: 22)),
-                      const SizedBox(width: 8),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Row(
-                            children: [
-                              Text(
-                                'GATE ${i + 1}: ${tmpl.title}',
-                                style: GoogleFonts.outfit(
-                                  color: isSelected ? Colors.white : Colors.white70,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                              const SizedBox(width: 4),
-                              GestureDetector(
-                                onTap: () => _showChangeTemplateDialog(i),
-                                child: Container(
-                                  padding: const EdgeInsets.all(2),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white10,
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: const Icon(Icons.swap_horiz_rounded, size: 14, color: Colors.cyanAccent),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            '$gateQCount / $questionsPerGame Qs Armed',
-                            style: TextStyle(
-                              color: gateQCount >= questionsPerGame ? const Color(0xFF10B981) : Colors.amber.shade300,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-        const SizedBox(height: 10),
-
-        // Selected Gate Management Card
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          decoration: BoxDecoration(
-            color: selectedTemplate.themeColor.withValues(alpha: 0.08),
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: selectedTemplate.themeColor.withValues(alpha: 0.3)),
-          ),
-          child: Row(
-            children: [
-              Text(selectedTemplate.icon, style: const TextStyle(fontSize: 24)),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'GATE ${_selectedTrapIdx + 1}: ${selectedTemplate.title}',
-                      style: GoogleFonts.outfit(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    Text(
-                      selectedTemplate.description,
-                      style: const TextStyle(color: Colors.white60, fontSize: 10),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-              ),
-              // Change template icon
-              TextButton.icon(
-                style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  backgroundColor: Colors.white10,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                ),
-                icon: const Icon(Icons.tune_rounded, size: 14, color: Colors.amber),
-                label: const Text('Change', style: TextStyle(color: Colors.amber, fontSize: 11)),
-                onPressed: () => _showChangeTemplateDialog(_selectedTrapIdx),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 8),
-
-        // Questions List for this Gate
-        Expanded(
-          child: trapQuestions.isEmpty
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                    child: Row(
                       children: [
-                        Text(selectedTemplate.icon, style: const TextStyle(fontSize: 40)),
-                        const SizedBox(height: 8),
+                        const Text('⚖️', style: TextStyle(fontSize: 12)),
+                        const SizedBox(width: 4),
                         Text(
-                          'No Defense Questions Armed for ${selectedTemplate.title}',
-                          style: GoogleFonts.outfit(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 4),
-                        const Text(
-                          'You are solely responsible for defending your house! Design tricky English questions with subtle rules so attackers cannot easily breach your gates.',
-                          style: TextStyle(color: Colors.white60, fontSize: 11, height: 1.4),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 14),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            OutlinedButton.icon(
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: const Color(0xFF34D399),
-                                side: const BorderSide(color: Color(0xFF34D399)),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                              ),
-                              icon: const Icon(Icons.school_rounded, size: 15),
-                              label: Text(
-                                'VIEW DEMO TUTORIAL',
-                                style: GoogleFonts.outfit(fontSize: 10.5, fontWeight: FontWeight.bold),
-                              ),
-                              onPressed: _showDemoTutorialModal,
-                            ),
-                            const SizedBox(width: 8),
-                            if (_questions.length < maxAllowed)
-                              ElevatedButton.icon(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: selectedTemplate.themeColor,
-                                  foregroundColor: Colors.white,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                                ),
-                                icon: const Icon(Icons.add_moderator_rounded, size: 15),
-                                label: Text(
-                                  'CRAFT QUESTION',
-                                  style: GoogleFonts.outfit(fontSize: 10.5, fontWeight: FontWeight.bold),
-                                ),
-                                onPressed: () => _openAddEditDialog(preselectedTrapType: selectedTrapId),
-                              ),
-                          ],
+                          'Admin Panel',
+                          style: GoogleFonts.outfit(
+                            color: Colors.amber.shade200,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ],
                     ),
                   ),
-                )
-              : ListView.builder(
-                  itemCount: trapQuestions.length,
-                  itemBuilder: (context, i) {
-                    final q = trapQuestions[i];
-                    final originalIdx = _questions.indexOf(q);
+                ),
+                const SizedBox(width: 4),
+                IconButton(
+                  icon: const Icon(Icons.close_rounded, color: Colors.white70),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
 
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 8),
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF0F172A),
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: selectedTemplate.themeColor.withValues(alpha: 0.3)),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: selectedTemplate.themeColor.withValues(alpha: 0.2),
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: Text(
-                                  'TRAP #${i + 1} (${q.category.toUpperCase()})',
-                                  style: GoogleFonts.outfit(
-                                    color: selectedTemplate.themeColor,
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
+            if (_isLoading)
+              const Expanded(child: Center(child: CircularProgressIndicator()))
+            else
+              Expanded(
+                child: ListView(
+                  children: [
+                    // Banned Notice Banner if house is banned
+                    if (_isBanned)
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        margin: const EdgeInsets.only(bottom: 10),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF7F1D1D), Color(0xFF450A0A)],
+                          ),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: Colors.redAccent, width: 1.5),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                const Text('🚫', style: TextStyle(fontSize: 22)),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'HOUSE CONDEMNED BY ADMIN',
+                                        style: GoogleFonts.outfit(
+                                          color: Colors.red.shade200,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w900,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      const Text(
+                                        'Defense questions were flagged for cheating. Rebuild to start clean with authentic English challenges.',
+                                        style: TextStyle(color: Colors.white70, fontSize: 10.5),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                              ),
-                              const SizedBox(width: 6),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF0284C7).withValues(alpha: 0.2),
-                                  borderRadius: BorderRadius.circular(6),
-                                  border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.4)),
+                              ],
+                            ),
+                            const SizedBox(height: 10),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.amberAccent,
+                                  foregroundColor: Colors.black,
+                                  padding: const EdgeInsets.symmetric(vertical: 8),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                                 ),
+                                onPressed: _showRebuildConfirmDialog,
                                 child: Text(
-                                  '${DefenseGameFormat.getIcon(q.gameFormat)} ${DefenseGameFormat.getTitle(q.gameFormat)}',
-                                  style: GoogleFonts.outfit(
-                                    color: const Color(0xFF38BDF8),
-                                    fontSize: 9.5,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                                  'Demolish & Rebuild Fortress from Day 1',
+                                  style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 11.5),
                                 ),
                               ),
-                              const SizedBox(width: 8),
-                              const Text('🏅 President Seal', style: TextStyle(color: Color(0xFF10B981), fontSize: 10.5, fontWeight: FontWeight.bold)),
-                              const Spacer(),
-                              IconButton(
-                                icon: const Icon(Icons.edit, color: Colors.amber, size: 18),
-                                onPressed: () => _openAddEditDialog(
-                                  editIndex: originalIdx != -1 ? originalIdx : null,
-                                  preselectedTrapType: selectedTrapId,
-                                ),
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 18),
-                                onPressed: () {
-                                  setState(() {
-                                    if (originalIdx != -1) {
-                                      _questions.removeAt(originalIdx);
-                                    } else {
-                                      _questions.remove(q);
-                                    }
-                                  });
-                                  PocketFortressDefenseService.saveShieldQuestions(_questions);
-                                },
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            q.question,
-                            style: GoogleFonts.outfit(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Correct: ${q.options[q.correctIndex]}',
-                            style: TextStyle(color: Colors.greenAccent.shade400, fontSize: 11.5, fontWeight: FontWeight.bold),
-                          ),
-                          if (q.explanation.isNotEmpty) ...[
-                            const SizedBox(height: 2),
-                            Text(
-                              '💡 ${q.explanation}',
-                              style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 10),
                             ),
                           ],
+                        ),
+                      ),
+
+                    // Inspection Banner
+                    if (_isUnderPresidentInspection && !_isBanned)
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        margin: const EdgeInsets.only(bottom: 10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF78350F).withValues(alpha: 0.8),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.amberAccent, width: 1.2),
+                        ),
+                        child: Row(
+                          children: [
+                            const Text('⚖️', style: TextStyle(fontSize: 18)),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'A raider filed an Admin review on your defense questions. Audit in progress.',
+                                style: GoogleFonts.outfit(color: Colors.amber.shade200, fontSize: 11),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                    // Quick Stats & Info Bar
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      margin: const EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1E293B),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.25)),
+                      ),
+                      child: Row(
+                        children: [
+                          _buildQuotaBadge('🛡️ Slots Armed', '${_questions.length} / $maxAllowed'),
+                          const SizedBox(width: 8),
+                          _buildQuotaBadge('🎯 Target', '$questionsPerGame Qs/Gate'),
+                          const SizedBox(width: 8),
+                          _buildQuotaBadge('⏱️ Challenge', '30s / Question'),
                         ],
                       ),
-                    );
-                  },
-                ),
-        ),
-        const SizedBox(height: 6),
+                    ),
 
-        // Add Button for This Gate (Gated by 1 Day = 1 Slot Rule)
-        SizedBox(
-          width: double.infinity,
-          height: 46,
-          child: ElevatedButton.icon(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: _questions.length < maxAllowed ? selectedTemplate.themeColor : const Color(0xFF334155),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-            icon: Icon(_questions.length < maxAllowed ? Icons.add_moderator_rounded : Icons.lock_outline_rounded, size: 18),
-            label: Text(
-              _questions.length < maxAllowed
-                  ? 'CRAFT DEFENSE QUESTION (${_questions.length}/$maxAllowed SLOTS USED)'
-                  : 'ALL $maxAllowed SLOTS ARMED • COMPLETE DAY ${widget.userDay + 1} TO EXPAND',
-              style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 11.5),
-            ),
-            onPressed: _questions.length < maxAllowed
-                ? () => _openAddEditDialog(preselectedTrapType: selectedTrapId)
-                : null,
-          ),
+                    // Gate Selector Title
+                    Row(
+                      children: [
+                        Text(
+                          'SELECT GATE / GAME TEMPLATE',
+                          style: GoogleFonts.outfit(
+                            color: Colors.white70,
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                        const Spacer(),
+                        InkWell(
+                          onTap: _showDemoTutorialModal,
+                          borderRadius: BorderRadius.circular(6),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            child: Row(
+                              children: [
+                                const Text('🎓', style: TextStyle(fontSize: 12)),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'Demo Tutorial',
+                                  style: GoogleFonts.outfit(
+                                    color: const Color(0xFF34D399),
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+
+                    // Horizontal Gate Selector Bar
+                    SizedBox(
+                      height: 58,
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: _activeTraps.length,
+                        separatorBuilder: (_, __) => const SizedBox(width: 8),
+                        itemBuilder: (context, i) {
+                          final trapId = _activeTraps[i];
+                          final tmpl = kDefenseTrapTemplates.firstWhere(
+                            (t) => t.id == trapId,
+                            orElse: () => kDefenseTrapTemplates[0],
+                          );
+                          final isSelected = i == _selectedTrapIdx;
+                          final gateQCount = _questions.where((q) => q.trapType == trapId || q.category == tmpl.category).length;
+
+                          return InkWell(
+                            onTap: () {
+                              setState(() => _selectedTrapIdx = i);
+                              HapticFeedback.selectionClick();
+                            },
+                            borderRadius: BorderRadius.circular(12),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 180),
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? tmpl.themeColor.withValues(alpha: 0.22)
+                                    : const Color(0xFF1E293B).withValues(alpha: 0.7),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: isSelected ? tmpl.themeColor : Colors.white12,
+                                  width: isSelected ? 1.8 : 1,
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Text(tmpl.icon, style: const TextStyle(fontSize: 20)),
+                                  const SizedBox(width: 8),
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        'Gate ${i + 1}: ${tmpl.title}',
+                                        style: GoogleFonts.outfit(
+                                          color: isSelected ? Colors.white : Colors.white70,
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                      ),
+                                      Text(
+                                        '$gateQCount / $questionsPerGame Qs Armed',
+                                        style: TextStyle(
+                                          color: gateQCount >= questionsPerGame ? const Color(0xFF10B981) : Colors.amber.shade300,
+                                          fontSize: 9.5,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(width: 6),
+                                  GestureDetector(
+                                    onTap: () => _showChangeTemplateDialog(i),
+                                    child: Container(
+                                      padding: const EdgeInsets.all(3),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white10,
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: const Icon(Icons.swap_horiz_rounded, size: 14, color: Colors.cyanAccent),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Add Shield Question Button
+                    SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _questions.length < maxAllowed ? selectedTemplate.themeColor : const Color(0xFF334155),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          elevation: _questions.length < maxAllowed ? 4 : 0,
+                        ),
+                        icon: Icon(
+                          _questions.length < maxAllowed ? Icons.add_moderator_rounded : Icons.lock_outline_rounded,
+                          size: 20,
+                        ),
+                        label: Text(
+                          _questions.length < maxAllowed
+                              ? '➕ ADD SHIELD QUESTION (${_questions.length}/$maxAllowed SLOTS)'
+                              : 'ALL $maxAllowed SLOTS ARMED • COMPLETE DAY ${widget.userDay + 1} TO EXPAND',
+                          style: GoogleFonts.outfit(
+                            fontWeight: FontWeight.w900,
+                            fontSize: 12.5,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                        onPressed: _questions.length < maxAllowed
+                            ? () => _openAddEditDialog(preselectedTrapType: selectedTrapId)
+                            : null,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Armed Questions Header
+                    Row(
+                      children: [
+                        Text(
+                          'ARMED QUESTIONS FOR ${selectedTemplate.title.toUpperCase()} (${trapQuestions.length})',
+                          style: GoogleFonts.outfit(
+                            color: Colors.white70,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+
+                    // Questions List
+                    if (trapQuestions.isEmpty)
+                      Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF0F172A),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: Colors.white12),
+                        ),
+                        child: Column(
+                          children: [
+                            Text(selectedTemplate.icon, style: const TextStyle(fontSize: 34)),
+                            const SizedBox(height: 8),
+                            Text(
+                              'No Shield Questions Armed for ${selectedTemplate.title}',
+                              style: GoogleFonts.outfit(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 4),
+                            const Text(
+                              'Tap "+ ADD SHIELD QUESTION" above to arm your gate with a custom English challenge for attackers!',
+                              style: TextStyle(color: Colors.white60, fontSize: 11, height: 1.3),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      )
+                    else
+                      ...trapQuestions.map((q) {
+                        final originalIdx = _questions.indexOf(q);
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 8),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF0F172A),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: selectedTemplate.themeColor.withValues(alpha: 0.3)),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: selectedTemplate.themeColor.withValues(alpha: 0.2),
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Text(
+                                      q.category.toUpperCase(),
+                                      style: GoogleFonts.outfit(
+                                        color: selectedTemplate.themeColor,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF0284C7).withValues(alpha: 0.2),
+                                      borderRadius: BorderRadius.circular(6),
+                                      border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.4)),
+                                    ),
+                                    child: Text(
+                                      '${DefenseGameFormat.getIcon(q.gameFormat)} ${DefenseGameFormat.getTitle(q.gameFormat)}',
+                                      style: GoogleFonts.outfit(
+                                        color: const Color(0xFF38BDF8),
+                                        fontSize: 9.5,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                  const Spacer(),
+                                  IconButton(
+                                    icon: const Icon(Icons.edit, color: Colors.amber, size: 18),
+                                    onPressed: () => _openAddEditDialog(
+                                      editIndex: originalIdx != -1 ? originalIdx : null,
+                                      preselectedTrapType: selectedTrapId,
+                                    ),
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 18),
+                                    onPressed: () {
+                                      setState(() {
+                                        if (originalIdx != -1) {
+                                          _questions.removeAt(originalIdx);
+                                        } else {
+                                          _questions.remove(q);
+                                        }
+                                      });
+                                      PocketFortressDefenseService.saveShieldQuestions(_questions);
+                                    },
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                q.question,
+                                style: GoogleFonts.outfit(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Correct: ${q.options[q.correctIndex]}',
+                                style: TextStyle(color: Colors.greenAccent.shade400, fontSize: 11.5, fontWeight: FontWeight.bold),
+                              ),
+                              if (q.explanation.isNotEmpty) ...[
+                                const SizedBox(height: 2),
+                                Text(
+                                  '💡 ${q.explanation}',
+                                  style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 10),
+                                ),
+                              ],
+                            ],
+                          ),
+                        );
+                      }),
+                    const SizedBox(height: 20),
+                  ],
+                ),
+              ),
+          ],
         ),
-      ],
+      ),
     );
   }
 
@@ -1714,432 +1471,6 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
           Text(
             value,
             style: GoogleFonts.outfit(color: Colors.white, fontSize: 10.5, fontWeight: FontWeight.bold),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ==========================================
-  // TAB 2: IRON DOME & ARMY (ACTIVITY POWERED)
-  // ==========================================
-  Widget _buildIronDomeAndArmyTab() {
-    return ListView(
-      children: [
-        // ⚡ Activity Points (FDC) Balance Card
-        Container(
-          padding: const EdgeInsets.all(14),
-          margin: const EdgeInsets.only(bottom: 12),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFF065F46), Color(0xFF064E3B)],
-            ),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFF34D399), width: 1.2),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF10B981).withValues(alpha: 0.2),
-                blurRadius: 8,
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  const Text('⚡', style: TextStyle(fontSize: 20)),
-                  const SizedBox(width: 8),
-                  Text(
-                    'FORTRESS DEFENSE CREDITS (FDC)',
-                    style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 13),
-                  ),
-                  const Spacer(),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: Colors.black38,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: const Color(0xFF6EE7B7)),
-                    ),
-                    child: Text(
-                      '${_houseStatus.activityPoints} FDC',
-                      style: GoogleFonts.outfit(
-                        color: const Color(0xFF6EE7B7),
-                        fontWeight: FontWeight.w900,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 6),
-              const Text(
-                'Activity Earning Tips: Anonymous English Voice Calls (+20 FDC) • Group English Chat (+10 FDC) • English Vibes (+15 FDC) • Daily Tasks (+30 FDC).',
-                style: TextStyle(color: Colors.white70, fontSize: 10.5, height: 1.3),
-              ),
-            ],
-          ),
-        ),
-
-        // House HP Status Card
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(colors: [Color(0xFF1E1B4B), Color(0xFF0F172A)]),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white12),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  const Text('❤️', style: TextStyle(fontSize: 18)),
-                  const SizedBox(width: 8),
-                  Text('House Health Status:', style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
-                  const Spacer(),
-                  Text('${_houseStatus.currentHp} / ${_houseStatus.maxHp} HP',
-                      style: GoogleFonts.outfit(
-                        color: _houseStatus.currentHp > 50 ? Colors.greenAccent : Colors.redAccent,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 14,
-                      )),
-                ],
-              ),
-              const SizedBox(height: 8),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(6),
-                child: LinearProgressIndicator(
-                  value: _houseStatus.hpPercentage,
-                  minHeight: 8,
-                  backgroundColor: Colors.white12,
-                  valueColor: AlwaysStoppedAnimation(
-                    _houseStatus.currentHp > 50 ? const Color(0xFF10B981) : Colors.redAccent,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10),
-              if (_houseStatus.currentHp < 100)
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF059669),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 8),
-                        ),
-                        icon: const Icon(Icons.build_rounded, size: 14),
-                        label: const Text('REPAIR (30 COINS)', style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold)),
-                        onPressed: () async {
-                          final ok = await PocketFortressDefenseService.repairHouse(coinCost: 30);
-                          if (!mounted) return;
-                          if (ok) {
-                            _loadData();
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('✅ House Repaired +50 HP!'), backgroundColor: Color(0xFF059669)),
-                            );
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('⚠️ Need 30 Pocket Coins to repair!'), backgroundColor: Colors.orange),
-                            );
-                          }
-                        },
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF0D9488),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 8),
-                        ),
-                        icon: const Icon(Icons.bolt_rounded, size: 14),
-                        label: const Text('REPAIR (40 FDC)', style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold)),
-                        onPressed: () async {
-                          final ok = await PocketFortressDefenseService.repairHouse(fdcCost: 40, useFdc: true);
-                          if (!mounted) return;
-                          if (ok) {
-                            _loadData();
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('⚡ Repaired using 40 Activity FDC!'), backgroundColor: Color(0xFF0D9488)),
-                            );
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('⚠️ Need 40 FDC! Engage in voice calls or group chat to earn.'), backgroundColor: Colors.orange),
-                            );
-                          }
-                        },
-                      ),
-                    ),
-                  ],
-                )
-              else
-                Text('🛡️ House is fully repaired and fortified.', style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 11)),
-            ],
-          ),
-        ),
-        const SizedBox(height: 14),
-
-        // Iron Dome Defense
-        Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: const Color(0xFF131D31),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFF00F0FF).withValues(alpha: 0.4)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  const Text('🛡️', style: TextStyle(fontSize: 22)),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('IRON DOME ANTI-AIR INTERCEPTOR',
-                            style: GoogleFonts.outfit(color: const Color(0xFF00F0FF), fontSize: 13, fontWeight: FontWeight.bold)),
-                        Text(
-                          _houseStatus.hasIronDome
-                              ? 'Active Tier ${_houseStatus.ironDomeTier}: Absorbs raid bomb impacts'
-                              : 'Not active. Install with Coins or Activity FDC!',
-                          style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 11),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF0284C7),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 9),
-                      ),
-                      onPressed: () async {
-                        final ok = await PocketFortressDefenseService.purchaseIronDome(
-                          tier: _houseStatus.ironDomeTier + 1,
-                          coinCost: 75,
-                        );
-                        if (!mounted) return;
-                        if (ok) {
-                          _loadData();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('🛡️ Iron Dome Upgraded & Active!'), backgroundColor: Color(0xFF0284C7)),
-                          );
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('⚠️ Need 75 Coins to upgrade Iron Dome!'), backgroundColor: Colors.orange),
-                          );
-                        }
-                      },
-                      child: Text(
-                        _houseStatus.hasIronDome ? 'UPGRADE (75 COINS)' : 'INSTALL (75 COINS)',
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF0E7490),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 9),
-                      ),
-                      onPressed: () async {
-                        final ok = await PocketFortressDefenseService.purchaseIronDome(
-                          tier: _houseStatus.ironDomeTier + 1,
-                          fdcCost: 60,
-                          useFdc: true,
-                        );
-                        if (!mounted) return;
-                        if (ok) {
-                          _loadData();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('⚡ Iron Dome Upgraded using Activity FDC!'), backgroundColor: Color(0xFF0E7490)),
-                          );
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('⚠️ Need 60 FDC! Complete voice calls or chat to earn.'), backgroundColor: Colors.orange),
-                          );
-                        }
-                      },
-                      child: Text(
-                        _houseStatus.hasIronDome ? 'UPGRADE (60 FDC)' : 'INSTALL (60 FDC)',
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 14),
-
-        // Army Knights
-        Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: const Color(0xFF131D31),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  const Text('⚔️', style: TextStyle(fontSize: 22)),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('STATIONED ARMY GUARDS',
-                            style: GoogleFonts.outfit(color: const Color(0xFFFFD700), fontSize: 13, fontWeight: FontWeight.bold)),
-                        Text('${_houseStatus.armyKnightsCount} Guards stationed at front staircase.',
-                            style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 11)),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFB45309),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 9),
-                      ),
-                      onPressed: () async {
-                        final ok = await PocketFortressDefenseService.enlistArmyKnights(coinCost: 40);
-                        if (!mounted) return;
-                        if (ok) {
-                          _loadData();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('⚔️ +2 Royal Guards Stationed!'), backgroundColor: Color(0xFFB45309)),
-                          );
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('⚠️ Need 40 Coins to enlist Guards!'), backgroundColor: Colors.orange),
-                          );
-                        }
-                      },
-                      child: const Text('ENLIST (40 COINS)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF92400E),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 9),
-                      ),
-                      onPressed: () async {
-                        final ok = await PocketFortressDefenseService.enlistArmyKnights(fdcCost: 35, useFdc: true);
-                        if (!mounted) return;
-                        if (ok) {
-                          _loadData();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('⚡ +2 Royal Guards Stationed via Activity FDC!'), backgroundColor: Color(0xFF92400E)),
-                          );
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('⚠️ Need 35 FDC! Join voice calls or group chat to earn.'), backgroundColor: Colors.orange),
-                          );
-                        }
-                      },
-                      child: const Text('ENLIST (35 FDC)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  // ==========================================
-  // TAB 3: PRESIDENT ANTI-CHEAT DECREE
-  // ==========================================
-  Widget _buildPresidentDecreeTab() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF131D31),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.amber.withValues(alpha: 0.4)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          const Text('🎩', style: TextStyle(fontSize: 44)),
-          const SizedBox(height: 6),
-          Text(
-            'OFFICIAL DECREE: PRESIDENT OF POCKET WORLD',
-            style: GoogleFonts.outfit(
-              color: const Color(0xFFFFD700),
-              fontSize: 14,
-              fontWeight: FontWeight.w900,
-              letterSpacing: 0.6,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: const Color(0xFF0F172A),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: Colors.white12),
-            ),
-            child: Text(
-              '“Attention citizens! Pocket World is a competitive English learning ground. '
-              'Every shield question you deploy to protect your house must be an authentic, '
-              'educational English challenge.\n\n'
-              'If you attempt to write fake, impossible, or gibberish questions to prevent others from breaching your gate, '
-              'my automated AI audit will flag your house with an Official Warning.\n\n'
-              'Repeated violations will result in an immediate BAN, resetting your fortress progress back to Day 0!”',
-              style: GoogleFonts.outfit(color: Colors.white.withValues(alpha: 0.9), fontSize: 12.5, height: 1.4),
-              textAlign: TextAlign.center,
-            ),
-          ),
-          const Spacer(),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            decoration: BoxDecoration(
-              color: const Color(0xFF064E3B),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: const Color(0xFF10B981)),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.verified_user_rounded, color: Color(0xFF34D399), size: 16),
-                const SizedBox(width: 6),
-                Text(
-                  'AI Anti-Cheat Monitor Active 24/7',
-                  style: GoogleFonts.outfit(color: const Color(0xFF34D399), fontSize: 11, fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
           ),
         ],
       ),
