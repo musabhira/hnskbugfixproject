@@ -6,7 +6,6 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../avatar/vector_avatar_config.dart';
 import '../avatar/vector_avatar_widget.dart';
-import '../avatar/avatar_game_perk.dart';
 import 'pocket_defense_admin_modal.dart';
 import 'pocket_fortress_defense_service.dart';
 import 'pocket_world_street_page.dart';
@@ -1998,7 +1997,7 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
                 _gameTimer?.cancel();
                 setState(() => _activeGame = null);
               } else {
-                Navigator.pop(context);
+                Navigator.pop(context, _opponentHp <= 0);
               }
             },
           ),
@@ -3622,13 +3621,35 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
             ),
           ],
           const SizedBox(height: 24),
+          if (won) ...[
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF10B981),
+                  foregroundColor: Colors.black,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                ),
+                onPressed: () {
+                  Navigator.pop(context, true);
+                },
+                icon: const Icon(Icons.check_circle_rounded, color: Colors.black),
+                label: Text(
+                  'CONFIRM RAID VICTORY & RETURN ⚔️',
+                  style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 13),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
           SizedBox(
             width: double.infinity,
             height: 50,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF0284C7),
+            child: OutlinedButton(
+              style: OutlinedButton.styleFrom(
                 foregroundColor: Colors.white,
+                side: const BorderSide(color: Colors.white24),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
               ),
               onPressed: () {

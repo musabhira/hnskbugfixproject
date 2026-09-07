@@ -5,7 +5,6 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
-import 'package:pocket_mates_app/custom_code/widgets/chat/pocket_ambient_flame_background.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.dart';
 import 'package:pocket_mates_app/custom_code/widgets/english_match/stage_peer_matchmaker.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_world_street_page.dart';
@@ -14,6 +13,7 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortr
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_defense_trap_modal.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_battle_arena_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_mission_timer_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_vocabulary_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/pocket_library_page.dart';
 
 /// 📚 Model for Daily 10 Vocabulary Words to Memorize (Multilingual Support)
@@ -42,6 +42,34 @@ class DailyVocabItem {
     required this.phonetic,
   });
 
+  Map<String, dynamic> toMap() => {
+        'word': word,
+        'partOfSpeech': partOfSpeech,
+        'definition': definition,
+        'malayalamMeaning': malayalamMeaning,
+        'tamilMeaning': tamilMeaning,
+        'hindiMeaning': hindiMeaning,
+        'teluguMeaning': teluguMeaning,
+        'kannadaMeaning': kannadaMeaning,
+        'exampleSentence': exampleSentence,
+        'phonetic': phonetic,
+      };
+
+  factory DailyVocabItem.fromMap(Map<String, dynamic> map) {
+    return DailyVocabItem(
+      word: map['word'] ?? '',
+      partOfSpeech: map['partOfSpeech'] ?? '',
+      definition: map['definition'] ?? '',
+      malayalamMeaning: map['malayalamMeaning'] ?? '',
+      tamilMeaning: map['tamilMeaning'] ?? '',
+      hindiMeaning: map['hindiMeaning'] ?? '',
+      teluguMeaning: map['teluguMeaning'] ?? '',
+      kannadaMeaning: map['kannadaMeaning'] ?? '',
+      exampleSentence: map['exampleSentence'] ?? '',
+      phonetic: map['phonetic'] ?? '',
+    );
+  }
+
   String getMeaning(String language) {
     switch (language.toLowerCase()) {
       case 'tamil':
@@ -63,6 +91,23 @@ class DailyVocabItem {
 class PocketDailyMissionPage extends StatefulWidget {
   final int day;
   final VoidCallback? onMissionCompleted;
+
+  static const List<String> kSupportedLanguages = [
+    'Malayalam',
+    'Tamil',
+    'Hindi',
+    'Telugu',
+    'Kannada',
+  ];
+
+  static const Map<String, String> kLanguageLabels = {
+    'Malayalam': 'മലയാളം',
+    'Tamil': 'தமிழ்',
+    'Hindi': 'हिन्दी',
+    'Telugu': 'తెలుగు',
+    'Kannada': 'ಕನ್ನಡ',
+    'English': 'English',
+  };
 
   const PocketDailyMissionPage({
     super.key,
@@ -89,19 +134,15 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   bool _defenseTrapArmed = false;
   bool _trialRaidLaunched = false;
   bool _midAttackCompleted = false;
+  bool _isPocketVocabSaved = false;
 
   // Quiz state
   int _selectedQuizAnswer = -1;
   bool _quizSubmitted = false;
 
   // 🌐 Multilingual Category Preferences (Audio Requirement)
-  static const List<String> kSupportedLanguages = [
-    'Malayalam',
-    'Tamil',
-    'Hindi',
-    'Telugu',
-    'Kannada',
-  ];
+  static List<String> get kSupportedLanguages => PocketDailyMissionPage.kSupportedLanguages;
+  static Map<String, String> get kLanguageLabels => PocketDailyMissionPage.kLanguageLabels;
 
   String _selectedLanguage = 'Malayalam';
   bool _isStorySpeaking = false;
@@ -2947,6 +2988,442 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     await prefs.setBool('${dayKey}_$key', value);
   }
 
+  // 💬 Interactive Confirmation Dialog for English Hub Chat
+  Future<void> _promptChatCompletionConfirmation() async {
+    final confirmed = await showModalBottomSheet<bool>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) => Container(
+        padding: const EdgeInsets.all(20),
+        decoration: const BoxDecoration(
+          color: Color(0xFF0F172A),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          border: Border(top: BorderSide(color: Color(0xFFFFFC00), width: 1.5)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.white24,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text('💬', style: TextStyle(fontSize: 36)),
+            const SizedBox(height: 8),
+            Text(
+              'Confirm English Hub Practice',
+              style: GoogleFonts.outfit(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Did you actively send your English messages to fellow learners in the English Hub?',
+              style: GoogleFonts.inter(color: Colors.white70, fontSize: 13),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(ctx, false),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.white70,
+                      side: const BorderSide(color: Colors.white24),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: const Text('Not Yet'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(ctx, true),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFFFFC00),
+                      foregroundColor: Colors.black,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: Text(
+                      'YES, COMPLETED ✓',
+                      style: GoogleFonts.outfit(fontWeight: FontWeight.w900),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+          ],
+        ),
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      setState(() => _hubChatVerified = true);
+      _saveSubtask('hub_chat', true);
+      HapticFeedback.mediumImpact();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('✅ Step 1 Verified: English Hub chat activity confirmed!'),
+          backgroundColor: Color(0xFF10B981),
+        ),
+      );
+    }
+  }
+
+  // 🎙️ Confirmation Check & Dialog for 1-on-1 Peer Calls
+  Future<void> _checkAndPromptPeerCallCompletion() async {
+    final myId = SupaFlow.client.auth.currentUser?.id;
+    int chatsCount = 0;
+    if (myId != null) {
+      final prefs = await SharedPreferences.getInstance();
+      final now = DateTime.now();
+      final todayChatKey = 'chat_goals_${myId}_${now.year}_${now.month}_${now.day}';
+      chatsCount = prefs.getInt(todayChatKey) ?? 0;
+    }
+
+    if (!mounted) return;
+    if (chatsCount >= 2) {
+      setState(() => _peerCallVerified = true);
+      _saveSubtask('peer_call', true);
+      HapticFeedback.heavyImpact();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('🎉 $chatsCount/2 Peer Calls Verified! Step 2 complete.'),
+          backgroundColor: const Color(0xFF10B981),
+        ),
+      );
+      return;
+    }
+
+    final confirmed = await showModalBottomSheet<bool>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) => Container(
+        padding: const EdgeInsets.all(20),
+        decoration: const BoxDecoration(
+          color: Color(0xFF0F172A),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          border: Border(top: BorderSide(color: Color(0xFF00E5FF), width: 1.5)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.white24,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text('🎙️', style: TextStyle(fontSize: 36)),
+            const SizedBox(height: 8),
+            Text(
+              'Confirm 1-on-1 Peer Calls',
+              style: GoogleFonts.outfit(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              chatsCount > 0
+                  ? 'Current progress: $chatsCount/2 peers connected today. Did you complete speaking with 2 mates?'
+                  : 'Did you complete live English speaking practice with 2 mates to conquer hesitation?',
+              style: GoogleFonts.inter(color: Colors.white70, fontSize: 13),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(ctx, false),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.white70,
+                      side: const BorderSide(color: Colors.white24),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: const Text('Connect More'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(ctx, true),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF00E5FF),
+                      foregroundColor: Colors.black,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: Text(
+                      'YES, 2 CALLS DONE ✓',
+                      style: GoogleFonts.outfit(fontWeight: FontWeight.w900),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+          ],
+        ),
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      setState(() => _peerCallVerified = true);
+      _saveSubtask('peer_call', true);
+      HapticFeedback.mediumImpact();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('✅ Step 2 Verified: 2 Peer conversations recorded!'),
+          backgroundColor: Color(0xFF10B981),
+        ),
+      );
+    }
+  }
+
+  // 📖 Pocket Vocabulary Vault & Rewind Modal (Offline Local Storage)
+  void _showPocketVocabularyModal() async {
+    final savedWords = await PocketVocabularyService.instance.getSavedWords();
+    if (!mounted) return;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setModalState) {
+          return Container(
+            height: MediaQuery.of(context).size.height * 0.85,
+            decoration: const BoxDecoration(
+              color: Color(0xFF0F172A),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              border: Border(top: BorderSide(color: Color(0xFFFFFC00), width: 1.5)),
+            ),
+            child: Column(
+              children: [
+                const SizedBox(height: 12),
+                Container(
+                  width: 44,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.white24,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Text('📖', style: TextStyle(fontSize: 20)),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Pocket Vocabulary Vault',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontSize: 17,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              '${savedWords.length} Offline Saved Words • Rewind Anytime',
+                              style: GoogleFonts.inter(
+                                color: const Color(0xFFFFD700),
+                                fontSize: 11.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close_rounded, color: Colors.white70),
+                        onPressed: () => Navigator.pop(ctx),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(color: Colors.white12, height: 20),
+                if (savedWords.isEmpty) ...[
+                  Expanded(
+                    child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(32),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text('📭', style: TextStyle(fontSize: 48)),
+                            const SizedBox(height: 12),
+                            Text(
+                              'Your Pocket Vocabulary is Empty',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              'Tap "Save to Pocket Vocabulary" in Step 3 to store today\'s words on your device for offline review!',
+                              style: GoogleFonts.inter(color: Colors.white60, fontSize: 12),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 16),
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFFFFC00),
+                                foregroundColor: Colors.black,
+                              ),
+                              onPressed: () async {
+                                final wordsMap = _vocabList.map((v) => v.toMap()).toList();
+                                await PocketVocabularyService.instance.saveWords(widget.day, wordsMap);
+                                final updated = await PocketVocabularyService.instance.getSavedWords();
+                                setModalState(() {
+                                  savedWords.clear();
+                                  savedWords.addAll(updated);
+                                });
+                                setState(() {
+                                  _vocabMemorized = true;
+                                  _isPocketVocabSaved = true;
+                                });
+                                _saveSubtask('vocab_mem', true);
+                              },
+                              child: const Text('SAVE TODAY\'S 10 WORDS NOW'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ] else ...[
+                  Expanded(
+                    child: ListView.separated(
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                      itemCount: savedWords.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 8),
+                      itemBuilder: (context, idx) {
+                        final item = savedWords[idx];
+                        final vocabItem = DailyVocabItem.fromMap(item);
+                        final dayVal = item['day'] ?? widget.day;
+                        return Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF1E293B),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.white10),
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text('D$dayVal', style: const TextStyle(color: Color(0xFFFFFC00), fontSize: 10, fontWeight: FontWeight.bold)),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Text(
+                                          vocabItem.word,
+                                          style: GoogleFonts.outfit(
+                                            color: Colors.amberAccent,
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          vocabItem.phonetic,
+                                          style: GoogleFonts.inter(
+                                            color: Colors.white54,
+                                            fontSize: 11,
+                                            fontStyle: FontStyle.italic,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          '(${vocabItem.partOfSpeech})',
+                                          style: const TextStyle(color: Colors.white38, fontSize: 10),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 3),
+                                    Text(
+                                      '📖 ${vocabItem.definition}',
+                                      style: const TextStyle(color: Colors.white, fontSize: 12),
+                                    ),
+                                    const SizedBox(height: 3),
+                                    Text(
+                                      '🗣️ Meaning ($_selectedLanguage): ${vocabItem.getMeaning(_selectedLanguage)}',
+                                      style: const TextStyle(color: Color(0xFFFFD700), fontSize: 11.5, fontWeight: FontWeight.w600),
+                                    ),
+                                    if (vocabItem.exampleSentence.isNotEmpty) ...[
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        '💡 "${vocabItem.exampleSentence}"',
+                                        style: const TextStyle(color: Colors.white60, fontSize: 11, fontStyle: FontStyle.italic),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.volume_up_rounded, color: Color(0xFFFFFC00), size: 20),
+                                onPressed: () => _speakWord('${vocabItem.word}. ${vocabItem.exampleSentence}'),
+                                tooltip: 'Listen',
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  int get _totalSubtasksCount => widget.day >= 4 ? 7 : 6;
+
   int get _completedSubtasksCount {
     int count = 0;
     if (_hubChatVerified) count++;
@@ -2955,11 +3432,11 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     if (_readingNotesCompleted) count++;
     if (_revisionQuizPassed) count++;
     if (_defenseTrapArmed) count++;
-    if (_trialRaidLaunched) count++;
+    if (widget.day >= 4 && _trialRaidLaunched) count++;
     return count;
   }
 
-  bool get _isAllCompleted => _completedSubtasksCount >= 7;
+  bool get _isAllCompleted => _completedSubtasksCount >= _totalSubtasksCount;
   bool get _isTimerCompleted => _timerService.hasReachedTarget;
   bool get _canClaimAndAdvance => _isTimerCompleted && _isAllCompleted;
 
@@ -3012,8 +3489,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                         isVerified: _hubChatVerified,
                         actionLabel: 'OPEN ENGLISH HUB CHAT',
                         actionColor: const Color(0xFFFFFC00),
-                        onAction: () {
-                          Navigator.push(
+                        onAction: () async {
+                          await Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (_) => const WhatsAppGroupChat(
@@ -3021,17 +3498,13 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                                 groupName: 'English Hub',
                               ),
                             ),
-                          ).then((_) {
-                            if (mounted) {
-                              setState(() => _hubChatVerified = true);
-                              _saveSubtask('hub_chat', true);
-                            }
-                          });
+                          );
+                          if (mounted) {
+                            _promptChatCompletionConfirmation();
+                          }
                         },
                         onVerify: () {
-                          setState(() => _hubChatVerified = true);
-                          _saveSubtask('hub_chat', true);
-                          HapticFeedback.lightImpact();
+                          _promptChatCompletionConfirmation();
                         },
                       ),
 
@@ -3046,27 +3519,23 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                         isVerified: _peerCallVerified,
                         actionLabel: 'FIND 1-ON-1 PEERS',
                         actionColor: const Color(0xFF00E5FF),
-                        onAction: () {
+                        onAction: () async {
                           // Auto-start 60-min practice timer as instructed in audio
                           if (!_timerService.isRunning && !_timerService.hasReachedTarget) {
                             _timerService.toggleTimer();
                           }
-                          Navigator.push(
+                          await Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (_) => const StagePeerMatchmakerPage(),
                             ),
-                          ).then((_) {
-                            if (mounted) {
-                              setState(() => _peerCallVerified = true);
-                              _saveSubtask('peer_call', true);
-                            }
-                          });
+                          );
+                          if (mounted) {
+                            _checkAndPromptPeerCallCompletion();
+                          }
                         },
                         onVerify: () {
-                          setState(() => _peerCallVerified = true);
-                          _saveSubtask('peer_call', true);
-                          HapticFeedback.lightImpact();
+                          _checkAndPromptPeerCallCompletion();
                         },
                       ),
 
@@ -3077,10 +3546,11 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
                       const SizedBox(height: 14),
 
-                      // ⚔️ In-Between Combat Attack Drill (Audio Directive: "idayil idayil attacking, oru attack okke kodukkaam")
-                      _buildMidMissionCombatAttackCard(),
-
-                      const SizedBox(height: 14),
+                      // ⚔️ In-Between Combat Attack Drill (Audio Directive: unlocks on Day 4+)
+                      if (widget.day >= 4) ...[
+                        _buildMidMissionCombatAttackCard(),
+                        const SizedBox(height: 14),
+                      ],
 
                       // Subtask 4: 📖 Core Notes & Reading Passage
                       _buildReadingNotesCard(),
@@ -3099,55 +3569,141 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                         title: 'Add Day ${widget.day} Citadel Defense Shield',
                         description: 'Arm your front gate with 1 authentic English challenge to defend your house from raiders. (Shield Slot ${widget.day} of ${widget.day})',
                         isVerified: _defenseTrapArmed,
-                        actionLabel: _defenseTrapArmed ? 'EDIT DEFENSE SHIELD 🛡️' : 'ADD DEFENSE SHIELD 🛡️',
+                        actionLabel: 'ADD DEFENSE SHIELD 🛡️',
                         actionColor: const Color(0xFF8B5CF6),
-                        onAction: () {
-                          PocketDefenseTrapModal.show(context, widget.day);
-                          setState(() => _defenseTrapArmed = true);
-                          _saveSubtask('defense', true);
+                        onAction: () async {
+                          await PocketDefenseTrapModal.show(context, widget.day);
+                          if (mounted) {
+                            setState(() => _defenseTrapArmed = true);
+                            _saveSubtask('defense', true);
+                          }
                         },
                         onVerify: () {
                           setState(() => _defenseTrapArmed = true);
                           _saveSubtask('defense', true);
+                          HapticFeedback.lightImpact();
                         },
                       ),
 
                       const SizedBox(height: 14),
 
-                      // Subtask 7: ⚔️ Citadel Siege Attack (Scaled Dynamically to Day)
-                      _buildSubtaskCard(
-                        stepNumber: '7',
-                        icon: '⚔️',
-                        title: 'Day ${widget.day} Citadel Siege Raid (${_getRivalCitadelForDay(widget.day).name})',
-                        description: 'Launch your tactical siege raid against a Level ${_getRivalCitadelForDay(widget.day).day} Neighbor Citadel in the Battle Arena to test your combat English under fire!',
-                        isVerified: _trialRaidLaunched,
-                        actionLabel: 'LAUNCH BATTLE ARENA RAID ⚔️',
-                        actionColor: const Color(0xFFEF4444),
-                        onAction: () {
-                          final rival = _getRivalCitadelForDay(widget.day);
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => PocketBattleArenaPage(
-                                neighbor: rival,
-                                userDay: widget.day,
-                                userStreak: widget.day,
+                      // Subtask 7: ⚔️ Citadel Siege Attack (Scaled Dynamically to Day - Unlocks at Level 4)
+                      if (widget.day >= 4) ...[
+                        _buildSubtaskCard(
+                          stepNumber: '7',
+                          icon: '⚔️',
+                          title: 'Day ${widget.day} Citadel Siege Raid (${_getRivalCitadelForDay(widget.day).name})',
+                          description: 'Launch your tactical siege raid against a Level ${_getRivalCitadelForDay(widget.day).day} Neighbor Citadel in the Battle Arena to test your combat English under fire!',
+                          isVerified: _trialRaidLaunched,
+                          actionLabel: 'LAUNCH BATTLE ARENA RAID ⚔️',
+                          actionColor: const Color(0xFFEF4444),
+                          onAction: () async {
+                            final rival = _getRivalCitadelForDay(widget.day);
+                            final won = await Navigator.push<bool>(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => PocketBattleArenaPage(
+                                  neighbor: rival,
+                                  userDay: widget.day,
+                                  userStreak: widget.day,
+                                ),
                               ),
-                            ),
-                          ).then((_) {
-                            if (mounted) {
+                            );
+                            if (!mounted) return;
+                            if (won == true) {
                               setState(() => _trialRaidLaunched = true);
                               _saveSubtask('raid', true);
+                              final uid = SupaFlow.client.auth.currentUser?.id;
+                              if (uid != null) {
+                                await Learning60DayService().completeTask(
+                                  userId: uid,
+                                  taskId: 'citadel_raid_attack',
+                                );
+                              }
+                              if (!mounted) return;
+                              HapticFeedback.heavyImpact();
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('🏰 Citadel ${rival.name} Breached! Day ${widget.day} Siege Raid verified ✓ +50 Bonus Coins!'),
+                                  backgroundColor: const Color(0xFF10B981),
+                                ),
+                              );
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('⚠️ Citadel raid incomplete. Defeat the rival fortress in Battle Arena to verify this step!'),
+                                  backgroundColor: Color(0xFFB45309),
+                                ),
+                              );
                             }
-                          });
-                        },
-                        onVerify: () {
-                          setState(() => _trialRaidLaunched = true);
-                          _saveSubtask('raid', true);
-                        },
-                      ),
-
-                      const SizedBox(height: 20),
+                          },
+                          onVerify: () {
+                            if (_trialRaidLaunched) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('✅ Day ${widget.day} Citadel Raid already verified!'),
+                                  backgroundColor: const Color(0xFF10B981),
+                                ),
+                              );
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('⚠️ Launch Battle Arena Raid and breach the citadel to verify Subtask 7!'),
+                                  backgroundColor: Color(0xFFB45309),
+                                ),
+                              );
+                            }
+                          },
+                        ),
+                        const SizedBox(height: 20),
+                      ] else ...[
+                        Container(
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF0F172A),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: Colors.white12),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.05),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Text('🔒', style: TextStyle(fontSize: 20)),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Citadel Siege Attacks Unlock at Level 4',
+                                      style: GoogleFonts.outfit(
+                                        color: Colors.white70,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      'Complete Days 1–3 foundational English missions and arm your defense shields first. Raid warfare unlocks on Day 4!',
+                                      style: GoogleFonts.inter(
+                                        color: Colors.white38,
+                                        fontSize: 11,
+                                        height: 1.3,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                      ],
 
                       // 🛡️ House Defense Shield Banner (Audio Directive: Show right inside Day 1!)
                       _buildShieldUnlockBanner(),
@@ -3464,7 +4020,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          '60-Min Target Reached! (${7 - _completedSubtasksCount} subtasks pending)',
+                          '60-Min Target Reached! (${_totalSubtasksCount - _completedSubtasksCount} subtasks pending)',
                           style: GoogleFonts.outfit(
                             color: Colors.amberAccent,
                             fontSize: 12.5,
@@ -3476,7 +4032,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    'Practice timer automatically stopped at 60:00. You must complete all 7 subtasks to advance to Day ${widget.day + 1}. Complete the tasks below, or add an extra 1-hour practice session.',
+                    'Practice timer automatically stopped at 60:00. You must complete all $_totalSubtasksCount subtasks to advance to Day ${widget.day + 1}. Complete the tasks below, or add an extra 1-hour practice session.',
                     style: GoogleFonts.inter(
                       color: Colors.white70,
                       fontSize: 11.5,
@@ -3574,7 +4130,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                   ),
                 ),
                 Text(
-                  'Complete all 7 actions below to claim Day ${widget.day} rewards & badge.',
+                  'Complete all $_totalSubtasksCount actions below to claim Day ${widget.day} rewards & badge.',
                   style: GoogleFonts.inter(
                     color: Colors.white60,
                     fontSize: 11.5,
@@ -3584,7 +4140,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
             ),
           ),
           Text(
-            '${((_completedSubtasksCount / 7) * 100).toInt()}%',
+            '${((_completedSubtasksCount / _totalSubtasksCount) * 100).toInt()}%',
             style: GoogleFonts.outfit(
               color: const Color(0xFFFFFC00),
               fontSize: 18,
@@ -3711,13 +4267,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
   // 🌐 Language Category Selector Bar (Audio Directive)
   Widget _buildLanguageSelectorBar() {
-    final languageFlags = {
-      'Malayalam': 'മലയാളം',
-      'Tamil': 'தமிழ்',
-      'Hindi': 'हिन्दी',
-      'Telugu': 'తెలుగు',
-      'Kannada': 'ಕನ್ನಡ',
-    };
+    final languageFlags = kLanguageLabels;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
@@ -3928,29 +4478,89 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
             },
           ),
           const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () async {
+                    final wordsMap = _vocabList.map((v) => v.toMap()).toList();
+                    final count = await PocketVocabularyService.instance.saveWords(widget.day, wordsMap);
+                    if (mounted) {
+                      setState(() {
+                        _vocabMemorized = true;
+                        _isPocketVocabSaved = true;
+                      });
+                      _saveSubtask('vocab_mem', true);
+                      HapticFeedback.mediumImpact();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('✨ Saved ${count > 0 ? count : 10} words to offline Pocket Vocabulary! Rewind anytime.'),
+                          backgroundColor: const Color(0xFF10B981),
+                        ),
+                      );
+                    }
+                  },
+                  icon: Icon(
+                    _isPocketVocabSaved ? Icons.bookmark_added_rounded : Icons.bookmark_add_rounded,
+                    color: Colors.black,
+                    size: 16,
+                  ),
+                  label: Text(
+                    _isPocketVocabSaved ? 'SAVED TO VAULT ✓' : 'SAVE TO POCKET VOCABULARY',
+                    style: GoogleFonts.outfit(fontWeight: FontWeight.w900, color: Colors.black, fontSize: 11.5),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFFFC00),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              OutlinedButton.icon(
+                onPressed: () => _showPocketVocabularyModal(),
+                icon: const Icon(Icons.menu_book_rounded, color: Color(0xFFFFD700), size: 16),
+                label: Text(
+                  'OPEN VAULT',
+                  style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: const Color(0xFFFFD700), fontSize: 11.5),
+                ),
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: Color(0xFFFFD700)),
+                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
           SizedBox(
             width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: () {
+            child: OutlinedButton.icon(
+              onPressed: () async {
                 setState(() => _vocabMemorized = true);
                 _saveSubtask('vocab_mem', true);
+                // Also auto-save to local pocket vocabulary
+                final wordsMap = _vocabList.map((v) => v.toMap()).toList();
+                await PocketVocabularyService.instance.saveWords(widget.day, wordsMap);
+                if (!mounted) return;
+                setState(() => _isPocketVocabSaved = true);
                 HapticFeedback.lightImpact();
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('🎉 10 Vocabulary Words memorized and recorded!'),
+                    content: Text('🎉 10 Vocabulary Words memorized & saved to Pocket Vocabulary!'),
                     backgroundColor: Color(0xFF10B981),
                   ),
                 );
               },
-              icon: Icon(_vocabMemorized ? Icons.check_circle_rounded : Icons.star_rounded, color: Colors.black),
+              icon: Icon(_vocabMemorized ? Icons.check_circle_rounded : Icons.done_all_rounded, color: _vocabMemorized ? const Color(0xFF10B981) : Colors.white70, size: 16),
               label: Text(
-                _vocabMemorized ? '10 WORDS MEMORIZED ✓' : 'I MEMORIZED ALL 10 WORDS',
-                style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: Colors.black),
+                _vocabMemorized ? '10 WORDS VERIFIED ✓' : 'MARK ALL 10 WORDS MEMORIZED',
+                style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: _vocabMemorized ? const Color(0xFF10B981) : Colors.white70, fontSize: 12),
               ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _vocabMemorized ? const Color(0xFF10B981) : const Color(0xFFFFFC00),
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              style: OutlinedButton.styleFrom(
+                side: BorderSide(color: _vocabMemorized ? const Color(0xFF10B981) : Colors.white24),
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
             ),
           ),
@@ -4033,9 +4643,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
-              onPressed: () {
+              onPressed: () async {
                 HapticFeedback.mediumImpact();
-                Navigator.push(
+                final won = await Navigator.push<bool>(
                   context,
                   MaterialPageRoute(
                     builder: (_) => PocketBattleArenaPage(
@@ -4044,18 +4654,26 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                       userStreak: widget.day,
                     ),
                   ),
-                ).then((_) {
-                  if (mounted) {
+                );
+                if (mounted) {
+                  if (won == true) {
                     setState(() => _midAttackCompleted = true);
                     _saveSubtask('mid_attack', true);
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('⚔️ Combat raid launched against ${rival.name}! Bonus +50 coins registered.'),
+                        content: Text('⚔️ Combat raid won against ${rival.name}! Bonus +50 coins registered.'),
                         backgroundColor: const Color(0xFF10B981),
                       ),
                     );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('⚠️ Citadel attack incomplete. Defeat the rival fortress in Battle Arena to earn bonus coins!'),
+                        backgroundColor: Color(0xFFB45309),
+                      ),
+                    );
                   }
-                });
+                }
               },
               icon: Icon(
                 _midAttackCompleted ? Icons.check_circle_rounded : Icons.flash_on_rounded,
@@ -4120,6 +4738,57 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               if (_readingNotesCompleted)
                 const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 18),
             ],
+          ),
+          const SizedBox(height: 10),
+
+          // Multi-Language Switcher (Malayalam, Tamil, Telugu, Hindi, Kannada, English)
+          Row(
+            children: [
+              Text(
+                'EXPLANATION LANGUAGE:',
+                style: GoogleFonts.outfit(color: Colors.white60, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+              ),
+              const Spacer(),
+              Text(
+                _selectedLanguage,
+                style: GoogleFonts.outfit(color: const Color(0xFFFFD700), fontSize: 11, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: kSupportedLanguages.map((lang) {
+                final isSelected = _selectedLanguage == lang;
+                return Padding(
+                  padding: const EdgeInsets.only(right: 6),
+                  child: InkWell(
+                    onTap: () => _onLanguageSelected(lang),
+                    borderRadius: BorderRadius.circular(8),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: isSelected ? const Color(0xFFFFFC00) : const Color(0xFF1E293B),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: isSelected ? const Color(0xFFFFFC00) : Colors.white24,
+                          width: 1,
+                        ),
+                      ),
+                      child: Text(
+                        kLanguageLabels[lang] ?? lang,
+                        style: TextStyle(
+                          color: isSelected ? Colors.black : Colors.white70,
+                          fontSize: 11,
+                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
           ),
           const SizedBox(height: 10),
 
@@ -4448,7 +5117,45 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 10),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: kSupportedLanguages.map((lang) {
+                      final isSelected = _selectedLanguage == lang;
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 6),
+                        child: InkWell(
+                          onTap: () {
+                            _onLanguageSelected(lang);
+                            modalSetState(() {});
+                          },
+                          borderRadius: BorderRadius.circular(8),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                            decoration: BoxDecoration(
+                              color: isSelected ? const Color(0xFFFFFC00) : const Color(0xFF1E293B),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: isSelected ? const Color(0xFFFFFC00) : Colors.white24,
+                                width: 1,
+                              ),
+                            ),
+                            child: Text(
+                              kLanguageLabels[lang] ?? lang,
+                              style: TextStyle(
+                                color: isSelected ? Colors.black : Colors.white70,
+                                fontSize: 11,
+                                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+                const SizedBox(height: 12),
                 Expanded(
                   child: SingleChildScrollView(
                     child: Column(
@@ -4616,7 +5323,53 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               ),
             );
           }),
-          const SizedBox(height: 8),
+          if (_quizSubmitted) ...[
+            const SizedBox(height: 6),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: _selectedQuizAnswer == 0
+                    ? const Color(0xFF064E3B)
+                    : const Color(0xFF78350F),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: _selectedQuizAnswer == 0
+                      ? const Color(0xFF10B981)
+                      : Colors.amberAccent,
+                ),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(_selectedQuizAnswer == 0 ? '✅' : '💡', style: const TextStyle(fontSize: 18)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _selectedQuizAnswer == 0
+                              ? 'Spot on! Correct answer.'
+                              : 'Keep learning! Correct answer is: "${_quizOptions[0]}"',
+                          style: GoogleFonts.inter(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Step 5 verified ✓ You can proceed to the next subtask.',
+                          style: TextStyle(color: Colors.white70, fontSize: 11),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+          const SizedBox(height: 10),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
@@ -4625,10 +5378,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                   : () {
                       setState(() {
                         _quizSubmitted = true;
-                        if (_selectedQuizAnswer == 0) {
-                          _revisionQuizPassed = true;
-                          _saveSubtask('quiz', true);
-                        }
+                        _revisionQuizPassed = true;
+                        _saveSubtask('quiz', true);
                       });
                       HapticFeedback.mediumImpact();
                     },
@@ -4638,7 +5389,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
               child: Text(
-                _revisionQuizPassed ? 'QUIZ PASSED ✓' : 'SUBMIT ANSWER',
+                _revisionQuizPassed ? 'QUIZ COMPLETED ✓ NEXT' : 'SUBMIT ANSWER',
                 style: GoogleFonts.outfit(color: Colors.black, fontWeight: FontWeight.bold),
               ),
             ),
@@ -4777,7 +5528,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               ),
             ),
             child: Text(
-              _defenseTrapArmed ? 'EDIT 🛡️' : 'ADD SHIELD',
+              _defenseTrapArmed ? 'SHIELD ACTIVE 🛡️' : 'ADD SHIELD',
               style: GoogleFonts.outfit(
                 color: Colors.black,
                 fontWeight: FontWeight.w900,
@@ -4795,6 +5546,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     final isTimerMet = _isTimerCompleted;
     final isSubtasksMet = _isAllCompleted;
     final canClaim = _canClaimAndAdvance;
+    final total = _totalSubtasksCount;
+    final remaining = (total - _completedSubtasksCount).clamp(0, total);
 
     String headerTitle;
     String description;
@@ -4803,23 +5556,23 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     if (canClaim) {
       headerTitle = '🎉 MISSION COMPLETED!';
       description =
-          '60-Minute practice target met & all 7 subtasks verified! Claim +${100 + (widget.day - 1) * 50} XP, +40 Fortress Defense Coins and unlock Day ${widget.day + 1}!';
+          '60-Minute practice target met & all $total subtasks verified! Claim +100 XP, +40 Fortress Defense Coins and unlock Day ${widget.day + 1}!';
       buttonText = 'CLAIM DAY ${widget.day} REWARDS & ADVANCE 🚀';
     } else if (isTimerMet && !isSubtasksMet) {
-      headerTitle = '⚠️ ${7 - _completedSubtasksCount} SUBTASKS REMAINING';
+      headerTitle = '⚠️ $remaining SUBTASKS REMAINING';
       description =
-          'Practice time target (60m) completed! You must complete all 7 subtasks below before unlocking Day ${widget.day + 1}.';
-      buttonText = 'FINISH ${7 - _completedSubtasksCount} MORE SUBTASKS TO ADVANCE';
+          'Practice time completed! Complete the remaining $remaining subtasks above before unlocking Day ${widget.day + 1}.';
+      buttonText = 'FINISH $remaining MORE SUBTASKS TO ADVANCE';
     } else if (!isTimerMet && isSubtasksMet) {
       headerTitle = '⏱️ PRACTICE TIME TARGET PENDING';
       description =
-          'All 7 subtasks are verified! Practice for ${_timerService.formatTime(_timerService.remainingSeconds)} more minutes in app chats, drills, or calls to complete the 60-min target.';
-      buttonText = 'PRACTICE ${_timerService.formatTime(_timerService.remainingSeconds)} MORE TO ADVANCE';
+          'All $total subtasks are verified! Continue your 60-min daily practice via app chats, voice calls, or drills to complete the target.';
+      buttonText = 'COMPLETE PRACTICE TIME TO ADVANCE';
     } else {
-      headerTitle = 'PRACTICE TARGET & SUBTASKS PENDING';
+      headerTitle = 'DAILY MISSION IN PROGRESS';
       description =
-          'Progress: ${_timerService.formatTime()}/${_timerService.formatTime(_timerService.targetSeconds)} practice time • $_completedSubtasksCount/7 subtasks verified.';
-      buttonText = '${7 - _completedSubtasksCount} SUBTASKS & ${_timerService.formatTime(_timerService.remainingSeconds)} REMAINING';
+          'Checklist Progress: $_completedSubtasksCount/$total subtasks verified. Keep practicing to reach your 60-min target!';
+      buttonText = '$remaining SUBTASKS REMAINING';
     }
 
     return Container(
@@ -4883,13 +5636,19 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                           'daily_mission',
                         );
                       }
+                      // Save today's completion date to enforce daily pacing
+                      final prefs = await SharedPreferences.getInstance();
+                      final todayStr = '${DateTime.now().year}-${DateTime.now().month}-${DateTime.now().day}';
+                      await prefs.setString('learning_day_${widget.day}_completed_date', todayStr);
+                      await prefs.setInt('learning_last_completed_day', widget.day);
+
                       widget.onMissionCompleted?.call();
                       if (mounted) {
                         Navigator.pop(context);
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(
-                              '🎉 Day ${widget.day} English Mission Complete! +${100 + (widget.day - 1) * 50} XP Points Earned • Day ${widget.day + 1} Unlocked!',
+                              '🎉 Day ${widget.day} English Mission Complete! +100 XP Points Earned • Day ${widget.day + 1} Unlocks Tomorrow!',
                             ),
                             backgroundColor: const Color(0xFF10B981),
                           ),
@@ -4910,8 +5669,10 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                 style: GoogleFonts.outfit(
                   color: canClaim ? Colors.black : Colors.white38,
                   fontWeight: FontWeight.bold,
-                  fontSize: 14,
+                  fontSize: 13.5,
                 ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
               ),
             ),

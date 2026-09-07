@@ -12,9 +12,9 @@ class PocketDefenseTrapModal extends StatefulWidget {
     required this.userDay,
   });
 
-  static void show(BuildContext context, int userDay) {
+  static Future<void> show(BuildContext context, int userDay) {
     HapticFeedback.selectionClick();
-    showModalBottomSheet(
+    return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: const Color(0xFF070B14),

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'learning_models.dart';
 import 'learning_service.dart';
 import 'pocket_fortress_defense_service.dart';
 import 'pocket_defense_trap_modal.dart';
+import 'pocket_daily_mission_page.dart';
 
 /// Interactive Sheet & Dashboard for the 90-Day English Transformation & Profile Palette System
 class Learning60DayDashboardSheet extends StatefulWidget {
@@ -38,6 +40,10 @@ class _Learning60DayDashboardSheetState extends State<Learning60DayDashboardShee
   bool _isLoading = true;
   int _selectedTab = 0; // 0: Overview & Tasks, 1: 30-Stage Palettes Roadmap
 
+  String? _todayDateStr;
+  String? _lastCompletedDate;
+  int? _lastCompletedDay;
+
   @override
   void initState() {
     super.initState();
@@ -46,10 +52,19 @@ class _Learning60DayDashboardSheetState extends State<Learning60DayDashboardShee
 
   Future<void> _loadProgress() async {
     final prog = await Learning60DayService().fetchProgress(widget.userId);
+    final prefs = await SharedPreferences.getInstance();
+    final now = DateTime.now();
+    final todayStr = '${now.year}-${now.month}-${now.day}';
+    final lastCompDate = prefs.getString('learning_last_completed_date');
+    final lastCompDay = prefs.getInt('learning_last_completed_day');
+
     if (mounted) {
       setState(() {
         _progress = prog;
         _isLoading = false;
+        _todayDateStr = todayStr;
+        _lastCompletedDate = lastCompDate;
+        _lastCompletedDay = lastCompDay;
       });
     }
   }
@@ -578,93 +593,133 @@ class _Learning60DayDashboardSheetState extends State<Learning60DayDashboardShee
         final stage = LearningMilestoneStage.allStages[index];
         final isUnlocked = currentDay >= stage.day;
         final isCurrent = currentDay == stage.day;
+        final isCompletedToday = _lastCompletedDate == _todayDateStr && _lastCompletedDay == stage.day;
 
-        return Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: isUnlocked ? stage.gradientColors : [const Color(0xFF14151F), const Color(0xFF0E0F17)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(
-              color: isCurrent
-                  ? const Color(0xFFFFD700)
-                  : stage.isMajorGate
-                      ? const Color(0xFFFFD700).withValues(alpha: 0.8)
-                      : isUnlocked
-                          ? stage.buttonColor.withValues(alpha: 0.5)
-                          : Colors.white10,
-              width: (isCurrent || stage.isMajorGate) ? 2 : 1,
-            ),
-          ),
-          child: Row(
-            children: [
-              // Stage badge
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: isUnlocked ? stage.buttonColor : Colors.white10,
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: Text(
-                    isUnlocked ? stage.emoji : '🔒',
-                    style: TextStyle(fontSize: isUnlocked ? 20 : 16),
+        return InkWell(
+          onTap: () {
+            if (isUnlocked) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => PocketDailyMissionPage(
+                    day: stage.day,
+                    onMissionCompleted: _loadProgress,
                   ),
                 ),
+              );
+            } else {
+              HapticFeedback.lightImpact();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    stage.day == currentDay + 1
+                        ? (isCompletedToday
+                            ? '⏳ Day ${stage.day} unlocks tomorrow at midnight! Great job completing Day $currentDay today.'
+                            : '🔒 Day ${stage.day} unlocks tomorrow! Complete today\'s 60-min practice & subtasks first.')
+                        : '🔒 Day ${stage.day} is locked. Complete Day ${stage.day - 1} to proceed.',
+                  ),
+                  backgroundColor: const Color(0xFF1E293B),
+                ),
+              );
+            }
+          },
+          borderRadius: BorderRadius.circular(18),
+          child: Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: isUnlocked ? stage.gradientColors : [const Color(0xFF14151F), const Color(0xFF0E0F17)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            'Stage ${stage.stageNumber}: ${stage.stageName}',
-                            style: GoogleFonts.outfit(
-                              color: isUnlocked ? Colors.white : Colors.white54,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 13.5,
-                            ),
-                          ),
-                        ),
-                        if (isCurrent) ...[
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFFFD700),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: isCurrent
+                    ? const Color(0xFFFFD700)
+                    : stage.isMajorGate
+                        ? const Color(0xFFFFD700).withValues(alpha: 0.8)
+                        : isUnlocked
+                            ? stage.buttonColor.withValues(alpha: 0.5)
+                            : Colors.white10,
+                width: (isCurrent || stage.isMajorGate) ? 2 : 1,
+              ),
+            ),
+            child: Row(
+              children: [
+                // Stage badge
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: isUnlocked ? stage.buttonColor : Colors.white10,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: Text(
+                      isUnlocked ? stage.emoji : '🔒',
+                      style: TextStyle(fontSize: isUnlocked ? 20 : 16),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
                             child: Text(
-                              'ACTIVE',
+                              'Stage ${stage.stageNumber}: ${stage.stageName}',
                               style: GoogleFonts.outfit(
-                                color: Colors.black,
-                                fontWeight: FontWeight.w900,
-                                fontSize: 9,
+                                color: isUnlocked ? Colors.white : Colors.white54,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13.5,
                               ),
                             ),
                           ),
+                          if (isCurrent) ...[
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFFD700),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                'ACTIVE',
+                                style: GoogleFonts.outfit(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 9,
+                                ),
+                              ),
+                            ),
+                          ],
                         ],
-                      ],
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'Day ${stage.day} of 90 • ${stage.fluencyTier}',
-                      style: GoogleFonts.inter(
-                        color: isUnlocked ? stage.buttonColor : Colors.white38,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w500,
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 2),
+                      Text(
+                        isCompletedToday
+                            ? '✅ DAY ${stage.day} COMPLETED TODAY • Day ${stage.day + 1} Unlocks Tomorrow'
+                            : (isUnlocked
+                                ? 'Day ${stage.day} of 90 • ${stage.fluencyTier}'
+                                : (stage.day == currentDay + 1
+                                    ? '🔒 UNLOCKS TOMORROW • Day ${stage.day}'
+                                    : '🔒 Locked • Complete Day ${stage.day - 1}')),
+                        style: GoogleFonts.inter(
+                          color: isCompletedToday
+                              ? const Color(0xFF10B981)
+                              : (isUnlocked
+                                  ? stage.buttonColor
+                                  : (stage.day == currentDay + 1 ? const Color(0xFFFFD700) : Colors.white38)),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
               const SizedBox(width: 8),
               // Verified Tick Badge Preview for this Stage
               Container(
@@ -694,9 +749,10 @@ class _Learning60DayDashboardSheetState extends State<Learning60DayDashboardShee
               ),
             ],
           ),
-        );
-      },
-    );
+        ),
+      );
+    },
+  );
   }
 }
 
