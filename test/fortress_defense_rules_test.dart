@@ -306,6 +306,26 @@ void main() {
       expect(PocketFortressDefenseService.getUnlockedGamesCountForStage(90), equals(9));
       expect(PocketFortressDefenseService.getMaxQuestionsForStage(90), equals(90));
     });
+
+    test('Attack unlocks starting at Level 4', () {
+      expect(PocketFortressDefenseService.canUserAttack(1), isFalse);
+      expect(PocketFortressDefenseService.canUserAttack(2), isFalse);
+      expect(PocketFortressDefenseService.canUserAttack(3), isFalse);
+      expect(PocketFortressDefenseService.canUserAttack(4), isTrue);
+      expect(PocketFortressDefenseService.canUserAttack(10), isTrue);
+    });
+
+    test('Level 4 attacker matches with Level 5 or 6 citadels', () {
+      final targets = <int>{};
+      for (int i = 0; i < 20; i++) {
+        targets.add(PocketFortressDefenseService.getRaidTargetDay(4));
+      }
+      expect(targets.every((t) => t == 5 || t == 6), isTrue);
+      expect(PocketFortressDefenseService.isRaidTargetValid(4, 5), isTrue);
+      expect(PocketFortressDefenseService.isRaidTargetValid(4, 6), isTrue);
+      expect(PocketFortressDefenseService.isRaidTargetValid(4, 4), isFalse);
+      expect(PocketFortressDefenseService.isRaidTargetValid(4, 3), isFalse);
+    });
   });
 }
 

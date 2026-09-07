@@ -2662,6 +2662,98 @@ class _FlameEnglishHouseWidgetState extends State<FlameEnglishHouseWidget> {
                   ),
                   const SizedBox(width: 8),
 
+                  // ⚔️ Direct Attack / Raid Button (Unlocks at Level 4)
+                  GestureDetector(
+                    onTap: () {
+                      HapticFeedback.mediumImpact();
+                      if (widget.currentDay < 4) {
+                        showDialog(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            backgroundColor: const Color(0xFF0F172A),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(18),
+                              side: const BorderSide(color: Color(0xFFEF4444), width: 1.5),
+                            ),
+                            title: Row(
+                              children: [
+                                const Text('🔒 ', style: TextStyle(fontSize: 22)),
+                                Expanded(
+                                  child: Text(
+                                    'Attack Unlocks at Level 4',
+                                    style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            content: Text(
+                              'Reach Level 4 to unlock direct citadel attacks and challenge rival houses with English battles!',
+                              style: GoogleFonts.inter(color: Colors.white70, fontSize: 13, height: 1.4),
+                            ),
+                            actions: [
+                              ElevatedButton(
+                                onPressed: () => Navigator.pop(ctx),
+                                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0284C7)),
+                                child: const Text('OK', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                              ),
+                            ],
+                          ),
+                        );
+                      } else {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => PocketWorldStreetPage(
+                              currentDay: widget.currentDay,
+                              streak: widget.streak,
+                              autoRollRaid: true,
+                            ),
+                          ),
+                        );
+                      }
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: widget.currentDay >= 4
+                              ? [const Color(0xFFDC2626), const Color(0xFF991B1B)]
+                              : [const Color(0xFF334155), const Color(0xFF1E293B)],
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: widget.currentDay >= 4 ? const Color(0xFFF87171) : Colors.white24,
+                          width: 1.2,
+                        ),
+                        boxShadow: [
+                          if (widget.currentDay >= 4)
+                            BoxShadow(
+                              color: Colors.redAccent.withValues(alpha: 0.35),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(widget.currentDay >= 4 ? '⚔️' : '🔒', style: const TextStyle(fontSize: 12)),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Attack',
+                            style: GoogleFonts.outfit(
+                              color: widget.currentDay >= 4 ? Colors.white : Colors.white60,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+
                   // 🏎️ Estate Garage / 90 VIP Fleet Button
                   GestureDetector(
                     onTap: () {

@@ -433,9 +433,28 @@ class PocketFortressDefenseService {
   ///   This forces rapid English learning and vocabulary application under pressure.
   /// - Level 20+ (Days 20–90): Users have demonstrated proven mastery and can attack
   ///   same-level peers or freely select targets.
+  /// ⚔️ Check if the user is high enough level to launch direct attacks
+  /// Attack unlocks starting at Level 4 (Malayalam Audio Directive):
+  /// "ഒരു നാലാമത്തെ ലെവൽ ഒക്കെ ആകുമ്പോൾ നമുക്ക് അറ്റാക്ക് സ്റ്റാർട്ട് ചെയ്യാം...
+  ///  ഡയറക്റ്റ് അറ്റാക്ക് ചെയ്യാൻ വരണം... നാലാമത്തെ ആണെന്നുണ്ടെങ്കിൽ അഞ്ചോ ആറോ ആ ഒരു ലെവലിൽ ഉള്ള വീടുകൾ ആക്രമിക്കാം."
+  static bool canUserAttack(int userDay) {
+    return userDay >= 4;
+  }
+
+  /// ⚔️ Raid Opponent Target Level Matchmaking Rule:
+  /// - Under Level 4: Attacks locked until Level 4.
+  /// - Level 4: Matches with Level 5 or 6 houses (+1 or +2 Lvls higher).
+  /// - Level 5–19: Matches with higher-level citadels (+1 to +3 Lvls higher) to push rapid English growth.
+  /// - Level 20+ (Days 20–90): Users have proven mastery and can challenge same-level peers or choose freely.
   static int getRaidTargetDay(int userDay) {
     final day = userDay.clamp(1, 90);
+    if (day < 4) {
+      return 5;
+    }
     if (day < 20) {
+      if (day == 4) {
+        return math.Random().nextBool() ? 5 : 6;
+      }
       return math.min(90, day + 4);
     } else {
       return day;
@@ -444,8 +463,9 @@ class PocketFortressDefenseService {
 
   /// Check whether an attack target is valid for user's level
   static bool isRaidTargetValid(int userDay, int targetDay) {
+    if (userDay < 4) return false;
     if (userDay < 20) {
-      return targetDay > userDay; // Under Level 20: Target must be higher level
+      return targetDay > userDay; // Under Level 20: Target must be higher level (e.g. Lvl 4 attacks Lvl 5 or 6)
     }
     return true; // Level 20+: Can attack anyone
   }
