@@ -170,6 +170,45 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
       '🏰 Part 4: The Safe Harbor\n'
       'By dawn, the ship glided safely into Citadel Harbor. Sarah proved that in every storm, decisive communication and resolute courage turn adversity into triumph.';
 
+  static const String _kDay6StoryText =
+      'Two rival merchant syndicates gathered at the high mountain summit of Alveron to negotiate vital trade routes. An escalating dispute over waterway access threatened to plunge the valley into conflict. For hours, tempers flared and talks reached a tense impasse as each side made unilateral demands. Alistair, a seasoned diplomatic envoy, stepped between the opposing delegations. Instead of taking sides, he offered a pragmatic compromise: "If we had succumbed to anger, our ships would have remained stranded in harbor. But if we establish an equitable joint council with stipulated seasonal tariffs, both merchant houses will prosper." His measured cadence and precise legal clarity disarmed hostility. Both syndicates concurred, signing the Alveron Accord before nightfall. Alistair demonstrated that when the stakes are highest, articulate negotiation turns bitter deadlock into enduring partnership.';
+
+  static const String _kDay6StoryFormatted =
+      '🏔️ Part 1: The Mountain Impasse\n'
+      'Two rival merchant syndicates gathered at the high summit of Alveron. An escalating dispute over waterway access reached a bitter deadlock as each side made unilateral demands.\n\n'
+      '⚖️ Part 2: The Pragmatic Envoy\n'
+      'Alistair, a seasoned diplomatic envoy, stepped forward with poise. Instead of matching hostility, he reframed the dispute with legal precision and unwavering neutrality.\n\n'
+      '🤝 Part 3: The Art of Compromise\n'
+      '"If we had succumbed to anger, our ships would have remained stranded. But if we establish an equitable joint council with stipulated tariffs, both houses will prosper."\n\n'
+      '📜 Part 4: The Alveron Accord\n'
+      'Both delegations concurred and signed the accord before nightfall. Alistair proved that articulate, high-stakes negotiation turns bitter gridlock into lasting victory.';
+
+  static const String _kDay7StoryText =
+      'Before the Great Academic Forum of Lysander, thousands of skeptical scholars waited in heavy silence. Young researcher Mira was tasked with presenting a revolutionary theory on sustainable clean energy. Never in history had a novice addressed this venerated council. As she stood before the podium, her heart raced, yet she channeled her nervous energy into profound rhetorical eloquence. "Rarely do we encounter moments where tradition and progress must forge a new alliance," Mira began, her voice resonating across the vaulted marble hall. She weaved rigorous empirical evidence with compelling moral purpose. Not only did she address every counter-argument with perspicacious clarity, but she also inspired the audience with a vision of global renewal. When she concluded, the once-hostile auditorium erupted into an overwhelming standing ovation. Mira proved that true eloquence is not ornamental vanity, but the courageous resonance of conviction and truth.';
+
+  static const String _kDay7StoryFormatted =
+      '🏛️ Part 1: The Skeptical Assembly\n'
+      'Before the Great Academic Forum of Lysander, thousands of skeptical scholars waited in silence. Young researcher Mira was tasked with defending a revolutionary clean energy theory.\n\n'
+      '⚡ Part 2: The Inverted Opening\n'
+      'As she stood before the podium, she channeled nervous energy into rhetorical mastery: "Never in history have we stood at such a crossroads. Rarely do we encounter moments where tradition and progress must unite."\n\n'
+      '🔬 Part 3: Logic and Ethos\n'
+      'Mira weaved rigorous empirical proof with compelling moral purpose. Not only did she address every critique with perspicacious insight, but she also electrified the hall.\n\n'
+      '🌟 Part 4: The Standing Ovation\n'
+      'The once-cynical assembly erupted into an overwhelming standing ovation. Mira demonstrated that authentic eloquence is the courageous echo of conviction and truth.';
+
+  static const String _kDay8StoryText =
+      'At the International Symposium on Future Ethics in Geneva, world leaders struggled with a complex dilemma: balancing rapid artificial intelligence autonomy with human dignity. The debate was paralyzed by a false dichotomy between reckless technological velocity and rigid technological stagnation. Dr. Evelyn Vance, a philosopher and systems architect, approached the rostrum. "It is imperative that our generation synthesize visionary technological innovation with timeless ethical wisdom," Dr. Vance declared. She proposed an adaptive global governance framework that empowered autonomous systems while safeguarding human well-being as a paramount prerequisite. Rather than viewing machine intelligence as an adversary, she articulated an enlightened paradigm where technology acts as an amplifier of human compassion. Her address synthesized philosophy, law, and science with sublime intellectual rigor. The assembly adopted the Geneva Synthesis by acclamation, establishing an enduring blueprint for generations to come.';
+
+  static const String _kDay8StoryFormatted =
+      '🌐 Part 1: The Global Dilemma\n'
+      'At the International Symposium on Future Ethics, global delegates were paralyzed by a false dichotomy: reckless technological speed versus rigid technological stagnation.\n\n'
+      '🧠 Part 2: The Subjunctive Call\n'
+      'Dr. Evelyn Vance approached the rostrum with sublime rigor: "It is imperative that our generation synthesize visionary innovation with timeless ethical wisdom."\n\n'
+      '🛡️ Part 3: The Enlightened Paradigm\n'
+      'She proposed an adaptive governance framework safeguarding human dignity as a prerequisite. Rather than fearing progress, she articulated a paradigm where innovation amplifies human compassion.\n\n'
+      '✨ Part 4: The Geneva Synthesis\n'
+      'The delegates adopted the charter by acclamation. Dr. Vance proved that visionary problem-solvers synthesize disparate complexities into a harmonious tomorrow.';
+
   String get _storyText {
     switch (widget.day) {
       case 2:
@@ -180,6 +219,12 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         return _kDay4StoryText;
       case 5:
         return _kDay5StoryText;
+      case 6:
+        return _kDay6StoryText;
+      case 7:
+        return _kDay7StoryText;
+      case 8:
+        return _kDay8StoryText;
       default:
         return _kDay1StoryText;
     }
@@ -195,6 +240,12 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         return _kDay4StoryFormatted;
       case 5:
         return _kDay5StoryFormatted;
+      case 6:
+        return _kDay6StoryFormatted;
+      case 7:
+        return _kDay7StoryFormatted;
+      case 8:
+        return _kDay8StoryFormatted;
       default:
         return _kDay1StoryFormatted;
     }
@@ -210,6 +261,12 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         return 'DAY 4 STORY: THE ART OF THE COUNTER-ARGUMENT';
       case 5:
         return 'DAY 5 STORY: THE BEACON IN THE STORM';
+      case 6:
+        return 'DAY 6 STORY: THE SUMMIT OF RESOLUTION';
+      case 7:
+        return 'DAY 7 STORY: THE ECHO OF AN IDEA';
+      case 8:
+        return 'DAY 8 STORY: THE CHRONICLE OF TOMORROW';
       default:
         return 'DAY 1 STORY: THE SEED OF CONFIDENCE';
     }
@@ -225,6 +282,12 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         return 'Persuasive Reasoning & Diplomatic Debate';
       case 5:
         return 'Decisive Leadership & Resilience in Crisis';
+      case 6:
+        return 'High-Stakes Negotiation & Resolving Impasses';
+      case 7:
+        return 'Rhetorical Oratory & Swaying a Skeptical Assembly';
+      case 8:
+        return 'Complex Problem-Solving & Philosophical Synthesis';
       default:
         return 'Aloud Reading & Pronunciation Practice';
     }
@@ -240,6 +303,12 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         return '🤝';
       case 5:
         return '⚓';
+      case 6:
+        return '🏔️';
+      case 7:
+        return '🏛️';
+      case 8:
+        return '🌐';
       default:
         return '🎋';
     }
@@ -255,6 +324,12 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         return '"In the town council assembly, young Kaelen was passionate about protecting the ancient forest. He raised his voice and interrupted opponents, but the council rejected his plea. An elder diplomat offered advice: \'Persuasion is not a battlefield of loud voices...\'"';
       case 5:
         return '"The merchant galleon was trapped in a fierce midnight gale near treacherous coral reefs. Amidst the chaos, Captain Sarah climbed to the helm with unwavering fortitude: \'Secure the main sail immediately! Man the bilge pumps! Navigator, plot the course toward Citadel Harbor!\'"';
+      case 6:
+        return '"Two rival merchant syndicates gathered at the high summit of Alveron. Talks reached a tense impasse as each side made unilateral demands. Envoy Alistair stepped forward: \'If we had succumbed to anger, our ships would have remained stranded in harbor...\'"';
+      case 7:
+        return '"Before the Great Academic Forum of Lysander, thousands of skeptical scholars waited in silence. Mira stood before the podium: \'Rarely do we encounter moments where tradition and progress must unite. Not only did she address every critique with perspicacious clarity...\'"';
+      case 8:
+        return '"At the International Symposium on Future Ethics in Geneva, world leaders debated AI autonomy and human dignity. Dr. Vance approached the rostrum: \'It is imperative that our generation synthesize technological velocity with timeless ethical wisdom...\'"';
       default:
         return '"A young student once stood by a tall bamboo tree, hesitant to practice speaking English. He was afraid of making mistakes in front of others. A wise mentor approached him: \'For four years, the bamboo roots grow deep underground in silence. Then, in the fifth year, it shoots up eighty feet into the sky!\'"';
     }
@@ -270,6 +345,12 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         return 'Rule 4: First Conditional (If + Present, Will + Verb)';
       case 5:
         return 'Rule 5: Present Perfect vs Simple Past';
+      case 6:
+        return 'Rule 6: Third Conditional (Past Unreal Situations)';
+      case 7:
+        return 'Rule 7: Inversion for Rhetorical Emphasis (Rarely, Never)';
+      case 8:
+        return 'Rule 8: Subjunctive Mood & Formal Conditional Stems';
       default:
         return 'Rule 1: Sentence Structure (S + V + O)';
     }
@@ -285,6 +366,12 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         return 'Q: Which sentence correctly follows the First Conditional structure?';
       case 5:
         return 'Q: Which sentence uses the Present Perfect tense for ongoing experience?';
+      case 6:
+        return 'Q: Which sentence correctly uses the Third Conditional for an unreal past event?';
+      case 7:
+        return 'Q: Which sentence correctly uses grammatical inversion for rhetorical emphasis?';
+      case 8:
+        return 'Q: Which sentence correctly employs the Subjunctive Mood in formal English?';
       default:
         return 'Q: Which sentence follows the correct English "Subject + Verb + Object" order?';
     }
@@ -316,6 +403,24 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           'I mastered strategic leadership since five days of practice.',
           'I have master strategic leadership over five days of practice.',
         ];
+      case 6:
+        return [
+          'If we had acted sooner, we would have avoided the impasse.',
+          'If we acted sooner, we would avoid the impasse.',
+          'If we would have acted sooner, we had avoided the impasse.',
+        ];
+      case 7:
+        return [
+          'Rarely have I witnessed such profound and articulate eloquence.',
+          'Rarely I have witnessed such profound and articulate eloquence.',
+          'Rarely did I witnessed such profound and articulate eloquence.',
+        ];
+      case 8:
+        return [
+          'It is imperative that every leader be present at the summit.',
+          'It is imperative that every leader is present at the summit.',
+          'It is imperative that every leader was present at the summit.',
+        ];
       default:
         return [
           'She reads books diligently.',
@@ -326,6 +431,54 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   }
 
   String _getGrammarRuleExplanation(String lang) {
+    if (widget.day == 8) {
+      switch (lang.toLowerCase()) {
+        case 'tamil':
+          return 'உயர்நிலை ஆங்கிலத்தில் Subjunctive Mood பயன்பாடு: "It is imperative that he be present." (is/was அல்ல!).\n• சரியான வாக்கியம்: "It is essential that our team synthesize ethical solutions."\n• சர்வதேச உயர்மட்ட மாநாடுகளிலும் ராஜதந்திர உரைகளிலும் இது பயன்படுத்தப்படுகிறது.';
+        case 'hindi':
+          return 'उच्च-स्तरीय और औपचारिक अंग्रेजी में Subjunctive Mood का प्रयोग होता है: "It is imperative that he be present." (is/was नहीं, मूल verb "be" लगाएं)।\n• सही वाक्य: "It is vital that our team synthesize visionary ideas."\n• राजनयिक सम्मेलनों और वैश्विक संवाद में यह अनिवार्य है।';
+        case 'telugu':
+          return 'అధికారిక మరియు ఉన్నత స్థాయి ఇంగ్లీషులో Subjunctive Mood (It is imperative that + Base Verb) వాడాలి.\n• సరైనది: "It is imperative that every leader be present." (is/was వాడకూడదు)\n• ఉన్నత సంభాషణల్లో మరియు సదస్సుల్లో ఇది అత్యంత ముఖ్యం.';
+        case 'kannada':
+          return 'ಅತ್ಯಂತ ಔಪಚಾರಿಕ ಹಾಗೂ ಉನ್ನತ ಮಟ್ಟದ ಇಂಗ್ಲಿಷ್‌ನಲ್ಲಿ Subjunctive Mood ಬಳಸಿ: "It is imperative that he be present."\n• ಸರಿಯಾದ ವಾಕ್ಯ: "It is essential that we synthesize new solutions."\n• ಅಧಿಕೃತ ಸಭೆಗಳಲ್ಲಿ ಪ್ರಭಾವಿ ಸಂವಾದಕ್ಕೆ ಇದು ನೆರವಾಗುತ್ತದೆ.';
+        case 'malayalam':
+        default:
+          return 'The Subjunctive Mood expresses formal urgency, ethical commands, or visionary demands. Following "imperative / essential / vital that", always use the BASE VERB (be, speak, synthesize) without third-person -s.\n• Correct: "It is imperative that every leader be present." (NOT "is")\n• Correct: "It is vital that she speak with clarity." (NOT "speaks")';
+      }
+    }
+
+    if (widget.day == 7) {
+      switch (lang.toLowerCase()) {
+        case 'tamil':
+          return 'பேச்சிற்கு கம்பீரமும் அழுத்தமும் சேர்க்க Inversion (Rarely, Never, Seldom + Auxiliary Verb + Subject) பயன்படுத்தவும்.\n• சரியான வாக்கியம்: "Rarely have I witnessed such profound eloquence."\n• வழக்கமான வாக்கியத்தை விட பொது மேடைகளில் இது அதிக ஆளுமையைத் தரும்.';
+        case 'hindi':
+          return 'भाषण में गाम्भीर्य और प्रभाव डालने के लिए Inversion का प्रयोग करें: Rarely/Never + Auxiliary Verb + Subject + Main Verb.\n• सही वाक्य: "Rarely have I witnessed such profound eloquence."\n• यह सामान्य वाक्य की तुलना में अधिक गरिमामयी और प्रभावशाली लगता है।';
+        case 'telugu':
+          return 'మాట్లాడేటప్పుడు మాటలకు బలం మరియు గాంభీర్యం తెచ్చేందుకు Inversion (Rarely/Never + సహాయక క్రియ + కర్త) వాడతారు.\n• సరైనది: "Rarely have I witnessed such profound eloquence."\n• పెద్ద సభలలో మరియు ప్రభావవంతమైన సంభాషణల్లో ఇది ఉపయోగపడుతుంది.';
+        case 'kannada':
+          return 'ಭಾಷಣದಲ್ಲಿ ಗಾಂಭೀರ್ಯ ಮತ್ತು ಪ್ರಭಾವವನ್ನು ಹೆಚ್ಚಿಸಲು Inversion (Rarely/Never + Auxiliary Verb + Subject) ಬಳಸಿ.\n• ಸರಿಯಾದ ವಾಕ್ಯ: "Rarely have I witnessed such profound eloquence."\n• ಸಾರ್ವಜನಿಕ ಭಾಷಣಗಳಲ್ಲಿ ಇದು ಆಕರ್ಷಕ ಶೈಲಿಯನ್ನು ನೀಡುತ್ತದೆ.';
+        case 'malayalam':
+        default:
+          return 'Inversion places negative or limiting adverbs at the start of a sentence followed by the auxiliary verb and subject to create dramatic rhetorical power.\n• Normal: "I have rarely witnessed such eloquence."\n• Inverted (Rhetorical): "Rarely have I witnessed such profound eloquence."\n• Structure: Rarely / Never / Not only + Have/Did/Can + Subject + Verb.';
+      }
+    }
+
+    if (widget.day == 6) {
+      switch (lang.toLowerCase()) {
+        case 'tamil':
+          return 'கடந்த கால மாற்ற முடியாத அனுமானங்களுக்கு Third Conditional (If + Past Perfect, Would have + Verb3) பயன்படுத்தவும்.\n• சரியான வாக்கியம்: "If we had negotiated earlier, we would have avoided the impasse."\n• கடந்த கால அனுபவங்களை சாதுரியமாக ஆராய இது உதவுகிறது.';
+        case 'hindi':
+          return 'Third Conditional का प्रयोग भूतकाल की काल्पनिक स्थितियों के लिए होता है जो नहीं हो सकीं: If + Past Perfect (had + V3), Would have + V3.\n• सही वाक्य: "If we had negotiated earlier, we would have avoided the impasse."\n• यह भूतकाल के तार्किक विश्लेषण के लिए अत्यंत उपयोगी है।';
+        case 'telugu':
+          return 'గతంలో జరగని ఊహాత్మక సంఘటనలను తెలపడానికి Third Conditional (If + Past Perfect, Would have + V3) వాడాలి.\n• సరైనది: "If we had negotiated earlier, we would have avoided the impasse."\n• గత అనుభవాలను చాకచక్యంగా విశ్లేషించేందుకు ఇది ఉపయోగపడుతుంది.';
+        case 'kannada':
+          return 'ಹಿಂದೆ ನಡೆಯದ ಕಾಲ್ಪನಿಕ ಸನ್ನಿವೇಶಗಳನ್ನು ವ್ಯಕ್ತಪಡಿಸಲು Third Conditional (If + Past Perfect, Would have + V3) ಬಳಸಿ.\n• ಸರಿಯಾದ ವಾಕ್ಯ: "If we had negotiated earlier, we would have avoided the impasse."\n• ಹಿಂದಿನ ತಪ್ಪುಗಳನ್ನು ಸರಿಪಡಿಸಲು ಇದು ನೆರವಾಗುತ್ತದೆ.';
+        case 'malayalam':
+        default:
+          return 'Third Conditional expresses hypothetical past outcomes that did not occur: If + Past Perfect (had + V3), Would have + Past Participle (V3).\n• Correct: "If we had negotiated earlier, we would have avoided the impasse."\n• In Malayalam: "ഞങ്ങൾ നേരത്തെ സംസാരിച്ചിരുന്നെങ്കിൽ തർക്കം ഒഴിവാക്കാമായിരുന്നു." Reflecting on past learning with poise.';
+      }
+    }
+
     if (widget.day == 5) {
       switch (lang.toLowerCase()) {
         case 'tamil':
@@ -406,6 +559,54 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   }
 
   String _getStorySummary(String lang) {
+    if (widget.day == 8) {
+      switch (lang.toLowerCase()) {
+        case 'tamil':
+          return '💡 நீதி: "தொழில்நுட்ப வேகத்தையும் தார்மீக மனித விழுமியங்களையும் ஒருங்கிணைக்கும் தொலைநோக்குப் பார்வையே எதிர்காலத்தை வழிநடத்தும்."';
+        case 'hindi':
+          return '💡 सीख: "तकनीकी नवाचार और मानवीय नैतिकता का संतुलित समन्वय ही भविष्य को उज्ज्वल बनाता है।" समग्र दृष्टिकोण अपनाएं।';
+        case 'telugu':
+          return '💡 నీతి: "సాంకేతిక వేగాన్ని, నైతిక విలువలను సమన్వయం చేసే వివేకవంతమైన దృక్పథమే మానవాళి భవిష్యత్తుకు మార్గదర్శకం."';
+        case 'kannada':
+          return '💡 ನೀತಿ: "ತಂತ್ರಜ್ಞಾನ ಮತ್ತು ನೈತಿಕ ಮಾನವ ಮೌಲ್ಯಗಳನ್ನು ಸಮನ್ವಯಗೊಳಿಸುವ ದೂರದೃಷ್ಟಿಯೇ ಭವಿಷ್ಯದ ದಾರಿದೀಪ."';
+        case 'malayalam':
+        default:
+          return '💡 സന്ദേശം: "സാങ്കേതിക വിപ്ലവങ്ങളെയും ഉന്നതമായ മാനുഷിക ധാർമ്മികതയെയും സമന്വയിപ്പിക്കുന്ന ദീർഘവീക്ഷണമുള്ള ചിന്തകരാണ് ഭാവിയുടെ യഥാർത്ഥ ശില്പികൾ."';
+      }
+    }
+
+    if (widget.day == 7) {
+      switch (lang.toLowerCase()) {
+        case 'tamil':
+          return '💡 நீதி: "உண்மையான சொல்வன்மை வெறும் அலங்காரமல்ல; ஆழ்ந்த அறிவும் அசைக்க முடியாத தன்னம்பிக்கையுமே சபையை வெல்லும்."';
+        case 'hindi':
+          return '💡 सीख: "सच्ची वाक्पटुता केवल शब्दों का आडंबर नहीं, बल्कि गहरे ज्ञान और आत्मबल का प्रभावशाली प्रकटीकरण है।"';
+        case 'telugu':
+          return '💡 నీతి: "నిజమైన వాక్చాతుర్యం ఆడంబరం కాదు; లోతైన విజ్ఞానమూ, నిశ్చలమైన ఆత్మవిశ్వాసమే సభను మెప్పిస్తాయి."';
+        case 'kannada':
+          return '💡 ನೀತಿ: "ನಿಜವಾದ ವಾಕ್ಚಾತುರ್ಯವು ಕೇವಲ ಅಲಂಕಾರವಲ್ಲ; ಆಳವಾದ ಜ್ಞಾನ ಮತ್ತು ಅಚಲ ಆತ್ಮವಿಶ್ವಾಸವೇ ಸಭೆಯನ್ನು ಗೆಲ್ಲುತ್ತದೆ."';
+        case 'malayalam':
+        default:
+          return '💡 സന്ദേശം: "യഥാർത്ഥ വാക്ചാതുര്യം കേവലം വാക്കുകളുടെ അലങ്കാരമല്ല, മറിച്ച് സത്യസന്ധമായ ഉറച്ച ബോധ്യങ്ങളുടെയും ആഴത്തിലുള്ള അറിവിന്റെയും ധീരമായ പ്രതിധ്വനിയാണ്."';
+      }
+    }
+
+    if (widget.day == 6) {
+      switch (lang.toLowerCase()) {
+        case 'tamil':
+          return '💡 நீதி: "கடும் பதற்றமான சூழலிலும் நிதானமான சமரசமும் சட்டபூர்வமான தெளிவுமே முட்டுக்கட்டையை மாபெரும் வெற்றியாக்கும்."';
+        case 'hindi':
+          return '💡 सीख: "अत्यधिक दबाव में भी शांत और व्यावहारिक समझौता ही बड़े से बड़े गतिरोध को स्थायी साझेदारी में बदल देता है।"';
+        case 'telugu':
+          return '💡 నీతి: "తీవ్రమైన ఒత్తిడిలో కూడా ప్రశాంతమైన సమన్వయమూ, స్పష్టమైన చట్టబద్ధమైన ఆలోచనే ప్రతిష్టంభనను విజయంగా మారుస్తాయి."';
+        case 'kannada':
+          return '💡 ನೀತಿ: "ತೀವ್ರ ಒತ್ತಡದ ಪರಿಸ್ಥಿತಿಯಲ್ಲೂ ಶಾಂತ ರಾಜೀ ಮತ್ತು ಸ್ಪಷ್ಟ ಸಂವಹನವೇ ಬಿಕ್ಕಟ್ಟನ್ನು ಶಾಶ್ವತ ಪಾಲುದಾರಿಕೆಯನ್ನಾಗಿ ಪರಿವರ್ತಿಸುತ್ತದೆ."';
+        case 'malayalam':
+        default:
+          return '💡 സന്ദേശം: "ഉയർന്ന സമ്മർദ്ദത്തിലും ശാന്തമായ വിട്ടുവീഴ്ചകളും നിയമപരമായ വ്യക്തതയും ഏറ്റവും കടുത്ത തർക്കങ്ങളെയും പരസ്പര വിജയമാക്കി മാറ്റും."';
+      }
+    }
+
     if (widget.day == 5) {
       switch (lang.toLowerCase()) {
         case 'tamil':
@@ -996,6 +1197,387 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           kannadaMeaning: 'ದೂರದೃಷ್ಟಿ',
           exampleSentence: 'Great speakers use foresight to anticipate their listeners\' questions.',
           phonetic: '/ˈfɔː.saɪt/',
+        ),
+      ];
+      return;
+    }
+
+    if (widget.day == 6) {
+      // 10 high-impact vocabulary words for Day 6 (High-Stakes Negotiation & Resolving Impasses)
+      _vocabList = const [
+        DailyVocabItem(
+          word: 'Compromise',
+          partOfSpeech: 'noun',
+          definition: 'An agreement or settlement of a dispute reached by mutual concession.',
+          malayalamMeaning: 'വിട്ടുവീഴ്ച / ഒത്തുതീർപ്പ്',
+          tamilMeaning: 'சமரச உடன்படிக்கை',
+          hindiMeaning: 'समझौता / सुलह',
+          teluguMeaning: 'రాజీ / సర్దుబాటు',
+          kannadaMeaning: 'ರಾಜಿ / ಹೊಂದಾಣಿಕೆ',
+          exampleSentence: 'A fair compromise protected the interests of both delegations.',
+          phonetic: '/ˈkɒm.prə.maɪz/',
+        ),
+        DailyVocabItem(
+          word: 'Equivocal',
+          partOfSpeech: 'adjective',
+          definition: 'Open to more than one interpretation; ambiguous.',
+          malayalamMeaning: 'വ്യക്തതയില്ലാത്ത / അവ്യക്തമായ',
+          tamilMeaning: 'தெளிவற்ற / இருபொருள் தரும்',
+          hindiMeaning: 'अस्पष्ट / संदिग्ध',
+          teluguMeaning: 'అస్పష్టమైన / సందేహాస్పద',
+          kannadaMeaning: 'ಅಸ್ಪಷ್ಟ / ಸಂದಿಗ್ಧ',
+          exampleSentence: 'Avoid equivocal phrasing when drafting formal agreements.',
+          phonetic: '/ɪˈkwɪv.ə.kəl/',
+        ),
+        DailyVocabItem(
+          word: 'Leverage',
+          partOfSpeech: 'noun',
+          definition: 'The power or influence to influence others and achieve a desired result.',
+          malayalamMeaning: 'സ്വാധീനശക്തി / അനുകൂല നേട്ടം',
+          tamilMeaning: 'சாதகமான செல்வாக்கு',
+          hindiMeaning: 'रणनीतिक लाभ / प्रभाव',
+          teluguMeaning: 'అనుకూల పరపతి / పలుకుబడి',
+          kannadaMeaning: 'ಪ್ರಭಾವ / ಅನುಕೂಲಕರ ಶಕ್ತಿ',
+          exampleSentence: 'Thorough preparation gives you leverage in difficult debates.',
+          phonetic: '/ˈliː.vər.ɪdʒ/',
+        ),
+        DailyVocabItem(
+          word: 'Pragmatic',
+          partOfSpeech: 'adjective',
+          definition: 'Dealing with things sensibly and realistically based on practical results.',
+          malayalamMeaning: 'പ്രായോഗികമായ / കാര്യക്ഷമമായ',
+          tamilMeaning: 'நடைமுறைக்கு ஏற்ற',
+          hindiMeaning: 'व्यावहारिक / यथार्थवादी',
+          teluguMeaning: 'ఆచరణాత్మకమైన',
+          kannadaMeaning: 'ಪ್ರಾಯೋಗಿಕ / ವಾಸ್ತವಿಕ',
+          exampleSentence: 'Adopt a pragmatic stance to overcome ideological division.',
+          phonetic: '/præɡˈmæt.ɪk/',
+        ),
+        DailyVocabItem(
+          word: 'Stipulate',
+          partOfSpeech: 'verb',
+          definition: 'Demand or specify a requirement typically as part of a formal bargain.',
+          malayalamMeaning: 'വ്യവസ്ഥ ചെയ്യുക',
+          tamilMeaning: 'நிபந்தனை விதித்தல்',
+          hindiMeaning: 'शर्त लगाना / निर्धारित करना',
+          teluguMeaning: 'నిబంధన విధించు',
+          kannadaMeaning: 'ಷರತ್ತು ವಿಧಿಸು',
+          exampleSentence: 'The treaty stipulations ensured safe passage for all traders.',
+          phonetic: '/ˈstɪp.jə.leɪt/',
+        ),
+        DailyVocabItem(
+          word: 'Concur',
+          partOfSpeech: 'verb',
+          definition: 'Be of the same opinion; agree.',
+          malayalamMeaning: 'യോജിക്കുക / ഏകാഭിപ്രായത്തിലെത്തുക',
+          tamilMeaning: 'ஒப்புக்கொள்ளுதல் / உடன்படுதல்',
+          hindiMeaning: 'सहमत होना',
+          teluguMeaning: 'ఏకీభవించు / అంగీకరించు',
+          kannadaMeaning: 'ಒಪ್ಪಿಕೊಳ್ಳು / ಸಮ್ಮತಿಸು',
+          exampleSentence: 'All committee members concurred with the proposed compromise.',
+          phonetic: '/kənˈkɜːr/',
+        ),
+        DailyVocabItem(
+          word: 'Impasse',
+          partOfSpeech: 'noun',
+          definition: 'A situation in which no progress is possible due to disagreement.',
+          malayalamMeaning: 'പ്രതിസന്ധി / വഴിമുട്ടിയ അവസ്ഥ',
+          tamilMeaning: 'முட்டுக்கட்டை / முடிவு காண முடியாத நிலை',
+          hindiMeaning: 'गतिरोध / बंद गली',
+          teluguMeaning: 'ప్రతిష్టంభన',
+          kannadaMeaning: 'ಬಿಕ್ಕಟ್ಟು / ಕಗ್ಗಂಟು',
+          exampleSentence: 'A skilled mediator can break an impasse and restore dialogue.',
+          phonetic: '/æmˈpɑːs/',
+        ),
+        DailyVocabItem(
+          word: 'Unilateral',
+          partOfSpeech: 'adjective',
+          definition: 'Performed by or affecting only one party without agreement from others.',
+          malayalamMeaning: 'ഏകപക്ഷീയമായ',
+          tamilMeaning: 'ஒருதலைப்பட்சமான',
+          hindiMeaning: 'एकतरफा / एकपक्षीय',
+          teluguMeaning: 'ఏకపక్ష',
+          kannadaMeaning: 'ಏಕಪಕ್ಷೀಯ',
+          exampleSentence: 'Unilateral decisions alienate partners and fracture trust.',
+          phonetic: '/ˌjuː.nɪˈlæt.ər.əl/',
+        ),
+        DailyVocabItem(
+          word: 'Arbitration',
+          partOfSpeech: 'noun',
+          definition: 'The use of an independent person to officially settle a dispute.',
+          malayalamMeaning: 'മധ്യസ്ഥത / തർക്കപരിഹാരം',
+          tamilMeaning: 'மத்தியஸ்தம் / நடுவர் தீர்ப்பு',
+          hindiMeaning: 'मध्यस्थता / पंच फैसला',
+          teluguMeaning: 'మధ్యవర్తిత్వం',
+          kannadaMeaning: 'ಮಧ್ಯಸ್ಥಿಕೆ',
+          exampleSentence: 'The dispute was successfully resolved through international arbitration.',
+          phonetic: '/ˌɑː.bɪˈtreɪ.ʃən/',
+        ),
+        DailyVocabItem(
+          word: 'Equitable',
+          partOfSpeech: 'adjective',
+          definition: 'Fair and impartial; just to all involved parties.',
+          malayalamMeaning: 'നീതിപൂർവ്വമായ / സമത്വമുള്ള',
+          tamilMeaning: 'நியாயமான / சமத்துவமான',
+          hindiMeaning: 'न्यायसंगत / निष्पक्ष',
+          teluguMeaning: 'సమన్యాయమైన / న్యాయబద్ధమైన',
+          kannadaMeaning: 'ನ್ಯಾಯಸಮ್ಮತವಾದ',
+          exampleSentence: 'They created an equitable distribution of resources across the region.',
+          phonetic: '/ˈek.wɪ.tə.bəl/',
+        ),
+      ];
+      return;
+    }
+
+    if (widget.day == 7) {
+      // 10 high-impact vocabulary words for Day 7 (Rhetorical Oratory & Public Speaking)
+      _vocabList = const [
+        DailyVocabItem(
+          word: 'Eloquent',
+          partOfSpeech: 'adjective',
+          definition: 'Fluent or persuasive in speaking or writing.',
+          malayalamMeaning: 'വാഗ്മിയായ / വാക്ചാതുര്യമുള്ള',
+          tamilMeaning: 'சொல்வன்மை மிக்க / நயமான',
+          hindiMeaning: 'वाक्पटु / सुवक्ता',
+          teluguMeaning: 'వాక్చాతుర్యం గల / మనోహరంగా మాట్లాడే',
+          kannadaMeaning: 'ವಾಗ್ಮಿತ್ವದ / ಸ್ಪಷ್ಟ ವಾಕ್ಪಟುತ್ವದ',
+          exampleSentence: 'Her eloquent address moved the entire international forum.',
+          phonetic: '/ˈel.ə.kwənt/',
+        ),
+        DailyVocabItem(
+          word: 'Perspicacious',
+          partOfSpeech: 'adjective',
+          definition: 'Having a ready insight into and deep understanding of things.',
+          malayalamMeaning: 'സൂക്ഷ്മദൃഷ്ടിയുള്ള / കാര്യങ്ങൾ വേഗത്തിൽ ഗ്രഹിക്കുന്ന',
+          tamilMeaning: 'கூர்மதி கொண்ட / ஆழமான அறிவுள்ள',
+          hindiMeaning: 'कुशाग्रबुद्धि / तीक्ष्ण दृष्टि वाला',
+          teluguMeaning: 'సూక్ష్మబుద్ధి గల / తీక్షణమైన అవగాహన గల',
+          kannadaMeaning: 'ತೀಕ್ಷ್ಣಮತಿಯ / ಒಳನೋಟವುಳ್ಳ',
+          exampleSentence: 'The perspicacious analyst uncovered the underlying trend.',
+          phonetic: '/ˌpɜː.spɪˈkeɪ.ʃəs/',
+        ),
+        DailyVocabItem(
+          word: 'Rhetoric',
+          partOfSpeech: 'noun',
+          definition: 'The art of effective or persuasive speaking or writing.',
+          malayalamMeaning: 'ഭാഷണകലാ ചാതുര്യം / പ്രസംഗരീതി',
+          tamilMeaning: 'சொற்பொழிவாற்றல் / நயவுரைக்கலை',
+          hindiMeaning: 'वक्तृत्व कला / भाषा-कौशल',
+          teluguMeaning: 'భాషణ కళా నైపుణ్యం',
+          kannadaMeaning: 'ಭಾಷಣ ಕಲೆ / ವಾಕ್ಶೈಲಿ',
+          exampleSentence: 'Master the principles of classical rhetoric to inspire crowds.',
+          phonetic: '/ˈret.ər.ɪk/',
+        ),
+        DailyVocabItem(
+          word: 'Resonate',
+          partOfSpeech: 'verb',
+          definition: 'Evoke or suggest images, memories, and emotions in listeners.',
+          malayalamMeaning: 'മനസ്സിൽ പ്രതിധ്വനിക്കുക / സ്വാധീനിക്കുക',
+          tamilMeaning: 'மனதில் எதிரொலித்தல்',
+          hindiMeaning: 'गूंजना / मन को छू जाना',
+          teluguMeaning: 'హృదయంలో ప్రతిధ్వనించు / ఆకట్టుకొను',
+          kannadaMeaning: 'ಮನಸ್ಸಿನಲ್ಲಿ ಪ್ರತಿಧ್ವನಿಸು / ಪ್ರಭಾವಿಸು',
+          exampleSentence: 'Her heartfelt words resonated with learners across every culture.',
+          phonetic: '/ˈrez.ən.eɪt/',
+        ),
+        DailyVocabItem(
+          word: 'Compelling',
+          partOfSpeech: 'adjective',
+          definition: 'Evoking interest, attention, or admiration powerfully.',
+          malayalamMeaning: 'മനസ്സിനെ ആകർഷിക്കുന്ന / ശക്തമായ',
+          tamilMeaning: 'ஈர்க்கும் ஆற்றல் மிக்க',
+          hindiMeaning: 'सम्मोहक / अकाट्य / प्रभावशाली',
+          teluguMeaning: 'బలమైన / ఆకట్టుకునే',
+          kannadaMeaning: 'ಬಲವಾದ / ಸೆಳೆಯುವ',
+          exampleSentence: 'She presented a compelling case for conversational immersion.',
+          phonetic: '/kəmˈpel.ɪŋ/',
+        ),
+        DailyVocabItem(
+          word: 'Discourse',
+          partOfSpeech: 'noun',
+          definition: 'Written or spoken communication or debate on an intellectual topic.',
+          malayalamMeaning: 'പ്രഭാഷണം / വിജ്ഞാനപ്രദമായ ചർച്ച',
+          tamilMeaning: 'உரையாடல் / கருத்தாடல்',
+          hindiMeaning: 'प्रवचन / गंभीर विमर्श',
+          teluguMeaning: 'విద్వత్ గోష్ఠి / చర్చ',
+          kannadaMeaning: 'ಸಂವಾದ / ತಾತ್ವಿಕ ಚರ್ಚೆ',
+          exampleSentence: 'Constructive discourse bridges cultural and linguistic divides.',
+          phonetic: '/ˈdɪs.kɔːs/',
+        ),
+        DailyVocabItem(
+          word: 'Vindicate',
+          partOfSpeech: 'verb',
+          definition: 'Clear of blame, suspicion, or show to be right through proof.',
+          malayalamMeaning: 'ന്യായീകരിക്കുക / ശരിയാണെന്ന് തെളിയിക്കുക',
+          tamilMeaning: 'உண்மையை நிரூபித்தல் / நியாயப்படுத்துதல்',
+          hindiMeaning: 'दोषमुक्त करना / सत्य साबित करना',
+          teluguMeaning: 'నిర్దోషిగా రుజువు చేయు / సమర్థించు',
+          kannadaMeaning: 'ದೋಷಮುಕ್ತಗೊಳಿಸು / ಸರಿ ಎಂದು ತೋರಿಸು',
+          exampleSentence: 'Rigorous empirical research vindicated her controversial thesis.',
+          phonetic: '/ˈvɪn.dɪ.keɪt/',
+        ),
+        DailyVocabItem(
+          word: 'Profound',
+          partOfSpeech: 'adjective',
+          definition: 'Having or showing great knowledge, insight, or emotional depth.',
+          malayalamMeaning: 'ഗാഢമായ / അഗാധമായ',
+          tamilMeaning: 'ஆழமான / மகத்தான',
+          hindiMeaning: 'गहरा / गंभीर / प्रकांड',
+          teluguMeaning: 'లోతైన / ప్రగాఢమైన',
+          kannadaMeaning: 'ಆಳವಾದ / ಪ್ರಗಾಢ',
+          exampleSentence: 'A profound understanding of phonetics refines native accents.',
+          phonetic: '/prəˈfaʊnd/',
+        ),
+        DailyVocabItem(
+          word: 'Exemplary',
+          partOfSpeech: 'adjective',
+          definition: 'Serving as a desirable model; representing the best of its kind.',
+          malayalamMeaning: 'മാതൃകാപരമായ',
+          tamilMeaning: 'முன்மாதிரியான / போற்றத்தக்க',
+          hindiMeaning: 'अनुकरणीय / आदर्श',
+          teluguMeaning: 'ఆదర్శవంతమైన / ఆదర్శప్రాయ',
+          kannadaMeaning: 'ಮಾದರಿಯಾದ / ಆದರ್ಶಪ್ರಾಯ',
+          exampleSentence: 'His exemplary dedication inspired every member of the hub.',
+          phonetic: '/ɪɡˈzem.plər.i/',
+        ),
+        DailyVocabItem(
+          word: 'Articulate',
+          partOfSpeech: 'adjective',
+          definition: 'Expressing oneself clearly, coherently, and effectively.',
+          malayalamMeaning: 'വ്യക്തമായി ആശയങ്ങൾ പ്രകടിപ്പിക്കുന്ന',
+          tamilMeaning: 'தெளிவாக எடுத்துரைக்கும்',
+          hindiMeaning: 'स्पष्टवादी / सुस्पष्ट',
+          teluguMeaning: 'స్పష్టంగా భావాలు తెలిపే',
+          kannadaMeaning: 'ಸ್ಪಷ್ಟವಾಗಿ ಅಭಿವ್ಯಕ್ತಿಸುವ',
+          exampleSentence: 'An articulate orator commands respect without raising their voice.',
+          phonetic: '/ɑːˈtɪk.jə.lət/',
+        ),
+      ];
+      return;
+    }
+
+    if (widget.day == 8) {
+      // 10 high-impact vocabulary words for Day 8 (Complex Problem Solving & Global Philosophical Synthesis)
+      _vocabList = const [
+        DailyVocabItem(
+          word: 'Paradigm',
+          partOfSpeech: 'noun',
+          definition: 'A distinct set of concepts, theories, or thought patterns.',
+          malayalamMeaning: 'ചിന്താരീതി / മാതൃക',
+          tamilMeaning: 'சிந்தனை மாதிரி / கோட்பாடு',
+          hindiMeaning: 'विचारधारा / दृष्टिकोण का ढांचा',
+          teluguMeaning: 'దృక్పథ నమూనా',
+          kannadaMeaning: 'ಚಿಂತನಾ ಮಾದರಿ',
+          exampleSentence: 'Interactive peer speaking created a new paradigm in language learning.',
+          phonetic: '/ˈpær.ə.daɪm/',
+        ),
+        DailyVocabItem(
+          word: 'Ubiquitous',
+          partOfSpeech: 'adjective',
+          definition: 'Present, appearing, or found everywhere simultaneously.',
+          malayalamMeaning: 'സർവ്വവ്യാപിയായ',
+          tamilMeaning: 'எங்கும் நிறைந்திருக்கின்ற',
+          hindiMeaning: 'सर्वव्यापी',
+          teluguMeaning: 'సర్వవ్యాప్తమైన',
+          kannadaMeaning: 'ಸರ್ವವ್ಯಾಪಿ',
+          exampleSentence: 'English has become a ubiquitous global bridge for knowledge.',
+          phonetic: '/juːˈbɪk.wɪ.təs/',
+        ),
+        DailyVocabItem(
+          word: 'Ephemeral',
+          partOfSpeech: 'adjective',
+          definition: 'Lasting for a very short time; transient.',
+          malayalamMeaning: 'ക്ഷണികമായ / അല്പായുസ്സുള്ള',
+          tamilMeaning: 'நிலையற்ற / கணநேர',
+          hindiMeaning: 'क्षणिक / अल्पकालिक',
+          teluguMeaning: 'క్షణికమైన / అల్పకాలిక',
+          kannadaMeaning: 'ಕ್ಷಣಿಕವಾದ / ಅಲ್ಪಕಾಲದ',
+          exampleSentence: 'Do not chase ephemeral applause; cultivate lasting speaking mastery.',
+          phonetic: '/ɪˈfem.ər.əl/',
+        ),
+        DailyVocabItem(
+          word: 'Dichotomy',
+          partOfSpeech: 'noun',
+          definition: 'A division or contrast between two things represented as opposed.',
+          malayalamMeaning: 'വിഭജനം / വിരുദ്ധ ചേരിതിരിവ്',
+          tamilMeaning: 'இருதுருவ வேறுபாடு',
+          hindiMeaning: 'द्विभाजन / दो विपरीत पक्ष',
+          teluguMeaning: 'ద్వైదీభావం / విభజన',
+          kannadaMeaning: 'ದ್ವಿಮುಖತೆ / ವಿಭಜನೆ',
+          exampleSentence: 'The debate dismantled the false dichotomy between speed and accuracy.',
+          phonetic: '/daɪˈkɒt.ə.mi/',
+        ),
+        DailyVocabItem(
+          word: 'Synthesize',
+          partOfSpeech: 'verb',
+          definition: 'Combine multiple ideas, elements, or systems into a coherent whole.',
+          malayalamMeaning: 'സമന്വയിപ്പിക്കുക',
+          tamilMeaning: 'ஒருங்கிணைத்தல் / தொகுத்தல்',
+          hindiMeaning: 'संश्लेषण करना / जोड़ना',
+          teluguMeaning: 'సమన్వయపరచు',
+          kannadaMeaning: 'ಸಂಶ್ಲೇಷಿಸು / ಸಮನ್ವಯಗೊಳಿಸು',
+          exampleSentence: 'Synthesize grammar rules with real conversation to achieve fluency.',
+          phonetic: '/ˈsɪn.θə.saɪz/',
+        ),
+        DailyVocabItem(
+          word: 'Autonomous',
+          partOfSpeech: 'adjective',
+          definition: 'Having the freedom or capacity to act independently.',
+          malayalamMeaning: 'സ്വയംഭരണാധികാരമുള്ള / സ്വതന്ത്രമായ',
+          tamilMeaning: 'சுயாட்சி கொண்ட / தன்னாட்சி',
+          hindiMeaning: 'स्वायत्त / स्वतंत्र',
+          teluguMeaning: 'స్వయంప్రతిపత్తి గల',
+          kannadaMeaning: 'ಸ್ವಾಯತ್ತ / ಸ್ವತಂತ್ರ',
+          exampleSentence: 'After 90 days, you will become an autonomous English communicator.',
+          phonetic: '/ɔːˈtɒn.ə.məs/',
+        ),
+        DailyVocabItem(
+          word: 'Omnipresent',
+          partOfSpeech: 'adjective',
+          definition: 'Widely or constantly encountered; common or widespread.',
+          malayalamMeaning: 'എല്ലായിടത്തും സന്നിഹിതമായ',
+          tamilMeaning: 'எல்லா இடங்களிலும் உள்ள',
+          hindiMeaning: 'सर्वत्र विद्यमान',
+          teluguMeaning: 'సర్వత్రా వ్యాపించియున్న',
+          kannadaMeaning: 'ಎಲ್ಲೆಡೆ ಉಪಸ್ಥಿತವಿರುವ',
+          exampleSentence: 'Technology is an omnipresent reality in modern communication.',
+          phonetic: '/ˌɒm.nɪˈprez.ənt/',
+        ),
+        DailyVocabItem(
+          word: 'Anachronistic',
+          partOfSpeech: 'adjective',
+          definition: 'Belonging to an earlier period; conspicuously out of date.',
+          malayalamMeaning: 'കാലഹരണപ്പെട്ട',
+          tamilMeaning: 'காலத்திற்கு ஒவ்வாத / பழமையான',
+          hindiMeaning: 'पुराना / कालभ्रमित',
+          teluguMeaning: 'కాలం చెల్లిన',
+          kannadaMeaning: 'ಕಾಲಕ್ಕೆ ಹೊಂದದ / ಹಳತಾದ',
+          exampleSentence: 'Passive rote learning is an anachronistic approach to spoken fluency.',
+          phonetic: '/əˌnæk.rəˈnɪs.tɪk/',
+        ),
+        DailyVocabItem(
+          word: 'Apex',
+          partOfSpeech: 'noun',
+          definition: 'The top or highest point of achievement or development.',
+          malayalamMeaning: 'ഉന്നതി / പരമോന്നത സ്ഥാനം',
+          tamilMeaning: 'உச்சி / உச்சக்கட்டம்',
+          hindiMeaning: 'शीर्ष / सर्वोच्च शिखर',
+          teluguMeaning: 'శిఖరాగ్రం / అత్యున్నత స్థానం',
+          kannadaMeaning: 'ಶಿಖರ / ಪರಮೋಚ್ಛ ಹಂತ',
+          exampleSentence: 'Confident international debate marks the apex of linguistic mastery.',
+          phonetic: '/ˈeɪ.peks/',
+        ),
+        DailyVocabItem(
+          word: 'Prerequisite',
+          partOfSpeech: 'noun',
+          definition: 'A thing required as a prior condition for something else to exist.',
+          malayalamMeaning: 'മുൻവ്യവസ്ഥ',
+          tamilMeaning: 'முன்நிபந்தனை',
+          hindiMeaning: 'पूर्वपेक्षा / आवश्यक पूर्वशर्त',
+          teluguMeaning: 'ముందస్తు షరతు',
+          kannadaMeaning: 'ಪೂರ್ವಭಾವಿ ಷರತ್ತು',
+          exampleSentence: 'Unbroken focus is a vital prerequisite for complex problem solving.',
+          phonetic: '/ˌpriːˈrek.wɪ.zɪt/',
         ),
       ];
       return;
