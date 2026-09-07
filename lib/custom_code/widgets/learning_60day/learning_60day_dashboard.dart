@@ -104,10 +104,9 @@ class _Learning60DayDashboardSheetState extends State<Learning60DayDashboardShee
       // Prompt to craft Defense Shield immediately upon completing challenge
       Future.delayed(const Duration(milliseconds: 700), () {
         if (mounted) {
-          PocketDefenseTrapModal.showShieldUnlockPrompt(
+          PocketDefenseTrapModal.show(
             context,
-            day: updated.currentDay,
-            coins: updated.totalPoints,
+            updated.currentDay,
           );
         }
       });
