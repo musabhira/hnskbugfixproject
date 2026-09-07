@@ -807,29 +807,53 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.05),
+                      // 🧪 Interactive Locked Container: Tap directly to test
+                      Material(
+                        color: Colors.transparent,
+                        child: InkWell(
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.white12),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.lock_rounded,
-                                color: Colors.white54, size: 15),
-                            const SizedBox(width: 6),
-                            Text(
-                              'Locked • Complete Day ${prog.currentDay} to Unlock',
-                              style: GoogleFonts.outfit(
-                                  color: Colors.white54,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 12.5),
+                          onTap: () {
+                            Navigator.pop(ctx);
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => PocketDailyMissionPage(
+                                  day: day,
+                                  onMissionCompleted: () => _loadData(),
+                                ),
+                              ),
+                            );
+                          },
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF00E5FF).withValues(alpha: 0.08),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: const Color(0xFF00E5FF).withValues(alpha: 0.35),
+                              ),
                             ),
-                          ],
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(Icons.lock_clock_rounded,
+                                    color: Color(0xFF00E5FF), size: 16),
+                                const SizedBox(width: 8),
+                                Flexible(
+                                  child: Text(
+                                    'Locked • Tap to Test Level $day 🧪',
+                                    style: GoogleFonts.outfit(
+                                        color: const Color(0xFF00E5FF),
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 13),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
                       const SizedBox(height: 10),

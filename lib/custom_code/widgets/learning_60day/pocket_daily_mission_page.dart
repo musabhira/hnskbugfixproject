@@ -131,54 +131,249 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
       '🏆 Part 4: Unbroken Rituals\n'
       'Within weeks, what once felt impossible became effortless. Marcus realized that mastery does not require giant leaps, only unbroken daily rituals.';
 
-  late final List<DailyVocabItem> _vocabList;
+  static const String _kDay3StoryText =
+      'Elena felt overwhelmed by constant notifications and shallow digital noise. She tried studying English while scrolling through social media, but her mind remained scattered. One evening, an architect named Paul showed her the blueprints of a grand cathedral. Notice how thick the stone walls are, Paul said. Without silence and deep focus, monumental beauty cannot be constructed. Elena decided to become the architect of her own mind. She placed her phone in another room, entered her study chamber, and gave sixty minutes of unbroken concentration to English speech and debate. In that deep silence, her cognitive abilities flourished. She realized that shallow multitasking is worthless, but sustained immersion builds unstoppable fluency.';
 
-  @override
-  void initState() {
-    super.initState();
-    _initTts();
-    _loadVocabForDay();
-    _timerService.initForDay(widget.day);
-    _timerService.addListener(_onTimerStateChanged);
-    _loadSavedMissionState();
-  }
+  static const String _kDay3StoryFormatted =
+      '📵 Part 1: The Scattered Mind\n'
+      'Elena felt overwhelmed by constant notifications and shallow digital noise. She tried studying English while scrolling through social media, but her mind remained scattered.\n\n'
+      '🏛️ Part 2: The Cathedral Blueprints\n'
+      'An architect named Paul showed her the blueprints of a grand cathedral. "Notice how thick the stone walls are," Paul said. "Without silence and deep focus, monumental beauty cannot be constructed."\n\n'
+      '🕯️ Part 3: Deep Immersion\n'
+      'Elena decided to become the architect of her own mind. She placed her phone in another room and gave 60 minutes of unbroken concentration to English speech and debate.\n\n'
+      '💎 Part 4: The Power of Focus\n'
+      'In that deep silence, her cognitive abilities flourished. She realized that shallow multitasking is worthless, but sustained immersion builds unstoppable fluency.';
 
-  void _onTimerStateChanged() {
-    if (mounted) setState(() {});
-  }
+  static const String _kDay4StoryText =
+      'In the town council assembly, young Kaelen was passionate about protecting the ancient forest. At first, he raised his voice, interrupted his opponents, and demanded immediate agreement. The council rejected his proposal. An elder diplomat pulled Kaelen aside and offered advice. Persuasion is not a battlefield of loud voices, Kaelen; it is a bridge built of diplomatic precision, careful listening, and eloquent concession. The next morning, Kaelen spoke calmly. He acknowledged the economic concerns of the council members before presenting his sustainable plan. By choosing articulate words over anger, he built consensus. The council unanimously approved the protection decree. Kaelen learned that true power in English communication lies not in shouting, but in the art of persuasive reasoning.';
 
-  void _initTts() {
-    _tts.setLanguage('en-US');
-    _tts.setSpeechRate(0.45);
-  }
+  static const String _kDay4StoryFormatted =
+      '⚡ Part 1: The Loud Approach\n'
+      'In the town council assembly, young Kaelen was passionate about protecting the ancient forest. He raised his voice and interrupted opponents, but the council rejected his plea.\n\n'
+      '🤝 Part 2: The Diplomat\'s Secret\n'
+      'An elder diplomat offered advice: "Persuasion is not a battlefield of loud voices. It is a bridge built of diplomatic precision, careful listening, and eloquent concession."\n\n'
+      '🕊️ Part 3: Articulate Reason\n'
+      'The next morning, Kaelen spoke calmly. He acknowledged economic concerns before presenting his sustainable plan with poise and articulate clarity.\n\n'
+      '🏆 Part 4: Unanimous Agreement\n'
+      'The council unanimously approved the decree. Kaelen learned that true English mastery lies not in volume, but in persuasive empathy and reasoned dialogue.';
 
-  void _speakWord(String text) async {
-    HapticFeedback.lightImpact();
-    await _tts.speak(text);
-  }
+  static const String _kDay5StoryText =
+      'The merchant galleon was trapped in a fierce midnight gale near treacherous coral reefs. Panic spread among the sailors as waves crashed over the wooden deck. Amidst the chaos, Captain Sarah climbed to the helm. She did not panic. With unwavering fortitude and decisive English commands, she directed the crew: Secure the main sail immediately! Man the bilge pumps! Navigator, plot the course toward Citadel Harbor! Her calm voice became a beacon of certainty in the dark. Every crew member executed their role with strategic precision. By dawn, the ship glided smoothly into the calm waters of the harbor. The sailors cheered. Sarah reminded them that in every great storm of life, decisive communication and resolute courage turn adversity into triumph.';
 
-  void _speakStory(String text) async {
-    HapticFeedback.lightImpact();
-    if (_isStorySpeaking) {
-      await _tts.stop();
-      if (mounted) setState(() => _isStorySpeaking = false);
-    } else {
-      setState(() => _isStorySpeaking = true);
-      _tts.setCompletionHandler(() {
-        if (mounted) setState(() => _isStorySpeaking = false);
-      });
-      await _tts.speak(text);
+  static const String _kDay5StoryFormatted =
+      '🌊 Part 1: Midnight Chaos\n'
+      'The merchant galleon was trapped in a fierce midnight gale near treacherous reefs. Panic spread among the sailors as waves crashed over the wooden deck.\n\n'
+      '⚓ Part 2: The Calm Commander\n'
+      'Captain Sarah climbed to the helm with unwavering fortitude. She did not panic. With decisive English commands, she directed the crew through the howling storm.\n\n'
+      '🧭 Part 3: Strategic Precision\n'
+      '"Secure the main sail immediately! Man the bilge pumps! Navigator, plot the course toward Citadel Harbor!" Her calm voice became a beacon of certainty.\n\n'
+      '🏰 Part 4: The Safe Harbor\n'
+      'By dawn, the ship glided safely into Citadel Harbor. Sarah proved that in every storm, decisive communication and resolute courage turn adversity into triumph.';
+
+  String get _storyText {
+    switch (widget.day) {
+      case 2:
+        return _kDay2StoryText;
+      case 3:
+        return _kDay3StoryText;
+      case 4:
+        return _kDay4StoryText;
+      case 5:
+        return _kDay5StoryText;
+      default:
+        return _kDay1StoryText;
     }
   }
 
-  void _onLanguageSelected(String lang) async {
-    HapticFeedback.selectionClick();
-    setState(() => _selectedLanguage = lang);
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('pocket_mission_pref_lang', lang);
+  String get _storyFormatted {
+    switch (widget.day) {
+      case 2:
+        return _kDay2StoryFormatted;
+      case 3:
+        return _kDay3StoryFormatted;
+      case 4:
+        return _kDay4StoryFormatted;
+      case 5:
+        return _kDay5StoryFormatted;
+      default:
+        return _kDay1StoryFormatted;
+    }
+  }
+
+  String get _storyTitle {
+    switch (widget.day) {
+      case 2:
+        return 'DAY 2 STORY: THE MORNING RITUAL OF CHAMPIONS';
+      case 3:
+        return 'DAY 3 STORY: THE ARCHITECT OF SILENCE';
+      case 4:
+        return 'DAY 4 STORY: THE ART OF THE COUNTER-ARGUMENT';
+      case 5:
+        return 'DAY 5 STORY: THE BEACON IN THE STORM';
+      default:
+        return 'DAY 1 STORY: THE SEED OF CONFIDENCE';
+    }
+  }
+
+  String get _storySubtitle {
+    switch (widget.day) {
+      case 2:
+        return 'The Power of Habits & Morning Routine Practice';
+      case 3:
+        return 'Deep Work & Overcoming Digital Distractions';
+      case 4:
+        return 'Persuasive Reasoning & Diplomatic Debate';
+      case 5:
+        return 'Decisive Leadership & Resilience in Crisis';
+      default:
+        return 'Aloud Reading & Pronunciation Practice';
+    }
+  }
+
+  String get _storyIcon {
+    switch (widget.day) {
+      case 2:
+        return '⏰';
+      case 3:
+        return '🏛️';
+      case 4:
+        return '🤝';
+      case 5:
+        return '⚓';
+      default:
+        return '🎋';
+    }
+  }
+
+  String get _storyQuotePreview {
+    switch (widget.day) {
+      case 2:
+        return '"Marcus was an ambitious learner who struggled to find time for English. Every evening he felt exhausted and postponed his speaking practice to tomorrow. One day, his grandfather handed him an empty notebook: \'We do not decide our future. We decide our daily habits...\'"';
+      case 3:
+        return '"Elena felt overwhelmed by constant notifications and shallow digital noise. She tried studying English while scrolling through social media, but her mind remained scattered. One evening, an architect named Paul showed her the blueprints of a grand cathedral..."';
+      case 4:
+        return '"In the town council assembly, young Kaelen was passionate about protecting the ancient forest. He raised his voice and interrupted opponents, but the council rejected his plea. An elder diplomat offered advice: \'Persuasion is not a battlefield of loud voices...\'"';
+      case 5:
+        return '"The merchant galleon was trapped in a fierce midnight gale near treacherous coral reefs. Amidst the chaos, Captain Sarah climbed to the helm with unwavering fortitude: \'Secure the main sail immediately! Man the bilge pumps! Navigator, plot the course toward Citadel Harbor!\'"';
+      default:
+        return '"A young student once stood by a tall bamboo tree, hesitant to practice speaking English. He was afraid of making mistakes in front of others. A wise mentor approached him: \'For four years, the bamboo roots grow deep underground in silence. Then, in the fifth year, it shoots up eighty feet into the sky!\'"';
+    }
+  }
+
+  String get _grammarRuleTitle {
+    switch (widget.day) {
+      case 2:
+        return 'Rule 2: Adverbs of Frequency (Always, Usually...)';
+      case 3:
+        return 'Rule 3: Modals of Obligation (Must, Should, Ought to)';
+      case 4:
+        return 'Rule 4: First Conditional (If + Present, Will + Verb)';
+      case 5:
+        return 'Rule 5: Present Perfect vs Simple Past';
+      default:
+        return 'Rule 1: Sentence Structure (S + V + O)';
+    }
+  }
+
+  String get _quizQuestion {
+    switch (widget.day) {
+      case 2:
+        return 'Q: Which sentence uses the adverb of frequency correctly?';
+      case 3:
+        return 'Q: Which sentence expresses a strict obligation/necessity?';
+      case 4:
+        return 'Q: Which sentence correctly follows the First Conditional structure?';
+      case 5:
+        return 'Q: Which sentence uses the Present Perfect tense for ongoing experience?';
+      default:
+        return 'Q: Which sentence follows the correct English "Subject + Verb + Object" order?';
+    }
+  }
+
+  List<String> get _quizOptions {
+    switch (widget.day) {
+      case 2:
+        return [
+          'I always practice speaking in the morning.',
+          'I practice always speaking in the morning.',
+          'Always I practice in the morning speaking.',
+        ];
+      case 3:
+        return [
+          'You must eliminate distractions to achieve deep immersion.',
+          'You might eliminate distractions to achieve deep immersion.',
+          'You could eliminate distractions to achieve deep immersion.',
+        ];
+      case 4:
+        return [
+          'If you practice persuasive debate, you will build consensus.',
+          'If you will practice persuasive debate, you build consensus.',
+          'If you practiced persuasive debate, you will build consensus.',
+        ];
+      case 5:
+        return [
+          'I have mastered strategic leadership over five days of practice.',
+          'I mastered strategic leadership since five days of practice.',
+          'I have master strategic leadership over five days of practice.',
+        ];
+      default:
+        return [
+          'She reads books diligently.',
+          'She books reads diligently.',
+          'Reads she books diligently.',
+        ];
+    }
   }
 
   String _getGrammarRuleExplanation(String lang) {
+    if (widget.day == 5) {
+      switch (lang.toLowerCase()) {
+        case 'tamil':
+          return 'நிகழ்காலப் பயனுள்ள செயல்களுக்கு Present Perfect (Have/Has + Verb3) பயன்படுத்தவும். முடிந்துபோன குறிப்பிட்ட நேரச் செயல்களுக்கு Simple Past (Verb2) பயன்படுத்தவும்.\n• சரியான வாக்கியம்: "I have lived here for 5 years." vs "I lived in London in 2020."';
+        case 'hindi':
+          return 'जो कार्य भूतकाल में हुआ लेकिन उसका प्रभाव अब भी है, उसके लिए Present Perfect (have/has + V3) लगाएं। जो कार्य भूतकाल में समाप्त हो चुका, उसके लिए Simple Past (V2) लगाएं।\n• उदाहरण: "I have completed 5 missions." vs "I finished yesterday."';
+        case 'telugu':
+          return 'గతంలో జరిగి ప్రస్తుతం కూడా ప్రభావం ఉన్న పనులకు Present Perfect (Have/Has + V3) వాడాలి. గతంలోనే ముగిసిన నిర్దిష్ట సమయానికి Simple Past వాడాలి.\n• సరైనది: "I have completed 5 missions." vs "I completed it yesterday."';
+        case 'kannada':
+          return 'ಪ್ರಸ್ತುತಕ್ಕೆ ಸಂಬಂಧಿಸಿದ ಹಿಂದಿನ ಕ್ರಿಯೆಗೆ Present Perfect (Have/Has + V3) ಬಳಸಿ. ಮುಗಿದುಹೋದ ನಿರ್ದಿಷ್ಟ ಸಮಯದ ಕ್ರಿಯೆಗೆ Simple Past ಬಳಸಿ.\n• ಸರಿಯಾದ ರೂಪ: "I have learned 50 new words." vs "I learned it yesterday."';
+        case 'malayalam':
+        default:
+          return 'Use Present Perfect (Have/Has + Past Participle) when a past action has relevance or continuity now. Use Simple Past when an action finished at a specific past time.\n• Correct: "I have completed 5 English missions this week." (Present relevance)\n• Correct: "I completed mission 1 yesterday." (Specific past time)';
+      }
+    }
+
+    if (widget.day == 4) {
+      switch (lang.toLowerCase()) {
+        case 'tamil':
+          return 'முதல் நிபந்தனை வாக்கியம் (First Conditional): நிஜமான சாத்தியக்கூറுகளைக் குறிக்க: If + Simple Present, Will + Base Verb.\n• சரியான வாக்கியம்: "If you practice speaking daily, you will achieve fluency."\n• "If" பகுதிக்குள் "will" பயன்படுத்தக் கூடாது!';
+        case 'hindi':
+          return 'First Conditional वास्तविक संभावनाओं के लिए: If + Simple Present, Will + Verb.\n• सही वाक्य: "If you practice speaking daily, you will achieve fluency."\n• याद रखें: If वाले भाग में "will" कभी न लगाएं!';
+        case 'telugu':
+          return 'First Conditional వాస్తవ అవకాశాలను తెలుపుతుంది: If + Simple Present, Will + Verb.\n• సరైనది: "If you practice speaking daily, you will achieve fluency."\n• గుర్తుంచుకోండి: If ఉన్న భాగంలో "will" వాడకూడదు!';
+        case 'kannada':
+          return 'First Conditional ನೈಜ ಸಾಧ್ಯತೆಗಳನ್ನು ತಿಳಿಸುತ್ತದೆ: If + Simple Present, Will + Verb.\n• ಸರಿಯಾದ ವಾಕ್ಯ: "If you practice speaking daily, you will achieve fluency."\n• "If" ಭಾಗದಲ್ಲಿ "will" ಬಳಸಬೇಡಿ!';
+        case 'malayalam':
+        default:
+          return 'First Conditional expresses real future possibilities: If + Simple Present, Will + Base Verb.\n• Correct: "If you practice speaking daily, you will achieve natural fluency."\n• Rule: Never put "will" inside the "if" clause!';
+      }
+    }
+
+    if (widget.day == 3) {
+      switch (lang.toLowerCase()) {
+        case 'tamil':
+          return 'கட்டாயத்திற்கு "Must", ஆலோசனைக்கு "Should", தார்மீகக் கடமைக்கு "Ought to" பயன்படுத்தவும்.\n• சரியான வாக்கியம்: "You must focus for 60 minutes." (கட்டாயம்)\n• "You should practice aloud." (ஆலோசனை)';
+        case 'hindi':
+          return 'अनिवार्यता के लिए "Must", अच्छी सलाह के लिए "Should", और नैतिक कर्तव्य के लिए "Ought to" का प्रयोग करें।\n• सही: "You must focus for 60 minutes." (कड़ा नियम/जरूरत)\n• "You should practice daily." (सलाह)';
+        case 'telugu':
+          return 'ఖచ్చితమైన అవసరానికి "Must", మంచి సలహాకు "Should", నైతిక బాధ్యతకు "Ought to" వాడాలి.\n• సరైనది: "You must focus for 60 minutes." (తప్పనిసరి)\n• "You should practice daily." (మంచి సలహా)';
+        case 'kannada':
+          return 'ಖಚಿತ ಅಗತ್ಯಕ್ಕೆ "Must", ಒಳ್ಳೆಯ ಸಲಹೆಗೆ "Should", ನೈತಿಕ ಕರ್ತವ್ಯಕ್ಕೆ "Ought to" ಬಳಸಿ.\n• ಸರಿಯಾದ ವಾಕ್ಯ: "You must focus for 60 minutes." (ಕಡ್ಡಾಯ)\n• "You should practice daily." (ಸಲಹೆ)';
+        case 'malayalam':
+        default:
+          return 'Use "Must" for strict necessity/obligation, "Should" for sensible advice, and "Ought to" for moral duty.\n• Correct: "You must dedicate focused time to master English." (Necessity)\n• Correct: "You should turn off phone notifications." (Sensible advice)';
+      }
+    }
+
     if (widget.day == 2) {
       switch (lang.toLowerCase()) {
         case 'tamil':
@@ -211,6 +406,54 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   }
 
   String _getStorySummary(String lang) {
+    if (widget.day == 5) {
+      switch (lang.toLowerCase()) {
+        case 'tamil':
+          return '💡 நீதி: "புயலின் நடுவிலும் தெளிவான துணிச்சலான பேச்சு துன்பத்தை வெற்றியாக்கும்." இக்கட்டான நேரத்திலும் ஆங்கிலத்தில் உறுதியாகப் பேசுங்கள்.';
+        case 'hindi':
+          return '💡 सीख: "संकट के समय में शांत और निर्णायक संवाद ही सफलता का मार्ग है।" कठिन परिस्थितियों में आत्मविश्वास से बोलें।';
+        case 'telugu':
+          return '💡 నీతి: "తుఫాను వంటి ఆపదలో కూడా ప్రశాంతమైన, నిర్ణయాత్మకమైన మాటే విజయాన్ని తెస్తుంది." ఆత్మవిశ్వాసంతో మాట్లాడండి.';
+        case 'kannada':
+          return '💡 ನೀತಿ: "ಸಂಕಷ್ಟದ ಸಮಯದಲ್ಲಿ ಶಾಂತ ಹಾಗೂ ನಿರ್ಣಾಯಕ ಸಂವಹನವೇ ಯಶಸ್ಸಿನ ದಾರಿ." ಧೈರ್ಯದಿಂದ ಇಂಗ್ಲಿಷ್‌ನಲ್ಲಿ ಮಾತನಾಡಿ.';
+        case 'malayalam':
+        default:
+          return '💡 സന്ദേശം: "പ്രതിസന്ധികളുടെ കൊടുങ്കാറ്റിലും പതറാത്ത വ്യക്തമായ നേതൃത്വപരമായ ആശയവിനിമയം വിജയത്തിലേക്ക് നയിക്കും."';
+      }
+    }
+
+    if (widget.day == 4) {
+      switch (lang.toLowerCase()) {
+        case 'tamil':
+          return '💡 நீதி: "சத்தமாகப் பேசுவதை விட சாதுரியமான அர்த்தமுள்ள வாதமே பிறர் மனதை வெல்லும்." ஆங்கிலத்தில் நயமுடன் பேசப் பழகுங்கள்.';
+        case 'hindi':
+          return '💡 सीख: "चिल्लाने से नहीं, बल्कि शांत और तार्किक संवाद से ही दूसरों का दिल जीता जा सकता है।" कूटनीतिक संवाद सीखें।';
+        case 'telugu':
+          return '💡 నీతి: "అరవడం వల్ల కాదు, చాకచక్యమైన సహేతుకమైన వాదనతోనే ఎవరినైనా ఒప్పించవచ్చు." వివేకంతో మాట్లాడండి.';
+        case 'kannada':
+          return '💡 ನೀತಿ: "ಗಟ್ಟಿಯಾಗಿ ಕೂಗುವುದಕ್ಕಿಂತ ಜಾಣ್ಮೆಯ ಸಾರಯುತ ಮಾತುಗಳಿಂದಲೇ ಜನರನ್ನು ಒಲಿಸಿಕೊಳ್ಳಬಹುದು."';
+        case 'malayalam':
+        default:
+          return '💡 സന്ദേശം: "ഒച്ചവെച്ച് സംസാരിക്കുന്നതിലല്ല, മറിച്ച് വിവേകപൂർവ്വമായ യുക്തിസഹമായ സംഭാഷണത്തിലാണ് യഥാർത്ഥ സ്വാധീനശക്തി."';
+      }
+    }
+
+    if (widget.day == 3) {
+      switch (lang.toLowerCase()) {
+        case 'tamil':
+          return '💡 நீதி: "ஆழ்ந்த அமைதியும் இடைவிடாத கவனமுமே மகத்தான அறிவை உருவாக்கும்." கவனச்சிதறல்களைத் தவிர்த்து ஒருமுகப்பட்டுப் பயிற்சி செய்யுங்கள்.';
+        case 'hindi':
+          return '💡 सीख: "गहरी एकाग्रता और शांत मन ही महान ज्ञान की नींव है।" भटकावों को दूर रखकर पूरे ध्यान से अंग्रेजी सीखें।';
+        case 'telugu':
+          return '💡 నీతి: "ప్రశాంతమైన లోతైన ఏకాగ్రతతోనే అద్భుతమైన నైపుణ్యం సాధ్యమవుతుంది." పరధ్యానాలను పక్కనపెట్టి సాధన చేయండి.';
+        case 'kannada':
+          return '💡 ನೀತಿ: "ಆಳವಾದ ಏಕಾಗ್ರತೆ ಮತ್ತು ಶ್ರದ್ಧೆಯು ಅಸಾಧಾರಣ ಕೌಶಲ್ಯವನ್ನು ನೀಡುತ್ತದೆ." ವಿಚಲಿತರಾಗದೆ ಪೂರ್ಣ ಗಮನದಿಂದ ಅಭ್ಯಾಸ ಮಾಡಿ.';
+        case 'malayalam':
+        default:
+          return '💡 സന്ദേശം: "ശ്രദ്ധതിരിക്കുന്ന ശബ്ദങ്ങളിൽ നിന്ന് മാറി 60 മിനിറ്റ് പൂർണ്ണ ശ്രദ്ധയോടെ പരിശീലിക്കുമ്പോൾ തലച്ചോറിന്റെ കഴിവുകൾ ഉണരും."';
+      }
+    }
+
     if (widget.day == 2) {
       switch (lang.toLowerCase()) {
         case 'tamil':
@@ -372,6 +615,387 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           kannadaMeaning: 'ಆಲೋಚಿಸು / ಪರಿಶೀಲಿಸು',
           exampleSentence: 'Reflect on what you learned at the end of each mission.',
           phonetic: '/rɪˈflekt/',
+        ),
+      ];
+      return;
+    }
+
+    if (widget.day == 3) {
+      // 10 high-impact vocabulary words for Day 3 (Deep Focus & Overcoming Distractions)
+      _vocabList = const [
+        DailyVocabItem(
+          word: 'Cognitive',
+          partOfSpeech: 'adjective',
+          definition: 'Related to mental processes of perception, memory, and judgment.',
+          malayalamMeaning: 'വൈജ്ഞാനികമായ / ബുദ്ധിപരമായ',
+          tamilMeaning: 'அறிவாற்றல் சார்ந்த',
+          hindiMeaning: 'संज्ञानात्मक / मानसिक',
+          teluguMeaning: 'జ్ఞాన సంబంధిత / మేధోపరమైన',
+          kannadaMeaning: 'ಜ್ಞಾನಗ್ರಹಣದ / ಬುದ್ಧಿಶಕ್ತಿಯ',
+          exampleSentence: 'Deep English reading strengthens your cognitive agility.',
+          phonetic: '/ˈkɒɡ.nə.tɪv/',
+        ),
+        DailyVocabItem(
+          word: 'Distraction',
+          partOfSpeech: 'noun',
+          definition: 'A thing that prevents someone from giving full attention to something.',
+          malayalamMeaning: 'ശ്രദ്ധതിരിവ് / വ്യതിചലനം',
+          tamilMeaning: 'கவனச்சிதறல்',
+          hindiMeaning: 'ध्यान भटकाव',
+          teluguMeaning: 'దృష్టి మళ్లింపు / అంతరాయం',
+          kannadaMeaning: 'ಗಮನ ವಿಚಲನೆ',
+          exampleSentence: 'Turn off notifications to eliminate every spoken distraction.',
+          phonetic: '/dɪˈstræk.ʃən/',
+        ),
+        DailyVocabItem(
+          word: 'Immersive',
+          partOfSpeech: 'adjective',
+          definition: 'Generating deep personal involvement or full mental absorption.',
+          malayalamMeaning: 'പൂർണ്ണമായി മുഴുകിനിൽക്കുന്ന',
+          tamilMeaning: 'ஆழ்ந்து ஈடுபடும்',
+          hindiMeaning: 'तल्लीन करने वाला / गहरा',
+          teluguMeaning: 'పూర్తిగా లీనమయ్యే',
+          kannadaMeaning: 'ಸಂಪೂರ್ಣ ತೊಡಗಿಸಿಕೊಳ್ಳುವ',
+          exampleSentence: 'An immersive 60-minute session accelerates conversational speed.',
+          phonetic: '/ɪˈmɜː.sɪv/',
+        ),
+        DailyVocabItem(
+          word: 'Meticulous',
+          partOfSpeech: 'adjective',
+          definition: 'Showing great attention to detail; very careful and precise.',
+          malayalamMeaning: 'അതീവ സൂക്ഷ്മതയുള്ള',
+          tamilMeaning: 'நுணுக்கமான / கவனமான',
+          hindiMeaning: 'अत्यंत सावधान / सूक्ष्म',
+          teluguMeaning: 'అత్యంత నిశితమైన',
+          kannadaMeaning: 'ಅತೀವ ಜಾಗರೂಕತೆಯುಳ್ಳ',
+          exampleSentence: 'He is meticulous about his English vowel pronunciation.',
+          phonetic: '/məˈtɪk.jə.ləs/',
+        ),
+        DailyVocabItem(
+          word: 'Procrastinate',
+          partOfSpeech: 'verb',
+          definition: 'To delay or postpone action; put off doing something.',
+          malayalamMeaning: 'നീട്ടിവെക്കുക / മടിപിടിക്കുക',
+          tamilMeaning: 'தள்ளிப்போடுதல்',
+          hindiMeaning: 'टालमटोल करना',
+          teluguMeaning: 'వాయిదా వేయు',
+          kannadaMeaning: 'ಮುಂದೂಡುವುದು',
+          exampleSentence: 'Do not procrastinate; start your speaking drill right now.',
+          phonetic: '/prəˈkræs.tɪ.neɪt/',
+        ),
+        DailyVocabItem(
+          word: 'Resilience',
+          partOfSpeech: 'noun',
+          definition: 'The capacity to withstand or recover quickly from difficulties.',
+          malayalamMeaning: 'പ്രതിസന്ധികളെ അതിജീവിക്കാനുള്ള കരുത്ത്',
+          tamilMeaning: 'மீண்டு வரும் திறன்',
+          hindiMeaning: 'लचीलापन / सहनशक्ति',
+          teluguMeaning: 'తట్టుకునే శక్తి / దృఢత్వం',
+          kannadaMeaning: 'ಪುಟಿದೇಳುವ ಸಾಮರ್ಥ್ಯ',
+          exampleSentence: 'Fluency requires resilience whenever you make grammar mistakes.',
+          phonetic: '/rɪˈzɪl.jəns/',
+        ),
+        DailyVocabItem(
+          word: 'Sustained',
+          partOfSpeech: 'adjective',
+          definition: 'Continuing for an extended period without interruption.',
+          malayalamMeaning: 'നിരന്തരമായ / തുടർച്ചയായ',
+          tamilMeaning: 'தொடர்ச்சியான',
+          hindiMeaning: 'निरंतर / सतत',
+          teluguMeaning: 'నిరంతరాయమైన',
+          kannadaMeaning: 'ನಿರಂತರವಾದ',
+          exampleSentence: 'Sustained focus for 60 minutes yields remarkable results.',
+          phonetic: '/səˈsteɪnd/',
+        ),
+        DailyVocabItem(
+          word: 'Superficial',
+          partOfSpeech: 'adjective',
+          definition: 'Existing or occurring at the surface; shallow.',
+          malayalamMeaning: 'ഉപരിപ്ലവമായ / ആഴമില്ലാത്ത',
+          tamilMeaning: 'மேலோட்டமான',
+          hindiMeaning: 'सतही / उथला',
+          teluguMeaning: 'పైపైన / లోతులేని',
+          kannadaMeaning: 'ಮೇಲ್ನೋಟದ',
+          exampleSentence: 'Superficial memorization cannot replace active conversation.',
+          phonetic: '/ˌsuː.pəˈfɪʃ.əl/',
+        ),
+        DailyVocabItem(
+          word: 'Discipline',
+          partOfSpeech: 'noun',
+          definition: 'The practice of training oneself to obey rules or codes of conduct.',
+          malayalamMeaning: 'അച്ചടക്കം / ആത്മനിയന്ത്രണം',
+          tamilMeaning: 'ஒழுக்கம் / சுயக்கட்டுப்பாடு',
+          hindiMeaning: 'अनुशासन / आत्म-नियंत्रण',
+          teluguMeaning: 'క్రమశిక్షణ',
+          kannadaMeaning: 'ಶಿಸ್ತು / ಸ್ವಯಂ ನಿಯಂತ್ರಣ',
+          exampleSentence: 'Daily discipline separates dreamers from fluent speakers.',
+          phonetic: '/ˈdɪs.ə.plɪn/',
+        ),
+        DailyVocabItem(
+          word: 'Velocity',
+          partOfSpeech: 'noun',
+          definition: 'The speed of something in a given direction; swift pace.',
+          malayalamMeaning: 'വേഗത / ചലനവേഗം',
+          tamilMeaning: 'வேகம் / விரைவு',
+          hindiMeaning: 'वेग / गति',
+          teluguMeaning: 'వేగము',
+          kannadaMeaning: 'ವೇಗ / ಚಲನೆ',
+          exampleSentence: 'Your speaking velocity improves as thinking in English becomes natural.',
+          phonetic: '/vəˈlɒs.ə.ti/',
+        ),
+      ];
+      return;
+    }
+
+    if (widget.day == 4) {
+      // 10 high-impact vocabulary words for Day 4 (Persuasion & Diplomatic Debate)
+      _vocabList = const [
+        DailyVocabItem(
+          word: 'Articulate',
+          partOfSpeech: 'adjective',
+          definition: 'Having or showing the ability to speak fluently and coherently.',
+          malayalamMeaning: 'സ്പഷ്ടമായി വ്യക്തമാക്കുന്ന',
+          tamilMeaning: 'தெளிவாகப் பேசும்',
+          hindiMeaning: 'सुस्पष्ट / स्पष्ट बोलने वाला',
+          teluguMeaning: 'స్పష్టంగా మాట్లాడే',
+          kannadaMeaning: 'ಸ್ಪಷ್ಟವಾಗಿ ಅಭಿವ್ಯಕ್ತಿಸುವ',
+          exampleSentence: 'An articulate leader explains complex plans with ease.',
+          phonetic: '/ɑːˈtɪk.jə.lət/',
+        ),
+        DailyVocabItem(
+          word: 'Concede',
+          partOfSpeech: 'verb',
+          definition: 'Admit that something is true or valid after first resisting it.',
+          malayalamMeaning: 'സമ്മതിക്കുക / അംഗീകരിക്കുക',
+          tamilMeaning: 'ஒப்புக்கொள்ளுதல்',
+          hindiMeaning: 'स्वीकार करना / मान लेना',
+          teluguMeaning: 'అంగీకరించు / ఒప్పుకొను',
+          kannadaMeaning: 'ಒಪ್ಪಿಕೊಳ್ಳು',
+          exampleSentence: 'A skilled negotiator knows when to concede minor points.',
+          phonetic: '/kənˈsiːd/',
+        ),
+        DailyVocabItem(
+          word: 'Diplomatic',
+          partOfSpeech: 'adjective',
+          definition: 'Skilled at dealing with sensitive situations and people.',
+          malayalamMeaning: 'നയതന്ത്രപരമായ / വിവേകപൂർവ്വമായ',
+          tamilMeaning: 'சாதுரியமான / நயமான',
+          hindiMeaning: 'कूटनीतिक / व्यवहारकुशल',
+          teluguMeaning: 'చాకచక్యమైన / సంభాషణా చాతుర్యం',
+          kannadaMeaning: 'ರಾಜತಾಂತ್ರಿಕ / ಜಾಣ್ಮೆಯ',
+          exampleSentence: 'Use diplomatic phrases to disagree politely without offense.',
+          phonetic: '/ˌdɪp.ləˈmæt.ɪk/',
+        ),
+        DailyVocabItem(
+          word: 'Eloquent',
+          partOfSpeech: 'adjective',
+          definition: 'Fluent or persuasive in speaking or writing.',
+          malayalamMeaning: 'വാഗ്ധോരണിയുള്ള / ഹൃദ്യമായി സംസാരിക്കുന്ന',
+          tamilMeaning: 'நாவன்மை மிக்க / சொல்வளமிக்க',
+          hindiMeaning: 'वाक्पटु / प्रभावशाली',
+          teluguMeaning: 'వాక్చాతుర్యం గల',
+          kannadaMeaning: 'ವಾಕ್ಪಟುತ್ವವುಳ್ಳ / ಮಧುರಭಾಷಿ',
+          exampleSentence: 'Her eloquent defense won over the entire audience.',
+          phonetic: '/ˈel.ə.kwənt/',
+        ),
+        DailyVocabItem(
+          word: 'Persuasive',
+          partOfSpeech: 'adjective',
+          definition: 'Good at convincing someone to agree through reasoning.',
+          malayalamMeaning: 'പ്രേരിപ്പിക്കുന്ന / ബോധ്യപ്പെടുത്തുന്ന',
+          tamilMeaning: 'வற்புறுத்தும் திறன்மிக்க',
+          hindiMeaning: 'प्रेरक / समझाने वाला',
+          teluguMeaning: 'ఒప్పించగల / మెప్పించగల',
+          kannadaMeaning: 'ಮನವೊಲಿಸುವ',
+          exampleSentence: 'Give persuasive reasons supported by real examples.',
+          phonetic: '/pəˈsweɪ.sɪv/',
+        ),
+        DailyVocabItem(
+          word: 'Consensus',
+          partOfSpeech: 'noun',
+          definition: 'A general agreement reached by a collective group.',
+          malayalamMeaning: 'പൊതുസമ്മതി / ഏകാഭിപ്രായം',
+          tamilMeaning: 'ஒருமித்த கருத்து',
+          hindiMeaning: 'सर्वसम्मति / आम सहमति',
+          teluguMeaning: 'ఏకాభిప్రాయం / సర్వసమ్మతి',
+          kannadaMeaning: 'ಒಮ್ಮತ / ಸರ್ವಾನುಮತ',
+          exampleSentence: 'The team reached a consensus after a productive discussion.',
+          phonetic: '/kənˈsen.səs/',
+        ),
+        DailyVocabItem(
+          word: 'Nuance',
+          partOfSpeech: 'noun',
+          definition: 'A subtle difference in meaning, opinion, or tone.',
+          malayalamMeaning: 'നേർത്ത സൂക്ഷ്മവ്യത്യാസം',
+          tamilMeaning: 'நுட்பமான வேறுபாடு',
+          hindiMeaning: 'सूक्ष्म भेद / बारीकी',
+          teluguMeaning: 'సూక్ష్మభేదం',
+          kannadaMeaning: 'ಸೂಕ್ಷ್ಮ ವ್ಯತ್ಯಾಸ',
+          exampleSentence: 'Mastering conversational tone requires understanding every nuance.',
+          phonetic: '/ˈnjuː.ɑːns/',
+        ),
+        DailyVocabItem(
+          word: 'Assertive',
+          partOfSpeech: 'adjective',
+          definition: 'Confidently and directly expressing thoughts and opinions.',
+          malayalamMeaning: 'ദൃഢനിശ്ചയത്തോടെ സംസാരിക്കുന്ന',
+          tamilMeaning: 'உறுதியான பேச்சுடைய',
+          hindiMeaning: 'मुखर / दृढ़निश्चयी',
+          teluguMeaning: 'దృఢమైన / స్పష్టమైన',
+          kannadaMeaning: 'ದೃಢವಾದ / ನೇರವಾದ',
+          exampleSentence: 'Speak in an assertive yet respectful manner.',
+          phonetic: '/əˈsɜː.tɪv/',
+        ),
+        DailyVocabItem(
+          word: 'Rebuttal',
+          partOfSpeech: 'noun',
+          definition: 'A contradiction or refutation of an opposing argument.',
+          malayalamMeaning: 'ഖണ്ഡനം / മറുവാദം',
+          tamilMeaning: 'மறுப்புரை',
+          hindiMeaning: 'खंडन / प्रतिवाद',
+          teluguMeaning: 'తిరస్కార వాదన / ప్రతిస్పందన',
+          kannadaMeaning: 'ಖಂಡನೆ / ಮರುವಾದ',
+          exampleSentence: 'He delivered a calm and reasoned rebuttal to the criticism.',
+          phonetic: '/rɪˈbʌt.əl/',
+        ),
+        DailyVocabItem(
+          word: 'Substantive',
+          partOfSpeech: 'adjective',
+          definition: 'Having a firm basis in reality; meaningful and significant.',
+          malayalamMeaning: 'അർത്ഥവത്തായ / കാമ്പുള്ള',
+          tamilMeaning: 'ஆழமான / அர்த்தமுள்ள',
+          hindiMeaning: 'ठोस / सार्थक / मूल',
+          teluguMeaning: 'అర్థవంతమైన / గట్టి పునాది గల',
+          kannadaMeaning: 'ಸಾರಯುತವಾದ / ಮಹತ್ವದ',
+          exampleSentence: 'Focus your speech on substantive insights rather than fluff.',
+          phonetic: '/səbˈstæn.tɪv/',
+        ),
+      ];
+      return;
+    }
+
+    if (widget.day == 5) {
+      // 10 high-impact vocabulary words for Day 5 (Strategic Leadership & Crisis Resilience)
+      _vocabList = const [
+        DailyVocabItem(
+          word: 'Decisive',
+          partOfSpeech: 'adjective',
+          definition: 'Having or showing the ability to make clear decisions quickly.',
+          malayalamMeaning: 'നിർണായകമായ / ദൃഢമായ തീരുമാനം എടുക്കുന്ന',
+          tamilMeaning: 'தீர்க்கமான முடிவெடுக்கும்',
+          hindiMeaning: 'निर्णायक / दृढ़',
+          teluguMeaning: 'నిర్ణయాత్మకమైన / స్పష్టమైన',
+          kannadaMeaning: 'ನಿರ್ಣಾಯಕವಾದ',
+          exampleSentence: 'In moments of crisis, a decisive speaker restores calm.',
+          phonetic: '/dɪˈsaɪ.sɪv/',
+        ),
+        DailyVocabItem(
+          word: 'Adversity',
+          partOfSpeech: 'noun',
+          definition: 'A difficult or unpleasant situation; hardship.',
+          malayalamMeaning: 'പ്രതികൂലാവസ്ഥ / ദുരിതം',
+          tamilMeaning: 'இன்னல்கள் / இடர்பாடு',
+          hindiMeaning: 'विपत्ति / कठिनाई',
+          teluguMeaning: 'ఆపద / ప్రతికూలత',
+          kannadaMeaning: 'ಕಷ್ಟಕಾಲ / ವಿಪತ್ತು',
+          exampleSentence: 'True leaders discover their voice during periods of adversity.',
+          phonetic: '/ədˈvɜː.sə.ti/',
+        ),
+        DailyVocabItem(
+          word: 'Fortitude',
+          partOfSpeech: 'noun',
+          definition: 'Courage in the face of pain, adversity, or danger.',
+          malayalamMeaning: 'മനോധൈര്യം / സഹനശക്തി',
+          tamilMeaning: 'மனோபலம் / விடாமுயற்சி',
+          hindiMeaning: 'धैर्य / आत्मबल',
+          teluguMeaning: 'మనోస్థైర్యం / ధైర్యం',
+          kannadaMeaning: 'ಮನೋಧೈರ್ಯ / ಸಹನಶಕ್ತಿ',
+          exampleSentence: 'She faced the difficult interview with quiet fortitude.',
+          phonetic: '/ˈfɔː.tɪ.tʃuːd/',
+        ),
+        DailyVocabItem(
+          word: 'Strategic',
+          partOfSpeech: 'adjective',
+          definition: 'Carefully planned to serve a major purpose or gain advantage.',
+          malayalamMeaning: 'തന്ത്രപരമായ',
+          tamilMeaning: 'வியூகரீதியான',
+          hindiMeaning: 'रणनीतिक / योजनाबद्ध',
+          teluguMeaning: 'వ్యూహాత్మక',
+          kannadaMeaning: 'ಕಾರ್ಯತಂತ್ರದ',
+          exampleSentence: 'Choose strategic vocabulary that elevates your spoken authority.',
+          phonetic: '/strəˈtiː.dʒɪk/',
+        ),
+        DailyVocabItem(
+          word: 'Unwavering',
+          partOfSpeech: 'adjective',
+          definition: 'Steady and resolute; not faltering.',
+          malayalamMeaning: 'അചഞ്ചലമായ',
+          tamilMeaning: 'அசைக்க முடியாத',
+          hindiMeaning: 'अडिग / स्थिर',
+          teluguMeaning: 'నిశ్చలమైన / స్థిరమైన',
+          kannadaMeaning: 'ಅಚಲವಾದ / ದೃಢವಾದ',
+          exampleSentence: 'Maintain an unwavering commitment to your 90-day goal.',
+          phonetic: '/ʌnˈweɪ.vər.ɪŋ/',
+        ),
+        DailyVocabItem(
+          word: 'Prerequisite',
+          partOfSpeech: 'noun',
+          definition: 'A required prior condition for something else to happen.',
+          malayalamMeaning: 'മുൻവ്യവസ്ഥ / നിർബന്ധിത നിബന്ധന',
+          tamilMeaning: 'முன்நிபந்தனை',
+          hindiMeaning: 'अनिवार्य शर्त / पूर्वपेक्षा',
+          teluguMeaning: 'ముందస్తు షరతు',
+          kannadaMeaning: 'ಪೂರ್ವಭಾವಿ ಷರತ್ತು',
+          exampleSentence: 'Active listening is a prerequisite for genuine fluency.',
+          phonetic: '/ˌpriːˈrek.wɪ.zɪt/',
+        ),
+        DailyVocabItem(
+          word: 'Contingency',
+          partOfSpeech: 'noun',
+          definition: 'A provision for an unforeseen event or circumstance.',
+          malayalamMeaning: 'അപ്രതീക്ഷിത സംഭവങ്ങൾ നേരിടാനുള്ള മുന്നൊരുക്കം',
+          tamilMeaning: 'எதிர்பாராத அவசரத் திட்டம்',
+          hindiMeaning: 'आकस्मिक योजना',
+          teluguMeaning: 'ఆకస్మిక ప్రణాళిక',
+          kannadaMeaning: 'ತುರ್ತು ಸಿದ್ಧತೆ',
+          exampleSentence: 'Always prepare a contingency response when speaking publicly.',
+          phonetic: '/kənˈtɪn.dʒən.si/',
+        ),
+        DailyVocabItem(
+          word: 'Paramount',
+          partOfSpeech: 'adjective',
+          definition: 'More important than anything else; supreme.',
+          malayalamMeaning: 'പരമപ്രധാനമായ',
+          tamilMeaning: 'தலையாய / மிக முக்கியமான',
+          hindiMeaning: 'सर्वोपरि / अत्यधिक महत्वपूर्ण',
+          teluguMeaning: 'అత్యంత ముఖ్యమైన / సర్వోన్నత',
+          kannadaMeaning: 'ಅತ್ಯಂತ ಮುಖ್ಯವಾದ / ಅಗ್ರಗಣ್ಯ',
+          exampleSentence: 'Consistency of daily effort is of paramount importance.',
+          phonetic: '/ˈpær.ə.maʊnt/',
+        ),
+        DailyVocabItem(
+          word: 'Catalyst',
+          partOfSpeech: 'noun',
+          definition: 'An agent that precipitates rapid change or progress.',
+          malayalamMeaning: 'ഉത്തേജകം / മാറ്റത്തിന് വഴിയൊരുക്കുന്ന ഘടകം',
+          tamilMeaning: 'மாற்றத்தை உந்துவிப்பவர்',
+          hindiMeaning: 'उत्प्रेरक / गति देने वाला',
+          teluguMeaning: 'ఉత్ప్రేరకం / మార్పుకు కారకం',
+          kannadaMeaning: 'ವೇಗವರ್ಧಕ / ಪ್ರೇರಕ',
+          exampleSentence: 'Peer conversations acted as a catalyst for his confidence.',
+          phonetic: '/ˈkæt.əl.ɪst/',
+        ),
+        DailyVocabItem(
+          word: 'Foresight',
+          partOfSpeech: 'noun',
+          definition: 'The ability to anticipate future needs or consequences.',
+          malayalamMeaning: 'ദീർഘവീക്ഷണം',
+          tamilMeaning: 'தொலைநோக்குப் பார்வை',
+          hindiMeaning: 'दूरदर्शिता / भविष्य-दृष्टि',
+          teluguMeaning: 'ముందుచూపు',
+          kannadaMeaning: 'ದೂರದೃಷ್ಟಿ',
+          exampleSentence: 'Great speakers use foresight to anticipate their listeners\' questions.',
+          phonetic: '/ˈfɔː.saɪt/',
         ),
       ];
       return;
@@ -806,17 +1430,18 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'Stage ${widget.day}/90 • Foundation & First Steps',
+                  'Stage ${widget.day}/90 • Reward: +${100 + (widget.day - 1) * 50} XP',
                   style: GoogleFonts.inter(
-                    color: Colors.white70,
+                    color: const Color(0xFF6EE7B7),
                     fontSize: 11,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
             ),
           ),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
               color: const Color(0xFF1E293B),
               borderRadius: BorderRadius.circular(10),
@@ -825,14 +1450,22 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text('🔥', style: TextStyle(fontSize: 12)),
-                const SizedBox(width: 4),
+                const Text('⚡', style: TextStyle(fontSize: 12)),
+                const SizedBox(width: 3),
                 Text(
-                  '$_completedSubtasksCount/7 Done',
+                  '+${100 + (widget.day - 1) * 50} XP',
                   style: GoogleFonts.outfit(
-                    color: const Color(0xFFFFFC00),
+                    color: const Color(0xFFFFD700),
                     fontSize: 11,
                     fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  '• $_completedSubtasksCount/7',
+                  style: GoogleFonts.inter(
+                    color: Colors.white70,
+                    fontSize: 10.5,
                   ),
                 ),
               ],
@@ -1586,9 +2219,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                     const Icon(Icons.school_rounded, color: Colors.amberAccent, size: 16),
                     const SizedBox(width: 6),
                     Text(
-                      widget.day == 2
-                          ? 'Rule 2: Adverbs of Frequency (Always, Usually, Often...)'
-                          : 'Rule 1: Sentence Structure (S + V + O)',
+                      _grammarRuleTitle,
                       style: GoogleFonts.outfit(color: Colors.amberAccent, fontWeight: FontWeight.bold, fontSize: 13),
                     ),
                   ],
@@ -1619,16 +2250,14 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               children: [
                 Row(
                   children: [
-                    Text(widget.day == 2 ? '⏰' : '🎋', style: const TextStyle(fontSize: 18)),
+                    Text(_storyIcon, style: const TextStyle(fontSize: 18)),
                     const SizedBox(width: 6),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            widget.day == 2
-                                ? 'DAY 2 STORY: THE MORNING RITUAL OF CHAMPIONS'
-                                : 'DAY 1 STORY: THE SEED OF CONFIDENCE',
+                            _storyTitle,
                             style: GoogleFonts.outfit(
                               color: const Color(0xFF00E5FF),
                               fontWeight: FontWeight.w900,
@@ -1636,9 +2265,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                             ),
                           ),
                           Text(
-                            widget.day == 2
-                                ? 'The Power of Habits & Morning Routine Practice'
-                                : 'Aloud Reading & Pronunciation Practice',
+                            _storySubtitle,
                             style: GoogleFonts.inter(color: Colors.white54, fontSize: 10.5),
                           ),
                         ],
@@ -1651,15 +2278,13 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                         size: 22,
                       ),
                       tooltip: _isStorySpeaking ? 'Stop Reading' : 'Read Aloud (TTS)',
-                      onPressed: () => _speakStory(widget.day == 2 ? _kDay2StoryText : _kDay1StoryText),
+                      onPressed: () => _speakStory(_storyText),
                     ),
                   ],
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  widget.day == 2
-                      ? '"Marcus was an ambitious learner who struggled to find time for English. Every evening he felt exhausted and postponed his speaking practice to tomorrow. One day, his grandfather handed him an empty notebook with golden edges: \'We do not decide our future. We decide our daily habits, and our habits decide our future...\'"'
-                      : '"A young student once stood by a tall bamboo tree, hesitant to practice speaking English. He was afraid of making mistakes in front of others. A wise mentor approached him: \'For four years, the bamboo roots grow deep underground in silence. Then, in the fifth year, it shoots up eighty feet into the sky! Your daily English practice is just like that seed...\'"',
+                  _storyQuotePreview,
                   style: GoogleFonts.inter(
                     color: Colors.white,
                     fontSize: 12,
@@ -1810,9 +2435,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            widget.day == 2
-                                ? 'DAY 2 STORY: THE MORNING RITUAL OF CHAMPIONS'
-                                : 'DAY 1 STORY: THE SEED OF CONFIDENCE',
+                            _storyTitle,
                             style: GoogleFonts.outfit(
                               color: Colors.white,
                               fontWeight: FontWeight.w900,
@@ -1821,9 +2444,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                             ),
                           ),
                           Text(
-                            widget.day == 2
-                                ? 'The Power of Habits & Morning Routine Guide'
-                                : 'Authentic Short Story Reading & Pronunciation Guide',
+                            _storySubtitle,
                             style: GoogleFonts.inter(color: Colors.white60, fontSize: 11),
                           ),
                         ],
@@ -1866,7 +2487,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                                 setState(() => _isStorySpeaking = false);
                               }
                             });
-                            _tts.speak(widget.day == 2 ? _kDay2StoryText : _kDay1StoryText);
+                            _tts.speak(_storyText);
                           }
                         },
                         icon: Icon(
@@ -1921,7 +2542,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                             border: Border.all(color: Colors.white12),
                           ),
                           child: Text(
-                            widget.day == 2 ? _kDay2StoryFormatted : _kDay1StoryFormatted,
+                            _storyFormatted,
                             style: GoogleFonts.inter(
                               color: Colors.white,
                               fontSize: 14,
@@ -1964,9 +2585,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                       _saveSubtask('reading', true);
                       Navigator.pop(ctx);
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('🎉 Day 1 Story Reading completed!'),
-                          backgroundColor: Color(0xFF10B981),
+                        SnackBar(
+                          content: Text('🎉 Day ${widget.day} Story Reading completed!'),
+                          backgroundColor: const Color(0xFF10B981),
                         ),
                       );
                     },
@@ -2034,24 +2655,12 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           ),
           const SizedBox(height: 10),
           Text(
-            widget.day == 2
-                ? 'Q: Which sentence uses the adverb of frequency correctly?'
-                : 'Q: Which sentence follows the correct English "Subject + Verb + Object" order?',
+            _quizQuestion,
             style: GoogleFonts.outfit(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 10),
           ...List.generate(3, (i) {
-            final options = widget.day == 2
-                ? [
-                    'I always practice speaking in the morning.',
-                    'I practice always speaking in the morning.',
-                    'Always I practice in the morning speaking.',
-                  ]
-                : [
-                    'She reads books diligently.',
-                    'She books reads diligently.',
-                    'Reads she books diligently.',
-                  ];
+            final options = _quizOptions;
             final isCorrect = i == 0;
             final isSelected = _selectedQuizAnswer == i;
 
@@ -2274,7 +2883,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     if (canClaim) {
       headerTitle = '🎉 MISSION COMPLETED!';
       description =
-          '60-Minute practice target met & all 7 subtasks verified! Claim +100 XP, +40 Fortress Defense Coins and unlock Day ${widget.day + 1}!';
+          '60-Minute practice target met & all 7 subtasks verified! Claim +${100 + (widget.day - 1) * 50} XP, +40 Fortress Defense Coins and unlock Day ${widget.day + 1}!';
       buttonText = 'CLAIM DAY ${widget.day} REWARDS & ADVANCE 🚀';
     } else if (isTimerMet && !isSubtasksMet) {
       headerTitle = '⚠️ ${7 - _completedSubtasksCount} SUBTASKS REMAINING';
@@ -2360,7 +2969,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(
-                              '🎉 Day ${widget.day} English Mission Complete! +100 XP • Day ${widget.day + 1} Unlocked!',
+                              '🎉 Day ${widget.day} English Mission Complete! +${100 + (widget.day - 1) * 50} XP Points Earned • Day ${widget.day + 1} Unlocked!',
                             ),
                             backgroundColor: const Color(0xFF10B981),
                           ),
