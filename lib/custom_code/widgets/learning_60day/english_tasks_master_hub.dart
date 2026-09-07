@@ -931,15 +931,13 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                 // 2. Sticky Glassmorphism Top HUD (Without Back button on tab navigation!)
                 _buildTopHUD(prog),
 
-                // 3. ⚔️ Floating Action Buttons (Attack Arena & Day Target)
-                // Left: ⚔️ Attack / 10 Games Arena Launcher
+                // 3. ⚔️ Unobtrusive Testing Action Button (Audio Directive: For testing only)
                 Positioned(
                   left: 18,
                   bottom: 24,
-                  child: FloatingActionButton.extended(
-                    heroTag: 'target_page_attack_button',
-                    onPressed: () {
-                      HapticFeedback.heavyImpact();
+                  child: InkWell(
+                    onTap: () {
+                      HapticFeedback.mediumImpact();
                       final rival = PocketNeighbor(
                         id: 'rival_fortress',
                         name: 'Lord Sterling',
@@ -961,39 +959,36 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                         ),
                       );
                     },
-                    backgroundColor: const Color(0xFFDC2626),
-                    elevation: 8,
-                    icon: const Text('⚔️', style: TextStyle(fontSize: 18)),
-                    label: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          'ATTACK',
-                          style: GoogleFonts.outfit(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w900,
-                            fontSize: 13,
-                            letterSpacing: 0.8,
+                    borderRadius: BorderRadius.circular(20),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1E293B).withValues(alpha: 0.9),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: Colors.redAccent.withValues(alpha: 0.4), width: 1),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.3),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
                           ),
-                        ),
-                        const SizedBox(width: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: 0.45),
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(color: const Color(0xFFFFD700), width: 0.8),
-                          ),
-                          child: const Text(
-                            '10 GAMES',
-                            style: TextStyle(
-                              color: Color(0xFFFFD700),
-                              fontWeight: FontWeight.w900,
-                              fontSize: 9.5,
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text('⚔️', style: TextStyle(fontSize: 12)),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Test Arena',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white70,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 11,
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -1040,24 +1035,24 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
       right: 0,
       child: Container(
         padding: EdgeInsets.only(
-          top: MediaQuery.of(context).padding.top + 6,
-          bottom: 10,
-          left: 12,
-          right: 12,
+          top: MediaQuery.of(context).padding.top + 4,
+          bottom: 6,
+          left: 10,
+          right: 10,
         ),
         decoration: BoxDecoration(
           color: const Color(0xFF0F1524).withValues(alpha: 0.95),
           border: Border(
             bottom: BorderSide(
-              color: Colors.white.withValues(alpha: 0.1),
+              color: Colors.white.withValues(alpha: 0.08),
               width: 1,
             ),
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.45),
-              blurRadius: 18,
-              offset: const Offset(0, 4),
+              color: Colors.black.withValues(alpha: 0.35),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
             ),
           ],
         ),
@@ -1065,17 +1060,45 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Row 1: Compact 90-Day Mission Badge + Stats + Actions
             Row(
               children: [
-                // Only show back button if pushed onto navigator stack, NOT on root bottom tab!
                 if (canPop) ...[
                   IconButton(
                     icon: const Icon(Icons.arrow_back_ios_rounded,
-                        color: Colors.white, size: 18),
+                        color: Colors.white, size: 16),
                     onPressed: () => Navigator.pop(context),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
                   ),
-                  const SizedBox(width: 2),
+                  const SizedBox(width: 6),
                 ],
+
+                // Minimal 90-Day Target Badge
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.4), width: 0.8),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text('🇬🇧', style: TextStyle(fontSize: 10)),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Day ${prog.currentDay}/90',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFFFFD700),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 6),
 
                 // Streak Capsule
                 _buildHudCapsule(
@@ -1083,7 +1106,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   color: const Color(0xFFFF5722),
                   label: '${prog.streakDays}d',
                 ),
-                const SizedBox(width: 6),
+                const SizedBox(width: 4),
 
                 // Stars Capsule
                 _buildHudCapsule(
@@ -1091,13 +1114,13 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   color: const Color(0xFFFFD700),
                   label: '$totalStars ⭐',
                 ),
-                const SizedBox(width: 6),
+                const SizedBox(width: 4),
 
                 // Score Capsule
                 _buildHudCapsule(
                   icon: Icons.bolt_rounded,
                   color: const Color(0xFF00E5FF),
-                  label: '${prog.totalPoints} XP',
+                  label: '${prog.totalPoints}',
                 ),
 
                 const Spacer(),
@@ -1114,30 +1137,30 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   },
                   child: Container(
                     padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                        const EdgeInsets.symmetric(horizontal: 7, vertical: 3.5),
                     decoration: BoxDecoration(
                       color: Colors.amber.withValues(alpha: 0.16),
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(8),
                       border: Border.all(
-                          color: Colors.amber.withValues(alpha: 0.5)),
+                          color: Colors.amber.withValues(alpha: 0.4)),
                     ),
                     child: Row(
                       children: [
-                        const Text('🏪', style: TextStyle(fontSize: 12)),
-                        const SizedBox(width: 4),
+                        const Text('🏪', style: TextStyle(fontSize: 11)),
+                        const SizedBox(width: 3),
                         Text(
                           'Store',
                           style: GoogleFonts.outfit(
                             color: const Color(0xFFFFD700),
                             fontWeight: FontWeight.bold,
-                            fontSize: 11.5,
+                            fontSize: 10.5,
                           ),
                         ),
                       ],
                     ),
                   ),
                 ),
-                const SizedBox(width: 6),
+                const SizedBox(width: 5),
 
                 // Rewards Trophy Button
                 GestureDetector(
@@ -1147,23 +1170,23 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   },
                   child: Container(
                     padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                        const EdgeInsets.symmetric(horizontal: 7, vertical: 3.5),
                     decoration: BoxDecoration(
                       color: const Color(0xFFFFFC00).withValues(alpha: 0.16),
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(8),
                       border: Border.all(
-                          color: const Color(0xFFFFFC00).withValues(alpha: 0.5)),
+                          color: const Color(0xFFFFFC00).withValues(alpha: 0.4)),
                     ),
                     child: Row(
                       children: [
-                        const Text('🏆', style: TextStyle(fontSize: 12)),
+                        const Text('🏆', style: TextStyle(fontSize: 11)),
                         const SizedBox(width: 3),
                         Text(
                           'Trophies',
                           style: GoogleFonts.outfit(
-                            color: const Color(0xFFFFFC00),
+                            color: const Color(0xFFFFD700),
                             fontWeight: FontWeight.bold,
-                            fontSize: 11.5,
+                            fontSize: 10.5,
                           ),
                         ),
                       ],
@@ -1173,58 +1196,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
               ],
             ),
 
-            const SizedBox(height: 8),
+            const SizedBox(height: 5),
 
-            // 🇬🇧 Prominent 90-Day English Learning Banner (Audio Directive!)
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [
-                    Color(0xFF1E1B4B),
-                    Color(0xFF3B0764),
-                    Color(0xFF451A03),
-                  ],
-                  begin: Alignment.centerLeft,
-                  end: Alignment.centerRight,
-                ),
-                borderRadius: BorderRadius.circular(9),
-                border: Border.all(
-                  color: const Color(0xFFFFD700).withValues(alpha: 0.55),
-                  width: 1.1,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFFFF8906).withValues(alpha: 0.2),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text('🇬🇧', style: TextStyle(fontSize: 14)),
-                  const SizedBox(width: 8),
-                  Text(
-                    'ENGLISH LEARNING IN 90 DAYS',
-                    style: GoogleFonts.outfit(
-                      color: const Color(0xFFFFFC00),
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 0.8,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  const Text('🔥', style: TextStyle(fontSize: 13)),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 8),
-
-            // 🎯 Minimal Horizontal Target Milestones Bar (Audio Requirement!)
+            // 🎯 Minimal Horizontal Target Milestones Strip
             _buildTargetMilestonesStrip(prog),
           ],
         ),
@@ -1235,12 +1209,12 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   /// 🎯 Minimal Horizontal Target Milestones Strip (Audio Requirement!)
   Widget _buildTargetMilestonesStrip(UserLearningProgress prog) {
     return SizedBox(
-      height: 44,
+      height: 28,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
         itemCount: kTargetMilestones.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 7),
+        separatorBuilder: (_, __) => const SizedBox(width: 6),
         itemBuilder: (context, index) {
           final item = kTargetMilestones[index];
           final isUnlocked = prog.currentDay >= item.targetDay;
@@ -1261,58 +1235,40 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
               }
             },
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
               decoration: BoxDecoration(
                 color: isCurrentTarget
                     ? item.themeColor.withValues(alpha: 0.20)
                     : (isUnlocked
                         ? const Color(0xFF10B981).withValues(alpha: 0.12)
                         : Colors.white.withValues(alpha: 0.05)),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(8),
                 border: Border.all(
                   color: isCurrentTarget
                       ? item.themeColor
                       : (isUnlocked ? const Color(0xFF10B981) : Colors.white12),
-                  width: isCurrentTarget ? 1.4 : 0.8,
+                  width: isCurrentTarget ? 1.2 : 0.8,
                 ),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(item.houseEmoji, style: const TextStyle(fontSize: 15)),
-                  const SizedBox(width: 6),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            item.title,
-                            style: GoogleFonts.outfit(
-                              color: isCurrentTarget
-                                  ? item.themeColor
-                                  : (isUnlocked ? const Color(0xFF10B981) : Colors.white70),
-                              fontWeight: FontWeight.w900,
-                              fontSize: 10.5,
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            isUnlocked ? '✓' : (isCurrentTarget ? '🔥' : '🔒'),
-                            style: const TextStyle(fontSize: 9),
-                          ),
-                        ],
-                      ),
-                      Text(
-                        '${item.houseStage} • ${item.defenseSummary}',
-                        style: GoogleFonts.inter(
-                          color: Colors.white54,
-                          fontSize: 9,
-                        ),
-                      ),
-                    ],
+                  Text(item.houseEmoji, style: const TextStyle(fontSize: 12)),
+                  const SizedBox(width: 4),
+                  Text(
+                    item.title,
+                    style: GoogleFonts.outfit(
+                      color: isCurrentTarget
+                          ? item.themeColor
+                          : (isUnlocked ? const Color(0xFF10B981) : Colors.white70),
+                      fontWeight: FontWeight.w800,
+                      fontSize: 10,
+                    ),
+                  ),
+                  const SizedBox(width: 3),
+                  Text(
+                    isUnlocked ? '✓' : (isCurrentTarget ? '🔥' : '🔒'),
+                    style: const TextStyle(fontSize: 8.5),
                   ),
                 ],
               ),

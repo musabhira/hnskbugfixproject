@@ -270,137 +270,91 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [
-            Color(0xFF1E1B4B),
-            Color(0xFF451A03),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: const Color(0xFF0D1520),
         border: Border(
           bottom: BorderSide(
-            color: const Color(0xFFFFD700).withValues(alpha: 0.35),
-            width: 1.2,
+            color: const Color(0xFFFFD700).withValues(alpha: 0.25),
+            width: 1.0,
           ),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFFFF8906).withValues(alpha: 0.12),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
       ),
-      padding: const EdgeInsets.fromLTRB(14, 8, 14, 8),
-      child: Column(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      child: Row(
         children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFFFD700), Color(0xFFFF8906)],
-                  ),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text('👑', style: TextStyle(fontSize: 11)),
-                    const SizedBox(width: 4),
-                    Text(
-                      'ENGLISH HUB 🔥',
-                      style: GoogleFonts.outfit(
-                        color: Colors.black,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 10.5,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  'Global English Fluency Arena • English Only',
-                  style: GoogleFonts.inter(
-                    color: Colors.white70,
-                    fontSize: 10.5,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF10B981).withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(6),
-                  border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.5)),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: const [
-                    Icon(Icons.circle, color: Color(0xFF10B981), size: 7),
-                    SizedBox(width: 4),
-                    Text(
-                      'ACTIVE',
-                      style: TextStyle(color: Color(0xFF10B981), fontSize: 9.5, fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 7),
-          // Quick Action Tools
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
+          // Minimal English Hub Badge
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(5),
+              border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.4), width: 0.8),
+            ),
             child: Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                _buildHubRibbonChip(
-                  icon: Icons.lightbulb_outline_rounded,
-                  label: 'Topic Starters',
-                  color: const Color(0xFFFFD700),
-                  onTap: _showEnglishTopicStartersModal,
-                ),
-                const SizedBox(width: 6),
-                _buildHubRibbonChip(
-                  icon: Icons.psychology_alt_rounded,
-                  label: 'AI Tutor',
-                  color: const Color(0xFF38BDF8),
-                  onTap: () {
-                    showModalBottomSheet(
-                      context: context,
-                      isScrollControlled: true,
-                      backgroundColor: Colors.transparent,
-                      builder: (context) => const AIEnglishTutorSheet(),
-                    );
-                  },
-                ),
-                const SizedBox(width: 6),
-                _buildHubRibbonChip(
-                  icon: _isSttListening ? Icons.mic_rounded : Icons.mic_none_rounded,
-                  label: _isSttListening ? 'Listening...' : 'Voice Dictation',
-                  color: _isSttListening ? Colors.redAccent : const Color(0xFF10B981),
-                  onTap: _toggleEnglishSpeechDictation,
-                ),
-                const SizedBox(width: 6),
-                _buildHubRibbonChip(
-                  icon: Icons.record_voice_over_rounded,
-                  label: 'Pronunciation & Drills',
-                  color: const Color(0xFFA855F7),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const EnglishLearningHubPage()),
-                    );
-                  },
+                const Text('🇬🇧', style: TextStyle(fontSize: 10.5)),
+                const SizedBox(width: 4),
+                Text(
+                  'ENGLISH HUB',
+                  style: GoogleFonts.outfit(
+                    color: const Color(0xFFFFD700),
+                    fontWeight: FontWeight.w800,
+                    fontSize: 9.5,
+                    letterSpacing: 0.4,
+                  ),
                 ),
               ],
+            ),
+          ),
+          const SizedBox(width: 6),
+          // Tool items in a compact scrollable row
+          Expanded(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              child: Row(
+                children: [
+                  _buildHubRibbonChip(
+                    icon: Icons.lightbulb_outline_rounded,
+                    label: 'Topics',
+                    color: const Color(0xFFFFD700),
+                    onTap: _showEnglishTopicStartersModal,
+                  ),
+                  const SizedBox(width: 5),
+                  _buildHubRibbonChip(
+                    icon: Icons.psychology_alt_rounded,
+                    label: 'AI Tutor',
+                    color: const Color(0xFF38BDF8),
+                    onTap: () {
+                      showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        backgroundColor: Colors.transparent,
+                        builder: (context) => const AIEnglishTutorSheet(),
+                      );
+                    },
+                  ),
+                  const SizedBox(width: 5),
+                  _buildHubRibbonChip(
+                    icon: _isSttListening ? Icons.mic_rounded : Icons.mic_none_rounded,
+                    label: _isSttListening ? 'Listening...' : 'Dictate',
+                    color: _isSttListening ? Colors.redAccent : const Color(0xFF10B981),
+                    onTap: _toggleEnglishSpeechDictation,
+                  ),
+                  const SizedBox(width: 5),
+                  _buildHubRibbonChip(
+                    icon: Icons.record_voice_over_rounded,
+                    label: 'Drills',
+                    color: const Color(0xFFA855F7),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const EnglishLearningHubPage()),
+                      );
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -420,23 +374,23 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
         onTap();
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
         decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: color.withValues(alpha: 0.5), width: 1),
+          color: color.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(color: color.withValues(alpha: 0.35), width: 0.8),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: color, size: 13),
-            const SizedBox(width: 4),
+            Icon(icon, color: color, size: 12),
+            const SizedBox(width: 3.5),
             Text(
               label,
-              style: GoogleFonts.outfit(
+              style: GoogleFonts.inter(
                 color: Colors.white,
-                fontSize: 10.5,
-                fontWeight: FontWeight.bold,
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ],
@@ -1034,28 +988,50 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
 
   Widget _buildShimmerLoading() {
     return Shimmer.fromColors(
-      baseColor: FlutterFlowTheme.of(context).secondaryBackground,
-      highlightColor: FlutterFlowTheme.of(context).primaryBackground,
+      baseColor: const Color(0xFF1E293B),
+      highlightColor: const Color(0xFF334155),
       child: ListView.builder(
         reverse: true,
-        itemCount: 15,
-        padding: const EdgeInsets.symmetric(vertical: 12),
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: 14,
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
         itemBuilder: (context, index) {
           final isMe = index % 2 == 0;
-          return Align(
-            alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-            child: Container(
-              margin: EdgeInsets.only(
-                top: 4,
-                bottom: 4,
-                left: isMe ? 64 : 16,
-                right: isMe ? 16 : 64,
-              ),
-              height: 60,
-              decoration: BoxDecoration(
-                color: FlutterFlowTheme.of(context).primaryBackground,
-                borderRadius: BorderRadius.circular(12),
-              ),
+          final bubbleWidths = [170.0, 240.0, 130.0, 210.0, 280.0, 150.0, 220.0];
+          final bubbleWidth = bubbleWidths[index % bubbleWidths.length];
+          final bubbleHeight = (index % 3 == 0) ? 56.0 : ((index % 3 == 1) ? 40.0 : 48.0);
+
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 5),
+            child: Row(
+              mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                if (!isMe) ...[
+                  Container(
+                    width: 32,
+                    height: 32,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF1E293B),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                ],
+                Container(
+                  width: bubbleWidth,
+                  height: bubbleHeight,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1E293B),
+                    borderRadius: BorderRadius.only(
+                      topLeft: const Radius.circular(16),
+                      topRight: const Radius.circular(16),
+                      bottomLeft: isMe ? const Radius.circular(16) : const Radius.circular(4),
+                      bottomRight: isMe ? const Radius.circular(4) : const Radius.circular(16),
+                    ),
+                  ),
+                ),
+              ],
             ),
           );
         },
@@ -1284,29 +1260,21 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
           child: Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
-                colors: [Color(0xFF0F172A), Color(0xFF070B0D)],
+                colors: [Color(0xFF0B1015), Color(0xFF070B0E)],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
               ),
             ),
             child: Stack(
               children: [
-                // Subtle Custom Doodle Background
+                // Refined, subtle dark wallpaper doodle background
                 Positioned.fill(
                   child: CustomPaint(
                     painter: PocketDoodleBackgroundPainter(
-                      color: const Color(0xFFFFFC00),
+                      color: Colors.white,
                       isDark: true,
-                      opacityMultiplier: 0.6,
+                      opacityMultiplier: 0.22,
                     ),
-                  ),
-                ),
-                // Ambient Glowing Flame & Ember System
-                Positioned.fill(
-                  child: PocketAmbientFlameBackground(
-                    isEnglishHub: widget.groupName == 'English Hub',
-                    showTopFlameGlow: true,
-                    emberDensity: widget.groupName == 'English Hub' ? 0.95 : 0.65,
                   ),
                 ),
                 Column(
@@ -3028,37 +2996,37 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   Widget _buildAIHelperPill() {
     return Container(
       alignment: Alignment.centerRight,
-      padding: const EdgeInsets.only(right: 16, bottom: 8),
+      padding: const EdgeInsets.only(right: 14, bottom: 4),
       child: Material(
-        color: const Color(0xFF1B5E20),
-        borderRadius: BorderRadius.circular(20),
-        elevation: 4,
+        color: const Color(0xFF14532D),
+        borderRadius: BorderRadius.circular(12),
+        elevation: 2,
         child: InkWell(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(12),
           onTap: _isCorrectingText ? null : _correctTextWithAI,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (_isCorrectingText)
                   const SizedBox(
-                    width: 14,
-                    height: 14,
+                    width: 11,
+                    height: 11,
                     child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.yellow),
+                      strokeWidth: 1.5,
+                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFFFC00)),
                     ),
                   )
                 else
-                  const Icon(Icons.auto_awesome, color: Colors.yellow, size: 16),
-                const SizedBox(width: 8),
+                  const Icon(Icons.auto_awesome, color: Color(0xFFFFFC00), size: 12),
+                const SizedBox(width: 5),
                 Text(
-                  _isCorrectingText ? 'Correcting...' : 'AI Correct',
-                  style: const TextStyle(
+                  _isCorrectingText ? 'Checking...' : 'AI Polish',
+                  style: GoogleFonts.outfit(
                     color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 11,
                   ),
                 ),
               ],

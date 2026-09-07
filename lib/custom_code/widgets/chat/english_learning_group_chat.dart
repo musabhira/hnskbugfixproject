@@ -116,26 +116,56 @@ class _EnglishLearningGroupChatWidgetState
   }
 
   Widget _buildShimmerLoading(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final baseColor = isDark ? const Color(0xFF1F2C34) : Colors.grey[300]!;
-    final highlightColor = isDark ? const Color(0xFF121B22) : Colors.grey[100]!;
+    const baseColor = Color(0xFF1E293B);
+    const highlightColor = Color(0xFF334155);
+    const darkBg = Color(0xFF070B0D);
+    const appBarColor = Color(0xFF121B22);
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF070B0D) : Colors.white,
+      backgroundColor: darkBg,
       appBar: AppBar(
-        backgroundColor: isDark ? const Color(0xFF121B22) : Colors.grey[200],
+        backgroundColor: appBarColor,
         elevation: 0,
         automaticallyImplyLeading: false,
+        titleSpacing: 12,
         title: Shimmer.fromColors(
           baseColor: baseColor,
           highlightColor: highlightColor,
-          child: Container(
-            width: 120,
-            height: 20,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(4),
-            ),
+          child: Row(
+            children: [
+              Container(
+                width: 38,
+                height: 38,
+                decoration: const BoxDecoration(
+                  color: baseColor,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 110,
+                    height: 14,
+                    decoration: BoxDecoration(
+                      color: baseColor,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  Container(
+                    width: 65,
+                    height: 10,
+                    decoration: BoxDecoration(
+                      color: baseColor,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ),
@@ -144,33 +174,27 @@ class _EnglishLearningGroupChatWidgetState
         highlightColor: highlightColor,
         child: ListView.builder(
           reverse: true,
-          itemCount: 15,
-          padding: const EdgeInsets.symmetric(vertical: 12),
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: 14,
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
           itemBuilder: (context, index) {
             final isMe = index % 2 == 0;
-            final width = (index % 3 == 0)
-                ? 180.0
-                : (index % 3 == 1)
-                    ? 130.0
-                    : 240.0;
-            final height = (index % 4 == 0)
-                ? 40.0
-                : (index % 4 == 1)
-                    ? 50.0
-                    : 45.0;
+            final bubbleWidths = [170.0, 240.0, 130.0, 210.0, 280.0, 150.0, 220.0];
+            final width = bubbleWidths[index % bubbleWidths.length];
+            final height = (index % 3 == 0) ? 56.0 : ((index % 3 == 1) ? 40.0 : 48.0);
 
             return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              padding: const EdgeInsets.symmetric(vertical: 5),
               child: Row(
                 mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   if (!isMe) ...[
                     Container(
-                      width: 28,
-                      height: 28,
+                      width: 32,
+                      height: 32,
                       decoration: const BoxDecoration(
-                        color: Colors.white,
+                        color: baseColor,
                         shape: BoxShape.circle,
                       ),
                     ),
@@ -180,12 +204,12 @@ class _EnglishLearningGroupChatWidgetState
                     width: width,
                     height: height,
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: baseColor,
                       borderRadius: BorderRadius.only(
-                        topLeft: const Radius.circular(12),
-                        topRight: const Radius.circular(12),
-                        bottomLeft: isMe ? const Radius.circular(12) : Radius.zero,
-                        bottomRight: isMe ? Radius.zero : const Radius.circular(12),
+                        topLeft: const Radius.circular(16),
+                        topRight: const Radius.circular(16),
+                        bottomLeft: isMe ? const Radius.circular(16) : const Radius.circular(4),
+                        bottomRight: isMe ? const Radius.circular(4) : const Radius.circular(16),
                       ),
                     ),
                   ),

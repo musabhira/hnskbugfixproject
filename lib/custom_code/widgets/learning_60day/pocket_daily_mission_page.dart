@@ -228,11 +228,16 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
       backgroundColor: const Color(0xFF070B14),
       body: Stack(
         children: [
-          // Ambient Glowing Flame & Ember System
-          const Positioned.fill(
-            child: PocketAmbientFlameBackground(
-              showTopFlameGlow: true,
-              emberDensity: 0.85,
+          // Subtle dark vignette background
+          Positioned.fill(
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFF0F172A), Color(0xFF070B14)],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+              ),
             ),
           ),
 
@@ -518,14 +523,14 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     final isTargetMet = _timerService.hasReachedTarget;
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [Color(0xFF1E1B4B), Color(0xFF0F172A)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: isRunning
               ? const Color(0xFFFFD700)
@@ -536,14 +541,14 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           if (isRunning)
             BoxShadow(
               color: const Color(0xFFFF8906).withValues(alpha: 0.25),
-              blurRadius: 16,
-              spreadRadius: 2,
+              blurRadius: 12,
+              spreadRadius: 1,
             ),
           if (isTargetMet)
             BoxShadow(
               color: const Color(0xFF10B981).withValues(alpha: 0.2),
-              blurRadius: 16,
-              spreadRadius: 2,
+              blurRadius: 12,
+              spreadRadius: 1,
             ),
         ],
       ),
@@ -555,21 +560,21 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
             children: [
               Row(
                 children: [
-                  const Text('⏱️', style: TextStyle(fontSize: 20)),
-                  const SizedBox(width: 8),
+                  const Text('⏱️', style: TextStyle(fontSize: 16)),
+                  const SizedBox(width: 6),
                   Text(
                     'DAILY 60-MIN PRACTICE TIMER',
                     style: GoogleFonts.outfit(
                       color: const Color(0xFFFFFC00),
-                      fontSize: 13,
+                      fontSize: 12,
                       fontWeight: FontWeight.w900,
-                      letterSpacing: 0.5,
+                      letterSpacing: 0.4,
                     ),
                   ),
                 ],
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
                 decoration: BoxDecoration(
                   color: isRunning
                       ? Colors.green.withValues(alpha: 0.2)
@@ -580,31 +585,31 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                 ),
                 child: Text(
                   isRunning
-                      ? 'ACTIVE RECORDING'
+                      ? 'ACTIVE'
                       : (isTargetMet
-                          ? 'TARGET REACHED'
+                          ? 'TARGET MET'
                           : _timerService.pauseReason.toUpperCase()),
                   style: TextStyle(
                     color: isRunning
                         ? Colors.greenAccent
                         : (isTargetMet ? const Color(0xFF10B981) : Colors.white54),
-                    fontSize: 9.5,
+                    fontSize: 9,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 6),
           Text(
-            'Rule: You must spend at least 60 minutes practicing English daily (across chat, voice calls, vocabulary & drills) to complete the stage. Timer automatically pauses when leaving the app.',
+            'Rule: Spend 60+ mins practicing English daily (chat, voice calls, drills). Pauses when leaving app.',
             style: GoogleFonts.inter(
               color: Colors.white70,
-              fontSize: 12,
-              height: 1.4,
+              fontSize: 11,
+              height: 1.3,
             ),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 10),
           Row(
             children: [
               Expanded(
@@ -618,7 +623,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                           _timerService.formatTime(),
                           style: GoogleFonts.outfit(
                             color: Colors.white,
-                            fontSize: 26,
+                            fontSize: 22,
                             fontWeight: FontWeight.w900,
                           ),
                         ),
@@ -626,17 +631,17 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                           '/ ${_timerService.formatTime(_timerService.targetSeconds)} Target',
                           style: GoogleFonts.inter(
                             color: Colors.white54,
-                            fontSize: 12,
+                            fontSize: 11,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 5),
                     ClipRRect(
                       borderRadius: BorderRadius.circular(4),
                       child: LinearProgressIndicator(
                         value: _timerService.progress,
-                        minHeight: 8,
+                        minHeight: 6,
                         backgroundColor: Colors.white12,
                         valueColor: AlwaysStoppedAnimation<Color>(
                           isTargetMet
@@ -648,7 +653,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                   ],
                 ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 12),
               ElevatedButton.icon(
                 onPressed: () {
                   if (isTargetMet) {
@@ -662,6 +667,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                       ? Icons.pause_rounded
                       : (isTargetMet ? Icons.add_alarm_rounded : Icons.play_arrow_rounded),
                   color: Colors.black,
+                  size: 18,
                 ),
                 label: Text(
                   isRunning
@@ -670,14 +676,15 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                   style: GoogleFonts.outfit(
                     fontWeight: FontWeight.bold,
                     color: Colors.black,
+                    fontSize: 12,
                   ),
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: isRunning
                       ? Colors.amberAccent
                       : (isTargetMet ? const Color(0xFF10B981) : const Color(0xFFFFFC00)),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
               ),
             ],
