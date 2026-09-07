@@ -1774,7 +1774,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-        backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+        backgroundColor: isDark ? const Color(0xFF0B1015) : const Color(0xFFF8FAFC),
         resizeToAvoidBottomInset: false,
         body: Stack(
           children: [
@@ -1782,7 +1782,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
             Positioned.fill(
               child: CustomPaint(
                 painter: DoodleBackgroundPainter(
-                  color: const Color(0xFFFFFC00),
+                  color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
                   isDark: isDark,
                 ),
               ),
@@ -2097,8 +2097,9 @@ class _TaskManagerScreenState extends State<ToolsPage> {
   }
 
   Widget _buildToolDetailView() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+      backgroundColor: isDark ? const Color(0xFF0B1015) : const Color(0xFFF8FAFC),
       body: SafeArea(
         child: Column(
           children: [
@@ -2334,9 +2335,9 @@ class _TaskManagerScreenState extends State<ToolsPage> {
       margin: const EdgeInsets.symmetric(horizontal: 24),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF2C2C2C),
+        color: const Color(0xFF131A2A),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF424242)),
+        border: Border.all(color: const Color(0xFF1E293B)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -2346,9 +2347,9 @@ class _TaskManagerScreenState extends State<ToolsPage> {
             style: const TextStyle(color: Colors.white),
             decoration: InputDecoration(
               hintText: 'What needs to be done?',
-              hintStyle: const TextStyle(color: Color(0xFF757575)),
+              hintStyle: const TextStyle(color: Color(0xFF94A3B8)),
               filled: true,
-              fillColor: const Color(0xFF1E1E1E),
+              fillColor: const Color(0xFF0B1015),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide.none,
@@ -2362,9 +2363,9 @@ class _TaskManagerScreenState extends State<ToolsPage> {
             maxLines: 2,
             decoration: InputDecoration(
               hintText: 'Add notes (optional)',
-              hintStyle: const TextStyle(color: Color(0xFF757575)),
+              hintStyle: const TextStyle(color: Color(0xFF94A3B8)),
               filled: true,
-              fillColor: const Color(0xFF1E1E1E),
+              fillColor: const Color(0xFF0B1015),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide.none,
@@ -2951,13 +2952,13 @@ class _TaskManagerScreenState extends State<ToolsPage> {
           child: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: const Color(0xFF2C2C2C),
+              color: const Color(0xFF131A2A),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: task.isCompleted
-                    ? const Color(0xFF4CAF50)
-                    : const Color(0xFF424242),
-                width: task.isCompleted ? 2 : 1,
+                    ? const Color(0xFF10B981).withValues(alpha: 0.6)
+                    : const Color(0xFF1E293B),
+                width: task.isCompleted ? 1.5 : 1,
               ),
             ),
             child: Column(
@@ -2973,12 +2974,12 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: task.isCompleted
-                              ? const Color(0xFF4CAF50)
+                              ? const Color(0xFF10B981)
                               : Colors.transparent,
                           border: Border.all(
                             color: task.isCompleted
-                                ? const Color(0xFF4CAF50)
-                                : const Color(0xFF757575),
+                              ? const Color(0xFF10B981)
+                              : const Color(0xFF64748B),
                             width: 2,
                           ),
                         ),

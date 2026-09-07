@@ -1226,7 +1226,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // 4-Tile Quick Metric Overview
+                // 4-Tile Quick Metric Overview (2x2 responsive grid)
                 Row(
                   children: [
                     // HP Tile
@@ -1317,8 +1317,11 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                         ),
                       ),
                     ),
-                    const SizedBox(width: 8),
-
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
                     // Knights Garrison Tile
                     Expanded(
                       child: Container(
@@ -1518,7 +1521,10 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                         ],
                                       ),
                                       const SizedBox(height: 6),
-                                      Row(
+                                      Wrap(
+                                        spacing: 6,
+                                        runSpacing: 6,
+                                        crossAxisAlignment: WrapCrossAlignment.center,
                                         children: [
                                           Container(
                                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -1538,9 +1544,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                               ),
                                             ),
                                           ),
-                                          const SizedBox(width: 6),
                                           Container(
                                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                            constraints: const BoxConstraints(maxWidth: 160),
                                             decoration: BoxDecoration(
                                               color: const Color(0xFF10B981).withValues(alpha: 0.15),
                                               borderRadius: BorderRadius.circular(5),
@@ -1553,20 +1559,23 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                               children: [
                                                 const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 11),
                                                 const SizedBox(width: 4),
-                                                Text(
-                                                  q.options.isNotEmpty && q.correctIndex < q.options.length
-                                                      ? q.options[q.correctIndex]
-                                                      : 'Option 1',
-                                                  style: GoogleFonts.inter(
-                                                    color: const Color(0xFF34D399),
-                                                    fontSize: 10.5,
-                                                    fontWeight: FontWeight.bold,
+                                                Flexible(
+                                                  child: Text(
+                                                    q.options.isNotEmpty && q.correctIndex < q.options.length
+                                                        ? q.options[q.correctIndex]
+                                                        : 'Option 1',
+                                                    maxLines: 1,
+                                                    overflow: TextOverflow.ellipsis,
+                                                    style: GoogleFonts.inter(
+                                                      color: const Color(0xFF34D399),
+                                                      fontSize: 10.5,
+                                                      fontWeight: FontWeight.bold,
+                                                    ),
                                                   ),
                                                 ),
                                               ],
                                             ),
                                           ),
-                                          const Spacer(),
                                           const Text(
                                             '🏅 Verified Authentic',
                                             style: TextStyle(
@@ -1814,7 +1823,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (isMe) _buildDualProfileSegmentSwitcher(textColor, btnColor, btnTextColor, isDark),
-        if (!_isPublicProfileView)
+        headerContent,
+        if (!_isPublicProfileView) ...[
+          Learning60DayProfileCard(userId: userId),
           FlameCompanionShowcaseCard(
             day: day,
             stage: activeStage,
@@ -1826,10 +1837,6 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               if (mounted) setState(() => _equippedTalismanId = talismanId);
             },
           ),
-        headerContent,
-        if (!_isPublicProfileView) ...[
-          Learning60DayProfileCard(userId: userId),
-          if (isMe) _buildLanguageHubDashboard(textColor, btnColor, isDark),
         ],
         _buildActionButtons(textColor, btnColor, btnTextColor, isMe, isDark, name, profileUrl),
       ],

@@ -2854,25 +2854,71 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                               ),
                             ),
                             const Spacer(),
-                            activeUsersRef.when(
-                              data: (data) => Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  _buildActiveCounter(
-                                      data.activeFriends.length),
-                                ],
-                              ),
-                              loading: () => SizedBox(
-                                width: 14,
-                                height: 14,
-                                child: material.CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: isDark
-                                      ? const Color(0xFFFFFC00)
-                                      : const Color(0xFFFFFC00),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                material.InkWell(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      material.MaterialPageRoute(
+                                        builder: (context) =>
+                                            const NotificationsPage(),
+                                      ),
+                                    );
+                                  },
+                                  borderRadius: BorderRadius.circular(10),
+                                  child: Container(
+                                    padding: const EdgeInsets.all(7),
+                                    decoration: BoxDecoration(
+                                      color: isDark
+                                          ? const Color(0xFF1E293B)
+                                          : const Color(0xFFF1F5F9),
+                                      borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(
+                                        color: isDark
+                                            ? const Color(0xFF334155)
+                                            : const Color(0xFFE2E8F0),
+                                        width: 1,
+                                      ),
+                                    ),
+                                    child: Icon(
+                                      material.Icons.notifications_outlined,
+                                      size: 17,
+                                      color: isDark
+                                          ? material.Colors.white
+                                          : material.Colors.black87,
+                                    ),
+                                  ),
                                 ),
-                              ),
-                              error: (_, __) => const SizedBox(),
+                                const SizedBox(width: 8),
+                                material.InkWell(
+                                  onTap: onRefresh,
+                                  borderRadius: BorderRadius.circular(10),
+                                  child: Container(
+                                    padding: const EdgeInsets.all(7),
+                                    decoration: BoxDecoration(
+                                      color: isDark
+                                          ? const Color(0xFF1E293B)
+                                          : const Color(0xFFF1F5F9),
+                                      borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(
+                                        color: isDark
+                                            ? const Color(0xFF334155)
+                                            : const Color(0xFFE2E8F0),
+                                        width: 1,
+                                      ),
+                                    ),
+                                    child: Icon(
+                                      material.Icons.refresh_rounded,
+                                      size: 17,
+                                      color: isDark
+                                          ? material.Colors.white
+                                          : material.Colors.black87,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),

@@ -868,12 +868,16 @@ class FlameCompanionShowcaseCard extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Text(
-                      stage.fluencyTier,
-                      style: GoogleFonts.outfit(
-                        color: stage.buttonColor,
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.w900,
+                    Flexible(
+                      child: Text(
+                        stage.fluencyTier,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.outfit(
+                          color: stage.buttonColor,
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w900,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 6),
@@ -885,6 +889,8 @@ class FlameCompanionShowcaseCard extends StatelessWidget {
                       ),
                       child: Text(
                         perk.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           color: perk.badgeColor,
                           fontSize: 9,

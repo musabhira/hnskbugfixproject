@@ -107,8 +107,20 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final size = MediaQuery.of(context).size;
+      final availableWidth = size.width;
+      final availableHeight = size.height - 140;
+      final scaleX = availableWidth / _canvasWidth;
+      final scaleY = availableHeight / _canvasHeight;
+      final fitScale = (math.min(scaleX, scaleY) * 0.94).clamp(0.08, 1.0);
+
+      final scaledW = _canvasWidth * fitScale;
+      final scaledH = _canvasHeight * fitScale;
+      final tx = (size.width - scaledW) / 2;
+      final ty = (size.height - scaledH) / 2;
+
       _transformationController.value = Matrix4.identity()
-        ..setTranslationRaw(-(_canvasWidth / 2) + size.width / 2, -(_canvasHeight / 2) + size.height / 2, 0);
+        ..translate(tx, ty)
+        ..scale(fitScale);
       
       setState(() {
         _sidebarOffset = Offset(8, (size.height - 400) / 2);
@@ -918,7 +930,7 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
   }
 
   Widget _buildTopBar(FlutterFlowTheme theme) => Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-    _headerBtn(Icons.home, () => Navigator.pop(context)),
+    _headerBtn(Icons.arrow_back_ios_new_rounded, () => Navigator.pop(context)),
     Row(children: [
       _headerBtn(Icons.face_retouching_natural_rounded, _convertTo1of1Avatar),
       const SizedBox(width: 8),
