@@ -900,7 +900,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                       TextButton.icon(
                         onPressed: () async {
                           Navigator.pop(ctx);
-                          final uid = _currentUserId ?? SupaFlow.client.auth.currentUser?.id;
+                          final uid = _supabase.auth.currentUser?.id;
                           if (uid != null) {
                             await Learning60DayService().jumpToDay(uid, day);
                             await _loadData();

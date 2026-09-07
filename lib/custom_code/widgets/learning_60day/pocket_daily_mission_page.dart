@@ -88,6 +88,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   bool _revisionQuizPassed = false;
   bool _defenseTrapArmed = false;
   bool _trialRaidLaunched = false;
+  bool _midAttackCompleted = false;
 
   // Quiz state
   int _selectedQuizAnswer = -1;
@@ -104,6 +105,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
   String _selectedLanguage = 'Malayalam';
   bool _isStorySpeaking = false;
+  List<DailyVocabItem> _vocabList = [];
 
   static const String _kDay1StoryText =
       'A young student once stood by a tall bamboo tree, hesitant to practice speaking English. He was afraid of making mistakes in front of others. A wise mentor approached him and smiled. Look at this bamboo, the mentor said. For four years, its roots grow deep underground in silence. Then, in the fifth year, it shoots up eighty feet into the sky! Your daily English practice is just like that seed. Every day you speak, read, and listen for sixty minutes, you are building unseen roots. Soon, your fluency will soar higher than you ever imagined. The student took a deep breath, spoke his first sentence with courage, and stepped fearlessly onto his ninety day path.';
@@ -248,6 +250,45 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
       '✨ Part 4: The Liberation of Mind\n'
       'Cassian\'s address electrified the assembly. He proved that learning English is not an obligation, but a transformative journey that expands the horizons of human potential.';
 
+  static const String _kDay12StoryText =
+      'Within the historic debate chamber of the Oxford Union, hundreds of seasoned intellectuals gathered for the annual world championship of forensic dialectic. Scholar Rowan stood before the dispatched dispatch box, facing an opponent known for employing specious fallacies and intimidating rhetorical volume. Rather than matching the aggression, Rowan dismantled the opponent\'s argument with surgical calm. "Were it not for foundational logic and empirical integrity," Rowan declared, "even the most eloquent rhetoric would dissolve into empty deception. Be that as it may, we must examine the unexamined assumptions beneath this motion." Through masterful subjunctive structures and concessive refutations, Rowan isolated the logical contradiction in the opponent\'s premise. Rowan demonstrated that conceding minor points gracefully disarms adversaries, while holding firm on core truth commands universal respect. When Rowan concluded, the entire assembly erupted in admiration. Rowan established that true mastery in debate is not bluster, but perspicacious clarity that exposes specious claims and elevates reasoned dialogue.';
+
+  static const String _kDay12StoryFormatted =
+      '🏛️ Part 1: The Oxford Arena\n'
+      'Within the Oxford Union debate chamber, hundreds of intellectuals convened. Rowan faced a formidable adversary renowned for aggressive, specious arguments.\n\n'
+      '⚖️ Part 2: The Subjunctive Opening\n'
+      'Stepping to the dispatch box, Rowan spoke with surgical composure: "Were it not for empirical rigor, eloquent rhetoric would collapse into hollow deception. Be that as it may, let us dissect the underlying premises."\n\n'
+      '🔍 Part 3: Dismantling the Fallacy\n'
+      'Through precise concessive reasoning, Rowan exposed the contradictions in the motion. Conceding trivial points disarmed the opposition while fortifying the core truth.\n\n'
+      '🌟 Part 4: Triumph of Perspicacity\n'
+      'The hall erupted in an overwhelming standing ovation. Rowan proved that dialectic mastery is not loud intimidation, but the luminous perspicacity that elevates truth over sophistry.';
+
+  static const String _kDay13StoryText =
+      'At the Cambridge Institute for Epistemic Inquiry, senior researcher Dr. Elena Rostova spent months investigating an anomalous paradox in quantum neural networks. Conventional academic wisdom dismissed the anomaly as mere experimental noise, urging her team to abandon the project. Unwavering in her scientific empiricism, Dr. Elena persisted. Addressing the international fellowship of scientists, she opened with commanding rhetorical inversion: "Not only did our control measurements fail to eliminate the anomaly, but never in modern computational history have we witnessed such reproducible defiance of classical theory. Under no circumstances should an investigator discard contradictory data simply because it disrupts a comfortable paradigm." By structuring her scientific argument with negative inversion, she infused her rigorous mathematical proofs with profound drama and gravitas. Her peer researchers scrutinized her findings and were compelled to corroborate her hypothesis. Elena proved that when profound intellectual rigor meets masterful English expression, an investigator can shift the paradigms of an entire generation.';
+
+  static const String _kDay13StoryFormatted =
+      '🔬 Part 1: The Quantum Paradox\n'
+      'At the Cambridge Institute for Epistemic Inquiry, Dr. Elena Rostova unraveled an anomalous paradox dismissed by conventional scholars as experimental noise.\n\n'
+      '⚡ Part 2: The Negative Inversion\n'
+      'Addressing the world fellowship of scientists, she commanded the room: "Not only did our control trials confirm the anomaly, but never in modern history have we witnessed such reproducible defiance of classical models."\n\n'
+      '📊 Part 3: The Gravitas of Evidence\n'
+      'Using negative inversion for dramatic weight, Elena declared: "Under no circumstances shall an investigator discard data merely because it shatters a comfortable paradigm."\n\n'
+      '🌌 Part 4: The Paradigm Shift\n'
+      'The symposium unanimously corroborated her findings. Elena demonstrated that when profound scientific truth is articulated with oratorical gravitas, history bends to evidence.';
+
+  static const String _kDay14StoryText =
+      'At the Grand Multilateral Summit in Geneva, delegates from opposing geopolitical blocs confronted a critical deadline to prevent an international trade embargo. Seventy-two consecutive hours of tense negotiations had brought the delegates to the brink of utter exhaustion. As cynicism began to settle across the council, Ambassador Kaelen and Chief Counsel Lyra took the floor. They employed rhetorical fronting and exquisite syntactic cohesion to galvanize the plenary hall. "Exhausted though we all are," Kaelen began, "reach a durable accord we must. Far and wide, millions of families await the outcome of this room. At stake stands not our pride, but our collective prosperity." Lyra then introduced a balanced multilateral compromise, using fronted prepositional phrases to place the human stakes center stage. Recalcitrant delegates set aside their stubborn posturing. By midnight, the landmark Geneva Treaty of Mutual Sovereignty was signed by all ninety nations. Kaelen and Lyra proved that oratorical rhetoric, when tempered by genuine empathy and grammatical elegance, has the power to bridge the deepest chasms of human discord.';
+
+  static const String _kDay14StoryFormatted =
+      '🌐 Part 1: The Geneva Deadline\n'
+      'At the Grand Multilateral Summit in Geneva, delegates faced an imminent midnight deadline on an international trade embargo after seventy-two hours of gridlock.\n\n'
+      '⚡ Part 2: Rhetorical Fronting\n'
+      'Ambassador Kaelen took the podium with electrifying presence: "Exhausted though we all are, reach a durable accord we must. Front and center stand not our egos, but our collective future."\n\n'
+      '📜 Part 3: The Forensic Accord\n'
+      'Chief Counsel Lyra presented the multilateral blueprint, placing common human prosperity ahead of narrow tactical gains through syntactic mastery.\n\n'
+      '🏆 Part 4: The Milestone Treaty\n'
+      'All ninety sovereign delegations signed the historic treaty before the midnight bell. Kaelen and Lyra proved that forensic rhetoric, fueled by empathy, can bridge any divide.';
+
   String get _storyText {
     switch (widget.day) {
       case 2:
@@ -270,6 +311,12 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         return _kDay10StoryText;
       case 11:
         return _kDay11StoryText;
+      case 12:
+        return _kDay12StoryText;
+      case 13:
+        return _kDay13StoryText;
+      case 14:
+        return _kDay14StoryText;
       default:
         return _kDay1StoryText;
     }
@@ -297,6 +344,12 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         return _kDay10StoryFormatted;
       case 11:
         return _kDay11StoryFormatted;
+      case 12:
+        return _kDay12StoryFormatted;
+      case 13:
+        return _kDay13StoryFormatted;
+      case 14:
+        return _kDay14StoryFormatted;
       default:
         return _kDay1StoryFormatted;
     }
@@ -324,6 +377,12 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         return 'DAY 10 MILESTONE: THE ARCHITECTURE OF CONSENSUS';
       case 11:
         return 'DAY 11 STORY: THE ODYSSEY OF REINVENTION';
+      case 12:
+        return 'DAY 12 STORY: THE DIALECTIC OF CONTRADICTION';
+      case 13:
+        return 'DAY 13 STORY: THE ALCHEMY OF INTELLECT';
+      case 14:
+        return 'DAY 14 MILESTONE: THE CITADEL OF RHETORIC';
       default:
         return 'DAY 1 STORY: THE SEED OF CONFIDENCE';
     }
@@ -351,6 +410,12 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         return 'Executive Statesmanship & Unifying Divergent Factions';
       case 11:
         return 'Linguistic Virtuosity & Cognitive Evolution';
+      case 12:
+        return 'Subjunctive Precision & Dissecting Sophistry in High Debate';
+      case 13:
+        return 'Negative Inversion & Epistemic Rigor in Advanced Inquiries';
+      case 14:
+        return 'Forensic Persuasion, Rhetorical Fronting & Multilateral Accords';
       default:
         return 'Aloud Reading & Pronunciation Practice';
     }
@@ -378,6 +443,12 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         return '👑';
       case 11:
         return '🌌';
+      case 12:
+        return '⚖️';
+      case 13:
+        return '🔬';
+      case 14:
+        return '🏛️';
       default:
         return '🎋';
     }
@@ -405,6 +476,12 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         return '"Inside the Peace Palace in The Hague, 50 nations sat in acrimonious deadlock. Ambassador Helena Vance declared: \'If we had succumbed to narrow pride, our borders would not be secure today, and our children would inherit conflict...\'"';
       case 11:
         return '"In an ancient stone library, bilingual philosopher Cassian addressed young scholars: \'Linguistic fluency is not a static destination you arrive at and abandon. It is an eternal odyssey of cognitive reinvention...\'"';
+      case 12:
+        return '"Within the historic debate chamber of the Oxford Union, Rowan faced an opponent known for specious fallacies: \'Were it not for empirical integrity, even the most eloquent rhetoric would dissolve into empty deception. Be that as it may...\'"';
+      case 13:
+        return '"At the Cambridge Institute for Epistemic Inquiry, Dr. Elena Rostova commanded the world symposium: \'Not only did our controls confirm the anomaly, but never in modern history have we witnessed such reproducible defiance of classical theory...\'"';
+      case 14:
+        return '"At the Grand Multilateral Summit in Geneva, Ambassador Kaelen galvanized the exhausted council: \'Exhausted though we all are, reach a durable accord we must. Front and center stand not our egos, but our collective future...\'"';
       default:
         return '"A young student once stood by a tall bamboo tree, hesitant to practice speaking English. He was afraid of making mistakes in front of others. A wise mentor approached him: \'For four years, the bamboo roots grow deep underground in silence. Then, in the fifth year, it shoots up eighty feet into the sky!\'"';
     }
@@ -432,6 +509,12 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         return 'Rule 10: Mixed Conditionals (Past Choice -> Present Reality)';
       case 11:
         return 'Rule 11: Participial Clauses for Sophisticated Flow';
+      case 12:
+        return 'Rule 12: Formal Subjunctive & Concessive Inversion';
+      case 13:
+        return 'Rule 13: Negative & Restrictive Inversion for Gravitas';
+      case 14:
+        return 'Rule 14: Rhetorical Fronting, Ellipsis & Cohesion';
       default:
         return 'Rule 1: Sentence Structure (S + V + O)';
     }
@@ -459,6 +542,12 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         return 'Q: Which sentence correctly uses a Mixed Conditional (Past Action -> Present Result)?';
       case 11:
         return 'Q: Which sentence correctly uses a participial clause for sophisticated sentence flow?';
+      case 12:
+        return 'Q: Which sentence correctly uses the formal subjunctive and concessive structure in debate?';
+      case 13:
+        return 'Q: Which sentence correctly applies negative inversion to convey dramatic gravitas?';
+      case 14:
+        return 'Q: Which sentence uses rhetorical fronting correctly to elevate oratorical eloquence?';
       default:
         return 'Q: Which sentence follows the correct English "Subject + Verb + Object" order?';
     }
@@ -526,6 +615,24 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           'After having analyze the data, the ambassador presented a balanced proposal.',
           'Having analyzing the data, the ambassador presented a balanced proposal.',
         ];
+      case 12:
+        return [
+          'Were it not for our rigorous treaties, cross-border stability would collapse.',
+          'Was it not for our rigorous treaties, cross-border stability would collapse.',
+          'If it were not for that our treaties, cross-border stability collapsed.',
+        ];
+      case 13:
+        return [
+          'Seldom have empirical researchers witnessed such an astonishing scientific breakthrough.',
+          'Seldom empirical researchers have witnessed such an astonishing scientific breakthrough.',
+          'Seldom did empirical researchers witnessed such an astonishing scientific breakthrough.',
+        ];
+      case 14:
+        return [
+          'Exhausted though the envoys were, reach a historic consensus they did.',
+          'Exhausted though were the envoys, reach a historic consensus they did.',
+          'Though exhausted were the envoys, reached a historic consensus they did.',
+        ];
       default:
         return [
           'She reads books diligently.',
@@ -536,6 +643,54 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   }
 
   String _getGrammarRuleExplanation(String lang) {
+    if (widget.day == 14) {
+      switch (lang.toLowerCase()) {
+        case 'tamil':
+          return 'பேச்சில் முக்கிய கருத்தை முன்னிலைப்படுத்த Rhetorical Fronting (Exhausted though they were..., Front and center stood...) பயன்படுத்தவும்.\n• சரியான வாக்கியம்: "Exhausted though the envoys were, reach a historic consensus they did."\n• சர்வதேச மாநாடுகளில் கவனத்தை ஈர்க்க இது பயன்படுகிறது.';
+        case 'hindi':
+          return 'भाषण में विशेष भाव या तथ्य को सबसे आगे लाने के लिए Rhetorical Fronting का प्रयोग करें: Adjective + though + Subject + Verb ("Exhausted though they were...")।\n• सही वाक्य: "Exhausted though the envoys were, reach a historic consensus they did."\n• यह सामान्य वाक्य की तुलना में कहीं अधिक प्रभावशाली और राजसी लगता है।';
+        case 'telugu':
+          return 'మాట్లాడేటప్పుడు ప్రధానాంశాన్ని ముందుంచి ఆకట్టుకునేందుకు Rhetorical Fronting (Exhausted though they were...) వాడతారు.\n• సరైనది: "Exhausted though the envoys were, reach a historic consensus they did."\n• ఇది ఉన్నత స్థాయి సదస్సుల్లో మరియు చర్చల్లో ప్రసంగానికి ప్రత్యేక ఆకర్షణ తెస్తుంది.';
+        case 'kannada':
+          return 'ಭಾಷಣದಲ್ಲಿ ಮುಖ್ಯ ವಿಷಯವನ್ನು ಮುಂಚೂಣಿಗೆ ತರಲು Rhetorical Fronting (Exhausted though they were...) ಬಳಸಿ.\n• ಸರಿಯಾದ ವಾಕ್ಯ: "Exhausted though the envoys were, reach a historic consensus they did."\n• ಜಾಗತಿಕ ವೇದಿಕೆಗಳಲ್ಲಿ ಪ್ರಭಾವಿ ಭಾಷಣಕ್ಕೆ ಇದು ಅತ್ಯುತ್ತಮ ಕಲೆ.';
+        case 'malayalam':
+        default:
+          return 'Rhetorical Fronting moves key descriptive adjectives or adverbs to the absolute beginning of the sentence to command dramatic focus and oratorical authority ("Exhausted though they were...", "Front and center stood..."): \n• Normal: "Although the envoys were exhausted, they reached a consensus."\n• Fronted Rhetoric: "Exhausted though the envoys were, reach a historic consensus they did."\n• The gold standard of diplomatic statesmanship.';
+      }
+    }
+
+    if (widget.day == 13) {
+      switch (lang.toLowerCase()) {
+        case 'tamil':
+          return 'ஆழ்ந்த அறிவியலிலும் வாதங்களிலும் அழுத்தமான தாக்கத்தை உருவாக்க Negative Inversion (Seldom / Never / Under no circumstances + Auxiliary Verb + Subject) பயன்படுத்தவும்.\n• சரியான வாக்கியம்: "Seldom have empirical researchers witnessed such a breakthrough."\n• சாதாரண வாக்கியத்தை விட இது அசைக்க முடியாத அதிகாரபூர்வமான தொனியைத் தரும்.';
+        case 'hindi':
+          return 'वैज्ञानिक व अकादमिक विमर्श में गाम्भीर्य दर्शाने के लिए Negative Inversion का प्रयोग करें: Seldom/Never/Under no circumstances + Auxiliary Verb + Subject.\n• सही वाक्य: "Seldom have empirical researchers witnessed such an astonishing breakthrough."\n• यह वाक्य को एक अचूक और प्रभावशाली बौद्धिक वजन देता है।';
+        case 'telugu':
+          return 'శాస్త్రీయ మరియు మేధోపరమైన చర్చల్లో గాంభీర్యాన్ని పెంచేందుకు Negative Inversion (Seldom/Never + సహాయక క్రియ + కర్త) వాడతారు.\n• సరైనది: "Seldom have empirical researchers witnessed such a breakthrough."\n• ఇది పరిశోధనాత్మక ప్రసంగాలకు తిరుగులేని బలాన్ని ఇస్తుంది.';
+        case 'kannada':
+          return 'ವೈಜ್ಞಾನಿಕ ಮತ್ತು ಬೌದ್ಧಿಕ ಚರ್ಚೆಗಳಲ್ಲಿ ಗಾಂಭೀರ್ಯವನ್ನು ಹೆಚ್ಚಿಸಲು Negative Inversion ಬಳಸಿ.\n• ಸರಿಯಾದ ವಾಕ್ಯ: "Seldom have empirical researchers witnessed such a breakthrough."\n• ಇದು ನಿಮ್ಮ ಇಂಗ್ಲಿಷ್‌ಗೆ ಅಪ್ರತಿಮ ಗಾಂಭೀರ್ಯವನ್ನು ನೀಡುತ್ತದೆ.';
+        case 'malayalam':
+        default:
+          return 'Negative & Restrictive Inversion opens a sentence with limiting adverbs (Seldom, Never, Under no circumstances, Hardly) immediately followed by an auxiliary verb and subject to convey unshakeable intellectual gravitas:\n• Normal: "Researchers have seldom witnessed such a breakthrough."\n• Inverted (Academic Gravitas): "Seldom have empirical researchers witnessed such an astonishing breakthrough."\n• Essential for high-level scientific and philosophical discourse.';
+      }
+    }
+
+    if (widget.day == 12) {
+      switch (lang.toLowerCase()) {
+        case 'tamil':
+          return 'உயர்மட்ட விவாதங்களில் மறுக்க முடியாத தர்க்கத்தை முன்வைக்க Subjunctive & Concessive Inversion ("Were it not for...", "Be that as it may...") பயன்படுத்தவும்.\n• சரியான வாக்கியம்: "Were it not for our rigorous treaties, cross-border stability would collapse."\n• இது எதிராளியின் வீண் வாதங்களை உடைத்து உண்மையை நிலைநாட்ட உதவுகிறது.';
+        case 'hindi':
+          return 'उच्च-स्तरीय वाद-विवाद में अचूक तर्कशीलता के लिए Formal Subjunctive एवं Concessive Inversion ("Were it not for...", "Be that as it may...") का प्रयोग करें।\n• सही वाक्य: "Were it not for our rigorous treaties, cross-border stability would collapse."\n• यह बिना आक्रामकता के तर्क की स्पष्टता से विपक्ष को निरुत्तर करने की कला है।';
+        case 'telugu':
+          return 'ఉన్నత స్థాయి చర్చల్లో సహేతుకమైన తర్కాన్ని నిలబెట్టేందుకు Formal Subjunctive & Concessive Inversion ("Were it not for...", "Be that as it may...") వాడాలి.\n• సరైనది: "Were it not for our rigorous treaties, cross-border stability would collapse."\n• ఇది వాదనలో అపరిమితమైన హుందాతనాన్ని మరియు స్పష్టతను ఇస్తుంది.';
+        case 'kannada':
+          return 'ಉನ್ನತ ಮಟ್ಟದ ಸಂವಾದಗಳಲ್ಲಿ ದೋಷರಹಿತ ತರ್ಕವನ್ನು ಮಂಡಿಸಲು Formal Subjunctive & Concessive Inversion ಬಳಸಿ.\n• ಸರಿಯಾದ ವಾಕ್ಯ: "Were it not for our rigorous treaties, cross-border stability would collapse."\n• ಇದು ಎದುರಾಳಿಯ ಪೊಳ್ಳು ವಾದಗಳನ್ನು ಪುಡಿಗಟ್ಟಿ ಸತ್ಯವನ್ನು ಎತ್ತಿಹಿಡಿಯುತ್ತದೆ.';
+        case 'malayalam':
+        default:
+          return 'The Formal Subjunctive with Concessive Inversion inverts standard "If it were not for" into "Were it not for..." and employs idioms like "Be that as it may..." to acknowledge an opposing argument before surgically dismantling its core fallacy:\n• Normal: "If it were not for our treaties, stability would collapse."\n• Subjunctive Debate Standard: "Were it not for our rigorous treaties, cross-border stability would collapse."\n• In Malayalam: "ഞങ്ങളുടെ കർശനമായ ഉടമ്പടികൾ ഇല്ലായിരുന്നുവെങ്കിൽ സമാധാനം തകരുമായിരുന്നു." Commands commanding intellectual respect.';
+      }
+    }
+
     if (widget.day == 11) {
       switch (lang.toLowerCase()) {
         case 'tamil':
@@ -712,6 +867,54 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   }
 
   String _getStorySummary(String lang) {
+    if (widget.day == 14) {
+      switch (lang.toLowerCase()) {
+        case 'tamil':
+          return '💡 நீதி: "உண்மையான சொல்வன்மை மனிதர்களின் சுயமரியாதையை உயர்த்தும் போதே முட்டுக்கட்டையை உடைத்து வரலாற்று வெற்றியை உருவாக்கும்." தொடர்ந்து முன்னேறுங்கள்.';
+        case 'hindi':
+          return '💡 सीख: "सच्ची वाक्पटुता और सहानुभूति ही सबसे बड़े गतिरोध को तोड़कर सर्वसम्मत ऐतिहासिक संधि का मार्ग प्रशस्त करती है।" शिखर पर पहुंचें।';
+        case 'telugu':
+          return '💡 నీతి: "నిజమైన వాక్చాతుర్యం మరియు సానుభూతి మాత్రమే ఎంతటి ప్రతిష్టంభననైనా ఛేదించి చారిత్రక శాంతి ఒప్పందాన్ని సాధించగలవు." ముందుకు సాగండి.';
+        case 'kannada':
+          return '💡 ನೀತಿ: "ನಿಜವಾದ ವಾಕ್ಚಾತುರ್ಯ ಮತ್ತು ಸಹಾನುಭೂತಿಯು ಎಂತಹದೇ ಬಿಕ್ಕಟ್ಟನ್ನು ನಿವಾರಿಸಿ ಐತಿಹಾಸಿಕ ಒಪ್ಪಂದವನ್ನು ತರಬಲ್ಲದು." ಮುನ್ನಡೆಯಿರಿ.';
+        case 'malayalam':
+        default:
+          return '💡 സന്ദേശം: "സത്യസന്ധമായ അനുഭാവവും വാഗ്മിത്വവും സമന്വയിക്കുമ്പോൾ ഏറ്റവും കടുത്ത സ്തംഭനാവസ്ഥകളും ചരിത്രപരമായ വിജയ സമാധാന ഉടമ്പടികളായി രൂപാന്തരപ്പെടും." മുന്നേറുക!';
+      }
+    }
+
+    if (widget.day == 13) {
+      switch (lang.toLowerCase()) {
+        case 'tamil':
+          return '💡 நீதி: "ஆழ்ந்த அறிவியலும் உண்மையும் அசைக்க முடியாத மொழியாற்றலுடன் முன்வைக்கப்படும் போது புதிய வரலாற்றுப் பாதை உருவாகும்." தேடலைத் தொடருங்கள்.';
+        case 'hindi':
+          return '💡 सीख: "जब गहन वैज्ञानिक सत्य को ओजस्वी भाषा के साथ प्रस्तुत किया जाता है, तो पुरानी रूढ़िवादिता ध्वस्त हो जाती है और नई क्रांति जन्म लेती है।" ज्ञान की ज्योति जलाएं।';
+        case 'telugu':
+          return '💡 నీతి: "లోతైన శాస్త్రీయ సత్యాన్ని గంభీరమైన భాషతో వ్యక్తపరిచినప్పుడు పాత మూఢనమ్మకాలు తొలగి కొత్త విజ్ఞాన యుగం ఆవిష్కృతమవుతుంది." అన్వేషణ సాగించండి.';
+        case 'kannada':
+          return '💡 ನೀತಿ: "ಆಳವಾದ ವೈಜ್ಞಾನಿಕ ಸತ್ಯವನ್ನು ಗಾಂಭೀರ್ಯದ ಭಾಷೆಯಲ್ಲಿ ಮಂಡಿಸಿದಾಗ ಸಮಾಜದ ಹಳೆಯ ಚೌಕಟ್ಟುಗಳು ಮುರಿದು ಹೊಸ ಕ್ರಾಂತಿ ಆರಂಭವಾಗುತ್ತದೆ." ಅನ್ವೇಷಕರಾಗಿ.';
+        case 'malayalam':
+        default:
+          return '💡 സന്ദേശം: "ആഴത്തിലുള്ള ശാസ്ത്രീയ സത്യങ്ങളെ ഗംഭീരമായ ഭാഷാപാടവത്തോടെ അവതരിപ്പിക്കുമ്പോൾ, നൂറ്റാണ്ടുകളുടെ തെറ്റായ ധാരണകളെപ്പോലും തകർത്തു പുതിയ ജ്ഞാനവിപ്ലവം സൃഷ്ടിക്കാൻ സാധിക്കും." അന്വേഷണം തുടരുക!';
+      }
+    }
+
+    if (widget.day == 12) {
+      switch (lang.toLowerCase()) {
+        case 'tamil':
+          return '💡 நீதி: "விவாதத்தில் வெல்வது என்பது பிறரை அடக்குவதல்ல; போலி வாதங்களை அறிவின் ஒளியால் விளக்கி உண்மையை நிலைநாட்டுவதாகும்." நிதானமாகப் பேசுங்கள்.';
+        case 'hindi':
+          return '💡 सीख: "वाद-विवाद में जीत दूसरों पर चिल्लाने से नहीं, बल्कि शांत बुद्धि और अकाट्य तर्कों से खोखले विचारों को बेनकाब करने से मिलती है।" विवेक से संवाद करें।';
+        case 'telugu':
+          return '💡 నీతి: "చర్చలో గెలవడం అంటే ఇతరులను అణగదొక్కడం కాదు; బోలు వాదనలను వివేకవంతమైన తర్కంతో తొలగించి సత్యాన్ని నిరూపించడమే." హుందాగా మాట్లాడండి.';
+        case 'kannada':
+          return '💡 ನೀತಿ: "ಸಂವಾದದಲ್ಲಿ ಗೆಲ್ಲುವುದು ಎಂದರೆ ಬೇರೆಯವರನ್ನು ಹತ್ತಿಕ್ಕುವುದಲ್ಲ; ಪೊಳ್ಳು ವಾದಗಳನ್ನು ವಿವೇಕಯುತ ತರ್ಕದಿಂದ ನಿವಾರಿಸಿ ಸತ್ಯವನ್ನು ಎತ್ತಿಹಿಡಿಯುವುದೇ ಆಗಿದೆ." ಶಾಂತಿಯಿಂದ ಮಾತನಾಡಿ.';
+        case 'malayalam':
+        default:
+          return '💡 സന്ദേശം: "സംവാദത്തിൽ ജയിക്കുക എന്നാൽ ഒച്ചവെച്ച് അപരനെ അടിച്ചമർത്തലല്ല, മറിച്ച് അന്ധമായ വാദങ്ങളെ വിവേകപൂർവ്വമായ യുക്തികൊണ്ട് തുറന്നുകാട്ടി പരമസത്യത്തെ സ്ഥാപിക്കലാണ്." ശാന്തമായി സംസാരിക്കുക!';
+      }
+    }
+
     if (widget.day == 11) {
       switch (lang.toLowerCase()) {
         case 'tamil':
@@ -884,6 +1087,53 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
       case 'malayalam':
       default:
         return '💡 സന്ദേശം: നമ്മുടെ ഇംഗ്ലീഷ് പരിശീലനം മുളയുടെ വിത്ത് പോലെയാണ്. തുടക്കത്തിൽ പുറമെ വളർച്ച കാണുന്നില്ലെങ്കിലും വേരുകൾ ആഴത്തിൽ ഉറക്കുകയാണ്. 90 ദിവസത്തെ നിരന്തര പരിശീലനത്തിലൂടെ ആത്മവിശ്വാസം ഉയരങ്ങളിലേക്ക് വളരും.';
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadVocabForDay();
+    _loadSavedMissionState();
+    _timerService.addListener(_onTimerStateChanged);
+  }
+
+  void _onTimerStateChanged() {
+    if (mounted) setState(() {});
+  }
+
+  void _onLanguageSelected(String lang) {
+    setState(() {
+      _selectedLanguage = lang;
+    });
+  }
+
+  Future<void> _speakWord(String text) async {
+    try {
+      await _tts.stop();
+      await _tts.setLanguage('en-US');
+      await _tts.setSpeechRate(0.45);
+      await _tts.speak(text);
+    } catch (_) {}
+  }
+
+  Future<void> _speakStory(String text) async {
+    try {
+      if (_isStorySpeaking) {
+        await _tts.stop();
+        if (mounted) setState(() => _isStorySpeaking = false);
+        return;
+      }
+      await _tts.stop();
+      await _tts.setLanguage('en-US');
+      await _tts.setSpeechRate(0.48);
+      _tts.setCompletionHandler(() {
+        if (mounted) setState(() => _isStorySpeaking = false);
+      });
+      if (mounted) setState(() => _isStorySpeaking = true);
+      await _tts.speak(text);
+    } catch (_) {
+      if (mounted) setState(() => _isStorySpeaking = false);
     }
   }
 
@@ -2038,6 +2288,387 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
       return;
     }
 
+    if (widget.day == 14) {
+      // 10 high-impact vocabulary words for Day 14 (Forensic Persuasion, Rhetoric & Multilateral Accords)
+      _vocabList = const [
+        DailyVocabItem(
+          word: 'Rhetoric',
+          partOfSpeech: 'noun',
+          definition: 'The art of effective or persuasive speaking or writing.',
+          malayalamMeaning: 'വാഗ്മിത്വം / വാക്ചാതുര്യം',
+          tamilMeaning: 'சொல்வன்மை / சொல்லாற்றல்',
+          hindiMeaning: 'वाक्पटुता / प्रभावकारी वक्तृत्व',
+          teluguMeaning: 'వాక్చాతుర్యం / ఉపన్యాస కళ',
+          kannadaMeaning: 'ವಾಕ್ಚಾತುರ್ಯ / ಭಾಷಣ ಕಲೆ',
+          exampleSentence: 'Masterful rhetoric aligns divergent factions toward a noble common goal.',
+          phonetic: '/ˈret.ər.ɪk/',
+        ),
+        DailyVocabItem(
+          word: 'Acumen',
+          partOfSpeech: 'noun',
+          definition: 'The ability to make good judgements and take quick, accurate decisions.',
+          malayalamMeaning: 'തീക്ഷ്ണബുദ്ധി / വിവേചനപാടവം',
+          tamilMeaning: 'நுட்பமான மதிநுட்பம் / கூர்மை',
+          hindiMeaning: 'कुशाग्रता / निर्णय क्षमता',
+          teluguMeaning: 'సమయస్ఫూర్తి / తీక్షణ ప్రతిభ',
+          kannadaMeaning: 'ಕುಶಾಗ್ರಮತಿ / ಚಾಣಾಕ್ಷತೆ',
+          exampleSentence: 'Her diplomatic acumen prevented an imminent international breakdown.',
+          phonetic: '/ˈæk.jə.mən/',
+        ),
+        DailyVocabItem(
+          word: 'Multilateral',
+          partOfSpeech: 'adjective',
+          definition: 'Agreed upon or participated in by three or more parties or sovereign nations.',
+          malayalamMeaning: 'ബഹുമുഖമായ / പല കക്ഷികൾ ചേർന്ന',
+          tamilMeaning: 'பலதரப்பு உடன்படிக்கை சார்ந்த',
+          hindiMeaning: 'बहुपक्षीय',
+          teluguMeaning: 'బహుపాక్షిక',
+          kannadaMeaning: 'ಬಹುಪಕ್ಷೀಯ',
+          exampleSentence: 'The multilateral accord unified ninety nations in maritime protection.',
+          phonetic: '/ˌmʌl.tiˈlæt.ər.əl/',
+        ),
+        DailyVocabItem(
+          word: 'Concomitant',
+          partOfSpeech: 'adjective',
+          definition: 'Naturally accompanying or associated with something.',
+          malayalamMeaning: 'അനുബന്ധമായ / കൂടെയുണ്ടാകുന്ന',
+          tamilMeaning: 'தொடர்ந்து உடன் நிகழும்',
+          hindiMeaning: 'सहगामी / सहवर्ती',
+          teluguMeaning: 'సహజంగా తోడుండే',
+          kannadaMeaning: 'ಜೊತೆಯಾಗಿ ಬರುವ',
+          exampleSentence: 'Great executive influence carries concomitant moral responsibilities.',
+          phonetic: '/kənˈkɒm.ɪ.tənt/',
+        ),
+        DailyVocabItem(
+          word: 'Impasse',
+          partOfSpeech: 'noun',
+          definition: 'A situation in which no progress is possible, especially due to disagreement.',
+          malayalamMeaning: 'സ്തംഭനാവസ്ഥ / വഴിമുട്ടിയ അവസ്ഥ',
+          tamilMeaning: 'முட்டுக்கட்டை / முன்னேற முடியாத நிலை',
+          hindiMeaning: 'गतिरोध / बंद गली',
+          teluguMeaning: 'ప్రతిష్టంభన / అడ్డంకి',
+          kannadaMeaning: 'ಬಿಕ್ಕಟ್ಟು / ಮುಗ್ಗಟ್ಟು',
+          exampleSentence: 'Creative compromise broke the three-day diplomatic impasse in Geneva.',
+          phonetic: '/ˈæm.pɑːs/',
+        ),
+        DailyVocabItem(
+          word: 'Solicitous',
+          partOfSpeech: 'adjective',
+          definition: 'Characterized by showing sincere interest, care, or concern for others.',
+          malayalamMeaning: 'ശ്രദ്ധാലുവായ / കരുതലുള്ള',
+          tamilMeaning: 'அக்கறையுள்ள / பரிவுள்ள',
+          hindiMeaning: 'चिंतित / हितैषी / परवाह करने वाला',
+          teluguMeaning: 'శ్రద్ధాసక్తులు గల / సంరక్షించే',
+          kannadaMeaning: 'ಕಾಳಜಿಯುಳ್ಳ / ಹಿತೈಷಿ',
+          exampleSentence: 'A solicitous leader addresses the legitimate grievances of every citizen.',
+          phonetic: '/səˈlɪs.ɪ.təs/',
+        ),
+        DailyVocabItem(
+          word: 'Efficacy',
+          partOfSpeech: 'noun',
+          definition: 'The ability to produce a desired or intended result; effectiveness.',
+          malayalamMeaning: 'ഫലപ്രാപ്തി / കാര്യക്ഷമത',
+          tamilMeaning: 'செயல்திறன் / பலன் தரும் தன்மை',
+          hindiMeaning: 'प्रभावोत्पादकता / प्रभावकारिता',
+          teluguMeaning: 'ఫలిత సామర్థ్యం / కార్యాచరణ',
+          kannadaMeaning: 'ಪರಿಣಾಮಕಾರಿತ್ವ / ಸಾಮರ್ಥ್ಯ',
+          exampleSentence: 'The clinical efficacy of the protocol was established across three trials.',
+          phonetic: '/ˈef.ɪ.kə.si/',
+        ),
+        DailyVocabItem(
+          word: 'Recalcitrant',
+          partOfSpeech: 'adjective',
+          definition: 'Having an obstinately uncooperative attitude toward authority or consensus.',
+          malayalamMeaning: 'വാശിയുള്ള / വഴങ്ങാത്ത',
+          tamilMeaning: 'அடங்காத / வழிக்கு வராத',
+          hindiMeaning: 'हठी / आज्ञा न मानने वाला',
+          teluguMeaning: 'మొండిపట్టుదలగల / లొంగని',
+          kannadaMeaning: 'ಹಟಮಾರಿ / ಒಪ್ಪಿಕೊಳ್ಳದ',
+          exampleSentence: 'Lyra\'s eloquence swayed even the most recalcitrant ministers.',
+          phonetic: '/rɪˈkæl.sɪ.trənt/',
+        ),
+        DailyVocabItem(
+          word: 'Consensus',
+          partOfSpeech: 'noun',
+          definition: 'A general agreement among a group of people.',
+          malayalamMeaning: 'സർവ്വ സമ്മതം / സമവായം',
+          tamilMeaning: 'ஒருமித்த கருத்து / பொது இணக்கம்',
+          hindiMeaning: 'सर्वसम्मति / आम सहमति',
+          teluguMeaning: 'ఏకాభిప్రాయం',
+          kannadaMeaning: 'ಸರ್ವಸಮ್ಮತಿ / ಒಮ್ಮತ',
+          exampleSentence: 'Building consensus requires deep listening alongside persuasive speech.',
+          phonetic: '/kənˈsen.səs/',
+        ),
+        DailyVocabItem(
+          word: 'Sovereignty',
+          partOfSpeech: 'noun',
+          definition: 'Supreme power or authority of a state to govern itself.',
+          malayalamMeaning: 'പരമാധികാരം',
+          tamilMeaning: 'இறையாண்மை',
+          hindiMeaning: 'संप्रभुता / सार्वभौमिकता',
+          teluguMeaning: 'సార్వభౌమాధికారం',
+          kannadaMeaning: 'ಸಾರ್ವಭೌಮತ್ವ',
+          exampleSentence: 'The treaty firmly safeguarded the national sovereignty of each republic.',
+          phonetic: '/ˈsɒv.rən.ti/',
+        ),
+      ];
+      return;
+    }
+
+    if (widget.day == 13) {
+      // 10 high-impact vocabulary words for Day 13 (Scientific Empiricism & Epistemic Inquiry)
+      _vocabList = const [
+        DailyVocabItem(
+          word: 'Epistemological',
+          partOfSpeech: 'adjective',
+          definition: 'Relating to the theory of knowledge, its validity and methods.',
+          malayalamMeaning: 'ജ്ഞാനശാസ്ത്രപരമായ',
+          tamilMeaning: 'அறிவாராய்ச்சியியல் சார்ந்த',
+          hindiMeaning: 'ज्ञानमीमांसीय / ज्ञान-सिद्धांत संबंधी',
+          teluguMeaning: 'జ్ఞానమీమాంసకు సంబంధించిన',
+          kannadaMeaning: 'ಜ್ಞಾನಮೀಮಾಂಸೆಯ',
+          exampleSentence: 'The discovery triggered a deep epistemological shift across neuroscience.',
+          phonetic: '/ɪˌpɪs.tə.məˈlɒdʒ.ɪ.kəl/',
+        ),
+        DailyVocabItem(
+          word: 'Paradigm',
+          partOfSpeech: 'noun',
+          definition: 'A typical pattern, framework, or model of thought.',
+          malayalamMeaning: 'മാതൃക / ചിന്താപദ്ധതി',
+          tamilMeaning: 'சிந்தனை கட்டமைப்பு / மாதிரி',
+          hindiMeaning: 'प्रतिमान / वैचारिक ढांचा',
+          teluguMeaning: 'ఆదర్శ నమూనా / ఆలోచనా విధానం',
+          kannadaMeaning: 'ಚಿಂತನೆಯ ಚೌಕಟ್ಟು / ಮಾದರಿ',
+          exampleSentence: 'Quantum computing introduces a revolutionary paradigm to computation.',
+          phonetic: '/ˈpær.ə.daɪm/',
+        ),
+        DailyVocabItem(
+          word: 'Empiricism',
+          partOfSpeech: 'noun',
+          definition: 'The theory that all knowledge is derived from sense-experience and evidence.',
+          malayalamMeaning: 'പ്രത്യക്ഷാനുഭവവാദം',
+          tamilMeaning: 'அனுபவவாத உண்மை / ஆய்வு நெறி',
+          hindiMeaning: 'अनुभववाद / प्रयोगमूलक प्रमाण',
+          teluguMeaning: 'అనుభవవాదం / ప్రయోగాధారిత జ్ఞానం',
+          kannadaMeaning: 'ಅನುಭವಜನ್ಯ ಸಿದ್ಧಾಂತ',
+          exampleSentence: 'Scientific progress relies upon unyielding empiricism rather than superstition.',
+          phonetic: '/ɪmˈpɪr.ɪ.sɪ.zəm/',
+        ),
+        DailyVocabItem(
+          word: 'Corroborate',
+          partOfSpeech: 'verb',
+          definition: 'Confirm or give support to a statement, theory, or finding.',
+          malayalamMeaning: 'സ്ഥിരീകരിക്കുക / തെളിവുനൽകി ഉറപ്പിക്കുക',
+          tamilMeaning: 'உறுதிப்படுத்துதல் / சான்றுடன் மெய்ப்பித்தல்',
+          hindiMeaning: 'पुष्टि करना / समर्थन देना',
+          teluguMeaning: 'ధృవీకరించు / సమర్థించు',
+          kannadaMeaning: 'ದೃಢೀಕರಿಸು / ಸಾಕ್ಷ್ಯಾಧಾರ ನೀಡು',
+          exampleSentence: 'Subsequent independent trials corroborated Dr. Elena\'s radical thesis.',
+          phonetic: '/kəˈrɒb.ə.reɪt/',
+        ),
+        DailyVocabItem(
+          word: 'Incongruous',
+          partOfSpeech: 'adjective',
+          definition: 'Not in harmony or keeping with the surroundings or other aspects.',
+          malayalamMeaning: 'പൊരുത്തമില്ലാത്ത / ചേർച്ചയില്ലാത്ത',
+          tamilMeaning: 'பொருத்தமற்ற / முரண்பாடான',
+          hindiMeaning: 'बेमेल / असंगत',
+          teluguMeaning: 'పొంతనలేని / అసంగతమైన',
+          kannadaMeaning: 'ಹೊಂದಿಕೆಯಾಗದ / ಅಸಂಗತ',
+          exampleSentence: 'The anomalous data point seemed incongruous alongside classical models.',
+          phonetic: '/ɪnˈkɒŋ.ɡru.əs/',
+        ),
+        DailyVocabItem(
+          word: 'Juxtaposition',
+          partOfSpeech: 'noun',
+          definition: 'The fact of two things being placed close together with contrasting effect.',
+          malayalamMeaning: 'താരതമ്യപ്പെടുത്തൽ / അടുത്തടുത്തുള്ള വെയ്ക്കൽ',
+          tamilMeaning: 'முரண்களை ஒப்பிட்டு நோக்குதல்',
+          hindiMeaning: 'तुलनात्मक सन्निकटता / विषमता दर्शाना',
+          teluguMeaning: 'పోలిక కోసం పక్కపక్కన ఉంచడం',
+          kannadaMeaning: 'ವ್ಯತ್ಯಾಸ ತೋರಲು ಅಕ್ಕಪಕ್ಕ ಇಡುವುದು',
+          exampleSentence: 'The juxtaposition of ancient traditions and cybernetic tools was striking.',
+          phonetic: '/ˌdʒʌk.stə.pəˈzɪʃ.ən/',
+        ),
+        DailyVocabItem(
+          word: 'Anomaly',
+          partOfSpeech: 'noun',
+          definition: 'Something that deviates from what is standard, normal, or expected.',
+          malayalamMeaning: 'അസ്വാഭാവികത / വ്യതിയാനം',
+          tamilMeaning: 'வழக்கத்திற்கு மாறான நிகழ்வு',
+          hindiMeaning: 'विसंगति / अनियमिता',
+          teluguMeaning: 'అసాధారణ వైపరీత్యం',
+          kannadaMeaning: 'ಅಸಹಜತೆ / ವಿಪರ್ಯಾಸ',
+          exampleSentence: 'Investigating the gravitational anomaly led to the new physics breakthrough.',
+          phonetic: '/əˈnɒm.ə.li/',
+        ),
+        DailyVocabItem(
+          word: 'Lucid',
+          partOfSpeech: 'adjective',
+          definition: 'Expressed clearly; easy to understand; showing clear thought.',
+          malayalamMeaning: 'വ്യക്തമായ / തെളിഞ്ഞ',
+          tamilMeaning: 'தெளிவான / எளிதில் விளங்கும்',
+          hindiMeaning: 'स्पष्ट / सुबोध',
+          teluguMeaning: 'స్పష్టమైన / సులభగ్రాహ్య',
+          kannadaMeaning: 'ಸ್ಪಷ್ಟವಾದ / ಸರಳ ತಿಳುವಳಿಕೆಯ',
+          exampleSentence: 'Her lucid presentation made the intricate quantum formula crystal clear.',
+          phonetic: '/ˈluː.sɪd/',
+        ),
+        DailyVocabItem(
+          word: 'Disquisition',
+          partOfSpeech: 'noun',
+          definition: 'A long or elaborate essay or discussion on a particular subject.',
+          malayalamMeaning: 'വിശദമായ പ്രബന്ധം / ശാസ്ത്രീയ ചർച്ച',
+          tamilMeaning: 'ஆழ்ந்த விரிவுரை / விரிவான ஆய்வுக்கட்டுரை',
+          hindiMeaning: 'गंभीर शोध प्रबंध / विस्तृत व्याख्या',
+          teluguMeaning: 'విస్తృత పరిశోధనా వ్యాసం',
+          kannadaMeaning: 'ವಿಸ್ತಾರವಾದ ಪ್ರಬಂಧ / ಗಂಭೀರ ಚರ್ಚೆ',
+          exampleSentence: 'The professor published an authoritative disquisition on epistemic truth.',
+          phonetic: '/ˌdɪs.kwɪˈzɪʃ.ən/',
+        ),
+        DailyVocabItem(
+          word: 'Vindicate',
+          partOfSpeech: 'verb',
+          definition: 'Clear someone of blame or show/prove to be right and justified.',
+          malayalamMeaning: 'ന്യായീകരിക്കുക / കുറ്റവിമുക്തനാക്കുക',
+          tamilMeaning: 'நிரூபித்து நியாயப்படுத்துதல்',
+          hindiMeaning: 'सही साबित करना / दोषमुक्त करना',
+          teluguMeaning: 'సరైనదని నిరూపించు / నిర్దోషిగా తేల్చు',
+          kannadaMeaning: 'ಸರಿಯೆಂದು ಸಾಬೀತುಪಡಿಸು',
+          exampleSentence: 'Years of patient experimentation vindicated her disputed findings.',
+          phonetic: '/ˈvɪn.dɪ.keɪt/',
+        ),
+      ];
+      return;
+    }
+
+    if (widget.day == 12) {
+      // 10 high-impact vocabulary words for Day 12 (Debate, Sophistry Dissection & Perspicacity)
+      _vocabList = const [
+        DailyVocabItem(
+          word: 'Specious',
+          partOfSpeech: 'adjective',
+          definition: 'Superficially plausible, but actually wrong or deceptive.',
+          malayalamMeaning: 'ബാഹ്യമായി ശരിയെന്നു തോന്നുന്ന എന്നാൽ തെറ്റായ',
+          tamilMeaning: 'மேலோட்டமாக சரியெனத் தோன்றும் ஆனால் தவறான',
+          hindiMeaning: 'दिखावटी / भ्रामक',
+          teluguMeaning: 'పైకి నిజమనిపించే మోసపూరితమైన',
+          kannadaMeaning: 'ಮೇಲ್ನೋಟಕ್ಕೆ ಸರಿ ಎನಿಸುವ ಆದರೆ ತಪ್ಪಾದ',
+          exampleSentence: 'A master debater quickly dismantles specious arguments with hard facts.',
+          phonetic: '/ˈspiː.ʃəs/',
+        ),
+        DailyVocabItem(
+          word: 'Hegemony',
+          partOfSpeech: 'noun',
+          definition: 'Leadership or dominance, especially by one state or group over others.',
+          malayalamMeaning: 'ആധിപത്യം / മേധാവിത്വം',
+          tamilMeaning: 'மேலாதிக்கம் / தலைமைப்பீடம்',
+          hindiMeaning: 'आधिपत्य / प्रभुत्व',
+          teluguMeaning: 'ఆధిపత్యం / పెత్తనం',
+          kannadaMeaning: 'ಮೇಲಾಧಿಪತ್ಯ / ಪ್ರಾಬಲ್ಯ',
+          exampleSentence: 'The council challenged the corporate hegemony in global communications.',
+          phonetic: '/hɪˈdʒem.ə.ni/',
+        ),
+        DailyVocabItem(
+          word: 'Fallacious',
+          partOfSpeech: 'adjective',
+          definition: 'Based on a mistaken belief or unsound reasoning.',
+          malayalamMeaning: 'യുക്തിരഹിതമായ / വഞ്ചനാപരമായ',
+          tamilMeaning: 'தவறான தர்க்கம் கொண்ட',
+          hindiMeaning: 'तर्कहीन / भ्रामक',
+          teluguMeaning: 'తప్పుదోవ పట్టించే / దోషపూరిత',
+          kannadaMeaning: 'ತರ್ಕಹೀನ / ದೋಷಯುಕ್ತ',
+          exampleSentence: 'Rowan exposed the fallacious logic concealed within the draft motion.',
+          phonetic: '/fəˈleɪ.ʃəs/',
+        ),
+        DailyVocabItem(
+          word: 'Prevaricate',
+          partOfSpeech: 'verb',
+          definition: 'Speak or act in an evasive way in order to avoid telling the truth.',
+          malayalamMeaning: 'വളച്ചൊടിച്ചു സംസാരിക്കുക / സത്യം മറച്ചുവെക്കുക',
+          tamilMeaning: 'வார்த்தைகளை மாற்றிப் பேசுதல் / உண்மையை மறைத்தல்',
+          hindiMeaning: 'टालमटोल करना / छल-कपट से बात घुमाना',
+          teluguMeaning: 'దాటవేయు / మాటమార్చు',
+          kannadaMeaning: 'ತಪ್ಪಿಸಿಕೊಳ್ಳುವಂತೆ ಮಾತನಾಡು / ವಿಷಯ ತಿರುಚು',
+          exampleSentence: 'Instead of prevaricating under questioning, state your thesis directly.',
+          phonetic: '/prɪˈvær.ɪ.keɪt/',
+        ),
+        DailyVocabItem(
+          word: 'Equivocal',
+          partOfSpeech: 'adjective',
+          definition: 'Open to more than one interpretation; deliberately ambiguous.',
+          malayalamMeaning: 'വ്യക്തതയില്ലാത്ത / രണ്ടർത്ഥമുള്ള',
+          tamilMeaning: 'தெளிவற்ற / இருபொருள் தரும்',
+          hindiMeaning: 'द्व्यर्थी / अस्पष्ट',
+          teluguMeaning: 'ద్వంద్వార్థమిచ్చే / అస్పష్టమైన',
+          kannadaMeaning: 'ದ್ವಂದ್ವಾರ್ಥದ / ಅಸ್ಪಷ್ಟ',
+          exampleSentence: 'His equivocal response failed to reassure the international committee.',
+          phonetic: '/ɪˈkwɪv.ə.kəl/',
+        ),
+        DailyVocabItem(
+          word: 'Anathema',
+          partOfSpeech: 'noun',
+          definition: 'Something or someone vehemently disliked or completely opposed.',
+          malayalamMeaning: 'പൂർണ്ണമായി എതിർക്കപ്പെടേണ്ട കാര്യം',
+          tamilMeaning: 'முற்றிலும் வெறுக்கத்தக்க ஒன்று',
+          hindiMeaning: 'अत्यंत घृणित / अभिशाप',
+          teluguMeaning: 'తీవ్రంగా వ్యతిరేకించవలసినది',
+          kannadaMeaning: 'ಅತ್ಯಂತ ಹೇಯವಾದದ್ದು',
+          exampleSentence: 'Censorship of honest intellectual inquiry is anathema to free scholars.',
+          phonetic: '/əˈnæθ.ə.mə/',
+        ),
+        DailyVocabItem(
+          word: 'Pragmatic',
+          partOfSpeech: 'adjective',
+          definition: 'Dealing with things sensibly and realistically based on practical considerations.',
+          malayalamMeaning: 'പ്രായോഗികമായ / അനുഭവവേദ്യമായ',
+          tamilMeaning: 'நடைமுறைக்கு உகந்த / யதார்த்தமான',
+          hindiMeaning: 'व्यावहारिक / यथार्थवादी',
+          teluguMeaning: 'ఆచరణాత్మకమైన / వాస్తవిక',
+          kannadaMeaning: 'ಪ್ರಾಯೋಗಿಕ / ವಾಸ್ತವಿಕ',
+          exampleSentence: 'Diplomats require pragmatic solutions rather than rigid ideologies.',
+          phonetic: '/præɡˈmæt.ɪk/',
+        ),
+        DailyVocabItem(
+          word: 'Discomfit',
+          partOfSpeech: 'verb',
+          definition: 'Make someone feel uneasy, embarrassed, or confused in debate.',
+          malayalamMeaning: 'പരുങ്ങലിലാക്കുക / ആശയക്കുഴപ്പത്തിലാക്കുക',
+          tamilMeaning: 'சங்கடப்படுத்துதல் / குழப்பத்தில் ஆழ்த்துதல்',
+          hindiMeaning: 'असमंजस में डालना / घबराना',
+          teluguMeaning: 'ఇరకాటంలో పడేయు / తికమకపెట్టు',
+          kannadaMeaning: 'ಇಕ್ಕಟ್ಟಿಗೆ ಸಿಲುಕಿಸು / ಕಸಿವಿಸಿಗೊಳಿಸು',
+          exampleSentence: 'Sharp cross-examination discomfited the unprepared speaker.',
+          phonetic: '/dɪsˈkʌm.fɪt/',
+        ),
+        DailyVocabItem(
+          word: 'Perspicacity',
+          partOfSpeech: 'noun',
+          definition: 'The quality of having a ready insight into things; shrewd discernment.',
+          malayalamMeaning: 'സൂക്ഷ്മബുദ്ധി / കാര്യഗ്രഹണശേഷി',
+          tamilMeaning: 'கூர்மதி / நுண்ணறிவு',
+          hindiMeaning: 'तीक्ष्ण बुद्धि / दूरदर्शिता',
+          teluguMeaning: 'సూక్ష్మబుద్ధి / చురుకుదనం',
+          kannadaMeaning: 'ತೀಕ್ಷ್ಣಮತಿ / ಸೂಕ್ಷ್ಮಗ್ರಹಿಕೆ',
+          exampleSentence: 'Her perspicacity enabled her to foresee the economic crisis months ahead.',
+          phonetic: '/ˌpɜː.spɪˈkæs.ə.ti/',
+        ),
+        DailyVocabItem(
+          word: 'Concession',
+          partOfSpeech: 'noun',
+          definition: 'A thing that is granted, especially in response to demands.',
+          malayalamMeaning: 'വിട്ടുവീഴ്ച / ഇളവ്',
+          tamilMeaning: 'சமரசம் / விட்டுக்கொடுத்தல்',
+          hindiMeaning: 'रियायत / समझौता',
+          teluguMeaning: 'రాయితీ / సడలింపు',
+          kannadaMeaning: 'ರಿಯಾಯಿತಿ / ಹೊಂದಾಣಿಕೆ',
+          exampleSentence: 'Mutual concession is the fundamental cornerstone of every peace treaty.',
+          phonetic: '/kənˈseʃ.ən/',
+        ),
+      ];
+      return;
+    }
+
     if (widget.day == 11) {
       // 10 high-impact vocabulary words for Day 11 (Linguistic Virtuosity & Cognitive Evolution)
       _vocabList = const [
@@ -2302,7 +2933,40 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
       _revisionQuizPassed = prefs.getBool('${dayKey}_quiz') ?? false;
       _defenseTrapArmed = prefs.getBool('${dayKey}_defense') ?? false;
       _trialRaidLaunched = prefs.getBool('${dayKey}_raid') ?? false;
+      _midAttackCompleted = prefs.getBool('${dayKey}_mid_attack') ?? false;
     });
+  }
+
+  PocketNeighbor _getRivalCitadelForDay(int day) {
+    final names = {
+      1: 'Novice Duelist Lvl 1',
+      2: 'Habit Sentinel Lvl 2',
+      3: 'Cathedral Guardian Lvl 3',
+      4: 'Town Council Envoy Lvl 4',
+      5: 'Citadel Sea Vanguard Lvl 5',
+      6: 'Alveron Syndicate Lvl 6',
+      7: 'Lysander Academician Lvl 7',
+      8: 'Geneva Ethicist Lvl 8',
+      9: 'Oxford Dialectician Lvl 9',
+      10: 'Hague High Chancellor Lvl 10',
+      11: 'Aegean Philosopher Lvl 11',
+      12: 'Union Master Rowan Lvl 12',
+      13: 'Cambridge Epistemist Lvl 13',
+      14: 'Geneva Treaty Envoy Lvl 14',
+    };
+    final name = names[day] ?? 'Citadel Guardian Lvl $day';
+    final rank = day >= 10 ? 'Imperial Fortress Citadel' : (day >= 5 ? 'Fortified Manor' : 'Rival House');
+    final palette = day >= 10 ? 'regal_amethyst' : (day >= 5 ? 'midnight_emerald' : 'rustic_oak');
+    return PocketNeighbor(
+      id: 'rival_citadel_day_$day',
+      name: name,
+      day: day,
+      streak: day + 3,
+      rank: rank,
+      paletteId: palette,
+      statusMessage: 'Can your Day $day English breach my citadel defense shields?',
+      hasActiveShield: true,
+    );
   }
 
   Future<void> _saveSubtask(String key, bool value) async {
@@ -2441,6 +3105,11 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
                       const SizedBox(height: 14),
 
+                      // ⚔️ In-Between Combat Attack Drill (Audio Directive: "idayil idayil attacking, oru attack okke kodukkaam")
+                      _buildMidMissionCombatAttackCard(),
+
+                      const SizedBox(height: 14),
+
                       // Subtask 4: 📖 Core Notes & Reading Passage
                       _buildReadingNotesCard(),
 
@@ -2473,33 +3142,24 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
                       const SizedBox(height: 14),
 
-                      // Subtask 7: ⚔️ Launch First Trial Raid
+                      // Subtask 7: ⚔️ Citadel Siege Attack (Scaled Dynamically to Day)
                       _buildSubtaskCard(
                         stepNumber: '7',
                         icon: '⚔️',
-                        title: 'First Trial Siege Attack (Level 5 House)',
-                        description: 'Launch your first raid against a Level 5 Neighbor Citadel in the Battle Arena to test your combat English!',
+                        title: 'Day ${widget.day} Citadel Siege Raid (${_getRivalCitadelForDay(widget.day).name})',
+                        description: 'Launch your tactical siege raid against a Level ${widget.day} Neighbor Citadel in the Battle Arena to test your combat English under fire!',
                         isVerified: _trialRaidLaunched,
-                        actionLabel: 'LAUNCH BATTLE ARENA RAID',
+                        actionLabel: 'LAUNCH BATTLE ARENA RAID ⚔️',
                         actionColor: const Color(0xFFEF4444),
                         onAction: () {
-                          final rival = PocketNeighbor(
-                            id: 'trial_citadel_lvl5',
-                            name: 'Shadow Sentinel Lvl 5',
-                            day: 5,
-                            streak: 8,
-                            rank: 'Rival Fortress',
-                            paletteId: 'regal_amethyst',
-                            statusMessage: 'Can you breach my English gates?',
-                            hasActiveShield: true,
-                          );
+                          final rival = _getRivalCitadelForDay(widget.day);
                           Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (_) => PocketBattleArenaPage(
                                 neighbor: rival,
                                 userDay: widget.day,
-                                userStreak: 1,
+                                userStreak: widget.day,
                               ),
                             ),
                           ).then((_) {
@@ -3319,6 +3979,130 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                 backgroundColor: _vocabMemorized ? const Color(0xFF10B981) : const Color(0xFFFFFC00),
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ⚔️ In-Between Combat Attack Drill (Audio Directive: "idayil idayil attacking, oru attack okke kodukkaam")
+  Widget _buildMidMissionCombatAttackCard() {
+    final rival = _getRivalCitadelForDay(widget.day);
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: _midAttackCompleted
+              ? [const Color(0xFF064E3B).withValues(alpha: 0.6), const Color(0xFF022C22).withValues(alpha: 0.6)]
+              : [const Color(0xFF450A0A).withValues(alpha: 0.8), const Color(0xFF180808)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: _midAttackCompleted ? const Color(0xFF10B981) : const Color(0xFFEF4444).withValues(alpha: 0.6),
+          width: 1.2,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: _midAttackCompleted ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text('⚔️ ', style: TextStyle(fontSize: 10)),
+                    Text(
+                      _midAttackCompleted ? 'COMBAT RAID CLEARED ✓' : 'RAPID COMBAT ATTACK',
+                      style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 0.5),
+                    ),
+                  ],
+                ),
+              ),
+              const Spacer(),
+              Text(
+                _midAttackCompleted ? '+50 BONUS COINS EARNED' : '+50 BONUS COINS',
+                style: GoogleFonts.outfit(
+                  color: const Color(0xFFFFD700),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 11,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            'Mid-Mission Combat Attack Drill (${rival.name})',
+            style: GoogleFonts.outfit(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Test your Day ${widget.day} vocabulary in live Battle Arena combat! Breach ${rival.name}\'s gate shields to loot bonus coins and sharpen your speaking reaction under pressure.',
+            style: GoogleFonts.inter(
+              color: Colors.white70,
+              fontSize: 12,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () {
+                HapticFeedback.mediumImpact();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => PocketBattleArenaPage(
+                      neighbor: rival,
+                      userDay: widget.day,
+                      userStreak: widget.day,
+                    ),
+                  ),
+                ).then((_) {
+                  if (mounted) {
+                    setState(() => _midAttackCompleted = true);
+                    _saveSubtask('mid_attack', true);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('⚔️ Combat raid launched against ${rival.name}! Bonus +50 coins registered.'),
+                        backgroundColor: const Color(0xFF10B981),
+                      ),
+                    );
+                  }
+                });
+              },
+              icon: Icon(
+                _midAttackCompleted ? Icons.check_circle_rounded : Icons.flash_on_rounded,
+                color: Colors.white,
+                size: 16,
+              ),
+              label: Text(
+                _midAttackCompleted ? 'LAUNCH ANOTHER COMBAT RAID ⚔️' : 'LAUNCH COMBAT ATTACK NOW ⚔️',
+                style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 12,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _midAttackCompleted ? const Color(0xFF059669) : const Color(0xFFDC2626),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
             ),
           ),
