@@ -290,6 +290,9 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
   Future<void> _openEnglishDuelDialog(PocketNeighbor neighbor) async {
     HapticFeedback.selectionClick();
     final inCooldown = await PocketFortressDefenseService.isTargetInCooldown(neighbor.id);
+    final isTargetJailed = await PocketFortressDefenseService.isHouseJailed(neighbor.id);
+    final isPlayerJailed = await PocketFortressDefenseService.isHouseJailed('me');
+    final cannotAttack = inCooldown || isTargetJailed || isPlayerJailed;
     if (!mounted) return;
     showModalBottomSheet(
       context: context,
@@ -336,6 +339,78 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
               ],
             ),
             const SizedBox(height: 16),
+            if (isTargetJailed)
+              Container(
+                margin: const EdgeInsets.only(bottom: 14),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(colors: [Color(0xFF3B0764), Color(0xFF1E1B4B)]),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: const Color(0xFFA855F7), width: 1.2),
+                ),
+                child: Row(
+                  children: [
+                    const Text('⛓️', style: TextStyle(fontSize: 22)),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'House Imprisoned in Jail',
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFFD8B4FE),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          const Text(
+                            'This house is serving a Presidential Jail sentence for fake defenses. Raids against jailed houses are locked.',
+                            style: TextStyle(color: Colors.white70, fontSize: 11),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            if (isPlayerJailed)
+              Container(
+                margin: const EdgeInsets.only(bottom: 14),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(colors: [Color(0xFF3B0764), Color(0xFF1E1B4B)]),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: const Color(0xFFA855F7), width: 1.2),
+                ),
+                child: Row(
+                  children: [
+                    const Text('⛓️', style: TextStyle(fontSize: 22)),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Your House is in Jail',
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFFD8B4FE),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          const Text(
+                            'You cannot raid other citadels while serving your Presidential Jail sentence.',
+                            style: TextStyle(color: Colors.white70, fontSize: 11),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             if (inCooldown)
               Container(
                 margin: const EdgeInsets.only(bottom: 14),
@@ -464,14 +539,14 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
               height: 48,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: inCooldown ? Colors.white12 : const Color(0xFF0284C7),
-                  foregroundColor: inCooldown ? Colors.white38 : Colors.white,
+                  backgroundColor: cannotAttack ? Colors.white12 : const Color(0xFF0284C7),
+                  foregroundColor: cannotAttack ? Colors.white38 : Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
-                  elevation: inCooldown ? 0 : 6,
+                  elevation: cannotAttack ? 0 : 6,
                 ),
-                onPressed: inCooldown
+                onPressed: cannotAttack
                     ? null
                     : () {
                         Navigator.pop(ctx);
@@ -497,10 +572,14 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(inCooldown ? '⏳' : '🚀', style: const TextStyle(fontSize: 16)),
+                    Text(cannotAttack ? '🔒' : '🚀', style: const TextStyle(fontSize: 16)),
                     const SizedBox(width: 8),
                     Text(
-                      inCooldown ? 'PEACE TREATY IN EFFECT' : 'START 1v1 DUEL',
+                      isTargetJailed
+                          ? 'TARGET IS IN JAIL ⛓️'
+                          : (isPlayerJailed
+                              ? 'YOU ARE IN JAIL ⛓️'
+                              : (inCooldown ? 'PEACE TREATY IN EFFECT ⏳' : 'START 1v1 DUEL')),
                       style: GoogleFonts.outfit(
                         fontWeight: FontWeight.w900,
                         fontSize: 14,

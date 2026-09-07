@@ -1027,6 +1027,14 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                             streak: (_profileData?['daily_streak'] as num?)?.toInt() ?? 1,
                           ),
                           const SizedBox(height: 16),
+                          if (_fortressStatus?.presidentNotice != null) ...[
+                            _buildPresidentNoticeBanner(),
+                            const SizedBox(height: 16),
+                          ],
+                          if (_fortressStatus?.isJailed == true) ...[
+                            _buildJailSentenceBanner(),
+                            const SizedBox(height: 16),
+                          ],
                           _buildCitadelDefenseSection(textColor, btnColor, btnTextColor),
                           const SizedBox(height: 16),
                           _buildFortressArmoryStoreSection(_fortressStatus ?? const HouseDefenseStatus()),
@@ -2099,6 +2107,141 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     );
   }
 
+  // 📜 President Notice Warning Banner
+  Widget _buildPresidentNoticeBanner() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF78350F), Color(0xFF451A03)],
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.amber.shade400, width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.amber.withValues(alpha: 0.2),
+            blurRadius: 12,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Text('📜', style: TextStyle(fontSize: 22)),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'OFFICIAL PRESIDENTIAL NOTICE',
+                  style: GoogleFonts.outfit(
+                    color: Colors.amber.shade300,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 13,
+                    letterSpacing: 0.6,
+                  ),
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.close_rounded, color: Colors.white70, size: 18),
+                onPressed: () async {
+                  await PocketFortressDefenseService.dismissPresidentNotice('me');
+                  _loadFortressDefenseData();
+                },
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            _fortressStatus?.presidentNotice ?? 'A warning has been issued regarding your defense questions.',
+            style: const TextStyle(color: Colors.white, fontSize: 12, height: 1.3),
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFF59E0B),
+                foregroundColor: Colors.black,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                padding: const EdgeInsets.symmetric(vertical: 8),
+              ),
+              icon: const Icon(Icons.check_circle_outline_rounded, size: 16, color: Colors.black),
+              label: Text(
+                'I UNDERSTAND & WILL UPDATE DEFENSES',
+                style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 11.5),
+              ),
+              onPressed: () async {
+                await PocketFortressDefenseService.dismissPresidentNotice('me');
+                _loadFortressDefenseData();
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ⛓️ Jail Sentence Banner
+  Widget _buildJailSentenceBanner() {
+    final days = _fortressStatus?.jailDaysRemaining ?? 3;
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF3B0764), Color(0xFF1E1B4B)],
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFA855F7), width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFA855F7).withValues(alpha: 0.25),
+            blurRadius: 14,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.black45,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFA855F7).withValues(alpha: 0.5)),
+            ),
+            child: const Text('⛓️', style: TextStyle(fontSize: 24)),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'HOUSE IMPRISONED IN JAIL',
+                  style: GoogleFonts.outfit(
+                    color: const Color(0xFFD8B4FE),
+                    fontWeight: FontWeight.w900,
+                    fontSize: 13,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '$days Days Remaining • Locked from raiding other citadels due to reported fake defense traps.',
+                  style: const TextStyle(color: Colors.white70, fontSize: 11, height: 1.3),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   // ⚔️ Recent Citadel Attackers (Audio directive: "ആരെങ്കിലും അറ്റാക്ക് ചെയ്തിട്ടുണ്ടെങ്കിൽ അറ്റാക്ക് ചെയ്ത ആൾക്കാരുടെ ലിസ്റ്റ് കാണിക്കണം... സുപ്പർബേസ് ആയിട്ടുള്ള ഇന്റഗ്രേഷൻ ചെയ്തു വെക്കണം")
   Widget _buildRecentAttackersSection() {
     return Container(
@@ -2241,12 +2384,26 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
-                                  Text(
-                                    timeText,
-                                    style: GoogleFonts.inter(
-                                      color: Colors.white54,
-                                      fontSize: 10,
-                                    ),
+                                  const SizedBox(height: 2),
+                                  Row(
+                                    children: [
+                                      Text(
+                                        entry.attackerWeapon,
+                                        style: const TextStyle(
+                                          color: Colors.amber,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        '• $timeText',
+                                        style: GoogleFonts.inter(
+                                          color: Colors.white54,
+                                          fontSize: 10,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),

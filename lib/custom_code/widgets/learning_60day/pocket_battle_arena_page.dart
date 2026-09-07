@@ -567,11 +567,13 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
 
     if (won) {
       // 🛡️ Process House Breach with Defender's Iron Dome Check (Audio Rule)
+      final attackerPerk = VectorAvatarConfig.getAvatarPerkForDay(widget.userDay);
       final breachReport = await PocketFortressDefenseService.processRaidBreach(
         defenderHouseId: widget.neighbor.id,
         damageHp: 60,
         attackerName: 'Attacker Lvl ${widget.userDay}',
         attackerAvatar: '⚔️',
+        attackerWeapon: attackerPerk.combatWeaponName,
         defenderHasIronDome: widget.neighbor.hasActiveShield,
       );
 
@@ -2371,7 +2373,21 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
                               ),
                             ],
                           ),
-                          const SizedBox(height: 3),
+                          const SizedBox(height: 2),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF0284C7).withValues(alpha: 0.25),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              'Tool: ${VectorAvatarConfig.getAvatarPerkForDay(widget.userDay).combatWeaponName}',
+                              style: const TextStyle(color: Colors.amber, fontSize: 9, fontWeight: FontWeight.bold),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
                           Text(
                             VectorAvatarConfig.getAvatarPerkForDay(widget.userDay).advantageText,
                             style: GoogleFonts.inter(color: Colors.white70, fontSize: 9.5),
@@ -2413,7 +2429,21 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
                               ),
                             ],
                           ),
-                          const SizedBox(height: 3),
+                          const SizedBox(height: 2),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFE11D48).withValues(alpha: 0.25),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              'Tool: ${VectorAvatarConfig.getAvatarPerkForDay(widget.neighbor.day).combatWeaponName}',
+                              style: const TextStyle(color: Colors.amber, fontSize: 9, fontWeight: FontWeight.bold),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
                           Text(
                             VectorAvatarConfig.getAvatarPerkForDay(widget.neighbor.day).advantageText,
                             style: GoogleFonts.inter(color: Colors.white70, fontSize: 9.5),

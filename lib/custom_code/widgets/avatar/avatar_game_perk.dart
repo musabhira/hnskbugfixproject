@@ -23,6 +23,7 @@ class AvatarGamePerk {
   final Color badgeColor;
   final String? advantage;
   final String? challenge;
+  final String? weapon;
 
   const AvatarGamePerk({
     required this.day,
@@ -34,7 +35,73 @@ class AvatarGamePerk {
     required this.badgeColor,
     this.advantage,
     this.challenge,
+    this.weapon,
   });
+
+  /// ⚔️ Avatar Combat Weapon / Battle Tool (Audio directive: Cannons, Blasters/Guns, Shields, Blades)
+  String get combatWeaponName {
+    if (weapon != null && weapon!.isNotEmpty) return weapon!;
+    switch (perkType) {
+      case PerkType.siegeDamage:
+        if (day % 3 == 0) return '💥 Royal Siege Cannon';
+        if (day % 3 == 1) return '💣 Heavy Mortar Cannon';
+        return '☄️ Kinetic Catapult';
+      case PerkType.vaultLoot:
+        if (day % 2 == 0) return '🔫 Plasma Blaster Gun';
+        return '🏹 Cyber Crossbow';
+      case PerkType.fdcBoost:
+        if (day % 2 == 0) return '⚡ Sonic Disruptor Gun';
+        return '🪄 Mystic Arcane Wand';
+      case PerkType.timeFreeze:
+        if (day % 2 == 0) return '🗡️ Chrono Dragon Katana';
+        return '⏳ Tachyon Accelerator';
+      case PerkType.ironDome:
+        return '🛡️ Iron Dome Aegis Shield';
+      case PerkType.fortressShield:
+        if (day % 2 == 0) return '🏰 Titanium Wall Barricade';
+        return '🛡️ Spiked Rampart Shield';
+      case PerkType.armyKnights:
+        if (day % 2 == 0) return '⚔️ Paladin Broadsword';
+        return '🛡️ Vanguard Tower Shield';
+    }
+  }
+
+  String get combatWeaponIcon {
+    switch (perkType) {
+      case PerkType.siegeDamage:
+        return '💥';
+      case PerkType.vaultLoot:
+        return '🔫';
+      case PerkType.fdcBoost:
+        return '⚡';
+      case PerkType.timeFreeze:
+        return '🗡️';
+      case PerkType.ironDome:
+      case PerkType.fortressShield:
+        return '🛡️';
+      case PerkType.armyKnights:
+        return '⚔️';
+    }
+  }
+
+  bool get isDefensiveTool =>
+      perkType == PerkType.ironDome ||
+      perkType == PerkType.fortressShield ||
+      perkType == PerkType.armyKnights;
+
+  String get combatRole => isDefensiveTool ? 'Defensive Guardian' : 'Offensive Raider';
+
+  String get combatActionVerb {
+    if (isDefensiveTool) {
+      return 'Defending with $combatWeaponName!';
+    } else {
+      if (combatWeaponName.contains('Cannon')) return 'Firing $combatWeaponName! 💥';
+      if (combatWeaponName.contains('Gun') || combatWeaponName.contains('Blaster')) {
+        return 'Blasting with $combatWeaponName! 🔫';
+      }
+      return 'Striking with $combatWeaponName! ⚔️';
+    }
+  }
 
   /// 🟢 Gunam (Tactical Advantage / Buff)
   String get advantageText {

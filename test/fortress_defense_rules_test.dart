@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortress_defense_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -408,6 +409,83 @@ void main() {
       // Verify dome is consumed
       final status = await PocketFortressDefenseService.getHouseStatus();
       expect(status.hasIronDome, isFalse);
+    });
+
+    test('Avatar Combat Weapons & Tools for all 90 days', () {
+      for (int day = 1; day <= 90; day++) {
+        final perk = VectorAvatarConfig.getAvatarPerkForDay(day);
+        expect(perk.combatWeaponName, isNotEmpty);
+        expect(perk.combatWeaponIcon, isNotEmpty);
+        expect(perk.combatActionVerb, isNotEmpty);
+        expect(perk.combatRole, anyOf(equals('Defensive Guardian'), equals('Offensive Raider')));
+      }
+
+      // Check specific day weapon designations
+      final day4 = VectorAvatarConfig.getAvatarPerkForDay(4);
+      expect(day4.combatRole, equals('Defensive Guardian')); // Royal Knights garrison
+      final day1 = VectorAvatarConfig.getAvatarPerkForDay(1);
+      expect(day1.combatWeaponName, contains('Wand'));
+      final day2 = VectorAvatarConfig.getAvatarPerkForDay(2);
+      expect(day2.combatWeaponName, contains('Katana'));
+      final day3 = VectorAvatarConfig.getAvatarPerkForDay(3);
+      expect(day3.combatWeaponName, contains('Cannon'));
+    });
+
+    test('Presidential Decrees: Notice, Jail, Demote, and Asset Confiscation', () async {
+      SharedPreferences.setMockInitialValues({
+        'user_pocket_coins': 250,
+        'learning_last_completed_day': 18,
+        'user_pocket_banned': false,
+      });
+
+      // 1. Issue & Dismiss Presidential Notice
+      await PocketFortressDefenseService.issuePresidentNotice('me', reason: 'Fake defense questions warning');
+      var status = await PocketFortressDefenseService.getHouseStatus(18);
+      expect(status.presidentNotice, equals('Fake defense questions warning'));
+
+      await PocketFortressDefenseService.dismissPresidentNotice('me');
+      status = await PocketFortressDefenseService.getHouseStatus(18);
+      expect(status.presidentNotice, isNull);
+
+      // 2. Sentence to Jail
+      await PocketFortressDefenseService.sentenceToJail('me', days: 3, reason: 'Nonsense defense traps');
+      expect(await PocketFortressDefenseService.isHouseJailed('me'), isTrue);
+
+      status = await PocketFortressDefenseService.getHouseStatus(18);
+      expect(status.isJailed, isTrue);
+      expect(status.jailDaysRemaining, greaterThan(0));
+
+      await PocketFortressDefenseService.releaseFromJail('me');
+      expect(await PocketFortressDefenseService.isHouseJailed('me'), isFalse);
+
+      // 3. Demote Levels
+      final newDay = await PocketFortressDefenseService.demoteHouseLevel('me', levels: 2);
+      expect(newDay, equals(16));
+
+      // 4. Ban & Asset Confiscation (coins set to 0, level reset to 0)
+      await PocketFortressDefenseService.banHouseWithAssetConfiscation('me', reason: 'Unfair fake traps');
+      status = await PocketFortressDefenseService.getHouseStatus(1);
+      expect(status.isBanned, isTrue);
+      expect(status.totalCoins, equals(0)); // Confiscated!
+    });
+
+    test('Raid Breach logs attacker avatar weapon', () async {
+      SharedPreferences.setMockInitialValues({
+        'pocket_house_hp': 100,
+        'pocket_house_coins': 150,
+        'user_house_iron_dome': false,
+      });
+
+      await PocketFortressDefenseService.processRaidBreach(
+        defenderHouseId: 'me',
+        damageHp: 60,
+        attackerName: 'Cannon Master',
+        attackerAvatar: '🐅',
+        attackerWeapon: '💥 Royal Siege Cannon',
+      );
+
+      final raids = await PocketFortressDefenseService.getRecentRaids();
+      expect(raids.first.attackerWeapon, equals('💥 Royal Siege Cannon'));
     });
   });
 }

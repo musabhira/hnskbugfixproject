@@ -46,33 +46,192 @@ class _PocketDefenseAdminModalState extends State<PocketDefenseAdminModal> {
     }
   }
 
-  Future<void> _handleBanHouse(DefenseQuestionReport report) async {
-    HapticFeedback.heavyImpact();
-    await PocketFortressDefenseService.banHouse(
-      report.houseId,
-      reason: 'Fake or impossible English defense trap reported: "${report.questionText}"',
-    );
+  Future<void> _inspectHouse(DefenseQuestionReport report) async {
+    HapticFeedback.selectionClick();
+    final questions = await PocketFortressDefenseService.loadShieldQuestions(15, isNeighbor: true);
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: const Color(0xFFDC2626),
-        behavior: SnackBarBehavior.floating,
-        content: Row(
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF0F172A),
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => Container(
+        height: MediaQuery.of(context).size.height * 0.75,
+        padding: const EdgeInsets.fromLTRB(18, 16, 18, 24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Icon(Icons.gavel_rounded, color: Colors.white),
-            const SizedBox(width: 10),
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2)),
+              ),
+            ),
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                const Text('🔍', style: TextStyle(fontSize: 22)),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'HOUSE INSPECTION: ${report.houseOwnerName}',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                      Text(
+                        'House ID: ${report.houseId} • Reported Question Audit',
+                        style: const TextStyle(color: Colors.white60, fontSize: 11),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close, color: Colors.white60),
+                  onPressed: () => Navigator.pop(ctx),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1E293B),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.redAccent.withValues(alpha: 0.4)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'FLAGGED QUESTION UNDER AUDIT:',
+                    style: GoogleFonts.outfit(color: Colors.redAccent, fontSize: 10.5, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    report.questionText,
+                    style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Options: ${report.options.join(" • ")}',
+                    style: const TextStyle(color: Colors.white70, fontSize: 11),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
+            Text(
+              'ALL ACTIVE HOUSE DEFENSE QUESTIONS (${questions.length}):',
+              style: GoogleFonts.outfit(color: const Color(0xFF38BDF8), fontSize: 11.5, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
             Expanded(
-              child: Text(
-                '🚫 ${report.houseOwnerName}\'s house has been banned! Presidential Ban Seal applied.',
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+              child: ListView.separated(
+                itemCount: questions.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 8),
+                itemBuilder: (ctx, i) {
+                  final q = questions[i];
+                  return Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1E293B),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: Colors.white10),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Trap: ${q.trapType} • #${i + 1}',
+                            style: const TextStyle(color: Colors.amber, fontSize: 10.5, fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 2),
+                        Text(q.question, style: const TextStyle(color: Colors.white, fontSize: 12)),
+                      ],
+                    ),
+                  );
+                },
               ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  Future<void> _handleIssueNotice(DefenseQuestionReport report) async {
+    HapticFeedback.mediumImpact();
+    await PocketFortressDefenseService.issuePresidentNotice(
+      report.houseId,
+      reason: 'Official warning: Your question "${report.questionText}" was reported as fake. Replace it with an educational English question immediately to prevent Jail or Account Ban.',
+    );
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: const Color(0xFFF59E0B),
+        behavior: SnackBarBehavior.floating,
+        content: Text('📜 Official Presidential Notice issued to ${report.houseOwnerName}\'s house!'),
+      ),
+    );
     _loadReports();
   }
+
+  Future<void> _handleSentenceToJail(DefenseQuestionReport report) async {
+    HapticFeedback.heavyImpact();
+    await PocketFortressDefenseService.sentenceToJail(
+      report.houseId,
+      days: 3,
+      reason: 'Jailed for deploying fake English defense trap: "${report.questionText}"',
+    );
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: const Color(0xFF7C3AED),
+        behavior: SnackBarBehavior.floating,
+        content: Text('⛓️ ${report.houseOwnerName}\'s house sentenced to 3 Days in Jail! Locked with iron bars.'),
+      ),
+    );
+    _loadReports();
+  }
+
+  Future<void> _handleDemoteLevels(DefenseQuestionReport report) async {
+    HapticFeedback.heavyImpact();
+    final newDay = await PocketFortressDefenseService.demoteHouseLevel(report.houseId, levels: 2);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: const Color(0xFFEF4444),
+        behavior: SnackBarBehavior.floating,
+        content: Text('📉 Disciplinary Demotion applied: ${report.houseOwnerName}\'s progression set back 2 levels (Now Level $newDay).'),
+      ),
+    );
+    _loadReports();
+  }
+
+  Future<void> _handleBanAndConfiscate(DefenseQuestionReport report) async {
+    HapticFeedback.heavyImpact();
+    await PocketFortressDefenseService.banHouseWithAssetConfiscation(
+      report.houseId,
+      reason: 'Banned & Treasury Confiscation for fake English defenses: "${report.questionText}"',
+    );
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: const Color(0xFFDC2626),
+        behavior: SnackBarBehavior.floating,
+        content: Text('🚫 Presidential Ban applied! All coins confiscated to Govt Treasury & reset to Day 1.'),
+      ),
+    );
+    _loadReports();
+  }
+
 
   Future<void> _handleUnbanHouse(DefenseQuestionReport report) async {
     HapticFeedback.mediumImpact();
@@ -511,7 +670,83 @@ class _PocketDefenseAdminModalState extends State<PocketDefenseAdminModal> {
           ),
           const SizedBox(height: 12),
 
-          // Action Buttons
+          // 🔍 Inspect House Defenses
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              style: OutlinedButton.styleFrom(
+                foregroundColor: const Color(0xFF38BDF8),
+                side: const BorderSide(color: Color(0xFF0284C7)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                padding: const EdgeInsets.symmetric(vertical: 8),
+              ),
+              icon: const Icon(Icons.home_work_rounded, size: 14),
+              label: const Text(
+                'INSPECT POCKET HOUSE & DEFENSES 🔍',
+                style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+              ),
+              onPressed: () => _inspectHouse(report),
+            ),
+          ),
+          const SizedBox(height: 10),
+
+          // ⚖️ Presidential Disciplinary Actions Grid
+          Text(
+            'PRESIDENTIAL DECREES & PENALTIES:',
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.4),
+              fontSize: 9.5,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 0.5,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFD97706),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                  ),
+                  icon: const Text('📜', style: TextStyle(fontSize: 12)),
+                  label: const Text('NOTICE', style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold)),
+                  onPressed: () => _handleIssueNotice(report),
+                ),
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF7C3AED),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                  ),
+                  icon: const Text('⛓️', style: TextStyle(fontSize: 12)),
+                  label: const Text('JAIL (3D)', style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold)),
+                  onPressed: () => _handleSentenceToJail(report),
+                ),
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFB45309),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                  ),
+                  icon: const Text('📉', style: TextStyle(fontSize: 12)),
+                  label: const Text('DEMOTE', style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold)),
+                  onPressed: () => _handleDemoteLevels(report),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
           Row(
             children: [
               if (report.status != 'banned')
@@ -520,15 +755,15 @@ class _PocketDefenseAdminModalState extends State<PocketDefenseAdminModal> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFDC2626),
                       foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                       padding: const EdgeInsets.symmetric(vertical: 8),
                     ),
                     icon: const Icon(Icons.gavel_rounded, size: 14),
                     label: const Text(
-                      'BAN HOUSE',
-                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                      'BAN & SEIZE COINS',
+                      style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold),
                     ),
-                    onPressed: () => _handleBanHouse(report),
+                    onPressed: () => _handleBanAndConfiscate(report),
                   ),
                 )
               else
@@ -537,30 +772,30 @@ class _PocketDefenseAdminModalState extends State<PocketDefenseAdminModal> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF047857),
                       foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                       padding: const EdgeInsets.symmetric(vertical: 8),
                     ),
                     icon: const Icon(Icons.lock_open_rounded, size: 14),
                     label: const Text(
                       'UNBAN HOUSE',
-                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                      style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold),
                     ),
                     onPressed: () => _handleUnbanHouse(report),
                   ),
                 ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 6),
               if (report.status != 'dismissed')
                 OutlinedButton.icon(
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.white70,
                     side: const BorderSide(color: Colors.white24),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                   ),
                   icon: const Icon(Icons.close_rounded, size: 14),
                   label: const Text(
                     'DISMISS',
-                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold),
                   ),
                   onPressed: () => _handleDismiss(report),
                 ),

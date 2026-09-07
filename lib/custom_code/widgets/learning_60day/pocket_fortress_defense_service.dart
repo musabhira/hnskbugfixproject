@@ -339,6 +339,7 @@ class CitadelRaidLogEntry {
   final String id;
   final String attackerName;
   final String attackerAvatar;
+  final String attackerWeapon; // ⚔️ Avatar Combat Weapon / Tool (Audio directive: Cannons, Blasters, Shields)
   final DateTime timestamp;
   final bool breached;
   final int coinsLooted;
@@ -348,6 +349,7 @@ class CitadelRaidLogEntry {
     required this.id,
     required this.attackerName,
     required this.attackerAvatar,
+    this.attackerWeapon = '💥 Heavy Cannon',
     required this.timestamp,
     required this.breached,
     required this.coinsLooted,
@@ -358,6 +360,7 @@ class CitadelRaidLogEntry {
         'id': id,
         'attackerName': attackerName,
         'attackerAvatar': attackerAvatar,
+        'attackerWeapon': attackerWeapon,
         'timestamp': timestamp.toIso8601String(),
         'breached': breached,
         'coinsLooted': coinsLooted,
@@ -368,6 +371,7 @@ class CitadelRaidLogEntry {
         id: json['id'] ?? '',
         attackerName: json['attackerName'] ?? 'Rival Raider',
         attackerAvatar: json['attackerAvatar'] ?? '⚔️',
+        attackerWeapon: json['attackerWeapon'] ?? '💥 Heavy Cannon',
         timestamp: json['timestamp'] != null
             ? DateTime.tryParse(json['timestamp']) ?? DateTime.now()
             : DateTime.now(),
@@ -392,6 +396,10 @@ class HouseDefenseStatus {
   final bool isBanned;
   final String? banReason;
   final bool isUnderPresidentInspection;
+  final bool isJailed; // ⛓️ Serving Presidential Jail Sentence for fake defenses
+  final int jailDaysRemaining;
+  final String? jailReason;
+  final String? presidentNotice; // 📜 Official warning decree from President of Pocket World
   final List<String> activeShieldTraps; // 1 up to 9 active defense gates
   final AvatarGamePerk? activePerk;
 
@@ -409,6 +417,10 @@ class HouseDefenseStatus {
     this.isBanned = false,
     this.banReason,
     this.isUnderPresidentInspection = false,
+    this.isJailed = false,
+    this.jailDaysRemaining = 0,
+    this.jailReason,
+    this.presidentNotice,
     this.activeShieldTraps = const ['vocab_gate'],
     this.activePerk,
   });
@@ -433,6 +445,11 @@ class PocketFortressDefenseService {
   static const String _lifelinesKey = 'user_combat_lifelines_count';
   static const String _raidLogKey = 'user_citadel_raid_logs_v2';
   static const String _targetCooldownKey = 'user_target_attack_cooldown_';
+  static const String _presidentNoticeKey = 'user_house_president_notice';
+  static const String _jailedKey = 'user_house_is_jailed';
+  static const String _jailUntilKey = 'user_house_jail_until';
+  static const String _jailReasonKey = 'user_house_jail_reason';
+  static const String _jailedHousesListKey = 'pocket_jailed_houses_list';
 
   /// 🛡️ Unlocked Defense Gates based on Challenge Stage:
   /// Gate 1: Days 1–10 (Up to 10 questions)
@@ -751,6 +768,17 @@ class PocketFortressDefenseService {
     final lifelines = prefs.getInt(_lifelinesKey) ?? 1;
     final underInspection = await isUnderPresidentInspection('me');
     final activeTraps = await getActiveShieldTraps(stage);
+    final presidentNotice = prefs.getString(_presidentNoticeKey);
+    final isJailed = await isHouseJailed('me');
+    final jailReason = prefs.getString(_jailReasonKey);
+    final jailUntilStr = prefs.getString(_jailUntilKey);
+    int jailDays = 0;
+    if (jailUntilStr != null) {
+      final until = DateTime.tryParse(jailUntilStr);
+      if (until != null) {
+        jailDays = math.max(0, until.difference(DateTime.now()).inDays + 1);
+      }
+    }
 
     // ⚡ Calculate active companion avatar perk buffs
     final perk = AvatarGamePerk.forDay(stage);
@@ -774,6 +802,10 @@ class PocketFortressDefenseService {
       isBanned: banned,
       banReason: banned ? 'Condemned by Presidential Decree: Reported fake English defenses.' : null,
       isUnderPresidentInspection: underInspection,
+      isJailed: isJailed,
+      jailDaysRemaining: jailDays,
+      jailReason: jailReason,
+      presidentNotice: presidentNotice,
       activeShieldTraps: activeTraps,
       activePerk: perk,
     );
@@ -1296,6 +1328,7 @@ class PocketFortressDefenseService {
           'defender_id': myId,
           'attacker_name': entry.attackerName,
           'attacker_avatar': entry.attackerAvatar,
+          'attacker_weapon': entry.attackerWeapon,
           'breached': entry.breached,
           'coins_looted': entry.coinsLooted,
           'iron_dome_blocked': entry.ironDomeBlocked,
@@ -1326,6 +1359,7 @@ class PocketFortressDefenseService {
             id: r['id']?.toString() ?? '',
             attackerName: r['attacker_name'] ?? 'Rival Raider',
             attackerAvatar: r['attacker_avatar'] ?? '⚔️',
+            attackerWeapon: r['attacker_weapon'] ?? '💥 Heavy Cannon',
             timestamp: r['created_at'] != null ? DateTime.tryParse(r['created_at']) ?? DateTime.now() : DateTime.now(),
             breached: r['breached'] ?? false,
             coinsLooted: (r['coins_looted'] as num?)?.toInt() ?? 0,
@@ -1352,6 +1386,7 @@ class PocketFortressDefenseService {
         id: 'seed_raid_1',
         attackerName: 'Vanguard Kaelen',
         attackerAvatar: '⚔️',
+        attackerWeapon: '💥 Royal Siege Cannon',
         timestamp: DateTime.now().subtract(const Duration(hours: 4)),
         breached: false,
         coinsLooted: 0,
@@ -1361,6 +1396,7 @@ class PocketFortressDefenseService {
         id: 'seed_raid_2',
         attackerName: 'Shadow Raider Lvl 8',
         attackerAvatar: '🏹',
+        attackerWeapon: '🔫 Plasma Blaster Gun',
         timestamp: DateTime.now().subtract(const Duration(hours: 18)),
         breached: true,
         coinsLooted: 45,
@@ -1378,6 +1414,7 @@ class PocketFortressDefenseService {
     int damageHp = 60,
     String attackerName = 'Rival Raider',
     String attackerAvatar = '⚔️',
+    String attackerWeapon = '💥 Heavy Cannon',
     bool defenderHasIronDome = false,
   }) async {
     final prefs = await SharedPreferences.getInstance();
@@ -1396,6 +1433,7 @@ class PocketFortressDefenseService {
         id: 'raid_${DateTime.now().millisecondsSinceEpoch}',
         attackerName: attackerName,
         attackerAvatar: attackerAvatar,
+        attackerWeapon: attackerWeapon,
         timestamp: DateTime.now(),
         breached: false,
         coinsLooted: 0,
@@ -1426,6 +1464,7 @@ class PocketFortressDefenseService {
       id: 'raid_${DateTime.now().millisecondsSinceEpoch}',
       attackerName: attackerName,
       attackerAvatar: attackerAvatar,
+      attackerWeapon: attackerWeapon,
       timestamp: DateTime.now(),
       breached: true,
       coinsLooted: lootedCoins,
@@ -1764,6 +1803,101 @@ class PocketFortressDefenseService {
       return r;
     }).toList();
     await prefs.setStringList(_reportsKey, updated.map((r) => jsonEncode(r.toJson())).toList());
+  }
+
+  /// 📜 Presidential Notice: Issue official warning decree to a house
+  static Future<void> issuePresidentNotice(String houseId, {required String reason}) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (houseId == 'me') {
+      await prefs.setString(_presidentNoticeKey, reason);
+    } else {
+      await prefs.setString('${_presidentNoticeKey}_$houseId', reason);
+    }
+  }
+
+  /// Dismiss/Acknowledge Presidential Notice
+  static Future<void> dismissPresidentNotice(String houseId) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (houseId == 'me') {
+      await prefs.remove(_presidentNoticeKey);
+    } else {
+      await prefs.remove('${_presidentNoticeKey}_$houseId');
+    }
+  }
+
+  /// ⛓️ Sentence House to Jail (Audio directive: "ജയിൽ ആണെങ്കിൽ ആ വീടിനെ മൊത്തം ജയിൽ പോലെ ഒരു സെറ്റപ്പ് ഡെവലപ്പ് ചെയ്യണം... ഇത്ര ദിവസം ജയിലിൽ കിടക്കേണ്ടി വരും")
+  static Future<void> sentenceToJail(String houseId, {int days = 3, required String reason}) async {
+    final prefs = await SharedPreferences.getInstance();
+    final releaseTime = DateTime.now().add(Duration(days: days));
+    if (houseId == 'me') {
+      await prefs.setBool(_jailedKey, true);
+      await prefs.setString(_jailUntilKey, releaseTime.toIso8601String());
+      await prefs.setString(_jailReasonKey, reason);
+    }
+    final jailedList = (prefs.getStringList(_jailedHousesListKey) ?? []).toSet();
+    jailedList.add(houseId);
+    await prefs.setStringList(_jailedHousesListKey, jailedList.toList());
+    await prefs.setString('${_jailUntilKey}_$houseId', releaseTime.toIso8601String());
+    await prefs.setString('${_jailReasonKey}_$houseId', reason);
+  }
+
+  static Future<bool> isHouseJailed(String houseId) async {
+    final prefs = await SharedPreferences.getInstance();
+    String? untilStr;
+    if (houseId == 'me') {
+      if (!(prefs.getBool(_jailedKey) ?? false)) return false;
+      untilStr = prefs.getString(_jailUntilKey);
+    } else {
+      final list = prefs.getStringList(_jailedHousesListKey) ?? [];
+      if (!list.contains(houseId)) return false;
+      untilStr = prefs.getString('${_jailUntilKey}_$houseId');
+    }
+    if (untilStr == null) return false;
+    final until = DateTime.tryParse(untilStr);
+    if (until == null) return false;
+    if (DateTime.now().isAfter(until)) {
+      // Jail sentence expired
+      await releaseFromJail(houseId);
+      return false;
+    }
+    return true;
+  }
+
+  static Future<void> releaseFromJail(String houseId) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (houseId == 'me') {
+      await prefs.setBool(_jailedKey, false);
+      await prefs.remove(_jailUntilKey);
+      await prefs.remove(_jailReasonKey);
+    }
+    final jailedList = (prefs.getStringList(_jailedHousesListKey) ?? []).toSet();
+    jailedList.remove(houseId);
+    await prefs.setStringList(_jailedHousesListKey, jailedList.toList());
+    await prefs.remove('${_jailUntilKey}_$houseId');
+    await prefs.remove('${_jailReasonKey}_$houseId');
+  }
+
+  /// 📉 Demote House Level (Audio directive: "രണ്ടു മൂന്ന് ലെവൽ ബാക്കിലോട്ട് ഇടാം")
+  static Future<int> demoteHouseLevel(String houseId, {int levels = 2}) async {
+    final prefs = await SharedPreferences.getInstance();
+    final currentLastCompleted = prefs.getInt('learning_last_completed_day') ?? 1;
+    final newDay = math.max(1, currentLastCompleted - levels);
+    await prefs.setInt('learning_last_completed_day', newDay);
+    return newDay;
+  }
+
+  /// 🚫 Ban House & Confiscate Coins (Audio directive: "ഫസ്റ്റിലോട്ട് തുടങ്ങണം, ഇവരുടെ കോയിൻസ് എല്ലാം ഗവൺമെന്റ് മേടിച്ചെടുക്കും")
+  static Future<void> banHouseWithAssetConfiscation(String houseId, {required String reason}) async {
+    final prefs = await SharedPreferences.getInstance();
+    await banHouse(houseId, reason: reason);
+    if (houseId == 'me') {
+      // Confiscate coins to government treasury
+      await prefs.setInt(_coinsKey, 0);
+      // Reset progression to Day 1
+      await prefs.setInt('learning_last_completed_day', 0);
+      // Wipe fake defense questions
+      await saveShieldQuestions([]);
+    }
   }
 }
 
