@@ -15,6 +15,7 @@ import 'pocket_defense_trap_modal.dart';
 import 'pocket_arsenal_store_modal.dart';
 import 'day90_vip_master_card_dialog.dart';
 import 'pocket_daily_mission_page.dart';
+import 'pocket_mission_timer_service.dart';
 
 /// 🎯 Model for Minimal Target Roadmaps (Audio Requirement)
 class TargetMilestoneItem {
@@ -455,6 +456,19 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  void _navigateToMissionPage(int day) {
+    HapticFeedback.selectionClick();
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PocketDailyMissionPage(
+          day: day,
+          onMissionCompleted: () => _loadData(),
+        ),
       ),
     );
   }
@@ -993,7 +1007,121 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   ),
                 ),
 
-                // Right: 🎯 Jump to Today Button (Clean, no broken Lottie)
+                // Floating Persistent 60-Minute Practice Timer Banner
+                Positioned(
+                  left: 18,
+                  right: 18,
+                  bottom: 84,
+                  child: ListenableBuilder(
+                    listenable: PocketMissionTimerService.instance,
+                    builder: (context, _) {
+                      final timer = PocketMissionTimerService.instance;
+                      if (timer.elapsedSeconds == 0 && !timer.isRunning) {
+                        return const SizedBox.shrink();
+                      }
+
+                      final isRunning = timer.isRunning;
+                      final isTargetMet = timer.hasReachedTarget;
+
+                      return GestureDetector(
+                        onTap: () => _navigateToMissionPage(timer.day),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: isTargetMet
+                                  ? const [Color(0xFF064E3B), Color(0xFF0F172A)]
+                                  : (isRunning
+                                      ? const [Color(0xFF1E1B4B), Color(0xFF0F172A)]
+                                      : const [Color(0xFF1E293B), Color(0xFF0F172A)]),
+                            ),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: isTargetMet
+                                  ? const Color(0xFF10B981)
+                                  : (isRunning ? const Color(0xFFFFD700) : Colors.white24),
+                              width: 1.2,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: (isRunning
+                                        ? const Color(0xFFFFD700)
+                                        : (isTargetMet ? const Color(0xFF10B981) : Colors.black))
+                                    .withValues(alpha: 0.3),
+                                blurRadius: 10,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            children: [
+                              Text(
+                                isTargetMet ? '🏆' : (isRunning ? '🔥' : '⏸️'),
+                                style: const TextStyle(fontSize: 16),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Text(
+                                          'DAY ${timer.day} PRACTICE: ',
+                                          style: GoogleFonts.outfit(
+                                            color: const Color(0xFFFFFC00),
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        Text(
+                                          '${timer.formatTime()} / ${timer.formatTime(timer.targetSeconds)}',
+                                          style: GoogleFonts.outfit(
+                                            color: Colors.white,
+                                            fontSize: 12.5,
+                                            fontWeight: FontWeight.w900,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    Text(
+                                      isRunning
+                                          ? 'Practice timer active • Runs while you explore!'
+                                          : (isTargetMet ? 'Target complete! Tap to claim' : 'Timer paused • Tap to continue'),
+                                      style: GoogleFonts.inter(
+                                        color: isRunning ? const Color(0xFF6EE7B7) : Colors.white60,
+                                        fontSize: 10,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFFFC00),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  'MISSION ➔',
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.black,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+
+                // Right: 🎯 Jump to Today Button (Direct entry into Mission Page)
                 Positioned(
                   right: 18,
                   bottom: 24,
@@ -1002,7 +1130,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                     onPressed: () {
                       HapticFeedback.mediumImpact();
                       _scrollToDay(prog.currentDay, animate: true);
-                      _showLevelMissionDialog(prog.currentDay);
+                      _navigateToMissionPage(prog.currentDay);
                     },
                     backgroundColor: const Color(0xFFFFFC00),
                     elevation: 6,
@@ -1516,7 +1644,14 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
       left: x - (nodeSize / 2),
       top: y - (nodeSize / 2),
       child: GestureDetector(
-        onTap: () => _showLevelMissionDialog(day),
+        onTap: () {
+          HapticFeedback.lightImpact();
+          if (day <= currentDay) {
+            _navigateToMissionPage(day);
+          } else {
+            _showLevelMissionDialog(day);
+          }
+        },
         child: SizedBox(
           width: nodeSize,
           height: nodeSize + (isCompleted ? 18 : 0),

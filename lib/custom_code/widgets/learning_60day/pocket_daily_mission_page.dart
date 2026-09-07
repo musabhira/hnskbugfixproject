@@ -16,12 +16,16 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_battl
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_mission_timer_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/pocket_library_page.dart';
 
-/// 📚 Model for Daily 10 Vocabulary Words to Memorize
+/// 📚 Model for Daily 10 Vocabulary Words to Memorize (Multilingual Support)
 class DailyVocabItem {
   final String word;
   final String partOfSpeech;
   final String definition;
   final String malayalamMeaning;
+  final String tamilMeaning;
+  final String hindiMeaning;
+  final String teluguMeaning;
+  final String kannadaMeaning;
   final String exampleSentence;
   final String phonetic;
 
@@ -30,9 +34,29 @@ class DailyVocabItem {
     required this.partOfSpeech,
     required this.definition,
     required this.malayalamMeaning,
+    this.tamilMeaning = '',
+    this.hindiMeaning = '',
+    this.teluguMeaning = '',
+    this.kannadaMeaning = '',
     required this.exampleSentence,
     required this.phonetic,
   });
+
+  String getMeaning(String language) {
+    switch (language.toLowerCase()) {
+      case 'tamil':
+        return tamilMeaning.isNotEmpty ? tamilMeaning : malayalamMeaning;
+      case 'hindi':
+        return hindiMeaning.isNotEmpty ? hindiMeaning : malayalamMeaning;
+      case 'telugu':
+        return teluguMeaning.isNotEmpty ? teluguMeaning : malayalamMeaning;
+      case 'kannada':
+        return kannadaMeaning.isNotEmpty ? kannadaMeaning : malayalamMeaning;
+      case 'malayalam':
+      default:
+        return malayalamMeaning;
+    }
+  }
 }
 
 /// 🎯 Comprehensive Interactive Daily English Mission Experience
@@ -69,6 +93,31 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   int _selectedQuizAnswer = -1;
   bool _quizSubmitted = false;
 
+  // 🌐 Multilingual Category Preferences (Audio Requirement)
+  static const List<String> kSupportedLanguages = [
+    'Malayalam',
+    'Tamil',
+    'Hindi',
+    'Telugu',
+    'Kannada',
+  ];
+
+  String _selectedLanguage = 'Malayalam';
+  bool _isStorySpeaking = false;
+
+  static const String _kDay1StoryText =
+      'A young student once stood by a tall bamboo tree, hesitant to practice speaking English. He was afraid of making mistakes in front of others. A wise mentor approached him and smiled. Look at this bamboo, the mentor said. For four years, its roots grow deep underground in silence. Then, in the fifth year, it shoots up eighty feet into the sky! Your daily English practice is just like that seed. Every day you speak, read, and listen for sixty minutes, you are building unseen roots. Soon, your fluency will soar higher than you ever imagined. The student took a deep breath, spoke his first sentence with courage, and stepped fearlessly onto his ninety day path.';
+
+  static const String _kDay1StoryFormatted =
+      '🌱 Part 1: The Hesitant Learner\n'
+      'A young student once stood by a tall bamboo tree, hesitant to practice speaking English. He was afraid of making mistakes in front of others.\n\n'
+      '🎋 Part 2: The Wisdom of the Bamboo\n'
+      'A wise mentor approached him and smiled. "Look at this bamboo," the mentor said. "For four years, its roots grow deep underground in silence. Then, in the fifth year, it shoots up eighty feet into the sky!"\n\n'
+      '✨ Part 3: The 90-Day Secret\n'
+      '"Your daily English practice is just like that seed. Every day you speak, read, and listen for sixty minutes, you are building unseen roots. Soon, your fluency will soar higher than you ever imagined."\n\n'
+      '🚀 Part 4: The First Step\n'
+      'The student took a deep breath, spoke his first sentence with courage, and stepped fearlessly onto his 90-day path.';
+
   late final List<DailyVocabItem> _vocabList;
 
   @override
@@ -95,20 +144,78 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     await _tts.speak(text);
   }
 
+  void _speakStory(String text) async {
+    HapticFeedback.lightImpact();
+    if (_isStorySpeaking) {
+      await _tts.stop();
+      if (mounted) setState(() => _isStorySpeaking = false);
+    } else {
+      setState(() => _isStorySpeaking = true);
+      _tts.setCompletionHandler(() {
+        if (mounted) setState(() => _isStorySpeaking = false);
+      });
+      await _tts.speak(text);
+    }
+  }
+
+  void _onLanguageSelected(String lang) async {
+    HapticFeedback.selectionClick();
+    setState(() => _selectedLanguage = lang);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('pocket_mission_pref_lang', lang);
+  }
+
+  String _getGrammarRuleExplanation(String lang) {
+    switch (lang.toLowerCase()) {
+      case 'tamil':
+        return 'ஆங்கிலத்தில் வாக்கிய அமைப்பு: எழுவாய் (Subject) + வினைச்சொல் (Verb) + செயப்படுபொருள் (Object).\n• சரியான வாக்கியம்: "She reads books."\n• தமிழில்: "அவள் புத்தகம் படிக்கிறாள்" (Subject + Object + Verb). ஆங்கிலத்தில் பேசுவதற்கு முன் வினையை (Verb) பொருளுக்கு முன்னால் வைக்க நினைவில் கொள்ளுங்கள்!';
+      case 'hindi':
+        return 'अंग्रेजी में वाक्य विन्यास: कर्ता (Subject) + क्रिया (Verb) + कर्म (Object) के क्रम में आता है।\n• सही: "She reads books."\n• हिंदी में: "वह किताब पढ़ती है" (Subject + Object + Verb)। अंग्रेजी में हमेशा क्रिया (Verb) को कर्म से पहले रखें!';
+      case 'telugu':
+        return 'ఇంగ్లీషులో వాక్య నిర్మాణం: కర్త (Subject) + క్రియ (Verb) + కర్మ (Object) క్రమంలో ఉంటుంది.\n• సరైనది: "She reads books."\n• తెలుగులో: "ఆమె పుస్తకం చదువుతుంది" (Subject + Object + Verb). ఇంగ్లీష్ మాట్లాడేటప్పుడు క్రియను కర్మకు ముందే ఉంచాలని గుర్తుంచుకోండి!';
+      case 'kannada':
+        return 'ಇಂಗ್ಲಿಷ್ ವಾಕ್ಯ ರಚನೆ: ಕರ್ತೃ (Subject) + ಕ್ರಿಯಾಪದ (Verb) + ಕರ್ಮ (Object) ಕ್ರಮದಲ್ಲಿ ಬರುತ್ತದೆ.\n• ಸರಿಯಾದ ವಾಕ್ಯ: "She reads books."\n• ಕನ್ನಡದಲ್ಲಿ: "ಅವಳು ಪುಸ್ತಕ ಓದುತ್ತಾಳೆ" (Subject + Object + Verb). ಇಂಗ್ಲಿಷ್‌ನಲ್ಲಿ ಕ್ರಿಯಾಪದವನ್ನು (Verb) ಕರ್ಮಕ್ಕಿಂತ ಮೊದಲು ಇರಿಸಿ!';
+      case 'malayalam':
+      default:
+        return 'English sentences follow the order: Subject (who) + Verb (action) + Object (what).\n• Correct: "She reads books."\n• In Malayalam: "അവൾ പുസ്തകം വായിക്കുന്നു" (Subject + Object + Verb). Remember to place the action verb BEFORE the object in English!';
+    }
+  }
+
+  String _getStorySummary(String lang) {
+    switch (lang.toLowerCase()) {
+      case 'tamil':
+        return '💡 நீதி: நமது ஆங்கிலப் பயிற்சி மூங்கில் விதை போன்றது. ஆரம்பத்தில் வெளியே தெரியாவிட்டாலும் உள்ளுக்குள் ஆழமான வேர்கள் உருவாகின்றன. 90 நாட்கள் தொடர் பயிற்சியால் உங்கள் சரளத்தன்மை வானளவிற்கு உயரும்.';
+      case 'hindi':
+        return '💡 सीख: हमारा अंग्रेजी अभ्यास बांस के बीज जैसा है। शुरुआत में भले ही बाहर कुछ न दिखे, लेकिन जड़ें गहराई तक फैलती हैं। 90 दिनों के नियमित अभ्यास से आपका आत्मविश्वास नई ऊंचाइयां छुएगा।';
+      case 'telugu':
+        return '💡 నీతి: మన ఇంగ్లీష్ సాధన వెదురు విత్తనం లాంటిది. మొదట్లో బయటకు కనిపించకపోయినా, లోపల వేర్లు బలంగా నాటుకుంటాయి. 90 రోజుల నిరంతర సాధనతో మీ ఆత్మవిశ్వాసం ఆకాశమంత ఎత్తుకు ఎదుగుతుంది.';
+      case 'kannada':
+        return '💡 ನೀತಿ: ನಮ್ಮ ಇಂಗ್ಲಿಷ್ ಅಭ್ಯಾಸವು ಬಿದಿರಿನ ಬೀಜದಂತಿದೆ. ಆರಂಭದಲ್ಲಿ ಮೇಲ್ನೋಟಕ್ಕೆ ಕಾಣಿಸದಿದ್ದರೂ, ಬೇರುಗಳು ಆಳವಾಗಿ ಬೆಳೆಯುತ್ತವೆ. 90 ದಿನಗಳ ನಿರಂತರ ಅಭ್ಯಾಸದಿಂದ ನಿಮ್ಮ ಆತ್ಮವಿಶ್ವಾಸವು ಎತ್ತರಕ್ಕೆ ಬೆಳೆಯುತ್ತದೆ.';
+      case 'malayalam':
+      default:
+        return '💡 സന്ദേശം: നമ്മുടെ ഇംഗ്ലീഷ് പരിശീലനം മുളയുടെ വിത്ത് പോലെയാണ്. തുടക്കത്തിൽ പുറമെ വളർച്ച കാണുന്നില്ലെങ്കിലും വേരുകൾ ആഴത്തിൽ ഉറക്കുകയാണ്. 90 ദിവസത്തെ നിരന്തര പരിശീലനത്തിലൂടെ ആത്മവിശ്വാസം ഉയരങ്ങളിലേക്ക് വളരും.';
+    }
+  }
+
   @override
   void dispose() {
+    _tts.stop();
     _timerService.removeListener(_onTimerStateChanged);
     super.dispose();
   }
 
   void _loadVocabForDay() {
-    // 10 high-impact vocabulary words for Day 1
+    // 10 high-impact vocabulary words for Day 1 with Multilingual translations
     _vocabList = const [
       DailyVocabItem(
         word: 'Ambition',
         partOfSpeech: 'noun',
         definition: 'A strong desire to achieve success or greatness.',
         malayalamMeaning: 'ഉയർന്ന ലക്ഷ്യം / ആഗ്രഹം',
+        tamilMeaning: 'உயர்ந்த லட்சியம் / விருப்பம்',
+        hindiMeaning: 'महत्वाकांक्षा / बड़ा लक्ष्य',
+        teluguMeaning: 'గొప్ప ఆశయం / ఆకాంక్ష',
+        kannadaMeaning: 'ಉನ್ನತ ಆಕಾಂಕ್ಷೆ / ಗುರಿ',
         exampleSentence: 'Her ambition is to speak fluent English with confidence.',
         phonetic: '/æmˈbɪʃ.ən/',
       ),
@@ -117,6 +224,10 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         partOfSpeech: 'noun',
         definition: 'The ability to do something that frightens you; bravery.',
         malayalamMeaning: 'ധൈര്യം',
+        tamilMeaning: 'தைரியம் / துணிவு',
+        hindiMeaning: 'साहस / हिम्मत',
+        teluguMeaning: 'ధైర్యం',
+        kannadaMeaning: 'ಧೈರ್ಯ / ಸಾಹಸ',
         exampleSentence: 'Have the courage to speak without fear of making mistakes.',
         phonetic: '/ˈkʌr.ɪdʒ/',
       ),
@@ -125,6 +236,10 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         partOfSpeech: 'adjective',
         definition: 'Showing careful and persistent work and effort.',
         malayalamMeaning: 'കഠിനാധ്വാനം ചെയ്യുന്ന / ശ്രദ്ധാലുവായ',
+        tamilMeaning: 'விடாமுயற்சியுள்ள / கடின உழைப்பாளி',
+        hindiMeaning: 'परिश्रमी / मेहनती',
+        teluguMeaning: 'శ్రద్ధగల / కష్టపడి పనిచేసే',
+        kannadaMeaning: 'ಪರಿಶ್ರಮಿ / ಜಾಗರೂಕ',
         exampleSentence: 'A diligent student practices English every single day.',
         phonetic: '/ˈdɪl.ə.dʒənt/',
       ),
@@ -133,6 +248,10 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         partOfSpeech: 'verb',
         definition: 'To convey feelings, thoughts, or ideas in words.',
         malayalamMeaning: 'വ്യക്തമാക്കുക / പ്രകടിപ്പിക്കുക',
+        tamilMeaning: 'வெளிப்படுத்து / விளக்கு',
+        hindiMeaning: 'व्यक्त करना / कहना',
+        teluguMeaning: 'వ్యక్తీకరించు / తెలుపు',
+        kannadaMeaning: 'ವ್ಯಕ್ತಪಡಿಸು / ಪ್ರಕಟಿಸು',
         exampleSentence: 'Reading books will help you express your thoughts easily.',
         phonetic: '/ɪkˈspres/',
       ),
@@ -141,6 +260,10 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         partOfSpeech: 'noun',
         definition: 'The ability to speak or write a language easily and accurately.',
         malayalamMeaning: 'സരളത / അനായാസമായ സംസാരം',
+        tamilMeaning: 'சரளம் / தடையற்ற பேச்சு',
+        hindiMeaning: 'धाराप्रवाह / सहज बोलना',
+        teluguMeaning: 'ధారాళత / నిరాటంక సంభాషణ',
+        kannadaMeaning: 'ನಿರರ್ಗಳತೆ / ಸರಾಗ ಮಾತು',
         exampleSentence: 'Consistency across 90 days creates unstoppable fluency.',
         phonetic: '/ˈfluː.ən.si/',
       ),
@@ -149,6 +272,10 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         partOfSpeech: 'adjective',
         definition: 'Feeling or showing appreciation for kindness received.',
         malayalamMeaning: 'നന്ദിയുള്ള',
+        tamilMeaning: 'நன்றியுடைய / கடமைப்பட்ட',
+        hindiMeaning: 'आभारी / कृतज्ञ',
+        teluguMeaning: 'కృతజ్ఞత గల',
+        kannadaMeaning: 'ಕೃತಜ್ಞ / ಧನ್ಯವಾದ',
         exampleSentence: 'I am grateful for every mate who helps me practice speaking.',
         phonetic: '/ˈɡreɪt.fəl/',
       ),
@@ -157,6 +284,10 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         partOfSpeech: 'verb',
         definition: 'To pause before saying or doing something through uncertainty.',
         malayalamMeaning: 'മടിക്കുക / സംശയിച്ചു നിൽക്കുക',
+        tamilMeaning: 'தயங்குதல் / தயக்கம்',
+        hindiMeaning: 'हिचकिचाना / झिझकना',
+        teluguMeaning: 'సంకోచించు / తటపటాయించు',
+        kannadaMeaning: 'ಹಿಂಜರಿಯು / ಅನುಮಾನಿಸು',
         exampleSentence: 'Do not hesitate when speaking; just let the words flow.',
         phonetic: '/ˈhez.ə.teɪt/',
       ),
@@ -165,6 +296,10 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         partOfSpeech: 'verb',
         definition: 'To fill someone with the urge or ability to do something.',
         malayalamMeaning: 'പ്രചോദിപ്പിക്കുക',
+        tamilMeaning: 'ஊக்கப்படுத்து / ஊக்கம் அளி',
+        hindiMeaning: 'प्रेरित करना',
+        teluguMeaning: 'ప్రేరేపించు / ఉత్సాహపరచు',
+        kannadaMeaning: 'ಪ್ರೇರೇಪಿಸು / ಸ್ಪೂರ್ತಿ ನೀಡು',
         exampleSentence: 'Great communicators inspire people around the world.',
         phonetic: '/ɪnˈspaɪər/',
       ),
@@ -173,6 +308,10 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         partOfSpeech: 'noun',
         definition: 'An act of traveling from one place or milestone to another.',
         malayalamMeaning: 'യാത്ര / ഘട്ടം',
+        tamilMeaning: 'பயணம் / வளர்ச்சிப் பாதை',
+        hindiMeaning: 'यात्रा / सफर',
+        teluguMeaning: 'ప్రయాణం / ప్రస్థానం',
+        kannadaMeaning: 'ಪ್ರಯಾಣ / ಹಂತ',
         exampleSentence: 'Your transformative 90-day English journey begins today.',
         phonetic: '/ˈdʒɜː.ni/',
       ),
@@ -181,6 +320,10 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         partOfSpeech: 'noun',
         definition: 'Facts, information, and skills acquired through experience.',
         malayalamMeaning: 'അറിവ്',
+        tamilMeaning: 'அறிவு / ஞானம்',
+        hindiMeaning: 'ज्ञान / विद्या',
+        teluguMeaning: 'జ్ఞానము',
+        kannadaMeaning: 'ಜ್ಞಾನ / ತಿಳುವಳಿಕೆ',
         exampleSentence: 'Knowledge is gained by learning, and fluency by speaking.',
         phonetic: '/ˈnɒl.ɪdʒ/',
       ),
@@ -191,6 +334,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     final prefs = await SharedPreferences.getInstance();
     final dayKey = 'pocket_mission_day_${widget.day}';
     setState(() {
+      _selectedLanguage = prefs.getString('pocket_mission_pref_lang') ?? 'Malayalam';
       _hubChatVerified = prefs.getBool('${dayKey}_hub_chat') ?? false;
       _peerCallVerified = prefs.getBool('${dayKey}_peer_call') ?? false;
       _vocabMemorized = prefs.getBool('${dayKey}_vocab_mem') ?? false;
@@ -964,6 +1108,97 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     );
   }
 
+  // 🌐 Language Category Selector Bar (Audio Directive)
+  Widget _buildLanguageSelectorBar() {
+    final languageFlags = {
+      'Malayalam': 'മലയാളം',
+      'Tamil': 'தமிழ்',
+      'Hindi': 'हिन्दी',
+      'Telugu': 'తెలుగు',
+      'Kannada': 'ಕನ್ನಡ',
+    };
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E293B).withValues(alpha: 0.85),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Text('🌐', style: TextStyle(fontSize: 14)),
+              const SizedBox(width: 6),
+              Text(
+                'Translation Language:',
+                style: GoogleFonts.outfit(
+                  color: Colors.white70,
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  _selectedLanguage,
+                  style: GoogleFonts.outfit(
+                    color: const Color(0xFFFFD700),
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: kSupportedLanguages.map((lang) {
+                final isSelected = _selectedLanguage == lang;
+                return Padding(
+                  padding: const EdgeInsets.only(right: 6),
+                  child: InkWell(
+                    onTap: () => _onLanguageSelected(lang),
+                    borderRadius: BorderRadius.circular(8),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: isSelected ? const Color(0xFFFFFC00) : const Color(0xFF0F172A),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: isSelected ? const Color(0xFFFFFC00) : Colors.white24,
+                          width: 1,
+                        ),
+                      ),
+                      child: Text(
+                        languageFlags[lang] ?? lang,
+                        style: GoogleFonts.outfit(
+                          color: isSelected ? Colors.black : Colors.white70,
+                          fontSize: 11.5,
+                          fontWeight: isSelected ? FontWeight.w900 : FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   // --- SUBTASK 3: 🧠 10 VOCABULARY WORDS TO MEMORIZE CARD ---
   Widget _buildVocabDeckCard() {
     return Container(
@@ -1004,10 +1239,15 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           ),
           const SizedBox(height: 6),
           Text(
-            'Memorize all 10 words below (definitions, Malayalam meanings & pronunciation):',
+            'Memorize all 10 words below (definitions, native meanings & audio pronunciation):',
             style: GoogleFonts.inter(color: Colors.white70, fontSize: 12),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
+
+          // 🌐 Multilingual Category Switcher Bar (Audio Directive)
+          _buildLanguageSelectorBar(),
+
+          const SizedBox(height: 4),
           ListView.separated(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -1065,7 +1305,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            '🗣️ അർത്ഥം: ${v.malayalamMeaning}',
+                            '🗣️ Meaning ($_selectedLanguage): ${v.getMeaning(_selectedLanguage)}',
                             style: GoogleFonts.inter(color: const Color(0xFFFFD700), fontSize: 11.5, fontWeight: FontWeight.w600),
                           ),
                           const SizedBox(height: 2),
@@ -1118,7 +1358,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     );
   }
 
-  // --- SUBTASK 4: 📖 CORE NOTES & READING PASSAGE CARD ---
+  // --- SUBTASK 4: 📖 CORE NOTES & AUTHENTIC STORY READING CARD ---
   Widget _buildReadingNotesCard() {
     return Container(
       padding: const EdgeInsets.all(14),
@@ -1148,7 +1388,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
-                  'Core Grammar Notes & Reading Passage',
+                  'Grammar Notes & Authentic Story Reading',
                   style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
                 ),
               ),
@@ -1157,6 +1397,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
             ],
           ),
           const SizedBox(height: 10),
+
+          // Grammar Concept Box
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
@@ -1167,31 +1409,122 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  '📚 Rule 1: English Sentence Structure (S + V + O)',
-                  style: GoogleFonts.outfit(color: Colors.amberAccent, fontWeight: FontWeight.bold, fontSize: 13),
+                Row(
+                  children: [
+                    const Icon(Icons.school_rounded, color: Colors.amberAccent, size: 16),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Rule 1: Sentence Structure (S + V + O)',
+                      style: GoogleFonts.outfit(color: Colors.amberAccent, fontWeight: FontWeight.bold, fontSize: 13),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'English sentences follow the order: Subject (who) + Verb (action) + Object (what).\n• Correct: "She reads books."\n• In Malayalam: "അവൾ പുസ്തകം വായിക്കുന്നു" (Subject + Object + Verb). Remember to place the action verb BEFORE the object in English!',
+                  _getGrammarRuleExplanation(_selectedLanguage),
                   style: GoogleFonts.inter(color: Colors.white70, fontSize: 12, height: 1.4),
                 ),
-                const Divider(color: Colors.white12, height: 16),
-                Text(
-                  '🗣️ Aloud Reading Exercise:',
-                  style: GoogleFonts.outfit(color: const Color(0xFF00E5FF), fontWeight: FontWeight.bold, fontSize: 12.5),
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
+
+          // 📖 Authentic Story Card (Audio Directive: Authentic story with TTS speaker reader!)
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFF13172A),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: const Color(0xFF00E5FF).withValues(alpha: 0.35),
+                width: 1.2,
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Text('🎋', style: TextStyle(fontSize: 18)),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'DAY 1 STORY: THE SEED OF CONFIDENCE',
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFF00E5FF),
+                              fontWeight: FontWeight.w900,
+                              fontSize: 12.5,
+                            ),
+                          ),
+                          Text(
+                            'Aloud Reading & Pronunciation Practice',
+                            style: GoogleFonts.inter(color: Colors.white54, fontSize: 10.5),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(
+                        _isStorySpeaking ? Icons.stop_circle_rounded : Icons.volume_up_rounded,
+                        color: _isStorySpeaking ? Colors.redAccent : const Color(0xFFFFFC00),
+                        size: 22,
+                      ),
+                      tooltip: _isStorySpeaking ? 'Stop Reading' : 'Read Aloud (TTS)',
+                      onPressed: () => _speakStory(_kDay1StoryText),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 6),
                 Text(
-                  '"Every great journey begins with a single confident step. By practicing 60 minutes each day, I transform my communication and unlock endless opportunities across the globe."',
-                  style: GoogleFonts.inter(color: Colors.white, fontSize: 12.5, fontStyle: FontStyle.italic, height: 1.4),
+                  '"A young student once stood by a tall bamboo tree, hesitant to practice speaking English. He was afraid of making mistakes in front of others. A wise mentor approached him: \'For four years, the bamboo roots grow deep underground in silence. Then, in the fifth year, it shoots up eighty feet into the sky! Your daily English practice is just like that seed...\'"',
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontStyle: FontStyle.italic,
+                    height: 1.45,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  _getStorySummary(_selectedLanguage),
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF6EE7B7),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    height: 1.35,
+                  ),
                 ),
               ],
             ),
           ),
           const SizedBox(height: 12),
+
+          // Action Buttons: Full Story Reader, Read Books, Read Aloud Done
           Row(
             children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: _showStoryDetailModal,
+                  icon: const Icon(Icons.menu_book_rounded, color: Colors.black, size: 15),
+                  label: Text(
+                    'STORY READER',
+                    style: GoogleFonts.outfit(
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 11,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF00E5FF),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 6),
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: () {
@@ -1206,13 +1539,13 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                       }
                     });
                   },
-                  icon: const Icon(Icons.auto_stories_rounded, color: Colors.black, size: 16),
+                  icon: const Icon(Icons.auto_stories_rounded, color: Colors.black, size: 15),
                   label: Text(
                     'READ BOOKS 📚',
                     style: GoogleFonts.outfit(
                       color: Colors.black,
                       fontWeight: FontWeight.bold,
-                      fontSize: 12,
+                      fontSize: 11,
                     ),
                   ),
                   style: ElevatedButton.styleFrom(
@@ -1222,7 +1555,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 6),
               Expanded(
                 child: OutlinedButton.icon(
                   onPressed: () {
@@ -1233,14 +1566,14 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                   icon: Icon(
                     _readingNotesCompleted ? Icons.check_circle_rounded : Icons.check_rounded,
                     color: const Color(0xFFFFFC00),
-                    size: 16,
+                    size: 15,
                   ),
                   label: Text(
-                    _readingNotesCompleted ? 'READ ALOUD ✓' : 'FINISHED READING',
+                    _readingNotesCompleted ? 'DONE ✓' : 'FINISHED',
                     style: GoogleFonts.outfit(
                       color: const Color(0xFFFFFC00),
                       fontWeight: FontWeight.bold,
-                      fontSize: 12,
+                      fontSize: 11,
                     ),
                   ),
                   style: OutlinedButton.styleFrom(
@@ -1253,6 +1586,226 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  // 📖 Full Interactive Story Reader Modal (Audio Directive: Story details view with TTS)
+  void _showStoryDetailModal() {
+    HapticFeedback.lightImpact();
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, modalSetState) {
+          return Container(
+            height: MediaQuery.of(ctx).size.height * 0.85,
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+            decoration: const BoxDecoration(
+              color: Color(0xFF0F172A),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+              border: Border(top: BorderSide(color: Color(0xFFFFD700), width: 1.5)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 44,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.white24,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Row(
+                  children: [
+                    const Text('📖', style: TextStyle(fontSize: 24)),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'DAY ${widget.day} STORY: THE SEED OF CONFIDENCE',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 14,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          Text(
+                            'Authentic Short Story Reading & Pronunciation Guide',
+                            style: GoogleFonts.inter(color: Colors.white60, fontSize: 11),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close_rounded, color: Colors.white54),
+                      onPressed: () {
+                        _tts.stop();
+                        if (mounted) setState(() => _isStorySpeaking = false);
+                        Navigator.pop(ctx);
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                // Audio Narrator Controller Bar
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1E293B),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFFFFC00).withValues(alpha: 0.3)),
+                  ),
+                  child: Row(
+                    children: [
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          HapticFeedback.lightImpact();
+                          if (_isStorySpeaking) {
+                            _tts.stop();
+                            modalSetState(() => _isStorySpeaking = false);
+                            setState(() => _isStorySpeaking = false);
+                          } else {
+                            modalSetState(() => _isStorySpeaking = true);
+                            setState(() => _isStorySpeaking = true);
+                            _tts.setCompletionHandler(() {
+                              if (mounted) {
+                                modalSetState(() => _isStorySpeaking = false);
+                                setState(() => _isStorySpeaking = false);
+                              }
+                            });
+                            _tts.speak(_kDay1StoryText);
+                          }
+                        },
+                        icon: Icon(
+                          _isStorySpeaking ? Icons.stop_circle_rounded : Icons.volume_up_rounded,
+                          color: Colors.black,
+                          size: 18,
+                        ),
+                        label: Text(
+                          _isStorySpeaking ? 'STOP NARRATOR' : 'LISTEN TO NARRATOR (TTS)',
+                          style: GoogleFonts.outfit(
+                            color: Colors.black,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 11.5,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFFFFC00),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
+                      ),
+                      const Spacer(),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.white10,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          _selectedLanguage,
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFFFFD700),
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF13172A),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: Colors.white12),
+                          ),
+                          child: Text(
+                            _kDay1StoryFormatted,
+                            style: GoogleFonts.inter(
+                              color: Colors.white,
+                              fontSize: 14,
+                              height: 1.6,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF1E293B),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.3)),
+                          ),
+                          child: Text(
+                            _getStorySummary(_selectedLanguage),
+                            style: GoogleFonts.inter(
+                              color: const Color(0xFF6EE7B7),
+                              fontSize: 12.5,
+                              height: 1.4,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      _tts.stop();
+                      setState(() {
+                        _readingNotesCompleted = true;
+                        _isStorySpeaking = false;
+                      });
+                      _saveSubtask('reading', true);
+                      Navigator.pop(ctx);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('🎉 Day 1 Story Reading completed!'),
+                          backgroundColor: Color(0xFF10B981),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.check_circle_rounded, color: Colors.black),
+                    label: Text(
+                      'I FINISHED READING THIS STORY ✓',
+                      style: GoogleFonts.outfit(
+                        color: Colors.black,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 13,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF10B981),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }

@@ -51,6 +51,11 @@ class PocketMissionTimerService extends ChangeNotifier with WidgetsBindingObserv
 
   /// Initialize state for a specific learning day from local SharedPreferences
   Future<void> initForDay(int dayNumber) async {
+    // If timer is already initialized and actively ticking for this day, preserve state!
+    if (_isInitialized && _day == dayNumber && _isRunning) {
+      return;
+    }
+
     _day = dayNumber;
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -65,7 +70,7 @@ class PocketMissionTimerService extends ChangeNotifier with WidgetsBindingObserv
 
       if (_elapsedSeconds >= _targetSeconds) {
         _pauseReason = '60-Min Target Reached';
-      } else {
+      } else if (!_isRunning) {
         _pauseReason = 'Paused';
       }
     } catch (e) {
