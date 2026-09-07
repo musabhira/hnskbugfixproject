@@ -24,6 +24,7 @@ import 'package:pocket_mates_app/custom_code/widgets/avatar/flame_profile_banner
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/flame_english_house_game.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_defense_trap_modal.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortress_defense_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/pocket_snap_flame_refresh.dart';
 
 class MainProfileWidget extends StatefulWidget {
   final String? userId;
@@ -240,6 +241,20 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     // 3. Fetch Fresh Data (Always)
     _fetchFreshData();
     _fetchEnglishHubData();
+  }
+
+  Future<void> _handleProfileRefresh() async {
+    try {
+      await Future.wait([
+        _fetchFreshData(),
+        _loadFortressDefenseData(),
+        _fetchThreads(),
+        _loadEquippedTalisman(),
+        _fetchEnglishHubData(),
+      ]);
+    } catch (e) {
+      debugPrint('Profile refresh error: $e');
+    }
   }
 
   Future<void> _fetchEnglishHubData() async {
@@ -814,8 +829,16 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
     return material.Scaffold(
       backgroundColor: bgColor,
-      body: material.NestedScrollView(
-        controller: _scrollController,
+      body: PocketSnapFlameRefresh(
+        onRefresh: _handleProfileRefresh,
+        primaryFlameColor: const Color(0xFFFFFC00),
+        accentFlameColor: const Color(0xFFFF5722),
+        pullText: 'Pull to refresh profile... 🔥',
+        readyText: 'Release to update! ✨',
+        refreshingText: 'Refreshing profile & citadel... 🔥',
+        successText: 'Profile updated! ✨',
+        child: material.NestedScrollView(
+          controller: _scrollController,
         headerSliverBuilder: (context, innerBoxIsScrolled) {
           return [
             material.SliverAppBar(
@@ -1081,6 +1104,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       ],
                     ),
         ),
+      ),
       ),
     );
   }

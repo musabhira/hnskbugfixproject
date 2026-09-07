@@ -800,17 +800,13 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                           )
                         : _currentIndex == 3
                             ? EnglishTasksMasterHubPage(userId: _currentUserId)
-                            : material.RefreshIndicator(
-                            onRefresh: _handleRefresh,
-                            color: isDark
-                                ? const Color(0xFFFFFC00)
-                                : const Color(0xFFFFFC00),
-                            backgroundColor: isDark
-                                ? const Color(0xFF121218)
-                                : const Color(0xFFF4F4F9),
-                            child: material.NestedScrollView(
-                              physics: const BouncingScrollPhysics(
-                                  parent: AlwaysScrollableScrollPhysics()),
+                            : PocketSnapFlameRefresh(
+                                onRefresh: _handleRefresh,
+                                primaryFlameColor: const Color(0xFFFFFC00),
+                                accentFlameColor: const Color(0xFFFF5722),
+                                child: material.NestedScrollView(
+                                  physics: const BouncingScrollPhysics(
+                                      parent: AlwaysScrollableScrollPhysics()),
                               headerSliverBuilder:
                                   (context, innerBoxIsScrolled) {
                                 return [

@@ -101,6 +101,7 @@ export 'report_dailoge.dart';
 export 'legal_policy_widget.dart';
 export 'eula_compliance_dialog.dart';
 export 'dual_video_recorder.dart';
+export 'pocket_snap_flame_refresh.dart' show PocketSnapFlameRefresh;
 
 // Print-on-Demand
 export 'pod_2d_preview_widget.dart';

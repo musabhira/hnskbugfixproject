@@ -237,42 +237,56 @@ class _MessageListPageState extends State<MessageListPage> {
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: Colors.yellow))
-          : _conversations.isEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.message_outlined,
-                        size: 80,
-                        color: Colors.grey.shade600,
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'No conversations yet',
-                        style: TextStyle(
-                          fontSize: 18,
-                          color: Colors.grey.shade400,
-                          fontWeight: FontWeight.w500,
+          : PocketSnapFlameRefresh(
+              onRefresh: _loadConversations,
+              primaryFlameColor: const Color(0xFFFFFC00),
+              accentFlameColor: const Color(0xFFFF5722),
+              pullText: 'Pull to refresh chats... 🔥',
+              readyText: 'Release to kindle! ✨',
+              refreshingText: 'Syncing messages... 🔥',
+              successText: 'Messages synced! ✨',
+              child: _conversations.isEmpty
+                  ? SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      child: Container(
+                        height: MediaQuery.of(context).size.height * 0.7,
+                        alignment: Alignment.center,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.message_outlined,
+                              size: 80,
+                              color: Colors.grey.shade600,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'No conversations yet',
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: Colors.grey.shade400,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Start messaging with someone!',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Start messaging with someone!',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey.shade600,
-                        ),
-                      ),
-                    ],
-                  ),
-                )
-              : ListView.builder(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  itemCount: _conversations.length,
-                  itemBuilder: (context, index) {
-                    final conversation = _conversations[index];
-                    final otherUser = _getOtherUser(conversation);
+                    )
+                  : ListView.builder(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      itemCount: _conversations.length,
+                      itemBuilder: (context, index) {
+                        final conversation = _conversations[index];
+                        final otherUser = _getOtherUser(conversation);
                     final isUnread = (conversation['unread_count'] ?? 0) > 0;
                     final subtitle = conversation['last_message'] ?? '';
                     final hasMention = _currentUserName != null && 
@@ -447,6 +461,7 @@ class _MessageListPageState extends State<MessageListPage> {
                   );
                 },
               ),
+            ),
     );
   }
 }
