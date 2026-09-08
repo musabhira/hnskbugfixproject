@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'pocket_fortress_defense_service.dart';
+import 'day90_graduation_certificate_dialog.dart';
 
 /// 🏆 Day 90 Master VIP Fleet & Victory Card Dialog
 /// Displays the prestigious Day 90 achievement:
@@ -142,6 +143,37 @@ class _Day90VipMasterCardDialogState extends State<Day90VipMasterCardDialog>
                 _buildHolographicMasterCard(),
 
                 const SizedBox(height: 18),
+
+                // 📜 View Official Graduation Certificate Button
+                SizedBox(
+                  width: double.infinity,
+                  height: 44,
+                  child: OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Color(0xFFFFD700), width: 1.2),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      backgroundColor: Colors.amber.withValues(alpha: 0.08),
+                    ),
+                    onPressed: () {
+                      HapticFeedback.mediumImpact();
+                      Day90GraduationCertificateDialog.show(
+                        context,
+                        studentName: 'Sovereign Scholar',
+                      );
+                    },
+                    icon: const Icon(Icons.workspace_premium_rounded, color: Color(0xFFFFD700), size: 18),
+                    label: Text(
+                      'VIEW OFFICIAL DIPLOMA CERTIFICATE 📜',
+                      style: GoogleFonts.outfit(
+                        color: const Color(0xFFFFD700),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12.5,
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 10),
 
                 // Close / Claim Button
                 SizedBox(
