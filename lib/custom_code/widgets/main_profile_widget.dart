@@ -2691,36 +2691,20 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 );
 
                 if (isCompact) {
-                  return Column(
+                  return Row(
                     children: [
-                      Row(
-                        children: [
-                          Expanded(child: buildEditProfileBtn()),
-                          const SizedBox(width: 8),
-                          Expanded(child: buildAvatarStudioBtn()),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Expanded(child: buildVipBtn()),
-                          const SizedBox(width: 8),
-                          buildStickersBtn(),
-                        ],
-                      ),
+                      Expanded(child: buildEditProfileBtn()),
+                      const SizedBox(width: 8),
+                      Expanded(child: buildVipBtn()),
                     ],
                   );
                 }
 
                 return Row(
                   children: [
-                    Expanded(flex: 4, child: buildEditProfileBtn()),
-                    const SizedBox(width: 8),
-                    Expanded(flex: 5, child: buildAvatarStudioBtn()),
+                    Expanded(flex: 5, child: buildEditProfileBtn()),
                     const SizedBox(width: 8),
                     Expanded(flex: 4, child: buildVipBtn()),
-                    const SizedBox(width: 8),
-                    buildStickersBtn(),
                   ],
                 );
               },

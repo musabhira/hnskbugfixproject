@@ -609,13 +609,15 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
     bool isValid = true;
     String errorMessage = '';
 
+    // Auto-populate internal shop_name if empty
+    if (_shopNameController.text.trim().isEmpty) {
+      _shopNameController.text = _nameController.text.trim().replaceAll(' ', '-').toLowerCase();
+    }
+
     // Check for required text fields
     if (_nameController.text.trim().isEmpty) {
       isValid = false;
       errorMessage = 'Please enter your name';
-    } else if (_shopNameController.text.trim().isEmpty) {
-      isValid = false;
-      errorMessage = 'Please enter your shop name';
     } else if (_phoneNumberController.text.trim().isEmpty) {
       isValid = false;
       errorMessage = 'Please enter your phone number';
@@ -1129,22 +1131,61 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
 
   Widget buildBeautifulLocationPicker() {
     final theme = DarkModeTheme();
+    final hasLocation = (selectedCountry ?? '').isNotEmpty;
+    final locationString = [selectedCountry, selectedState, selectedCity]
+        .where((s) => (s ?? '').isNotEmpty)
+        .join(', ');
+
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(20.0, 1.0, 20.0, 0.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Location Information',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: theme.primaryText,
-            ),
+          Row(
+            children: [
+              Icon(Icons.public, color: theme.primary, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                'Location & Country',
+                style: TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.bold,
+                  color: theme.primaryText,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 15),
+          const SizedBox(height: 12),
 
-          // Custom implementation showing initial values
+          // Prominent Selected Country / Location Banner if already chosen
+          if (hasLocation)
+            Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: theme.primary.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: theme.primary.withValues(alpha: 0.4)),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.location_on, color: theme.primary, size: 18),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Selected: $locationString',
+                      style: TextStyle(
+                        color: theme.primaryText,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+          // Dropdown selector
           Container(
             decoration: BoxDecoration(
               color: theme.primaryBackground,
@@ -1161,7 +1202,6 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
             child: Padding(
               padding: const EdgeInsets.all(12),
               child: SelectState(
-                // Using the country_state_city_picker package
                 onCountryChanged: (value) {
                   safeSetState(() {
                     selectedCountry = value;
@@ -1181,7 +1221,6 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                   });
                 },
                 dropdownColor: Colors.black,
-                // Style customization
                 style: TextStyle(
                   color: theme.primaryText,
                   fontWeight: FontWeight.w500,
@@ -1190,45 +1229,6 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
               ),
             ),
           ),
-
-          // Display selected values in beautiful tiles
-          const SizedBox(height: 20),
-          Text(
-            'Your Selected Location',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: theme.primaryText,
-            ),
-          ),
-          const SizedBox(height: 10),
-
-          // Country display
-          if ((selectedCountry ?? '').isNotEmpty)
-            _buildLocationTile(
-              title: 'Country',
-              value: selectedCountry ?? '',
-              icon: Icons.flag_outlined,
-              color: theme.primary,
-            ),
-
-          // State display
-          if ((selectedState ?? '').isNotEmpty)
-            _buildLocationTile(
-              title: 'State/Province',
-              value: selectedState ?? '',
-              icon: Icons.location_city_outlined,
-              color: theme.secondary,
-            ),
-
-          // City display
-          if ((selectedCity ?? '').isNotEmpty)
-            _buildLocationTile(
-              title: 'City',
-              value: selectedCity ?? '',
-              icon: Icons.business_outlined,
-              color: theme.tertiary,
-            ),
         ],
       ),
     );
@@ -1391,7 +1391,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                         padding: const EdgeInsetsDirectional.fromSTEB(
                             24.0, 16.0, 0.0, 16.0),
                         child: Text(
-                          'Create your Online shop Profile',
+                          'Edit Profile',
                           style: theme.headlineMedium.override(
                             fontFamily: 'Poppins',
                             color: theme.primaryText,
@@ -1716,272 +1716,35 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                     hintText: 'Enter your full name',
                   ),
 
-                  // Shop Name Text Field
-                  Row(
-                    children: [
-                      Expanded(
-                        child: CustomTextField(
-                          width: double.infinity,
-                          height: 56.0,
-                          controller: _shopNameController,
-                          labelText: 'Shop Name',
-                          hintText: 'Unique name for your shop',
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(right: 20, top: 16),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              onPressed: _checkingShopName ? null : _checkShopName,
-                              icon: _checkingShopName
-                                  ? SizedBox(
-                                      width: 20,
-                                      height: 20,
-                                      child: CircularProgressIndicator(
-                                          strokeWidth: 2, color: theme.primary))
-                                  : Icon(Icons.check_circle,
-                                      color: _isShopNameVerified
-                                          ? theme.success
-                                          : theme.secondaryText),
-                              tooltip: 'Verify Availability',
-                            ),
-                            Text('Verify',
-                                style: theme.bodySmall.override(
-                                  fontFamily: 'Montserrat',
-                                  color: theme.primaryText,
-                                  fontSize: 10,
-                                )),
-                          ],
-                        ),
-                      )
-                    ],
-                  ),
-                  if (_shopNameMessage != null)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
-                      child: Text(
-                        _shopNameMessage!,
-                        style: theme.bodySmall.override(
-                          fontFamily: 'Montserrat',
-                          color: _shopNameMessageColor,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                  
-                  // Business Setup Section
+                  // Account Privacy Section
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Business Setup',
-                          style: theme.bodyMedium.override(
-                            fontFamily: 'Montserrat',
-                            color: theme.primary,
-                            fontSize: 16.0,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'What is your business type?',
-                          style: theme.bodyMedium.override(
-                            fontFamily: 'Montserrat',
-                            color: theme.primaryText,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: GestureDetector(
-                                onTap: () => safeSetState(() => _businessType = 'product'),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(vertical: 12),
-                                  decoration: BoxDecoration(
-                                    color: _businessType == 'product' ? theme.primary : theme.secondaryBackground,
-                                    borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(
-                                      color: _businessType == 'product' ? theme.primary : theme.alternate,
-                                    ),
-                                  ),
-                                  alignment: Alignment.center,
-                                  child: Text(
-                                    'Product',
-                                    style: TextStyle(
-                                      color: _businessType == 'product' ? Colors.black : theme.primaryText,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ),
+                    padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: theme.secondaryBackground,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: theme.alternate),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.lock_outline, color: theme.primary, size: 20),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              'Private Account',
+                              style: TextStyle(color: theme.primaryText, fontSize: 13, fontWeight: FontWeight.w600),
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: GestureDetector(
-                                onTap: () => safeSetState(() => _businessType = 'service'),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(vertical: 12),
-                                  decoration: BoxDecoration(
-                                    color: _businessType == 'service' ? theme.primary : theme.secondaryBackground,
-                                    borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(
-                                      color: _businessType == 'service' ? theme.primary : theme.alternate,
-                                    ),
-                                  ),
-                                  alignment: Alignment.center,
-                                  child: Text(
-                                    'Service',
-                                    style: TextStyle(
-                                      color: _businessType == 'service' ? Colors.black : theme.primaryText,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 20),
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: theme.primary.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: theme.primary.withValues(alpha: 0.3)),
                           ),
-                          child: Row(
-                            children: [
-                              Icon(Icons.payment, color: theme.primary, size: 20),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Text(
-                                  'Enable Payment Integration (Coming soon)',
-                                  style: TextStyle(color: theme.primaryText, fontSize: 13),
-                                ),
-                              ),
-                              Switch(
-                                value: _wantsPaymentIntegration,
-                                onChanged: (v) {
-                                  safeSetState(() => _wantsPaymentIntegration = v);
-                                  if (v) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(content: Text('Payment integration will be fully unlocked in a future update!')),
-                                    );
-                                  }
-                                },
-                                activeThumbColor: theme.primary,
-                              ),
-                            ],
+                          Switch(
+                            value: _isPrivate,
+                            onChanged: (v) {
+                              safeSetState(() => _isPrivate = v);
+                            },
+                            activeThumbColor: theme.primary,
                           ),
-                        ),
-                        const SizedBox(height: 12),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                          decoration: BoxDecoration(
-                            color: theme.primary.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: theme.primary.withValues(alpha: 0.3)),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(Icons.lock_outline, color: theme.primary, size: 20),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Text(
-                                  'Private Account',
-                                  style: TextStyle(color: theme.primaryText, fontSize: 13),
-                                ),
-                              ),
-                              Switch(
-                                value: _isPrivate,
-                                onChanged: (v) {
-                                  safeSetState(() => _isPrivate = v);
-                                },
-                                activeThumbColor: theme.primary,
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: theme.secondaryBackground,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: theme.alternate),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Icon(Icons.language, color: theme.primary, size: 20),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    'Your Shop Website',
-                                    style: TextStyle(color: theme.primaryText, fontWeight: FontWeight.bold, fontSize: 16),
-                                  ),
-                                  if (_currentPlan == 'free') ...[
-                                    const Spacer(),
-                                    Icon(Icons.lock, color: Colors.red[400], size: 16),
-                                  ]
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-                              if (_currentPlan == 'free') ...[
-                                Text(
-                                  'Upgrade to Premium to unlock your custom web profile.',
-                                  style: TextStyle(color: theme.secondaryText, fontSize: 13),
-                                ),
-                                const SizedBox(height: 12),
-                                SizedBox(
-                                  width: double.infinity,
-                                  child: ElevatedButton.icon(
-                                    onPressed: () {
-                                      Navigator.push(context, MaterialPageRoute(builder: (context) => const SubscriptionPage()));
-                                    },
-                                    icon: const Icon(Icons.workspace_premium),
-                                    label: const Text('Upgrade Plan'),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFFFFD700),
-                                      foregroundColor: Colors.black,
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                    ),
-                                  ),
-                                ),
-                              ] else ...[
-                                Text(
-                                  'Your store will be hosted at:\nhandskillapp.web.app/${_shopNameController.text.isNotEmpty ? _sanitizeSlug(_shopNameController.text) : 'your-shop-name'}',
-                                  style: TextStyle(color: theme.secondaryText, fontSize: 13),
-                                ),
-                                const SizedBox(height: 12),
-                                SizedBox(
-                                  width: double.infinity,
-                                  child: OutlinedButton.icon(
-                                    onPressed: () {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(content: Text('Please contact the Handskill Team at +91 0000000000 to setup a custom domain.')),
-                                      );
-                                    },
-                                    icon: Icon(Icons.support_agent, color: theme.primary),
-                                    label: Text('Get Custom Domain Hosting', style: TextStyle(color: theme.primary)),
-                                    style: OutlinedButton.styleFrom(
-                                      side: BorderSide(color: theme.primary),
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ],
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
 
@@ -2016,36 +1779,27 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                   ),
 
                   Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 20, vertical: 12),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                     child: Container(
                       decoration: BoxDecoration(
                         color: theme.secondaryBackground,
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(color: theme.alternate),
                       ),
-                      padding: const EdgeInsets.all(12),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                       child: Row(
                         children: [
-                          Icon(Icons.security, color: theme.primary, size: 20),
-                          const SizedBox(width: 12),
+                          Icon(Icons.lock_outline, color: theme.primary, size: 18),
+                          const SizedBox(width: 10),
                           Expanded(
                             child: Text(
-                              'Show WhatsApp & Phone number in public view',
+                              'Strict Privacy: Phone number & WhatsApp are confidential and will never be shown in public view.',
                               style: theme.bodySmall.override(
                                 fontFamily: 'Montserrat',
-                                color: theme.primaryText,
-                                fontSize: 12,
+                                color: theme.secondaryText,
+                                fontSize: 11.5,
                               ),
                             ),
-                          ),
-                          Switch(
-                            value: !isHidden,
-                            onChanged: (value) => saveHideStatus(!value),
-                            activeThumbColor: theme.primary,
-                            activeTrackColor: theme.primary.withValues(alpha: 0.3),
-                            inactiveThumbColor: Colors.white,
-                            inactiveTrackColor: theme.alternate,
                           ),
                         ],
                       ),
@@ -2175,33 +1929,34 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                     hintText: 'https://instagram.com/yourprofile',
                   ),
 
-                  // Template Selection
+                  // Instagram Day 90 Certificate Delivery & Support Notice
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                    child: Row(
-                      children: [
-                        Text(
-                          'Web Profile Template',
-                          style: theme.bodyMedium.override(
-                            fontFamily: 'Montserrat',
-                            color: theme.primaryText,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.deepPurple.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.deepPurple.withValues(alpha: 0.3)),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('🎓', style: TextStyle(fontSize: 18)),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              'Private Connection: Your Instagram ID & link are 100% private and never exposed publicly. They are exclusively used by Sovereign Mentors to connect with you, support your Day 90 Challenge, and deliver your verified Graduation Certificate.',
+                              style: theme.bodySmall.override(
+                                fontFamily: 'Montserrat',
+                                color: theme.primaryText.withValues(alpha: 0.85),
+                                fontSize: 11.5,
+                                height: 1.4,
+                              ),
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Row(
-                      children: [
-                        _buildTemplateItem('default', 'React Glassmorphism', Icons.auto_awesome),
-                        _buildTemplateItem('minimal', 'React Cyber Neon', Icons.bolt),
-                        _buildTemplateItem('modern', 'Next.js Portfolio', Icons.web),
-                        _buildTemplateItem('classic', 'Three.js 3D Web', Icons.view_in_ar_rounded),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
 
@@ -2219,12 +1974,22 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         Text(
-                          'Live Color Preview',
+                          'Profile Colors & Theme (Live Preview)',
                           style: theme.bodyMedium.override(
                             fontFamily: 'Montserrat',
                             color: theme.primaryText,
                             fontSize: 16.0,
                             fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Customize background and button colors for your profile',
+                          style: theme.bodySmall.override(
+                            fontFamily: 'Montserrat',
+                            color: theme.secondaryText,
+                            fontSize: 12.0,
                           ),
                           textAlign: TextAlign.center,
                         ),
