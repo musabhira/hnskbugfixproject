@@ -15,6 +15,9 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_battl
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_mission_timer_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_vocabulary_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/pocket_library_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_world_game_rules_modal.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_reading_library_modal.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_code_english_decoder_modal.dart';
 
 export 'daily_vocab_item.dart';
 import 'daily_vocab_item.dart';
@@ -1371,6 +1374,15 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     _loadVocabForDay();
     _loadSavedMissionState();
     _timerService.addListener(_onTimerStateChanged);
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final hasAccepted = prefs.getBool('pocket_world_rules_accepted_v1') ?? false;
+        if (!hasAccepted && widget.day == 1 && mounted) {
+          PocketWorldGameRulesModal.show(context, currentDay: widget.day);
+        }
+      } catch (_) {}
+    });
   }
 
   void _onTimerStateChanged() {
@@ -4193,6 +4205,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                 // Top Header Deck
                 _buildHeader(context),
 
+                // Quick Sovereign Action Bar: Rules & 90d Guarantee, Reading Library, Code English
+                _buildSovereignActionBar(),
+
                 // Mission Body Content
                 Expanded(
                   child: ListView(
@@ -4440,6 +4455,11 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
                       // 🏆 Final Mission Completion Button
                       _buildFinalClaimButton(),
+
+                      const SizedBox(height: 14),
+
+                      // 🧪 DEV TEST: Complete & Advance to Next Day
+                      _buildDevAdvanceButton(),
                     ],
                   ),
                 ),
@@ -4447,6 +4467,153 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  // --- QUICK SOVEREIGN ACTION BAR: RULES, READING LIBRARY, CODE ENGLISH ---
+  Widget _buildSovereignActionBar() {
+    return Container(
+      color: const Color(0xFF0F172A),
+      padding: const EdgeInsets.fromLTRB(14, 0, 14, 8),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            _buildActionPill(
+              icon: '📜',
+              label: 'RULES & 90D GUARANTEE',
+              color: const Color(0xFF38BDF8),
+              onTap: () {
+                HapticFeedback.lightImpact();
+                PocketWorldGameRulesModal.show(context, currentDay: widget.day);
+              },
+            ),
+            const SizedBox(width: 8),
+            _buildActionPill(
+              icon: '📚',
+              label: 'READING LIBRARY',
+              color: const Color(0xFF8B5CF6),
+              onTap: () {
+                HapticFeedback.lightImpact();
+                PocketReadingLibraryModal.show(context, currentDay: widget.day);
+              },
+            ),
+            const SizedBox(width: 8),
+            _buildActionPill(
+              icon: '⚡',
+              label: 'CODE ENGLISH',
+              color: const Color(0xFF00FFCC),
+              onTap: () {
+                HapticFeedback.lightImpact();
+                PocketCodeEnglishDecoderModal.show(context, currentDay: widget.day);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionPill({
+    required String icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: color.withValues(alpha: 0.4)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(icon, style: const TextStyle(fontSize: 13)),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: GoogleFonts.outfit(
+                color: Colors.white,
+                fontSize: 10.5,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 0.4,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // --- 🧪 DEV TEST: FAST ADVANCE BUTTON ---
+  Widget _buildDevAdvanceButton() {
+    return Container(
+      margin: const EdgeInsets.only(top: 4),
+      child: OutlinedButton(
+        onPressed: () async {
+          HapticFeedback.heavyImpact();
+          final nextDay = (widget.day < 90) ? widget.day + 1 : 90;
+          try {
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setInt('pocket_learning_user_stage', nextDay);
+            await prefs.setBool('pocket_day_${widget.day}_completed', true);
+            await prefs.setString(
+              'learning_day_${widget.day}_completed_date',
+              '${DateTime.now().year}-${DateTime.now().month}-${DateTime.now().day}',
+            );
+            await prefs.setInt('learning_last_completed_day', widget.day);
+          } catch (_) {}
+
+          widget.onMissionCompleted?.call();
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                backgroundColor: const Color(0xFF10B981),
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                content: Text(
+                  '🧪 DEV: Day ${widget.day} completed! Advancing to Day $nextDay...',
+                  style: GoogleFonts.firaCode(fontSize: 12, fontWeight: FontWeight.bold),
+                ),
+              ),
+            );
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (_) => PocketDailyMissionPage(
+                  day: nextDay,
+                  onMissionCompleted: widget.onMissionCompleted,
+                ),
+              ),
+            );
+          }
+        },
+        style: OutlinedButton.styleFrom(
+          side: BorderSide(color: Colors.amber.withValues(alpha: 0.5)),
+          backgroundColor: Colors.amber.withValues(alpha: 0.08),
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text('🧪', style: TextStyle(fontSize: 14)),
+            const SizedBox(width: 8),
+            Text(
+              'DEV TEST: COMPLETE & ADVANCE TO DAY ${widget.day < 90 ? widget.day + 1 : 90}',
+              style: GoogleFonts.firaCode(
+                color: Colors.amber,
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

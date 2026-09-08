@@ -5,9 +5,9 @@ import 'package:google_fonts/google_fonts.dart';
 import '../avatar/vector_avatar_config.dart';
 import '../avatar/vector_avatar_widget.dart';
 import 'flame_english_house_game.dart';
-import 'pocket_battle_arena_page.dart';
 import 'pocket_defense_admin_modal.dart';
 import 'pocket_fortress_defense_service.dart';
+import 'pocket_world_game_rules_modal.dart';
 
 /// 🌍 Pocket World Street Model: A resident on the neighborhood street
 class PocketNeighbor {
@@ -1245,6 +1245,33 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
                       ],
                     ),
                   ),
+                  InkWell(
+                    onTap: () => PocketWorldGameRulesModal.show(context),
+                    borderRadius: BorderRadius.circular(10),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF38BDF8).withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: const Color(0xFF38BDF8), width: 1),
+                      ),
+                      child: Row(
+                        children: [
+                          const Text('📜', style: TextStyle(fontSize: 12)),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Rules',
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFF38BDF8),
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
                   InkWell(
                     onTap: () async {
                       await PocketDefenseAdminModal.show(context);

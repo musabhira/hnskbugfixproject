@@ -631,4 +631,70 @@ void main() {
       expect(totalVocabCount, equals(320));
     });
   });
+
+  group('48-Hour Presidential Police Protection Tests (പ്രസിഡൻഷ്യൽ പ്രൊട്ടക്ഷൻ)', () {
+    test('Can place house under presidential protection for 48 hours', () async {
+      const houseId = 'house_alpha_99';
+      expect(await PocketFortressDefenseService.isUnderPresidentialProtection(houseId), isFalse);
+
+      await PocketFortressDefenseService.placeUnderPresidentialProtection(houseId);
+
+      expect(await PocketFortressDefenseService.isUnderPresidentialProtection(houseId), isTrue);
+
+      final mins = await PocketFortressDefenseService.getPresidentialProtectionMinutesRemaining(houseId);
+      expect(mins, greaterThan(2800)); // 48 hours = 2880 mins
+      expect(mins, lessThanOrEqualTo(2880));
+
+      final protectedList = await PocketFortressDefenseService.getProtectedHouseIds();
+      expect(protectedList, contains(houseId));
+    });
+
+    test('Can lift presidential protection', () async {
+      const houseId = 'house_beta_100';
+      await PocketFortressDefenseService.placeUnderPresidentialProtection(houseId);
+      expect(await PocketFortressDefenseService.isUnderPresidentialProtection(houseId), isTrue);
+
+      await PocketFortressDefenseService.liftPresidentialProtection(houseId);
+      expect(await PocketFortressDefenseService.isUnderPresidentialProtection(houseId), isFalse);
+    });
+
+    test('Breaching a house in a raid automatically activates 48-hour presidential protection', () async {
+      const victimHouseId = 'victim_sanctuary_77';
+      expect(await PocketFortressDefenseService.isUnderPresidentialProtection(victimHouseId), isFalse);
+
+      final breachResult = await PocketFortressDefenseService.processRaidBreach(
+        defenderHouseId: victimHouseId,
+        damageHp: 40,
+      );
+
+      expect(breachResult['underPresidentialProtection'], isTrue);
+      expect(await PocketFortressDefenseService.isUnderPresidentialProtection(victimHouseId), isTrue);
+    });
+  });
+
+  group('Pocket Robo Fallback Matchmaker Tests (പോക്കറ്റ് റോബോ)', () {
+    test('Generates Pocket Robo Defender calibrated to player level bracket', () {
+      final roboStage5 = PocketFortressDefenseService.generatePocketRoboDefender(5);
+      expect(roboStage5.isPocketRobo, isTrue);
+      expect(roboStage5.id, contains('pocket_robo_'));
+      expect(roboStage5.day, 5);
+      expect(roboStage5.name, contains('Pocket Robo'));
+      expect(roboStage5.rank, contains('Robo Home Guardian'));
+
+      final roboStage18 = PocketFortressDefenseService.generatePocketRoboDefender(18);
+      expect(roboStage18.isPocketRobo, isTrue);
+      expect(roboStage18.day, 18);
+    });
+
+    test('Curated defense traps for Days 14 to 18 provide progressive high-level challenges', () async {
+      final traps = await PocketFortressDefenseService.loadShieldQuestions(18, isNeighbor: true);
+      expect(traps.length, 18);
+
+      final questionsText = traps.map((t) => t.question).toList();
+      expect(questionsText.any((q) => q.contains('Identify the structural parallelism defect')), isTrue);
+      expect(questionsText.any((q) => q.contains('Mixed Conditional')), isTrue);
+      expect(questionsText.any((q) => q.contains('executive statesmanship')), isTrue);
+    });
+  });
 }
+

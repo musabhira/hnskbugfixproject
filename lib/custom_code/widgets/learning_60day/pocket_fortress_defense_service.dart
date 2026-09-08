@@ -1677,6 +1677,23 @@ class PocketFortressDefenseService {
     await prefs.remove('$_presidentialProtectionPrefix$houseId');
   }
 
+  /// Get list of house IDs currently under active Presidential Police Protection
+  static Future<List<String>> getProtectedHouseIds() async {
+    final prefs = await SharedPreferences.getInstance();
+    final keys = prefs.getKeys();
+    final protectedIds = <String>[];
+    final now = DateTime.now().millisecondsSinceEpoch;
+    for (final key in keys) {
+      if (key.startsWith(_presidentialProtectionPrefix)) {
+        final expiry = prefs.getInt(key) ?? 0;
+        if (now < expiry) {
+          protectedIds.add(key.replaceFirst(_presidentialProtectionPrefix, ''));
+        }
+      }
+    }
+    return protectedIds;
+  }
+
   /// 🤖 Pocket Robo Matchmaker Profile Generator (Audio 16 directive)
   static Map<String, dynamic> generatePocketRoboProfile(int targetDay) {
     final roboNames = [
