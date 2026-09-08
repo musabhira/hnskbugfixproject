@@ -16,76 +16,9 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_missi
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_vocabulary_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/pocket_library_page.dart';
 
-/// 📚 Model for Daily 10 Vocabulary Words to Memorize (Multilingual Support)
-class DailyVocabItem {
-  final String word;
-  final String partOfSpeech;
-  final String definition;
-  final String malayalamMeaning;
-  final String tamilMeaning;
-  final String hindiMeaning;
-  final String teluguMeaning;
-  final String kannadaMeaning;
-  final String exampleSentence;
-  final String phonetic;
-
-  const DailyVocabItem({
-    required this.word,
-    required this.partOfSpeech,
-    required this.definition,
-    required this.malayalamMeaning,
-    this.tamilMeaning = '',
-    this.hindiMeaning = '',
-    this.teluguMeaning = '',
-    this.kannadaMeaning = '',
-    required this.exampleSentence,
-    required this.phonetic,
-  });
-
-  Map<String, dynamic> toMap() => {
-        'word': word,
-        'partOfSpeech': partOfSpeech,
-        'definition': definition,
-        'malayalamMeaning': malayalamMeaning,
-        'tamilMeaning': tamilMeaning,
-        'hindiMeaning': hindiMeaning,
-        'teluguMeaning': teluguMeaning,
-        'kannadaMeaning': kannadaMeaning,
-        'exampleSentence': exampleSentence,
-        'phonetic': phonetic,
-      };
-
-  factory DailyVocabItem.fromMap(Map<String, dynamic> map) {
-    return DailyVocabItem(
-      word: map['word'] ?? '',
-      partOfSpeech: map['partOfSpeech'] ?? '',
-      definition: map['definition'] ?? '',
-      malayalamMeaning: map['malayalamMeaning'] ?? '',
-      tamilMeaning: map['tamilMeaning'] ?? '',
-      hindiMeaning: map['hindiMeaning'] ?? '',
-      teluguMeaning: map['teluguMeaning'] ?? '',
-      kannadaMeaning: map['kannadaMeaning'] ?? '',
-      exampleSentence: map['exampleSentence'] ?? '',
-      phonetic: map['phonetic'] ?? '',
-    );
-  }
-
-  String getMeaning(String language) {
-    switch (language.toLowerCase()) {
-      case 'tamil':
-        return tamilMeaning.isNotEmpty ? tamilMeaning : malayalamMeaning;
-      case 'hindi':
-        return hindiMeaning.isNotEmpty ? hindiMeaning : malayalamMeaning;
-      case 'telugu':
-        return teluguMeaning.isNotEmpty ? teluguMeaning : malayalamMeaning;
-      case 'kannada':
-        return kannadaMeaning.isNotEmpty ? kannadaMeaning : malayalamMeaning;
-      case 'malayalam':
-      default:
-        return malayalamMeaning;
-    }
-  }
-}
+export 'daily_vocab_item.dart';
+import 'daily_vocab_item.dart';
+import 'pocket_mission_curriculum_registry.dart';
 
 /// 🎯 Comprehensive Interactive Daily English Mission Experience
 class PocketDailyMissionPage extends StatefulWidget {
@@ -383,6 +316,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
       'The leaders ratified the historic accord with standing ovations. Ronen proved that mixed conditionals crystallize strategic leadership and elevate rhetoric into timeless statecraft.';
 
   String get _storyText {
+    if (PocketMissionCurriculumRegistry.hasDay(widget.day)) {
+      return PocketMissionCurriculumRegistry.getStoryText(widget.day);
+    }
     switch (widget.day) {
       case 2:
         return _kDay2StoryText;
@@ -424,6 +360,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   }
 
   String get _storyFormatted {
+    if (PocketMissionCurriculumRegistry.hasDay(widget.day)) {
+      return PocketMissionCurriculumRegistry.getStoryFormatted(widget.day);
+    }
     switch (widget.day) {
       case 2:
         return _kDay2StoryFormatted;
@@ -465,6 +404,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   }
 
   String get _storyTitle {
+    if (PocketMissionCurriculumRegistry.hasDay(widget.day)) {
+      return PocketMissionCurriculumRegistry.getStoryTitle(widget.day);
+    }
     switch (widget.day) {
       case 2:
         return 'DAY 2 STORY: THE MORNING RITUAL OF CHAMPIONS';
@@ -506,6 +448,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   }
 
   String get _storySubtitle {
+    if (PocketMissionCurriculumRegistry.hasDay(widget.day)) {
+      return PocketMissionCurriculumRegistry.getStorySubtitle(widget.day);
+    }
     switch (widget.day) {
       case 2:
         return 'The Power of Habits & Morning Routine Practice';
@@ -547,6 +492,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   }
 
   String get _storyIcon {
+    if (PocketMissionCurriculumRegistry.hasDay(widget.day)) {
+      return PocketMissionCurriculumRegistry.getStoryIcon(widget.day);
+    }
     switch (widget.day) {
       case 2:
         return '⏰';
@@ -588,6 +536,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   }
 
   String get _storyQuotePreview {
+    if (PocketMissionCurriculumRegistry.hasDay(widget.day)) {
+      return PocketMissionCurriculumRegistry.getStoryQuotePreview(widget.day);
+    }
     switch (widget.day) {
       case 2:
         return '"Marcus was an ambitious learner who struggled to find time for English. Every evening he felt exhausted and postponed his speaking practice to tomorrow. One day, his grandfather handed him an empty notebook: \'We do not decide our future. We decide our daily habits...\'"';
@@ -629,6 +580,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   }
 
   String get _grammarRuleTitle {
+    if (PocketMissionCurriculumRegistry.hasDay(widget.day)) {
+      return PocketMissionCurriculumRegistry.getGrammarRuleTitle(widget.day);
+    }
     switch (widget.day) {
       case 2:
         return 'Rule 2: Adverbs of Frequency (Always, Usually...)';
@@ -670,6 +624,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   }
 
   String get _quizQuestion {
+    if (PocketMissionCurriculumRegistry.hasDay(widget.day)) {
+      return PocketMissionCurriculumRegistry.getQuizQuestion(widget.day);
+    }
     switch (widget.day) {
       case 2:
         return 'Q: Which sentence uses the adverb of frequency correctly?';
@@ -711,6 +668,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   }
 
   List<String> get _quizOptions {
+    if (PocketMissionCurriculumRegistry.hasDay(widget.day)) {
+      return PocketMissionCurriculumRegistry.getQuizOptions(widget.day);
+    }
     switch (widget.day) {
       case 2:
         return [
@@ -824,6 +784,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   }
 
   String _getGrammarRuleExplanation(String lang) {
+    if (PocketMissionCurriculumRegistry.hasDay(widget.day)) {
+      return PocketMissionCurriculumRegistry.getGrammarRuleExplanation(widget.day, lang);
+    }
     if (widget.day == 18) {
       switch (lang.toLowerCase()) {
         case 'tamil':
@@ -1112,6 +1075,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   }
 
   String _getStorySummary(String lang) {
+    if (PocketMissionCurriculumRegistry.hasDay(widget.day)) {
+      return PocketMissionCurriculumRegistry.getStorySummary(widget.day, lang);
+    }
     if (widget.day == 18) {
       switch (lang.toLowerCase()) {
         case 'tamil':
@@ -1454,6 +1420,10 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   }
 
   void _loadVocabForDay() {
+    if (PocketMissionCurriculumRegistry.hasDay(widget.day)) {
+      _vocabList = PocketMissionCurriculumRegistry.getVocabItems(widget.day);
+      return;
+    }
     if (widget.day == 2) {
       // 10 high-impact vocabulary words for Day 2 (Habits & Daily Routines) with Multilingual translations
       _vocabList = const [

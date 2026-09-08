@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortress_defense_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_mission_curriculum_registry.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -556,6 +557,78 @@ void main() {
       );
 
       expect(await PocketFortressDefenseService.isUnderPresidentialProtection(victimHouse), isTrue);
+    });
+  });
+
+  group('Days 19–38 Deep Curriculum Expansion Tests (20-Day Mastery Set)', () {
+    test('PocketMissionCurriculumRegistry handles all days from 19 to 38', () {
+      for (int day = 19; day <= 38; day++) {
+        expect(PocketMissionCurriculumRegistry.hasDay(day), isTrue,
+            reason: 'Day $day must be supported by curriculum registry');
+      }
+      expect(PocketMissionCurriculumRegistry.hasDay(18), isFalse);
+      expect(PocketMissionCurriculumRegistry.hasDay(39), isFalse);
+    });
+
+    test('Every day from 19 to 38 has complete stories, titles, and quizzes', () {
+      for (int day = 19; day <= 38; day++) {
+        final story = PocketMissionCurriculumRegistry.getStoryText(day);
+        expect(story.length, greaterThan(200), reason: 'Story for Day $day must be rich and detailed');
+
+        final formatted = PocketMissionCurriculumRegistry.getStoryFormatted(day);
+        expect(formatted, contains('Part 1:'));
+        expect(formatted, contains('Part 4:'));
+
+        expect(PocketMissionCurriculumRegistry.getStoryTitle(day), isNotEmpty);
+        expect(PocketMissionCurriculumRegistry.getStorySubtitle(day), isNotEmpty);
+        expect(PocketMissionCurriculumRegistry.getStoryIcon(day), isNotEmpty);
+        expect(PocketMissionCurriculumRegistry.getStoryQuotePreview(day), isNotEmpty);
+        expect(PocketMissionCurriculumRegistry.getGrammarRuleTitle(day), isNotEmpty);
+
+        final question = PocketMissionCurriculumRegistry.getQuizQuestion(day);
+        expect(question, startsWith('Q:'));
+
+        final options = PocketMissionCurriculumRegistry.getQuizOptions(day);
+        expect(options.length, equals(3), reason: 'Day $day must have exactly 3 quiz options');
+      }
+    });
+
+    test('Every day from 19 to 38 has 5-language grammar explanations and morals', () {
+      const languages = ['Malayalam', 'Tamil', 'Hindi', 'Telugu', 'Kannada'];
+      for (int day = 19; day <= 38; day++) {
+        for (final lang in languages) {
+          final explanation = PocketMissionCurriculumRegistry.getGrammarRuleExplanation(day, lang);
+          expect(explanation, isNotEmpty,
+              reason: 'Day $day must have $lang grammar explanation');
+
+          final summary = PocketMissionCurriculumRegistry.getStorySummary(day, lang);
+          expect(summary, isNotEmpty,
+              reason: 'Day $day must have $lang story summary moral');
+        }
+      }
+    });
+
+    test('Every day from 19 to 38 has exactly 10 high-impact vocabulary items (200 words total)', () {
+      int totalVocabCount = 0;
+      for (int day = 19; day <= 38; day++) {
+        final vocabList = PocketMissionCurriculumRegistry.getVocabItems(day);
+        expect(vocabList.length, equals(10),
+            reason: 'Day $day must have exactly 10 high-impact vocabulary words');
+        totalVocabCount += vocabList.length;
+
+        for (final item in vocabList) {
+          expect(item.word, isNotEmpty);
+          expect(item.definition, isNotEmpty);
+          expect(item.exampleSentence, isNotEmpty);
+          expect(item.phonetic, startsWith('/'));
+          expect(item.malayalamMeaning, isNotEmpty);
+          expect(item.tamilMeaning, isNotEmpty);
+          expect(item.hindiMeaning, isNotEmpty);
+          expect(item.teluguMeaning, isNotEmpty);
+          expect(item.kannadaMeaning, isNotEmpty);
+        }
+      }
+      expect(totalVocabCount, equals(200));
     });
   });
 }
