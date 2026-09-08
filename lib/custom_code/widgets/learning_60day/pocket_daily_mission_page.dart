@@ -330,6 +330,58 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
       '🏆 Part 4: The Milestone Treaty\n'
       'All ninety sovereign delegations signed the historic treaty before the midnight bell. Kaelen and Lyra proved that forensic rhetoric, fueled by empathy, can bridge any divide.';
 
+  static const String _kDay15StoryText =
+      'In the historic diplomatic halls of Vienna, young diplomat Maya recognized that true resonance demanded conversational register. At first, her proposals were delivered in stiff, scholastic decrees that alienated her counterparts. An elder ambassador observed her frustration and shared an invaluable insight: "True authority in English is not wielded through rigid ultimatums, Maya. It flourishes through diplomatic softeners, polite register, and subtle nuance." Taking this counsel to heart, Maya transformed her communication. Instead of commanding, she opened conversations with grace: "I was wondering if we might explore an interim custodial partnership," and "Would you happen to know if the energy council has finalized the draft parameters?" The atmosphere transformed instantly. Her conversational warmth and linguistic tact melted defensive barriers. The assembly reached a breakthrough consensus before dusk. Maya discovered that conversational register and diplomatic softeners build unbreakable bridges of international trust.';
+
+  static const String _kDay15StoryFormatted =
+      '🏛️ Part 1: The Formal Dilemma\n'
+      'In the historic diplomatic halls of Vienna, young diplomat Maya faced stubborn resistance. Her rigid, scholastic speeches alienated foreign delegates and brought negotiations to a standstill.\n\n'
+      '🕊️ Part 2: The Ambassador\'s Counsel\n'
+      'An elder statesman shared an enduring secret: "True authority in English is not wielded through cold ultimatums. It flourishes through diplomatic softeners, conversational register, and subtle nuance."\n\n'
+      '🤝 Part 3: The Conversational Pivot\n'
+      'Maya softened her phrasing with consummate grace: "I was wondering if we might explore an interim partnership," and "Would you happen to know if the committee has finalized the draft parameters?"\n\n'
+      '🌟 Part 4: The Harmonious Accord\n'
+      'The assembly responded with warmth and trust, forging a unanimous consensus before dusk. Maya proved that conversational register and diplomatic tact turn cold impasses into enduring cooperation.';
+
+  static const String _kDay16StoryText =
+      'Before the Parliamentary Select Committee, Chief Architect Daniel faced an intense public inquiry regarding the national energy grid failure. Hostile questions echoed through the vaulted hearing room as committee members sought someone to blame. Rather than becoming defensive, Daniel deployed the surgical focus of cleft sentences. "It was not a deficit of capital that caused the blackout," Daniel declared with quiet authority; "it was our reluctance to modernize legacy transmission lines. What we must construct today is a resilient, decentralized grid that withstands severe meteorological shocks." His cleft structures cut through speculative rhetoric like a laser, fixing the committee\'s undivided attention on the systemic cause and its actionable remedy. Convinced by his lucid diagnostic precision, parliament unanimously approved a multi-billion-dollar modernization bill. Daniel demonstrated that cleft sentences wield unparalleled oratorical force when clarifying complex crises.';
+
+  static const String _kDay16StoryFormatted =
+      '⚡ Part 1: The Committee Crucible\n'
+      'Before the Parliamentary Select Committee, Chief Architect Daniel faced a hostile inquiry regarding the national grid failure. Accusations flared as critics sought a scapegoat.\n\n'
+      '🎯 Part 2: Surgical Cleft Focus\n'
+      'Daniel deployed cleft precision to cut through noise: "It was not a deficit of capital that caused the blackout; it was our reluctance to modernize legacy transmission lines."\n\n'
+      '💡 Part 3: What We Must Build\n'
+      '"What we must construct today is a resilient, decentralized grid that withstands severe meteorological shocks." His laser focus disarmed speculative arguments.\n\n'
+      '🏛️ Part 4: The Unanimous Mandate\n'
+      'Parliament unanimously approved the full modernization bill. Daniel proved that cleft sentences command total attention and crystallize urgent truth under pressure.';
+
+  static const String _kDay17StoryText =
+      'In the High Court of Constitutional Appeals, Senior Advocate Samantha stepped forward to deliver closing arguments in a landmark civil liberties trial. Across the courtroom sat a formidable team of opposing counsel backed by vast institutional resources. Samantha recognized that only pristine rhetorical symmetry could elevate her legal arguments into timeless precedent. Harnessing syntactic parallelism, her cadence echoed across the marble bench: "The respondent has sought not clarity, but obfuscation; has offered not evidence, but speculation; and has delivered not remedy, but delay. To protect our constitutional charter, this court must speak with courage, decide with impartiality, and act with decisive rectitude." The rhythmic balance of her words left the bench captivated and the courtroom breathless. The presiding Chief Justice delivered a landmark unanimous verdict that very afternoon. Samantha proved that syntactic parallelism transforms spoken arguments into unforgettable monuments of justice.';
+
+  static const String _kDay17StoryFormatted =
+      '⚖️ Part 1: The Constitutional Arena\n'
+      'In the High Court of Constitutional Appeals, Senior Advocate Samantha stepped forward in a landmark civil liberties trial, facing a formidable wall of institutional opposition.\n\n'
+      '🏛️ Part 2: Flawless Parallel Cadence\n'
+      'Samantha marshaled relentless syntactic triads: "The respondent has sought not clarity, but obfuscation; has offered not evidence, but speculation; and has delivered not remedy, but delay."\n\n'
+      '⚡ Part 3: The Call to Rectitude\n'
+      '"To protect our charter, this court must speak with courage, decide with impartiality, and act with decisive rectitude." Her symmetrical balance commanded profound reverence.\n\n'
+      '🏆 Part 4: The Landmark Verdict\n'
+      'The bench delivered a unanimous ruling in her favor. Samantha proved that syntactic parallelism endows legal and moral arguments with enduring oratorical immortality.';
+
+  static const String _kDay18StoryText =
+      'At the World Sovereign Economic Summit in Singapore, Chief Strategist Ronen took the podium before heads of state from forty nations. The global economy stood at a perilous crossroads between short-term isolationism and visionary multilateral investment. Synthesizing decades of historical data, Ronen delivered a masterclass in mixed conditional reasoning: "If our founding ministers had not invested courageously in renewable infrastructure thirty years ago, our economies would not enjoy sovereign energy independence today. If we had succumbed to protectionist fears in the previous decade, we would not stand here as collaborative equals now. What we decide today will determine our reality fifty years hence." His seamless bridge between past decisions and present reality galvanized the assembly. The leaders ratified the Sovereign Century Accord with resounding applause. Ronen proved that mixed conditionals are the ultimate linguistic instrument for strategic synthesis and visionary leadership.';
+
+  static const String _kDay18StoryFormatted =
+      '👑 Part 1: The Global Crossroads\n'
+      'At the World Sovereign Economic Summit in Singapore, Chief Strategist Ronen addressed forty heads of state amidst volatile macroeconomic turbulence.\n\n'
+      '🌉 Part 2: The Historical Bridge\n'
+      'Ronen wielded mixed conditionals with sovereign mastery: "If our founding ministers had not invested courageously thirty years ago, our economies would not enjoy energy independence today."\n\n'
+      '🌱 Part 3: Legacy and Vision\n'
+      '"If we had succumbed to protectionist fears in the previous decade, we would not stand here as collaborative equals now. Past resolve fuels our present reality."\n\n'
+      '📜 Part 4: The Sovereign Century Accord\n'
+      'The leaders ratified the historic accord with standing ovations. Ronen proved that mixed conditionals crystallize strategic leadership and elevate rhetoric into timeless statecraft.';
+
   String get _storyText {
     switch (widget.day) {
       case 2:
@@ -358,6 +410,14 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         return _kDay13StoryText;
       case 14:
         return _kDay14StoryText;
+      case 15:
+        return _kDay15StoryText;
+      case 16:
+        return _kDay16StoryText;
+      case 17:
+        return _kDay17StoryText;
+      case 18:
+        return _kDay18StoryText;
       default:
         return _kDay1StoryText;
     }
@@ -391,6 +451,14 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         return _kDay13StoryFormatted;
       case 14:
         return _kDay14StoryFormatted;
+      case 15:
+        return _kDay15StoryFormatted;
+      case 16:
+        return _kDay16StoryFormatted;
+      case 17:
+        return _kDay17StoryFormatted;
+      case 18:
+        return _kDay18StoryFormatted;
       default:
         return _kDay1StoryFormatted;
     }
@@ -424,6 +492,14 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         return 'DAY 13 STORY: THE ALCHEMY OF INTELLECT';
       case 14:
         return 'DAY 14 MILESTONE: THE CITADEL OF RHETORIC';
+      case 15:
+        return 'DAY 15 MILESTONE: THE CRUCIBLE OF NUANCE';
+      case 16:
+        return 'DAY 16 STORY: THE CITADEL OF CLEFT SENTENCES';
+      case 17:
+        return 'DAY 17 STORY: THE BASTION OF PARALLELISM';
+      case 18:
+        return 'DAY 18 MILESTONE: THE GRAND EMPYREAN';
       default:
         return 'DAY 1 STORY: THE SEED OF CONFIDENCE';
     }
@@ -457,6 +533,14 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         return 'Negative Inversion & Epistemic Rigor in Advanced Inquiries';
       case 14:
         return 'Forensic Persuasion, Rhetorical Fronting & Multilateral Accords';
+      case 15:
+        return 'Conversational Register & Diplomatic Softeners';
+      case 16:
+        return 'Cleft Sentences & Dynamic Oratorical Focus';
+      case 17:
+        return 'Syntactic Parallelism & Forensic Rhetorical Balance';
+      case 18:
+        return 'Mixed Conditionals & Sovereign Dialectic Synthesis';
       default:
         return 'Aloud Reading & Pronunciation Practice';
     }
@@ -490,6 +574,14 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         return '🔬';
       case 14:
         return '🏛️';
+      case 15:
+        return '💎';
+      case 16:
+        return '⚡';
+      case 17:
+        return '⚖️';
+      case 18:
+        return '👑';
       default:
         return '🎋';
     }
@@ -523,6 +615,14 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         return '"At the Cambridge Institute for Epistemic Inquiry, Dr. Elena Rostova commanded the world symposium: \'Not only did our controls confirm the anomaly, but never in modern history have we witnessed such reproducible defiance of classical theory...\'"';
       case 14:
         return '"At the Grand Multilateral Summit in Geneva, Ambassador Kaelen galvanized the exhausted council: \'Exhausted though we all are, reach a durable accord we must. Front and center stand not our egos, but our collective future...\'"';
+      case 15:
+        return '"In the historic diplomatic halls of Vienna, young diplomat Maya recognized that true resonance demanded conversational register: \'Would you happen to know if the draft is finalized? I was wondering if we might explore an interim custodial partnership...\'"';
+      case 16:
+        return '"Before the Parliamentary Select Committee, Chief Architect Daniel crystallized the issue with cleft precision: \'It was not a deficit of capital that caused the blackout; it was our reluctance to modernize. What we must construct today is a resilient grid...\'"';
+      case 17:
+        return '"In the High Court of Constitutional Appeals, Senior Advocate Samantha unleashed relentless syntactic triads: \'The respondent has sought not clarity, but obfuscation; has offered not evidence, but speculation; and has delivered not remedy, but delay...\'"';
+      case 18:
+        return '"At the World Sovereign Economic Summit in Singapore, Chief Strategist Ronen united divergent leaders: \'If our founding ministers had not invested courageously thirty years ago, our economies would not enjoy sovereign independence today...\'"';
       default:
         return '"A young student once stood by a tall bamboo tree, hesitant to practice speaking English. He was afraid of making mistakes in front of others. A wise mentor approached him: \'For four years, the bamboo roots grow deep underground in silence. Then, in the fifth year, it shoots up eighty feet into the sky!\'"';
     }
@@ -556,6 +656,14 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         return 'Rule 13: Negative & Restrictive Inversion for Gravitas';
       case 14:
         return 'Rule 14: Rhetorical Fronting, Ellipsis & Cohesion';
+      case 15:
+        return 'Rule 15: Conversational Register & Diplomatic Softeners';
+      case 16:
+        return 'Rule 16: It-Clefts & Wh-Clefts for Dynamic Focus';
+      case 17:
+        return 'Rule 17: Syntactic Parallelism & Symmetrical Balance';
+      case 18:
+        return 'Rule 18: Mixed Conditionals (Past Unreal -> Present Reality)';
       default:
         return 'Rule 1: Sentence Structure (S + V + O)';
     }
@@ -589,6 +697,14 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         return 'Q: Which sentence correctly applies negative inversion to convey dramatic gravitas?';
       case 14:
         return 'Q: Which sentence uses rhetorical fronting correctly to elevate oratorical eloquence?';
+      case 15:
+        return 'Q: Which sentence uses diplomatic softeners and refined conversational register correctly?';
+      case 16:
+        return 'Q: Which sentence uses a cleft sentence correctly to emphasize the pivotal factor?';
+      case 17:
+        return 'Q: Which sentence demonstrates flawless syntactic parallelism in its structure?';
+      case 18:
+        return 'Q: Which sentence correctly implements a mixed conditional linking past action to present state?';
       default:
         return 'Q: Which sentence follows the correct English "Subject + Verb + Object" order?';
     }
@@ -674,6 +790,30 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           'Exhausted though were the envoys, reach a historic consensus they did.',
           'Though exhausted were the envoys, reached a historic consensus they did.',
         ];
+      case 15:
+        return [
+          'I was wondering if you might happen to have the updated draft agreement available.',
+          'Give me the updated draft agreement right now because I need it.',
+          'You must give the updated draft agreement without asking questions.',
+        ];
+      case 16:
+        return [
+          'It was the architect\'s prompt vigilance that prevented catastrophic system failure.',
+          'The architect vigilance that was preventing catastrophic system failure.',
+          'Was the architect vigilance that prevented catastrophe prompt.',
+        ];
+      case 17:
+        return [
+          'She inspired her team through clear vision, empathetic listening, and courageous action.',
+          'She inspired her team through clear vision, to listen empathetically, and acting courageously.',
+          'She inspired her team through vision clear, empathetic listening, and to act courageous.',
+        ];
+      case 18:
+        return [
+          'If our founders had not fortified the citadel walls, we would not enjoy peace today.',
+          'If our founders had not fortified the citadel walls, we will not enjoy peace today.',
+          'If our founders did not fortified walls, we would not had enjoyed peace today.',
+        ];
       default:
         return [
           'She reads books diligently.',
@@ -684,6 +824,70 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   }
 
   String _getGrammarRuleExplanation(String lang) {
+    if (widget.day == 18) {
+      switch (lang.toLowerCase()) {
+        case 'tamil':
+          return 'கடந்த கால நிகழ்வு நிகழ்காலத்தில் ஏற்படுத்திய தாக்கத்தை விவரிக்க Mixed Conditionals பயன்படுத்தவும்: If + had + V3, would + Base Verb (today/now).\n• சரியான வாக்கியம்: "If our founders had not fortified the citadel walls, we would not enjoy peace today."\n• வரலாற்றுத் தேர்வுகள் எவ்வாறு நிகழ்காலத்தை மாற்றுகின்றன என்பதை விளக்க இது உதவுகிறது.';
+        case 'hindi':
+          return 'अतीत के काल्पनिक कार्य और वर्तमान में उसके प्रत्यक्ष प्रभाव को जोड़ने के लिए Mixed Conditionals का प्रयोग करें: If + Past Perfect (had + V3), Would + Base Verb (today/now)।\n• सही वाक्य: "If our founders had not fortified the citadel walls, we would not enjoy peace today."\n• रणनीतिक विश्लेषण और ऐतिहासिक परिणामों की समीक्षा में यह संरचना अत्यंत प्रभावी है।';
+        case 'telugu':
+          return 'గతంలోని ఒక నిర్ణయం ప్రస్తుత వాస్తవాన్ని ఎలా మార్చిందో వివరించేందుకు Mixed Conditionals (If + had + V3, would + Base Verb) వాడతారు.\n• సరైనది: "If our founders had not fortified the citadel walls, we would not enjoy peace today."\n• వ్యూహాత్మక విశ్లేషణలకు మరియు చారిత్రక సంభాషణలకు ఇది కీలకం.';
+        case 'kannada':
+          return 'ಹಿಂದಿನ ನಿರ್ಧಾರವು ಪ್ರಸ್ತುತ ವಾಸ್ತವವನ್ನು ಹೇಗೆ ರೂಪಿಸಿದೆ ಎಂದು ವಿವರಿಸಲು Mixed Conditionals (If + had + V3, would + Base Verb) ಬಳಸಿ.\n• ಸರಿಯಾದ ವಾಕ್ಯ: "If our founders had not fortified the citadel walls, we would not enjoy peace today."\n• ಐತಿಹಾಸಿಕ ವಿಶ್ಲೇಷಣೆ ಮತ್ತು ಕಾರ್ಯತಂತ್ರದ ಚರ್ಚೆಗಳಿಗೆ ಇದು ಅತ್ಯಗತ್ಯ.';
+        case 'malayalam':
+        default:
+          return 'Mixed Conditionals connect an unrealized past condition directly to an ongoing present reality: If + Past Perfect (had + V3), would + Base Verb (now/today):\n• Standard: "If they had fortified the walls, they would have survived back then."\n• Mixed (Past -> Present): "If our founders had not fortified the citadel walls, we would not enjoy peace today."\n• Indispensable for sovereign policy analysis, strategic retrospectives, and geopolitical synthesis.';
+      }
+    }
+
+    if (widget.day == 17) {
+      switch (lang.toLowerCase()) {
+        case 'tamil':
+          return 'ஒரே அமைப்பிலான வாக்கியத் தொடர்களை (Syntactic Parallelism) பயன்படுத்தி பேசுவது கருத்துக்களுக்கு அசாதாரண தாளத்தையும் கம்பீரத்தையும் தரும்.\n• சரியான வாக்கியம்: "She inspired her team through clear vision, empathetic listening, and courageous action."\n• நீதிமன்ற வாதங்களிலும் பிரம்மாண்ட மேடைகளிலும் இது கேட்போரை பெரிதும் ஈர்க்கும்.';
+        case 'hindi':
+          return 'समान व्याकरणिक संरचनाओं (Syntactic Parallelism) का प्रयोग भाषण में लय और अविस्मरणीय शक्ति लाता है: समान संज्ञाएं, क्रियाएं या विशेषण जोड़ें।\n• सही वाक्य: "She inspired her team through clear vision, empathetic listening, and courageous action."\n• न्यायालयीन बहसों और ऐतिहासिक जनसभाओं में यह श्रोताओं को मंत्रमुग्ध कर देता है।';
+        case 'telugu':
+          return 'ఒకే విధమైన వ్యాకరణ నిర్మాణాలను (Syntactic Parallelism) వాడటం ప్రసంగానికి లయబద్ధమైన బలాన్ని చేకూరుస్తుంది.\n• సరైనది: "She inspired her team through clear vision, empathetic listening, and courageous action."\n• న్యాయస్థాన వాదనల్లో మరియు చారిత్రక ప్రసంగాల్లో ఇది తిరుగులేని సాధనం.';
+        case 'kannada':
+          return 'ಒಂದೇ ರೀತಿಯ ವ್ಯಾಕರಣ ರಚನೆಗಳನ್ನು (Syntactic Parallelism) ಬಳಸುವುದರಿಂದ ಭಾಷಣಕ್ಕೆ ಅದ್ಭುತ ಲಯ ಮತ್ತು ಪ್ರಭಾವ ಸಿಗುತ್ತದೆ.\n• ಸರಿಯಾದ ವಾಕ್ಯ: "She inspired her team through clear vision, empathetic listening, and courageous action."\n• ನ್ಯಾಯಾಲಯದ ವಾದಗಳಲ್ಲಿ ಹಾಗೂ ಪ್ರಮುಖ ಸಾರ್ವಜನಿಕ ಭಾಷಣಗಳಲ್ಲಿ ಇದು ಸಮ್ಮೋಹಕ ಶಕ್ತಿ ನೀಡುತ್ತದೆ.';
+        case 'malayalam':
+        default:
+          return 'Syntactic Parallelism balances coordinate words, phrases, or clauses with identical grammatical rhythm to produce forensic cadence and unforgettable authority:\n• Flawed/Unbalanced: "She inspired her team through clear vision, to listen empathetically, and acting courageously."\n• Flawless Parallelism: "She inspired her team through clear vision, empathetic listening, and courageous action."\n• The hallmark of constitutional jurisprudence and timeless statesman eloquence.';
+      }
+    }
+
+    if (widget.day == 16) {
+      switch (lang.toLowerCase()) {
+        case 'tamil':
+          return 'வாக்கியத்தில் ஒரு குறிப்பிட்ட உண்மையை அல்லது காரணத்தை மையப்படுத்தி அழுத்தமாகச் சொல்ல Cleft Sentences ("It was... that...", "What we must achieve is...") பயன்படுத்தவும்.\n• சரியான வாக்கியம்: "It was the architect\'s prompt vigilance that prevented catastrophic system failure."\n• சாதாரண வாக்கியத்தை விட இது கேட்போரின் கவனத்தை முக்கிய புள்ளியில் நிலைநிறுத்தும்.';
+        case 'hindi':
+          return 'किसी निश्चित बिंदु या कारण पर श्रोताओं का विशेष ध्यान आकर्षित करने के लिए Cleft Sentences ("It was... that...", "What we must construct is...") का प्रयोग करें।\n• सही वाक्य: "It was the architect\'s prompt vigilance that prevented catastrophic system failure."\n• यह सामान्य वाक्य की तुलना में मुख्य विचार को असाधारण रूप से प्रभावशाली बना देता है।';
+        case 'telugu':
+          return 'ముఖ్యమైన అంశాన్ని లేదా కారణాన్ని ప్రత్యేకంగా నొక్కి చెప్పేందుకు Cleft Sentences ("It was... that...", "What we must achieve is...") వాడతారు.\n• సరైనది: "It was the architect\'s prompt vigilance that prevented catastrophic system failure."\n• ఇది వినేవారి దృష్టిని నేరుగా ప్రధాన కారణం వైపు మళ్లిస్తుంది.';
+        case 'kannada':
+          return 'ಒಂದು ನಿರ್ದಿಷ್ಟ ಕಾರಣ ಅಥವಾ ವಿಷಯಕ್ಕೆ ವಿಶೇಷ ಪ್ರಾಮುಖ್ಯತೆ ನೀಡಲು Cleft Sentences ("It was... that...") ಬಳಸಿ.\n• ಸರಿಯಾದ ವಾಕ್ಯ: "It was the architect\'s prompt vigilance that prevented catastrophic system failure."\n• ಭಾಷಣದಲ್ಲಿ ಪ್ರಮುಖ ಅಂಶವನ್ನು ಎತ್ತಿಹಿಡಿಯಲು ಇದು ಅತ್ಯುತ್ತಮ ತಂತ್ರ.';
+        case 'malayalam':
+        default:
+          return 'Cleft Sentences restructure statements using "It was [X] that [Y]" or "What [X] is [Y]" to place unwavering focus on the catalyst of an event:\n• Standard: "The architect\'s prompt vigilance prevented catastrophic system failure."\n• Cleft Focus: "It was the architect\'s prompt vigilance that prevented catastrophic system failure."\n• Indispensable for parliamentary inquiries, investigative reporting, and high-impact oratory.';
+      }
+    }
+
+    if (widget.day == 15) {
+      switch (lang.toLowerCase()) {
+        case 'tamil':
+          return 'மரியாதையுடனும் இணக்கமாகவும் பேச Diplomatic Softeners ("I was wondering if...", "Would you happen to know...", "Perhaps we might...") பயன்படுத்தவும்.\n• நேரடி கட்டளைகளைத் தவிர்த்து, மென்மையான வார்த்தைகள் மூலம் மற்றவர்களை எளிதில் இணங்க வைக்கலாம்.\n• சரியான வாக்கியம்: "I was wondering if you might happen to have the updated draft agreement available."\n• சர்வதேச தூதரகப் பேச்சுக்களில் இது மிகவும் முக்கியம்.';
+        case 'hindi':
+          return 'सभ्य, विनम्र और प्रभावी संवाद के लिए Diplomatic Softeners का प्रयोग करें ("I was wondering if...", "Would you happen to know...", "Perhaps we could...")।\n• सीधे आदेश देने के बजाय विनम्र अनुरोध दूसरों को तुरंत आकर्षित करता है।\n• सही वाक्य: "I was wondering if you might happen to have the updated draft agreement available."\n• उच्च-स्तरीय कूटनीतिक और कॉर्पोरेट वार्तालाप का यह मूल आधार है।';
+        case 'telugu':
+          return 'మర్యాదపూర్వకంగా, ఆకట్టుకునేలా మాట్లాడేందుకు Diplomatic Softeners ("I was wondering if...", "Would you happen to know...") వాడతారు.\n• ప్రత్యక్ష ఆదేశాలకు బదులుగా గౌరవప్రదమైన అభ్యర్థనలు ఇతరులను సులభంగా ఒప్పిస్తాయి.\n• సరైనది: "I was wondering if you might happen to have the updated draft agreement available."\n• దౌత్యపరమైన మరియు ఉన్నత స్థాయి చర్చల్లో ఇది అత్యంత ప్రభావవంతమైనది.';
+        case 'kannada':
+          return 'ಗೌರವಯುತ ಹಾಗೂ ಸೌಮ್ಯ ಸಂಭಾಷಣೆಗೆ Diplomatic Softeners ("I was wondering if...", "Would you happen to know...") ಬಳಸಿ.\n• ನೇರ ಆದೇಶಗಳ ಬದಲು ವಿನಮ್ರ ಶಬ್ದಗಳು ಇತರರನ್ನು ಸುಲಭವಾಗಿ ಒಪ್ಪಿಸುತ್ತವೆ.\n• ಸರಿಯಾದ ವಾಕ್ಯ: "I was wondering if you might happen to have the updated draft agreement available."\n• ಉನ್ನತ ಮಟ್ಟದ ರಾಜತಾಂತ್ರಿಕ ಸಂವಾದಗಳಿಗೆ ಇದು ಕೀಲಿ ಕೈ.';
+        case 'malayalam':
+        default:
+          return 'Diplomatic Softeners and conversational nuance soften direct commands into polite, persuasive invitations ("I was wondering if...", "Would you happen to know...", "Might we perhaps explore..."): \n• Direct/Blunt: "Give me the agreement now."\n• Diplomatic Nuance: "I was wondering if you might happen to have the updated draft agreement available."\n• Essential for executive negotiations, diplomatic accords, and elite social grace.';
+      }
+    }
+
     if (widget.day == 14) {
       switch (lang.toLowerCase()) {
         case 'tamil':
@@ -908,6 +1112,70 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   }
 
   String _getStorySummary(String lang) {
+    if (widget.day == 18) {
+      switch (lang.toLowerCase()) {
+        case 'tamil':
+          return '💡 நீதி: "கடந்த காலத்தின் துணிச்சலான அர்ப்பணிப்பே நிகழ்காலத்தின் சுதந்திரத்தையும் அமைதியையும் நிலைநிறுத்துகிறது." வரலாற்று சாதனை படைத்திடுங்கள்!';
+        case 'hindi':
+          return '💡 सीख: "अतीत में लिए गए साहसी और दूरदर्शी निर्णय ही आज के युग में संप्रभु स्वतंत्रता और शांति का आधार बनते हैं।" शिखर पर बने रहें!';
+        case 'telugu':
+          return '💡 నీతి: "గతంలో తీసుకున్న సాహసోపేతమైన నిర్ణయాలు మాత్రమే నేడు మనకు స్వేచ్ఛను, శాంతియుత భవిష్యత్తును ప్రసాదిస్తాయి." శిఖరాన్ని అధిరోహించండి!';
+        case 'kannada':
+          return '💡 ನೀತಿ: "ಹಿಂದೆ ತೆಗೆದುಕೊಂಡ ಧೈರ್ಯದ ನಿರ್ಧಾರಗಳೇ ಇಂದು ನಮ್ಮ ಶಾಂತಿ ಮತ್ತು ಸ್ವಾತಂತ್ರ್ಯಕ್ಕೆ ಭದ್ರ ಬುನಾದಿ." ಐತಿಹಾಸಿಕ ಸಾಧನೆ ಮುಂದುವರಿಸಿ!';
+        case 'malayalam':
+        default:
+          return '💡 സന്ദേശം: "ഭൂതകാലത്തിൽ സ്വീകരിച്ച ധീരവും ദീർഘവീക്ഷണമുള്ളതുമായ നിലപാടുകളാണ് വർത്തമാനകാലത്തെ നമ്മുടെ സ്വാതന്ത്ര്യത്തെയും സമാധാനത്തെയും സംരക്ഷിക്കുന്നത്." അഭിമാനത്തോടെ വിജയത്തിലേക്ക് കുതിക്കുക!';
+      }
+    }
+
+    if (widget.day == 17) {
+      switch (lang.toLowerCase()) {
+        case 'tamil':
+          return '💡 நீதி: "நீதியும் சத்தியமும் சமச்சீரான, நேர்த்தியான மொழியில் ஒலிக்கும் போது எவராலும் அதை மறுக்க முடியாது." உறுதியுடன் நில்லுங்கள்!';
+        case 'hindi':
+          return '💡 सीख: "जब सत्य और न्याय संतुलित, ओजस्वी और सुसंगत भाषा में प्रस्तुत किए जाते हैं, तो कोई भी उनका खंडन नहीं कर सकता।" अडिग रहें!';
+        case 'telugu':
+          return '💡 నీతి: "సత్యం మరియు న్యాయం సమతుల్యమైన, అందమైన భాషలో ప్రతిధ్వనించినప్పుడు ఎవరూ దానిని కాదనలేరు." స్థిరంగా నిలబడండి!';
+        case 'kannada':
+          return '💡 ನೀತಿ: "ಸತ್ಯ ಮತ್ತು ನ್ಯಾಯವು ಸಮತೋಲಿತ ಭಾಷೆಯಲ್ಲಿ ಮಂಡಿಸಲ್ಪಟ್ಟಾಗ ಯಾರೂ ಅದನ್ನು ಅಲ್ಲಗಳೆಯಲು ಸಾಧ್ಯವಿಲ್ಲ." ದೃಢವಾಗಿರಿ!';
+        case 'malayalam':
+        default:
+          return '💡 സന്ദേശം: "സത്യവും നീതിയും സമതുലിതമായ താളബോധമുള്ള ഭാഷയിൽ മാറ്റൊലിക്കപ്പെടുമ്പോൾ ഏത് കടുത്ത എതിർപ്പുകളെയും നിഷ്പ്രഭമാക്കാൻ സാധിക്കും." മുന്നേറുക!';
+      }
+    }
+
+    if (widget.day == 16) {
+      switch (lang.toLowerCase()) {
+        case 'tamil':
+          return '💡 நீதி: "பிரச்சனையின் மூலக் காரணத்தை துல்லியமான மொழியால் அடையாளம் காண்பதே தீர்வுக்கான முதல் படியாகும்." தெளிவுடன் பேசுங்கள்!';
+        case 'hindi':
+          return '💡 सीख: "समस्या की मूल जड़ को स्पष्ट और अचूक भाषा से उजागर करना ही स्थायी समाधान का पहला कदम है।" आत्मविश्वास बनाए रखें!';
+        case 'telugu':
+          return '💡 నీతి: "సమస్య యొక్క మూల కారణాన్ని స్పష్టమైన భాషతో ఎత్తిచూపడమే శాశ్వత పరిష్కారానికి తొలి అడుగు." ఆత్మవిశ్వాసంతో మాట్లాడండి!';
+        case 'kannada':
+          return '💡 ನೀತಿ: "ಸಮಸ್ಯೆಯ ಮೂಲ ಕಾರಣವನ್ನು ನಿಖರ ಭಾಷೆಯಿಂದ ಗುರುತಿಸುವುದೇ ಶಾಶ್ವತ ಪರಿಹಾರದ ಮೊದಲ ಹೆಜ್ಜೆ." ಸ್ಪಷ್ಟತೆಯಿಂದ ಮಾತನಾಡಿ!';
+        case 'malayalam':
+        default:
+          return '💡 സന്ദേശം: "പ്രശ്നങ്ങളുടെ യഥാർത്ഥ കാരണത്തെ കൃത്യതയാർന്ന ഭാഷകൊണ്ട് ലക്ഷ്യകേന്ദ്രത്തിൽ എത്തിക്കുകയാണ് ശാശ്വത പരിഹാരത്തിലേക്കുള്ള ആദ്യ പടി." ആത്മവിശ്വാസത്തോടെ സംസാരിക്കുക!';
+      }
+    }
+
+    if (widget.day == 15) {
+      switch (lang.toLowerCase()) {
+        case 'tamil':
+          return '💡 நீதி: "எந்த ஒரு கடுமையான எதிர்ப்பையும் தூதரக மென்மொழியும் நயமான பேச்சுமே சுமுகமான இணக்கத்திற்கு இட்டுச்செல்லும்." தொடர்ந்து பேசுங்கள்!';
+        case 'hindi':
+          return '💡 सीख: "सख्त से सख्त गतिरोध को भी कूटनीतिक विनम्रता और शब्दों की नजाकत से सुलझाया जा सकता है।" निरंतर आगे बढ़ें!';
+        case 'telugu':
+          return '💡 నీతి: "ఎంతటి కఠినమైన పరిస్థితినైనా దౌత్యపరమైన మృదుభాష మరియు సమయస్ఫూర్తితో శాంతియుతంగా పరిష్కరించవచ్చు." ముందుకు సాగండి!';
+        case 'kannada':
+          return '💡 ನೀತಿ: "ಎಂತಹದೇ ಕಠಿಣ ಸನ್ನಿವೇಶವನ್ನೂ ಸೌಮ್ಯ ಮಾತುಗಾರಿಕೆ ಮತ್ತು ರಾಜತಾಂತ್ರಿಕ ಜಾಣ್ಮೆಯಿಂದ ಗೆಲ್ಲಬಹುದು." ಮುನ್ನಡೆಯಿರಿ!';
+        case 'malayalam':
+        default:
+          return '💡 സന്ദേശം: "ഏറ്റവും കടുത്ത വിയോജിപ്പുകളെപ്പോലും നയതന്ത്രജ്ഞതയോടുകൂടിയ മൃദുവായ സംഭാഷണ ശൈലികൊണ്ട് രമ്യമായി പരിഹരിക്കാൻ സാധിക്കും." മുന്നേറുക!';
+      }
+    }
+
     if (widget.day == 14) {
       switch (lang.toLowerCase()) {
         case 'tamil':
@@ -2329,6 +2597,514 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
       return;
     }
 
+    if (widget.day == 18) {
+      // 10 high-impact vocabulary words for Day 18 (Mixed Conditionals & Sovereign Synthesis)
+      _vocabList = const [
+        DailyVocabItem(
+          word: 'Synthesis',
+          partOfSpeech: 'noun',
+          definition: 'The combination of ideas, principles, or elements into a coherent whole.',
+          malayalamMeaning: 'സംയോജനം / സമന്വയം',
+          tamilMeaning: 'ஒருங்கிணைப்பு / தொகுப்பு',
+          hindiMeaning: 'संश्लेषण / संयोजन',
+          teluguMeaning: 'సమన్వయం / సంశ్లేషణ',
+          kannadaMeaning: 'ಸಂಶ್ಲೇಷಣೆ / ಸಂಯೋಜನೆ',
+          exampleSentence: 'The treatise is an exquisite synthesis of classical and modern statecraft.',
+          phonetic: '/ˈsɪn.θə.sɪs/',
+        ),
+        DailyVocabItem(
+          word: 'Legacy',
+          partOfSpeech: 'noun',
+          definition: 'Something handed down from predecessors; enduring heritage.',
+          malayalamMeaning: 'പൈതൃകം / പിന്തുടർച്ച',
+          tamilMeaning: 'பாரம்பரியம் / வழிவழியாக வந்த சொத்து',
+          hindiMeaning: 'विरासत / धरोहर',
+          teluguMeaning: 'వారసత్వం',
+          kannadaMeaning: 'ಪರಂಪರೆ / ಆಸ್ತಿ',
+          exampleSentence: 'The peace treaty became the crown jewel of their historical legacy.',
+          phonetic: '/ˈleɡ.ə.si/',
+        ),
+        DailyVocabItem(
+          word: 'Retrospective',
+          partOfSpeech: 'adjective',
+          definition: 'Looking back on, contemplating, or dealing with past events.',
+          malayalamMeaning: 'ഭൂതകാലാവലോകനപരമായ',
+          tamilMeaning: 'பின்னோக்கிய / கடந்த காலத்தை நோக்கும்',
+          hindiMeaning: 'भूतलक्षी / अतीतदर्शी',
+          teluguMeaning: 'గతావలోకన',
+          kannadaMeaning: 'ಸಿಂಹಾವಲೋಕನದ',
+          exampleSentence: 'A retrospective audit proved that every sacrifice had been justified.',
+          phonetic: '/ˌret.rəˈspek.tɪv/',
+        ),
+        DailyVocabItem(
+          word: 'Sovereign',
+          partOfSpeech: 'adjective',
+          definition: 'Possessing supreme, independent authority and self-determination.',
+          malayalamMeaning: 'പരമാധികാരമുള്ള / സ്വതന്ത്രമായ',
+          tamilMeaning: 'இறையாண்மையுள்ள / தன்னாட்சி',
+          hindiMeaning: 'संप्रभु / स्वायत्त',
+          teluguMeaning: 'సార్వభౌమ / స్వతంత్ర',
+          kannadaMeaning: 'ಸಾರ್ವಭೌಮ / ಸ್ವತಂತ್ರ',
+          exampleSentence: 'Sovereign nations maintain the inalienable right to chart their destinies.',
+          phonetic: '/ˈsɒv.rɪn/',
+        ),
+        DailyVocabItem(
+          word: 'Fortification',
+          partOfSpeech: 'noun',
+          definition: 'A defensive wall or reinforcement built to safeguard against invasion.',
+          malayalamMeaning: 'കോട്ടകെട്ടി സുരക്ഷിതമാക്കൽ / പ്രതിരോധം',
+          tamilMeaning: 'கோட்டை கொத்தளம் / அரண்',
+          hindiMeaning: 'किलेबंदी / मोर्चाबंदी',
+          teluguMeaning: 'కోట రక్షణ / బలపరచడం',
+          kannadaMeaning: 'ಕೋಟೆ ನಿರ್ಮಾಣ / ರಕ್ಷಣೆ',
+          exampleSentence: 'Intellectual fortification shields the mind against deceptive fallacies.',
+          phonetic: '/ˌfɔː.tɪ.fɪˈkeɪ.ʃən/',
+        ),
+        DailyVocabItem(
+          word: 'Transcendent',
+          partOfSpeech: 'adjective',
+          definition: 'Beyond or above the range of normal, physical, or ordinary experience.',
+          malayalamMeaning: 'അതീതമായ / പരമോന്നതമായ',
+          tamilMeaning: 'அளப்பரிய / எல்லையைக் கடந்த',
+          hindiMeaning: 'सर्वोत्कृष्ट / अतींद्रिय',
+          teluguMeaning: 'అతీతమైన / సర్వోన్నత',
+          kannadaMeaning: 'ಅತೀತವಾದ / ಶ್ರೇಷ್ಠ',
+          exampleSentence: 'The poet captured a transcendent moment of human courage.',
+          phonetic: '/trænˈsen.dənt/',
+        ),
+        DailyVocabItem(
+          word: 'Epoch',
+          partOfSpeech: 'noun',
+          definition: 'A particular period of time in history characterized by notable events.',
+          malayalamMeaning: 'യുഗം / ചരിത്രഘട്ടം',
+          tamilMeaning: 'வரலாற்று சகாப்தம்',
+          hindiMeaning: 'युग / नया दौर',
+          teluguMeaning: 'యుగం / చారిత్రక ఘట్టம்',
+          kannadaMeaning: 'ಯುಗ / ಹೊಸ ಕಾಲಘಟ್ಟ',
+          exampleSentence: 'Their breakthrough inaugurated an epoch of interplanetary exploration.',
+          phonetic: '/ˈiː.pɒk/',
+        ),
+        DailyVocabItem(
+          word: 'Visionary',
+          partOfSpeech: 'noun',
+          definition: 'A person with original, far-seeing ideas about the future.',
+          malayalamMeaning: 'ദീർഘദർശി / ഭാവനാസമ്പന്നൻ',
+          tamilMeaning: 'தொலைநோக்கு சிந்தனையாளர்',
+          hindiMeaning: 'दूरदर्शी / स्वप्नदृष्टा',
+          teluguMeaning: 'దూరదృష్టిగల వ్యక్తి',
+          kannadaMeaning: 'ದೂರದರ್ಶಿ / ಭವಿಷ್ಯ ಚಿಂತಕ',
+          exampleSentence: 'Only a visionary could foresee how digital tools would empower voices.',
+          phonetic: '/ˈvɪʒ.ən.ri/',
+        ),
+        DailyVocabItem(
+          word: 'Inviolable',
+          partOfSpeech: 'adjective',
+          definition: 'Never to be broken, infringed, or dishonored; sacred and absolute.',
+          malayalamMeaning: 'ലംഘിക്കാനാവാത്ത / പവിത്രമായ',
+          tamilMeaning: 'மீற முடியாத / புனிதமான',
+          hindiMeaning: 'अनुल्लंघनीय / पवित्र',
+          teluguMeaning: 'ఉల్లంఘించలేని / పవిత్రమైన',
+          kannadaMeaning: 'ಉಲ್ಲಂಘಿಸಲಾಗದ / ಪವಿತ್ರ',
+          exampleSentence: 'The human rights treaty declared human dignity to be inviolable.',
+          phonetic: '/ɪnˈvaɪ.ə.lə.bəl/',
+        ),
+        DailyVocabItem(
+          word: 'Culmination',
+          partOfSpeech: 'noun',
+          definition: 'The highest, crowning point of something attained after protracted effort.',
+          malayalamMeaning: 'പാരമ്യം / പരിസമാപ്തി',
+          tamilMeaning: 'உச்சக்கட்டம் / நிறைவு',
+          hindiMeaning: 'चरम सीमा / परिणति',
+          teluguMeaning: 'పరాకాష్ట / ముగింపు',
+          kannadaMeaning: 'ಪರಾಕಾಷ್ಠೆ / ಅಂತಿಮ ಹಂತ',
+          exampleSentence: 'Day 18 marks the culmination of advanced grammatical mastery.',
+          phonetic: '/ˌkʌl.mɪˈneɪ.ʃən/',
+        ),
+      ];
+      return;
+    }
+
+    if (widget.day == 17) {
+      // 10 high-impact vocabulary words for Day 17 (Syntactic Parallelism & Symmetrical Balance)
+      _vocabList = const [
+        DailyVocabItem(
+          word: 'Symmetry',
+          partOfSpeech: 'noun',
+          definition: 'The quality of being made up of exactly similar parts facing each other or around an axis.',
+          malayalamMeaning: 'സമമിതി / സന്തുലിതാവസ്ഥ',
+          tamilMeaning: 'சமச்சீர்மை',
+          hindiMeaning: 'समरूपता / संतुलन',
+          teluguMeaning: 'సౌష్ఠవం / సమతుల్యత',
+          kannadaMeaning: 'ಸಮಪಾತಳಿ / ಸಮರೂಪತೆ',
+          exampleSentence: 'Syntactic symmetry renders political rhetoric impossible to forget.',
+          phonetic: '/ˈsɪm.ə.tri/',
+        ),
+        DailyVocabItem(
+          word: 'Cadence',
+          partOfSpeech: 'noun',
+          definition: 'A rhythmic sequence or flow of sounds in language.',
+          malayalamMeaning: 'താളഭംഗി / സ്വരതാളം',
+          tamilMeaning: 'குரல் ஏற்ற இறக்கம் / தாள லயம்',
+          hindiMeaning: 'स्वर-लहरी / लयबद्धता',
+          teluguMeaning: 'స్వర విన్యాసం / లయ',
+          kannadaMeaning: 'ಧ್ವನಿ ಏರಿಳಿತ / ಲಯ',
+          exampleSentence: 'The courtroom fell silent as the cadence of her argument gathered speed.',
+          phonetic: '/ˈkeɪ.dəns/',
+        ),
+        DailyVocabItem(
+          word: 'Obfuscation',
+          partOfSpeech: 'noun',
+          definition: 'The action of making something obscure, unclear, or unintelligible.',
+          malayalamMeaning: 'അവ്യക്തതയുണ്ടാക്കൽ / പുകമറസൃഷ്ടിക്കൽ',
+          tamilMeaning: 'குழப்பம் உண்டாக்குதல்',
+          hindiMeaning: 'भ्रम पैदा करना / अस्पष्टता',
+          teluguMeaning: 'గందరగోళ పరచడం',
+          kannadaMeaning: 'ಗೊಂದಲ ಉಂಟುಮಾಡುವುದು',
+          exampleSentence: 'The defense sought not justice, but deliberate obfuscation.',
+          phonetic: '/ˌɒb.fʌsˈkeɪ.ʃən/',
+        ),
+        DailyVocabItem(
+          word: 'Equanimity',
+          partOfSpeech: 'noun',
+          definition: 'Mental calmness, composure, and evenness of temper in difficult situations.',
+          malayalamMeaning: 'സമചിത്തത / മനശാന്തി',
+          tamilMeaning: 'மன அமைதி / சலனமற்ற நிலை',
+          hindiMeaning: 'समभाव / मानसिक संतुलन',
+          teluguMeaning: 'సమచిత్తత / ప్రశాంతత',
+          kannadaMeaning: 'ಮನಸ್ಸಿನ ಶಾಂತಿ / ಸಮಾಧಾನ',
+          exampleSentence: 'She received praise and condemnation with equal equanimity.',
+          phonetic: '/ˌek.wəˈnɪm.ə.ti/',
+        ),
+        DailyVocabItem(
+          word: 'Rectitude',
+          partOfSpeech: 'noun',
+          definition: 'Morally correct behaviour or thinking; unblemished integrity.',
+          malayalamMeaning: 'ധാർമ്മികശുദ്ധി / നീതിനിഷ്ഠ',
+          tamilMeaning: 'நேர்மை / அறநெறி',
+          hindiMeaning: 'सदाचार / सत्यनिष्ठा',
+          teluguMeaning: 'ధర్మనిష్ఠ / నిజాయితీ',
+          kannadaMeaning: 'ಸದಾಚಾರ / ನಿಷ್ಠೆ',
+          exampleSentence: 'The magistrate was revered for unflinching judicial rectitude.',
+          phonetic: '/ˈrek.tɪ.tʃuːd/',
+        ),
+        DailyVocabItem(
+          word: 'Juxtaposition',
+          partOfSpeech: 'noun',
+          definition: 'The fact of placing two or more things side by side to highlight comparison or contrast.',
+          malayalamMeaning: 'താരതമ്യപ്പെടുത്തൽ / ഒരുമിച്ചു ചേർത്തുനിർത്തൽ',
+          tamilMeaning: 'ஒப்பீடு செய்ய அருகருகே வைத்தல்',
+          hindiMeaning: 'समीपस्थापन / तुलनात्मक मिलान',
+          teluguMeaning: 'పోలిక కోసం పక్కపక్కనే ఉంచుట',
+          kannadaMeaning: 'ಹೋಲಿಕೆಗಾಗಿ ಪಕ್ಕಪಕ್ಕದಲ್ಲಿ ಇಡುವುದು',
+          exampleSentence: 'The juxtaposition of opulent promises and harsh reality exposed the deceit.',
+          phonetic: '/ˌdʒʌk.stə.pəˈzɪʃ.ən/',
+        ),
+        DailyVocabItem(
+          word: 'Eloquence',
+          partOfSpeech: 'noun',
+          definition: 'Fluent or persuasive speaking or writing.',
+          malayalamMeaning: 'വാഗ്മിത്വം / ആശയപ്രകാശന സാമർത്ഥ്യം',
+          tamilMeaning: 'சொல்வளம் / நாவன்மை',
+          hindiMeaning: 'सुवक्तृत्व / वाक्पटुता',
+          teluguMeaning: 'వాగ్ధాటి / ప్రావీణ్యం',
+          kannadaMeaning: 'ಮಾತಿನ ಜಾಣ್ಮೆ / ವಾಗ್ಝರಿ',
+          exampleSentence: 'Her natural eloquence stirred thousands into purposeful collective action.',
+          phonetic: '/ˈel.ə.kwəns/',
+        ),
+        DailyVocabItem(
+          word: 'Unflinching',
+          partOfSpeech: 'adjective',
+          definition: 'Not showing fear, hesitation, or compromise in facing difficulty.',
+          malayalamMeaning: 'പതറാത്ത / അചഞ്ചലമായ',
+          tamilMeaning: 'அஞ்சாத / உறுதியான',
+          hindiMeaning: 'अडिग / निडर',
+          teluguMeaning: 'అచంచలమైన / నిర్భయమైన',
+          kannadaMeaning: 'ಅಚಲ / ಹೆದರದ',
+          exampleSentence: 'She offered unflinching testimony before the constitutional bench.',
+          phonetic: '/ʌnˈflɪn.tʃɪŋ/',
+        ),
+        DailyVocabItem(
+          word: 'Triad',
+          partOfSpeech: 'noun',
+          definition: 'A group or set of three closely related elements.',
+          malayalamMeaning: 'ത്രിത്വം / മൂന്നംഗക്കൂട്ടം',
+          tamilMeaning: 'மூவர் கூட்டணி / மூவகை',
+          hindiMeaning: 'त्रिमूर्ति / त्रिक',
+          teluguMeaning: 'త్రిమూర్తి / మూడింటి సముదాయం',
+          kannadaMeaning: 'ಮೂರರ ಗುಂಪು / ತ್ರಿವಳಿ',
+          exampleSentence: 'Orators use the rhetorical triad: truth, clarity, and decisive action.',
+          phonetic: '/ˈtraɪ.æd/',
+        ),
+        DailyVocabItem(
+          word: 'Resonance',
+          partOfSpeech: 'noun',
+          definition: 'The quality in a sound or idea of being deep, full, and reverberating.',
+          malayalamMeaning: 'അനുരണനം / പ്രതിധ്വനി',
+          tamilMeaning: 'எதிரொலி / ஆழ்ந்த தாக்கம்',
+          hindiMeaning: 'गूंज / गहरा प्रभाव',
+          teluguMeaning: 'ప్రతిధ్వని / గాఢ ప్రభావం',
+          kannadaMeaning: 'ಪ್ರತಿಧ್ವನಿ / ಆಳವಾದ ಪ್ರಭಾವ',
+          exampleSentence: 'Her closing remarks achieved timeless emotional resonance.',
+          phonetic: '/ˈrez.ən.əns/',
+        ),
+      ];
+      return;
+    }
+
+    if (widget.day == 16) {
+      // 10 high-impact vocabulary words for Day 16 (Cleft Sentences & Oratorical Focus)
+      _vocabList = const [
+        DailyVocabItem(
+          word: 'Pivotal',
+          partOfSpeech: 'adjective',
+          definition: 'Of crucial importance in relation to the development or outcome of something.',
+          malayalamMeaning: 'സുപ്രധാനമായ / നിർണ്ണായകമായ',
+          tamilMeaning: 'முக்கியமான / திருப்புமுனையான',
+          hindiMeaning: 'निर्णायक / आधारभूत',
+          teluguMeaning: 'కీలకమైన',
+          kannadaMeaning: 'ಪ್ರಮುಖ / ತಿರುವು ನೀಡುವ',
+          exampleSentence: 'It was her pivotal intervention that restored parliamentary order.',
+          phonetic: '/ˈpɪv.ə.təl/',
+        ),
+        DailyVocabItem(
+          word: 'Catalyst',
+          partOfSpeech: 'noun',
+          definition: 'A person or event that precipitates significant change or action.',
+          malayalamMeaning: 'ഉൽപ്രേരകം / മാറ്റത്തിനു കാരണമാകുന്ന ഘടകം',
+          tamilMeaning: 'மாற்றத்தை தூண்டும் காரணி',
+          hindiMeaning: 'उत्प्रेरक / बदलाव लाने वाला',
+          teluguMeaning: 'ఉత్ప్రేరకం',
+          kannadaMeaning: 'ಉತ್ಪ್ರೇರಕ',
+          exampleSentence: 'What served as the true catalyst was public accountability.',
+          phonetic: '/ˈkæt.əl.ɪst/',
+        ),
+        DailyVocabItem(
+          word: 'Oratorical',
+          partOfSpeech: 'adjective',
+          definition: 'Relating to the art, practice, or style of public speaking.',
+          malayalamMeaning: 'പ്രസംഗകലപരമായ / വാഗ്മിത്വമുള്ള',
+          tamilMeaning: 'பேச்சாற்றல் சார்ந்த',
+          hindiMeaning: 'वक्तृत्व संबंधी / भाषण कला',
+          teluguMeaning: 'ఉపన్యాస కళకు చెందిన',
+          kannadaMeaning: 'ಭಾಷಣ ಕಲೆಗೆ ಸಂಬಂಧಿಸಿದ',
+          exampleSentence: 'Cleft sentences elevate oratorical speeches above ordinary chatter.',
+          phonetic: '/ˌɒr.əˈtɒr.ɪ.kəl/',
+        ),
+        DailyVocabItem(
+          word: 'Scrutiny',
+          partOfSpeech: 'noun',
+          definition: 'Critical observation or examination.',
+          malayalamMeaning: 'സൂക്ഷ്മപരിശോധന',
+          tamilMeaning: 'கூர்ந்து ஆராய்தல்',
+          hindiMeaning: 'गहन जांच / सूक्ष्म निरीक्षण',
+          teluguMeaning: 'సూక్ష్మ పరిశీలన',
+          kannadaMeaning: 'ಸೂಕ್ಷ್ಮ ಪರಿಶೀಲನೆ',
+          exampleSentence: 'It is under rigorous scrutiny that flawed policies crumble.',
+          phonetic: '/ˈskruː.tɪ.ni/',
+        ),
+        DailyVocabItem(
+          word: 'Salient',
+          partOfSpeech: 'adjective',
+          definition: 'Most noticeable, prominent, or important.',
+          malayalamMeaning: 'പ്രധാനപ്പെട്ട / തെളിഞ്ഞുനിൽക്കുന്ന',
+          tamilMeaning: 'முக்கியமான / வெளிப்படையான',
+          hindiMeaning: 'प्रमुख / मुख्य',
+          teluguMeaning: 'ప్రముఖమైన',
+          kannadaMeaning: 'ಪ್ರಮುಖವಾದ',
+          exampleSentence: 'What remains salient is our commitment to grid modernization.',
+          phonetic: '/ˈseɪ.li.ənt/',
+        ),
+        DailyVocabItem(
+          word: 'Elucidate',
+          partOfSpeech: 'verb',
+          definition: 'Make something clear; explain thoroughly.',
+          malayalamMeaning: 'വ്യക്തമാക്കുക / വിശദീകരിക്കുക',
+          tamilMeaning: 'தெளிவுபடுத்துதல் / விளக்குதல்',
+          hindiMeaning: 'स्पष्ट करना / व्याख्या करना',
+          teluguMeaning: 'స్పష్టం చేయు / వివరించు',
+          kannadaMeaning: 'ಸ್ಪಷ್ಟಪಡಿಸು / ವಿವರಿಸು',
+          exampleSentence: 'It was the engineer who elucidated the cascading transformer failure.',
+          phonetic: '/ɪˈluː.sɪ.deɪt/',
+        ),
+        DailyVocabItem(
+          word: 'Paradox',
+          partOfSpeech: 'noun',
+          definition: 'A statement that seems self-contradictory but in reality expresses a possible truth.',
+          malayalamMeaning: 'വിരോധാഭാസം',
+          tamilMeaning: 'முரண்போலி / முரண்பாடு',
+          hindiMeaning: 'विरोधाभास',
+          teluguMeaning: 'విరోధాభాసం',
+          kannadaMeaning: 'ವಿರೋಧಾಭಾಸ',
+          exampleSentence: 'It is a strange paradox that simpler words wield greater force.',
+          phonetic: '/ˈpær.ə.dɒks/',
+        ),
+        DailyVocabItem(
+          word: 'Resilience',
+          partOfSpeech: 'noun',
+          definition: 'The capacity to withstand or recover quickly from difficult conditions.',
+          malayalamMeaning: 'പ്രതിരോധശേഷി / അതിജീവനക്കരുത്ത്',
+          tamilMeaning: 'மீண்டெழும் திறன்',
+          hindiMeaning: 'लचीलापन / प्रतिरोधक क्षमता',
+          teluguMeaning: 'స్థితిస్థాపకత / పుంజుకునే శక్తి',
+          kannadaMeaning: 'ಚೇತರಿಸಿಕೊಳ್ಳುವ ಶಕ್ತಿ',
+          exampleSentence: 'What saved the city was the enduring resilience of its citizenry.',
+          phonetic: '/rɪˈzɪl.jəns/',
+        ),
+        DailyVocabItem(
+          word: 'Impervious',
+          partOfSpeech: 'adjective',
+          definition: 'Unable to be affected or influenced by criticism or harm.',
+          malayalamMeaning: 'ബാധിക്കപ്പെടാത്ത / അടിയറവു പറയാത്ത',
+          tamilMeaning: 'பாதிக்கப்படாத',
+          hindiMeaning: 'अभैद्य / अप्रभावित',
+          teluguMeaning: 'ప్రభావితం కాని',
+          kannadaMeaning: 'ಅಭೇದ್ಯ / ಪ್ರಭಾವಕ್ಕೆ ಒಳಗಾಗದ',
+          exampleSentence: 'The bedrock foundation proved impervious to seasonal tremors.',
+          phonetic: '/ɪmˈpɜː.vi.əs/',
+        ),
+        DailyVocabItem(
+          word: 'Vindication',
+          partOfSpeech: 'noun',
+          definition: 'Proof that someone or something is right, reasonable, or justified.',
+          malayalamMeaning: 'സാധൂകരണം / നീതീകരണം',
+          tamilMeaning: 'நிரூபணம் / நியாயப்படுத்தல்',
+          hindiMeaning: 'पुष्टि / दोषमुक्ति',
+          teluguMeaning: 'సమర్థన / నిరూపణ',
+          kannadaMeaning: 'ಸಮರ್ಥನೆ / ದೋಷಮುಕ್ತಿ',
+          exampleSentence: 'It was historical vindication that the banished scientist received.',
+          phonetic: '/ˌvɪn.dɪˈkeɪ.ʃən/',
+        ),
+      ];
+      return;
+    }
+
+    if (widget.day == 15) {
+      // 10 high-impact vocabulary words for Day 15 (Conversational Register & Diplomatic Softeners)
+      _vocabList = const [
+        DailyVocabItem(
+          word: 'Nuance',
+          partOfSpeech: 'noun',
+          definition: 'A subtle distinction or variation in meaning, expression, or tone.',
+          malayalamMeaning: 'സൂക്ഷ്മഭേദം / അർത്ഥവ്യത്യാസം',
+          tamilMeaning: 'நுட்பமான வேறுபாடு',
+          hindiMeaning: 'सूक्ष्म भेद / बारीकी',
+          teluguMeaning: 'సూక్ష్మ భేదం',
+          kannadaMeaning: 'ಸೂಕ್ಷ್ಮ ವ್ಯತ್ಯಾಸ',
+          exampleSentence: 'Mastering conversational register requires grasping linguistic nuance.',
+          phonetic: '/ˈnjuː.ɑːns/',
+        ),
+        DailyVocabItem(
+          word: 'Diplomatic',
+          partOfSpeech: 'adjective',
+          definition: 'Having or showing an ability to deal with people tactfully and sensitively.',
+          malayalamMeaning: 'നയതന്ത്രപരമായ / വിവേകപൂർവ്വമായ',
+          tamilMeaning: 'சமரச உணர்வுள்ள / ராஜதந்திர',
+          hindiMeaning: 'कूटनीतिक / विनम्र',
+          teluguMeaning: 'దౌత్యపరమైన',
+          kannadaMeaning: 'ರಾಜತಾಂತ್ರಿಕ',
+          exampleSentence: 'Her diplomatic reply eased the tension in the boardroom.',
+          phonetic: '/ˌdɪp.ləˈmæt.ɪk/',
+        ),
+        DailyVocabItem(
+          word: 'Hedging',
+          partOfSpeech: 'noun',
+          definition: 'The use of cautious, softening language to avoid direct assertion or offense.',
+          malayalamMeaning: 'മയപ്പെടുത്തിയ ഭാഷാപ്രയോഗം',
+          tamilMeaning: 'எச்சரிக்கையான நயவுரை',
+          hindiMeaning: 'सतर्क भाषा-प्रयोग',
+          teluguMeaning: 'హెడ్జింగ్ / మృదువైన వ్యక్తీకరణ',
+          kannadaMeaning: 'ಎಚ್ಚರಿಕೆಯ ಭಾಷಾಪ್ರಯೋಗ',
+          exampleSentence: 'Using modal verbs is an effective hedging strategy in British English.',
+          phonetic: '/ˈhedʒ.ɪŋ/',
+        ),
+        DailyVocabItem(
+          word: 'Tactful',
+          partOfSpeech: 'adjective',
+          definition: 'Showing sensitivity and skill in dealing with others or difficult issues.',
+          malayalamMeaning: 'കൗശലപൂർവ്വമായ / സമയോചിതമായ',
+          tamilMeaning: 'சாமர்த்தியமான / கனிவான',
+          hindiMeaning: 'विनम्र / कुशल',
+          teluguMeaning: 'సమయస్ఫూర్తిగల',
+          kannadaMeaning: 'ಚತುರ / ಜಾಣ್ಮೆಯ',
+          exampleSentence: 'A tactful question opens doors that aggressive demands shut.',
+          phonetic: '/ˈtækt.fəl/',
+        ),
+        DailyVocabItem(
+          word: 'Equivocal',
+          partOfSpeech: 'adjective',
+          definition: 'Open to more than one interpretation; deliberately ambiguous.',
+          malayalamMeaning: 'വ്യക്തതയില്ലാത്ത / ഇരുതലവാചകമായ',
+          tamilMeaning: 'இருபொருள் படத்தக்க',
+          hindiMeaning: 'அस्पष्ट / संदिग्ध',
+          teluguMeaning: 'సందిగ్ధమైన',
+          kannadaMeaning: 'ಸಂದಿಗ್ಧವಾದ',
+          exampleSentence: 'Diplomats sometimes prefer equivocal phrasing during early talks.',
+          phonetic: '/ɪˈkwɪv.ə.kəl/',
+        ),
+        DailyVocabItem(
+          word: 'Concur',
+          partOfSpeech: 'verb',
+          definition: 'Be of the same opinion; agree.',
+          malayalamMeaning: 'യോജിക്കുക / സമ്മതിക്കുക',
+          tamilMeaning: 'ஒப்புக்கொள்ளுதல் / உடன்படுதல்',
+          hindiMeaning: 'सहमत होना',
+          teluguMeaning: 'ఏకీభవించు',
+          kannadaMeaning: 'ಒಪ್ಪಿಕೊ / ಸಮ್ಮತಿಸು',
+          exampleSentence: 'I respectfully concur with your strategic evaluation.',
+          phonetic: '/kənˈkɜːr/',
+        ),
+        DailyVocabItem(
+          word: 'Pragmatic',
+          partOfSpeech: 'adjective',
+          definition: 'Dealing with matters sensibly and realistically based on practical considerations.',
+          malayalamMeaning: 'പ്രായോഗികമായ / അനുഭവവേദ്യമായ',
+          tamilMeaning: 'நடைமுறைக்குரிய / எதார்த்தமான',
+          hindiMeaning: 'व्यावहारिक / यथार्थवादी',
+          teluguMeaning: 'ఆచరణాత్మక',
+          kannadaMeaning: 'ಪ್ರಾಯೋಗಿಕ',
+          exampleSentence: 'We chose a pragmatic compromise to preserve goodwill.',
+          phonetic: '/præɡˈmæt.ɪk/',
+        ),
+        DailyVocabItem(
+          word: 'Deference',
+          partOfSpeech: 'noun',
+          definition: 'Polite submission and respectful regard shown to another.',
+          malayalamMeaning: 'ആദരവ് / ബഹുമാനപൂർവ്വമായ വണക്കം',
+          tamilMeaning: 'மரியாதை / அடிபணிவு',
+          hindiMeaning: 'सम्मान / आदरभाव',
+          teluguMeaning: 'గౌరవభావం',
+          kannadaMeaning: 'ಗೌರವ / ಆದರ',
+          exampleSentence: 'The junior delegate spoke with consummate deference to the elder statesman.',
+          phonetic: '/ˈdef.ər.əns/',
+        ),
+        DailyVocabItem(
+          word: 'Circumspect',
+          partOfSpeech: 'adjective',
+          definition: 'Wary and cautious; unwilling to take unnecessary conversational risks.',
+          malayalamMeaning: 'ജാഗ്രതയുള്ള / കരുതലോടെയുള്ള',
+          tamilMeaning: 'எச்சரிக்கையான / விழிப்புடைய',
+          hindiMeaning: 'सावधान / सतर्क',
+          teluguMeaning: 'జాగరూకత గల',
+          kannadaMeaning: 'ಎಚ್ಚರಿಕೆಯುಳ್ಳ',
+          exampleSentence: 'In tense negotiations, circumspect phrasing prevents diplomatic fallout.',
+          phonetic: '/ˈsɜː.kəm.spekt/',
+        ),
+        DailyVocabItem(
+          word: 'Cordially',
+          partOfSpeech: 'adverb',
+          definition: 'In a warm, friendly, and courteous manner.',
+          malayalamMeaning: 'ഹൃദ്യമായി / സ്നേഹപൂർവ്വം',
+          tamilMeaning: 'அன்புடன் / கனிவுடன்',
+          hindiMeaning: 'सौहार्दपूर्वक / प्रेमपूर्वक',
+          teluguMeaning: 'ఆప్యాయంగా / హృదయపూర్వకంగా',
+          kannadaMeaning: 'ಆತ್ಮೀಯವಾಗಿ / ಸೌಹಾರ್ದಯುತವಾಗಿ',
+          exampleSentence: 'We cordially invite your delegation to review our amendments.',
+          phonetic: '/ˈkɔː.di.ə.li/',
+        ),
+      ];
+      return;
+    }
+
     if (widget.day == 14) {
       // 10 high-impact vocabulary words for Day 14 (Forensic Persuasion, Rhetoric & Multilateral Accords)
       _vocabList = const [
@@ -3548,10 +4324,10 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                       _buildSubtaskCard(
                         stepNumber: '6',
                         icon: '🛡️',
-                        title: 'Add Day ${widget.day} Citadel Defense Shield',
+                        title: 'Add Day ${widget.day} Home Defense',
                         description: 'Arm your front gate with 1 authentic English challenge to defend your house from raiders. (Shield Slot ${widget.day} of ${widget.day})',
                         isVerified: _defenseTrapArmed,
-                        actionLabel: 'ADD DEFENSE SHIELD 🛡️',
+                        actionLabel: 'ADD HOME DEFENSE 🛡️',
                         actionColor: const Color(0xFF8B5CF6),
                         onAction: () async {
                           await PocketDefenseTrapModal.show(context, widget.day);
@@ -3574,8 +4350,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                         _buildSubtaskCard(
                           stepNumber: '7',
                           icon: '⚔️',
-                          title: 'Day ${widget.day} Citadel Siege Raid (${_getRivalCitadelForDay(widget.day).name})',
-                          description: 'Launch your tactical siege raid against a Level ${_getRivalCitadelForDay(widget.day).day} Neighbor Citadel in the Battle Arena to test your combat English under fire!',
+                          title: 'Day ${widget.day} Battle Arena Raid (${_getRivalCitadelForDay(widget.day).name})',
+                          description: 'Launch your tactical raid against Level ${_getRivalCitadelForDay(widget.day).day} in the Battle Arena to test your combat English under fire!',
                           isVerified: _trialRaidLaunched,
                           actionLabel: 'LAUNCH BATTLE ARENA RAID ⚔️',
                           actionColor: const Color(0xFFEF4444),
@@ -3606,14 +4382,14 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                               HapticFeedback.heavyImpact();
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text('🏰 Citadel ${rival.name} Breached! Day ${widget.day} Siege Raid verified ✓ +50 Bonus Coins!'),
+                                  content: Text('🏰 ${rival.name} Breached! Day ${widget.day} Raid verified ✓ +50 Bonus Coins!'),
                                   backgroundColor: const Color(0xFF10B981),
                                 ),
                               );
                             } else {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content: Text('⚠️ Citadel raid incomplete. Defeat the rival fortress in Battle Arena to verify this step!'),
+                                  content: Text('⚠️ Battle Arena raid incomplete. Defeat the rival house in Battle Arena to verify this step!'),
                                   backgroundColor: Color(0xFFB45309),
                                 ),
                               );
@@ -3623,14 +4399,14 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                             if (_trialRaidLaunched) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text('✅ Day ${widget.day} Citadel Raid already verified!'),
+                                  content: Text('✅ Day ${widget.day} Battle Arena Raid already verified!'),
                                   backgroundColor: const Color(0xFF10B981),
                                 ),
                               );
                             } else {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content: Text('⚠️ Launch Battle Arena Raid and breach the citadel to verify Subtask 7!'),
+                                  content: Text('⚠️ Launch Battle Arena Raid and breach the house to verify Subtask 7!'),
                                   backgroundColor: Color(0xFFB45309),
                                 ),
                               );
@@ -3662,7 +4438,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'Citadel Siege Attacks Unlock at Level 4',
+                                      'Battle Arena Raids Unlock at Level 4',
                                       style: GoogleFonts.outfit(
                                         color: Colors.white70,
                                         fontWeight: FontWeight.bold,
@@ -3671,7 +4447,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                                     ),
                                     const SizedBox(height: 2),
                                     Text(
-                                      'Complete Days 1–3 foundational English missions and arm your defense shields first. Raid warfare unlocks on Day 4!',
+                                      'Complete Days 1–3 foundational English missions and arm your Home Defense first. Raid warfare unlocks on Day 4!',
                                       style: GoogleFonts.inter(
                                         color: Colors.white38,
                                         fontSize: 11,
@@ -4650,7 +5426,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text('⚠️ Citadel attack incomplete. Defeat the rival fortress in Battle Arena to earn bonus coins!'),
+                        content: Text('⚠️ Raid incomplete. Defeat the rival house in Battle Arena to earn bonus coins!'),
                         backgroundColor: Color(0xFFB45309),
                       ),
                     );
@@ -5442,7 +6218,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                 Row(
                   children: [
                     Text(
-                      'DAY ${widget.day} DEFENSE SHIELD',
+                      'DAY ${widget.day} HOME DEFENSE',
                       style: GoogleFonts.outfit(
                         color: Colors.white,
                         fontWeight: FontWeight.w900,
@@ -5510,7 +6286,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               ),
             ),
             child: Text(
-              _defenseTrapArmed ? 'SHIELD ACTIVE 🛡️' : 'ADD SHIELD',
+              _defenseTrapArmed ? 'HOME DEFENSE ACTIVE 🛡️' : 'ADD HOME DEFENSE',
               style: GoogleFonts.outfit(
                 color: Colors.black,
                 fontWeight: FontWeight.w900,

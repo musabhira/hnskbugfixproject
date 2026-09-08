@@ -544,7 +544,7 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
         content: Text(
           wasEditing
               ? '🛡️ Defense Shield Updated & Synced!'
-              : '🛡️ Shield Question Armed & Synced to Citadel!',
+              : '🛡️ Defense Question Armed & Synced to Home Defense!',
         ),
         backgroundColor: const Color(0xFF10B981),
         behavior: SnackBarBehavior.floating,
@@ -574,7 +574,7 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
       setState(() => _questions = updated);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('🗑️ Shield question removed from citadel gate.'),
+          content: Text('🗑️ Defense question removed from Home Defense.'),
           backgroundColor: Color(0xFF1E293B),
           behavior: SnackBarBehavior.floating,
         ),
@@ -627,7 +627,7 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        _isEditMode ? 'Edit Defense Shield' : 'Citadel Defense Shield',
+                        _isEditMode ? 'Edit Home Defense' : 'Home Defense',
                         style: GoogleFonts.outfit(
                           color: Colors.white,
                           fontSize: 16,

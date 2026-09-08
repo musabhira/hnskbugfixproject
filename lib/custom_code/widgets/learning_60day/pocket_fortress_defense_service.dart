@@ -597,6 +597,35 @@ class PocketFortressDefenseService {
     );
   }
 
+  /// 🤖 Generate Pocket Robo defender when no real neighbor is available in level bracket (Audio 16 directive)
+  static PocketNeighbor generatePocketRoboDefender(int targetStage) {
+    final roboNames = [
+      'Pocket Robo 🤖 Alpha',
+      'Pocket Robo 🤖 Titan',
+      'Pocket Robo 🤖 Apex',
+      'Pocket Robo 🤖 Sentinel',
+      'Pocket Robo 🤖 Nexus',
+      'Pocket Robo 🤖 Zenith',
+    ];
+    final name = roboNames[(targetStage + 3) % roboNames.length];
+    final palette = targetStage >= 70
+        ? 'mirror_glass'
+        : (targetStage >= 45 ? 'cyber_yellow' : (targetStage >= 20 ? 'royal_gold' : 'emerald'));
+
+    return PocketNeighbor(
+      id: 'pocket_robo_$targetStage',
+      name: name,
+      day: targetStage,
+      streak: targetStage,
+      rank: 'Robo Home Guardian (Lvl $targetStage)',
+      paletteId: palette,
+      isMe: false,
+      hasActiveShield: true,
+      statusMessage: '🤖 Autonomous AI English Defender ready for battle!',
+      isPocketRobo: true,
+    );
+  }
+
   /// 🚨 Inactivity / Consistency Check (Daily Focus Protection)
   /// If user skips a day, stage downgrades (e.g. Day 6 -> Day 5) with a focus warning!
   static Future<ConsistencyCheckResult> checkDailyConsistency(int currentDay, int streak) async {
@@ -909,6 +938,33 @@ class PocketFortressDefenseService {
             category: 'vocab',
             trapType: 'vocab_gate',
           ),
+          HouseShieldQuestion(
+            id: 'cur_vg_4',
+            question: 'What is the precise meaning of "Pragmatic"?',
+            options: ['Dealing with matters sensibly and realistically based on practical conditions', 'Obsessed with wild fantasies', 'Emotionally fragile', 'Careless and hasty'],
+            correctIndex: 0,
+            explanation: '"Pragmatic" refers to prioritizing practical, workable results over theoretical ideals.',
+            category: 'vocab',
+            trapType: 'vocab_gate',
+          ),
+          HouseShieldQuestion(
+            id: 'cur_vg_5',
+            question: 'Select the exact definition of "Quintessential":',
+            options: ['Representing the most perfect or typical example of a quality or class', 'Second-best alternative', 'Ancient and deteriorated', 'Fictional'],
+            correctIndex: 0,
+            explanation: '"Quintessential" means the absolute embodiment or purest model of something.',
+            category: 'vocab',
+            trapType: 'vocab_gate',
+          ),
+          HouseShieldQuestion(
+            id: 'cur_vg_6',
+            question: 'What does "Sagacious" signify in executive statesmanship?',
+            options: ['Having keen mental discernment and good judgment; wise', 'Reckless and impulsive', 'Weak and indecisive', 'Hostile'],
+            correctIndex: 0,
+            explanation: '"Sagacious" means acutely insightful and deeply wise.',
+            category: 'vocab',
+            trapType: 'vocab_gate',
+          ),
         ];
       case 'grammar_sentry':
         return const [
@@ -949,6 +1005,34 @@ class PocketFortressDefenseService {
             category: 'grammar',
             trapType: 'grammar_sentry',
           ),
+          HouseShieldQuestion(
+            id: 'cur_gs_4',
+            question: 'Spot the relative pronoun error: "It was the envoy which unified the sovereign delegations."',
+            options: [
+              '"which" should be "who"',
+              '"was" should be "were"',
+              '"envoy" should be "envoys"',
+              'The sentence is grammatically flawless'
+            ],
+            correctIndex: 0,
+            explanation: '"Who" (not "which") must be used to refer to persons.',
+            category: 'grammar',
+            trapType: 'grammar_sentry',
+          ),
+          HouseShieldQuestion(
+            id: 'cur_gs_5',
+            question: 'Identify the structural parallelism defect: "A true leader excels at clear vision, listening with empathy, and to act decisively."',
+            options: [
+              '"to act decisively" should be "acting decisively"',
+              '"clear vision" should be "to see clearly"',
+              '"listening with empathy" should be "listening empathetic"',
+              'No error present'
+            ],
+            correctIndex: 0,
+            explanation: 'Elements in a series must share matching grammatical forms (gerund: "acting decisively").',
+            category: 'grammar',
+            trapType: 'grammar_sentry',
+          ),
         ];
       case 'tense_fortress':
         return const [
@@ -986,6 +1070,20 @@ class PocketFortressDefenseService {
             ],
             correctIndex: 0,
             explanation: 'Simple past passive is "was/were + past participle (forged)".',
+            category: 'tense',
+            trapType: 'tense_fortress',
+          ),
+          HouseShieldQuestion(
+            id: 'cur_tf_4',
+            question: 'Select the correct Mixed Conditional (Past Action -> Present Reality):',
+            options: [
+              'If the founders had fortified the citadel walls, we would live in peace today.',
+              'If the founders fortified the citadel walls, we will live in peace today.',
+              'If the founders had fortified the walls, we would have lived in peace today.',
+              'If the founders would have fortified walls, we live in peace today.'
+            ],
+            correctIndex: 0,
+            explanation: 'Past cause ("had fortified") yielding present state ("would live today") requires a Mixed Conditional.',
             category: 'tense',
             trapType: 'tense_fortress',
           ),
@@ -1048,6 +1146,34 @@ class PocketFortressDefenseService {
             ],
             correctIndex: 0,
             explanation: '"Not only... but also" is the correct correlative conjunction.',
+            category: 'syntax',
+            trapType: 'syntax_wall',
+          ),
+          HouseShieldQuestion(
+            id: 'cur_sw_3',
+            question: 'Select the sentence with correct Wh-Cleft dramatic focus:',
+            options: [
+              'What impressed the assembly most was her unwavering integrity.',
+              'That impressed the assembly most was her unwavering integrity.',
+              'What did impress the assembly was her unwavering integrity that was.',
+              'Which impressed the assembly most was her integrity.'
+            ],
+            correctIndex: 0,
+            explanation: 'A wh-cleft sentence ("What [clause] was [focus]") delivers elegant rhetorical emphasis.',
+            category: 'syntax',
+            trapType: 'syntax_wall',
+          ),
+          HouseShieldQuestion(
+            id: 'cur_sw_4',
+            question: 'Identify the correct Rhetorical Fronting structure:',
+            options: [
+              'Exhausted though the envoys were, reach a historic consensus they did.',
+              'Though exhausted were the envoys, reach a historic consensus they did.',
+              'Exhausted though were the envoys, reached a historic consensus they did.',
+              'Were the envoys exhausted though, reach consensus they did.'
+            ],
+            correctIndex: 0,
+            explanation: 'Rhetorical fronting: [Adjective] + though + [Subject] + [Verb], followed by emphatic inversion.',
             category: 'syntax',
             trapType: 'syntax_wall',
           ),
@@ -1495,12 +1621,81 @@ class PocketFortressDefenseService {
     );
     await recordRaidLog(entry);
 
+    // 👮‍♂️ Place breached house under 48-Hour Presidential Police Protection (Audio 16 directive)
+    await placeUnderPresidentialProtection(defenderHouseId);
+
     return {
       'damageDealt': damageHp,
       'remainingHp': newHp,
       'lootedCoins': lootedCoins,
       'ironDomeBlocked': false,
       'isRubbled': newHp <= 0,
+      'underPresidentialProtection': true,
+      'protectionHours': kPresidentialProtectionHours,
+    };
+  }
+
+  // ============================================================
+  // 👮‍♂️ 48-HOUR PRESIDENTIAL POLICE PROTECTION SYSTEM (Audio 16)
+  // "പിന്നെ ഒരു രണ്ടു ദിവസം സമയം കൊടുക്കണം. അതിനുള്ളിൽ ഇവര് റിക്കവർ ചെയ്യാൻ വേണ്ടിയിട്ട്
+  // 'പ്രസിഡൻഷ്യൽ പ്രൊട്ടക്ഷൻ' കൊടുക്കും. കാവൽക്കാർ പ്രസിഡൻസിന്റെ പോലീസ് കാവലുകള്
+  // വന്നിട്ട് നിൽക്കും എന്നിട്ട് പ്രൊട്ടക്ട് ചെയ്യും. രണ്ടു ദിവസം പ്രൊട്ടക്ട് ചെയ്യും."
+  // ============================================================
+  static const String _presidentialProtectionPrefix = 'pocket_pres_protection_';
+  static const int kPresidentialProtectionHours = 48;
+
+  /// Place a breached house under 48-hour Presidential Police Protection
+  static Future<void> placeUnderPresidentialProtection(
+    String houseId, {
+    int hours = kPresidentialProtectionHours,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    final expiry = DateTime.now().add(Duration(hours: hours)).millisecondsSinceEpoch;
+    await prefs.setInt('$_presidentialProtectionPrefix$houseId', expiry);
+  }
+
+  /// Check if house is actively guarded by Presidential Police
+  static Future<bool> isUnderPresidentialProtection(String houseId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final expiry = prefs.getInt('$_presidentialProtectionPrefix$houseId');
+    if (expiry == null) return false;
+    return DateTime.now().millisecondsSinceEpoch < expiry;
+  }
+
+  /// Get minutes remaining in 48-hour Presidential Police Protection
+  static Future<int> getPresidentialProtectionMinutesRemaining(String houseId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final expiry = prefs.getInt('$_presidentialProtectionPrefix$houseId');
+    if (expiry == null) return 0;
+    final diff = expiry - DateTime.now().millisecondsSinceEpoch;
+    return diff > 0 ? (diff / (1000 * 60)).ceil() : 0;
+  }
+
+  /// Lift protection early when house is repaired/rebuilt
+  static Future<void> liftPresidentialProtection(String houseId) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('$_presidentialProtectionPrefix$houseId');
+  }
+
+  /// 🤖 Pocket Robo Matchmaker Profile Generator (Audio 16 directive)
+  static Map<String, dynamic> generatePocketRoboProfile(int targetDay) {
+    final roboNames = [
+      'Pocket Robo 🤖 Alpha',
+      'Pocket Robo 🤖 Titan',
+      'Pocket Robo 🤖 Apex',
+      'Pocket Robo 🤖 Sentinel',
+      'Pocket Robo 🤖 Nexus',
+      'Pocket Robo 🤖 Zenith',
+    ];
+    final name = roboNames[(targetDay + 3) % roboNames.length];
+    return {
+      'id': 'pocket_robo_$targetDay',
+      'name': name,
+      'day': targetDay,
+      'streak': targetDay,
+      'rank': 'Robo Home Guardian (Lvl $targetDay)',
+      'isPocketRobo': true,
+      'statusMessage': '🤖 Autonomous AI English Defender ready for battle!',
     };
   }
 

@@ -506,6 +506,58 @@ void main() {
       expect(await PocketFortressDefenseService.canLaunchAttackToday(), isFalse);
     });
   });
+
+  group('Pocket Robo 🤖 Fallback Matchmaker Tests', () {
+    test('generatePocketRoboDefender creates valid high-level AI match', () {
+      final robo18 = PocketFortressDefenseService.generatePocketRoboDefender(18);
+      expect(robo18.id, equals('pocket_robo_18'));
+      expect(robo18.name, contains('Pocket Robo'));
+      expect(robo18.day, equals(18));
+      expect(robo18.isPocketRobo, isTrue);
+      expect(robo18.rank, contains('Robo Home Guardian'));
+
+      final robo40 = PocketFortressDefenseService.generatePocketRoboDefender(40);
+      expect(robo40.id, equals('pocket_robo_40'));
+      expect(robo40.day, equals(40));
+    });
+  });
+
+  group('48-Hour Presidential Police Protection Tests', () {
+    test('House enters 48h protection and tracks time correctly', () async {
+      SharedPreferences.setMockInitialValues({});
+      const houseId = 'target_house_456';
+
+      expect(await PocketFortressDefenseService.isUnderPresidentialProtection(houseId), isFalse);
+
+      await PocketFortressDefenseService.placeUnderPresidentialProtection(houseId);
+
+      expect(await PocketFortressDefenseService.isUnderPresidentialProtection(houseId), isTrue);
+
+      final mins = await PocketFortressDefenseService.getPresidentialProtectionMinutesRemaining(houseId);
+      expect(mins, inInclusiveRange(2870, 2880)); // ~48 hours (2880 mins)
+
+      await PocketFortressDefenseService.liftPresidentialProtection(houseId);
+      expect(await PocketFortressDefenseService.isUnderPresidentialProtection(houseId), isFalse);
+    });
+
+    test('processRaidBreach automatically activates 48-hour Presidential Protection', () async {
+      SharedPreferences.setMockInitialValues({
+        'pocket_house_hp': 100,
+        'pocket_house_coins': 150,
+      });
+      const victimHouse = 'breached_house_789';
+
+      await PocketFortressDefenseService.processRaidBreach(
+        defenderHouseId: victimHouse,
+        damageHp: 60,
+        attackerName: 'Eagle Scout',
+        attackerAvatar: '🦅',
+        attackerWeapon: '⚡ Laser Piercer',
+      );
+
+      expect(await PocketFortressDefenseService.isUnderPresidentialProtection(victimHouse), isTrue);
+    });
+  });
 }
 
 

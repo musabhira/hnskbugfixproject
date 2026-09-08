@@ -22,6 +22,7 @@ class PocketNeighbor {
   final String statusMessage;
   final bool isBanned;
   final String? banReason;
+  final bool isPocketRobo;
 
   const PocketNeighbor({
     required this.id,
@@ -35,6 +36,7 @@ class PocketNeighbor {
     required this.statusMessage,
     this.isBanned = false,
     this.banReason,
+    this.isPocketRobo = false,
   });
 }
 
@@ -61,12 +63,12 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
   double _currentPage = 0.0;
   late final List<PocketNeighbor> _neighbors;
   Set<String> _bannedHouseIds = {'neighbor_cheat'};
+  Set<String> _protectedHouseIds = {};
   bool _isRollingRandomTarget = false;
 
   @override
   void initState() {
     super.initState();
-    _loadBannedHouses();
     _pageController = PageController(viewportFraction: 0.82);
     _pageController.addListener(() {
       setState(() {
@@ -74,13 +76,8 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
       });
     });
 
-    if (widget.autoRollRaid) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _rollRandomRaidTarget();
-      });
-    }
-
     // Generate neighborhood street with user + peers at varied stages
+    final roboTargetDay = widget.currentDay >= 4 ? widget.currentDay + 2 : 5;
     _neighbors = [
       PocketNeighbor(
         id: 'me',
@@ -93,6 +90,8 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
         hasActiveShield: true,
         statusMessage: 'Practicing English daily! 🏡',
       ),
+      // 🤖 Pocket Robo Defender (Audio 16: Always available AI defender matching target bracket)
+      PocketFortressDefenseService.generatePocketRoboDefender(roboTargetDay),
       const PocketNeighbor(
         id: 'neighbor_1',
         name: 'Aisha K.',
@@ -156,22 +155,39 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
         statusMessage: '90-Day Fluency Champion! 💎',
       ),
     ];
+
+    _loadBannedAndProtectedHouses();
+
+    if (widget.autoRollRaid) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _rollRandomRaidTarget();
+      });
+    }
   }
 
-  Future<void> _loadBannedHouses() async {
+  Future<void> _loadBannedAndProtectedHouses() async {
     final reports = await PocketFortressDefenseService.getDefenseReports();
-    final set = <String>{'neighbor_cheat'};
+    final bannedSet = <String>{'neighbor_cheat'};
     for (final r in reports) {
       if (r.status == 'banned' || await PocketFortressDefenseService.isHouseBanned(r.houseId)) {
-        set.add(r.houseId);
+        bannedSet.add(r.houseId);
       }
     }
     if (await PocketFortressDefenseService.isHouseBanned('me')) {
-      set.add('me');
+      bannedSet.add('me');
     }
+
+    final protectedSet = <String>{};
+    for (final n in _neighbors) {
+      if (await PocketFortressDefenseService.isUnderPresidentialProtection(n.id)) {
+        protectedSet.add(n.id);
+      }
+    }
+
     if (mounted) {
       setState(() {
-        _bannedHouseIds = set;
+        _bannedHouseIds = bannedSet;
+        _protectedHouseIds = protectedSet;
       });
     }
   }
@@ -292,9 +308,13 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
     final inCooldown = await PocketFortressDefenseService.isTargetInCooldown(neighbor.id);
     final isTargetJailed = await PocketFortressDefenseService.isHouseJailed(neighbor.id);
     final isPlayerJailed = await PocketFortressDefenseService.isHouseJailed('me');
+    final isTargetProtected = await PocketFortressDefenseService.isUnderPresidentialProtection(neighbor.id);
+    final protectionMinutes = isTargetProtected
+        ? await PocketFortressDefenseService.getPresidentialProtectionMinutesRemaining(neighbor.id)
+        : 0;
     final attacksUsed = await PocketFortressDefenseService.getDailyAttacksUsedToday();
     final isDailyLimitReached = attacksUsed >= PocketFortressDefenseService.kDailyMaxAttacks;
-    final cannotAttack = inCooldown || isTargetJailed || isPlayerJailed || isDailyLimitReached;
+    final cannotAttack = inCooldown || isTargetJailed || isPlayerJailed || isTargetProtected || isDailyLimitReached;
     if (!mounted) return;
 
     // Load actual defense trap questions for this neighbor
@@ -510,11 +530,13 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
                           if (isTargetJailed)
                             _buildNoticeCard('⛓️ Target is serving a Presidential Jail sentence. Raids are blocked.')
                           else if (isPlayerJailed)
-                            _buildNoticeCard('⛓️ You cannot raid citadels while serving your Presidential Jail sentence.')
+                            _buildNoticeCard('⛓️ You cannot raid while serving your Presidential Jail sentence.')
+                          else if (isTargetProtected)
+                            _buildNoticeCard('👮‍♂️ Under 48-Hour Presidential Police Protection!\nPresidential guards are stationed here to allow the resident 48 hours to rebuild & recover after a battle breach (${(protectionMinutes / 60).toStringAsFixed(1)}h remaining). Raids are blocked!')
                           else if (inCooldown)
-                            _buildNoticeCard('⏳ 24h Peace Treaty active! You attacked this fortress recently.')
+                            _buildNoticeCard('⏳ 24h Peace Treaty active! You attacked this home recently.')
                           else if (isDailyLimitReached)
-                            _buildNoticeCard('🔒 Daily limit reached! You have completed 2/2 citadel raids today.')
+                            _buildNoticeCard('🔒 Daily limit reached! You have completed 2/2 raids today.')
                           else
                             Container(
                               padding: const EdgeInsets.all(12),
@@ -532,7 +554,7 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          'Citadel Siege Duel',
+                                          'Home Defense Challenge',
                                           style: GoogleFonts.outfit(
                                             color: Colors.white,
                                             fontWeight: FontWeight.bold,
@@ -540,7 +562,7 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
                                           ),
                                         ),
                                         Text(
-                                          'Crack ${neighbor.name}\'s authentic defense questions to breach their gates & claim +45 study coins!',
+                                          'Crack ${neighbor.name}\'s Home Defense questions to breach their gates & claim +45 study coins!',
                                           style: const TextStyle(color: Colors.white70, fontSize: 11),
                                         ),
                                       ],
@@ -894,6 +916,27 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
+                                const SizedBox(height: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF1E3A8A).withValues(alpha: 0.6),
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(color: const Color(0xFF60A5FA).withValues(alpha: 0.5)),
+                                  ),
+                                  child: Row(
+                                    children: const [
+                                      Text('👮‍♂️', style: TextStyle(fontSize: 13)),
+                                      SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          '48h Presidential Police Guard Dispatched: Target is under protective peace treaty while recovering.',
+                                          style: TextStyle(color: Colors.white70, fontSize: 10.5),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ],
                             ),
                           ),
@@ -909,10 +952,11 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
                               ),
                               onPressed: () {
                                 Navigator.pop(ctx);
+                                _loadBannedAndProtectedHouses();
                                 HapticFeedback.selectionClick();
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: Text('🏆 Citadel Raid Victory against ${neighbor.name}! +${breachResult?['lootedCoins'] ?? 45} coins claimed!'),
+                                    content: Text('🏆 Home Raid Victory against ${neighbor.name}! +${breachResult?['lootedCoins'] ?? 45} coins claimed!'),
                                     backgroundColor: const Color(0xFF059669),
                                     behavior: SnackBarBehavior.floating,
                                   ),
@@ -1019,98 +1063,6 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
     );
   }
 
-  void _showGrowthMatchmakingDialog(PocketNeighbor requested, PocketNeighbor escalated) {
-    showDialog(
-      context: context,
-      builder: (dlgCtx) => AlertDialog(
-        backgroundColor: const Color(0xFF0F172A),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-          side: const BorderSide(color: Color(0xFFEF4444), width: 1.5),
-        ),
-        title: Row(
-          children: [
-            const Text('⚔️ ', style: TextStyle(fontSize: 22)),
-            Expanded(
-              child: Text(
-                'Combat Growth Rule',
-                style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
-              ),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Before Level 20, challenging same-level or lower houses (${requested.name} Lvl ${requested.day}) is locked because true English fluency requires tougher combat pressure!',
-              style: GoogleFonts.inter(color: Colors.white70, fontSize: 13, height: 1.4),
-            ),
-            const SizedBox(height: 14),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: const Color(0xFF1E293B),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.4)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '⚡ ESCALATED CITADEL TARGET:',
-                    style: GoogleFonts.outfit(color: const Color(0xFF38BDF8), fontSize: 11, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${escalated.name} (Level ${escalated.day} Citadel)',
-                    style: GoogleFonts.outfit(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w900),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    '+${escalated.day - widget.currentDay} Levels higher • Rewards +50 Bonus Coins on breach!',
-                    style: GoogleFonts.inter(color: Colors.amber, fontSize: 11),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dlgCtx),
-            child: Text('Cancel', style: GoogleFonts.inter(color: Colors.white60)),
-          ),
-          ElevatedButton.icon(
-            onPressed: () {
-              Navigator.pop(dlgCtx);
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => PocketBattleArenaPage(
-                    neighbor: escalated,
-                    userDay: widget.currentDay,
-                    userStreak: widget.streak,
-                  ),
-                ),
-              );
-            },
-            icon: const Icon(Icons.flash_on_rounded, color: Colors.white, size: 16),
-            label: Text(
-              'RAID LVL ${escalated.day} CITADEL ⚔️',
-              style: GoogleFonts.outfit(fontWeight: FontWeight.w900, color: Colors.white),
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFDC2626),
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   /// 🎲 Random House Raid Roulette ("കടകടകാ" Rapid Roll Animation)
   /// User audio directive: "ഒരു നാലാമത്തെ ലെവൽ ഒക്കെ ആകുമ്പോൾ നമുക്ക് അറ്റാക്ക് സ്റ്റാർട്ട് ചെയ്യാം...
@@ -1172,9 +1124,25 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
     }
 
     // Filter valid candidate neighbors (favoring higher levels: Level 5 or 6 for Level 4 user)
+    // Audio 16: Exclude banned, on-cooldown, and 48h Presidential Police Protected houses!
     List<PocketNeighbor> candidates = _neighbors
-        .where((n) => !n.isMe && !n.isBanned && !_bannedHouseIds.contains(n.id) && n.day > widget.currentDay)
+        .where((n) =>
+            !n.isMe &&
+            !n.isBanned &&
+            !_bannedHouseIds.contains(n.id) &&
+            !_protectedHouseIds.contains(n.id) &&
+            n.day > widget.currentDay)
         .toList();
+
+    if (candidates.isEmpty) {
+      candidates = _neighbors
+          .where((n) =>
+              !n.isMe &&
+              !n.isBanned &&
+              !_bannedHouseIds.contains(n.id) &&
+              !_protectedHouseIds.contains(n.id))
+          .toList();
+    }
 
     PocketNeighbor targetNeighbor;
     if (candidates.isNotEmpty) {
@@ -1189,11 +1157,9 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
         );
       }
     } else {
-      // Fallback to escalated target generated by service (e.g. Level 5 or 6)
-      targetNeighbor = PocketFortressDefenseService.generateRivalForUser(
-        widget.currentDay,
-        userStreak: widget.streak,
-      );
+      // Audio 16 Directive: When no eligible peer is available in the level bracket, fallback to Pocket Robo 🤖!
+      final targetRoboDay = widget.currentDay >= 4 ? widget.currentDay + 2 : 5;
+      targetNeighbor = PocketFortressDefenseService.generatePocketRoboDefender(targetRoboDay);
     }
 
     HapticFeedback.heavyImpact();
@@ -1282,7 +1248,7 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
                   InkWell(
                     onTap: () async {
                       await PocketDefenseAdminModal.show(context);
-                      _loadBannedHouses();
+                      _loadBannedAndProtectedHouses();
                     },
                     borderRadius: BorderRadius.circular(10),
                     child: Container(
@@ -1549,41 +1515,71 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
                                       ],
                                     ),
                                   ),
-                                  // Shield Icon
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                    decoration: BoxDecoration(
-                                      color: isBanned
-                                          ? const Color(0xFF7F1D1D).withValues(alpha: 0.6)
-                                          : (neighbor.hasActiveShield
-                                              ? const Color(0xFF065F46).withValues(alpha: 0.4)
-                                              : const Color(0xFF7F1D1D).withValues(alpha: 0.4)),
-                                      borderRadius: BorderRadius.circular(10),
-                                      border: Border.all(
-                                        color: isBanned
-                                            ? Colors.redAccent
-                                            : (neighbor.hasActiveShield ? const Color(0xFF10B981) : Colors.redAccent),
-                                        width: 0.8,
-                                      ),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Text(isBanned ? '🚫' : (neighbor.hasActiveShield ? '🛡️' : '⚠️'), style: const TextStyle(fontSize: 11)),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          isBanned ? 'Banned' : (neighbor.hasActiveShield ? 'Shield' : 'Raidable'),
-                                          style: TextStyle(
-                                            color: isBanned
-                                                ? Colors.redAccent
-                                                : (neighbor.hasActiveShield ? const Color(0xFF34D399) : Colors.redAccent),
-                                            fontSize: 9.5,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
+                                   // Defense Status Badge
+                                   Builder(builder: (ctx) {
+                                     final isProtected = _protectedHouseIds.contains(neighbor.id);
+                                     return Container(
+                                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                       decoration: BoxDecoration(
+                                         color: isBanned
+                                             ? const Color(0xFF7F1D1D).withValues(alpha: 0.6)
+                                             : (isProtected
+                                                 ? const Color(0xFF1E3A8A).withValues(alpha: 0.6)
+                                                 : (neighbor.isPocketRobo
+                                                     ? const Color(0xFF312E81).withValues(alpha: 0.5)
+                                                     : (neighbor.hasActiveShield
+                                                         ? const Color(0xFF065F46).withValues(alpha: 0.4)
+                                                         : const Color(0xFF7F1D1D).withValues(alpha: 0.4)))),
+                                         borderRadius: BorderRadius.circular(10),
+                                         border: Border.all(
+                                           color: isBanned
+                                               ? Colors.redAccent
+                                               : (isProtected
+                                                   ? const Color(0xFF60A5FA)
+                                                   : (neighbor.isPocketRobo
+                                                       ? const Color(0xFF818CF8)
+                                                       : (neighbor.hasActiveShield ? const Color(0xFF10B981) : Colors.redAccent))),
+                                           width: 0.8,
+                                         ),
+                                       ),
+                                       child: Row(
+                                         mainAxisSize: MainAxisSize.min,
+                                         children: [
+                                           Text(
+                                             isBanned
+                                                 ? '🚫'
+                                                 : (isProtected
+                                                     ? '👮‍♂️'
+                                                     : (neighbor.isPocketRobo
+                                                         ? '🤖'
+                                                         : (neighbor.hasActiveShield ? '🛡️' : '⚠️'))),
+                                             style: const TextStyle(fontSize: 11),
+                                           ),
+                                           const SizedBox(width: 4),
+                                           Text(
+                                             isBanned
+                                                 ? 'Banned'
+                                                 : (isProtected
+                                                     ? 'Protected (48h)'
+                                                     : (neighbor.isPocketRobo
+                                                         ? 'Robo'
+                                                         : (neighbor.hasActiveShield ? 'Home Defense' : 'Raidable'))),
+                                             style: TextStyle(
+                                               color: isBanned
+                                                   ? Colors.redAccent
+                                                   : (isProtected
+                                                       ? const Color(0xFF93C5FD)
+                                                       : (neighbor.isPocketRobo
+                                                           ? const Color(0xFFA5B4FC)
+                                                           : (neighbor.hasActiveShield ? const Color(0xFF34D399) : Colors.redAccent))),
+                                               fontSize: 9.5,
+                                               fontWeight: FontWeight.bold,
+                                             ),
+                                           ),
+                                         ],
+                                       ),
+                                     );
+                                   }),
                                 ],
                               ),
                             ),
@@ -1602,6 +1598,36 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
                                         streak: neighbor.streak,
                                       ),
                                     ),
+                                    // 👮‍♂️ Presidential Police Guard banner overlay
+                                    if (_protectedHouseIds.contains(neighbor.id))
+                                      Positioned(
+                                        top: 10,
+                                        right: 10,
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFF1E3A8A).withValues(alpha: 0.9),
+                                            borderRadius: BorderRadius.circular(8),
+                                            border: Border.all(color: const Color(0xFF60A5FA)),
+                                            boxShadow: const [BoxShadow(color: Colors.black45, blurRadius: 4)],
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: const [
+                                             Text('👮‍♂️', style: TextStyle(fontSize: 12)),
+                                             SizedBox(width: 4),
+                                             Text(
+                                               'POLICE GUARD ACTIVE',
+                                               style: TextStyle(
+                                                 color: Colors.white,
+                                                 fontSize: 9,
+                                                 fontWeight: FontWeight.w900,
+                                               ),
+                                             ),
+                                           ],
+                                         ),
+                                       ),
+                                     ),
                                     // Banned house ribbon seal
                                     if (isBanned)
                                       Positioned.fill(
@@ -1630,19 +1656,19 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
                                                       style: GoogleFonts.outfit(
                                                         color: Colors.white,
                                                         fontWeight: FontWeight.w900,
-                                                        fontSize: 13,
-                                                        letterSpacing: 1.0,
+                                                        fontSize: 14,
+                                                        letterSpacing: 1.2,
                                                       ),
                                                     ),
-                                                    const SizedBox(height: 2),
-                                                    const Text(
-                                                      'Fake Defense Traps Reported',
-                                                      style: TextStyle(
-                                                        color: Colors.white70,
-                                                        fontSize: 9.5,
-                                                        fontWeight: FontWeight.bold,
+                                                    if (neighbor.banReason != null) ...[
+                                                      const SizedBox(height: 2),
+                                                      Text(
+                                                        neighbor.banReason!,
+                                                        style: const TextStyle(color: Colors.white70, fontSize: 10),
+                                                        textAlign: TextAlign.center,
+                                                        maxLines: 2,
                                                       ),
-                                                    ),
+                                                    ],
                                                   ],
                                                 ),
                                               ),
@@ -1650,16 +1676,15 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
                                           ),
                                         ),
                                       ),
-                                    // Plot Number Tag
+                                    // House Level / Address Badge
                                     Positioned(
-                                      bottom: 10,
-                                      left: 14,
+                                      bottom: 8,
+                                      left: 8,
                                       child: Container(
                                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                         decoration: BoxDecoration(
-                                          color: Colors.black.withValues(alpha: 0.65),
+                                          color: Colors.black.withValues(alpha: 0.6),
                                           borderRadius: BorderRadius.circular(8),
-                                          border: Border.all(color: Colors.white12),
                                         ),
                                         child: Text(
                                           'Plot #${index + 1}',
@@ -1705,34 +1730,45 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
                                     ),
                                   ),
                                   const SizedBox(width: 8),
-                                  // Challenge / Duel button
-                                  Expanded(
-                                    flex: 1,
-                                    child: ElevatedButton.icon(
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: neighbor.isMe
-                                            ? const Color(0xFF1E293B)
-                                            : const Color(0xFF0284C7),
-                                        foregroundColor: Colors.white,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(12),
+                                  Builder(builder: (ctx) {
+                                    final isProtected = _protectedHouseIds.contains(neighbor.id);
+                                    return Expanded(
+                                      flex: 1,
+                                      child: ElevatedButton.icon(
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: neighbor.isMe
+                                              ? const Color(0xFF1E293B)
+                                              : (isProtected
+                                                  ? const Color(0xFF1E3A8A)
+                                                  : const Color(0xFFDC2626)),
+                                          foregroundColor: Colors.white,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(12),
+                                          ),
+                                          padding: const EdgeInsets.symmetric(vertical: 10),
+                                          elevation: neighbor.isMe ? 0 : 4,
                                         ),
-                                        padding: const EdgeInsets.symmetric(vertical: 10),
-                                        elevation: neighbor.isMe ? 0 : 4,
-                                      ),
-                                      onPressed: neighbor.isMe
-                                          ? null
-                                          : () => _openEnglishDuelDialog(neighbor),
-                                      icon: Text(neighbor.isMe ? '🏡' : '⚔️', style: const TextStyle(fontSize: 13)),
-                                      label: Text(
-                                        neighbor.isMe ? 'My Home' : 'Challenge',
-                                        style: GoogleFonts.outfit(
-                                          fontSize: 11.5,
-                                          fontWeight: FontWeight.bold,
+                                        onPressed: neighbor.isMe
+                                            ? null
+                                            : () => _openEnglishDuelDialog(neighbor),
+                                        icon: Text(
+                                          neighbor.isMe
+                                              ? '🏡'
+                                              : (isProtected ? '👮‍♂️' : '⚔️'),
+                                          style: const TextStyle(fontSize: 13),
+                                        ),
+                                        label: Text(
+                                          neighbor.isMe
+                                              ? 'My Home'
+                                              : (isProtected ? 'Protected' : 'Attack'),
+                                          style: GoogleFonts.outfit(
+                                            fontSize: 11.5,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                  ),
+                                    );
+                                  }),
                                 ],
                               ),
                             ),
