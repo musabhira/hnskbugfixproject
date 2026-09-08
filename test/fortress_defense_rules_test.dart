@@ -560,18 +560,18 @@ void main() {
     });
   });
 
-  group('Days 19–38 Deep Curriculum Expansion Tests (20-Day Mastery Set)', () {
-    test('PocketMissionCurriculumRegistry handles all days from 19 to 38', () {
-      for (int day = 19; day <= 38; day++) {
+  group('Days 19–50 Deep Curriculum Expansion Tests (Crossing Day 50 Milestone)', () {
+    test('PocketMissionCurriculumRegistry handles all days from 19 to 50', () {
+      for (int day = 19; day <= 50; day++) {
         expect(PocketMissionCurriculumRegistry.hasDay(day), isTrue,
             reason: 'Day $day must be supported by curriculum registry');
       }
       expect(PocketMissionCurriculumRegistry.hasDay(18), isFalse);
-      expect(PocketMissionCurriculumRegistry.hasDay(39), isFalse);
+      expect(PocketMissionCurriculumRegistry.hasDay(51), isFalse);
     });
 
-    test('Every day from 19 to 38 has complete stories, titles, and quizzes', () {
-      for (int day = 19; day <= 38; day++) {
+    test('Every day from 19 to 50 has complete stories, titles, and quizzes', () {
+      for (int day = 19; day <= 50; day++) {
         final story = PocketMissionCurriculumRegistry.getStoryText(day);
         expect(story.length, greaterThan(200), reason: 'Story for Day $day must be rich and detailed');
 
@@ -593,9 +593,9 @@ void main() {
       }
     });
 
-    test('Every day from 19 to 38 has 5-language grammar explanations and morals', () {
+    test('Every day from 19 to 50 has 5-language grammar explanations and morals', () {
       const languages = ['Malayalam', 'Tamil', 'Hindi', 'Telugu', 'Kannada'];
-      for (int day = 19; day <= 38; day++) {
+      for (int day = 19; day <= 50; day++) {
         for (final lang in languages) {
           final explanation = PocketMissionCurriculumRegistry.getGrammarRuleExplanation(day, lang);
           expect(explanation, isNotEmpty,
@@ -608,9 +608,9 @@ void main() {
       }
     });
 
-    test('Every day from 19 to 38 has exactly 10 high-impact vocabulary items (200 words total)', () {
+    test('Every day from 19 to 50 has exactly 10 high-impact vocabulary items (320 words total)', () {
       int totalVocabCount = 0;
-      for (int day = 19; day <= 38; day++) {
+      for (int day = 19; day <= 50; day++) {
         final vocabList = PocketMissionCurriculumRegistry.getVocabItems(day);
         expect(vocabList.length, equals(10),
             reason: 'Day $day must have exactly 10 high-impact vocabulary words');
@@ -628,7 +628,7 @@ void main() {
           expect(item.kannadaMeaning, isNotEmpty);
         }
       }
-      expect(totalVocabCount, equals(200));
+      expect(totalVocabCount, equals(320));
     });
   });
 }
