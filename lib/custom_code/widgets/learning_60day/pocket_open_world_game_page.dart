@@ -2,27 +2,39 @@ import 'dart:math' as math;
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../services/pocket_robot_service.dart';
 import '../avatar/vector_avatar_config.dart';
 import '../avatar/vector_avatar_painter.dart';
 import '../chat/whatsapp_group_chat.dart';
-import '../gallery_profile_search_page.dart';
+import '../english_learning_hub_page.dart';
+import '../main_profile_widget.dart';
+import '../voice_accent_coach_page.dart';
 import 'flame_english_house_game.dart';
 import 'pocket_citadel_attack_page.dart';
+import 'pocket_daily_mission_page.dart';
 import 'pocket_fortress_defense_service.dart';
 import 'pocket_world_street_page.dart';
 
 /// 🌍 Pocket Open World: Hill Climb Racing Style 2D Rolling-Hills Adventure
-/// Powered by Flame Engine (`FlameGame`)
 ///
-/// Features:
-/// 1. Hill Climb Racing Physics: Dynamic chassis pitch conforming to slopes, suspension bounce, and air-tilt controls!
-/// 2. Raw Listener Pedals: Reliable touch controls with instant engine braking on release ("നിർത്തിക്കഴിഞ്ഞാൽ വണ്ടി നിൽക്കണം").
-/// 3. Zero-Overlap Sequential House Plots: Guaranteed 440px spacing between houses with "STREET X • #N" signboards.
-/// 4. Collectible Golden Coins: 300+ spinning 3D gold coins (+1 Pocket Score each) with floating popups.
-/// 5. English Learning Elements: Floating Vocabulary Orbs (+5 XP with meaning) & Nitro Speed Gates with idioms!
-/// 6. Interactive Neighbor Cards: Tapping any house, avatar, or sign opens a modal card with direct Profile, Chat, Mate & Raid buttons!
+/// Upgraded Features:
+/// 1. True Hill Climb Racing Flipping & Stunts:
+///    - Throttle/Gas produces front wheelie lift; Brake produces nose dive.
+///    - If chassis tilts past 85°, vehicle flips onto its roof with sparks!
+///    - "🔄 RECOVER / FLIP" button rights the car on its wheels.
+///    - Mid-air backflip / frontflip stunt detection (+10 pts bonus!).
+/// 2. Spawning Directly At User's Own House:
+///    - Player starts right outside their home driveway (Street $currentDay) marked "🏠 YOUR HOME".
+/// 3. Direct Profile Navigation with ZERO Errors:
+///    - Opens [MainProfileWidget] cleanly for both Supabase users and Pocket Robots.
+/// 4. Roadside English Learning Billboards & Audio TTS:
+///    - Electronic LED billboards every 600px with Words, Meanings, Poems, and Quotes.
+///    - FlutterTTS pronounces English words and poems as you drive or tap!
+///    - Floating "📚 English Tools" quick access drawer (Stories, Poems, Vocabulary).
+/// 5. Majestic Ocean Suspension Bridges:
+///    - The road crosses high over turquoise ocean waters between sectors with towering suspension towers, cables, sailboats, and leaping dolphins.
 class PocketOpenWorldGamePage extends StatefulWidget {
   final int currentDay;
   final int streak;
@@ -48,23 +60,43 @@ class _PocketOpenWorldGamePageState extends State<PocketOpenWorldGamePage> {
   // Locomotion & Environment
   LocomotionMode _locomotion = LocomotionMode.buggy;
   bool _isNightMode = false;
+  bool _isAudioMuted = false;
 
   // Driving pedal states (Hill Climb style Gas & Brake/Reverse)
   bool _isGasPressed = false;
   bool _isBrakePressed = false;
 
   final FocusNode _keyboardFocusNode = FocusNode();
+  final FlutterTts _tts = FlutterTts();
 
   @override
   void initState() {
     super.initState();
+    _initTts();
     _initGame();
     _loadNeighbors();
+  }
+
+  Future<void> _initTts() async {
+    try {
+      await _tts.setLanguage('en-US');
+      await _tts.setSpeechRate(0.48);
+      await _tts.setVolume(1.0);
+    } catch (_) {}
+  }
+
+  Future<void> _speakEnglish(String text) async {
+    if (_isAudioMuted) return;
+    try {
+      await _tts.stop();
+      await _tts.speak(text);
+    } catch (_) {}
   }
 
   @override
   void dispose() {
     _keyboardFocusNode.dispose();
+    _tts.stop();
     super.dispose();
   }
 
@@ -87,6 +119,7 @@ class _PocketOpenWorldGamePageState extends State<PocketOpenWorldGamePage> {
         _showNeighborProfileCard(neighbor);
       },
       onWordCollected: (word, meaning) {
+        _speakEnglish('$word. $meaning');
         if (mounted) {
           ScaffoldMessenger.of(context).hideCurrentSnackBar();
           ScaffoldMessenger.of(context).showSnackBar(
@@ -128,16 +161,17 @@ class _PocketOpenWorldGamePageState extends State<PocketOpenWorldGamePage> {
           );
         }
       },
+      onBillboardRead: (board) {
+        _speakEnglish('${board.title}. ${board.content}');
+      },
     );
   }
 
   Future<void> _loadNeighbors() async {
     try {
-      // 1. Fetch Supabase neighbors
       final supaNeighbors = await PocketFortressDefenseService.fetchSupabaseNeighbors(limit: 50);
-
-      // 2. Fetch all 90 procedural Pocket Robots (Levels 1 to 90)
       final allRobots = PocketRobotService.getAll90Robots();
+
       final List<PocketNeighbor> robotNeighbors = allRobots.map((robot) {
         return PocketNeighbor(
           id: robot.id,
@@ -155,13 +189,11 @@ class _PocketOpenWorldGamePageState extends State<PocketOpenWorldGamePage> {
         );
       }).toList();
 
-      // 3. Dynamic target homes
       final dynamicTargets = PocketFortressDefenseService.generateDynamicTargetBracketHomes(
         widget.currentDay,
         count: 14,
       );
 
-      // Combine all and deduplicate
       final Map<String, PocketNeighbor> combinedMap = {};
       for (final r in robotNeighbors) {
         combinedMap[r.id] = r;
@@ -173,8 +205,7 @@ class _PocketOpenWorldGamePageState extends State<PocketOpenWorldGamePage> {
         combinedMap[s.id] = s;
       }
 
-      final combined = combinedMap.values.toList()
-        ..sort((a, b) => a.day.compareTo(b.day));
+      final combined = combinedMap.values.toList()..sort((a, b) => a.day.compareTo(b.day));
 
       if (mounted) {
         setState(() {
@@ -230,6 +261,16 @@ class _PocketOpenWorldGamePageState extends State<PocketOpenWorldGamePage> {
     _game.setDayNight(_isNightMode);
   }
 
+  void _toggleAudio() {
+    HapticFeedback.selectionClick();
+    setState(() {
+      _isAudioMuted = !_isAudioMuted;
+    });
+    if (_isAudioMuted) {
+      _tts.stop();
+    }
+  }
+
   void _setLocomotion(LocomotionMode mode) {
     HapticFeedback.selectionClick();
     setState(() {
@@ -239,7 +280,7 @@ class _PocketOpenWorldGamePageState extends State<PocketOpenWorldGamePage> {
   }
 
   /// 📇 Interactive Neighbor Profile Card Modal Bottom Sheet
-  /// Tapping avatar, house, or signpost displays this card
+  /// Clicking "View Profile" opens [MainProfileWidget] directly with zero UUID errors!
   void _showNeighborProfileCard(PocketNeighbor neighbor) {
     HapticFeedback.lightImpact();
     showModalBottomSheet(
@@ -267,7 +308,6 @@ class _PocketOpenWorldGamePageState extends State<PocketOpenWorldGamePage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Handle bar
               Container(
                 width: 44,
                 height: 4,
@@ -278,7 +318,6 @@ class _PocketOpenWorldGamePageState extends State<PocketOpenWorldGamePage> {
                 ),
               ),
 
-              // Avatar Badge & Details
               Row(
                 children: [
                   Container(
@@ -335,7 +374,7 @@ class _PocketOpenWorldGamePageState extends State<PocketOpenWorldGamePage> {
                                   border: Border.all(color: const Color(0xFF00F0FF), width: 0.8),
                                 ),
                                 child: const Text(
-                                  'BOT',
+                                  'ROBOT',
                                   style: TextStyle(
                                     color: Color(0xFF00F0FF),
                                     fontSize: 9,
@@ -357,7 +396,7 @@ class _PocketOpenWorldGamePageState extends State<PocketOpenWorldGamePage> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          '🔥 ${neighbor.streak} Day Streak • ${neighbor.hasActiveShield ? "🛡️ Fortress Shielded" : "🔓 Vulnerable"}',
+                          '🔥 ${neighbor.streak} Day Streak • ${neighbor.hasActiveShield ? "🛡️ Shield Active" : "🔓 Raid Open"}',
                           style: GoogleFonts.outfit(
                             color: Colors.white70,
                             fontSize: 11,
@@ -392,17 +431,30 @@ class _PocketOpenWorldGamePageState extends State<PocketOpenWorldGamePage> {
 
               const SizedBox(height: 18),
 
-              // Action Buttons Row 1: View Profile | Direct Chat
+              // Action Buttons: View Profile (Direct MainProfileWidget) | Direct Chat
               Row(
                 children: [
                   Expanded(
                     child: ElevatedButton.icon(
                       onPressed: () {
                         Navigator.pop(ctx);
+                        final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(neighbor.id);
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => GalleryProfileSearchPage(userid: neighbor.id),
+                            builder: (context) => MainProfileWidget(
+                              userId: isUuid ? neighbor.id : null,
+                              preloadedProfile: {
+                                'user_id': neighbor.id,
+                                'first_name': neighbor.name,
+                                'bio': neighbor.statusMessage,
+                                'learning_day': neighbor.day,
+                                'streak': neighbor.streak,
+                                'rank': neighbor.rank,
+                                'palette_id': neighbor.paletteId,
+                                'is_pocket_robo': neighbor.isPocketRobo,
+                              },
+                            ),
                           ),
                         );
                       },
@@ -439,7 +491,6 @@ class _PocketOpenWorldGamePageState extends State<PocketOpenWorldGamePage> {
               ),
               const SizedBox(height: 8),
 
-              // Action Buttons Row 2: Mate Request | Raid Citadel
               Row(
                 children: [
                   Expanded(
@@ -560,6 +611,194 @@ class _PocketOpenWorldGamePageState extends State<PocketOpenWorldGamePage> {
     });
   }
 
+  /// 📚 Opens English Learning Tools modal (Stories, Poems, Vocabulary)
+  void _openEnglishToolsModal() {
+    HapticFeedback.selectionClick();
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) {
+        return Container(
+          height: MediaQuery.of(context).size.height * 0.75,
+          padding: const EdgeInsets.all(20),
+          decoration: const BoxDecoration(
+            color: Color(0xFF0F172A),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+            border: Border(top: BorderSide(color: Color(0xFF38BDF8), width: 2)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 44,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 14),
+                  decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2)),
+                ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    '📚 English Highway Studio',
+                    style: GoogleFonts.outfit(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded, color: Colors.white70),
+                    onPressed: () => Navigator.pop(ctx),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+
+              // Tool Shortcuts
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildToolShortcut(
+                      icon: '🎙️',
+                      label: 'Accent Coach',
+                      color: const Color(0xFF6366F1),
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => const VoiceAccentCoachPage()));
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _buildToolShortcut(
+                      icon: '🏛️',
+                      label: 'Learning Hub',
+                      color: const Color(0xFF0284C7),
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => const EnglishLearningHubPage()));
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _buildToolShortcut(
+                      icon: '🎯',
+                      label: 'Day Mission',
+                      color: const Color(0xFF10B981),
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => PocketDailyMissionPage(
+                              day: widget.currentDay,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 16),
+              Text(
+                '📜 Micro-Poems & Stories on Road',
+                style: GoogleFonts.outfit(color: const Color(0xFFFFFC00), fontSize: 13, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+
+              Expanded(
+                child: ListView(
+                  children: [
+                    _buildPoemCard(
+                      title: 'The Road Not Taken',
+                      poet: 'Robert Frost',
+                      snippet: 'Two roads diverged in a yellow wood, and I took the one less traveled by.',
+                    ),
+                    _buildPoemCard(
+                      title: 'Hope is the Thing with Feathers',
+                      poet: 'Emily Dickinson',
+                      snippet: 'Hope is the thing with feathers that perches in the soul, and sings the tune without words.',
+                    ),
+                    _buildPoemCard(
+                      title: 'The Secret of Speed',
+                      poet: 'English Wisdom',
+                      snippet: 'Step by step, hill by hill, fluency is born through daily will.',
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildToolShortcut({
+    required String icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.2),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: color, width: 1.2),
+        ),
+        child: Column(
+          children: [
+            Text(icon, style: const TextStyle(fontSize: 20)),
+            const SizedBox(height: 4),
+            Text(label, style: GoogleFonts.outfit(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPoemCard({
+    required String title,
+    required String poet,
+    required String snippet,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E293B),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white10),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          IconButton(
+            icon: const Icon(Icons.volume_up_rounded, color: Color(0xFF38BDF8), size: 22),
+            onPressed: () => _speakEnglish('$title by $poet. $snippet'),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: GoogleFonts.outfit(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
+                Text(poet, style: GoogleFonts.outfit(color: const Color(0xFFFFFC00), fontSize: 10.5)),
+                const SizedBox(height: 4),
+                Text('"$snippet"', style: GoogleFonts.outfit(color: Colors.white70, fontSize: 11, fontStyle: FontStyle.italic)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _updateDrivingInput() {
     double dx = 0.0;
     if (_isGasPressed) dx += 1.0;
@@ -574,25 +813,20 @@ class _PocketOpenWorldGamePageState extends State<PocketOpenWorldGamePage> {
       autofocus: true,
       onKeyEvent: (event) {
         if (event is KeyDownEvent) {
-          if (event.logicalKey == LogicalKeyboardKey.arrowRight ||
-              event.logicalKey == LogicalKeyboardKey.keyD) {
+          if (event.logicalKey == LogicalKeyboardKey.arrowRight || event.logicalKey == LogicalKeyboardKey.keyD) {
             _isGasPressed = true;
             _updateDrivingInput();
-          } else if (event.logicalKey == LogicalKeyboardKey.arrowLeft ||
-              event.logicalKey == LogicalKeyboardKey.keyA) {
+          } else if (event.logicalKey == LogicalKeyboardKey.arrowLeft || event.logicalKey == LogicalKeyboardKey.keyA) {
             _isBrakePressed = true;
             _updateDrivingInput();
-          } else if (event.logicalKey == LogicalKeyboardKey.space ||
-              event.logicalKey == LogicalKeyboardKey.arrowUp) {
+          } else if (event.logicalKey == LogicalKeyboardKey.space || event.logicalKey == LogicalKeyboardKey.arrowUp) {
             _triggerJump();
           }
         } else if (event is KeyUpEvent) {
-          if (event.logicalKey == LogicalKeyboardKey.arrowRight ||
-              event.logicalKey == LogicalKeyboardKey.keyD) {
+          if (event.logicalKey == LogicalKeyboardKey.arrowRight || event.logicalKey == LogicalKeyboardKey.keyD) {
             _isGasPressed = false;
             _updateDrivingInput();
-          } else if (event.logicalKey == LogicalKeyboardKey.arrowLeft ||
-              event.logicalKey == LogicalKeyboardKey.keyA) {
+          } else if (event.logicalKey == LogicalKeyboardKey.arrowLeft || event.logicalKey == LogicalKeyboardKey.keyA) {
             _isBrakePressed = false;
             _updateDrivingInput();
           }
@@ -751,6 +985,44 @@ class _PocketOpenWorldGamePageState extends State<PocketOpenWorldGamePage> {
 
                       const SizedBox(width: 6),
 
+                      // 📚 English Studio Button
+                      GestureDetector(
+                        onTap: _openEnglishToolsModal,
+                        child: Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF0F172A).withValues(alpha: 0.9),
+                            shape: BoxShape.circle,
+                            border: Border.all(color: const Color(0xFF38BDF8), width: 1.2),
+                          ),
+                          child: const Center(
+                            child: Text('📚', style: TextStyle(fontSize: 14)),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(width: 6),
+
+                      // 🔊 Audio TTS Mute / Unmute Toggle
+                      GestureDetector(
+                        onTap: _toggleAudio,
+                        child: Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: _isAudioMuted ? Colors.red.withValues(alpha: 0.7) : const Color(0xFF0F172A),
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white24, width: 1),
+                          ),
+                          child: Center(
+                            child: Text(_isAudioMuted ? '🔇' : '🔊', style: const TextStyle(fontSize: 13)),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(width: 6),
+
                       // Day / Night Mini Toggle
                       GestureDetector(
                         onTap: _toggleDayNight,
@@ -861,7 +1133,6 @@ class _PocketOpenWorldGamePageState extends State<PocketOpenWorldGamePage> {
                             ),
                           ),
                           const SizedBox(width: 12),
-                          // Action Icons: Chat | Mate | Raid
                           _buildActionIcon(
                             icon: Icons.chat_bubble_rounded,
                             color: const Color(0xFF25D366),
@@ -888,8 +1159,62 @@ class _PocketOpenWorldGamePageState extends State<PocketOpenWorldGamePage> {
                   ),
                 ),
 
-              // 4. Hill Climb Racing Driving Pedals (Bottom HUD)
-              // Left: BRAKE / REVERSE Pedal (◀️ REV) using raw Listener for guaranteed touch release
+              // 4. 🔄 CAR FLIP / RECOVER BUTTON (Hill Climb Racing Crash Recovery)
+              ValueListenableBuilder<bool>(
+                valueListenable: _game.isCrashedNotifier,
+                builder: (context, isCrashed, _) {
+                  if (!isCrashed) return const SizedBox.shrink();
+                  return Positioned(
+                    bottom: 118,
+                    left: 0,
+                    right: 0,
+                    child: Center(
+                      child: GestureDetector(
+                        onTap: () {
+                          HapticFeedback.heavyImpact();
+                          _game.recoverFromCrash();
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFFEF4444), Color(0xFFF97316)],
+                            ),
+                            borderRadius: BorderRadius.circular(24),
+                            border: Border.all(color: Colors.white, width: 2),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.redAccent.withValues(alpha: 0.6),
+                                blurRadius: 18,
+                                spreadRadius: 2,
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text('🔄', style: TextStyle(fontSize: 20)),
+                              const SizedBox(width: 8),
+                              Text(
+                                'FLIP / RECOVER',
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 1,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+
+              // 5. Hill Climb Racing Driving Pedals (Bottom HUD)
+              // Left: BRAKE / REVERSE Pedal (◀️ REV) using raw Listener
               Positioned(
                 bottom: 24,
                 left: 20,
@@ -994,7 +1319,7 @@ class _PocketOpenWorldGamePageState extends State<PocketOpenWorldGamePage> {
 
                     const SizedBox(width: 14),
 
-                    // ▶️ GAS / ACCELERATE PEDAL (Hill Climb Racing Style with Listener)
+                    // ▶️ GAS / ACCELERATE PEDAL (Hill Climb Racing Style)
                     Listener(
                       behavior: HitTestBehavior.opaque,
                       onPointerDown: (_) {
@@ -1124,13 +1449,14 @@ class _PocketOpenWorldGamePageState extends State<PocketOpenWorldGamePage> {
 
 enum LocomotionMode { walk, bike, buggy }
 
-/// 🎮 Flame Game Engine Implementation with Hill Climb Racing Physics, Coins, & English Learning
+/// 🎮 Flame Game Engine Implementation with Hill Climb Racing Physics, Stunts, Bridges, & English Learning
 class PocketOpenWorldGame extends FlameGame {
   final int playerDay;
   final int playerStreak;
   final ValueChanged<PocketNeighbor?> onProximityChanged;
   final ValueChanged<PocketNeighbor> onProfileTap;
   final void Function(String word, String meaning)? onWordCollected;
+  final void Function(RoadsideLearningBoard board)? onBillboardRead;
   double initialZoom;
 
   PocketOpenWorldGame({
@@ -1139,10 +1465,11 @@ class PocketOpenWorldGame extends FlameGame {
     required this.onProximityChanged,
     required this.onProfileTap,
     this.onWordCollected,
+    this.onBillboardRead,
     this.initialZoom = 0.82,
   });
 
-  // World Bounds (Dynamically extended to 55,000+ px for endless scenic driving!)
+  // World Bounds
   double worldWidth = 55000.0;
   final double worldHeight = 1700.0;
   final double groundBaseY = 960.0;
@@ -1152,23 +1479,31 @@ class PocketOpenWorldGame extends FlameGame {
   double cameraX = 200.0;
   double cameraY = 600.0;
 
-  // Player Physics (Hill Climb Racing dynamics)
+  // Player Physics & Hill Climb Racing Tipping dynamics
   double playerX = 240.0;
   double playerY = 960.0;
-  double playerZ = 0.0; // Vertical leap height
+  double playerZ = 0.0;
   double vx = 0.0;
   double vy = 0.0;
   double jumpVelocity = 0.0;
   bool isJumping = false;
   double airTime = 0.0;
-  double playerFacing = 1.0; // 1 = forward (right), -1 = reverse (left)
+  double playerFacing = 1.0;
   bool isMoving = false;
   double runCycle = 0.0;
   double bikeWheelAngle = 0.0;
   double carWheelAngle = 0.0;
-  double chassisTilt = 0.0; // Dynamic pitch angle matching hill slope
+
+  // Chassis tilt & rotational angular velocity for genuine Hill Climb Racing flips
+  double chassisTilt = 0.0;
+  double angularVelocity = 0.0;
   double suspensionOffset = 0.0;
   double inputDx = 0.0;
+  double airRotationProgress = 0.0;
+
+  // Crash State
+  bool isCrashed = false;
+  final ValueNotifier<bool> isCrashedNotifier = ValueNotifier<bool>(false);
 
   // Environment & Modes
   bool isNight = false;
@@ -1184,18 +1519,17 @@ class PocketOpenWorldGame extends FlameGame {
   // House nodes on the hill
   final List<WorldHouseNode> houseNodes = [];
 
-  // Collectibles: Coins & English Learning Elements
+  // Collectibles: Coins, English Learning Elements, & Roadside Billboards
   final List<WorldCoin> coins = [];
   final List<EnglishWordOrb> englishOrbs = [];
   final List<EnglishSpeedGate> speedGates = [];
+  final List<RoadsideLearningBoard> roadsideBoards = [];
 
   // Roaming NPCs
   List<RoamingRobotNpc> robotNpcs = [];
 
-  // Cruising Boats on the living river
+  // Cruising Boats & Leaping Dolphins on the ocean
   List<CruisingBoat> riverBoats = [];
-
-  // Flying Seagulls
   List<FlyingBird> seagulls = [];
 
   // Particles & Floating Text FX
@@ -1214,7 +1548,6 @@ class PocketOpenWorldGame extends FlameGame {
     zoomScale = initialZoom;
     playerY = getGroundY(playerX);
 
-    // Prepare player's authentic VectorAvatar painter
     playerAvatarPainter = VectorAvatarPainter(
       config: VectorAvatarConfig.getEvolutionAvatarForStage(playerDay),
       showBackgroundAura: false,
@@ -1224,6 +1557,7 @@ class PocketOpenWorldGame extends FlameGame {
     _spawnRiverBoatsAndSeagulls();
     _generateCoins();
     _generateEnglishLearningElements();
+    _generateRoadsideBoards();
   }
 
   void setZoom(double newZoom) {
@@ -1241,9 +1575,33 @@ class PocketOpenWorldGame extends FlameGame {
     locomotion = mode;
   }
 
-  /// ⛰️ Rolling Hills Mathematical Spline
-  /// Generates continuous smooth slopes, crests, and valleys
+  /// 🌊 Check if coordinate is crossing an ocean suspension bridge
+  bool isOceanBridge(double x) {
+    return (x >= 6200.0 && x <= 7600.0) || (x >= 18200.0 && x <= 19800.0) || (x >= 36200.0 && x <= 38000.0);
+  }
+
+  /// ⛰️ Rolling Hills & Ocean Suspension Bridges Spline
   double getGroundY(double x) {
+    // 1. Ocean Suspension Bridge 1 (Streets 10 to 12)
+    if (x >= 6200.0 && x <= 7600.0) {
+      final progress = (x - 6200.0) / 1400.0;
+      final arch = math.sin(progress * math.pi) * 32.0;
+      return groundBaseY - 25.0 - arch;
+    }
+    // 2. Ocean Suspension Bridge 2 (Streets 30 to 32)
+    if (x >= 18200.0 && x <= 19800.0) {
+      final progress = (x - 18200.0) / 1600.0;
+      final arch = math.sin(progress * math.pi) * 38.0;
+      return groundBaseY - 25.0 - arch;
+    }
+    // 3. Ocean Suspension Bridge 3 (Streets 60 to 62)
+    if (x >= 36200.0 && x <= 38000.0) {
+      final progress = (x - 36200.0) / 1800.0;
+      final arch = math.sin(progress * math.pi) * 42.0;
+      return groundBaseY - 25.0 - arch;
+    }
+
+    // Rolling Hills elsewhere
     final wave1 = math.sin(x * 0.0024) * 55.0;
     final wave2 = math.sin(x * 0.0012 + 1.2) * 95.0;
     final wave3 = math.sin(x * 0.0006) * 120.0;
@@ -1258,8 +1616,7 @@ class PocketOpenWorldGame extends FlameGame {
     return math.atan2(y2 - y1, delta * 2);
   }
 
-  /// 🏡 Distribute all houses with ZERO overlaps!
-  /// Guarantees a minimum gap of 440px between houses, sequential indexing ("STREET 4 • #1", "STREET 4 • #2")
+  /// 🏡 Distribute all houses with ZERO overlaps and spawn player at their own home!
   void setNeighbors(List<PocketNeighbor> list) {
     houseNodes.clear();
 
@@ -1271,6 +1628,7 @@ class PocketOpenWorldGame extends FlameGame {
     const minGap = 440.0;
     double currentX = 350.0;
     final Map<int, int> currentLevelIndex = {};
+    double playerHomeSpawnX = 450.0;
 
     for (int i = 0; i < list.length; i++) {
       final neighbor = list[i];
@@ -1279,7 +1637,13 @@ class PocketOpenWorldGame extends FlameGame {
       currentLevelIndex[lvl] = idxInLevel;
 
       final progressRatio = (lvl - 1) / 89.0;
-      final targetX = 350.0 + (progressRatio * 46000.0) + ((idxInLevel - 1) * minGap);
+      double targetX = 350.0 + (progressRatio * 46000.0) + ((idxInLevel - 1) * minGap);
+
+      // Avoid placing house directly in the middle of ocean bridges
+      if (targetX >= 6100 && targetX <= 7700) targetX = 7780;
+      if (targetX >= 18100 && targetX <= 19900) targetX = 19980;
+      if (targetX >= 36100 && targetX <= 38100) targetX = 38180;
+
       final x = math.max(currentX, targetX);
       final y = getGroundY(x);
       currentX = x + minGap;
@@ -1294,7 +1658,14 @@ class PocketOpenWorldGame extends FlameGame {
       }
 
       final totalInLvl = housesPerLevel[lvl] ?? 1;
-      final streetLabel = totalInLvl > 1 ? 'STREET $lvl • #$idxInLevel' : 'STREET $lvl';
+      final bool isMyOwnHome = lvl == playerDay && idxInLevel == 1;
+      final streetLabel = isMyOwnHome
+          ? '🏠 YOUR HOME • Street $lvl'
+          : (totalInLvl > 1 ? 'STREET $lvl • #$idxInLevel' : 'STREET $lvl');
+
+      if (isMyOwnHome) {
+        playerHomeSpawnX = x;
+      }
 
       houseNodes.add(
         WorldHouseNode(
@@ -1303,27 +1674,33 @@ class PocketOpenWorldGame extends FlameGame {
           y: y,
           sectorIndex: sectorIndex,
           streetSignLabel: streetLabel,
+          isPlayerHome: isMyOwnHome,
           isNight: isNight,
         ),
       );
     }
 
     worldWidth = math.max(55000.0, currentX + 2000.0);
+
+    // 🚀 SPAWN PLAYER DIRECTLY AT THEIR OWN HOME DRIVEWAY!
+    playerX = playerHomeSpawnX;
+    playerY = getGroundY(playerX);
+    cameraX = (playerX - (size.x / zoomScale / 2)).clamp(0.0, worldWidth);
+
     _generateCoins();
     _generateEnglishLearningElements();
+    _generateRoadsideBoards();
   }
 
   /// 🟡 Generate 300+ Golden Coins along the Highway
   void _generateCoins() {
     coins.clear();
     for (double x = 450.0; x < worldWidth - 600.0; x += 190.0) {
-      // Avoid placing right in house doorways
       final nearHouse = houseNodes.any((h) => (h.x - x).abs() < 85);
       if (nearHouse) continue;
 
       final groupType = ((x / 190).floor()) % 3;
       if (groupType == 0) {
-        // Arc of 3 coins over hill
         for (int c = 0; c < 3; c++) {
           final cx = x + (c * 36.0);
           final groundY = getGroundY(cx);
@@ -1331,7 +1708,6 @@ class PocketOpenWorldGame extends FlameGame {
           coins.add(WorldCoin(x: cx, y: groundY - arcHeight, spinPhase: c * 0.4));
         }
       } else if (groupType == 1) {
-        // Single coin floating at car level
         final groundY = getGroundY(x);
         coins.add(WorldCoin(x: x, y: groundY - 24.0));
       }
@@ -1399,6 +1775,85 @@ class PocketOpenWorldGame extends FlameGame {
     }
   }
 
+  /// 📜 Generate Roadside Electronic Billboards with Poems, Quotes, & Vocabulary
+  void _generateRoadsideBoards() {
+    roadsideBoards.clear();
+
+    final boardsData = [
+      (
+        'VOCAB',
+        'PERSISTENCE',
+        'Continued effort despite difficulty or delay.',
+        '"Persistence breaks through all barriers."',
+      ),
+      (
+        'POEM',
+        'The Road Not Taken',
+        'Two roads diverged in a yellow wood...',
+        '— Robert Frost',
+      ),
+      (
+        'QUOTE',
+        'Step By Step',
+        'The journey of a thousand miles begins with a single step.',
+        '— Lao Tzu',
+      ),
+      (
+        'VOCAB',
+        'ELOQUENT',
+        'Fluent or persuasive in speaking or writing.',
+        '"Her eloquent words inspired the whole team."',
+      ),
+      (
+        'POEM',
+        'Hope With Feathers',
+        'Hope is the thing with feathers that perches in the soul.',
+        '— Emily Dickinson',
+      ),
+      (
+        'QUOTE',
+        'Courage to Grow',
+        'Mistakes are the portals of discovery.',
+        '— James Joyce',
+      ),
+      (
+        'VOCAB',
+        'FORTITUDE',
+        'Courage in pain or adversity.',
+        '"True fortitude shines in moments of challenge."',
+      ),
+      (
+        'POEM',
+        'The Secret Road',
+        'The road goes ever on and on, down from the door.',
+        '— J.R.R. Tolkien',
+      ),
+      (
+        'QUOTE',
+        'Daily Habit',
+        'We are what we repeatedly do. Excellence is a habit.',
+        '— Aristotle',
+      ),
+    ];
+
+    for (int i = 0; i < boardsData.length; i++) {
+      final x = 900.0 + (i * 5400.0);
+      if (x < worldWidth - 800) {
+        final y = getGroundY(x);
+        roadsideBoards.add(
+          RoadsideLearningBoard(
+            x: x,
+            y: y,
+            category: boardsData[i].$1,
+            title: boardsData[i].$2,
+            content: boardsData[i].$3,
+            subtext: boardsData[i].$4,
+          ),
+        );
+      }
+    }
+  }
+
   void _spawnRoamingRobots() {
     robotNpcs = [
       RoamingRobotNpc(
@@ -1408,7 +1863,7 @@ class PocketOpenWorldGame extends FlameGame {
         y: getGroundY(600),
         patrolMinX: 350,
         patrolMaxX: 900,
-        speechText: 'Welcome to the 2D Open World! 🌟',
+        speechText: 'Welcome to your Open World! 🌟',
       ),
       RoamingRobotNpc(
         id: 'robo_valk',
@@ -1461,16 +1916,17 @@ class PocketOpenWorldGame extends FlameGame {
   void setHorizontalInput(double dx, bool sprint) {
     inputDx = dx;
     isMoving = dx.abs() > 0.08;
-    if (dx.abs() > 0.08) {
+    if (dx.abs() > 0.08 && !isCrashed) {
       playerFacing = dx > 0 ? 1.0 : -1.0;
     }
   }
 
-  /// 🦘 Tight, exciting arcade jump that stays in view
+  /// 🦘 Tight arcade jump
   void playerJump() {
-    if (!isJumping) {
+    if (!isJumping && !isCrashed) {
       isJumping = true;
       airTime = 0.0;
+      airRotationProgress = 0.0;
       jumpVelocity = locomotion == LocomotionMode.buggy ? 13.5 : (locomotion == LocomotionMode.bike ? 13.0 : 11.5);
 
       final groundY = getGroundY(playerX);
@@ -1488,11 +1944,43 @@ class PocketOpenWorldGame extends FlameGame {
     }
   }
 
-  /// 👆 Direct screen tap handling: checks if tapped any house, avatar, or signpost
+  /// 🔄 Recovers vehicle from a flip/crash back onto its wheels
+  void recoverFromCrash() {
+    isCrashed = false;
+    isCrashedNotifier.value = false;
+    chassisTilt = getGroundSlope(playerX);
+    angularVelocity = 0.0;
+    playerZ = 35.0;
+    jumpVelocity = 6.0;
+    isJumping = true;
+
+    floatingTexts.add(
+      FloatingTextEffect(
+        text: '🔄 BACK ON WHEELS!',
+        x: playerX,
+        y: playerY - 45,
+        color: const Color(0xFF10B981),
+      ),
+    );
+  }
+
+  /// 👆 Direct screen tap handling: checks if tapped any house, avatar, signpost, or billboard
   void handleTapAt(Offset screenOffset) {
     final worldX = (screenOffset.dx / zoomScale) + cameraX;
     final worldY = (screenOffset.dy / zoomScale) + cameraY;
 
+    // Check Roadside Billboards
+    for (final board in roadsideBoards) {
+      final dist = math.sqrt(math.pow(worldX - board.x, 2) + math.pow(worldY - (board.y - 75), 2));
+      if (dist < 110) {
+        if (onBillboardRead != null) {
+          onBillboardRead!(board);
+        }
+        return;
+      }
+    }
+
+    // Check Houses / Avatars / Signposts
     for (final node in houseNodes) {
       final avatarCenterY = node.y - 220;
       final distAvatar = math.sqrt(math.pow(worldX - node.x, 2) + math.pow(worldY - avatarCenterY, 2));
@@ -1511,7 +1999,25 @@ class PocketOpenWorldGame extends FlameGame {
     super.update(dt);
     gameTime += dt;
 
-    // 1. Hill Climb Racing Driving Physics with Engine Braking
+    // If vehicle crashed (flipped over onto its roof), apply crash skidding physics
+    if (isCrashed) {
+      vx *= math.pow(0.82, dt * 60);
+      playerX += vx * dt;
+      playerY = getGroundY(playerX);
+      if ((gameTime % 0.08) < dt) {
+        particles.add(
+          JumpDustParticle(
+            x: playerX + (math.Random().nextDouble() * 20 - 10),
+            y: playerY - 5,
+            vx: (math.Random().nextDouble() * 40 - 20),
+            vy: -25,
+          ),
+        );
+      }
+      return;
+    }
+
+    // 1. Hill Climb Racing Driving Physics & Engine Braking
     double accel = 0.0;
     double maxSpeed = 380.0;
     if (locomotion == LocomotionMode.bike) {
@@ -1526,79 +2032,113 @@ class PocketOpenWorldGame extends FlameGame {
     }
 
     if (inputDx > 0.05) {
-      // Forward gas
       vx += accel * dt;
       vx = vx.clamp(-maxSpeed * 0.5, maxSpeed);
     } else if (inputDx < -0.05) {
-      // Brake / Reverse
       if (vx > 20.0) {
-        // Active hard brake
-        vx -= 1300.0 * dt;
+        vx -= 1300.0 * dt; // Active braking
       } else {
-        // Reverse
-        vx -= (accel * 0.65) * dt;
+        vx -= (accel * 0.65) * dt; // Reverse
         vx = vx.clamp(-maxSpeed * 0.5, maxSpeed);
       }
     } else {
-      // Responsive Engine Braking when gas is released ("നിർത്തിക്കഴിഞ്ഞാൽ വണ്ടി നിൽക്കണം")
+      // Immediate engine braking on release ("നിർത്തിക്കഴിഞ്ഞാൽ വണ്ടി നിൽക്കണം")
       vx *= math.pow(0.68, dt * 60);
       if (vx.abs() < 5.0) vx = 0.0;
     }
 
-    // Apply horizontal motion
     playerX += vx * dt;
     playerX = playerX.clamp(100.0, worldWidth - 100.0);
 
-    // Wheel rotation & run cycles
     runCycle += dt * (vx.abs() / 20.0);
     bikeWheelAngle += (vx * dt) / 10.0;
     carWheelAngle += (vx * dt) / 8.0;
-
-    // Update speedometer
     speedNotifier.value = (vx.abs() * 0.12);
 
-    // Buggy exhaust smoke when pressing gas
-    if (locomotion == LocomotionMode.buggy && vx.abs() > 40.0 && (gameTime % 0.06) < dt) {
-      final groundY = getGroundY(playerX);
-      particles.add(
-        JumpDustParticle(
-          x: playerX - (playerFacing * 28),
-          y: groundY - playerZ - 6,
-          vx: -playerFacing * (vx.abs() * 0.35 + 20),
-          vy: -10,
-        ),
-      );
-    }
-
-    // Ground slope tracking
     final groundY = getGroundY(playerX);
     final targetSlope = getGroundSlope(playerX);
 
-    // 2. Chassis Tilt & Suspension Physics
+    // 2. Hill Climb Racing Tipping / Flip Physics & Torques
     if (!isJumping) {
-      chassisTilt += (targetSlope - chassisTilt) * 0.28;
+      // On Ground:
+      // Gas lifts front wheels (wheelie torque); Brake pushes nose down
+      if (inputDx > 0) {
+        angularVelocity -= 1.6 * dt;
+      } else if (inputDx < 0) {
+        angularVelocity += 2.0 * dt;
+      }
+
+      // Spring torque aligns with hill slope
+      angularVelocity += (targetSlope - chassisTilt) * 12.0 * dt;
+      angularVelocity *= math.pow(0.78, dt * 60); // Damping
+      chassisTilt += angularVelocity * dt;
+
+      // Check Flip / Driver Down Crash
+      if ((chassisTilt - targetSlope).abs() > 1.38) {
+        isCrashed = true;
+        isCrashedNotifier.value = true;
+        HapticFeedback.heavyImpact();
+
+        floatingTexts.add(
+          FloatingTextEffect(
+            text: '💥 FLIPPED! DRIVER DOWN! 🔄',
+            x: playerX,
+            y: groundY - 45,
+            color: const Color(0xFFEF4444),
+          ),
+        );
+      }
+
       suspensionOffset = math.sin(gameTime * 14.0) * (vx.abs() > 30 ? 1.8 : 0.0);
     } else {
+      // In Air: Player controls tilt rotation with Gas/Brake
       airTime += dt;
       if (inputDx > 0) {
-        chassisTilt -= 0.6 * dt;
+        chassisTilt -= 2.8 * dt; // Tilt back
+        airRotationProgress -= 2.8 * dt;
       } else if (inputDx < 0) {
-        chassisTilt += 0.6 * dt;
+        chassisTilt += 2.8 * dt; // Tilt forward
+        airRotationProgress += 2.8 * dt;
       }
-      chassisTilt = chassisTilt.clamp(-0.65, 0.65);
+
+      // Detect 360 backflip / frontflip stunt!
+      if (airRotationProgress.abs() >= (math.pi * 2 * 0.85)) {
+        airRotationProgress = 0.0;
+        floatingTexts.add(
+          FloatingTextEffect(
+            text: '🏆 360 FLIP STUNT! +10 🟡',
+            x: playerX,
+            y: playerY - 40,
+            color: const Color(0xFFFFFC00),
+          ),
+        );
+        PocketFortressDefenseService.awardPoints(10);
+      }
     }
 
-    // 3. Vertical Jump & Airtime Bonus
+    // 3. Vertical Jump & Landing
     if (isJumping) {
       playerZ += jumpVelocity;
-      jumpVelocity -= 0.65; // Snappy arcade gravity
+      jumpVelocity -= 0.65;
       if (playerZ <= 0.0) {
         playerZ = 0.0;
         isJumping = false;
         jumpVelocity = 0.0;
 
-        // Big jump air-time award
-        if (airTime >= 0.7) {
+        // Check if landed upside down
+        if ((chassisTilt - targetSlope).abs() > 1.35) {
+          isCrashed = true;
+          isCrashedNotifier.value = true;
+          HapticFeedback.heavyImpact();
+          floatingTexts.add(
+            FloatingTextEffect(
+              text: '💥 ROUGH LANDING! FLIPPED! 🔄',
+              x: playerX,
+              y: groundY - 45,
+              color: const Color(0xFFEF4444),
+            ),
+          );
+        } else if (airTime >= 0.7) {
           floatingTexts.add(
             FloatingTextEffect(
               text: '🚀 AIR TIME ${airTime.toStringAsFixed(1)}s! +2 🟡',
@@ -1610,7 +2150,6 @@ class PocketOpenWorldGame extends FlameGame {
           PocketFortressDefenseService.awardPoints(2);
         }
 
-        // Landing dust particles
         for (int i = 0; i < 5; i++) {
           final angle = (i / 5) * math.pi * 2;
           particles.add(
@@ -1647,7 +2186,6 @@ class PocketOpenWorldGame extends FlameGame {
             color: const Color(0xFFFFFC00),
           ),
         );
-        // Persist +1 Pocket Score!
         PocketFortressDefenseService.awardPoints(1);
       }
     }
@@ -1673,14 +2211,22 @@ class PocketOpenWorldGame extends FlameGame {
       }
     }
 
-    // 6. Nitro Speed Boost Gates with English Idioms
+    // 6. Roadside Billboards proximity auto-read
+    for (final board in roadsideBoards) {
+      if (!board.isRead && (playerX - board.x).abs() < 55) {
+        board.isRead = true;
+        if (onBillboardRead != null) {
+          onBillboardRead!(board);
+        }
+      }
+    }
+
+    // 7. Nitro Speed Boost Gates
     for (final gate in speedGates) {
       if ((playerX - gate.x).abs() < 35 && (playerY - gate.y).abs() < 90) {
         if (gameTime - gate.lastTriggerTime > 3.0) {
           gate.lastTriggerTime = gameTime;
           HapticFeedback.heavyImpact();
-
-          // Grant turbo boost forward
           vx = (vx >= 0 ? 1 : -1) * (maxSpeed * 1.35);
 
           floatingTexts.add(
@@ -1706,27 +2252,22 @@ class PocketOpenWorldGame extends FlameGame {
       }
     }
 
-    // 7. Update Particles & Floating Text
+    // 8. Update Particles & Floating Text
     for (int i = particles.length - 1; i >= 0; i--) {
       particles[i].update(dt);
-      if (particles[i].isDead) {
-        particles.removeAt(i);
-      }
+      if (particles[i].isDead) particles.removeAt(i);
     }
     for (int i = floatingTexts.length - 1; i >= 0; i--) {
       floatingTexts[i].update(dt);
-      if (floatingTexts[i].isDead) {
-        floatingTexts.removeAt(i);
-      }
+      if (floatingTexts[i].isDead) floatingTexts.removeAt(i);
     }
 
-    // 8. Update Roaming Robots
+    // 9. Update Roaming Robots
     for (final bot in robotNpcs) {
       bot.update(dt);
       bot.y = getGroundY(bot.x);
     }
 
-    // 9. Update Cruising Boats & Flying Birds
     for (final boat in riverBoats) {
       boat.update(dt, worldWidth);
     }
@@ -1741,7 +2282,7 @@ class PocketOpenWorldGame extends FlameGame {
       }
     }
 
-    // 11. Smooth Camera Tracking
+    // 11. Camera Tracking
     final viewportW = size.x / zoomScale;
     final viewportH = size.y / zoomScale;
     final targetCamX = playerX - (viewportW / 2);
@@ -1755,7 +2296,9 @@ class PocketOpenWorldGame extends FlameGame {
     // 12. Current Street & Sector Computation
     final currentStreetNumber = ((playerX / 480.0).floor() + 1).clamp(1, 90);
     String sectorTitle;
-    if (currentStreetNumber <= 10) {
+    if (isOceanBridge(playerX)) {
+      sectorTitle = '🌉 Grand Ocean Bridge';
+    } else if (currentStreetNumber <= 10) {
       sectorTitle = 'Rookie Way';
     } else if (currentStreetNumber <= 30) {
       sectorTitle = 'Grammar Avenue';
@@ -1770,7 +2313,7 @@ class PocketOpenWorldGame extends FlameGame {
       districtNotifier.value = currentDistrictName;
     }
 
-    // 13. Proximity Detection to House Gates
+    // 13. Proximity Detection
     PocketNeighbor? closest;
     double minDistance = 160.0;
 
@@ -1796,24 +2339,27 @@ class PocketOpenWorldGame extends FlameGame {
     // 1. Sky & Mountains
     _drawSkyAndMountains(canvas);
 
-    // 2. Rolling Hills Terrain
+    // 2. Rolling Hills & Earth
     _drawRollingHills(canvas);
 
-    // 3. Living River Water with Cruising Boats & Jumping Fish
+    // 3. Ocean Suspension Bridges
+    _drawOceanSuspensionBridges(canvas);
+
+    // 4. Living River Water with Cruising Boats & Jumping Fish
     _drawLivingRiver(canvas);
 
     final viewportW = size.x / zoomScale;
     final leftBound = cameraX - 300;
     final rightBound = cameraX + viewportW + 300;
 
-    // 4. Collectible Golden Coins (Viewport Culled)
+    // 5. Collectible Golden Coins
     for (final coin in coins) {
       if (coin.x >= leftBound && coin.x <= rightBound) {
         coin.render(canvas, gameTime);
       }
     }
 
-    // 5. English Word Orbs & Speed Gates
+    // 6. English Learning Orbs & Speed Gates
     for (final orb in englishOrbs) {
       if (orb.x >= leftBound && orb.x <= rightBound) {
         orb.render(canvas, gameTime);
@@ -1825,21 +2371,28 @@ class PocketOpenWorldGame extends FlameGame {
       }
     }
 
-    // 6. Authentic 2D Front-Facing English Houses + Street Signboards
+    // 7. Roadside English Learning Billboards
+    for (final board in roadsideBoards) {
+      if (board.x >= leftBound && board.x <= rightBound) {
+        board.render(canvas, gameTime);
+      }
+    }
+
+    // 8. Authentic 2D Front-Facing English Houses + Street Signboards
     for (final node in houseNodes) {
       if (node.x >= leftBound && node.x <= rightBound) {
         _drawAuthenticEnglishHouse(canvas, node);
       }
     }
 
-    // 7. Roaming Robots
+    // 9. Roaming Robots
     for (final bot in robotNpcs) {
       if (bot.x >= leftBound && bot.x <= rightBound) {
         _drawRobotNpc(canvas, bot);
       }
     }
 
-    // 8. Dust, Smoke, and Floating Text Particles
+    // 10. Dust, Smoke, and Floating Text Particles
     for (final p in particles) {
       p.render(canvas);
     }
@@ -1847,7 +2400,7 @@ class PocketOpenWorldGame extends FlameGame {
       ft.render(canvas);
     }
 
-    // 9. 2D Avatar with Hill Climb Racing Physics (Walk / Bike / Buggy)
+    // 11. 2D Avatar with Hill Climb Racing Physics
     _drawPlatformerAvatar(canvas);
 
     canvas.restore();
@@ -1855,7 +2408,6 @@ class PocketOpenWorldGame extends FlameGame {
 
   void _drawSkyAndMountains(Canvas canvas) {
     if (isNight) {
-      // 🌌 NIGHT SKY
       final skyPaint = Paint()
         ..shader = const LinearGradient(
           colors: [Color(0xFF030712), Color(0xFF0F172A), Color(0xFF1E1B4B)],
@@ -1864,7 +2416,6 @@ class PocketOpenWorldGame extends FlameGame {
         ).createShader(Rect.fromLTWH(0, 0, worldWidth, worldHeight));
       canvas.drawRect(Rect.fromLTWH(0, 0, worldWidth, worldHeight), skyPaint);
 
-      // Glowing Crescent Moon
       final moonX = cameraX + (size.x / zoomScale * 0.75);
       const moonY = 160.0;
       final moonPaint = Paint()..color = const Color(0xFFFEF08A);
@@ -1874,7 +2425,6 @@ class PocketOpenWorldGame extends FlameGame {
         30,
         Paint()..color = const Color(0xFF0F172A),
       );
-      // Soft Moon Glow Halo
       canvas.drawCircle(
         Offset(moonX, moonY),
         55,
@@ -1883,7 +2433,6 @@ class PocketOpenWorldGame extends FlameGame {
           ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 15),
       );
 
-      // Twinkling Cosmic Stars
       for (double sx = 60; sx < worldWidth; sx += 140) {
         final sy = 80 + (math.sin(sx * 1.5) * 60);
         final twinkle = (math.sin(gameTime * 3.0 + sx) * 0.4) + 0.6;
@@ -1894,7 +2443,6 @@ class PocketOpenWorldGame extends FlameGame {
         );
       }
     } else {
-      // ☀️ DAY SKY
       final skyPaint = Paint()
         ..shader = const LinearGradient(
           colors: [Color(0xFF0284C7), Color(0xFF38BDF8), Color(0xFFBAE6FD)],
@@ -1903,7 +2451,6 @@ class PocketOpenWorldGame extends FlameGame {
         ).createShader(Rect.fromLTWH(0, 0, worldWidth, worldHeight));
       canvas.drawRect(Rect.fromLTWH(0, 0, worldWidth, worldHeight), skyPaint);
 
-      // Radiant Glowing Sun
       final sunX = cameraX + (size.x / zoomScale * 0.80);
       const sunY = 140.0;
       canvas.drawCircle(Offset(sunX, sunY), 42, Paint()..color = const Color(0xFFFDE047));
@@ -1915,19 +2462,16 @@ class PocketOpenWorldGame extends FlameGame {
           ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 20),
       );
 
-      // Cartoon Clouds
       for (double cx = 100; cx < worldWidth; cx += 520) {
         final cy = 120 + (math.sin(cx * 0.8) * 35);
         _drawFluffyCloud(canvas, cx + ((gameTime * 12) % 400), cy);
       }
 
-      // Flying Seagulls
       for (final bird in seagulls) {
         bird.render(canvas);
       }
     }
 
-    // Distant Mountain Ridges
     final mountainPath = Path();
     mountainPath.moveTo(0, groundBaseY - 180);
     for (double x = 0; x <= worldWidth; x += 300) {
@@ -1971,22 +2515,20 @@ class PocketOpenWorldGame extends FlameGame {
       ).createShader(Rect.fromLTWH(0, 400, worldWidth, 1200));
     canvas.drawPath(hillPath, hillPaint);
 
-    // Green Grass Ridge Outline
     final ridgePaint = Paint()
       ..color = isNight ? const Color(0xFF10B981).withValues(alpha: 0.8) : const Color(0xFF4ADE80)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 7.0;
     canvas.drawPath(hillPath, ridgePaint);
 
-    // Paved Cobblestone Footpath on top of hill curve
     final pathOutline = Paint()
       ..color = (isNight ? const Color(0xFF38BDF8) : const Color(0xFFFDE047)).withValues(alpha: 0.35)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 14.0;
     canvas.drawPath(hillPath, pathOutline);
 
-    // Lamp posts along the hills with lighting aura
     for (double x = 160; x < worldWidth; x += 320) {
+      if (isOceanBridge(x)) continue; // Skip lamp posts over ocean bridges
       final y = getGroundY(x);
       canvas.drawLine(
         Offset(x, y),
@@ -2001,6 +2543,114 @@ class PocketOpenWorldGame extends FlameGame {
           ..color = const Color(0xFFFFFC00).withValues(alpha: isNight ? 0.28 : 0.12)
           ..maskFilter = MaskFilter.blur(BlurStyle.normal, isNight ? 12 : 6),
       );
+    }
+  }
+
+  /// 🌉 Draws Majestic Ocean Suspension Bridges spanning across ocean channels
+  void _drawOceanSuspensionBridges(Canvas canvas) {
+    final bridges = [
+      (6200.0, 7600.0, 'OCEAN STRAIT I'),
+      (18200.0, 19800.0, 'SAPPHIRE BAY II'),
+      (36200.0, 38000.0, 'APEX SOUND III'),
+    ];
+
+    for (final b in bridges) {
+      final startX = b.$1;
+      final endX = b.$2;
+
+      // Only draw if inside viewport
+      if (endX < cameraX - 200 || startX > cameraX + (size.x / zoomScale) + 200) {
+        continue;
+      }
+
+      final tower1X = startX + 280.0;
+      final tower2X = endX - 280.0;
+      final deckY = getGroundY(tower1X);
+      final towerTopY = deckY - 180.0;
+
+      // 1. Towering Suspension Pillars
+      final towerPaint = Paint()
+        ..color = const Color(0xFFDC2626) // Golden Gate Crimson Red
+        ..strokeWidth = 10.0;
+
+      canvas.drawLine(Offset(tower1X, deckY + 80), Offset(tower1X, towerTopY), towerPaint);
+      canvas.drawLine(Offset(tower2X, deckY + 80), Offset(tower2X, towerTopY), towerPaint);
+
+      // Tower cross-beams
+      final beamPaint = Paint()..color = const Color(0xFF991B1B)..strokeWidth = 4.0;
+      canvas.drawLine(Offset(tower1X - 12, towerTopY + 50), Offset(tower1X + 12, towerTopY + 50), beamPaint);
+      canvas.drawLine(Offset(tower1X - 12, towerTopY + 110), Offset(tower1X + 12, towerTopY + 110), beamPaint);
+      canvas.drawLine(Offset(tower2X - 12, towerTopY + 50), Offset(tower2X + 12, towerTopY + 50), beamPaint);
+      canvas.drawLine(Offset(tower2X - 12, towerTopY + 110), Offset(tower2X + 12, towerTopY + 110), beamPaint);
+
+      // Tower lights
+      canvas.drawCircle(Offset(tower1X, towerTopY), 5.0, Paint()..color = const Color(0xFFFFFC00));
+      canvas.drawCircle(Offset(tower2X, towerTopY), 5.0, Paint()..color = const Color(0xFFFFFC00));
+
+      // 2. Main Glowing Suspension Cable Curve
+      final cablePath = Path();
+      cablePath.moveTo(startX, getGroundY(startX));
+      cablePath.lineTo(tower1X, towerTopY);
+
+      // Parabolic drop between towers
+      final midX = (tower1X + tower2X) / 2;
+      final midDeckY = getGroundY(midX);
+      cablePath.quadraticBezierTo(midX, midDeckY - 15.0, tower2X, towerTopY);
+
+      cablePath.lineTo(endX, getGroundY(endX));
+
+      final cablePaint = Paint()
+        ..color = const Color(0xFFFFFC00).withValues(alpha: 0.85)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 3.0;
+      canvas.drawPath(cablePath, cablePaint);
+
+      // 3. Vertical Suspension Wire Droppers every 40px
+      final wirePaint = Paint()
+        ..color = Colors.white.withValues(alpha: 0.5)
+        ..strokeWidth = 1.2;
+
+      for (double wx = tower1X + 35; wx <= tower2X - 35; wx += 40) {
+        final wyDeck = getGroundY(wx);
+        // compute cable y at wx
+        final t = (wx - tower1X) / (tower2X - tower1X);
+        final cableY = (1 - t) * (1 - t) * towerTopY + 2 * (1 - t) * t * (midDeckY - 15.0) + t * t * towerTopY;
+        canvas.drawLine(Offset(wx, cableY), Offset(wx, wyDeck), wirePaint);
+      }
+
+      // 4. Bridge Road Deck & Railings
+      final deckPath = Path();
+      deckPath.moveTo(startX, getGroundY(startX));
+      for (double bx = startX; bx <= endX; bx += 20) {
+        deckPath.lineTo(bx, getGroundY(bx));
+      }
+      final bridgeRoadPaint = Paint()
+        ..color = const Color(0xFF1E293B)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 16.0;
+      canvas.drawPath(deckPath, bridgeRoadPaint);
+
+      // Glowing Runway Edge
+      final runwayPaint = Paint()
+        ..color = const Color(0xFF00F0FF)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.5;
+      canvas.drawPath(deckPath, runwayPaint);
+
+      // Bridge Welcome Arch Text
+      final bannerTp = TextPainter(
+        text: TextSpan(
+          text: '🌉 ${b.$3} • OCEAN HIGHWAY',
+          style: const TextStyle(
+            color: Color(0xFFFFFC00),
+            fontSize: 10,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 1.2,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      bannerTp.paint(canvas, Offset(startX + 60, getGroundY(startX) - 45));
     }
   }
 
@@ -2090,7 +2740,7 @@ class PocketOpenWorldGame extends FlameGame {
       );
     }
 
-    // 2. 👤 Authentic VectorAvatar Portrait Badge Floating Over the Roof (Tappable!)
+    // 2. 👤 Authentic VectorAvatar Portrait Badge Floating Over the Roof
     final avatarCenterY = groundY - 220;
     const avatarRadius = 18.0;
 
@@ -2116,12 +2766,28 @@ class PocketOpenWorldGame extends FlameGame {
     node.avatarPainter.paint(canvas, const Size(avatarRadius * 2, avatarRadius * 2));
     canvas.restore();
 
-    // 3. 🚏 Roadside Street Signpost next to Driveway [ STREET X • #N • NAME ]
+    // Special Glowing Banner for User's Own Home
+    if (node.isPlayerHome) {
+      final homeBadgeRect = RRect.fromRectAndRadius(
+        Rect.fromCenter(center: Offset(x, groundY - 250), width: 130, height: 22),
+        const Radius.circular(6),
+      );
+      canvas.drawRRect(homeBadgeRect, Paint()..color = const Color(0xFFFFFC00));
+      final homeTp = TextPainter(
+        text: const TextSpan(
+          text: '👑 YOUR HOME',
+          style: TextStyle(color: Colors.black, fontSize: 10, fontWeight: FontWeight.w900),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      homeTp.paint(canvas, Offset(x - (homeTp.width / 2), groundY - 250 - (homeTp.height / 2)));
+    }
+
+    // 3. 🚏 Roadside Street Signpost next to Driveway
     final signX = x + 120.0;
     final signGroundY = getGroundY(signX);
     final signTopY = signGroundY - 48.0;
 
-    // Wooden post
     canvas.drawLine(
       Offset(signX, signGroundY),
       Offset(signX, signTopY),
@@ -2243,7 +2909,7 @@ class PocketOpenWorldGame extends FlameGame {
     canvas.save();
     canvas.translate(x, avatarY - 24 + suspensionOffset);
 
-    // Hill Climb Racing slope rotation
+    // Dynamic slope and torque tilt rotation!
     canvas.rotate(chassisTilt);
 
     if (playerFacing < 0) {
@@ -2263,12 +2929,12 @@ class PocketOpenWorldGame extends FlameGame {
     // "YOU (Lvl X)" Text Tag
     final tp = TextPainter(
       text: TextSpan(
-        text: 'YOU (Lvl $playerDay)',
-        style: const TextStyle(
-          color: Color(0xFFFFFC00),
+        text: isCrashed ? '😵 CRASHED!' : 'YOU (Lvl $playerDay)',
+        style: TextStyle(
+          color: isCrashed ? const Color(0xFFEF4444) : const Color(0xFFFFFC00),
           fontSize: 11,
           fontWeight: FontWeight.w900,
-          shadows: [Shadow(color: Colors.black, blurRadius: 4)],
+          shadows: const [Shadow(color: Colors.black, blurRadius: 4)],
         ),
       ),
       textDirection: TextDirection.ltr,
@@ -2446,6 +3112,7 @@ class WorldHouseNode {
   final double y;
   final int sectorIndex;
   final String streetSignLabel;
+  final bool isPlayerHome;
   late final HouseMasterComponent houseMaster;
   late final VectorAvatarPainter avatarPainter;
 
@@ -2455,6 +3122,7 @@ class WorldHouseNode {
     required this.y,
     required this.sectorIndex,
     required this.streetSignLabel,
+    this.isPlayerHome = false,
     bool isNight = false,
   }) {
     houseMaster = HouseMasterComponent(
@@ -2494,7 +3162,6 @@ class WorldCoin {
     if (collected) return;
     final widthScale = math.cos((gameTime * 6.5) + spinPhase).abs();
 
-    // Outer glow halo
     canvas.drawCircle(
       Offset(x, y),
       12.0,
@@ -2503,7 +3170,6 @@ class WorldCoin {
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6),
     );
 
-    // Coin rim
     final coinRect = Rect.fromCenter(
       center: Offset(x, y),
       width: math.max(3.0, 16.0 * widthScale),
@@ -2514,7 +3180,6 @@ class WorldCoin {
       Paint()..color = const Color(0xFFF59E0B),
     );
 
-    // Coin face
     final innerRect = Rect.fromCenter(
       center: Offset(x, y),
       width: math.max(2.0, 13.0 * widthScale),
@@ -2525,7 +3190,6 @@ class WorldCoin {
       Paint()..color = const Color(0xFFFFFC00),
     );
 
-    // Center star detail
     if (widthScale > 0.45) {
       canvas.drawCircle(
         Offset(x, y),
@@ -2555,7 +3219,6 @@ class EnglishWordOrb {
     if (collected) return;
     final floatY = y + (math.sin(gameTime * 4.0 + x) * 4.5);
 
-    // Cyan Neon Orb
     canvas.drawCircle(
       Offset(x, floatY),
       16,
@@ -2573,7 +3236,6 @@ class EnglishWordOrb {
         ..strokeWidth = 1.8,
     );
 
-    // Mini Book Icon / Word badge
     final tp = TextPainter(
       text: TextSpan(
         text: word,
@@ -2587,6 +3249,92 @@ class EnglishWordOrb {
       textDirection: TextDirection.ltr,
     )..layout();
     tp.paint(canvas, Offset(x - (tp.width / 2), floatY - 22));
+  }
+}
+
+/// 📜 Roadside Electronic Learning Billboard (Poems, Quotes, Vocabulary)
+class RoadsideLearningBoard {
+  final double x;
+  final double y;
+  final String category; // 'VOCAB', 'POEM', 'QUOTE'
+  final String title;
+  final String content;
+  final String subtext;
+  bool isRead = false;
+
+  RoadsideLearningBoard({
+    required this.x,
+    required this.y,
+    required this.category,
+    required this.title,
+    required this.content,
+    required this.subtext,
+  });
+
+  void render(Canvas canvas, double gameTime) {
+    final boardW = 210.0;
+    final boardH = 68.0;
+    final boardCenterY = y - 75.0;
+
+    // Twin steel support legs
+    canvas.drawLine(Offset(x - 65, y), Offset(x - 65, boardCenterY + 30), Paint()..color = const Color(0xFF334155)..strokeWidth = 4);
+    canvas.drawLine(Offset(x + 65, y), Offset(x + 65, boardCenterY + 30), Paint()..color = const Color(0xFF334155)..strokeWidth = 4);
+
+    final rect = RRect.fromRectAndRadius(
+      Rect.fromCenter(center: Offset(x, boardCenterY), width: boardW, height: boardH),
+      const Radius.circular(8),
+    );
+
+    canvas.drawRRect(rect, Paint()..color = const Color(0xFF0F172A).withValues(alpha: 0.94));
+
+    final themeColor = category == 'POEM'
+        ? const Color(0xFFA855F7)
+        : (category == 'QUOTE' ? const Color(0xFF38BDF8) : const Color(0xFFFFFC00));
+
+    canvas.drawRRect(
+      rect,
+      Paint()
+        ..color = themeColor
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.5,
+    );
+
+    final tp = TextPainter(
+      text: TextSpan(
+        children: [
+          TextSpan(
+            text: '[$category] $title\n',
+            style: TextStyle(
+              color: themeColor,
+              fontSize: 8.5,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          TextSpan(
+            text: '$content\n',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 9.5,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          TextSpan(
+            text: subtext,
+            style: const TextStyle(
+              color: Colors.white70,
+              fontSize: 8.0,
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+        ],
+      ),
+      textAlign: TextAlign.center,
+      textDirection: TextDirection.ltr,
+      maxLines: 3,
+      ellipsis: '...',
+    )..layout(maxWidth: boardW - 14);
+
+    tp.paint(canvas, Offset(x - (tp.width / 2), boardCenterY - (tp.height / 2)));
   }
 }
 
@@ -2609,7 +3357,6 @@ class EnglishSpeedGate {
     final gateHeight = 70.0;
     final topY = y - gateHeight;
 
-    // Glowing Neon Archway Pillars
     final gatePaint = Paint()
       ..color = const Color(0xFF00F0FF)
       ..strokeWidth = 3.5;
@@ -2617,7 +3364,6 @@ class EnglishSpeedGate {
     canvas.drawLine(Offset(x + 24, y), Offset(x + 24, topY), gatePaint);
     canvas.drawLine(Offset(x - 24, topY), Offset(x + 24, topY), gatePaint);
 
-    // Archway Banner
     final bannerRect = RRect.fromRectAndRadius(
       Rect.fromCenter(center: Offset(x, topY - 12), width: 150, height: 24),
       const Radius.circular(6),
@@ -2666,7 +3412,7 @@ class FloatingTextEffect {
 
   void update(double dt) {
     life += dt;
-    y -= 35.0 * dt; // floats upward
+    y -= 35.0 * dt;
   }
 
   void render(Canvas canvas) {
