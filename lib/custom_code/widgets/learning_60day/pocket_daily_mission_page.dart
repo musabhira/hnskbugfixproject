@@ -27,6 +27,8 @@ import 'daily_vocab_item.dart';
 import 'pocket_mission_curriculum_registry.dart';
 import 'day90_master_certificate_dialog.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/english_hub_level_group_service.dart';
+import 'games/word_catcher_models.dart';
+import 'games/word_catcher_game_page.dart';
 
 /// 🎯 Comprehensive Interactive Daily English Mission Experience
 class PocketDailyMissionPage extends StatefulWidget {
@@ -81,6 +83,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   bool _pronunciationCompleted = false;
   bool _englishThinkingCompleted = false;
   bool _speakingChallengeCompleted = false;
+  bool _wordCatcherCompleted = false;
   bool _isSpeakingChallengeRecording = false;
   int _speakingChallengeSecondsRemaining = 30;
   Timer? _speakingTimer;
@@ -3758,6 +3761,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
       _hubChatVerified = prefs.getBool('${dayKey}_hub_chat') ?? false;
       _peerCallVerified = prefs.getBool('${dayKey}_peer_call') ?? false;
       _vocabMemorized = prefs.getBool('${dayKey}_vocab_mem') ?? false;
+      _wordCatcherCompleted = prefs.getBool('${dayKey}_word_catcher') ?? false;
       _readingNotesCompleted = prefs.getBool('${dayKey}_reading') ?? false;
       _codeEnglishCompleted = prefs.getBool('${dayKey}_code_english') ?? false;
       _revisionQuizPassed = prefs.getBool('${dayKey}_quiz') ?? false;
@@ -4194,6 +4198,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
   int get _totalSubtasksCount {
     int count = 8; // Rule + Hub + Peer Call + Vocab + Reading + Code English + Quiz + Defense Trap
+    if (widget.day == 1) count++; // 🕹️ Level 1 Word Catcher Game
     if (_hasAlphabetPhonics) count++;
     if (_hasSentencePatterns) count++;
     if (_hasPronunciationClinic) count++;
@@ -4210,6 +4215,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     if (_hubChatVerified) count++;
     if (_peerCallVerified) count++;
     if (_vocabMemorized) count++;
+    if (widget.day == 1 && _wordCatcherCompleted) count++; // 🕹️ Level 1 Word Catcher Game
     if (_hasSentencePatterns && _sentencePatternCompleted) count++;
     if (_readingNotesCompleted) count++;
     if (_codeEnglishCompleted) count++;
@@ -4359,6 +4365,12 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                       _buildVocabDeckCard(),
 
                       const SizedBox(height: 14),
+
+                      // Subtask 4: 🕹️ Word Catcher 2D Game (User Audio Directive: Level 1 Game Step 4)
+                      if (widget.day == 1) ...[
+                        _buildWordCatcherCard(),
+                        const SizedBox(height: 14),
+                      ],
 
                       // 📐 Sentence Pattern Practice (User Audio Directive)
                       if (_hasSentencePatterns) ...[
@@ -6244,7 +6256,217 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
       ),
     );
   }
-  // --- SUBTASK 4: 📖 CORE NOTES & AUTHENTIC MULTI-PAGE STORY READING CARD ---
+  // --- SUBTASK 4: 🕹️ WORD CATCHER 2D GAME CARD (User Audio Directive: Level 1 Game Step 4) ---
+  Widget _buildWordCatcherCard() {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F172A),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: _wordCatcherCompleted
+              ? const Color(0xFF10B981)
+              : const Color(0xFFFFD700).withValues(alpha: 0.5),
+          width: _wordCatcherCompleted ? 1.5 : 1.0,
+        ),
+        boxShadow: [
+          if (!_wordCatcherCompleted)
+            BoxShadow(
+              color: const Color(0xFFFFD700).withValues(alpha: 0.12),
+              blurRadius: 14,
+            ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                decoration: BoxDecoration(
+                  color: _wordCatcherCompleted
+                      ? const Color(0xFF10B981)
+                      : const Color(0xFFFFD700),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  'STEP 4',
+                  style: TextStyle(
+                    color: _wordCatcherCompleted ? Colors.white : Colors.black,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Text('🕹️', style: TextStyle(fontSize: 16)),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Word Catcher: 2D Learning Game',
+                      style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14),
+                    ),
+                    Text(
+                      'Catch 10 everyday words & beat the Final Challenge',
+                      style: GoogleFonts.inter(
+                          color: Colors.white60, fontSize: 11),
+                    ),
+                  ],
+                ),
+              ),
+              if (_wordCatcherCompleted)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: const Color(0xFF10B981)),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.check_circle_rounded,
+                          color: Color(0xFF10B981), size: 14),
+                      SizedBox(width: 4),
+                      Text('VERIFIED',
+                          style: TextStyle(
+                              color: Color(0xFF10B981),
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                )
+              else
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.5)),
+                  ),
+                  child: Text(
+                    '+25 PTS',
+                    style: GoogleFonts.outfit(
+                      color: const Color(0xFFFFD700),
+                      fontSize: 10,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1E293B),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              children: [
+                const Text('🍎 ⚽ 📖 🐱 🐶 🚗 🏠 ☀️ 🌳 💧',
+                    style: TextStyle(fontSize: 14)),
+                const Spacer(),
+                Text(
+                  _wordCatcherCompleted ? '10/10 Mastered' : 'Level 1 Arcade',
+                  style: GoogleFonts.outfit(
+                    color: _wordCatcherCompleted
+                        ? const Color(0xFF10B981)
+                        : const Color(0xFF38BDF8),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            height: 42,
+            child: ElevatedButton(
+              onPressed: () async {
+                HapticFeedback.lightImpact();
+                final completed = await Navigator.push<bool>(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => WordCatcherGamePage(
+                      levelData: kWordCatcherLevel1Data,
+                      preferredLanguage: _selectedLanguage,
+                    ),
+                  ),
+                );
+                if (completed == true && mounted) {
+                  setState(() => _wordCatcherCompleted = true);
+                  _saveSubtask('word_catcher', true);
+                  HapticFeedback.heavyImpact();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                          '🎉 Level 1 Word Catcher Completed! Step 4 Verified ✓ +25 Points!'),
+                      backgroundColor: Color(0xFF10B981),
+                    ),
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _wordCatcherCompleted
+                    ? const Color(0xFF1E293B)
+                    : const Color(0xFF10B981),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  side: BorderSide(
+                    color: _wordCatcherCompleted
+                        ? const Color(0xFF10B981)
+                        : Colors.transparent,
+                  ),
+                ),
+                elevation: _wordCatcherCompleted ? 0 : 3,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    _wordCatcherCompleted
+                        ? Icons.replay_rounded
+                        : Icons.sports_esports_rounded,
+                    color: _wordCatcherCompleted
+                        ? const Color(0xFF10B981)
+                        : Colors.white,
+                    size: 18,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    _wordCatcherCompleted
+                        ? 'REPLAY WORD CATCHER 🎮'
+                        : 'PLAY LEVEL 1: WORD CATCHER 🎮',
+                    style: GoogleFonts.outfit(
+                      color: _wordCatcherCompleted
+                          ? const Color(0xFF10B981)
+                          : Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // --- SUBTASK 4/5: 📖 CORE NOTES & AUTHENTIC MULTI-PAGE STORY READING CARD ---
   Widget _buildReadingNotesCard() {
     final storyPages = PocketMissionCurriculumRegistry.getStoryPages(widget.day);
     final hasPages = storyPages.isNotEmpty;
@@ -6273,7 +6495,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                   color: _readingNotesCompleted ? const Color(0xFF10B981) : Colors.white12,
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: Text('STEP 4', style: TextStyle(color: _readingNotesCompleted ? Colors.black : Colors.white70, fontSize: 10, fontWeight: FontWeight.w900)),
+                child: Text(widget.day == 1 ? 'STEP 5' : 'STEP 4', style: TextStyle(color: _readingNotesCompleted ? Colors.black : Colors.white70, fontSize: 10, fontWeight: FontWeight.w900)),
               ),
               const SizedBox(width: 8),
               const Text('📖', style: TextStyle(fontSize: 16)),
@@ -6739,7 +6961,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
-                  'STEP 5',
+                  widget.day == 1 ? 'STEP 6' : 'STEP 5',
                   style: TextStyle(
                     color: Colors.black,
                     fontSize: 10,

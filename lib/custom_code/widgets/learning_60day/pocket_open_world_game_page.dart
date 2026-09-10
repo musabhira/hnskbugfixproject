@@ -4198,25 +4198,18 @@ class JumpDustParticle {
 }
 
 /// 🚀 Booster Flame Particle for Aerial Jumps
-class BoosterFlameParticle {
-  double x;
-  double y;
-  double vx;
-  double vy;
-  double life = 0.0;
-  final double maxLife = 0.35;
+class BoosterFlameParticle extends JumpDustParticle {
   final Color color;
 
   BoosterFlameParticle({
-    required this.x,
-    required this.y,
-    required this.vx,
-    required this.vy,
+    required super.x,
+    required super.y,
+    required super.vx,
+    required super.vy,
     required this.color,
   });
 
-  bool get isDead => life >= maxLife;
-
+  @override
   void update(double dt) {
     life += dt;
     x += vx * dt;
@@ -4225,6 +4218,7 @@ class BoosterFlameParticle {
     vy *= 0.90;
   }
 
+  @override
   void render(Canvas canvas) {
     final progress = life / maxLife;
     final alpha = (1.0 - progress).clamp(0.0, 1.0);
