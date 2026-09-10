@@ -8,6 +8,7 @@ import 'flame_english_house_game.dart';
 import 'pocket_citadel_attack_page.dart';
 import 'pocket_defense_admin_modal.dart';
 import 'pocket_fortress_defense_service.dart';
+import 'pocket_open_world_game_page.dart';
 import 'pocket_world_game_rules_modal.dart';
 
 /// 🌍 Pocket World Street Model: A resident on the neighborhood street
@@ -566,6 +567,103 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
                     ),
                   ),
                 ],
+              ),
+            ),
+
+            // --- 🌐 SWITCH TO OPEN WORLD (FREE ROAM) BANNER ---
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 2, 16, 6),
+              child: GestureDetector(
+                onTap: () {
+                  HapticFeedback.mediumImpact();
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => PocketOpenWorldGamePage(
+                        currentDay: widget.currentDay,
+                        streak: widget.streak,
+                      ),
+                    ),
+                  ).then((_) {
+                    _loadNeighborsFromSupabase();
+                  });
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0xFF00F0FF).withValues(alpha: 0.6), width: 1.2),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF00F0FF).withValues(alpha: 0.15),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(5),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFFC00),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Text('🎮', style: TextStyle(fontSize: 15)),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Text(
+                                  'OPEN WORLD (FREE ROAM)',
+                                  style: GoogleFonts.outfit(
+                                    color: const Color(0xFFFFFC00),
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 0.4,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF10B981),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Text(
+                                    'NEW',
+                                    style: GoogleFonts.outfit(
+                                      color: Colors.black,
+                                      fontSize: 8.5,
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Text(
+                              'Walk, jump & explore neighborhoods in live 2D Flame engine!',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white.withValues(alpha: 0.75),
+                                fontSize: 11,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFFFFFC00), size: 13),
+                    ],
+                  ),
+                ),
               ),
             ),
 

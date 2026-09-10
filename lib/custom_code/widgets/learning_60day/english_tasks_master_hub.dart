@@ -10,6 +10,7 @@ import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget
 import 'package:pocket_mates_app/custom_code/widgets/avatar/nft_trading_card_dialog.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/jackie_chan_talisman_service.dart';
 import 'pocket_world_street_page.dart';
+import 'pocket_open_world_game_page.dart';
 import 'pocket_fortress_defense_service.dart';
 import 'pocket_defense_trap_modal.dart';
 import 'pocket_arsenal_store_modal.dart';
@@ -979,6 +980,59 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                             style: GoogleFonts.outfit(
                               color: Colors.white,
                               fontWeight: FontWeight.w700,
+                              fontSize: 11.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+
+                // 🌟 🌐 Open World Action Button (User audio: "പോക്കറ്റ് ബാറ്റിലിന്റെ മേലെ എവിടെയെങ്കിലും ഒരു ഐക്കൺ കൊടുത്ത് ടെസ്റ്റ് ചെയ്തു നോക്കണം")
+                Positioned(
+                  left: 18,
+                  bottom: 64,
+                  child: InkWell(
+                    onTap: () {
+                      HapticFeedback.mediumImpact();
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => PocketOpenWorldGamePage(
+                            currentDay: prog.currentDay,
+                            streak: prog.streakDays,
+                          ),
+                        ),
+                      );
+                    },
+                    borderRadius: BorderRadius.circular(20),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF0284C7), Color(0xFF0F172A)],
+                        ),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: const Color(0xFF00F0FF).withValues(alpha: 0.8), width: 1.2),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF00F0FF).withValues(alpha: 0.3),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text('🌐', style: TextStyle(fontSize: 12)),
+                          const SizedBox(width: 5),
+                          Text(
+                            'Open World',
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFFFFFC00),
+                              fontWeight: FontWeight.w800,
                               fontSize: 11.5,
                             ),
                           ),
