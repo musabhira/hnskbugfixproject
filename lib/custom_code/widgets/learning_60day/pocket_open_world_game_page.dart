@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../avatar/vector_avatar_config.dart';
 import '../avatar/vector_avatar_widget.dart';
+import '../chat/whatsapp_group_chat.dart';
 import 'flame_english_house_game.dart';
 import 'pocket_citadel_attack_page.dart';
 import 'pocket_fortress_defense_service.dart';
@@ -14,12 +15,14 @@ import 'pocket_world_street_page.dart';
 /// Powered by Flame Engine (`FlameGame`)
 ///
 /// Features:
-/// 1. Curving rolling-hills terrain with gentle slopes, plateaus, and valleys
-/// 2. Authentic 2D front-facing English Houses placed along hillsides
-/// 3. Level-grouped neighborhoods: Rookie Village, Intermediate Town, Scholar Heights, Apex Peaks
-/// 4. Avatar running & jumping along the street in front of houses
-/// 5. Smooth Camera Zoom (1.0x close-up, 0.6x street, 0.32x panoramic world view + pinch-to-zoom)
-/// 6. Walk-up Proximity Citadel Raids into Pocket Battle
+/// 1. 2D Rolling Hills Terrain with smooth slopes, crests, and valleys.
+/// 2. Authentic 2D Front-Facing English Houses rendered directly by [HouseMasterComponent].
+/// 3. Level-grouped neighborhoods: Rookie Village, Intermediate Town, Scholar Heights, Apex Citadel Peaks.
+/// 4. Day & Night Cycle with Sun, Moon, Twinkling Stars, and glowing streetlamps.
+/// 5. Fun Locomotion Modes: 🚶 Walk/Run, 🚲 Cyber Bicycle, 🛹 Neon Hoverboard.
+/// 6. Parabolic Jumping physics with landing dust puffs (🦘 JUMP).
+/// 7. Social Interaction: 💬 Chat in WhatsAppGroupChat, 🤝 Request Learning Mate, ⚔️ Raid Citadel.
+/// 8. Smooth Camera Zoom: 1.0x (Action Close-Up), 0.65x (Street), 0.32x (World Panorama) + pinch-to-zoom.
 class PocketOpenWorldGamePage extends StatefulWidget {
   final int currentDay;
   final int streak;
@@ -40,13 +43,16 @@ class _PocketOpenWorldGamePageState extends State<PocketOpenWorldGamePage> {
   PocketNeighbor? _proximityNeighbor;
 
   // Zoom control
-  double _currentZoom = 0.85;
+  double _currentZoom = 0.80;
 
   // Touch joystick / move state
   Offset? _joystickBase;
-  Offset? _joystickThumb;
   double _joystickDeltaX = 0.0;
   bool _isSprinting = false;
+
+  // Locomotion & Environment
+  LocomotionMode _locomotion = LocomotionMode.walk;
+  bool _isNightMode = false;
 
   @override
   void initState() {
@@ -116,6 +122,77 @@ class _PocketOpenWorldGamePageState extends State<PocketOpenWorldGamePage> {
     _game.setZoom(_currentZoom);
   }
 
+  void _toggleDayNight() {
+    HapticFeedback.lightImpact();
+    setState(() {
+      _isNightMode = !_isNightMode;
+    });
+    _game.setDayNight(_isNightMode);
+  }
+
+  void _setLocomotion(LocomotionMode mode) {
+    HapticFeedback.selectionClick();
+    setState(() {
+      _locomotion = mode;
+    });
+    _game.setLocomotionMode(mode);
+  }
+
+  void _openChat(PocketNeighbor neighbor) {
+    HapticFeedback.lightImpact();
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => WhatsAppGroupChat(
+          groupId: neighbor.id,
+          groupName: neighbor.name,
+          groupImage: null,
+        ),
+      ),
+    );
+  }
+
+  void _requestMate(PocketNeighbor neighbor) {
+    HapticFeedback.heavyImpact();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Text('🤝', style: TextStyle(fontSize: 22)),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Learning Mate Request Sent!',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
+                  Text(
+                    'Invited ${neighbor.name} (Lvl ${neighbor.day}) to practice English daily.',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white70,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: const Color(0xFF0F766E),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
   void _launchRaid(PocketNeighbor neighbor) {
     HapticFeedback.heavyImpact();
     Navigator.push(
@@ -137,7 +214,7 @@ class _PocketOpenWorldGamePageState extends State<PocketOpenWorldGamePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF070B14),
+      backgroundColor: _isNightMode ? const Color(0xFF030712) : const Color(0xFF0284C7),
       body: GestureDetector(
         onScaleUpdate: (details) {
           if (details.scale != 1.0) {
@@ -153,7 +230,7 @@ class _PocketOpenWorldGamePageState extends State<PocketOpenWorldGamePage> {
             // 2. Top Navigation & District Status Bar
             SafeArea(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                 child: Row(
                   children: [
                     // Back / Return Button
@@ -232,6 +309,32 @@ class _PocketOpenWorldGamePageState extends State<PocketOpenWorldGamePage> {
 
                     const SizedBox(width: 8),
 
+                    // Day / Night Toggle
+                    GestureDetector(
+                      onTap: _toggleDayNight,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: _isNightMode ? const Color(0xFF1E1B4B) : const Color(0xFFFEF08A),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: _isNightMode ? const Color(0xFF818CF8) : const Color(0xFFF59E0B),
+                            width: 1.2,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Text(
+                              _isNightMode ? '🌙' : '☀️',
+                              style: const TextStyle(fontSize: 14),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(width: 8),
+
                     // Street View Mode Switcher
                     GestureDetector(
                       onTap: () => Navigator.pop(context),
@@ -253,7 +356,7 @@ class _PocketOpenWorldGamePageState extends State<PocketOpenWorldGamePage> {
                             const Icon(Icons.view_carousel_rounded, color: Colors.black, size: 15),
                             const SizedBox(width: 4),
                             Text(
-                              'Street View',
+                              'Street',
                               style: GoogleFonts.outfit(color: Colors.black, fontSize: 12, fontWeight: FontWeight.bold),
                             ),
                           ],
@@ -282,168 +385,308 @@ class _PocketOpenWorldGamePageState extends State<PocketOpenWorldGamePage> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Zoom In (1.0x)
                     _buildZoomButton(
                       label: '🔍 1.0x',
                       isSelected: _currentZoom >= 0.95,
                       onTap: () => _setZoom(1.0),
                     ),
                     const SizedBox(height: 6),
-                    // Street View (0.65x)
                     _buildZoomButton(
                       label: '🏡 0.6x',
                       isSelected: _currentZoom >= 0.55 && _currentZoom < 0.95,
                       onTap: () => _setZoom(0.65),
                     ),
                     const SizedBox(height: 6),
-                    // World Panorama (0.35x)
                     _buildZoomButton(
                       label: '🌍 World',
                       isSelected: _currentZoom < 0.55,
-                      onTap: () => _setZoom(0.35),
+                      onTap: () => _setZoom(0.32),
                     ),
                   ],
                 ),
               ),
             ),
 
-            // 4. Proximity Action Card (Appears when near a Citadel Gate)
+            // 4. Locomotion Mode Selector (Walk / Bike / Hoverboard)
+            Positioned(
+              top: 75,
+              left: 14,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.75),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.white24, width: 1),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildVehicleButton(
+                      icon: '🚶',
+                      label: 'Walk',
+                      isSelected: _locomotion == LocomotionMode.walk,
+                      onTap: () => _setLocomotion(LocomotionMode.walk),
+                    ),
+                    const SizedBox(height: 4),
+                    _buildVehicleButton(
+                      icon: '🚲',
+                      label: 'Bike',
+                      isSelected: _locomotion == LocomotionMode.bike,
+                      onTap: () => _setLocomotion(LocomotionMode.bike),
+                    ),
+                    const SizedBox(height: 4),
+                    _buildVehicleButton(
+                      icon: '🛹',
+                      label: 'Hover',
+                      isSelected: _locomotion == LocomotionMode.hoverboard,
+                      onTap: () => _setLocomotion(LocomotionMode.hoverboard),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // 5. Proximity Social & Raid Card (When standing near a House Gate)
             if (_proximityNeighbor != null)
               Positioned(
-                bottom: 120,
-                left: 16,
-                right: 16,
+                bottom: 125,
+                left: 14,
+                right: 14,
                 child: AnimatedSlide(
                   duration: const Duration(milliseconds: 250),
                   offset: Offset.zero,
                   curve: Curves.easeOutCubic,
                   child: Container(
-                    padding: const EdgeInsets.all(14),
+                    padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [Color(0xFF1E1B4B), Color(0xFF0F172A)],
+                        colors: [Color(0xFF0F172A), Color(0xFF1E1B4B)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: const Color(0xFFFFFC00).withValues(alpha: 0.7), width: 1.5),
+                      border: Border.all(
+                        color: _proximityNeighbor!.hasActiveShield ? const Color(0xFF38BDF8) : const Color(0xFFFFFC00),
+                        width: 1.5,
+                      ),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFFFFFC00).withValues(alpha: 0.25),
+                          color: (_proximityNeighbor!.hasActiveShield ? const Color(0xFF38BDF8) : const Color(0xFFFFFC00))
+                              .withValues(alpha: 0.3),
                           blurRadius: 16,
                           offset: const Offset(0, 4),
                         ),
                       ],
                     ),
-                    child: Row(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        // Neighbor Avatar
-                        SizedBox(
-                          width: 48,
-                          height: 48,
-                          child: VectorAvatarWidget(
-                            config: VectorAvatarConfig.getEvolutionAvatarForStage(_proximityNeighbor!.day),
-                            size: 48,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        // Info
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Row(
+                        // Header Row: Avatar, Name, Level, Shield
+                        Row(
+                          children: [
+                            SizedBox(
+                              width: 44,
+                              height: 44,
+                              child: VectorAvatarWidget(
+                                config: VectorAvatarConfig.getEvolutionAvatarForStage(_proximityNeighbor!.day),
+                                size: 44,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Flexible(
-                                    child: Text(
-                                      _proximityNeighbor!.name,
-                                      style: GoogleFonts.outfit(
-                                        color: Colors.white,
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.bold,
+                                  Row(
+                                    children: [
+                                      Flexible(
+                                        child: Text(
+                                          _proximityNeighbor!.name,
+                                          style: GoogleFonts.outfit(
+                                            color: Colors.white,
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
                                       ),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
+                                      const SizedBox(width: 6),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFFFFC00).withValues(alpha: 0.2),
+                                          borderRadius: BorderRadius.circular(6),
+                                        ),
+                                        child: Text(
+                                          'Lvl ${_proximityNeighbor!.day}',
+                                          style: GoogleFonts.outfit(
+                                            color: const Color(0xFFFFFC00),
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  const SizedBox(width: 6),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFFFFC00).withValues(alpha: 0.2),
-                                      borderRadius: BorderRadius.circular(6),
-                                    ),
-                                    child: Text(
-                                      'Lvl ${_proximityNeighbor!.day}',
-                                      style: GoogleFonts.outfit(
-                                        color: const Color(0xFFFFFC00),
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.bold,
+                                  const SizedBox(height: 2),
+                                  Row(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                                        decoration: BoxDecoration(
+                                          color: _proximityNeighbor!.hasActiveShield
+                                              ? const Color(0xFF0284C7).withValues(alpha: 0.35)
+                                              : const Color(0xFFDC2626).withValues(alpha: 0.25),
+                                          borderRadius: BorderRadius.circular(4),
+                                        ),
+                                        child: Text(
+                                          _proximityNeighbor!.hasActiveShield ? '🛡️ SHIELDED' : '⚔️ VULNERABLE',
+                                          style: GoogleFonts.outfit(
+                                            color: _proximityNeighbor!.hasActiveShield
+                                                ? const Color(0xFF38BDF8)
+                                                : const Color(0xFFF87171),
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
                                       ),
-                                    ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        'HP: ${_proximityNeighbor!.hp}/100',
+                                        style: GoogleFonts.outfit(
+                                          color: _proximityNeighbor!.hp > 30
+                                              ? const Color(0xFF10B981)
+                                              : const Color(0xFFEF4444),
+                                          fontSize: 11.5,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 3),
-                              Row(
-                                children: [
-                                  Text(
-                                    'HP: ${_proximityNeighbor!.hp}/100',
-                                    style: GoogleFonts.outfit(
-                                      color: _proximityNeighbor!.hp > 30 ? const Color(0xFF10B981) : const Color(0xFFEF4444),
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  if (_proximityNeighbor!.isDamaged) ...[
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      '• Breached 💥',
-                                      style: GoogleFonts.outfit(color: const Color(0xFFF59E0B), fontSize: 11),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 10),
-                        // Raid Button
-                        GestureDetector(
-                          onTap: () => _launchRaid(_proximityNeighbor!),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [Color(0xFFFF2A55), Color(0xFFDC2626)],
-                              ),
-                              borderRadius: BorderRadius.circular(14),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: const Color(0xFFFF2A55).withValues(alpha: 0.4),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 3),
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Text('⚔️', style: TextStyle(fontSize: 15)),
-                                const SizedBox(width: 5),
-                                Text(
-                                  'RAID',
-                                  style: GoogleFonts.outfit(
-                                    color: Colors.white,
-                                    fontSize: 13.5,
-                                    fontWeight: FontWeight.w900,
-                                    letterSpacing: 0.5,
+
+                        const SizedBox(height: 10),
+
+                        // Action Buttons: Chat | Request Mate | Raid
+                        Row(
+                          children: [
+                            // 💬 Chat Button
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () => _openChat(_proximityNeighbor!),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(vertical: 9),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF25D366).withValues(alpha: 0.9),
+                                    borderRadius: BorderRadius.circular(12),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: const Color(0xFF25D366).withValues(alpha: 0.3),
+                                        blurRadius: 6,
+                                      ),
+                                    ],
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Icon(Icons.chat_rounded, color: Colors.white, size: 14),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        'Chat',
+                                        style: GoogleFonts.outfit(
+                                          color: Colors.white,
+                                          fontSize: 12.5,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                              ],
+                              ),
                             ),
-                          ),
+
+                            const SizedBox(width: 8),
+
+                            // 🤝 Request Mate Button
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () => _requestMate(_proximityNeighbor!),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(vertical: 9),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF6366F1).withValues(alpha: 0.9),
+                                    borderRadius: BorderRadius.circular(12),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: const Color(0xFF6366F1).withValues(alpha: 0.3),
+                                        blurRadius: 6,
+                                      ),
+                                    ],
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Text('🤝', style: TextStyle(fontSize: 13)),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        'Mate',
+                                        style: GoogleFonts.outfit(
+                                          color: Colors.white,
+                                          fontSize: 12.5,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                            const SizedBox(width: 8),
+
+                            // ⚔️ Raid Button
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () => _launchRaid(_proximityNeighbor!),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(vertical: 9),
+                                  decoration: BoxDecoration(
+                                    gradient: const LinearGradient(
+                                      colors: [Color(0xFFFF2A55), Color(0xFFDC2626)],
+                                    ),
+                                    borderRadius: BorderRadius.circular(12),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: const Color(0xFFFF2A55).withValues(alpha: 0.4),
+                                        blurRadius: 8,
+                                      ),
+                                    ],
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Text('⚔️', style: TextStyle(fontSize: 13)),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        'RAID',
+                                        style: GoogleFonts.outfit(
+                                          color: Colors.white,
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w900,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -451,7 +694,7 @@ class _PocketOpenWorldGamePageState extends State<PocketOpenWorldGamePage> {
                 ),
               ),
 
-            // 5. Left/Right Horizontal Running Controller (Bottom Left)
+            // 6. Left/Right Horizontal Running Controller (Bottom Left)
             Positioned(
               bottom: 24,
               left: 20,
@@ -459,19 +702,14 @@ class _PocketOpenWorldGamePageState extends State<PocketOpenWorldGamePage> {
                 onPointerDown: (details) {
                   setState(() {
                     _joystickBase = details.localPosition;
-                    _joystickThumb = details.localPosition;
                   });
                 },
                 onPointerMove: (details) {
                   if (_joystickBase != null) {
-                    final offset = details.localPosition - _joystickBase!;
-                    final dist = offset.dx;
-                    final maxDist = 45.0;
-                    final clampedX = dist.clamp(-maxDist, maxDist);
-
+                    final dx = details.localPosition.dx - _joystickBase!.dx;
+                    final clampedDx = dx.clamp(-55.0, 55.0);
                     setState(() {
-                      _joystickThumb = Offset(_joystickBase!.dx + clampedX, _joystickBase!.dy);
-                      _joystickDeltaX = clampedX / maxDist;
+                      _joystickDeltaX = clampedDx / 55.0;
                     });
                     _game.setHorizontalInput(_joystickDeltaX, _isSprinting);
                   }
@@ -479,39 +717,41 @@ class _PocketOpenWorldGamePageState extends State<PocketOpenWorldGamePage> {
                 onPointerUp: (_) {
                   setState(() {
                     _joystickBase = null;
-                    _joystickThumb = null;
-                    _joystickDeltaX = 0;
+                    _joystickDeltaX = 0.0;
                   });
-                  _game.setHorizontalInput(0, false);
+                  _game.setHorizontalInput(0.0, _isSprinting);
                 },
                 child: Container(
                   width: 140,
-                  height: 64,
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  height: 90,
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.45),
-                    borderRadius: BorderRadius.circular(32),
-                    border: Border.all(color: Colors.white.withValues(alpha: 0.15), width: 1.5),
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: Colors.white24, width: 1.5),
                   ),
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
-                      // Direction Arrows Background
-                      const Row(
+                      // Guide Arrows
+                      Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Icon(Icons.arrow_back_ios_rounded, color: Colors.white38, size: 18),
-                          Icon(Icons.arrow_forward_ios_rounded, color: Colors.white38, size: 18),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 12),
+                            child: Icon(Icons.arrow_back_ios_rounded, color: Colors.white.withValues(alpha: 0.5), size: 24),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(right: 12),
+                            child: Icon(Icons.arrow_forward_ios_rounded, color: Colors.white.withValues(alpha: 0.5), size: 24),
+                          ),
                         ],
                       ),
-                      // Movable Slider Knob
+                      // Thumb Handle
                       Transform.translate(
-                        offset: _joystickBase != null && _joystickThumb != null
-                            ? Offset(_joystickThumb!.dx - _joystickBase!.dx, 0)
-                            : Offset.zero,
+                        offset: Offset(_joystickDeltaX * 36, 0),
                         child: Container(
-                          width: 46,
-                          height: 46,
+                          width: 48,
+                          height: 48,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             gradient: const LinearGradient(
@@ -524,7 +764,7 @@ class _PocketOpenWorldGamePageState extends State<PocketOpenWorldGamePage> {
                               ),
                             ],
                           ),
-                          child: const Icon(Icons.directions_run_rounded, color: Colors.black87, size: 24),
+                          child: const Icon(Icons.run_circle_outlined, color: Colors.black, size: 28),
                         ),
                       ),
                     ],
@@ -533,7 +773,7 @@ class _PocketOpenWorldGamePageState extends State<PocketOpenWorldGamePage> {
               ),
             ),
 
-            // 6. Action Buttons: Jump (🦘) & Sprint (⚡) (Bottom Right)
+            // 7. Parabolic JUMP & Sprint Buttons (Bottom Right)
             Positioned(
               bottom: 24,
               right: 20,
@@ -554,66 +794,67 @@ class _PocketOpenWorldGamePageState extends State<PocketOpenWorldGamePage> {
                       height: 54,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: _isSprinting ? const Color(0xFF00F0FF) : Colors.black.withValues(alpha: 0.6),
+                        color: _isSprinting ? const Color(0xFFFF2A55) : const Color(0xFF1E293B),
                         border: Border.all(
-                          color: _isSprinting ? Colors.white : const Color(0xFF00F0FF).withValues(alpha: 0.5),
-                          width: 1.5,
+                          color: _isSprinting ? Colors.white : Colors.white24,
+                          width: 2,
                         ),
                         boxShadow: [
                           if (_isSprinting)
                             BoxShadow(
-                              color: const Color(0xFF00F0FF).withValues(alpha: 0.5),
+                              color: const Color(0xFFFF2A55).withValues(alpha: 0.5),
                               blurRadius: 12,
                             ),
                         ],
                       ),
-                      child: Center(
-                        child: Icon(
-                          Icons.bolt_rounded,
-                          color: _isSprinting ? Colors.black : const Color(0xFF00F0FF),
-                          size: 26,
+                      child: const Center(
+                        child: Text(
+                          '⚡',
+                          style: TextStyle(fontSize: 22),
                         ),
                       ),
                     ),
                   ),
 
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 14),
 
-                  // Big Jump Button
+                  // 🦘 PARABOLIC JUMP BUTTON
                   GestureDetector(
                     onTap: _triggerJump,
                     child: Container(
-                      width: 74,
-                      height: 74,
+                      width: 72,
+                      height: 72,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         gradient: const LinearGradient(
-                          colors: [Color(0xFFFFFC00), Color(0xFFEAB308)],
+                          colors: [Color(0xFF00F0FF), Color(0xFF0284C7)],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
-                        border: Border.all(color: Colors.white, width: 2),
+                        border: Border.all(color: Colors.white, width: 2.5),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFFFFFC00).withValues(alpha: 0.5),
-                            blurRadius: 14,
+                            color: const Color(0xFF00F0FF).withValues(alpha: 0.55),
+                            blurRadius: 16,
                             offset: const Offset(0, 4),
                           ),
                         ],
                       ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Text('🦘', style: TextStyle(fontSize: 24)),
-                          Text(
-                            'JUMP',
-                            style: GoogleFonts.outfit(
-                              color: Colors.black,
-                              fontSize: 10.5,
-                              fontWeight: FontWeight.w900,
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text('🦘', style: TextStyle(fontSize: 22)),
+                            Text(
+                              'JUMP',
+                              style: GoogleFonts.outfit(
+                                color: Colors.black,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w900,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -636,12 +877,8 @@ class _PocketOpenWorldGamePageState extends State<PocketOpenWorldGamePage> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF00F0FF) : Colors.white.withValues(alpha: 0.1),
+          color: isSelected ? const Color(0xFF00F0FF) : Colors.transparent,
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: isSelected ? Colors.white : Colors.white24,
-            width: 1,
-          ),
         ),
         child: Text(
           label,
@@ -654,69 +891,128 @@ class _PocketOpenWorldGamePageState extends State<PocketOpenWorldGamePage> {
       ),
     );
   }
+
+  Widget _buildVehicleButton({
+    required String icon,
+    required String label,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 5),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFFFFFC00) : Colors.transparent,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(icon, style: const TextStyle(fontSize: 13)),
+            const SizedBox(width: 3),
+            Text(
+              label,
+              style: GoogleFonts.outfit(
+                color: isSelected ? Colors.black : Colors.white70,
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
-/// 🎮 Flame Game Engine: 2D Rolling Hills World, Front-Facing Houses & Platformer Avatar
+enum LocomotionMode { walk, bike, hoverboard }
+
+/// 🎮 Flame Game Engine Implementation for 2D Rolling-Hills Side-Scroller
 class PocketOpenWorldGame extends FlameGame {
   final int playerDay;
   final int playerStreak;
   final ValueChanged<PocketNeighbor?> onProximityChanged;
-  double zoomScale;
-
-  final ValueNotifier<String> districtNotifier =
-      ValueNotifier<String>('🔰 Rookie Village (Lvl 1 - 5)');
-
-  // World dimensions (6000px rolling mountain range)
-  static const double worldWidth = 6000.0;
-  static const double worldHeight = 1600.0;
-  static const double groundBaseY = 880.0;
-
-  // Player physics
-  double playerX = 350.0;
-  double playerY = groundBaseY;
-  double playerZ = 0.0; // Jump altitude
-  double jumpVelocity = 0.0;
-  bool isJumping = false;
-  double playerFacing = 1.0;
-  double runCycle = 0.0;
-  bool isMoving = false;
-
-  // Input
-  double inputDx = 0.0;
-  bool isSprinting = false;
-
-  // Camera
-  double cameraX = 0.0;
-  double cameraY = 0.0;
-
-  // Citadels along the rolling hills
-  List<WorldHouseNode> houseNodes = [];
-  List<RoamingRobotNpc> robotNpcs = [];
-  final List<JumpDustParticle> particles = [];
-
-  String currentDistrictName = '🔰 Rookie Village (Lvl 1 - 5)';
+  double initialZoom;
 
   PocketOpenWorldGame({
     required this.playerDay,
     required this.playerStreak,
     required this.onProximityChanged,
-    double initialZoom = 0.85,
-  }) : zoomScale = initialZoom;
+    this.initialZoom = 0.80,
+  });
+
+  // World Bounds
+  final double worldWidth = 6200.0;
+  final double worldHeight = 1600.0;
+  final double groundBaseY = 960.0;
+
+  // Camera & Zoom
+  double zoomScale = 0.80;
+  double cameraX = 200.0;
+  double cameraY = 600.0;
+
+  // Player Physics
+  double playerX = 240.0;
+  double playerY = 960.0;
+  double playerZ = 0.0; // Vertical leap height
+  double jumpVelocity = 0.0;
+  bool isJumping = false;
+  double playerFacing = 1.0; // 1 = right, -1 = left
+  bool isMoving = false;
+  bool isSprinting = false;
+  double runCycle = 0.0;
+  double bikeWheelAngle = 0.0;
+  double inputDx = 0.0;
+
+  // Environment & Modes
+  bool isNight = false;
+  LocomotionMode locomotion = LocomotionMode.walk;
+  double gameTime = 0.0;
+
+  // District name notifier
+  final ValueNotifier<String> districtNotifier = ValueNotifier('🔰 Rookie Village (Lvl 1 - 5)');
+  String currentDistrictName = '🔰 Rookie Village (Lvl 1 - 5)';
+
+  // House nodes on the hill
+  final List<WorldHouseNode> houseNodes = [];
+
+  // Roaming NPCs
+  List<RoamingRobotNpc> robotNpcs = [];
+
+  // Dust & Jump Particle FX
+  final List<JumpDustParticle> particles = [];
+
+  @override
+  Color backgroundColor() => isNight ? const Color(0xFF030712) : const Color(0xFF0284C7);
 
   @override
   Future<void> onLoad() async {
-    super.onLoad();
+    await super.onLoad();
+    zoomScale = initialZoom;
+    playerY = getGroundY(playerX);
     _spawnRoamingRobots();
   }
 
-  void setZoom(double z) {
-    zoomScale = z;
+  void setZoom(double newZoom) {
+    zoomScale = newZoom;
   }
 
-  /// ⛰️ Rolling Hills Terrain Spline Function
-  /// Returns ground Y coordinate at any X position in the world
-  static double getGroundY(double x) {
-    final wave1 = math.sin(x * 0.0028) * 65.0;
+  void setDayNight(bool night) {
+    isNight = night;
+    for (final node in houseNodes) {
+      node.houseMaster.lightsOn = isNight || node.neighbor.day >= 20;
+    }
+  }
+
+  void setLocomotionMode(LocomotionMode mode) {
+    locomotion = mode;
+  }
+
+  /// ⛰️ Rolling Hills Mathematical Spline
+  /// Generates natural curves with crests, gentle slopes, and valleys
+  double getGroundY(double x) {
+    final wave1 = math.sin(x * 0.0024) * 55.0;
     final wave2 = math.sin(x * 0.0012 + 1.2) * 95.0;
     final wave3 = math.sin(x * 0.0006) * 120.0;
     return groundBaseY - wave1 - wave2 - wave3;
@@ -725,22 +1021,26 @@ class PocketOpenWorldGame extends FlameGame {
   void setNeighbors(List<PocketNeighbor> list) {
     houseNodes.clear();
 
-    // Distribute houses along the rolling hills by level sectors
+    // Distribute houses along the rolling hills grouped by level sectors
     for (int i = 0; i < list.length; i++) {
       final neighbor = list[i];
-      // Sector calculation
       double x;
+      int sectorIndex;
       if (neighbor.day <= 5) {
         // Rookie Village
+        sectorIndex = 0;
         x = 220.0 + (i * 240.0).clamp(0.0, 1100.0);
       } else if (neighbor.day <= 11) {
         // Intermediate Town
+        sectorIndex = 1;
         x = 1400.0 + ((i - 3).clamp(0, 20) * 260.0);
       } else if (neighbor.day <= 30) {
         // Scholar Heights
+        sectorIndex = 2;
         x = 2700.0 + ((i - 6).clamp(0, 20) * 280.0);
       } else {
         // Apex Citadel Peaks
+        sectorIndex = 3;
         x = 4200.0 + ((i - 10).clamp(0, 20) * 300.0);
       }
       x = x.clamp(180.0, worldWidth - 250.0);
@@ -751,7 +1051,8 @@ class PocketOpenWorldGame extends FlameGame {
           neighbor: neighbor,
           x: x,
           y: y,
-          isNorth: false,
+          sectorIndex: sectorIndex,
+          isNight: isNight,
         ),
       );
     }
@@ -801,7 +1102,7 @@ class PocketOpenWorldGame extends FlameGame {
   void playerJump() {
     if (!isJumping) {
       isJumping = true;
-      jumpVelocity = 18.0;
+      jumpVelocity = locomotion == LocomotionMode.bike ? 21.0 : (locomotion == LocomotionMode.hoverboard ? 23.0 : 18.0);
 
       // Jump dust particles
       final groundY = getGroundY(playerX);
@@ -822,22 +1123,32 @@ class PocketOpenWorldGame extends FlameGame {
   @override
   void update(double dt) {
     super.update(dt);
+    gameTime += dt;
 
-    // 1. Horizontal Movement
-    final speed = (isSprinting ? 320.0 : 200.0) * dt;
+    // 1. Determine speed based on Locomotion Mode
+    double baseSpeed = 220.0;
+    if (locomotion == LocomotionMode.bike) {
+      baseSpeed = 380.0;
+    } else if (locomotion == LocomotionMode.hoverboard) {
+      baseSpeed = 460.0;
+    }
+    final moveSpeed = (isSprinting ? baseSpeed * 1.55 : baseSpeed) * dt;
+
+    // 2. Horizontal Movement
     if (inputDx.abs() > 0.05) {
-      playerX += inputDx * speed;
+      playerX += inputDx * moveSpeed;
       runCycle += dt * (isSprinting ? 18.0 : 12.0);
+      bikeWheelAngle += dt * inputDx * 14.0;
     }
     playerX = playerX.clamp(100.0, worldWidth - 100.0);
 
     // Lock player to rolling ground curve
     final groundY = getGroundY(playerX);
 
-    // 2. Vertical Jump Physics
+    // 3. Vertical Jump Physics
     if (isJumping) {
       playerZ += jumpVelocity;
-      jumpVelocity -= 0.85; // Gravity
+      jumpVelocity -= 0.88; // Gravity
       if (playerZ <= 0.0) {
         playerZ = 0.0;
         isJumping = false;
@@ -859,21 +1170,28 @@ class PocketOpenWorldGame extends FlameGame {
     }
     playerY = groundY - playerZ;
 
-    // 3. Update Particles
+    // 4. Update Particles
     for (int i = particles.length - 1; i >= 0; i--) {
       particles[i].update(dt);
-      if (particles[i].life <= 0) {
+      if (particles[i].isDead) {
         particles.removeAt(i);
       }
     }
 
-    // 4. Update Roaming Robots
+    // 5. Update Roaming Robots
     for (final bot in robotNpcs) {
       bot.update(dt);
       bot.y = getGroundY(bot.x);
     }
 
-    // 5. Camera Tracking
+    // 6. Update Houses (Only nearby houses to ensure 60fps)
+    for (final node in houseNodes) {
+      if ((node.x - playerX).abs() < 1800) {
+        node.update(dt);
+      }
+    }
+
+    // 7. Camera Tracking
     final viewportW = size.x / zoomScale;
     final viewportH = size.y / zoomScale;
     final targetCamX = playerX - (viewportW / 2);
@@ -884,7 +1202,7 @@ class PocketOpenWorldGame extends FlameGame {
     cameraX = cameraX.clamp(0.0, math.max(0.0, worldWidth - viewportW));
     cameraY = cameraY.clamp(0.0, math.max(0.0, worldHeight - viewportH));
 
-    // 6. District Check
+    // 8. District Check
     if (playerX < 1350) {
       currentDistrictName = '🔰 Rookie Village (Lvl 1 - 5)';
     } else if (playerX < 2750) {
@@ -899,9 +1217,9 @@ class PocketOpenWorldGame extends FlameGame {
       districtNotifier.value = currentDistrictName;
     }
 
-    // 7. Proximity Detection to House Gates
+    // 9. Proximity Detection to House Gates
     PocketNeighbor? closest;
-    double minDistance = 110.0;
+    double minDistance = 140.0;
 
     for (final node in houseNodes) {
       final dist = (playerX - node.x).abs();
@@ -923,20 +1241,28 @@ class PocketOpenWorldGame extends FlameGame {
     canvas.scale(zoomScale, zoomScale);
     canvas.translate(-cameraX, -cameraY);
 
-    // 1. Draw Sky & Mountain Background
+    // 1. Draw Sky & Mountain Background with Day/Night cycle
     _drawSkyAndMountains(canvas);
 
     // 2. Draw Rolling Hills Terrain
     _drawRollingHills(canvas);
 
-    // 3. Draw Authentic 2D Front-Facing English Houses on the Hills
+    // 3. Draw Authentic 2D Front-Facing English Houses (rendered directly with HouseMasterComponent)
+    final viewportW = size.x / zoomScale;
+    final leftBound = cameraX - 250;
+    final rightBound = cameraX + viewportW + 250;
+
     for (final node in houseNodes) {
-      _drawAuthenticEnglishHouse(canvas, node);
+      if (node.x >= leftBound && node.x <= rightBound) {
+        _drawAuthenticEnglishHouse(canvas, node);
+      }
     }
 
     // 4. Draw Roaming Robots
     for (final bot in robotNpcs) {
-      _drawRobotNpc(canvas, bot);
+      if (bot.x >= leftBound && bot.x <= rightBound) {
+        _drawRobotNpc(canvas, bot);
+      }
     }
 
     // 5. Draw Particles
@@ -944,35 +1270,82 @@ class PocketOpenWorldGame extends FlameGame {
       p.render(canvas);
     }
 
-    // 6. Draw 2D Side-Scroller Player Avatar
+    // 6. Draw 2D Avatar with Selected Locomotion (Walk / Bike / Hoverboard)
     _drawPlatformerAvatar(canvas);
 
     canvas.restore();
   }
 
   void _drawSkyAndMountains(Canvas canvas) {
-    // Sky Gradient
-    final skyPaint = Paint()
-      ..shader = const LinearGradient(
-        colors: [Color(0xFF050B14), Color(0xFF0F1E36), Color(0xFF1E293B)],
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-      ).createShader(const Rect.fromLTWH(0, 0, worldWidth, worldHeight));
-    canvas.drawRect(const Rect.fromLTWH(0, 0, worldWidth, worldHeight), skyPaint);
+    if (isNight) {
+      // 🌌 NIGHT SKY
+      final skyPaint = Paint()
+        ..shader = const LinearGradient(
+          colors: [Color(0xFF030712), Color(0xFF0F172A), Color(0xFF1E1B4B)],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ).createShader(Rect.fromLTWH(0, 0, worldWidth, worldHeight));
+      canvas.drawRect(Rect.fromLTWH(0, 0, worldWidth, worldHeight), skyPaint);
 
-    // Distant Stars & Moon
-    final moonPaint = Paint()..color = const Color(0xFFFEF08A);
-    canvas.drawCircle(const Offset(900, 240), 45, moonPaint);
-    canvas.drawCircle(
-      const Offset(900, 240),
-      60,
-      Paint()
-        ..color = const Color(0xFFFEF08A).withValues(alpha: 0.2)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 12,
-    );
+      // Glowing Crescent Moon (follows camera smoothly in parallax)
+      final moonX = cameraX + (size.x / zoomScale * 0.75);
+      const moonY = 160.0;
+      final moonPaint = Paint()..color = const Color(0xFFFEF08A);
+      canvas.drawCircle(Offset(moonX, moonY), 36, moonPaint);
+      canvas.drawCircle(
+        Offset(moonX + 10, moonY - 6),
+        30,
+        Paint()..color = const Color(0xFF0F172A),
+      );
+      // Soft Moon Glow Halo
+      canvas.drawCircle(
+        Offset(moonX, moonY),
+        55,
+        Paint()
+          ..color = const Color(0xFFFEF08A).withValues(alpha: 0.15)
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 15),
+      );
 
-    // Distant Mountain Ridges (Parallax Silhouettes)
+      // Twinkling Cosmic Stars
+      for (double sx = 60; sx < worldWidth; sx += 140) {
+        final sy = 80 + (math.sin(sx * 1.5) * 60);
+        final twinkle = (math.sin(gameTime * 3.0 + sx) * 0.4) + 0.6;
+        canvas.drawCircle(
+          Offset(sx, sy),
+          1.8 * twinkle,
+          Paint()..color = Colors.white.withValues(alpha: 0.85 * twinkle),
+        );
+      }
+    } else {
+      // ☀️ DAY SKY
+      final skyPaint = Paint()
+        ..shader = const LinearGradient(
+          colors: [Color(0xFF0284C7), Color(0xFF38BDF8), Color(0xFFBAE6FD)],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ).createShader(Rect.fromLTWH(0, 0, worldWidth, worldHeight));
+      canvas.drawRect(Rect.fromLTWH(0, 0, worldWidth, worldHeight), skyPaint);
+
+      // Radiant Glowing Sun
+      final sunX = cameraX + (size.x / zoomScale * 0.80);
+      const sunY = 140.0;
+      canvas.drawCircle(Offset(sunX, sunY), 42, Paint()..color = const Color(0xFFFDE047));
+      canvas.drawCircle(
+        Offset(sunX, sunY),
+        70,
+        Paint()
+          ..color = const Color(0xFFFDE047).withValues(alpha: 0.25)
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 20),
+      );
+
+      // Fluffy Cartoon Clouds
+      for (double cx = 100; cx < worldWidth; cx += 520) {
+        final cy = 120 + (math.sin(cx * 0.8) * 35);
+        _drawFluffyCloud(canvas, cx + ((gameTime * 12) % 400), cy);
+      }
+    }
+
+    // Distant Mountain Ridges (Layer 1: Far Parallax 0.15x)
     final mountainPath = Path();
     mountainPath.moveTo(0, groundBaseY - 180);
     for (double x = 0; x <= worldWidth; x += 300) {
@@ -983,8 +1356,17 @@ class PocketOpenWorldGame extends FlameGame {
     mountainPath.lineTo(0, worldHeight);
     mountainPath.close();
 
-    final mountainPaint = Paint()..color = const Color(0xFF131F37);
+    final mountainPaint = Paint()
+      ..color = isNight ? const Color(0xFF0B132B) : const Color(0xFF0D9488).withValues(alpha: 0.65);
     canvas.drawPath(mountainPath, mountainPaint);
+  }
+
+  void _drawFluffyCloud(Canvas canvas, double cx, double cy) {
+    final cloudPaint = Paint()..color = Colors.white.withValues(alpha: 0.75);
+    canvas.drawCircle(Offset(cx, cy), 22, cloudPaint);
+    canvas.drawCircle(Offset(cx + 20, cy - 8), 28, cloudPaint);
+    canvas.drawCircle(Offset(cx + 45, cy - 4), 22, cloudPaint);
+    canvas.drawCircle(Offset(cx + 60, cy), 16, cloudPaint);
   }
 
   void _drawRollingHills(Canvas canvas) {
@@ -1000,188 +1382,139 @@ class PocketOpenWorldGame extends FlameGame {
 
     // Lush Earth / Hill Shader
     final hillPaint = Paint()
-      ..shader = const LinearGradient(
-        colors: [Color(0xFF1E3A5F), Color(0xFF0F172A), Color(0xFF080D1A)],
+      ..shader = LinearGradient(
+        colors: isNight
+            ? const [Color(0xFF1E293B), Color(0xFF0F172A), Color(0xFF030712)]
+            : const [Color(0xFF15803D), Color(0xFF166534), Color(0xFF14532D)],
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-      ).createShader(const Rect.fromLTWH(0, 400, worldWidth, 1200));
+      ).createShader(Rect.fromLTWH(0, 400, worldWidth, 1200));
     canvas.drawPath(hillPath, hillPaint);
 
     // Green Grass Ridge Outline
     final ridgePaint = Paint()
-      ..color = const Color(0xFF10B981)
+      ..color = isNight ? const Color(0xFF10B981).withValues(alpha: 0.8) : const Color(0xFF4ADE80)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 7.0;
     canvas.drawPath(hillPath, ridgePaint);
 
     // Paved Cobblestone Footpath on top of hill curve
     final pathOutline = Paint()
-      ..color = const Color(0xFF38BDF8).withValues(alpha: 0.35)
+      ..color = (isNight ? const Color(0xFF38BDF8) : const Color(0xFFFDE047)).withValues(alpha: 0.35)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 14.0;
     canvas.drawPath(hillPath, pathOutline);
 
-    // Lamp posts along the hills
-    for (double x = 150; x < worldWidth; x += 320) {
+    // Lamp posts along the hills with lighting aura
+    for (double x = 160; x < worldWidth; x += 320) {
       final y = getGroundY(x);
       // Pole
       canvas.drawLine(
         Offset(x, y),
         Offset(x, y - 55),
-        Paint()..color = const Color(0xFF475569)..strokeWidth = 3.5,
+        Paint()
+          ..color = const Color(0xFF475569)
+          ..strokeWidth = 3.5,
       );
       // Lantern
       canvas.drawCircle(Offset(x, y - 55), 6, Paint()..color = const Color(0xFFFFFC00));
-      // Light aura
+      // Light aura (brighter at night)
       canvas.drawCircle(
         Offset(x, y - 55),
-        24,
-        Paint()..color = const Color(0xFFFFFC00).withValues(alpha: 0.15),
+        isNight ? 42 : 24,
+        Paint()
+          ..color = const Color(0xFFFFFC00).withValues(alpha: isNight ? 0.28 : 0.12)
+          ..maskFilter = MaskFilter.blur(BlurStyle.normal, isNight ? 12 : 6),
       );
     }
   }
 
-  /// 🏡 Draws the Authentic 2D Front-Facing English House on the Hill
+  /// 🏡 Draws the Authentic 2D Front-Facing English House directly via [HouseMasterComponent]
   void _drawAuthenticEnglishHouse(Canvas canvas, WorldHouseNode node) {
     final x = node.x;
     final groundY = node.y;
     final neighbor = node.neighbor;
-    final pal = HousePalette.getById(neighbor.paletteId);
 
-    // Scale house dimensions
-    const houseW = 160.0;
-    const houseH = 135.0;
-    final houseBottom = groundY - 2;
+    canvas.save();
+    // Scale factor so the full Victorian palace / cottage fits comfortably on the rolling hill
+    const houseScale = 0.72;
+    // HouseMasterComponent centers around cx=190, with base at groundY=320 - 34 = 286
+    const cx = 190.0;
+    const baseGroundY = 286.0;
 
-    // 1. Stone Foundation
-    final foundationRect = Rect.fromLTWH(x - (houseW / 2) - 6, houseBottom - 18, houseW + 12, 20);
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(foundationRect, const Radius.circular(4)),
-      Paint()..color = pal.foundationColor,
-    );
+    canvas.translate(x, groundY);
+    canvas.scale(houseScale, houseScale);
+    canvas.translate(-cx, -baseGroundY);
 
-    // 2. Main Building Front Wall
-    final wallRect = Rect.fromLTWH(x - (houseW / 2), houseBottom - houseH, houseW, houseH - 16);
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(wallRect, const Radius.circular(8)),
-      Paint()..color = pal.wallColor,
-    );
+    // Render the real authentic HouseMasterComponent!
+    node.houseMaster.render(canvas);
 
-    // Brick mortar lines
-    final mortarPaint = Paint()
-      ..color = pal.mortarColor.withValues(alpha: 0.4)
-      ..strokeWidth = 1.0;
-    for (double ly = wallRect.top + 16; ly < wallRect.bottom; ly += 18) {
-      canvas.drawLine(Offset(wallRect.left, ly), Offset(wallRect.right, ly), mortarPaint);
-    }
+    canvas.restore();
 
-    // 3. Pitched Victorian Roof & Gables
-    final roofPeakY = wallRect.top - 65;
-    final roofPath = Path();
-    roofPath.moveTo(x - (houseW / 2) - 16, wallRect.top + 4);
-    roofPath.lineTo(x, roofPeakY);
-    roofPath.lineTo(x + (houseW / 2) + 16, wallRect.top + 4);
-    roofPath.close();
+    // --- Overlay Elements (Level Badge, Owner Banner, Shield Bubble) ---
 
-    canvas.drawPath(roofPath, Paint()..color = pal.roofColor);
-
-    // Roof Trim
-    canvas.drawPath(
-      roofPath,
-      Paint()
-        ..color = pal.roofTrim
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 4.5,
-    );
-
-    // 4. Chimney & Smoke
-    final chimneyRect = Rect.fromLTWH(x + 36, roofPeakY + 8, 20, 42);
-    canvas.drawRect(chimneyRect, Paint()..color = pal.foundationColor);
-    // Smoke puffs
-    canvas.drawCircle(Offset(x + 46, roofPeakY - 4), 6, Paint()..color = Colors.white24);
-    canvas.drawCircle(Offset(x + 52, roofPeakY - 14), 9, Paint()..color = Colors.white12);
-
-    // 5. Grand Front Entrance Door
-    final doorRect = Rect.fromLTWH(x - 18, houseBottom - 58, 36, 42);
-    canvas.drawRRect(
-      RRect.fromRectAndCorners(
-        doorRect,
-        topLeft: const Radius.circular(16),
-        topRight: const Radius.circular(16),
-      ),
-      Paint()..color = pal.doorColor,
-    );
-    // Doorknob
-    canvas.drawCircle(Offset(x + 10, houseBottom - 36), 3, Paint()..color = const Color(0xFFFFD700));
-
-    // 6. Glowing Windows
-    final windowPaint = Paint()..color = pal.windowColor;
-    final winFrame = Paint()
-      ..color = Colors.white70
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.5;
-
-    // Left window
-    final lWin = Rect.fromCenter(center: Offset(x - 48, houseBottom - 75), width: 28, height: 32);
-    canvas.drawRRect(RRect.fromRectAndRadius(lWin, const Radius.circular(6)), windowPaint);
-    canvas.drawRRect(RRect.fromRectAndRadius(lWin, const Radius.circular(6)), winFrame);
-
-    // Right window
-    final rWin = Rect.fromCenter(center: Offset(x + 48, houseBottom - 75), width: 28, height: 32);
-    canvas.drawRRect(RRect.fromRectAndRadius(rWin, const Radius.circular(6)), windowPaint);
-    canvas.drawRRect(RRect.fromRectAndRadius(rWin, const Radius.circular(6)), winFrame);
-
-    // Attic circular rosette window
-    canvas.drawCircle(Offset(x, wallRect.top - 20), 12, windowPaint);
-    canvas.drawCircle(Offset(x, wallRect.top - 20), 12, winFrame);
-
-    // 7. Active Iron Dome Forcefield Bubble
+    // 1. Shimmering Shield Bubble (if active)
     if (neighbor.hasActiveShield) {
-      final shieldPaint = Paint()
-        ..color = const Color(0xFF00F0FF).withValues(alpha: 0.16)
-        ..style = PaintingStyle.fill;
-      canvas.drawCircle(Offset(x, houseBottom - 70), 115, shieldPaint);
-
-      final shieldRing = Paint()
-        ..color = const Color(0xFF00F0FF).withValues(alpha: 0.6)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.0;
-      canvas.drawCircle(Offset(x, houseBottom - 70), 115, shieldRing);
+      final shieldCenter = Offset(x, groundY - 110);
+      canvas.drawCircle(
+        shieldCenter,
+        105,
+        Paint()
+          ..color = const Color(0xFF00F0FF).withValues(alpha: 0.14)
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 12),
+      );
+      canvas.drawCircle(
+        shieldCenter,
+        105,
+        Paint()
+          ..color = const Color(0xFF38BDF8).withValues(alpha: 0.65)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2.5,
+      );
     }
 
-    // 8. Charred Breach Damage
-    if (neighbor.isDamaged) {
-      final crackPaint = Paint()
-        ..color = const Color(0xFFDC2626)
-        ..strokeWidth = 2.5;
-      canvas.drawLine(Offset(x - 30, wallRect.top + 20), Offset(x - 10, wallRect.top + 45), crackPaint);
-      canvas.drawLine(Offset(x - 10, wallRect.top + 45), Offset(x - 22, wallRect.top + 70), crackPaint);
+    // 2. Interactive Gate Ring on the Road (when player approaches)
+    final distToPlayer = (playerX - x).abs();
+    if (distToPlayer < 140) {
+      final gatePulse = (math.sin(gameTime * 5.0) * 4.0) + 26.0;
+      canvas.drawOval(
+        Rect.fromCenter(center: Offset(x, groundY + 8), width: gatePulse * 2, height: 16),
+        Paint()
+          ..color = const Color(0xFFFFFC00).withValues(alpha: 0.35)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2.5,
+      );
     }
 
-    // 9. Floating Owner Nameplate Banner
-    final bannerY = roofPeakY - 26;
+    // 3. Floating Owner Name Banner
+    final bannerY = groundY - 215;
     final bannerRect = RRect.fromRectAndRadius(
-      Rect.fromCenter(center: Offset(x, bannerY), width: 140, height: 26),
+      Rect.fromCenter(center: Offset(x, bannerY), width: 150, height: 26),
       const Radius.circular(8),
     );
     canvas.drawRRect(bannerRect, Paint()..color = Colors.black.withValues(alpha: 0.85));
     canvas.drawRRect(
       bannerRect,
       Paint()
-        ..color = const Color(0xFFFFFC00).withValues(alpha: 0.7)
+        ..color = (neighbor.hasActiveShield ? const Color(0xFF00F0FF) : const Color(0xFFFFFC00)).withValues(alpha: 0.8)
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.0,
+        ..strokeWidth = 1.2,
     );
 
+    final title = '${neighbor.name} (Lvl ${neighbor.day})';
     final tp = TextPainter(
       text: TextSpan(
-        text: 'Lvl ${neighbor.day} • ${neighbor.name}',
-        style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+        text: title,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+        ),
       ),
       textDirection: TextDirection.ltr,
       maxLines: 1,
       ellipsis: '...',
-    )..layout(maxWidth: 130);
+    )..layout(maxWidth: 140);
     tp.paint(canvas, Offset(x - (tp.width / 2), bannerY - (tp.height / 2)));
   }
 
@@ -1240,25 +1573,24 @@ class PocketOpenWorldGame extends FlameGame {
     }
   }
 
-  /// 🏃 Draws the 2D Platformer Avatar running and jumping in front of houses
+  /// 🏃 Draws the 2D Platformer Avatar running/cycling/hovering in front of houses
   void _drawPlatformerAvatar(Canvas canvas) {
     final x = playerX;
     final groundY = getGroundY(playerX);
     final avatarY = groundY - playerZ;
 
     // 1. Drop Shadow on the Ground (scales down as player jumps higher)
-    final shadowScale = math.max(0.3, 1.0 - (playerZ / 90.0));
+    final shadowScale = math.max(0.3, 1.0 - (playerZ / 95.0));
     final shadowPaint = Paint()..color = Colors.black.withValues(alpha: 0.45 * shadowScale);
     canvas.drawOval(
       Rect.fromCenter(
         center: Offset(playerX, groundY + 4),
-        width: 44 * shadowScale,
-        height: 14 * shadowScale,
+        width: 48 * shadowScale,
+        height: 15 * shadowScale,
       ),
       shadowPaint,
     );
 
-    // 2. Avatar Character
     canvas.save();
     canvas.translate(x, avatarY - 24);
 
@@ -1267,46 +1599,150 @@ class PocketOpenWorldGame extends FlameGame {
       canvas.scale(-1.0, 1.0);
     }
 
-    // Running leg animation
-    if (isMoving && !isJumping) {
-      final legAngle = math.sin(runCycle) * 0.45;
-      final legPaint = Paint()
+    if (locomotion == LocomotionMode.bike) {
+      // 🚲 BICYCLE MOUNT
+      final wheelPaint = Paint()
         ..color = const Color(0xFF0F172A)
-        ..strokeWidth = 4.0;
-      canvas.drawLine(const Offset(-6, 12), Offset(-6 - (legAngle * 18), 24), legPaint);
-      canvas.drawLine(const Offset(6, 12), Offset(6 + (legAngle * 18), 24), legPaint);
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 3.5;
+      final rimPaint = Paint()
+        ..color = const Color(0xFF00F0FF)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.0;
+
+      // Front & Rear Wheels
+      canvas.drawCircle(const Offset(-18, 16), 11, wheelPaint);
+      canvas.drawCircle(const Offset(-18, 16), 8, rimPaint);
+      canvas.drawCircle(const Offset(18, 16), 11, wheelPaint);
+      canvas.drawCircle(const Offset(18, 16), 8, rimPaint);
+
+      // Spokes (rotating with movement)
+      for (int s = 0; s < 4; s++) {
+        final a = bikeWheelAngle + (s * (math.pi / 2));
+        canvas.drawLine(
+          const Offset(-18, 16),
+          Offset(-18 + math.cos(a) * 8, 16 + math.sin(a) * 8),
+          Paint()..color = Colors.white70..strokeWidth = 1,
+        );
+        canvas.drawLine(
+          const Offset(18, 16),
+          Offset(18 + math.cos(a) * 8, 16 + math.sin(a) * 8),
+          Paint()..color = Colors.white70..strokeWidth = 1,
+        );
+      }
+
+      // Bike Frame (Triangular Sports Frame)
+      final framePaint = Paint()
+        ..color = const Color(0xFFFFFC00)
+        ..strokeWidth = 3.2
+        ..strokeCap = StrokeCap.round;
+      canvas.drawLine(const Offset(-18, 16), const Offset(-2, 14), framePaint); // Bottom bracket
+      canvas.drawLine(const Offset(-18, 16), const Offset(-8, 2), framePaint); // Seat stay
+      canvas.drawLine(const Offset(-2, 14), const Offset(-8, 2), framePaint); // Seat tube
+      canvas.drawLine(const Offset(-2, 14), const Offset(12, 4), framePaint); // Down tube
+      canvas.drawLine(const Offset(-8, 2), const Offset(12, 4), framePaint); // Top tube
+      canvas.drawLine(const Offset(12, 4), const Offset(18, 16), framePaint); // Fork
+
+      // Saddle & Handlebars
+      canvas.drawLine(const Offset(-12, 0), const Offset(-4, 0), Paint()..color = Colors.black..strokeWidth = 4);
+      canvas.drawLine(const Offset(12, 4), const Offset(14, -4), Paint()..color = Colors.white..strokeWidth = 3);
+      canvas.drawLine(const Offset(10, -4), const Offset(18, -4), Paint()..color = const Color(0xFFFF2A55)..strokeWidth = 3);
+
+      // Rider Body on Saddle
+      final bodyRect = RRect.fromRectAndRadius(
+        const Rect.fromLTWH(-16, -20, 24, 22),
+        const Radius.circular(8),
+      );
+      canvas.drawRRect(bodyRect, Paint()..color = const Color(0xFFFFFC00));
+      canvas.drawRRect(bodyRect, Paint()..color = Colors.black87..style = PaintingStyle.stroke..strokeWidth = 2);
+
+      // Head & Visor
+      canvas.drawCircle(const Offset(-4, -28), 10, Paint()..color = const Color(0xFFFFFC00));
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(const Rect.fromLTWH(0, -32, 10, 6), const Radius.circular(3)),
+        Paint()..color = const Color(0xFF00F0FF),
+      );
+    } else if (locomotion == LocomotionMode.hoverboard) {
+      // 🛹 NEON HOVERBOARD MOUNT
+      final boardY = 16.0 + (math.sin(gameTime * 7.0) * 3.0);
+
+      // Neon Thruster Glow under board
+      canvas.drawOval(
+        Rect.fromCenter(center: Offset(0, boardY + 6), width: 54, height: 10),
+        Paint()
+          ..color = const Color(0xFF00F0FF).withValues(alpha: 0.45)
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8),
+      );
+
+      // Deck
+      final deckRect = RRect.fromRectAndRadius(
+        Rect.fromCenter(center: Offset(0, boardY), width: 56, height: 8),
+        const Radius.circular(4),
+      );
+      canvas.drawRRect(deckRect, Paint()..color = const Color(0xFF0F172A));
+      canvas.drawRRect(
+        deckRect,
+        Paint()
+          ..color = const Color(0xFF00F0FF)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2,
+      );
+
+      // Surfer Body
+      final bodyRect = RRect.fromRectAndRadius(
+        Rect.fromCenter(center: Offset(0, boardY - 24), width: 28, height: 36),
+        const Radius.circular(10),
+      );
+      canvas.drawRRect(bodyRect, Paint()..color = const Color(0xFFFFFC00));
+      canvas.drawRRect(bodyRect, Paint()..color = Colors.black87..style = PaintingStyle.stroke..strokeWidth = 2);
+
+      // Visor
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(Rect.fromLTWH(2, boardY - 32, 12, 7), const Radius.circular(3)),
+        Paint()..color = const Color(0xFF00F0FF),
+      );
     } else {
-      // Standing legs
-      final legPaint = Paint()
-        ..color = const Color(0xFF0F172A)
-        ..strokeWidth = 4.0;
-      canvas.drawLine(const Offset(-6, 12), const Offset(-6, 24), legPaint);
-      canvas.drawLine(const Offset(6, 12), const Offset(6, 24), legPaint);
+      // 🚶 ON FOOT RUNNER
+      // Running legs
+      if (isMoving && !isJumping) {
+        final legAngle = math.sin(runCycle) * 0.45;
+        final legPaint = Paint()
+          ..color = const Color(0xFF0F172A)
+          ..strokeWidth = 4.0;
+        canvas.drawLine(const Offset(-6, 12), Offset(-6 - (legAngle * 18), 24), legPaint);
+        canvas.drawLine(const Offset(6, 12), Offset(6 + (legAngle * 18), 24), legPaint);
+      } else {
+        final legPaint = Paint()
+          ..color = const Color(0xFF0F172A)
+          ..strokeWidth = 4.0;
+        canvas.drawLine(const Offset(-6, 12), const Offset(-6, 24), legPaint);
+        canvas.drawLine(const Offset(6, 12), const Offset(6, 24), legPaint);
+      }
+
+      // Torso
+      final bodyRect = RRect.fromRectAndRadius(
+        Rect.fromCenter(center: const Offset(0, 0), width: 34, height: 42),
+        const Radius.circular(16),
+      );
+      canvas.drawRRect(bodyRect, Paint()..color = const Color(0xFFFFFC00));
+      canvas.drawRRect(
+        bodyRect,
+        Paint()
+          ..color = Colors.black87
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2.5,
+      );
+
+      // Visor Glasses
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(const Rect.fromLTWH(-2, -12, 16, 10), const Radius.circular(5)),
+        Paint()..color = const Color(0xFF0F172A),
+      );
+      canvas.drawCircle(const Offset(6, -7), 2.5, Paint()..color = const Color(0xFF00F0FF));
     }
 
-    // Body
-    final bodyRect = RRect.fromRectAndRadius(
-      Rect.fromCenter(center: const Offset(0, 0), width: 34, height: 42),
-      const Radius.circular(16),
-    );
-    canvas.drawRRect(bodyRect, Paint()..color = const Color(0xFFFFFC00));
-    canvas.drawRRect(
-      bodyRect,
-      Paint()
-        ..color = Colors.black87
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.5,
-    );
-
-    // Visor Glasses
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(const Rect.fromLTWH(-2, -12, 16, 10), const Radius.circular(5)),
-      Paint()..color = const Color(0xFF0F172A),
-    );
-    canvas.drawCircle(const Offset(6, -7), 2.5, Paint()..color = const Color(0xFF00F0FF));
-
     // Floating Golden Level Star over Head
-    canvas.drawCircle(const Offset(0, -32), 6, Paint()..color = const Color(0xFFFFD700));
+    canvas.drawCircle(const Offset(0, -42), 6, Paint()..color = const Color(0xFFFFD700));
 
     canvas.restore();
 
@@ -1323,22 +1759,39 @@ class PocketOpenWorldGame extends FlameGame {
       ),
       textDirection: TextDirection.ltr,
     )..layout();
-    tp.paint(canvas, Offset(x - (tp.width / 2), avatarY - 65));
+    tp.paint(canvas, Offset(x - (tp.width / 2), avatarY - 78));
   }
 }
 
+/// 🏰 Node representing a neighbor's house positioned on the hill
 class WorldHouseNode {
   final PocketNeighbor neighbor;
   final double x;
   final double y;
-  final bool isNorth;
+  final int sectorIndex;
+  late final HouseMasterComponent houseMaster;
 
   WorldHouseNode({
     required this.neighbor,
     required this.x,
     required this.y,
-    required this.isNorth,
-  });
+    required this.sectorIndex,
+    bool isNight = false,
+  }) {
+    // Instantiate authentic HouseMasterComponent with exact day/streak/palette/damage logic!
+    houseMaster = HouseMasterComponent(
+      day: neighbor.day.clamp(1, 90),
+      streak: neighbor.hasActiveShield ? 7 : 1,
+      palette: HousePalette.getById(neighbor.paletteId),
+      isDamaged: neighbor.isDamaged,
+    );
+    houseMaster.lightsOn = isNight || neighbor.day >= 20;
+    houseMaster.resize(Vector2(380, 320));
+  }
+
+  void update(double dt) {
+    houseMaster.update(dt);
+  }
 }
 
 class RoamingRobotNpc {
@@ -1348,7 +1801,8 @@ class RoamingRobotNpc {
   double y;
   final double patrolMinX;
   final double patrolMaxX;
-  double direction = 1.0;
+  double speed = 40.0;
+  double facing = 1.0;
   final String speechText;
 
   RoamingRobotNpc({
@@ -1362,13 +1816,13 @@ class RoamingRobotNpc {
   });
 
   void update(double dt) {
-    x += direction * 35.0 * dt;
+    x += speed * facing * dt;
     if (x >= patrolMaxX) {
       x = patrolMaxX;
-      direction = -1.0;
+      facing = -1.0;
     } else if (x <= patrolMinX) {
       x = patrolMinX;
-      direction = 1.0;
+      facing = 1.0;
     }
   }
 }
@@ -1376,9 +1830,10 @@ class RoamingRobotNpc {
 class JumpDustParticle {
   double x;
   double y;
-  final double vx;
-  final double vy;
-  double life = 1.0;
+  double vx;
+  double vy;
+  double life = 0.0;
+  final double maxLife = 0.45;
 
   JumpDustParticle({
     required this.x,
@@ -1387,15 +1842,21 @@ class JumpDustParticle {
     required this.vy,
   });
 
+  bool get isDead => life >= maxLife;
+
   void update(double dt) {
+    life += dt;
     x += vx * dt;
     y += vy * dt;
-    life -= dt * 2.5;
+    vx *= 0.92;
+    vy *= 0.92;
   }
 
   void render(Canvas canvas) {
-    if (life <= 0) return;
-    final paint = Paint()..color = Colors.white.withValues(alpha: life * 0.4);
-    canvas.drawCircle(Offset(x, y), 3.5 * life, paint);
+    final progress = life / maxLife;
+    final alpha = (1.0 - progress).clamp(0.0, 1.0);
+    final size = 4.5 + (progress * 6.0);
+    final paint = Paint()..color = const Color(0xFFFDE047).withValues(alpha: alpha * 0.7);
+    canvas.drawCircle(Offset(x, y), size, paint);
   }
 }
