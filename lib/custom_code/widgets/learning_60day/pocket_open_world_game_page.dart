@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
@@ -16,6 +17,7 @@ import 'pocket_citadel_attack_page.dart';
 import 'pocket_daily_mission_page.dart';
 import 'pocket_fortress_defense_service.dart';
 import 'pocket_world_street_page.dart';
+import 'pocket_world_vocabulary_bank.dart';
 
 /// 🌍 Pocket Open World: Hill Climb Racing Style 2D Rolling-Hills Adventure
 ///
@@ -57,6 +59,11 @@ class _PocketOpenWorldGamePageState extends State<PocketOpenWorldGamePage> {
   // Zoom control
   double _currentZoom = 0.82;
 
+  // Multilingual Vocabulary Language Filter (Malayalam, Tamil, Hindi, Telugu, English)
+  String _selectedLanguage = 'malayalam';
+  OpenWorldVocabItem? _activeVocabCard;
+  Timer? _vocabCardTimer;
+
   // Locomotion & Environment
   LocomotionMode _locomotion = LocomotionMode.buggy;
   bool _isNightMode = false;
@@ -97,7 +104,121 @@ class _PocketOpenWorldGamePageState extends State<PocketOpenWorldGamePage> {
   void dispose() {
     _keyboardFocusNode.dispose();
     _tts.stop();
+    _vocabCardTimer?.cancel();
     super.dispose();
+  }
+
+  void _triggerVocabFlashcard(OpenWorldVocabItem vocab) {
+    _vocabCardTimer?.cancel();
+    _speakEnglish('${vocab.word}. ${vocab.exampleEn}');
+    if (mounted) {
+      setState(() {
+        _activeVocabCard = vocab;
+      });
+      _vocabCardTimer = Timer(const Duration(seconds: 5), () {
+        if (mounted) {
+          setState(() {
+            _activeVocabCard = null;
+          });
+        }
+      });
+    }
+  }
+
+  void _showLanguageFilterDialog() {
+    HapticFeedback.selectionClick();
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        final langs = [
+          {'code': 'malayalam', 'name': 'മലയാളം (Malayalam)', 'flag': '🌴', 'desc': 'മലയാളത്തിൽ അർത്ഥം കാണുക'},
+          {'code': 'tamil', 'name': 'தமிழ் (Tamil)', 'flag': '🦚', 'desc': 'தமிழில் அர்த்தம் காண்க'},
+          {'code': 'hindi', 'name': 'हिन्दी (Hindi)', 'flag': '🇮🇳', 'desc': 'हिन्दी में अर्थ देखें'},
+          {'code': 'telugu', 'name': 'తెలుగు (Telugu)', 'flag': '🌺', 'desc': 'తెలుగులో అర్థం చూడండి'},
+          {'code': 'english', 'name': 'English', 'flag': '🌐', 'desc': 'English definitions & examples'},
+        ];
+
+        return Container(
+          padding: const EdgeInsets.all(20),
+          decoration: const BoxDecoration(
+            color: Color(0xFF0F172A),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            border: Border(top: BorderSide(color: Color(0xFF38BDF8), width: 2)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2)),
+                ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    '🌐 Vocabulary Language Filter',
+                    style: GoogleFonts.outfit(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded, color: Colors.white70, size: 20),
+                    onPressed: () => Navigator.pop(ctx),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              ...langs.map((l) {
+                final isSelected = _selectedLanguage == l['code'];
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  decoration: BoxDecoration(
+                    color: isSelected ? const Color(0xFF0284C7).withValues(alpha: 0.25) : const Color(0xFF1E293B),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: isSelected ? const Color(0xFF38BDF8) : Colors.white12,
+                      width: isSelected ? 1.5 : 1,
+                    ),
+                  ),
+                  child: ListTile(
+                    dense: true,
+                    leading: Text(l['flag']!, style: const TextStyle(fontSize: 22)),
+                    title: Text(
+                      l['name']!,
+                      style: GoogleFonts.outfit(
+                        color: isSelected ? const Color(0xFFFFFC00) : Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                    subtitle: Text(
+                      l['desc']!,
+                      style: GoogleFonts.outfit(color: Colors.white60, fontSize: 11),
+                    ),
+                    trailing: isSelected
+                        ? const Icon(Icons.check_circle_rounded, color: Color(0xFF38BDF8))
+                        : null,
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      setState(() {
+                        _selectedLanguage = l['code']!;
+                      });
+                      _game.setLanguage(l['code']!);
+                      Navigator.pop(ctx);
+                    },
+                  ),
+                );
+              }),
+              const SizedBox(height: 12),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   void _initGame() {
@@ -105,6 +226,7 @@ class _PocketOpenWorldGamePageState extends State<PocketOpenWorldGamePage> {
       playerDay: widget.currentDay,
       playerStreak: widget.streak,
       initialZoom: _currentZoom,
+      selectedLanguage: _selectedLanguage,
       onProximityChanged: (neighbor) {
         if (mounted && _proximityNeighbor != neighbor) {
           setState(() {
@@ -118,51 +240,15 @@ class _PocketOpenWorldGamePageState extends State<PocketOpenWorldGamePage> {
       onProfileTap: (neighbor) {
         _showNeighborProfileCard(neighbor);
       },
-      onWordCollected: (word, meaning) {
-        _speakEnglish('$word. $meaning');
-        if (mounted) {
-          ScaffoldMessenger.of(context).hideCurrentSnackBar();
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Row(
-                children: [
-                  const Text('📘', style: TextStyle(fontSize: 22)),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          'Vocabulary: $word (+5 XP)',
-                          style: GoogleFonts.outfit(
-                            color: const Color(0xFFFFFC00),
-                            fontSize: 13.5,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          meaning,
-                          style: GoogleFonts.outfit(color: Colors.white70, fontSize: 11.5),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              backgroundColor: const Color(0xFF0F172A),
-              behavior: SnackBarBehavior.floating,
-              duration: const Duration(seconds: 3),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
-                side: const BorderSide(color: Color(0xFF38BDF8), width: 1.2),
-              ),
-            ),
-          );
-        }
+      onVocabCollected: (vocab) {
+        _triggerVocabFlashcard(vocab);
       },
       onBillboardRead: (board) {
-        _speakEnglish('${board.title}. ${board.content}');
+        if (board.vocabItem != null) {
+          _triggerVocabFlashcard(board.vocabItem!);
+        } else {
+          _speakEnglish('${board.title}. ${board.content}');
+        }
       },
     );
   }
@@ -1004,6 +1090,38 @@ class _PocketOpenWorldGamePageState extends State<PocketOpenWorldGamePage> {
 
                       const SizedBox(width: 6),
 
+                      // 🌐 Language Filter Pill [ 🌴 ML ]
+                      GestureDetector(
+                        onTap: _showLanguageFilterDialog,
+                        child: Container(
+                          height: 36,
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF0F172A).withValues(alpha: 0.9),
+                            borderRadius: BorderRadius.circular(18),
+                            border: Border.all(color: const Color(0xFF38BDF8), width: 1.2),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(OpenWorldVocabItem.getLanguageFlag(_selectedLanguage), style: const TextStyle(fontSize: 12)),
+                              const SizedBox(width: 3),
+                              Text(
+                                OpenWorldVocabItem.getLanguageShortCode(_selectedLanguage),
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                              const Icon(Icons.arrow_drop_down_rounded, color: Color(0xFF38BDF8), size: 14),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(width: 6),
+
                       // 🔊 Audio TTS Mute / Unmute Toggle
                       GestureDetector(
                         onTap: _toggleAudio,
@@ -1087,6 +1205,139 @@ class _PocketOpenWorldGamePageState extends State<PocketOpenWorldGamePage> {
                   ),
                 ),
               ),
+
+              // 2.5 Floating Interactive Vocabulary Flashcard HUD
+              if (_activeVocabCard != null)
+                Positioned(
+                  top: 56,
+                  left: 14,
+                  right: 14,
+                  child: Center(
+                    child: Container(
+                      constraints: const BoxConstraints(maxWidth: 460),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: const Color(0xFF38BDF8), width: 1.5),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF0284C7).withValues(alpha: 0.4),
+                            blurRadius: 16,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF0284C7).withValues(alpha: 0.25),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(color: const Color(0xFF38BDF8), width: 0.8),
+                                ),
+                                child: Text(
+                                  '📘 ${_activeVocabCard!.category} • ${_activeVocabCard!.partOfSpeech}',
+                                  style: GoogleFonts.outfit(
+                                    color: const Color(0xFF38BDF8),
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  _activeVocabCard!.word,
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.white,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 0.5,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              Text(
+                                _activeVocabCard!.phonetics,
+                                style: GoogleFonts.outfit(
+                                  color: const Color(0xFFFFFC00),
+                                  fontSize: 11,
+                                  fontStyle: FontStyle.italic,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              GestureDetector(
+                                onTap: () => _speakEnglish('${_activeVocabCard!.word}. ${_activeVocabCard!.exampleEn}'),
+                                child: Container(
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF38BDF8).withValues(alpha: 0.2),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(Icons.volume_up_rounded, color: Color(0xFF38BDF8), size: 16),
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              GestureDetector(
+                                onTap: () {
+                                  setState(() => _activeVocabCard = null);
+                                },
+                                child: const Icon(Icons.close_rounded, color: Colors.white60, size: 16),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 5),
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF0284C7).withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
+                              children: [
+                                Text(
+                                  OpenWorldVocabItem.getLanguageFlag(_selectedLanguage),
+                                  style: const TextStyle(fontSize: 12),
+                                ),
+                                const SizedBox(width: 6),
+                                Expanded(
+                                  child: Text(
+                                    _activeVocabCard!.getMeaning(_selectedLanguage),
+                                    style: const TextStyle(
+                                      color: Color(0xFFFFFC00),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            '"${_activeVocabCard!.exampleEn}"',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white70,
+                              fontSize: 10.5,
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
 
               // 3. Proximity Action Pill (Appears above the Road when standing near a House Gate)
               if (_proximityNeighbor != null)
@@ -1456,8 +1707,10 @@ class PocketOpenWorldGame extends FlameGame {
   final ValueChanged<PocketNeighbor?> onProximityChanged;
   final ValueChanged<PocketNeighbor> onProfileTap;
   final void Function(String word, String meaning)? onWordCollected;
+  final void Function(OpenWorldVocabItem vocab)? onVocabCollected;
   final void Function(RoadsideLearningBoard board)? onBillboardRead;
   double initialZoom;
+  String selectedLanguage;
 
   PocketOpenWorldGame({
     required this.playerDay,
@@ -1465,8 +1718,10 @@ class PocketOpenWorldGame extends FlameGame {
     required this.onProximityChanged,
     required this.onProfileTap,
     this.onWordCollected,
+    this.onVocabCollected,
     this.onBillboardRead,
     this.initialZoom = 0.82,
+    this.selectedLanguage = 'malayalam',
   });
 
   // World Bounds
@@ -1524,6 +1779,7 @@ class PocketOpenWorldGame extends FlameGame {
   final List<EnglishWordOrb> englishOrbs = [];
   final List<EnglishSpeedGate> speedGates = [];
   final List<RoadsideLearningBoard> roadsideBoards = [];
+  final List<WorldJumpRamp> jumpRamps = [];
 
   // Roaming NPCs
   List<RoamingRobotNpc> robotNpcs = [];
@@ -1558,6 +1814,11 @@ class PocketOpenWorldGame extends FlameGame {
     _generateCoins();
     _generateEnglishLearningElements();
     _generateRoadsideBoards();
+    _generateJumpRamps();
+  }
+
+  void setLanguage(String lang) {
+    selectedLanguage = lang;
   }
 
   void setZoom(double newZoom) {
@@ -1719,31 +1980,17 @@ class PocketOpenWorldGame extends FlameGame {
     englishOrbs.clear();
     speedGates.clear();
 
-    final vocabWords = [
-      ('FLUENT', 'Able to express oneself easily and articulately.'),
-      ('COURAGE', 'Bravery in the face of English speech & citadel trials.'),
-      ('WISDOM', 'Knowledge acquired through daily practice.'),
-      ('JOURNEY', 'The road of continuous improvement and mastery.'),
-      ('VICTORY', 'Triumph over difficult vocabulary and grammar.'),
-      ('RESILIENT', 'Bouncing back stronger from every mistake.'),
-      ('DISCIPLINE', 'Consistency is the secret to lifelong fluency.'),
-      ('CHAMPION', 'One who masters communication through effort.'),
-      ('BRILLIANT', 'Remarkably clever and radiant in expression.'),
-      ('PERSIST', 'Continuing firmly until fluency is attained.'),
-      ('INSPIRE', 'Lifting up learning mates through speech.'),
-      ('ELEVATE', 'Raising vocabulary to a professional grade.'),
-    ];
-
-    for (int i = 0; i < vocabWords.length; i++) {
-      final x = 1200.0 + (i * 4200.0);
+    for (int i = 0; i < kOpenWorldVocabBank.length; i++) {
+      final x = 1100.0 + (i * 1550.0);
       if (x < worldWidth - 800) {
-        final y = getGroundY(x) - 38.0;
+        final nearHouse = houseNodes.any((h) => (h.x - x).abs() < 90);
+        final orbX = nearHouse ? x + 120.0 : x;
+        final groundY = getGroundY(orbX);
         englishOrbs.add(
           EnglishWordOrb(
-            x: x,
-            y: y,
-            word: vocabWords[i].$1,
-            meaning: vocabWords[i].$2,
+            x: orbX,
+            y: groundY - 38.0,
+            vocabItem: kOpenWorldVocabBank[i],
           ),
         );
       }
@@ -1775,81 +2022,64 @@ class PocketOpenWorldGame extends FlameGame {
     }
   }
 
-  /// 📜 Generate Roadside Electronic Billboards with Poems, Quotes, & Vocabulary
+  /// 📜 Generate Roadside Electronic Billboards with Poems, Quotes, & Multilingual Vocabulary
   void _generateRoadsideBoards() {
     roadsideBoards.clear();
 
-    final boardsData = [
-      (
-        'VOCAB',
-        'PERSISTENCE',
-        'Continued effort despite difficulty or delay.',
-        '"Persistence breaks through all barriers."',
-      ),
-      (
-        'POEM',
-        'The Road Not Taken',
-        'Two roads diverged in a yellow wood...',
-        '— Robert Frost',
-      ),
-      (
-        'QUOTE',
-        'Step By Step',
-        'The journey of a thousand miles begins with a single step.',
-        '— Lao Tzu',
-      ),
-      (
-        'VOCAB',
-        'ELOQUENT',
-        'Fluent or persuasive in speaking or writing.',
-        '"Her eloquent words inspired the whole team."',
-      ),
-      (
-        'POEM',
-        'Hope With Feathers',
-        'Hope is the thing with feathers that perches in the soul.',
-        '— Emily Dickinson',
-      ),
-      (
-        'QUOTE',
-        'Courage to Grow',
-        'Mistakes are the portals of discovery.',
-        '— James Joyce',
-      ),
-      (
-        'VOCAB',
-        'FORTITUDE',
-        'Courage in pain or adversity.',
-        '"True fortitude shines in moments of challenge."',
-      ),
-      (
-        'POEM',
-        'The Secret Road',
-        'The road goes ever on and on, down from the door.',
-        '— J.R.R. Tolkien',
-      ),
-      (
-        'QUOTE',
-        'Daily Habit',
-        'We are what we repeatedly do. Excellence is a habit.',
-        '— Aristotle',
-      ),
-    ];
+    int vocabIndex = 0;
+    for (double bx = 950.0; bx < worldWidth - 1000.0; bx += 2100.0) {
+      final isPoemOrQuote = ((bx / 2100).floor()) % 3;
+      final y = getGroundY(bx);
 
-    for (int i = 0; i < boardsData.length; i++) {
-      final x = 900.0 + (i * 5400.0);
-      if (x < worldWidth - 800) {
-        final y = getGroundY(x);
+      if (isPoemOrQuote == 1) {
         roadsideBoards.add(
           RoadsideLearningBoard(
-            x: x,
+            x: bx,
             y: y,
-            category: boardsData[i].$1,
-            title: boardsData[i].$2,
-            content: boardsData[i].$3,
-            subtext: boardsData[i].$4,
+            category: 'POEM',
+            title: 'The Road Not Taken',
+            content: 'Two roads diverged in a yellow wood...',
+            subtext: '— Robert Frost',
           ),
         );
+      } else if (isPoemOrQuote == 2) {
+        roadsideBoards.add(
+          RoadsideLearningBoard(
+            x: bx,
+            y: y,
+            category: 'QUOTE',
+            title: 'Continuous Mastery',
+            content: 'The journey of a thousand miles begins with a single step.',
+            subtext: '— Lao Tzu',
+          ),
+        );
+      } else {
+        final vocab = kOpenWorldVocabBank[vocabIndex % kOpenWorldVocabBank.length];
+        vocabIndex++;
+        roadsideBoards.add(
+          RoadsideLearningBoard(
+            x: bx,
+            y: y,
+            category: 'VOCAB',
+            title: vocab.word,
+            content: vocab.meaningEn,
+            subtext: '${vocab.phonetics} • "${vocab.exampleEn}"',
+            vocabItem: vocab,
+          ),
+        );
+      }
+    }
+  }
+
+  /// 🚀 Generate Strategic Jump Ramps along the Highway and Bridges
+  void _generateJumpRamps() {
+    jumpRamps.clear();
+    final rampPositions = [5800.0, 12200.0, 17800.0, 27500.0, 35800.0];
+    for (final rx in rampPositions) {
+      if (rx < worldWidth - 600) {
+        final ry = getGroundY(rx);
+        final slope = getGroundSlope(rx);
+        jumpRamps.add(WorldJumpRamp(x: rx, y: ry, angle: slope));
       }
     }
   }
@@ -1897,11 +2127,15 @@ class PocketOpenWorldGame extends FlameGame {
 
   void _spawnRiverBoatsAndSeagulls() {
     riverBoats = [
-      CruisingBoat(x: 800, y: groundBaseY + 230, speed: 38, isSailboat: true),
-      CruisingBoat(x: 3200, y: groundBaseY + 260, speed: 65, isSailboat: false),
-      CruisingBoat(x: 6800, y: groundBaseY + 240, speed: 42, isSailboat: true),
-      CruisingBoat(x: 11400, y: groundBaseY + 270, speed: 70, isSailboat: false),
-      CruisingBoat(x: 16500, y: groundBaseY + 235, speed: 45, isSailboat: true),
+      CruisingBoat(x: 800, y: groundBaseY + 230, speed: 36, boatType: CruisingBoatType.kettuvallam),
+      CruisingBoat(x: 3200, y: groundBaseY + 260, speed: 68, boatType: CruisingBoatType.speedboat),
+      CruisingBoat(x: 6600, y: groundBaseY + 245, speed: 28, boatType: CruisingBoatType.cruiseShip),
+      CruisingBoat(x: 7400, y: groundBaseY + 235, speed: 42, boatType: CruisingBoatType.sailboat),
+      CruisingBoat(x: 11400, y: groundBaseY + 250, speed: 34, boatType: CruisingBoatType.kettuvallam),
+      CruisingBoat(x: 18400, y: groundBaseY + 242, speed: 30, boatType: CruisingBoatType.cruiseShip),
+      CruisingBoat(x: 19300, y: groundBaseY + 265, speed: 72, boatType: CruisingBoatType.speedboat),
+      CruisingBoat(x: 36500, y: groundBaseY + 244, speed: 29, boatType: CruisingBoatType.cruiseShip),
+      CruisingBoat(x: 37400, y: groundBaseY + 236, speed: 38, boatType: CruisingBoatType.kettuvallam),
     ];
 
     seagulls = [
@@ -1921,23 +2155,23 @@ class PocketOpenWorldGame extends FlameGame {
     }
   }
 
-  /// 🦘 Tight arcade jump
+  /// 🦘 Smooth arcade jump with momentum carryover
   void playerJump() {
     if (!isJumping && !isCrashed) {
       isJumping = true;
       airTime = 0.0;
       airRotationProgress = 0.0;
-      jumpVelocity = locomotion == LocomotionMode.buggy ? 13.5 : (locomotion == LocomotionMode.bike ? 13.0 : 11.5);
+      jumpVelocity = locomotion == LocomotionMode.buggy ? 16.0 : (locomotion == LocomotionMode.bike ? 15.0 : 13.0);
 
       final groundY = getGroundY(playerX);
-      for (int i = 0; i < 6; i++) {
-        final angle = (i / 6) * math.pi * 2;
+      for (int i = 0; i < 8; i++) {
+        final angle = (i / 8) * math.pi * 2;
         particles.add(
           JumpDustParticle(
             x: playerX,
             y: groundY,
-            vx: math.cos(angle) * 35,
-            vy: math.sin(angle) * 18,
+            vx: math.cos(angle) * 45,
+            vy: math.sin(angle) * 22,
           ),
         );
       }
@@ -2116,13 +2350,65 @@ class PocketOpenWorldGame extends FlameGame {
       }
     }
 
-    // 3. Vertical Jump & Landing
+    // Jump Ramp Collisions
+    for (final ramp in jumpRamps) {
+      if ((playerX - ramp.x).abs() < 32 && (playerY - ramp.y).abs() < 42) {
+        if (!isJumping || jumpVelocity < 10.0) {
+          isJumping = true;
+          jumpVelocity = 19.5;
+          vx = (vx.abs() < 140 ? 340.0 : vx.abs() * 1.35) * playerFacing;
+          HapticFeedback.heavyImpact();
+
+          floatingTexts.add(
+            FloatingTextEffect(
+              text: '🚀 MEGA RAMP LAUNCH! +5 🟡',
+              x: ramp.x,
+              y: ramp.y - 65,
+              color: const Color(0xFFFF9900),
+            ),
+          );
+          PocketFortressDefenseService.awardPoints(5);
+
+          for (int i = 0; i < 12; i++) {
+            particles.add(
+              JumpDustParticle(
+                x: ramp.x,
+                y: ramp.y - 10,
+                vx: (math.Random().nextDouble() * 120 - 60),
+                vy: -math.Random().nextDouble() * 45 - 20,
+              ),
+            );
+          }
+        }
+      }
+    }
+
+    // 3. Vertical Jump & Landing with Frame-Rate Independent Delta Time
     if (isJumping) {
-      playerZ += jumpVelocity;
-      jumpVelocity -= 0.65;
+      playerZ += jumpVelocity * (dt * 60.0);
+      jumpVelocity -= 0.65 * (dt * 60.0);
+
+      // Rocket booster flame particles during airtime
+      if (playerZ > 6.0 && locomotion == LocomotionMode.buggy) {
+        if ((gameTime % 0.04) < dt) {
+          final rearX = playerX - (playerFacing * 28.0);
+          final rearY = playerY + 4.0;
+          particles.add(
+            BoosterFlameParticle(
+              x: rearX,
+              y: rearY,
+              vx: -playerFacing * (140.0 + math.Random().nextDouble() * 50),
+              vy: (math.Random().nextDouble() * 24 - 12),
+              color: math.Random().nextBool() ? const Color(0xFF00F0FF) : const Color(0xFFFF9900),
+            ),
+          );
+        }
+      }
+
       if (playerZ <= 0.0) {
         playerZ = 0.0;
         isJumping = false;
+        suspensionOffset = (jumpVelocity.abs() * 0.45).clamp(0.0, 10.0);
         jumpVelocity = 0.0;
 
         // Check if landed upside down
@@ -2190,7 +2476,7 @@ class PocketOpenWorldGame extends FlameGame {
       }
     }
 
-    // 5. Collect English Word Orbs
+    // 5. Collect English Word Orbs with Multilingual Flashcard Callback
     for (final orb in englishOrbs) {
       if (!orb.collected && playerHitRect.contains(Offset(orb.x, orb.y))) {
         orb.collected = true;
@@ -2205,6 +2491,9 @@ class PocketOpenWorldGame extends FlameGame {
           ),
         );
         PocketFortressDefenseService.awardPoints(5);
+        if (onVocabCollected != null) {
+          onVocabCollected!(orb.vocabItem);
+        }
         if (onWordCollected != null) {
           onWordCollected!(orb.word, orb.meaning);
         }
@@ -2371,10 +2660,17 @@ class PocketOpenWorldGame extends FlameGame {
       }
     }
 
-    // 7. Roadside English Learning Billboards
+    // 7. Roadside English Learning Billboards with Multilingual Translation
     for (final board in roadsideBoards) {
       if (board.x >= leftBound && board.x <= rightBound) {
-        board.render(canvas, gameTime);
+        board.render(canvas, gameTime, selectedLanguage);
+      }
+    }
+
+    // 7.5 Strategic Launch Ramps
+    for (final ramp in jumpRamps) {
+      if (ramp.x >= leftBound && ramp.x <= rightBound) {
+        ramp.render(canvas, gameTime);
       }
     }
 
@@ -2698,6 +2994,54 @@ class PocketOpenWorldGame extends FlameGame {
         Rect.fromCenter(center: Offset(fx, riverTopY), width: 18 * (fishCycle / 1.4), height: 4),
         Paint()..color = const Color(0xFFBAE6FD).withValues(alpha: 0.6),
       );
+    }
+
+    // Leaping Dolphins under Bridge & River
+    for (int d = 0; d < 3; d++) {
+      final dolphinBaseX = 6400.0 + (d * 12000.0);
+      final dolphinCycle = ((gameTime * 0.9) + (d * 2.1)) % 5.0;
+      if (dolphinCycle < 1.6) {
+        final leapProgress = dolphinCycle / 1.6;
+        final dx = dolphinBaseX + (leapProgress * 120.0);
+        final leapHeight = math.sin(leapProgress * math.pi) * 42.0;
+        final dy = riverTopY - leapHeight;
+        final dolphinAngle = math.cos(leapProgress * math.pi) * 0.6;
+
+        canvas.save();
+        canvas.translate(dx, dy);
+        canvas.rotate(dolphinAngle);
+
+        // Sleek dolphin body
+        final dolphinPath = Path();
+        dolphinPath.moveTo(-16, 0);
+        dolphinPath.quadraticBezierTo(-4, -8, 12, 0);
+        dolphinPath.quadraticBezierTo(2, 6, -16, 0);
+
+        // Dorsal fin
+        dolphinPath.moveTo(0, -6);
+        dolphinPath.lineTo(4, -13);
+        dolphinPath.lineTo(6, -6);
+
+        // Tail fluke
+        dolphinPath.moveTo(-16, 0);
+        dolphinPath.lineTo(-22, -4);
+        dolphinPath.lineTo(-20, 0);
+        dolphinPath.lineTo(-22, 4);
+        dolphinPath.close();
+
+        canvas.drawPath(dolphinPath, Paint()..color = const Color(0xFF94A3B8));
+        canvas.drawPath(dolphinPath, Paint()..color = const Color(0xFFE2E8F0)..style = PaintingStyle.stroke..strokeWidth = 1);
+
+        canvas.restore();
+
+        // Water splash rings
+        if (leapProgress > 0.05 && leapProgress < 0.95) {
+          canvas.drawOval(
+            Rect.fromCenter(center: Offset(dx, riverTopY), width: 22 * math.sin(leapProgress * math.pi), height: 5),
+            Paint()..color = const Color(0xFFBAE6FD).withValues(alpha: 0.65),
+          );
+        }
+      }
     }
   }
 
@@ -3200,55 +3544,67 @@ class WorldCoin {
   }
 }
 
-/// 📘 Floating English Vocabulary Orb
+/// 📘 Floating English Vocabulary Orb with Multilingual Translation
 class EnglishWordOrb {
   final double x;
   final double y;
-  final String word;
-  final String meaning;
+  final OpenWorldVocabItem vocabItem;
   bool collected = false;
 
   EnglishWordOrb({
     required this.x,
     required this.y,
-    required this.word,
-    required this.meaning,
+    required this.vocabItem,
   });
+
+  String get word => vocabItem.word;
+  String get meaning => vocabItem.meaningEn;
 
   void render(Canvas canvas, double gameTime) {
     if (collected) return;
-    final floatY = y + (math.sin(gameTime * 4.0 + x) * 4.5);
+    final floatY = y + (math.sin(gameTime * 4.0 + x) * 5.0);
 
     canvas.drawCircle(
       Offset(x, floatY),
-      16,
+      18,
       Paint()
-        ..color = const Color(0xFF00F0FF).withValues(alpha: 0.35)
+        ..color = const Color(0xFF00F0FF).withValues(alpha: 0.4)
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8),
     );
-    canvas.drawCircle(Offset(x, floatY), 12, Paint()..color = const Color(0xFF0284C7));
+    canvas.drawCircle(Offset(x, floatY), 13, Paint()..color = const Color(0xFF0284C7));
     canvas.drawCircle(
       Offset(x, floatY),
-      12,
+      13,
       Paint()
-        ..color = const Color(0xFF38BDF8)
+        ..color = const Color(0xFFFFFC00)
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.8,
+        ..strokeWidth = 2.0,
     );
 
+    // Mini icon inside
+    final iconTp = TextPainter(
+      text: const TextSpan(
+        text: '📖',
+        style: TextStyle(fontSize: 10),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    iconTp.paint(canvas, Offset(x - (iconTp.width / 2), floatY - (iconTp.height / 2)));
+
+    // Word label on top
     final tp = TextPainter(
       text: TextSpan(
         text: word,
         style: const TextStyle(
           color: Colors.white,
-          fontSize: 8.5,
+          fontSize: 9.0,
           fontWeight: FontWeight.w900,
           shadows: [Shadow(color: Colors.black, blurRadius: 4)],
         ),
       ),
       textDirection: TextDirection.ltr,
     )..layout();
-    tp.paint(canvas, Offset(x - (tp.width / 2), floatY - 22));
+    tp.paint(canvas, Offset(x - (tp.width / 2), floatY - 24));
   }
 }
 
@@ -3260,6 +3616,7 @@ class RoadsideLearningBoard {
   final String title;
   final String content;
   final String subtext;
+  final OpenWorldVocabItem? vocabItem;
   bool isRead = false;
 
   RoadsideLearningBoard({
@@ -3269,23 +3626,24 @@ class RoadsideLearningBoard {
     required this.title,
     required this.content,
     required this.subtext,
+    this.vocabItem,
   });
 
-  void render(Canvas canvas, double gameTime) {
-    final boardW = 210.0;
-    final boardH = 68.0;
-    final boardCenterY = y - 75.0;
+  void render(Canvas canvas, double gameTime, String selectedLanguage) {
+    final boardW = 230.0;
+    final boardH = 74.0;
+    final boardCenterY = y - 78.0;
 
     // Twin steel support legs
-    canvas.drawLine(Offset(x - 65, y), Offset(x - 65, boardCenterY + 30), Paint()..color = const Color(0xFF334155)..strokeWidth = 4);
-    canvas.drawLine(Offset(x + 65, y), Offset(x + 65, boardCenterY + 30), Paint()..color = const Color(0xFF334155)..strokeWidth = 4);
+    canvas.drawLine(Offset(x - 70, y), Offset(x - 70, boardCenterY + 34), Paint()..color = const Color(0xFF334155)..strokeWidth = 4);
+    canvas.drawLine(Offset(x + 70, y), Offset(x + 70, boardCenterY + 34), Paint()..color = const Color(0xFF334155)..strokeWidth = 4);
 
     final rect = RRect.fromRectAndRadius(
       Rect.fromCenter(center: Offset(x, boardCenterY), width: boardW, height: boardH),
-      const Radius.circular(8),
+      const Radius.circular(10),
     );
 
-    canvas.drawRRect(rect, Paint()..color = const Color(0xFF0F172A).withValues(alpha: 0.94));
+    canvas.drawRRect(rect, Paint()..color = const Color(0xFF0F172A).withValues(alpha: 0.95));
 
     final themeColor = category == 'POEM'
         ? const Color(0xFFA855F7)
@@ -3296,22 +3654,27 @@ class RoadsideLearningBoard {
       Paint()
         ..color = themeColor
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.5,
+        ..strokeWidth = 1.8,
     );
+
+    final displayTitle = vocabItem != null ? '[VOCAB] ${vocabItem!.word} (${vocabItem!.partOfSpeech})' : '[$category] $title';
+    final displayBody = vocabItem != null ? vocabItem!.getMeaning(selectedLanguage) : content;
+    final displaySub = vocabItem != null ? '${vocabItem!.phonetics} • "${vocabItem!.exampleEn}"' : subtext;
 
     final tp = TextPainter(
       text: TextSpan(
         children: [
           TextSpan(
-            text: '[$category] $title\n',
+            text: '$displayTitle\n',
             style: TextStyle(
               color: themeColor,
-              fontSize: 8.5,
+              fontSize: 9.0,
               fontWeight: FontWeight.w900,
+              letterSpacing: 0.5,
             ),
           ),
           TextSpan(
-            text: '$content\n',
+            text: '$displayBody\n',
             style: const TextStyle(
               color: Colors.white,
               fontSize: 9.5,
@@ -3319,7 +3682,7 @@ class RoadsideLearningBoard {
             ),
           ),
           TextSpan(
-            text: subtext,
+            text: displaySub,
             style: const TextStyle(
               color: Colors.white70,
               fontSize: 8.0,
@@ -3332,9 +3695,77 @@ class RoadsideLearningBoard {
       textDirection: TextDirection.ltr,
       maxLines: 3,
       ellipsis: '...',
-    )..layout(maxWidth: boardW - 14);
+    )..layout(maxWidth: boardW - 16);
 
     tp.paint(canvas, Offset(x - (tp.width / 2), boardCenterY - (tp.height / 2)));
+  }
+}
+
+/// 🚀 Animated Launch Ramp on Hill Crests & Bridge Entrances
+class WorldJumpRamp {
+  final double x;
+  final double y;
+  final double angle;
+
+  WorldJumpRamp({
+    required this.x,
+    required this.y,
+    this.angle = -0.22,
+  });
+
+  void render(Canvas canvas, double gameTime) {
+    canvas.save();
+    canvas.translate(x, y);
+    canvas.rotate(angle);
+
+    final rampPath = Path();
+    rampPath.moveTo(-32, 0);
+    rampPath.lineTo(32, -22);
+    rampPath.lineTo(32, 0);
+    rampPath.close();
+
+    canvas.drawPath(rampPath, Paint()..color = const Color(0xFF0F172A).withValues(alpha: 0.95));
+    canvas.drawPath(
+      rampPath,
+      Paint()
+        ..color = const Color(0xFFFF9900)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.5,
+    );
+
+    // Animated chevrons
+    final chevronPhase = (gameTime * 4.0) % 1.0;
+    for (int i = 0; i < 3; i++) {
+      final cx = -14.0 + (i * 18.0) + (chevronPhase * 8.0);
+      final cy = -5.0 - (i * 5.0);
+      final arrow = Path();
+      arrow.moveTo(cx - 5, cy + 5);
+      arrow.lineTo(cx, cy);
+      arrow.lineTo(cx - 5, cy - 5);
+      canvas.drawPath(
+        arrow,
+        Paint()
+          ..color = const Color(0xFFFFFC00)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2.2
+          ..strokeCap = StrokeCap.round,
+      );
+    }
+
+    final tp = TextPainter(
+      text: const TextSpan(
+        text: '🚀 RAMP',
+        style: TextStyle(
+          color: Color(0xFFFF9900),
+          fontSize: 8,
+          fontWeight: FontWeight.w900,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    tp.paint(canvas, const Offset(6, 2));
+
+    canvas.restore();
   }
 }
 
@@ -3473,24 +3904,28 @@ class RoamingRobotNpc {
   }
 }
 
-/// ⛵ Cruising Boat Model on the Living River
+enum CruisingBoatType { kettuvallam, cruiseShip, speedboat, sailboat }
+
+/// ⛵ Diverse Living Fleet: Kerala Kettuvallam, Cruise Liner, Speedboat & Sailboat
 class CruisingBoat {
   double x;
   final double y;
   final double speed;
-  final bool isSailboat;
+  final CruisingBoatType boatType;
+  double animationTimer = 0.0;
 
   CruisingBoat({
     required this.x,
     required this.y,
     required this.speed,
-    required this.isSailboat,
+    required this.boatType,
   });
 
   void update(double dt, double worldWidth) {
     x += speed * dt;
-    if (x > worldWidth + 200) {
-      x = -200;
+    animationTimer += dt;
+    if (x > worldWidth + 250) {
+      x = -250;
     }
   }
 
@@ -3498,37 +3933,201 @@ class CruisingBoat {
     canvas.save();
     canvas.translate(x, y);
 
-    final hullPath = Path();
-    hullPath.moveTo(-18, 0);
-    hullPath.lineTo(-12, 6);
-    hullPath.lineTo(16, 6);
-    hullPath.lineTo(22, 0);
-    hullPath.close();
+    switch (boatType) {
+      case CruisingBoatType.kettuvallam:
+        _drawKettuvallam(canvas, isNight);
+        break;
+      case CruisingBoatType.cruiseShip:
+        _drawCruiseShip(canvas, isNight);
+        break;
+      case CruisingBoatType.speedboat:
+        _drawSpeedboat(canvas, isNight);
+        break;
+      case CruisingBoatType.sailboat:
+        _drawSailboat(canvas, isNight);
+        break;
+    }
 
-    canvas.drawPath(hullPath, Paint()..color = const Color(0xFFE2E8F0));
-    canvas.drawPath(hullPath, Paint()..color = Colors.black45..style = PaintingStyle.stroke..strokeWidth = 1);
+    canvas.restore();
+  }
 
-    if (isSailboat) {
-      canvas.drawLine(const Offset(2, 0), const Offset(2, -18), Paint()..color = const Color(0xFF78350F)..strokeWidth = 1.5);
-      final sailPath = Path();
-      sailPath.moveTo(2, -18);
-      sailPath.lineTo(14, -4);
-      sailPath.lineTo(2, -4);
-      sailPath.close();
-      canvas.drawPath(sailPath, Paint()..color = const Color(0xFFFEF08A));
-    } else {
+  /// 🛶 Authentic Kerala Kettuvallam (Houseboat)
+  void _drawKettuvallam(Canvas canvas, bool isNight) {
+    final hull = Path();
+    hull.moveTo(-36, 0);
+    hull.quadraticBezierTo(-22, 10, 0, 10);
+    hull.quadraticBezierTo(22, 10, 36, 0);
+    hull.quadraticBezierTo(24, 4, 0, 4);
+    hull.quadraticBezierTo(-24, 4, -36, 0);
+    hull.close();
+
+    canvas.drawPath(hull, Paint()..color = const Color(0xFF451A03));
+    canvas.drawPath(hull, Paint()..color = const Color(0xFF78350F)..style = PaintingStyle.stroke..strokeWidth = 1.2);
+
+    final canopy = Path();
+    canopy.moveTo(-24, 1);
+    canopy.quadraticBezierTo(-20, -16, 0, -18);
+    canopy.quadraticBezierTo(20, -16, 24, 1);
+    canopy.close();
+    canvas.drawPath(canopy, Paint()..color = const Color(0xFFD97706));
+    canvas.drawPath(canopy, Paint()..color = const Color(0xFF92400E)..style = PaintingStyle.stroke..strokeWidth = 1);
+
+    for (double rx = -16; rx <= 16; rx += 8) {
+      canvas.drawLine(Offset(rx, 1), Offset(rx * 0.8, -17), Paint()..color = const Color(0xFF78350F)..strokeWidth = 1);
+    }
+
+    for (double wx = -12; wx <= 12; wx += 10) {
       canvas.drawRRect(
-        RRect.fromRectAndRadius(const Rect.fromLTWH(-6, -6, 14, 6), const Radius.circular(2)),
-        Paint()..color = const Color(0xFF00F0FF),
+        RRect.fromRectAndRadius(Rect.fromCenter(center: Offset(wx, -5), width: 6, height: 5), const Radius.circular(1.5)),
+        Paint()..color = isNight ? const Color(0xFFFEF08A) : const Color(0xFFFFFBEB),
+      );
+    }
+
+    canvas.drawLine(const Offset(30, 0), const Offset(30, -5), Paint()..color = Colors.black87..strokeWidth = 1);
+    canvas.drawCircle(const Offset(30, -4), 2.5, Paint()..color = const Color(0xFFFFD700));
+    if (isNight) {
+      canvas.drawCircle(
+        const Offset(30, -4),
+        7.0,
+        Paint()
+          ..color = const Color(0xFFFFD700).withValues(alpha: 0.35)
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4),
       );
     }
 
     canvas.drawOval(
-      const Rect.fromLTWH(-28, 4, 14, 3),
-      Paint()..color = Colors.white.withValues(alpha: 0.5),
+      const Rect.fromLTWH(-46, 6, 20, 3),
+      Paint()..color = Colors.white.withValues(alpha: 0.45),
+    );
+  }
+
+  /// 🚢 Luxury Ocean Cruise Liner
+  void _drawCruiseShip(Canvas canvas, bool isNight) {
+    final lowerHull = Path();
+    lowerHull.moveTo(-55, 0);
+    lowerHull.lineTo(-44, 12);
+    lowerHull.lineTo(44, 12);
+    lowerHull.lineTo(58, 0);
+    lowerHull.close();
+    canvas.drawPath(lowerHull, Paint()..color = const Color(0xFF1E3A8A));
+
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(const Rect.fromLTWH(-48, -8, 96, 9), const Radius.circular(2)),
+      Paint()..color = const Color(0xFFF8FAFC),
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(const Rect.fromLTWH(-38, -16, 76, 9), const Radius.circular(2)),
+      Paint()..color = const Color(0xFFF1F5F9),
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(const Rect.fromLTWH(-26, -23, 48, 8), const Radius.circular(2)),
+      Paint()..color = const Color(0xFFE2E8F0),
     );
 
-    canvas.restore();
+    for (double px = -40; px <= 38; px += 10) {
+      canvas.drawCircle(
+        Offset(px, -4),
+        1.6,
+        Paint()..color = isNight ? const Color(0xFF38BDF8) : const Color(0xFF0284C7),
+      );
+      if (px >= -30 && px <= 30) {
+        canvas.drawCircle(
+          Offset(px, -12),
+          1.5,
+          Paint()..color = isNight ? const Color(0xFFFFFC00) : const Color(0xFF0284C7),
+        );
+      }
+    }
+
+    canvas.drawRect(const Rect.fromLTWH(-16, -30, 7, 8), Paint()..color = const Color(0xFFDC2626));
+    canvas.drawRect(const Rect.fromLTWH(4, -30, 7, 8), Paint()..color = const Color(0xFFDC2626));
+    canvas.drawRect(const Rect.fromLTWH(-16, -30, 7, 2), Paint()..color = Colors.black87);
+    canvas.drawRect(const Rect.fromLTWH(4, -30, 7, 2), Paint()..color = Colors.black87);
+
+    final puffX = -22.0 - (animationTimer * 12.0 % 20.0);
+    final puffY = -34.0 - (animationTimer * 6.0 % 10.0);
+    canvas.drawCircle(Offset(puffX, puffY), 3.5, Paint()..color = Colors.white.withValues(alpha: 0.35));
+
+    canvas.drawLine(const Offset(-4, -23), const Offset(-4, -34), Paint()..color = Colors.white70..strokeWidth = 1.2);
+    canvas.drawLine(const Offset(-8, -31), const Offset(0, -31), Paint()..color = Colors.white70..strokeWidth = 1);
+
+    canvas.drawOval(const Rect.fromLTWH(-68, 8, 22, 4), Paint()..color = Colors.white.withValues(alpha: 0.4));
+    canvas.drawOval(const Rect.fromLTWH(48, 8, 14, 3), Paint()..color = Colors.white.withValues(alpha: 0.4));
+  }
+
+  /// 🚤 High-Speed Motorboat
+  void _drawSpeedboat(Canvas canvas, bool isNight) {
+    final hull = Path();
+    hull.moveTo(-24, 1);
+    hull.lineTo(-14, 7);
+    hull.lineTo(24, 7);
+    hull.lineTo(32, 1);
+    hull.close();
+    canvas.drawPath(hull, Paint()..color = const Color(0xFF06B6D4));
+
+    final stripe = Path();
+    stripe.moveTo(-20, 2);
+    stripe.lineTo(-12, 6);
+    stripe.lineTo(22, 6);
+    stripe.lineTo(28, 2);
+    stripe.close();
+    canvas.drawPath(stripe, Paint()..color = const Color(0xFFF97316));
+
+    final glass = Path();
+    glass.moveTo(2, 1);
+    glass.lineTo(8, -6);
+    glass.lineTo(16, -6);
+    glass.lineTo(14, 1);
+    glass.close();
+    canvas.drawPath(glass, Paint()..color = const Color(0xFF38BDF8).withValues(alpha: 0.8));
+
+    canvas.drawCircle(const Offset(6, -8), 3.0, Paint()..color = Colors.white);
+
+    final wake = Path();
+    wake.moveTo(-24, 4);
+    wake.lineTo(-44, -2);
+    wake.lineTo(-40, 7);
+    wake.close();
+    canvas.drawPath(wake, Paint()..color = Colors.white.withValues(alpha: 0.7));
+    canvas.drawOval(const Rect.fromLTWH(-52, 5, 26, 4), Paint()..color = Colors.white.withValues(alpha: 0.6));
+  }
+
+  /// ⛵ Classic Two-Sail Yacht
+  void _drawSailboat(Canvas canvas, bool isNight) {
+    final hullPath = Path();
+    hullPath.moveTo(-22, 0);
+    hullPath.lineTo(-14, 7);
+    hullPath.lineTo(18, 7);
+    hullPath.lineTo(26, 0);
+    hullPath.close();
+
+    canvas.drawPath(hullPath, Paint()..color = const Color(0xFF78350F));
+    canvas.drawPath(hullPath, Paint()..color = Colors.white..style = PaintingStyle.stroke..strokeWidth = 1);
+
+    canvas.drawLine(const Offset(3, 0), const Offset(3, -28), Paint()..color = const Color(0xFF451A03)..strokeWidth = 2);
+
+    final mainSail = Path();
+    mainSail.moveTo(3, -26);
+    mainSail.lineTo(18, -4);
+    mainSail.lineTo(3, -4);
+    mainSail.close();
+    canvas.drawPath(mainSail, Paint()..color = const Color(0xFFFEF08A));
+
+    final jibSail = Path();
+    jibSail.moveTo(2, -24);
+    jibSail.lineTo(-12, -4);
+    jibSail.lineTo(2, -4);
+    jibSail.close();
+    canvas.drawPath(jibSail, Paint()..color = const Color(0xFFEF4444));
+
+    final flag = Path();
+    flag.moveTo(3, -28);
+    flag.lineTo(-4, -26);
+    flag.lineTo(3, -24);
+    flag.close();
+    canvas.drawPath(flag, Paint()..color = const Color(0xFF00F0FF));
+
+    canvas.drawOval(const Rect.fromLTWH(-32, 5, 16, 3), Paint()..color = Colors.white.withValues(alpha: 0.5));
   }
 }
 
@@ -3595,5 +4194,47 @@ class JumpDustParticle {
     final size = 4.5 + (progress * 6.0);
     final paint = Paint()..color = const Color(0xFFFDE047).withValues(alpha: alpha * 0.7);
     canvas.drawCircle(Offset(x, y), size, paint);
+  }
+}
+
+/// 🚀 Booster Flame Particle for Aerial Jumps
+class BoosterFlameParticle {
+  double x;
+  double y;
+  double vx;
+  double vy;
+  double life = 0.0;
+  final double maxLife = 0.35;
+  final Color color;
+
+  BoosterFlameParticle({
+    required this.x,
+    required this.y,
+    required this.vx,
+    required this.vy,
+    required this.color,
+  });
+
+  bool get isDead => life >= maxLife;
+
+  void update(double dt) {
+    life += dt;
+    x += vx * dt;
+    y += vy * dt;
+    vx *= 0.90;
+    vy *= 0.90;
+  }
+
+  void render(Canvas canvas) {
+    final progress = life / maxLife;
+    final alpha = (1.0 - progress).clamp(0.0, 1.0);
+    final size = (4.0 * (1.0 - progress)).clamp(1.0, 5.0);
+    canvas.drawCircle(
+      Offset(x, y),
+      size,
+      Paint()
+        ..color = color.withValues(alpha: alpha * 0.8)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2),
+    );
   }
 }
