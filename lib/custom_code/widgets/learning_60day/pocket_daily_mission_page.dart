@@ -29,6 +29,8 @@ import 'day90_master_certificate_dialog.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/english_hub_level_group_service.dart';
 import 'games/word_catcher_models.dart';
 import 'games/word_catcher_game_page.dart';
+import 'career_adventure/adventure_models.dart';
+import 'career_adventure/career_adventure_game_page.dart';
 
 /// 🎯 Comprehensive Interactive Daily English Mission Experience
 class PocketDailyMissionPage extends StatefulWidget {
@@ -84,6 +86,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   bool _englishThinkingCompleted = false;
   bool _speakingChallengeCompleted = false;
   bool _wordCatcherCompleted = false;
+  bool _careerAdventureCompleted = false;
   bool _isSpeakingChallengeRecording = false;
   int _speakingChallengeSecondsRemaining = 30;
   Timer? _speakingTimer;
@@ -3762,6 +3765,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
       _peerCallVerified = prefs.getBool('${dayKey}_peer_call') ?? false;
       _vocabMemorized = prefs.getBool('${dayKey}_vocab_mem') ?? false;
       _wordCatcherCompleted = prefs.getBool('${dayKey}_word_catcher') ?? false;
+      _careerAdventureCompleted = prefs.getBool('${dayKey}_career_adventure') ?? _wordCatcherCompleted;
       _readingNotesCompleted = prefs.getBool('${dayKey}_reading') ?? false;
       _codeEnglishCompleted = prefs.getBool('${dayKey}_code_english') ?? false;
       _revisionQuizPassed = prefs.getBool('${dayKey}_quiz') ?? false;
@@ -4215,7 +4219,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     if (_hubChatVerified) count++;
     if (_peerCallVerified) count++;
     if (_vocabMemorized) count++;
-    if (widget.day == 1 && _wordCatcherCompleted) count++; // 🕹️ Level 1 Word Catcher Game
+    if (widget.day == 1 && (_careerAdventureCompleted || _wordCatcherCompleted)) count++; // 🏢 Level 1 Career Adventure Game
     if (_hasSentencePatterns && _sentencePatternCompleted) count++;
     if (_readingNotesCompleted) count++;
     if (_codeEnglishCompleted) count++;
@@ -4366,9 +4370,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
                       const SizedBox(height: 14),
 
-                      // Subtask 4: 🕹️ Word Catcher 2D Game (User Audio Directive: Level 1 Game Step 4)
+                      // Subtask 4: 🏢 Mission 01 – The First Conversation (2D Career Adventure Game)
                       if (widget.day == 1) ...[
-                        _buildWordCatcherCard(),
+                        _buildCareerAdventureCard(),
                         const SizedBox(height: 14),
                       ],
 
@@ -6256,25 +6260,30 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
       ),
     );
   }
-  // --- SUBTASK 4: 🕹️ WORD CATCHER 2D GAME CARD (User Audio Directive: Level 1 Game Step 4) ---
-  Widget _buildWordCatcherCard() {
+  // --- SUBTASK 4: 🏢 MISSION 01 CAREER ADVENTURE 2D GAME CARD (User Audio Directive: Mature Level 1 Game) ---
+  Widget _buildCareerAdventureCard() {
+    final isDone = _careerAdventureCompleted || _wordCatcherCompleted;
+
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF0F172A),
-        borderRadius: BorderRadius.circular(16),
+        gradient: LinearGradient(
+          colors: isDone
+              ? const [Color(0xFF0F172A), Color(0xFF064E3B)]
+              : const [Color(0xFF0F172A), Color(0xFF1E293B)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: _wordCatcherCompleted
-              ? const Color(0xFF10B981)
-              : const Color(0xFFFFD700).withValues(alpha: 0.5),
-          width: _wordCatcherCompleted ? 1.5 : 1.0,
+          color: isDone ? const Color(0xFF10B981) : const Color(0xFF38BDF8).withValues(alpha: 0.6),
+          width: isDone ? 1.6 : 1.2,
         ),
         boxShadow: [
-          if (!_wordCatcherCompleted)
-            BoxShadow(
-              color: const Color(0xFFFFD700).withValues(alpha: 0.12),
-              blurRadius: 14,
-            ),
+          BoxShadow(
+            color: (isDone ? const Color(0xFF10B981) : const Color(0xFF38BDF8)).withValues(alpha: 0.15),
+            blurRadius: 16,
+          ),
         ],
       ),
       child: Column(
@@ -6283,77 +6292,75 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: _wordCatcherCompleted
-                      ? const Color(0xFF10B981)
-                      : const Color(0xFFFFD700),
+                  color: isDone ? const Color(0xFF10B981) : const Color(0xFF38BDF8),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
                   'STEP 4',
                   style: TextStyle(
-                    color: _wordCatcherCompleted ? Colors.white : Colors.black,
+                    color: isDone ? Colors.white : Colors.black,
                     fontSize: 10,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
               ),
               const SizedBox(width: 8),
-              const Text('🕹️', style: TextStyle(fontSize: 16)),
+              const Text('🏢', style: TextStyle(fontSize: 18)),
               const SizedBox(width: 6),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Word Catcher: 2D Learning Game',
+                      'Mission 01 – The First Conversation',
                       style: GoogleFonts.outfit(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14),
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 14,
+                      ),
                     ),
                     Text(
-                      'Catch 10 everyday words & beat the Final Challenge',
+                      '2D Career Adventure · Modern Office & Interview',
                       style: GoogleFonts.inter(
-                          color: Colors.white60, fontSize: 11),
+                        color: const Color(0xFF38BDF8),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ],
                 ),
               ),
-              if (_wordCatcherCompleted)
+              if (isDone)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                    color: const Color(0xFF10B981).withValues(alpha: 0.25),
                     borderRadius: BorderRadius.circular(6),
                     border: Border.all(color: const Color(0xFF10B981)),
                   ),
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.check_circle_rounded,
-                          color: Color(0xFF10B981), size: 14),
+                      Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 14),
                       SizedBox(width: 4),
                       Text('VERIFIED',
                           style: TextStyle(
-                              color: Color(0xFF10B981),
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold)),
+                              color: Color(0xFF10B981), fontSize: 10, fontWeight: FontWeight.bold)),
                     ],
                   ),
                 )
               else
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFD700).withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(6),
-                    border: Border.all(
-                        color: const Color(0xFFFFD700).withValues(alpha: 0.5)),
+                    border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.6)),
                   ),
                   child: Text(
-                    '+25 PTS',
+                    '+50 PTS',
                     style: GoogleFonts.outfit(
                       color: const Color(0xFFFFD700),
                       fontSize: 10,
@@ -6363,96 +6370,101 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                 ),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: const Color(0xFF1E293B),
-              borderRadius: BorderRadius.circular(10),
+              color: const Color(0xFF1E293B).withValues(alpha: 0.85),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.white12),
             ),
-            child: Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('🍎 ⚽ 📖 🐱 🐶 🚗 🏠 ☀️ 🌳 💧',
-                    style: TextStyle(fontSize: 14)),
-                const Spacer(),
                 Text(
-                  _wordCatcherCompleted ? '10/10 Mastered' : 'Level 1 Arcade',
-                  style: GoogleFonts.outfit(
-                    color: _wordCatcherCompleted
-                        ? const Color(0xFF10B981)
-                        : const Color(0xFF38BDF8),
+                  'Explore Apex Corporate Tower, check in at reception, arrange sentence builder tiles, survive the 8s quick response, and pass your first job interview!',
+                  style: GoogleFonts.inter(
+                    color: Colors.white70,
                     fontSize: 11,
-                    fontWeight: FontWeight.w700,
+                    height: 1.35,
                   ),
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    const Icon(Icons.stars_rounded, color: Color(0xFFFFD700), size: 14),
+                    const SizedBox(width: 4),
+                    Text(
+                      '10 Workplace Vocabulary Words · Practical Spoken English',
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFFFFD700),
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
           SizedBox(
             width: double.infinity,
-            height: 42,
+            height: 44,
             child: ElevatedButton(
               onPressed: () async {
                 HapticFeedback.lightImpact();
                 final completed = await Navigator.push<bool>(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => WordCatcherGamePage(
-                      levelData: kWordCatcherLevel1Data,
-                      preferredLanguage: _selectedLanguage,
+                    builder: (_) => const CareerAdventureGamePage(
+                      levelData: kMission01LevelData,
                     ),
                   ),
                 );
                 if (completed == true && mounted) {
-                  setState(() => _wordCatcherCompleted = true);
+                  setState(() {
+                    _careerAdventureCompleted = true;
+                    _wordCatcherCompleted = true;
+                  });
+                  _saveSubtask('career_adventure', true);
                   _saveSubtask('word_catcher', true);
                   HapticFeedback.heavyImpact();
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text(
-                          '🎉 Level 1 Word Catcher Completed! Step 4 Verified ✓ +25 Points!'),
+                          '🎉 Mission 01 Career Adventure Completed! Step 4 Verified ✓ +50 Points!'),
                       backgroundColor: Color(0xFF10B981),
                     ),
                   );
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: _wordCatcherCompleted
-                    ? const Color(0xFF1E293B)
-                    : const Color(0xFF10B981),
+                backgroundColor: isDone ? const Color(0xFF1E293B) : const Color(0xFF0284C7),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(12),
                   side: BorderSide(
-                    color: _wordCatcherCompleted
-                        ? const Color(0xFF10B981)
-                        : Colors.transparent,
+                    color: isDone ? const Color(0xFF10B981) : Colors.transparent,
                   ),
                 ),
-                elevation: _wordCatcherCompleted ? 0 : 3,
+                elevation: isDone ? 0 : 4,
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
-                    _wordCatcherCompleted
-                        ? Icons.replay_rounded
-                        : Icons.sports_esports_rounded,
-                    color: _wordCatcherCompleted
-                        ? const Color(0xFF10B981)
-                        : Colors.white,
+                    isDone ? Icons.replay_rounded : Icons.sports_esports_rounded,
+                    color: isDone ? const Color(0xFF10B981) : Colors.white,
                     size: 18,
                   ),
-                  const SizedBox(width: 6),
+                  const SizedBox(width: 8),
                   Text(
-                    _wordCatcherCompleted
-                        ? 'REPLAY WORD CATCHER 🎮'
-                        : 'PLAY LEVEL 1: WORD CATCHER 🎮',
+                    isDone
+                        ? 'REPLAY MISSION 01 ADVENTURE 🔄'
+                        : 'PLAY MISSION 01: CAREER ADVENTURE 🎮',
                     style: GoogleFonts.outfit(
-                      color: _wordCatcherCompleted
-                          ? const Color(0xFF10B981)
-                          : Colors.white,
-                      fontSize: 12,
+                      color: isDone ? const Color(0xFF10B981) : Colors.white,
+                      fontSize: 13,
                       fontWeight: FontWeight.w900,
                       letterSpacing: 0.5,
                     ),
