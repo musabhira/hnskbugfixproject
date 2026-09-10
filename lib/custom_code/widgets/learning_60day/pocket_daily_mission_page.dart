@@ -33,6 +33,8 @@ import 'career_adventure/adventure_models.dart';
 import 'career_adventure/career_adventure_game_page.dart';
 import 'career_adventure/city_navigator_models.dart';
 import 'career_adventure/city_navigator_game_page.dart';
+import 'career_adventure/memory_break_in_models.dart';
+import 'career_adventure/memory_break_in_game_page.dart';
 
 /// 🎯 Comprehensive Interactive Daily English Mission Experience
 class PocketDailyMissionPage extends StatefulWidget {
@@ -90,6 +92,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   bool _wordCatcherCompleted = false;
   bool _careerAdventureCompleted = false;
   bool _cityNavigatorCompleted = false;
+  bool _memoryBreakInCompleted = false;
   bool _isSpeakingChallengeRecording = false;
   int _speakingChallengeSecondsRemaining = 30;
   Timer? _speakingTimer;
@@ -3770,6 +3773,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
       _wordCatcherCompleted = prefs.getBool('${dayKey}_word_catcher') ?? false;
       _careerAdventureCompleted = prefs.getBool('${dayKey}_career_adventure') ?? _wordCatcherCompleted;
       _cityNavigatorCompleted = prefs.getBool('${dayKey}_city_navigator') ?? false;
+      _memoryBreakInCompleted = prefs.getBool('${dayKey}_memory_break_in') ?? false;
       _readingNotesCompleted = prefs.getBool('${dayKey}_reading') ?? false;
       _codeEnglishCompleted = prefs.getBool('${dayKey}_code_english') ?? false;
       _revisionQuizPassed = prefs.getBool('${dayKey}_quiz') ?? false;
@@ -4206,7 +4210,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
   int get _totalSubtasksCount {
     int count = 8; // Rule + Hub + Peer Call + Vocab + Reading + Code English + Quiz + Defense Trap
-    if (widget.day == 1 || widget.day == 2) count++; // 🕹️ Level 1 & Level 2 2D Adventure Game
+    if (widget.day == 1 || widget.day == 2 || widget.day == 3) count++; // 🕹️ Level 1, 2 & 3 2D Adventure Game
     if (_hasAlphabetPhonics) count++;
     if (_hasSentencePatterns) count++;
     if (_hasPronunciationClinic) count++;
@@ -4225,6 +4229,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     if (_vocabMemorized) count++;
     if (widget.day == 1 && (_careerAdventureCompleted || _wordCatcherCompleted)) count++; // 🏢 Level 1 Career Adventure Game
     if (widget.day == 2 && _cityNavigatorCompleted) count++; // 🏙️ Level 2 City Navigator Game
+    if (widget.day == 3 && _memoryBreakInCompleted) count++; // 🧠 Level 3 Memory Break-In Game
     if (_hasSentencePatterns && _sentencePatternCompleted) count++;
     if (_readingNotesCompleted) count++;
     if (_codeEnglishCompleted) count++;
@@ -4384,6 +4389,12 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                       // Subtask 4: 🏙️ Mission 02 – City Navigator (2D City Navigation Game)
                       if (widget.day == 2) ...[
                         _buildCityNavigatorCard(),
+                        const SizedBox(height: 14),
+                      ],
+
+                      // Subtask 4: 🧠 Mission 03 – Memory Break-In (2D Memory & Vocabulary Game)
+                      if (widget.day == 3) ...[
+                        _buildMemoryBreakInCard(),
                         const SizedBox(height: 14),
                       ],
 
@@ -6685,6 +6696,220 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                   const SizedBox(width: 8),
                   Text(
                     isDone ? 'REPLAY MISSION 2 🔄' : 'PLAY MISSION 2 🎮',
+                    style: GoogleFonts.outfit(
+                      color: isDone ? const Color(0xFF10B981) : Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // --- SUBTASK 4: 🧠 MISSION 03 MEMORY BREAK-IN 2D GAME CARD (Day 3 Memory) ---
+  Widget _buildMemoryBreakInCard() {
+    final isDone = _memoryBreakInCompleted;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: isDone
+              ? const [Color(0xFF0F172A), Color(0xFF064E3B)]
+              : const [Color(0xFF0F172A), Color(0xFF1E293B)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: isDone ? const Color(0xFF10B981) : const Color(0xFF38BDF8).withValues(alpha: 0.6),
+          width: isDone ? 1.6 : 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: (isDone ? const Color(0xFF10B981) : const Color(0xFF38BDF8)).withValues(alpha: 0.15),
+            blurRadius: 16,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: isDone ? const Color(0xFF10B981) : const Color(0xFF38BDF8),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  'STEP 4',
+                  style: TextStyle(
+                    color: isDone ? Colors.white : Colors.black,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Text('🧠', style: TextStyle(fontSize: 18)),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Mission 03 – Memory Break-In',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 14,
+                      ),
+                    ),
+                    Text(
+                      '2D Memory Puzzle · Observation & Spelling',
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFF38BDF8),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (isDone)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF10B981).withValues(alpha: 0.25),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: const Color(0xFF10B981)),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 14),
+                      SizedBox(width: 4),
+                      Text('VERIFIED',
+                          style: TextStyle(
+                              color: Color(0xFF10B981), fontSize: 10, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                )
+              else
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.6)),
+                  ),
+                  child: Text(
+                    '+50 PTS',
+                    style: GoogleFonts.outfit(
+                      color: const Color(0xFFFFD700),
+                      fontSize: 10,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1E293B).withValues(alpha: 0.85),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.white12),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Inspect the modern workspace, memorize 12 objects, words & positions, then test your memory without labels!',
+                  style: GoogleFonts.inter(
+                    color: Colors.white70,
+                    fontSize: 11,
+                    height: 1.35,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    const Icon(Icons.psychology_rounded, color: Color(0xFFFFD700), size: 14),
+                    const SizedBox(width: 4),
+                    Text(
+                      '15 Workplace Vocabulary Words · Visual Recall',
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFFFFD700),
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          SizedBox(
+            width: double.infinity,
+            height: 44,
+            child: ElevatedButton(
+              onPressed: () async {
+                HapticFeedback.lightImpact();
+                final completed = await Navigator.push<bool>(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const MemoryBreakInGamePage(
+                      levelData: kMission03MemoryData,
+                    ),
+                  ),
+                );
+                if (completed == true && mounted) {
+                  setState(() {
+                    _memoryBreakInCompleted = true;
+                  });
+                  _saveSubtask('memory_break_in', true);
+                  HapticFeedback.heavyImpact();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                          '🎉 Mission 03 Memory Break-In Completed! Step 4 Verified ✓ +50 Points!'),
+                      backgroundColor: Color(0xFF10B981),
+                    ),
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: isDone ? const Color(0xFF1E293B) : const Color(0xFF0284C7),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(
+                    color: isDone ? const Color(0xFF10B981) : Colors.transparent,
+                  ),
+                ),
+                elevation: isDone ? 0 : 4,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    isDone ? Icons.replay_rounded : Icons.psychology_rounded,
+                    color: isDone ? const Color(0xFF10B981) : Colors.white,
+                    size: 18,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    isDone ? 'REPLAY MISSION 3 🔄' : 'PLAY MISSION 3 🎮',
                     style: GoogleFonts.outfit(
                       color: isDone ? const Color(0xFF10B981) : Colors.white,
                       fontSize: 13,
