@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import '/backend/supabase/supabase.dart';
 import 'index.dart'; // Imports other custom widgets
 // Imports custom actions
-import 'package:flutter/material.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
@@ -12,8 +11,10 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import 'dart:async';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:math' as math;
+import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/custom_code/widgets/subscription_page.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({
@@ -456,6 +457,27 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
           .order('name', ascending: true)
           .range(_currentPage * _pageSize, (_currentPage + 1) * _pageSize - 1);
 
+      // Featured spotlight robots showcasing the Human & Robot co-existing world
+      final spotlightRobots = [
+        PocketRobotService.getRobotByLevel(1),
+        PocketRobotService.getRobotByLevel(45),
+        PocketRobotService.getRobotByLevel(90),
+      ];
+      final List<Map<String, dynamic>> robotMaps = spotlightRobots.map((r) => {
+        'user_id': r.id,
+        'name': r.name,
+        'shop_name': 'Lvl ${r.level} • ${r.archetype.label} ${r.archetype.icon}',
+        'profile_image_url': r.avatarUrl,
+        'verified': false,
+        'is_robot': true,
+        'robot_level': r.level,
+        'robot_archetype': r.archetype.label,
+        'robot_archetype_icon': r.archetype.icon,
+        'robot_bio': r.bio,
+        'robot_cefr': r.cefrRank,
+        'robot_opening': r.openingMessage,
+      }).toList();
+
       safeSetState(() {
         var resultsToDisplay = List<Map<String, dynamic>>.from(response);
         if (_currentPlan == 'free' && resultsToDisplay.length > 5) {
@@ -464,7 +486,7 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
         } else {
           _hasMoreData = response.length == _pageSize;
         }
-        _searchResults = resultsToDisplay;
+        _searchResults = [...robotMaps, ...resultsToDisplay];
         _isLoading = false;
         _currentPage++;
       });
@@ -500,14 +522,54 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
       _currentQuery = query;
     });
 
+    final cleanQ = query.trim().toLowerCase();
+    final isHumanOnly = cleanQ == 'human' || cleanQ == 'humans';
+    final isRobotOnly = cleanQ == 'robot' || cleanQ == 'robots' || cleanQ == 'all robots';
+
     try {
-      final response = await _supabase
-          .from('profile')
-          .select('profile_image_url, shop_name, verified, user_id, name')
-          .neq('is_private', true)
-          .or('name.ilike.%$query%,shop_name.ilike.%$query%,slug.ilike.%$query%')
-          .order('name', ascending: true)
-          .range(_currentPage * _pageSize, (_currentPage + 1) * _pageSize - 1);
+      List<dynamic> response = [];
+
+      // 1. Fetch humans if not searching robots exclusively
+      if (!isRobotOnly) {
+        final queryBuilder = _supabase
+            .from('profile')
+            .select('profile_image_url, shop_name, verified, user_id, name')
+            .neq('is_private', true);
+
+        if (isHumanOnly) {
+          response = await queryBuilder
+              .order('name', ascending: true)
+              .range(_currentPage * _pageSize, (_currentPage + 1) * _pageSize - 1);
+        } else {
+          response = await queryBuilder
+              .or('name.ilike.%$query%,shop_name.ilike.%$query%,slug.ilike.%$query%')
+              .order('name', ascending: true)
+              .range(_currentPage * _pageSize, (_currentPage + 1) * _pageSize - 1);
+        }
+      }
+
+      // 2. Fetch matching robots if not searching humans exclusively
+      List<PocketRobot> matchingRobots = [];
+      if (!isHumanOnly) {
+        matchingRobots = isRobotOnly
+            ? PocketRobotService.getAllRobots()
+            : PocketRobotService.searchRobots(query);
+      }
+
+      final List<Map<String, dynamic>> robotMaps = matchingRobots.map((r) => {
+        'user_id': r.id,
+        'name': r.name,
+        'shop_name': 'Lvl ${r.level} • ${r.archetype.label} ${r.archetype.icon}',
+        'profile_image_url': r.avatarUrl,
+        'verified': false,
+        'is_robot': true,
+        'robot_level': r.level,
+        'robot_archetype': r.archetype.label,
+        'robot_archetype_icon': r.archetype.icon,
+        'robot_bio': r.bio,
+        'robot_cefr': r.cefrRank,
+        'robot_opening': r.openingMessage,
+      }).toList();
 
       safeSetState(() {
         var resultsToDisplay = List<Map<String, dynamic>>.from(response);
@@ -517,7 +579,7 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
         } else {
           _hasMoreData = response.length == _pageSize;
         }
-        _searchResults = resultsToDisplay;
+        _searchResults = [...robotMaps, ...resultsToDisplay];
         _isLoading = false;
         _currentPage++;
       });
@@ -654,9 +716,14 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
         final name = profile['name'] ?? 'Partner';
         final shopName = profile['shop_name'];
         final isVerified = profile['verified'] == true;
+        final isRobot = profile['is_robot'] == true;
 
         return GestureDetector(
           onTap: () {
+            if (isRobot) {
+              _showPocketRobotProfileSheet(context, profile);
+              return;
+            }
             Navigator.push(
               context,
               MaterialPageRoute(
@@ -671,7 +738,11 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
             decoration: BoxDecoration(
               color: FlutterFlowTheme.of(context).secondaryBackground,
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.04)),
+              border: Border.all(
+                color: isRobot
+                    ? const Color(0xFF06B6D4).withValues(alpha: 0.3)
+                    : Colors.white.withValues(alpha: 0.04),
+              ),
             ),
             child: Row(
               children: [
@@ -680,11 +751,14 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
                   padding: const EdgeInsets.all(2),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    gradient: isVerified
+                    gradient: isRobot
                         ? const LinearGradient(
-                            colors: [Colors.yellow, Colors.orange])
-                        : null,
-                    border: !isVerified
+                            colors: [Color(0xFF06B6D4), Color(0xFF3B82F6)])
+                        : (isVerified
+                            ? const LinearGradient(
+                                colors: [Colors.yellow, Colors.orange])
+                            : null),
+                    border: (!isVerified && !isRobot)
                         ? Border.all(color: Colors.grey[800]!)
                         : null,
                   ),
@@ -720,34 +794,283 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                          if (isVerified) ...[
+                          if (isRobot) ...[
+                            const SizedBox(width: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF06B6D4).withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(4),
+                                border: Border.all(color: const Color(0xFF06B6D4)),
+                              ),
+                              child: Text(
+                                '🤖 ROBOT',
+                                style: GoogleFonts.outfit(
+                                  color: const Color(0xFF06B6D4),
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 8.5,
+                                ),
+                              ),
+                            ),
+                          ] else if (isVerified) ...[
                             const SizedBox(width: 6),
                             const Icon(Icons.verified_rounded,
                                 color: Colors.blueAccent, size: 16),
                           ],
                         ],
                       ),
-                      if (shopName != null && shopName.toString().isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 2),
-                          child: Text(
-                            shopName,
-                            style: TextStyle(
-                              color: Colors.grey[500],
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          if (isRobot) ...[
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF06B6D4).withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(4),
+                                border: Border.all(
+                                  color: const Color(0xFF06B6D4).withValues(alpha: 0.4),
+                                  width: 0.8,
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Text('🤖 ', style: TextStyle(fontSize: 10)),
+                                  Text(
+                                    'Robot',
+                                    style: GoogleFonts.outfit(
+                                      color: const Color(0xFF06B6D4),
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                  if (profile['robot_level'] != null) ...[
+                                    Text(
+                                      ' • Lvl ${profile['robot_level']}',
+                                      style: GoogleFonts.outfit(
+                                        color: const Color(0xFFFFFC00),
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 10.5,
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
                             ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
+                          ] else ...[
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.08),
+                                borderRadius: BorderRadius.circular(4),
+                                border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.15),
+                                  width: 0.8,
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Text('👤 ', style: TextStyle(fontSize: 10)),
+                                  Text(
+                                    'Human',
+                                    style: GoogleFonts.outfit(
+                                      color: Colors.grey[300],
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                          if (shopName != null && shopName.toString().isNotEmpty) ...[
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
+                                shopName.toString(),
+                                style: TextStyle(
+                                  color: isRobot ? const Color(0xFFFFFC00).withValues(alpha: 0.85) : Colors.grey[500],
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
                     ],
                   ),
                 ),
                 // Action Arrow
-                Icon(Icons.chevron_right_rounded, color: Colors.grey[700]),
+                Icon(Icons.chevron_right_rounded, color: isRobot ? const Color(0xFF06B6D4) : Colors.grey[700]),
               ],
             ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showPocketRobotProfileSheet(BuildContext context, Map<String, dynamic> robotData) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Color(0xFF0F111A),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            border: Border(top: BorderSide(color: Color(0xFF06B6D4), width: 1.5)),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.white24,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 16),
+              CircleAvatar(
+                radius: 40,
+                backgroundColor: const Color(0xFF1E293B),
+                backgroundImage: CachedNetworkImageProvider(robotData['profile_image_url'] ?? ''),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    robotData['name'] ?? 'Pocket Robot',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF06B6D4).withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: const Color(0xFF06B6D4)),
+                    ),
+                    child: Text(
+                      '🤖 ROBOT',
+                      style: GoogleFonts.outfit(
+                        color: const Color(0xFF06B6D4),
+                        fontWeight: FontWeight.w900,
+                        fontSize: 10,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Text(
+                '${robotData['robot_archetype_icon'] ?? '✨'} ${robotData['robot_archetype'] ?? 'Mate'} • ${robotData['robot_cefr'] ?? 'A1 Rookie'}',
+                style: GoogleFonts.outfit(
+                  color: const Color(0xFFFFFC00),
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                ),
+              ),
+              const SizedBox(height: 12),
+              if (robotData['robot_bio'] != null)
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1E293B).withValues(alpha: 0.6),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.white12),
+                  ),
+                  child: Text(
+                    robotData['robot_bio'],
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(
+                      color: Colors.white70,
+                      fontSize: 12.5,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () async {
+                        final myId = SupaFlow.client.auth.currentUser?.id ?? '';
+                        if (myId.isNotEmpty) {
+                          await PocketRobotService.acceptRobotRequest(
+                            myId: myId,
+                            robotId: robotData['user_id'],
+                          );
+                        }
+                        if (ctx.mounted) Navigator.pop(ctx);
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('✨ Added ${robotData['name']} to your Pocket Mates!'),
+                              backgroundColor: const Color(0xFF10B981),
+                            ),
+                          );
+                        }
+                      },
+                      icon: const Icon(Icons.person_add_rounded, color: Colors.black, size: 18),
+                      label: Text(
+                        'Add Mate',
+                        style: GoogleFonts.outfit(color: Colors.black, fontWeight: FontWeight.bold),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFFFFC00),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => WhatsAppGroupChat(
+                              groupId: 'p:${robotData['user_id']}',
+                              groupName: robotData['name'],
+                              groupImage: robotData['profile_image_url'],
+                            ),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.chat_bubble_rounded, color: Colors.white, size: 18),
+                      label: Text(
+                        'AI Chat',
+                        style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2563EB),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+            ],
           ),
         );
       },

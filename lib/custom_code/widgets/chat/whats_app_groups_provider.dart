@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:pocket_mates_app/custom_code/services/local_sync_server.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 
 part 'whats_app_groups_provider.g.dart';
 
@@ -38,6 +39,8 @@ class ChatConversation {
   final DateTime? timerStartTime;
   final Map<String, dynamic>? teamData;
   final Map<String, dynamic>? avatarConfig;
+  final String? snapMediaUrl;
+  final String? snapCaption;
 
   ChatConversation({
     required this.id,
@@ -66,6 +69,8 @@ class ChatConversation {
     this.timerStartTime,
     this.teamData,
     this.avatarConfig,
+    this.snapMediaUrl,
+    this.snapCaption,
   });
 
   factory ChatConversation.fromActiveTimer(Map<String, dynamic> json) {
@@ -183,6 +188,8 @@ class ChatConversation {
       'isTool': isTool,
       'toolTitle': toolTitle,
       'isPinned': isPinned,
+      'snapMediaUrl': snapMediaUrl,
+      'snapCaption': snapCaption,
     };
   }
 
@@ -216,6 +223,8 @@ class ChatConversation {
       isTool: json['isTool'] ?? false,
       toolTitle: json['toolTitle'],
       isPinned: json['isPinned'] ?? false,
+      snapMediaUrl: json['snapMediaUrl'],
+      snapCaption: json['snapCaption'],
     );
   }
 }
@@ -485,8 +494,66 @@ class Conversations extends _$Conversations {
           isTool: c.isTool,
           toolTitle: c.toolTitle,
           isPinned: pinnedIds.contains(c.id),
+          snapMediaUrl: c.snapMediaUrl,
+          snapCaption: c.snapCaption,
         );
       }).toList();
+
+      // Include accepted Pocket Robot Mates & trigger occasional snaps
+      try {
+        PocketRobotService.checkAndTriggerOccasionalRobotSnaps(userId);
+
+        final prefs = await SharedPreferences.getInstance();
+        final matesList = prefs.getStringList('pocket_mates_$userId') ?? [];
+        final robotMates = matesList.where((id) => PocketRobotService.isRobotId(id)).toList();
+        for (final robotId in robotMates) {
+          final robot = PocketRobotService.getRobotById(robotId);
+          if (robot != null) {
+            final history = await PocketRobotService.getRobotChatHistory(userId, robotId);
+            final lastMsgObj = history.isNotEmpty ? history.first : null;
+            final isSnap = lastMsgObj != null &&
+                (lastMsgObj['message_type'] == 'snap' ||
+                 lastMsgObj['metadata']?['is_snap'] == true ||
+                 lastMsgObj['message_text']?.toString().contains('Snap') == true);
+
+            final snapUrl = isSnap
+                ? (lastMsgObj['content'] ?? lastMsgObj['file_url'] ?? lastMsgObj['media_url'])?.toString()
+                : null;
+            final snapCaption = isSnap
+                ? (lastMsgObj['metadata']?['caption'] ?? lastMsgObj['message_text'])?.toString()
+                : null;
+
+            final isUnread = lastMsgObj != null &&
+                lastMsgObj['sender_id'] == robot.id &&
+                (lastMsgObj['is_read'] == false || lastMsgObj['metadata']?['is_read'] == false);
+
+            final lastMsg = isSnap
+                ? (isUnread ? '⚡ New Snap • Tap to view' : 'Opened Snap')
+                : (lastMsgObj != null ? lastMsgObj['message_text']?.toString() : robot.openingMessage);
+
+            final lastTime = lastMsgObj != null && lastMsgObj['created_at'] != null
+                ? DateTime.tryParse(lastMsgObj['created_at'].toString()) ?? DateTime.now()
+                : DateTime.now();
+
+            updatedPersonal.add(ChatConversation(
+              id: robot.id,
+              name: robot.name,
+              imageUrl: robot.avatarUrl,
+              snapMediaUrl: snapUrl,
+              snapCaption: snapCaption,
+              lastMessage: lastMsg,
+              lastMessageTime: lastTime,
+              lastSenderId: lastMsgObj?['sender_id']?.toString(),
+              unreadCount: isUnread ? 1 : 0,
+              isGroup: false,
+              isOnline: true,
+              isPinned: pinnedIds.contains(robot.id),
+            ));
+          }
+        }
+      } catch (e) {
+        debugPrint('Error loading robot mates: $e');
+      }
 
       // Combine and sort
       final combined = [

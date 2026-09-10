@@ -7,7 +7,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/flutter_flow/flutter_flow_theme.dart';
@@ -25,6 +24,7 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/flame_englis
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortress_defense_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_defense_trap_modal.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_world_street_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/day90_master_certificate_dialog.dart';
 import 'package:pocket_mates_app/custom_code/widgets/pocket_snap_flame_refresh.dart';
 
 class MainProfileWidget extends StatefulWidget {
@@ -91,9 +91,23 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   bool _showAvatarMode = true;
   bool _isPublicProfileView = false;
   String? _equippedTalismanId;
+  int _localUserStage = 1;
+
+  Future<void> _loadLocalUserStage() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final stage = prefs.getInt('pocket_learning_user_stage') ?? prefs.getInt('learning_day_$userId') ?? 1;
+      if (mounted && stage != _localUserStage) {
+        setState(() => _localUserStage = stage);
+      }
+    } catch (_) {}
+  }
 
   VectorAvatarConfig _getAvatarConfig() {
-    final day = (_profileData?['learning_day'] as num?)?.toInt() ?? 1;
+    int day = (_profileData?['learning_day'] as num?)?.toInt() ?? 1;
+    if (isMe && _localUserStage > day) {
+      day = _localUserStage;
+    }
     // When in My Account / My Pocket view, show the systematic stage-evolved avatar
     if (!_isPublicProfileView) {
       return VectorAvatarConfig.getEvolutionAvatarForStage(day, talismanId: _equippedTalismanId);
@@ -156,6 +170,17 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     _fetchThreads();
     _loadEquippedTalisman();
     _loadFortressDefenseData();
+    _loadPocketScore();
+  }
+
+  // 🪙 Unified Pocket Score state (highest priority on user profile)
+  int _pocketScore = 0;
+
+  Future<void> _loadPocketScore() async {
+    try {
+      final score = await PocketFortressDefenseService.getUnifiedScore(userId);
+      if (mounted) setState(() => _pocketScore = score);
+    } catch (_) {}
   }
 
   // Fortress Citadel & Defense Traps State (User audio: "നിലവിലുള്ള ഡിഫൻസ് എന്തൊക്കെയാണ് എന്നുള്ളത്, എന്തൊക്കെ ക്വസ്റ്റ്യൻസ് ഡിഫൻസ് ഉണ്ട് എന്നുള്ളത് അത് കാണാനും പറ്റണം. അത് നമ്മുടെ മൈ പ്രൊഫൈലില് കാണാൻ പറ്റണം")
@@ -167,9 +192,36 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   Future<void> _loadFortressDefenseData() async {
     final day = (_profileData?['learning_day'] as num?)?.toInt() ?? 1;
     try {
-      final status = await PocketFortressDefenseService.getHouseStatus(day);
+      HouseDefenseStatus status = await PocketFortressDefenseService.getHouseStatus(day);
+      if (!isMe && widget.userId != null) {
+        final supaHome = await PocketFortressDefenseService.getSupabaseHouse(widget.userId!);
+        if (supaHome != null) {
+          status = HouseDefenseStatus(
+            currentHp: (supaHome['hp'] as num?)?.toInt() ?? 100,
+            maxHp: (supaHome['max_hp'] as num?)?.toInt() ?? 100,
+            isDamaged: (supaHome['is_damaged'] as bool?) ?? false,
+          );
+        }
+      } else if (isMe) {
+        final streak = (_profileData?['daily_streak'] as num?)?.toInt() ?? 1;
+        PocketFortressDefenseService.syncMyHouseToSupabase(day: day, streak: streak);
+      }
       final questions = await PocketFortressDefenseService.loadShieldQuestions(day, isNeighbor: !isMe);
-      final raids = await PocketFortressDefenseService.getRecentRaids();
+      List<CitadelRaidLogEntry> raids = await PocketFortressDefenseService.getRecentRaids();
+      if (raids.isEmpty && day >= 4) {
+        final mockRaid = CitadelRaidLogEntry(
+          id: 'mock_raid_${day}_1',
+          attackerId: 'robot_citadel_6_0',
+          attackerName: 'Cyber Valkyrie 🛡️ #01',
+          attackerAvatar: '🤖',
+          attackerWeapon: '⚡ Laser Broadsword',
+          timestamp: DateTime.now().subtract(const Duration(hours: 2)),
+          breached: false,
+          coinsLooted: 0,
+          ironDomeBlocked: true,
+        );
+        raids = [mockRaid];
+      }
       if (mounted) {
         setState(() {
           _fortressStatus = status;
@@ -243,6 +295,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     }
 
     // 3. Fetch Fresh Data (Always)
+    _loadLocalUserStage();
     _fetchFreshData();
     _fetchEnglishHubData();
   }
@@ -251,10 +304,12 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     try {
       await Future.wait([
         _fetchFreshData(),
+        _loadLocalUserStage(),
         _loadFortressDefenseData(),
         _fetchThreads(),
         _loadEquippedTalisman(),
         _fetchEnglishHubData(),
+        _loadPocketScore(),
       ]);
     } catch (e) {
       debugPrint('Profile refresh error: $e');
@@ -386,8 +441,12 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 _buildJumpButton(ctx, 30, '🥈 Day 30 (Silver Gate UI)'),
                 _buildJumpButton(ctx, 45, '🏰 Day 45 (Golden Citadel)'),
                 _buildJumpButton(ctx, 60, '🥇 Day 60 (24K Gold Sovereign)'),
-                _buildJumpButton(ctx, 75, '🖤 Day 75 (Phantom Onyx)'),
-                _buildJumpButton(ctx, 90, '💎 Day 90 (Diamond Master Peak)'),
+                _buildJumpButton(ctx, 71, '🏛️ Day 71 (Victorian Manor)'),
+                _buildJumpButton(ctx, 78, '🏰 Day 78 (Rear Palace Expansion)'),
+                _buildJumpButton(ctx, 81, '⛲ Day 81 (Royal Mezzanine & Fountains)'),
+                _buildJumpButton(ctx, 84, '🦁 Day 84 (Twin Bastion Watchtowers)'),
+                _buildJumpButton(ctx, 87, '👑 Day 87 (Baroque Imperial Dome)'),
+                _buildJumpButton(ctx, 90, '💎 Day 90 (Imperial Sovereign Citadel)'),
               ],
             ),
             const SizedBox(height: 14),
@@ -442,6 +501,11 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     final day = (data['learning_day'] as num?)?.toInt() ?? 1;
     final stage = LearningMilestoneStage.getStageForDay(day);
     _testStageIndex = (stage.stageNumber - 1).clamp(0, LearningMilestoneStage.allStages.length - 1);
+
+    final fromProfile = (data['learning_points'] as num?)?.toInt() ?? (data['xp'] as num?)?.toInt() ?? 0;
+    if (fromProfile > _pocketScore) {
+      _pocketScore = fromProfile;
+    }
 
     // Keep user's chosen custom colors configured in "Edit Profile" across both My Account and Public Profile
     _bgColor = _parseColor(data['bg_color_code']) ?? const Color(0xFF0F111A);
@@ -871,34 +935,10 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               actions: [
                 if (isMe) ...[
                   material.IconButton(
-                    icon: const Icon(material.Icons.receipt_long_rounded, size: 22),
-                    color: textColor,
-                    tooltip: 'POS Terminal',
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        material.MaterialPageRoute(
-                          builder: (context) => const BusinessPOSPage(),
-                        ),
-                      );
-                    },
-                  ),
-                  material.IconButton(
                     icon: const Icon(material.Icons.switch_account, size: 22),
                     color: textColor,
                     onPressed: () => AutoLoginBottomSheet.show(context),
                     tooltip: 'Switch Account',
-                  ),
-                  material.IconButton(
-                    icon: const Icon(material.Icons.notifications_outlined, size: 22),
-                    color: textColor,
-                    tooltip: 'Notifications & Requests',
-                    onPressed: () => material.Navigator.push(
-                      context,
-                      material.MaterialPageRoute(
-                        builder: (context) => const NotificationsPage(),
-                      ),
-                    ),
                   ),
                   material.Tooltip(
                     message: 'Tap: Next Stage (+1) | Long-Press: Select Milestone',
@@ -917,34 +957,29 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                     ),
                   ),
                 ],
-                material.IconButton(
-                  icon: const Icon(material.Icons.share, size: 22),
-                  color: textColor,
-                  onPressed: () => SharePlus.instance.share(
-                      ShareParams(text: 'Check out ${_profileData?['name']}\'s profile on Pocketmates!')),
-                ),
-                PopupMenuButton<String>(
-                  icon: const Icon(material.Icons.more_vert),
-                  color: bgColor,
-                  iconColor: textColor,
-                  onSelected: (value) {
-                    if (value == 'Report') {
-                      // Report logic
-                    } else if (value == 'Block') {
-                      // Block logic
-                    }
-                  },
-                  itemBuilder: (context) => [
-                    const PopupMenuItem(
-                      value: 'Report',
-                      child: Text('Report'),
-                    ),
-                    const PopupMenuItem(
-                      value: 'Block',
-                      child: Text('Block', style: TextStyle(color: material.Colors.red)),
-                    ),
-                  ],
-                ),
+                if (!isMe)
+                  PopupMenuButton<String>(
+                    icon: const Icon(material.Icons.more_vert),
+                    color: bgColor,
+                    iconColor: textColor,
+                    onSelected: (value) {
+                      if (value == 'Report') {
+                        // Report logic
+                      } else if (value == 'Block') {
+                        // Block logic
+                      }
+                    },
+                    itemBuilder: (context) => [
+                      const PopupMenuItem(
+                        value: 'Report',
+                        child: Text('Report'),
+                      ),
+                      const PopupMenuItem(
+                        value: 'Block',
+                        child: Text('Block', style: TextStyle(color: material.Colors.red)),
+                      ),
+                    ],
+                  ),
               ],
               flexibleSpace: material.FlexibleSpaceBar(
                 background: _buildBanner(),
@@ -989,7 +1024,77 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       FlameEnglishHouseWidget(
                         currentDay: (_profileData?['learning_day'] as num?)?.toInt() ?? 1,
                         streak: (_profileData?['daily_streak'] as num?)?.toInt() ?? 1,
+                        isDamaged: _fortressStatus?.isDamaged ?? false,
+                        houseId: isMe ? 'me' : (widget.userId ?? ''),
                       ),
+                      if (_recentRaids.isNotEmpty) ...[
+                        Container(
+                          margin: const EdgeInsets.fromLTRB(16, 10, 16, 4),
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF7F1D1D), Color(0xFF1E1B4B)],
+                            ),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: Colors.redAccent.withValues(alpha: 0.6)),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.redAccent.withValues(alpha: 0.25),
+                                blurRadius: 10,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: Colors.redAccent.withValues(alpha: 0.25),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Text(_recentRaids.first.attackerAvatar, style: const TextStyle(fontSize: 18)),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Text(
+                                          '⚔️ CITADEL SIEGE ALERT',
+                                          style: GoogleFonts.outfit(
+                                            color: const Color(0xFFFCA5A5),
+                                            fontWeight: FontWeight.w900,
+                                            fontSize: 11,
+                                            letterSpacing: 0.5,
+                                          ),
+                                        ),
+                                        const Spacer(),
+                                        Text(
+                                          _recentRaids.first.breached ? '💥 Breached (-60 HP)' : '🛡️ Repelled',
+                                          style: TextStyle(
+                                            color: _recentRaids.first.breached ? const Color(0xFFF87171) : const Color(0xFF34D399),
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 10.5,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      'Attacked by ${_recentRaids.first.attackerName} using ${_recentRaids.first.attackerWeapon}!',
+                                      style: const TextStyle(color: Colors.white, fontSize: 11.5, fontWeight: FontWeight.bold),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                       if (!isMe) ...[
                         const SizedBox(height: 12),
                         Padding(
@@ -1030,7 +1135,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                           ),
                         ),
                       ],
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 24),
                       if (_fortressStatus?.presidentNotice != null) ...[
                         _buildPresidentNoticeBanner(),
                         const SizedBox(height: 16),
@@ -1590,12 +1695,16 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                   const SizedBox(height: 2),
                                   Row(
                                     children: [
-                                      Text(
-                                        entry.attackerWeapon,
-                                        style: const TextStyle(
-                                          color: Colors.amber,
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.w600,
+                                      Flexible(
+                                        child: Text(
+                                          entry.attackerWeapon,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                            color: Colors.amber,
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w600,
+                                          ),
                                         ),
                                       ),
                                       const SizedBox(width: 6),
@@ -1675,7 +1784,10 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   }
 
   Widget _buildBanner() {
-    final day = (_profileData?['learning_day'] as num?)?.toInt() ?? 1;
+    int day = (_profileData?['learning_day'] as num?)?.toInt() ?? 1;
+    if (isMe && _localUserStage > day) {
+      day = _localUserStage;
+    }
     final stage = LearningMilestoneStage.getStageForDay(day);
     final avatar = _getAvatarConfig();
     final bannerUrl = _profileData?['banner_image_url'] ?? _profileData?['banner_url'];
@@ -1722,7 +1834,10 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       return _buildShimmerHeader();
     }
 
-    final day = (_profileData?['learning_day'] as num?)?.toInt() ?? 1;
+    int day = (_profileData?['learning_day'] as num?)?.toInt() ?? 1;
+    if (isMe && _localUserStage > day) {
+      day = _localUserStage;
+    }
     final activeStage = LearningMilestoneStage.getStageForDay(day);
 
     final name = _profileData?['name'] ?? 'User';
@@ -1810,7 +1925,12 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         _buildDualProfileSegmentSwitcher(textColor, btnColor, btnTextColor, isDark),
         headerContent,
         if (!_isPublicProfileView) ...[
-          Learning60DayProfileCard(userId: userId),
+          Learning60DayProfileCard(
+            userId: userId,
+            currentDay: day,
+            userName: name,
+            onProgressUpdated: () => _loadInitialData(),
+          ),
           FlameCompanionShowcaseCard(
             day: day,
             stage: activeStage,
@@ -1962,12 +2082,10 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               Expanded(
                 child: Row(
                   children: [
-                    Expanded(child: FittedBox(fit: BoxFit.scaleDown, child: _buildStatItem("Friends", _friendsCount, textColor, activeStage))),
-                    const SizedBox(width: 4),
-                    Expanded(child: FittedBox(fit: BoxFit.scaleDown, child: _buildStatItem("Followers", _followersCount, textColor, activeStage))),
-                    const SizedBox(width: 4),
-                    Expanded(child: FittedBox(fit: BoxFit.scaleDown, child: _buildStatItem("Following", _followingCount, textColor, activeStage))),
-                    const SizedBox(width: 4),
+                    Expanded(child: FittedBox(fit: BoxFit.scaleDown, child: _buildStatItem("Mates", _followersCount > 0 ? _followersCount : _friendsCount, textColor, activeStage))),
+                    const SizedBox(width: 8),
+                    Expanded(child: FittedBox(fit: BoxFit.scaleDown, child: _buildPocketScoreStatItem(_pocketScore, activeStage))),
+                    const SizedBox(width: 8),
                     Expanded(child: FittedBox(fit: BoxFit.scaleDown, child: _buildAchievementsStatItem(textColor, activeStage, activeStage.day))),
                   ],
                 ),
@@ -2017,12 +2135,10 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               Expanded(
                 child: Row(
                   children: [
-                    Expanded(child: FittedBox(fit: BoxFit.scaleDown, child: _buildStatItem("Friends", _friendsCount, textColor, activeStage))),
-                    const SizedBox(width: 4),
-                    Expanded(child: FittedBox(fit: BoxFit.scaleDown, child: _buildStatItem("Followers", _followersCount, textColor, activeStage))),
-                    const SizedBox(width: 4),
-                    Expanded(child: FittedBox(fit: BoxFit.scaleDown, child: _buildStatItem("Following", _followingCount, textColor, activeStage))),
-                    const SizedBox(width: 4),
+                    Expanded(child: FittedBox(fit: BoxFit.scaleDown, child: _buildStatItem("Mates", _followersCount > 0 ? _followersCount : _friendsCount, textColor, activeStage))),
+                    const SizedBox(width: 8),
+                    Expanded(child: FittedBox(fit: BoxFit.scaleDown, child: _buildPocketScoreStatItem(_pocketScore, activeStage))),
+                    const SizedBox(width: 8),
                     Expanded(child: FittedBox(fit: BoxFit.scaleDown, child: _buildAchievementsStatItem(textColor, activeStage, activeStage.day))),
                   ],
                 ),
@@ -2110,11 +2226,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _buildStatItem("Friends", _friendsCount, textColor, activeStage),
+                _buildStatItem("Mates", _followersCount > 0 ? _followersCount : _friendsCount, textColor, activeStage),
                 Container(width: 1, height: 28, color: const Color(0xFFFFD700).withValues(alpha: 0.3)),
-                _buildStatItem("Followers", _followersCount, textColor, activeStage),
-                Container(width: 1, height: 28, color: const Color(0xFFFFD700).withValues(alpha: 0.3)),
-                _buildStatItem("Following", _followingCount, textColor, activeStage),
+                _buildPocketScoreStatItem(_pocketScore, activeStage),
                 Container(width: 1, height: 28, color: const Color(0xFFFFD700).withValues(alpha: 0.3)),
                 _buildAchievementsStatItem(textColor, activeStage, activeStage.day),
               ],
@@ -2165,7 +2279,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Grandmaster Header Tag
+          // Grandmaster Header Tag (Minimal, uncluttered layout)
           Row(
             children: [
               Container(
@@ -2178,10 +2292,10 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(isDay90 ? '🐉' : '💎', style: const TextStyle(fontSize: 12)),
+                    Text(isDay90 ? '👑' : '💎', style: const TextStyle(fontSize: 12)),
                     const SizedBox(width: 5),
                     Text(
-                      isDay90 ? 'STAGE 90/90 • GRANDMASTER DRAGON' : 'STAGE ${activeStage.stageNumber}/90 • CELESTIAL',
+                      'STAGE ${activeStage.stageNumber}/90',
                       style: GoogleFonts.outfit(
                         color: accentColor,
                         fontWeight: FontWeight.w900,
@@ -2192,15 +2306,41 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   ],
                 ),
               ),
-              const Spacer(),
-              Text(
-                activeStage.fluencyTier,
-                style: GoogleFonts.inter(
-                  color: accentColor,
-                  fontSize: 11.5,
-                  fontWeight: FontWeight.w700,
+              if (isDay90) ...[
+                const SizedBox(width: 8),
+                GestureDetector(
+                  onTap: () {
+                    HapticFeedback.mediumImpact();
+                    Day90MasterCertificateDialog.show(
+                      context,
+                      userName: _profileData?['username'] ?? 'Learner',
+                    );
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFD700).withValues(alpha: 0.18),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: const Color(0xFFFFD700), width: 0.8),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text('📜', style: TextStyle(fontSize: 10)),
+                        const SizedBox(width: 4),
+                        Text(
+                          'GRADUATE',
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFFFFD700),
+                            fontWeight: FontWeight.w900,
+                            fontSize: 9.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ],
           ),
           const SizedBox(height: 14),
@@ -2219,12 +2359,10 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               Expanded(
                 child: Row(
                   children: [
-                    Expanded(child: FittedBox(fit: BoxFit.scaleDown, child: _buildStatItem("Friends", _friendsCount, textColor, activeStage))),
-                    const SizedBox(width: 4),
-                    Expanded(child: FittedBox(fit: BoxFit.scaleDown, child: _buildStatItem("Followers", _followersCount, textColor, activeStage))),
-                    const SizedBox(width: 4),
-                    Expanded(child: FittedBox(fit: BoxFit.scaleDown, child: _buildStatItem("Following", _followingCount, textColor, activeStage))),
-                    const SizedBox(width: 4),
+                    Expanded(child: FittedBox(fit: BoxFit.scaleDown, child: _buildStatItem("Mates", _followersCount > 0 ? _followersCount : _friendsCount, textColor, activeStage))),
+                    const SizedBox(width: 8),
+                    Expanded(child: FittedBox(fit: BoxFit.scaleDown, child: _buildPocketScoreStatItem(_pocketScore, activeStage))),
+                    const SizedBox(width: 8),
                     Expanded(child: FittedBox(fit: BoxFit.scaleDown, child: _buildAchievementsStatItem(textColor, activeStage, activeStage.day))),
                   ],
                 ),
@@ -2659,7 +2797,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                               const Icon(Icons.workspace_premium_rounded, size: 15, color: Colors.white),
                               const SizedBox(width: 4),
                               Text(
-                                "VIP ₹199",
+                                "Premium ₹199",
                                 style: GoogleFonts.outfit(
                                   color: Colors.white,
                                   fontSize: 12,
@@ -2980,9 +3118,67 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     return content;
   }
 
+  /// 🪙 Pocket Score Stat Item (Highest Priority Hero Stat on User Profile)
+  /// User audio directive: "പോക്കറ്റ് സ്കോർ വെച്ചിട്ടാണ് നമ്മുടെ അക്കൗണ്ടിൽ പോക്കറ്റ് സ്കോർ മേലെ തന്നെ വരണം... പോക്കറ്റ് സ്കോറിനാണ് ഇവിടെ ഹൈ പ്രയോറിറ്റി വരുന്നത്!"
+  Widget _buildPocketScoreStatItem(int score, LearningMilestoneStage stage) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF2A1F05), Color(0xFF140F02)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: const Color(0xFFFFD700),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFFFD700).withValues(alpha: 0.28),
+            blurRadius: 10,
+            spreadRadius: 0.5,
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('🪙', style: TextStyle(fontSize: 13)),
+              const SizedBox(width: 4),
+              Text(
+                _formatCount(score),
+                style: GoogleFonts.outfit(
+                  color: const Color(0xFFFFD700),
+                  fontSize: 15,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -0.5,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 2),
+          Text(
+            'Pocket Score',
+            style: GoogleFonts.outfit(
+              color: const Color(0xFFFFFC00),
+              fontSize: 10.5,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.3,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildAchievementsStatItem(Color textColor, LearningMilestoneStage stage, int day) {
     final unlockedCount = day >= 90 ? 6 : (day >= 60 ? 5 : (day >= 30 ? 4 : (day >= 21 ? 3 : (day >= 15 ? 2 : 1))));
-    final score = (_profileData?['learning_points'] as num?)?.toInt() ?? 0;
+    final score = _pocketScore;
 
     Widget content = GestureDetector(
       onTap: () => _showAchievementsModal(day, score),
@@ -2995,7 +3191,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               const Text('🏆', style: TextStyle(fontSize: 12)),
               const SizedBox(width: 3),
               Text(
-                '$unlockedCount/6',
+                '$unlockedCount',
                 style: GoogleFonts.outfit(
                   color: const Color(0xFFFFFC00),
                   fontSize: 14,
@@ -3007,7 +3203,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
           ),
           const SizedBox(height: 2),
           Text(
-            'Badges',
+            'Trophies',
             style: GoogleFonts.inter(
               color: textColor.withValues(alpha: 0.6),
               fontSize: 10.5,
@@ -3096,7 +3292,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                           style: GoogleFonts.outfit(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
                         ),
                         Text(
-                          'Score: ⭐ $score XP (Active Streak Progression)',
+                          'Pocket Score: 🪙 $score PTS',
                           style: GoogleFonts.inter(color: const Color(0xFFFFFC00), fontSize: 11.5, fontWeight: FontWeight.w600),
                         ),
                       ],
@@ -3347,7 +3543,31 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
   void _fastForwardStage() {
     final currentDay = (_profileData?['learning_day'] as num?)?.toInt() ?? 1;
-    final nextDay = currentDay >= 90 ? 1 : currentDay + 1;
+    if (currentDay >= 90) {
+      HapticFeedback.heavyImpact();
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Text('👑', style: TextStyle(fontSize: 18)),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  '💎 DAY 90 CITADEL COMPLETE! Long-press palette icon to test any milestone.',
+                  style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: const Color(0xFFFFFC00)),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: const Color(0xFF0F172A),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(milliseconds: 2000),
+        ),
+      );
+      return;
+    }
+    final nextDay = currentDay + 1;
     _jumpToDay(nextDay);
   }
 

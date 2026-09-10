@@ -8,13 +8,15 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/learning_ser
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/nft_trading_card_dialog.dart';
-import 'pocket_battle_arena_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/jackie_chan_talisman_service.dart';
 import 'pocket_world_street_page.dart';
 import 'pocket_fortress_defense_service.dart';
 import 'pocket_defense_trap_modal.dart';
 import 'pocket_arsenal_store_modal.dart';
 import 'day90_vip_master_card_dialog.dart';
 import 'pocket_daily_mission_page.dart';
+import 'pocket_world_game_rules_modal.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// 🎯 Model for Minimal Target Roadmaps (Audio Requirement)
 class TargetMilestoneItem {
@@ -42,6 +44,17 @@ class TargetMilestoneItem {
 }
 
 final List<TargetMilestoneItem> kTargetMilestones = [
+  const TargetMilestoneItem(
+    stageNumber: 0,
+    title: 'Rule',
+    rangeText: 'Charter',
+    targetDay: 0,
+    houseStage: 'Rules & Pledge',
+    houseEmoji: '📜',
+    rewardSummary: 'Charter Badge • 12 Rules',
+    defenseSummary: 'Complete Rule Guide',
+    themeColor: Color(0xFF38BDF8),
+  ),
   const TargetMilestoneItem(
     stageNumber: 1,
     title: 'Target 1',
@@ -129,14 +142,19 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   late AnimationController _bobController;
 
   bool _isLoading = true;
+  bool _isRefreshing = false;
+  int _unifiedPocketScore = 0;
+  Set<int> _unlockedDays = {};
   UserLearningProgress? _progress;
-  VectorAvatarConfig? _customUserAvatar;
+  String? _equippedTalismanId;
+  bool _hasAcceptedRules = false;
   final int _totalDays = 90;
 
   // Spacing & node dimensions
-  static const double _nodeSpacingY = 135.0;
-  static const double _topPadding = 200.0;
-  static const double _bottomPadding = 320.0;
+  static const double _nodeSpacingY = 140.0;
+  static const double _topPadding = 380.0; // Pushed down so Rules and Day 1 have comfortable breathing room
+  static const double _bottomPadding = 340.0;
+  static const double _ruleNodeY = 240.0; // Y center of the Rules / Get Started node
 
   @override
   void initState() {
@@ -163,34 +181,60 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
       return;
     }
 
-    final prog = await Learning60DayService().fetchProgress(uid);
+    final progRaw = await Learning60DayService().fetchProgress(uid);
+    final score = await PocketFortressDefenseService.getUnifiedScore(uid);
+
     Map<String, dynamic>? profileData;
     try {
       profileData = await _supabase
-          .from('profiles')
-          .select('avatar_config')
-          .eq('id', uid)
+          .from('profile')
+          .select('avatar_config, learning_day, learning_stage')
+          .eq('user_id', uid)
           .maybeSingle();
     } catch (_) {}
 
-    VectorAvatarConfig? customConfig;
-    if (profileData != null && profileData['avatar_config'] != null) {
-      try {
-        final map = Map<String, dynamic>.from(profileData['avatar_config']);
-        customConfig = VectorAvatarConfig.fromMap(map);
-      } catch (_) {}
+    final prefs = await SharedPreferences.getInstance();
+    final localStage = prefs.getInt('pocket_learning_user_stage') ??
+        prefs.getInt('learning_day_$uid') ??
+        1;
+    final profileDay = (profileData?['learning_day'] as num?)?.toInt() ?? 1;
+    final effectiveDay = math.max(progRaw.currentDay, math.max(profileDay, localStage));
+    final prog = progRaw.copyWith(currentDay: effectiveDay);
+
+    String? talismanId;
+    try {
+      final talisman = await JackieChanTalismanService.getEquippedTalisman();
+      talismanId = talisman.id;
+    } catch (_) {}
+
+    final rulesAccepted = (prog.currentDay > 1) ||
+        (prefs.getBool('pocket_world_rules_accepted_v1') ?? false);
+
+    final Set<int> unlocked = {};
+    for (int d = 1; d <= _totalDays; d++) {
+      if (d <= prog.currentDay || (prefs.getBool('pocket_day_${d}_unlocked') ?? false)) {
+        unlocked.add(d);
+      }
     }
 
     if (mounted) {
       setState(() {
         _progress = prog;
-        _customUserAvatar = customConfig;
+        _unifiedPocketScore = score;
+        _unlockedDays = unlocked;
+        _equippedTalismanId = talismanId;
+        _hasAcceptedRules = rulesAccepted;
         _isLoading = false;
+        _isRefreshing = false;
       });
 
-      // Auto-scroll to current active day & check daily consistency
+      // Auto-scroll to current active day or Rules node & check daily consistency
       WidgetsBinding.instance.addPostFrameCallback((_) async {
-        _scrollToDay(prog.currentDay, animate: true);
+        if (!rulesAccepted) {
+          _scrollToRule(animate: true);
+        } else {
+          _scrollToDay(prog.currentDay, animate: true);
+        }
 
         // 🚨 Check Daily Consistency (User Audio Directive: Consistency loss / focus loss downgrade)
         final consistencyRes = await PocketFortressDefenseService.checkDailyConsistency(
@@ -204,14 +248,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     }
   }
 
-  /// Returns the avatar configuration tailored to the user's progress:
-  /// Day 1 uses their personal chosen avatar (if customized) or beginner avatar,
-  /// and subsequent days evolve along the 90-day master progression!
+  /// Returns the systematic stage-evolved avatar for the day, matching the Main Profile view exactly!
   VectorAvatarConfig _getAvatarForDay(int day) {
-    if (day == 1 && _customUserAvatar != null) {
-      return _customUserAvatar!;
-    }
-    return VectorAvatarConfig.getEvolutionAvatarForStage(day);
+    return VectorAvatarConfig.getEvolutionAvatarForStage(day, talismanId: _equippedTalismanId);
   }
 
   double _getNodeX(int day, double screenWidth) {
@@ -224,6 +263,19 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
 
   double _getNodeY(int day) {
     return _topPadding + ((day - 1) * _nodeSpacingY);
+  }
+
+  void _scrollToRule({bool animate = true}) {
+    if (!_scrollController.hasClients) return;
+    if (animate) {
+      _scrollController.animateTo(
+        0.0,
+        duration: const Duration(milliseconds: 700),
+        curve: Curves.easeOutCubic,
+      );
+    } else {
+      _scrollController.jumpTo(0.0);
+    }
   }
 
   void _scrollToDay(int day, {bool animate = true}) {
@@ -321,6 +373,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
         _progress ?? UserLearningProgress(lastActiveDate: DateTime.now());
     final isCurrent = day == prog.currentDay;
     final isCompleted = day < prog.currentDay;
+    final isUnlocked = ((day <= prog.currentDay) || _unlockedDays.contains(day));
     final lesson = EnglishCurriculumLesson.getLessonForDay(day);
     final stage = LearningMilestoneStage.getStageForDay(day);
     final avatarConfig = _getAvatarForDay(day);
@@ -340,14 +393,20 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   ? const Color(0xFFFFFC00)
                   : (isCompleted
                       ? const Color(0xFF10B981)
-                      : Colors.white.withValues(alpha: 0.18)),
+                      : (isUnlocked
+                          ? const Color(0xFF00E5FF)
+                          : Colors.white.withValues(alpha: 0.18))),
               width: 2,
             ),
             boxShadow: [
               BoxShadow(
                 color: (isCurrent
                         ? const Color(0xFFFFFC00)
-                        : const Color(0xFF10B981))
+                        : (isCompleted
+                            ? const Color(0xFF10B981)
+                            : (isUnlocked
+                                ? const Color(0xFF00E5FF)
+                                : Colors.black)))
                     .withValues(alpha: 0.28),
                 blurRadius: 28,
                 offset: const Offset(0, 8),
@@ -557,27 +616,19 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                 const SizedBox(height: 20),
 
                 // Action Buttons
-                if (isCurrent) ...[
+                if (isCurrent || isUnlocked) ...[
                   Row(
                     children: [
                       Expanded(
                         child: ElevatedButton.icon(
                           onPressed: () {
                             Navigator.pop(ctx);
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => PocketDailyMissionPage(
-                                  day: day,
-                                  onMissionCompleted: () => _loadData(),
-                                ),
-                              ),
-                            );
+                            _navigateToMissionPage(day);
                           },
                           icon: const Icon(Icons.play_arrow_rounded,
                               color: Colors.black, size: 20),
                           label: Text(
-                            'START MISSION 🎮',
+                            isCurrent ? 'START MISSION 🎮' : 'ENTER LEVEL $day 🎮',
                             style: GoogleFonts.outfit(
                               color: Colors.black,
                               fontWeight: FontWeight.bold,
@@ -586,7 +637,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                             ),
                           ),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFFFFC00),
+                            backgroundColor: isCurrent ? const Color(0xFFFFFC00) : const Color(0xFF00E5FF),
                             padding: const EdgeInsets.symmetric(vertical: 14),
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(14)),
@@ -594,22 +645,24 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                           ),
                         ),
                       ),
-                      const SizedBox(width: 10),
-                      ElevatedButton(
-                        onPressed: () {
-                          Navigator.pop(ctx);
-                          _completeTodayTasks();
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF10B981),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 14),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14)),
+                      if (isCurrent) ...[
+                        const SizedBox(width: 10),
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.pop(ctx);
+                            _completeTodayTasks();
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF10B981),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 14),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14)),
+                          ),
+                          child: const Icon(Icons.check_rounded,
+                              color: Colors.white, size: 22),
                         ),
-                        child: const Icon(Icons.check_rounded,
-                            color: Colors.white, size: 22),
-                      ),
+                      ],
                     ],
                   ),
                 ] else if (isCompleted) ...[
@@ -656,15 +709,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                           borderRadius: BorderRadius.circular(12),
                           onTap: () {
                             Navigator.pop(ctx);
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => PocketDailyMissionPage(
-                                  day: day,
-                                  onMissionCompleted: () => _loadData(),
-                                ),
-                              ),
-                            );
+                            _navigateToMissionPage(day);
                           },
                           child: Container(
                             width: double.infinity,
@@ -706,15 +751,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                         child: ElevatedButton.icon(
                           onPressed: () {
                             Navigator.pop(ctx);
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => PocketDailyMissionPage(
-                                  day: day,
-                                  onMissionCompleted: () => _loadData(),
-                                ),
-                              ),
-                            );
+                            _navigateToMissionPage(day);
                           },
                           icon: const Icon(Icons.science_rounded,
                               color: Colors.black, size: 18),
@@ -830,29 +867,34 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
 
     return Scaffold(
       backgroundColor: const Color(0xFF0A1118),
-      body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: Color(0xFFFFFC00)))
-          : Stack(
-              children: [
-                // 1. The Scrollable Game World Map
-                SingleChildScrollView(
-                  controller: _scrollController,
-                  physics: const BouncingScrollPhysics(),
-                  child: SizedBox(
-                    width: screenWidth,
-                    height: totalMapHeight,
-                    child: Stack(
-                      children: [
-                        // Background Biomes & Curved Trail Road
-                        Positioned.fill(
-                          child: CustomPaint(
-                            painter: _AdventureMapRoadPainter(
+      body: Stack(
+        children: [
+          // 1. The Scrollable Game World Map with Pull-to-Refresh
+          RefreshIndicator(
+            onRefresh: _loadData,
+            color: const Color(0xFFFFD700),
+            backgroundColor: const Color(0xFF13172A),
+            child: SingleChildScrollView(
+              controller: _scrollController,
+              physics: const AlwaysScrollableScrollPhysics(
+                parent: BouncingScrollPhysics(),
+              ),
+              child: SizedBox(
+                width: screenWidth,
+                height: totalMapHeight,
+                child: Stack(
+                  children: [
+                    // Background Biomes & Curved Trail Road
+                    Positioned.fill(
+                      child: CustomPaint(
+                        painter: _AdventureMapRoadPainter(
                               totalDays: _totalDays,
                               currentDay: prog.currentDay,
                               screenWidth: screenWidth,
                               nodeSpacingY: _nodeSpacingY,
                               topPadding: _topPadding,
+                              ruleNodeY: _ruleNodeY,
+                              hasAcceptedRules: _hasAcceptedRules,
                             ),
                           ),
                         ),
@@ -864,19 +906,36 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                         for (int day = 1; day <= _totalDays; day++)
                           _buildMapMiniAnimalCard(day, screenWidth, prog.currentDay),
 
+                        // 📜 Special "Rule" Level Node (Audio Directive: Before Level 1, show Rule level)
+                        _buildRuleLevelNode(screenWidth),
+
                         // Interactive 3D Level Nodes (Days 1 to 90)
                         for (int day = 1; day <= _totalDays; day++)
                           _buildLevelNode(day, screenWidth, prog.currentDay),
 
-                        // Bouncing Animated Character Avatar at Current Level
+                        // Bouncing Animated Character Avatar at Current Level or Rules Node
                         _buildAnimatedAvatar(screenWidth, prog.currentDay),
                       ],
                     ),
                   ),
                 ),
+              ),
 
-                // 2. Sticky Glassmorphism Top HUD (Without Back button on tab navigation!)
-                _buildTopHUD(prog),
+              // Subtle non-blocking loading shimmer beneath top HUD
+              if (_isLoading || _isRefreshing)
+                Positioned(
+                  top: MediaQuery.of(context).padding.top + 70,
+                  left: 0,
+                  right: 0,
+                  child: const LinearProgressIndicator(
+                    minHeight: 2.5,
+                    color: Color(0xFFFFD700),
+                    backgroundColor: Colors.transparent,
+                  ),
+                ),
+
+              // 2. Sticky Glassmorphism Top HUD (Without Back button on tab navigation!)
+              _buildTopHUD(prog),
 
                 // 3. ⚔️ Pocket Battle Action Button (User audio: "Battle Arena എന്ന് പറയില്ലല്ലോ, 'Pocket Battle' എന്ന് സിംപിൾ ആയി കൊടുത്താൽ മതി. അതൊന്ന് ഡയറക്റ്റ് പോക്കറ്റ് ഹോമിൽ പോകുന്നു.")
                 Positioned(
@@ -930,7 +989,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                 ),
 
 
-                // Right: 🎯 Jump to Today Button (Direct entry into Mission Page)
+                // Right: 🎯 Jump to Today Button (Direct entry into Mission Page / Rules)
                 Positioned(
                   right: 18,
                   bottom: 24,
@@ -938,15 +997,29 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                     heroTag: 'target_page_jump_today_button',
                     onPressed: () {
                       HapticFeedback.mediumImpact();
+                      if (!_hasAcceptedRules) {
+                        PocketWorldGameRulesModal.show(
+                          context,
+                          currentDay: prog.currentDay,
+                          onPledgeAccepted: () {
+                            setState(() => _hasAcceptedRules = true);
+                            _loadData();
+                          },
+                        );
+                        return;
+                      }
                       _scrollToDay(prog.currentDay, animate: true);
                       _navigateToMissionPage(prog.currentDay);
                     },
                     backgroundColor: const Color(0xFFFFFC00),
                     elevation: 6,
-                    icon: const Icon(Icons.play_circle_fill_rounded,
-                        color: Colors.black, size: 20),
+                    icon: Icon(
+                      !_hasAcceptedRules ? Icons.menu_book_rounded : Icons.play_circle_fill_rounded,
+                      color: Colors.black,
+                      size: 20,
+                    ),
                     label: Text(
-                      'MISSION DAY ${prog.currentDay}',
+                      !_hasAcceptedRules ? 'GET STARTED: RULES 📜' : 'MISSION DAY ${prog.currentDay}',
                       style: GoogleFonts.outfit(
                         color: Colors.black,
                         fontWeight: FontWeight.w900,
@@ -1028,14 +1101,53 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                 ),
                 const SizedBox(width: 8),
 
-                // Pocket Score Capsule (User directive: "അതിൽ 'Day 1' എന്ന് കൊടുത്തോ, പിന്നെ 'Pocket Score'. ഇത്ര മാത്രം മതി")
+                // Pocket Score Capsule (Unified Score)
                 _buildHudCapsule(
-                  icon: Icons.bolt_rounded,
-                  color: const Color(0xFF00E5FF),
-                  label: 'Pocket Score: ${prog.totalPoints}',
+                  icon: Icons.monetization_on_rounded,
+                  color: const Color(0xFFFFD700),
+                  label: 'Pocket Score: 🪙 $_unifiedPocketScore PTS',
                 ),
 
                 const Spacer(),
+
+                // 🔄 Refresh Button (User Audio Directive: "ഒരു റീഫ്രഷ് ചെയ്യാനുള്ള ബട്ടൺ കൊടുക്കണം കേട്ടോ അവിടെ")
+                GestureDetector(
+                  onTap: () async {
+                    HapticFeedback.lightImpact();
+                    setState(() => _isRefreshing = true);
+                    await _loadData();
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Roadmap Refreshed! Day ${prog.currentDay} • 🪙 $_unifiedPocketScore PTS',
+                            style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 12),
+                          ),
+                          backgroundColor: const Color(0xFF10B981),
+                          duration: const Duration(milliseconds: 1200),
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    }
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(5),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.white24, width: 0.8),
+                    ),
+                    child: _isRefreshing
+                        ? const SizedBox(
+                            width: 14,
+                            height: 14,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFFFFD700)),
+                          )
+                        : const Icon(Icons.refresh_rounded, color: Colors.white, size: 16),
+                  ),
+                ),
+                const SizedBox(width: 8),
 
                 // 🏪 Minimal Store Button
                 GestureDetector(
@@ -1095,14 +1207,28 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
         separatorBuilder: (_, __) => const SizedBox(width: 6),
         itemBuilder: (context, index) {
           final item = kTargetMilestones[index];
-          final isUnlocked = prog.currentDay >= item.targetDay;
-          final isCurrentTarget = prog.currentDay <= item.targetDay &&
-              (index == 0 || prog.currentDay > kTargetMilestones[index - 1].targetDay);
+          final isRule = item.stageNumber == 0;
+          final isUnlocked =
+              isRule ? _hasAcceptedRules : prog.currentDay >= item.targetDay;
+          final isCurrentTarget = isRule
+              ? !_hasAcceptedRules
+              : (prog.currentDay <= item.targetDay &&
+                  (index <= 1 ||
+                      prog.currentDay >
+                          kTargetMilestones[index - 1].targetDay));
 
           return GestureDetector(
             onTap: () {
               HapticFeedback.selectionClick();
-              if (item.stageNumber == 6) {
+              if (item.stageNumber == 0) {
+                PocketWorldGameRulesModal.show(
+                  context,
+                  currentDay: prog.currentDay,
+                  onPledgeAccepted: () {
+                    setState(() => _hasAcceptedRules = true);
+                  },
+                );
+              } else if (item.stageNumber == 6) {
                 Day90VipMasterCardDialog.show(
                   context,
                   userDay: prog.currentDay,
@@ -1138,14 +1264,18 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                     style: GoogleFonts.outfit(
                       color: isCurrentTarget
                           ? item.themeColor
-                          : (isUnlocked ? const Color(0xFF10B981) : Colors.white70),
+                          : (isUnlocked
+                              ? const Color(0xFF10B981)
+                              : Colors.white70),
                       fontWeight: FontWeight.w800,
                       fontSize: 10,
                     ),
                   ),
                   const SizedBox(width: 3),
                   Text(
-                    isUnlocked ? '✓' : (isCurrentTarget ? '🔥' : '🔒'),
+                    isRule
+                        ? (_hasAcceptedRules ? '✓' : '📜')
+                        : (isUnlocked ? '✓' : (isCurrentTarget ? '🔥' : '🔒')),
                     style: const TextStyle(fontSize: 8.5),
                   ),
                 ],
@@ -1373,11 +1503,148 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     );
   }
 
+  /// 📜 Special "Rule" Level Node (Audio Directive: Before Level 1, show Rule level)
+  Widget _buildRuleLevelNode(double screenWidth) {
+    final x = screenWidth / 2;
+    final y = _ruleNodeY;
+    const nodeSize = 74.0;
+
+    return Positioned(
+      left: x - (nodeSize / 2),
+      top: y - (nodeSize / 2),
+      child: GestureDetector(
+        onTap: () {
+          HapticFeedback.lightImpact();
+          PocketWorldGameRulesModal.show(
+            context,
+            currentDay: _progress?.currentDay ?? 1,
+            onPledgeAccepted: () {
+              setState(() => _hasAcceptedRules = true);
+              _loadData();
+            },
+          );
+        },
+        child: SizedBox(
+          width: nodeSize,
+          height: nodeSize + 24,
+          child: Stack(
+            clipBehavior: Clip.none,
+            alignment: Alignment.center,
+            children: [
+              // Pulsing glow if not accepted yet
+              if (!_hasAcceptedRules)
+                Positioned.fill(
+                  child: AnimatedBuilder(
+                    animation: _bobController,
+                    builder: (context, child) {
+                      final scale = 1.0 + (_bobController.value * 0.24);
+                      return Transform.scale(
+                        scale: scale,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: const Color(0xFFFFFC00).withValues(
+                                  alpha: 0.75 - (_bobController.value * 0.4)),
+                              width: 3.2,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+
+              // 3D Stepping Stone
+              Container(
+                width: nodeSize,
+                height: nodeSize,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    colors: _hasAcceptedRules
+                        ? [const Color(0xFF10B981), const Color(0xFF047857)]
+                        : [const Color(0xFFFF8906), const Color(0xFFE53E3E)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  border: Border.all(
+                    color: _hasAcceptedRules
+                        ? const Color(0xFF6EE7B7)
+                        : const Color(0xFFFFFC00),
+                    width: 3.0,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: (_hasAcceptedRules
+                              ? const Color(0xFF10B981)
+                              : const Color(0xFFFF8906))
+                          .withValues(alpha: 0.5),
+                      blurRadius: 18,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
+                ),
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text('📜', style: TextStyle(fontSize: 24)),
+                      Text(
+                        _hasAcceptedRules ? 'RULES' : 'GET STARTED',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w900,
+                          fontSize: _hasAcceptedRules ? 10 : 8.5,
+                          letterSpacing: 0.7,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // Verification badge
+              Positioned(
+                bottom: 0,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+                  decoration: BoxDecoration(
+                    color: _hasAcceptedRules
+                        ? const Color(0xFF10B981)
+                        : const Color(0xFFFFFC00),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: _hasAcceptedRules ? Colors.white38 : Colors.black26,
+                      width: 0.8,
+                    ),
+                  ),
+                  child: Text(
+                    _hasAcceptedRules ? '✓ VERIFIED' : 'START HERE 🔥',
+                    style: GoogleFonts.outfit(
+                      color: _hasAcceptedRules ? Colors.white : Colors.black,
+                      fontSize: 8.5,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildLevelNode(int day, double screenWidth, int currentDay) {
     final x = _getNodeX(day, screenWidth);
     final y = _getNodeY(day);
-    final isCurrent = day == currentDay;
-    final isCompleted = day < currentDay;
+    // User audio requirement: Before Get Started rules are accepted, Day 1 must stay LOCKED!
+    final isLockedByRules = (day == 1 && !_hasAcceptedRules);
+    final isCurrent = (day == currentDay) && !isLockedByRules;
+    final isUnlocked = ((day <= currentDay) || _unlockedDays.contains(day)) && !isLockedByRules;
+    final isCompleted = (day < currentDay) && _hasAcceptedRules;
     final isBossMilestone = day == 7 ||
         day == 14 ||
         day == 21 ||
@@ -1396,7 +1663,44 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
       child: GestureDetector(
         onTap: () {
           HapticFeedback.lightImpact();
-          if (day <= currentDay) {
+          if (!_hasAcceptedRules && day == 1) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                backgroundColor: const Color(0xFF0F172A),
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: const BorderSide(color: Color(0xFF38BDF8), width: 1.5),
+                ),
+                content: Row(
+                  children: [
+                    const Text('📜', style: TextStyle(fontSize: 18)),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Read and accept all 12 Rules first to unlock Day 1!',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12.5,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+            PocketWorldGameRulesModal.show(
+              context,
+              currentDay: currentDay,
+              onPledgeAccepted: () {
+                setState(() => _hasAcceptedRules = true);
+                _loadData();
+              },
+            );
+            return;
+          }
+          if (isUnlocked) {
             _navigateToMissionPage(day);
           } else {
             _showLevelMissionDialog(day);
@@ -1444,9 +1748,11 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                         ? [const Color(0xFFFFFC00), const Color(0xFFFF8906)]
                         : (isCompleted
                             ? [const Color(0xFF10B981), const Color(0xFF047857)]
-                            : (isBossMilestone
-                                ? [const Color(0xFF475569), const Color(0xFF1E293B)]
-                                : [const Color(0xFF2A314A), const Color(0xFF181C2E)])),
+                            : (isUnlocked
+                                ? [const Color(0xFF00E5FF), const Color(0xFF0284C7)]
+                                : (isBossMilestone
+                                    ? [const Color(0xFF475569), const Color(0xFF1E293B)]
+                                    : [const Color(0xFF2A314A), const Color(0xFF181C2E)]))),
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -1455,9 +1761,11 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                         ? Colors.white
                         : (isCompleted
                             ? const Color(0xFF6EE7B7)
-                            : (isBossMilestone
-                                ? const Color(0xFFFFD700)
-                                : Colors.white.withValues(alpha: 0.22))),
+                            : (isUnlocked
+                                ? const Color(0xFF38BDF8)
+                                : (isBossMilestone
+                                    ? const Color(0xFFFFD700)
+                                    : Colors.white.withValues(alpha: 0.22)))),
                     width: isCurrent ? 3.2 : 2.2,
                   ),
                   boxShadow: [
@@ -1466,8 +1774,10 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                           ? const Color(0xFFFFFC00).withValues(alpha: 0.5)
                           : (isCompleted
                               ? const Color(0xFF10B981).withValues(alpha: 0.4)
-                              : Colors.black.withValues(alpha: 0.5)),
-                      blurRadius: isCurrent ? 16 : 8,
+                              : (isUnlocked
+                                  ? const Color(0xFF00E5FF).withValues(alpha: 0.45)
+                                  : Colors.black.withValues(alpha: 0.5))),
+                      blurRadius: (isCurrent || isUnlocked) ? 16 : 8,
                       offset: const Offset(0, 4),
                     ),
                   ],
@@ -1485,41 +1795,50 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                                 fontSize: isBossMilestone ? 24 : 20,
                               ),
                             )
-                          : (isBossMilestone
-                              ? Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      stage.emoji,
-                                      style: TextStyle(
-                                          fontSize: isBossMilestone ? 19 : 16),
-                                    ),
-                                    Text(
-                                      '$day',
-                                      style: GoogleFonts.outfit(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 11,
-                                      ),
-                                    ),
-                                  ],
+                          : (isUnlocked
+                              ? Text(
+                                  '$day',
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: isBossMilestone ? 24 : 20,
+                                  ),
                                 )
-                              : Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    const Icon(Icons.lock_rounded,
-                                        color: Colors.white54, size: 12),
-                                    const SizedBox(width: 2),
-                                    Text(
-                                      '$day',
-                                      style: GoogleFonts.outfit(
-                                        color: Colors.white70,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                  ],
-                                ))),
+                              : (isBossMilestone
+                                  ? Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          stage.emoji,
+                                          style: TextStyle(
+                                              fontSize: isBossMilestone ? 19 : 16),
+                                        ),
+                                        Text(
+                                          '$day',
+                                          style: GoogleFonts.outfit(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 11,
+                                          ),
+                                        ),
+                                      ],
+                                    )
+                                  : Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        const Icon(Icons.lock_rounded,
+                                            color: Colors.white54, size: 12),
+                                        const SizedBox(width: 2),
+                                        Text(
+                                          '$day',
+                                          style: GoogleFonts.outfit(
+                                            color: Colors.white70,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                      ],
+                                    )))),
                 ),
               ),
 
@@ -1581,7 +1900,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     final nodeX = _getNodeX(day, screenWidth);
     final nodeY = _getNodeY(day);
     final isRightSide = nodeX >= screenWidth / 2;
-    final isUnlocked = day <= currentDay;
+    final isUnlocked = ((day <= currentDay) || _unlockedDays.contains(day)) && (day > 1 || _hasAcceptedRules);
     final config = _getAvatarForDay(day);
 
     // Position in wide empty space on opposite side of node
@@ -1623,33 +1942,32 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
           height: 52,
           padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 5),
           decoration: BoxDecoration(
-            color: const Color(0xFF0D1322).withValues(alpha: 0.90),
-            borderRadius: BorderRadius.circular(14),
+            color: const Color(0xFF111726).withValues(alpha: 0.88),
+            borderRadius: BorderRadius.circular(13),
             border: Border.all(
               color: isUnlocked
-                  ? rarityColor.withValues(alpha: 0.7)
+                  ? rarityColor.withValues(alpha: 0.75)
                   : Colors.white.withValues(alpha: 0.12),
-              width: isUnlocked ? 1.2 : 0.8,
+              width: isUnlocked ? 1.4 : 0.9,
             ),
             boxShadow: [
               BoxShadow(
                 color: isUnlocked
-                    ? rarityColor.withValues(alpha: 0.25)
-                    : Colors.black.withValues(alpha: 0.4),
+                    ? rarityColor.withValues(alpha: 0.22)
+                    : Colors.black.withValues(alpha: 0.35),
                 blurRadius: 8,
-                offset: const Offset(0, 2),
+                offset: const Offset(0, 3),
               ),
             ],
           ),
           child: Row(
             children: [
-              // Mini Avatar Preview Circle
+              // Avatar Thumbnail Frame
               Container(
                 width: 38,
                 height: 38,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: rarityColor.withValues(alpha: 0.18),
                   border: Border.all(
                     color: isUnlocked ? rarityColor : Colors.white24,
                     width: 1,
@@ -1694,7 +2012,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          isUnlocked ? '• 🔓 Claim' : '• 🔒 Target',
+                          isUnlocked
+                              ? '• 🔓 Claim'
+                              : (day == 1 && !_hasAcceptedRules ? '• 🔒 Rules Req.' : '• 🔒 Target'),
                           style: GoogleFonts.inter(
                             color: isUnlocked ? const Color(0xFF10B981) : Colors.white38,
                             fontSize: 8.5,
@@ -1717,12 +2037,13 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     );
   }
 
-  /// The active character avatar standing on today's node.
-  /// Tapping the avatar navigates to their personal profile (MainProfileWidget)!
+  /// The active character avatar standing on today's node (or on Rules node before start).
+  /// User audio requirement: Before level 1 start, the avatar stands on the Rules node!
   Widget _buildAnimatedAvatar(double screenWidth, int currentDay) {
-    final x = _getNodeX(currentDay, screenWidth);
-    final y = _getNodeY(currentDay);
-    final avatarConfig = _getAvatarForDay(currentDay);
+    final bool atRuleNode = !_hasAcceptedRules;
+    final double x = atRuleNode ? (screenWidth / 2) : _getNodeX(currentDay, screenWidth);
+    final double y = atRuleNode ? _ruleNodeY : _getNodeY(currentDay);
+    final avatarConfig = _getAvatarForDay(atRuleNode ? 1 : currentDay);
 
     return Positioned(
       left: x - 48,
@@ -1736,9 +2057,22 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
           return Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Speech bubble - Tap to view NFT Collectible Card!
+              // Speech bubble - Tap to view Rules or NFT Collectible Card!
               GestureDetector(
-                onTap: () => _openAvatarCard(currentDay),
+                onTap: () {
+                  if (atRuleNode) {
+                    PocketWorldGameRulesModal.show(
+                      context,
+                      currentDay: currentDay,
+                      onPledgeAccepted: () {
+                        setState(() => _hasAcceptedRules = true);
+                        _loadData();
+                      },
+                    );
+                  } else {
+                    _openAvatarCard(currentDay);
+                  }
+                },
                 child: Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -1756,10 +2090,13 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Text('🃏', style: TextStyle(fontSize: 11)),
+                      Text(atRuleNode ? '📜' : '🃏',
+                          style: const TextStyle(fontSize: 11)),
                       const SizedBox(width: 4),
                       Text(
-                        'Day $currentDay • View NFT Card',
+                        atRuleNode
+                            ? 'Rules & Pledge • Tap to Start 📜'
+                            : 'Day $currentDay • View NFT Card',
                         style: GoogleFonts.outfit(
                           color: Colors.black,
                           fontWeight: FontWeight.bold,
@@ -1772,11 +2109,24 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
               ),
               const SizedBox(height: 5),
 
-              // Bobbing Avatar Character: Tapping opens the NFT Trading Card!
+              // Bobbing Avatar Character
               Transform.translate(
                 offset: Offset(0, -bobY),
                 child: GestureDetector(
-                  onTap: () => _openAvatarCard(currentDay),
+                  onTap: () {
+                    if (atRuleNode) {
+                      PocketWorldGameRulesModal.show(
+                        context,
+                        currentDay: currentDay,
+                        onPledgeAccepted: () {
+                          setState(() => _hasAcceptedRules = true);
+                          _loadData();
+                        },
+                      );
+                    } else {
+                      _openAvatarCard(currentDay);
+                    }
+                  },
                   child: Container(
                     width: 60,
                     height: 60,
@@ -1974,6 +2324,8 @@ class _AdventureMapRoadPainter extends CustomPainter {
   final double screenWidth;
   final double nodeSpacingY;
   final double topPadding;
+  final double ruleNodeY;
+  final bool hasAcceptedRules;
 
   _AdventureMapRoadPainter({
     required this.totalDays,
@@ -1981,6 +2333,8 @@ class _AdventureMapRoadPainter extends CustomPainter {
     required this.screenWidth,
     required this.nodeSpacingY,
     required this.topPadding,
+    required this.ruleNodeY,
+    required this.hasAcceptedRules,
   });
 
   double _getNodeX(int day) {
@@ -2097,6 +2451,19 @@ class _AdventureMapRoadPainter extends CustomPainter {
     final fullPath = Path();
     final completedPath = Path();
 
+    // Connect from Rule node (day 0) down to Day 1
+    final pRule = Offset(screenWidth / 2, ruleNodeY);
+    final pFirst = Offset(_getNodeX(1), _getNodeY(1));
+    fullPath.moveTo(pRule.dx, pRule.dy);
+    fullPath.quadraticBezierTo(
+        pRule.dx, (pRule.dy + pFirst.dy) / 2, pFirst.dx, pFirst.dy);
+
+    if (hasAcceptedRules) {
+      completedPath.moveTo(pRule.dx, pRule.dy);
+      completedPath.quadraticBezierTo(
+          pRule.dx, (pRule.dy + pFirst.dy) / 2, pFirst.dx, pFirst.dy);
+    }
+
     for (int day = 1; day < totalDays; day++) {
       final p1 = Offset(_getNodeX(day), _getNodeY(day));
       final p2 = Offset(_getNodeX(day + 1), _getNodeY(day + 1));
@@ -2104,12 +2471,12 @@ class _AdventureMapRoadPainter extends CustomPainter {
 
       if (day == 1) {
         fullPath.moveTo(p1.dx, p1.dy);
-        if (day < currentDay) completedPath.moveTo(p1.dx, p1.dy);
+        if (day < currentDay && hasAcceptedRules) completedPath.moveTo(p1.dx, p1.dy);
       }
 
       fullPath.quadraticBezierTo(p1.dx, midPoint.dy, p2.dx, p2.dy);
 
-      if (day < currentDay) {
+      if (day < currentDay && hasAcceptedRules) {
         completedPath.quadraticBezierTo(p1.dx, midPoint.dy, p2.dx, p2.dy);
       }
     }
@@ -2121,7 +2488,7 @@ class _AdventureMapRoadPainter extends CustomPainter {
 
     // Draw center trail lines
     canvas.drawPath(fullPath, lockedTrailPaint);
-    if (currentDay > 1) {
+    if (hasAcceptedRules) {
       canvas.drawPath(completedPath, completedGlowPaint);
     }
   }
@@ -2129,6 +2496,8 @@ class _AdventureMapRoadPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _AdventureMapRoadPainter oldDelegate) {
     return oldDelegate.currentDay != currentDay ||
-        oldDelegate.screenWidth != screenWidth;
+        oldDelegate.screenWidth != screenWidth ||
+        oldDelegate.hasAcceptedRules != hasAcceptedRules ||
+        oldDelegate.ruleNodeY != ruleNodeY;
   }
 }

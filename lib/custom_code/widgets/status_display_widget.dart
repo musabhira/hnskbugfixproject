@@ -32,6 +32,7 @@ import 'package:pocket_mates_app/custom_code/widgets/thread_feed_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.dart';
 import 'package:pocket_mates_app/custom_code/widgets/courses_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/story/snapchat_story_creator_page.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_snap_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/ads/pocket_ad_service.dart';
@@ -431,24 +432,15 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
   }
 
   void _openStatusUpload() async {
-    final result = await Navigator.push(
+    await PocketSnapService.launchSnapWorkflow(
       context,
-      MaterialPageRoute(
-        builder: (context) => SnapchatStoryCreatorPage(
-          userId: widget.currentUserId,
-          profileId: widget.currentProfileId,
-          onStatusUploaded: () {
-            _loadStatusesOptimized();
-            widget.onStatusUploaded?.call();
-          },
-        ),
-      ),
+      userId: widget.currentUserId,
+      profileId: widget.currentProfileId,
+      onUploaded: () {
+        _loadStatusesOptimized();
+        widget.onStatusUploaded?.call();
+      },
     );
-
-    if (result == true) {
-      _loadStatusesOptimized();
-      widget.onStatusUploaded?.call();
-    }
   }
 
   @override
@@ -923,30 +915,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
 
     return GestureDetector(
       onTap: _openStatusUpload,
-      onLongPress: () async {
-        HapticFeedback.mediumImpact();
-        try {
-          final picker = ImagePicker();
-          final photo = await picker.pickImage(source: ImageSource.camera, imageQuality: 85);
-          if (photo != null && mounted) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => SnapchatStoryCreatorPage(
-                  userId: widget.currentUserId,
-                  profileId: widget.currentProfileId,
-                  initialFile: photo,
-                  initialMediaType: 'image',
-                  onStatusUploaded: () {
-                    _loadStatusesOptimized();
-                    widget.onStatusUploaded?.call();
-                  },
-                ),
-              ),
-            );
-          }
-        } catch (_) {}
-      },
+      onLongPress: _openStatusUpload,
       child: Container(
         width: 80,
         margin: const EdgeInsets.only(right: 12),

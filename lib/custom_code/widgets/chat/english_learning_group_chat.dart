@@ -6,6 +6,8 @@ import '/backend/supabase/supabase.dart';
 import 'whatsapp_group_chat.dart';
 import 'package:shimmer/shimmer.dart';
 
+import 'english_hub_level_group_service.dart';
+
 class EnglishLearningGroupChatWidget extends ConsumerStatefulWidget {
   final VoidCallback onCancel;
 
@@ -25,6 +27,8 @@ class _EnglishLearningGroupChatWidgetState
   bool _isLoading = true;
   bool _isMember = false;
   String? _groupId;
+  String? _groupName;
+  EnglishHubLevelGroup? _levelGroup;
   String? _currentUserProfileId;
   String? _currentUserId;
 
@@ -49,66 +53,30 @@ class _EnglishLearningGroupChatWidgetState
           .from('profile')
           .select('id')
           .eq('user_id', _currentUserId!)
-          .single();
-      _currentUserProfileId = profileResponse['id'];
+          .maybeSingle();
+      _currentUserProfileId = profileResponse?['id']?.toString() ?? _currentUserId!;
 
-      // 2. Find group named 'English Hub'
-      final groups = await _supabase
-          .from('groups')
-          .select('id')
-          .eq('name', 'English Hub')
-          .limit(1);
+      // 2. Resolve user's current learning level
+      final userLevel = await EnglishHubLevelGroupService.resolveCurrentUserLevel();
 
-      String? tempGroupId;
-      if ((groups as List).isEmpty) {
-        // Group doesn't exist, create it
-        final newGroup = await _supabase
-            .from('groups')
-            .insert({
-              'name': 'English Hub',
-              'description': 'Welcome to the English Hub!',
-              'created_by': _currentUserId!,
-              'is_public': true,
-            })
-            .select('id')
-            .single();
-        tempGroupId = newGroup['id']?.toString();
-      } else {
-        tempGroupId = (groups as List).first['id']?.toString();
-      }
+      // 3. Ensure user is in their level group & auto-leaves older level groups
+      final matchedGroup = await EnglishHubLevelGroupService.ensureUserInLevelGroup(
+        userLevel: userLevel,
+        userId: _currentUserId!,
+        profileId: _currentUserProfileId,
+        forceLevelMatch: true,
+      );
 
-      _groupId = tempGroupId;
-
-      if (_groupId != null) {
-        // 3. Check membership
-        final membership = await _supabase
-            .from('group_members')
-            .select('id')
-            .eq('group_id', _groupId!)
-            .eq('user_id', _currentUserId!)
-            .eq('is_active', true)
-            .limit(1);
-
-        if ((membership as List).isNotEmpty) {
-          _isMember = true;
-        } else {
-          // Auto-join silently
-          await _supabase.from('group_members').insert({
-            'group_id': _groupId!,
-            'user_id': _currentUserId!,
-            'role': 'member',
-            'profile_id': _currentUserProfileId!,
-            'is_active': true,
-          });
-          _isMember = true;
-        }
-      }
+      _groupId = matchedGroup.groupId;
+      _groupName = matchedGroup.groupName;
+      _levelGroup = matchedGroup;
+      _isMember = true;
 
       setState(() {
         _isLoading = false;
       });
     } catch (e) {
-      debugPrint('Error initializing English Hub group: $e');
+      debugPrint('Error initializing dynamic English Hub level group: $e');
       setState(() {
         _isLoading = false;
       });
@@ -231,7 +199,7 @@ class _EnglishLearningGroupChatWidgetState
     if (_isMember && _groupId != null) {
       return WhatsAppGroupChat(
         groupId: _groupId!,
-        groupName: 'English Hub',
+        groupName: _groupName ?? _levelGroup?.groupName ?? 'English Hub (Lvl 1 - 6)',
         showBackButton: false,
       );
     }

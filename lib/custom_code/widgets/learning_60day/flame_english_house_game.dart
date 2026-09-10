@@ -8,10 +8,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'pocket_defense_trap_modal.dart';
 import 'pocket_fortress_defense_service.dart';
-import 'pocket_vehicle_garage_modal.dart';
 import 'pocket_world_street_page.dart';
 import 'pocket_arsenal_store_modal.dart';
-import 'day90_vip_master_card_dialog.dart';
 
 /// 🎨 Curated Color Schemes for the English Habit House
 class HousePalette {
@@ -146,10 +144,11 @@ class HousePalette {
 /// 🏡 Flame-powered Interactive Habit House & Grand Victorian Manor
 /// Progresses from a cozy cottage into a magnificent Victorian Manor Palace with soaring birds and colonnades.
 class FlameEnglishHouseGame extends FlameGame with TapCallbacks {
-  final int currentDay;
-  final int streak;
+  int currentDay;
+  int streak;
   HousePalette palette;
   bool isDamaged;
+  Vector2? _cachedSize;
 
   FlameEnglishHouseGame({
     required this.currentDay,
@@ -168,18 +167,32 @@ class FlameEnglishHouseGame extends FlameGame with TapCallbacks {
   Future<void> onLoad() async {
     await super.onLoad();
 
+    final effectiveSize = _cachedSize ?? size;
+
     // 1. Transparent atmosphere with drifting clouds, twinkling stars, & flying birds
     atmosphereComponent = AtmosphereComponent(day: currentDay);
+    atmosphereComponent.size = effectiveSize;
     add(atmosphereComponent);
 
-    // 2. The progressive cartoon house / Victorian manor
+    // 2. The progressive cartoon house / Victorian manor & citadel
     houseComponent = HouseMasterComponent(
       day: currentDay,
       streak: streak,
       palette: palette,
       isDamaged: isDamaged,
     );
+    houseComponent.resize(effectiveSize);
     add(houseComponent);
+  }
+
+  void updateDayAndStreak(int newDay, int newStreak) {
+    currentDay = newDay;
+    streak = newStreak;
+    if (isLoaded) {
+      houseComponent.day = newDay;
+      houseComponent.streak = newStreak;
+      atmosphereComponent.day = newDay;
+    }
   }
 
   void updatePalette(HousePalette newPalette) {
@@ -199,6 +212,7 @@ class FlameEnglishHouseGame extends FlameGame with TapCallbacks {
   @override
   void onGameResize(Vector2 size) {
     super.onGameResize(size);
+    _cachedSize = size;
     if (isLoaded) {
       atmosphereComponent.size = size;
       houseComponent.resize(size);
@@ -215,7 +229,7 @@ class FlameEnglishHouseGame extends FlameGame with TapCallbacks {
 
 /// Gentle ambient atmosphere: drifting clouds, twinkling stardust & soaring birds ("കിളികൾ, പക്ഷികൾ")
 class AtmosphereComponent extends Component {
-  final int day;
+  int day;
   Vector2 size = Vector2.zero();
   double time = 0;
 
@@ -357,8 +371,8 @@ class _FlyingBird {
 
 /// 🏰 Progressive Architectural Cartoon Pyramid House & Grand Victorian Manor
 class HouseMasterComponent extends Component {
-  final int day;
-  final int streak;
+  int day;
+  int streak;
   HousePalette palette;
   bool isDamaged;
 
@@ -427,17 +441,69 @@ class HouseMasterComponent extends Component {
     _renderLawnAndPath(canvas, cx, groundY);
 
     // 2. THE MULTI-STAGE PROGRESSION:
-    if (day >= 81) {
-      // 👑 DAYS 81–90: THE MAJESTIC IMPERIAL PALACE CITADEL ("വലിയൊരു കൊട്ടാരം പോലെ")
-      // Sprawling multi-wing palace with auxiliary bastion watchtowers, connecting colonnaded arcades,
-      // grand tiered dome lantern spire, twin courtyard fountains, and imperial gates!
-      _renderImperialPalaceCitadel(canvas, cx, groundY);
-    } else if (day >= 71) {
-      // 🌟 DAYS 71–80: THE MAJESTIC GRAND VICTORIAN MANOR ESTATE (Reference Image 2!)
-      // Colonnaded porch, central chateau spire tower, dormers, and 4 tall chimneys!
+    if (day >= 71) {
+      // ============================================================
+      // 🏰 THE GRAND VICTORIAN MANOR & PROGRESSIVE CITADEL (DAYS 71–90)
+      // "ബാക്കിലോ മേലെയോ എന്തെങ്കിലുമൊക്കെ വെച്ച് പിന്നെയും ബാക്കിലൂടെയൊക്കെ എന്തെങ്കിലുമൊക്കെ ഡെവലപ്പ് ചെയ്യുക."
+      // ============================================================
+      final floor2Top = groundY - 134.0;
+
+      // [LAYER A: REAR PALATIAL EXPANSIONS - DRAWN BEHIND MANOR (ബാക്കിൽ)]
+      // Day 87+: Monumental Baroque Imperial Dome & Golden Clock Pavilion (soaring into upper sky)
+      if (day >= 87) {
+        _renderCentralImperialDome(canvas, cx, floor2Top - 24);
+      }
+
+      // Day 81+: Upper 3rd-Floor Royal Mezzanine Gallery
+      if (day >= 81) {
+        _renderRearRoyalMezzanine(canvas, cx, floor2Top);
+      }
+
+      // Day 78+: Monumental Rear Palace Wing with Arched Clerestory Windows & Twin Chateau Turrets
+      if (day >= 78) {
+        _renderRearPalaceWing(canvas, cx, groundY);
+        _renderRearTurretSpires(canvas, cx, floor2Top);
+      }
+
+      // Day 84+: Flanking 3-Story Fortified Bastion Watchtowers & Aerial Bridge Arcades
+      if (day >= 84) {
+        _renderFlankingBastionTowers(canvas, cx, groundY);
+      }
+
+      // [LAYER B: THE GRAND VICTORIAN MANOR FOREGROUND FAÇADE (മുന്നിൽ)]
+      // Preserves 100% of the beloved Victorian Manor up to Day 78 and beyond!
       _renderGrandVictorianManor(canvas, cx, groundY);
+
+      // [LAYER C: FORECOURT PLAZA & ROYAL COURTYARD (മുറ്റത്ത്)]
+      // Day 78+: Wrought Iron Spearhead Perimeter Gates & Coach Lamps
+      if (day >= 78) {
+        _renderPalaceSpearGates(canvas, cx, groundY, (day >= 85) ? 346.0 : 320.0);
+      }
+
+      // Day 81+: Twin Cascading Marble Courtyard Fountains
+      if (day >= 81) {
+        _renderCourtyardFountain(canvas, cx - 146, groundY - 6);
+        _renderCourtyardFountain(canvas, cx + 146, groundY - 6);
+      }
+
+      // Day 84+: Twin Sculpted Golden Guardian Lion Pedestals
+      if (day >= 84) {
+        _renderGuardianLionPedestal(canvas, cx - 48, groundY - 14);
+        _renderGuardianLionPedestal(canvas, cx + 48, groundY - 14);
+      }
+
+      // Day 87+: Sweeping 5-Tier Marble Steps with Crimson Velvet Royal Carpet & Brass Rods
+      if (day >= 87) {
+        _renderImperialSteps(canvas, cx, groundY);
+      }
+
+      // Day 90: 24K Sovereign Imperial Eagle Crown with Sunburst Corona & Day 90 Golden Ribbon
+      if (day >= 90) {
+        _renderDay90DomeCrown(canvas, cx, groundY);
+        _renderDay90PalaceBanner(canvas, cx, groundY);
+      }
     } else {
-      // 🏡 DAYS 1–70: PROGRESSIVE COTTAGE TO PYRAMID MANOR (Reference Image 1)
+      // 🏡 DAYS 1–70: PROGRESSIVE COTTAGE TO PYRAMID MANOR (Unchanged!)
       if (day >= 11) _renderLeftWing(canvas, cx, groundY);
       if (day >= 26) _renderRightWing(canvas, cx, groundY);
       _renderCoreCottage(canvas, cx, groundY);
@@ -453,15 +519,15 @@ class HouseMasterComponent extends Component {
       if (day >= 9) _renderDay9GardenFountain(canvas, cx, groundY);
     }
 
-    // 3. Chimney Smoke Particles (Unlocked at Day 4)
-    if (day >= 81) {
-      _renderSmoke(canvas, cx - 174, groundY - 240);
-      _renderSmoke(canvas, cx - 54, groundY - 250);
-      _renderSmoke(canvas, cx + 54, groundY - 250);
-      _renderSmoke(canvas, cx + 174, groundY - 240);
+    // 3. Chimney Smoke Particles
+    if (day >= 84) {
+      _renderSmoke(canvas, cx - 172, groundY - 240);
+      _renderSmoke(canvas, cx - 50, groundY - 220);
+      _renderSmoke(canvas, cx + 50, groundY - 220);
+      _renderSmoke(canvas, cx + 172, groundY - 240);
     } else if (day >= 71) {
-      _renderSmoke(canvas, cx - 52, groundY - 240);
-      _renderSmoke(canvas, cx + 52, groundY - 240);
+      _renderSmoke(canvas, cx - 50, groundY - 220);
+      _renderSmoke(canvas, cx + 50, groundY - 220);
     } else if (day >= 4) {
       final chimX = cx - 54;
       final chimY = (day >= 41) ? groundY - 210 : groundY - 175;
@@ -985,6 +1051,221 @@ class HouseMasterComponent extends Component {
     canvas.drawCircle(Offset(cx + 3, dRect.center.dy + 4), 1.8, Paint()..color = palette.accentColor);
   }
 
+  // ============================================================
+  // 🏰 DAYS 78–90: PROGRESSIVE REAR PALATIAL LAYERS & CITADEL EXPANSIONS
+  // "ബാക്കിലോ മേലെയോ എന്തെങ്കിലുമൊക്കെ വെച്ച് പിന്നെയും ബാക്കിലൂടെയൊക്കെ എന്തെങ്കിലുമൊക്കെ ഡെവലപ്പ് ചെയ്യുക."
+  // ============================================================
+
+  /// 🏰 Days 78+: Monumental Rear Palace Wing rising behind the Victorian Manor
+  void _renderRearPalaceWing(Canvas canvas, double cx, double groundY) {
+    const rearW = 346.0;
+    const rearH = 176.0;
+    final rLeft = cx - rearW / 2;
+    final rTop = groundY - rearH;
+
+    // Rear wall body (slightly shaded stone tone for depth perspective)
+    final wallRect = Rect.fromLTWH(rLeft, rTop + 30, rearW, rearH - 30);
+    canvas.drawRect(wallRect, Paint()..color = palette.wallShade);
+    canvas.drawRect(
+      wallRect,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..color = palette.roofUnderTrim.withValues(alpha: 0.4)
+        ..strokeWidth = 1.2,
+    );
+
+    // High Grand Clerestory Windows glowing above the 2nd-floor roofline
+    final winY = rTop + 48;
+    for (final wx in [cx - 130.0, cx - 88.0, cx + 88.0, cx + 130.0]) {
+      _renderArchedClerestoryWindow(canvas, wx, winY, 18, 30);
+    }
+
+    // Rear Grand Mansard Roof Beam & Cornice
+    final roofPath = Path();
+    roofPath.moveTo(rLeft - 6, rTop + 32);
+    roofPath.lineTo(rLeft + 18, rTop);
+    roofPath.lineTo(rLeft + rearW - 18, rTop);
+    roofPath.lineTo(rLeft + rearW + 6, rTop + 32);
+    roofPath.close();
+
+    final roofShader = LinearGradient(
+      colors: [palette.roofShade, palette.roofColor],
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+    ).createShader(Rect.fromLTWH(rLeft, rTop, rearW, 32));
+    canvas.drawPath(roofPath, Paint()..shader = roofShader);
+    canvas.drawPath(
+      roofPath,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..color = palette.roofTrim
+        ..strokeWidth = 2.0,
+    );
+
+    // Decorative Rooftop Cresting / Fleur-de-lis Spikes
+    final crestPaint = Paint()
+      ..color = const Color(0xFFFFD700).withValues(alpha: 0.8)
+      ..strokeWidth = 1.2;
+    for (double x = rLeft + 24; x <= rLeft + rearW - 24; x += 12) {
+      canvas.drawLine(Offset(x, rTop), Offset(x, rTop - 5), crestPaint);
+      canvas.drawCircle(Offset(x, rTop - 5), 1.2, crestPaint);
+    }
+  }
+
+  void _renderArchedClerestoryWindow(Canvas canvas, double cx, double cy, double w, double h) {
+    final rect = Rect.fromCenter(center: Offset(cx, cy), width: w, height: h);
+    final rrect = RRect.fromRectAndCorners(
+      rect,
+      topLeft: Radius.circular(w / 2),
+      topRight: Radius.circular(w / 2),
+      bottomLeft: const Radius.circular(2),
+      bottomRight: const Radius.circular(2),
+    );
+    canvas.drawRRect(rrect.inflate(1.5), Paint()..color = Colors.white70);
+    final winColor = lightsOn ? palette.windowColor : const Color(0xFF1E293B);
+    canvas.drawRRect(rrect, Paint()..color = winColor);
+    if (lightsOn) {
+      canvas.drawCircle(Offset(cx, cy + 2), 4.0, Paint()..color = Colors.white60);
+    }
+    canvas.drawLine(Offset(cx, rect.top + 3), Offset(cx, rect.bottom), Paint()..color = Colors.white ..strokeWidth = 1.0);
+    canvas.drawLine(Offset(rect.left + 1, cy + 2), Offset(rect.right - 1, cy + 2), Paint()..color = Colors.white ..strokeWidth = 1.0);
+  }
+
+  /// 🏰 Days 78+: Twin Rear Octagonal Chateau Turret Spires rising behind left and right wings
+  void _renderRearTurretSpires(Canvas canvas, double cx, double floor2Top) {
+    for (final tx in [cx - 96.0, cx + 96.0]) {
+      const towerW = 32.0;
+      const towerH = 68.0;
+      final tTop = floor2Top - 40;
+      final tLeft = tx - towerW / 2;
+
+      // Tower stone body
+      final tRect = Rect.fromLTWH(tLeft, tTop, towerW, towerH);
+      canvas.drawRect(tRect, Paint()..color = palette.wallColor);
+      canvas.drawRect(
+        tRect,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..color = palette.roofUnderTrim.withValues(alpha: 0.5)
+          ..strokeWidth = 1.2,
+      );
+
+      // High arched stained glass window
+      _renderArchedClerestoryWindow(canvas, tx, tTop + 24, 12, 22);
+
+      // Conical slate roof with golden finial
+      const roofH = 42.0;
+      final peakY = tTop - roofH;
+      final rPath = Path();
+      rPath.moveTo(tLeft - 3, tTop + 1);
+      rPath.lineTo(tx, peakY);
+      rPath.lineTo(tLeft + towerW + 3, tTop + 1);
+      rPath.close();
+
+      final rShader = LinearGradient(
+        colors: [palette.roofColor, palette.roofShade],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      ).createShader(Rect.fromLTWH(tLeft, peakY, towerW, roofH));
+      canvas.drawPath(rPath, Paint()..shader = rShader);
+      canvas.drawPath(
+        rPath,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..color = palette.roofTrim
+          ..strokeWidth = 2.0,
+      );
+
+      // Golden Finial Needle & Ball
+      final fPaint = Paint()..color = const Color(0xFFFFD700);
+      canvas.drawLine(Offset(tx, peakY), Offset(tx, peakY - 14), fPaint..strokeWidth = 2.0);
+      canvas.drawCircle(Offset(tx, peakY - 14), 2.4, fPaint);
+    }
+  }
+
+  /// 👑 Days 81+: Upper 3rd-Floor Royal Mezzanine Gallery above Central Chateau
+  void _renderRearRoyalMezzanine(Canvas canvas, double cx, double floor2Top) {
+    const mezW = 104.0;
+    const mezH = 44.0;
+    final mTop = floor2Top - 48.0;
+    final mLeft = cx - mezW / 2;
+
+    // Stone wall
+    final mRect = Rect.fromLTWH(mLeft, mTop, mezW, mezH);
+    canvas.drawRect(mRect, Paint()..color = palette.wallColor);
+    canvas.drawRect(
+      mRect,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..color = palette.roofTrim
+        ..strokeWidth = 1.5,
+    );
+
+    // Triple arched palace gallery windows
+    for (int i = -1; i <= 1; i++) {
+      final wx = cx + i * 28.0;
+      _renderArchedClerestoryWindow(canvas, wx, mTop + 22, 16, 26);
+    }
+
+    // Rooftop balustrade & urns
+    final bTop = mTop - 8;
+    canvas.drawLine(Offset(mLeft, mTop), Offset(mLeft + mezW, mTop), Paint()..color = palette.roofTrim ..strokeWidth = 2.5);
+    canvas.drawLine(Offset(mLeft, bTop), Offset(mLeft + mezW, bTop), Paint()..color = Colors.white ..strokeWidth = 1.2);
+    for (double bx = mLeft + 6; bx <= mLeft + mezW - 6; bx += 8.0) {
+      canvas.drawLine(Offset(bx, bTop), Offset(bx, mTop), Paint()..color = Colors.white ..strokeWidth = 1.2);
+    }
+    _renderClassicalUrn(canvas, mLeft + 4, bTop - 4);
+    _renderClassicalUrn(canvas, cx, bTop - 4);
+    _renderClassicalUrn(canvas, mLeft + mezW - 4, bTop - 4);
+  }
+
+  /// 🏰 Days 84+: Flanking 3-Story Fortified Bastion Watchtowers & Aerial Arcades
+  void _renderFlankingBastionTowers(Canvas canvas, double cx, double groundY) {
+    _renderConnectingArcade(canvas, cx - 162, cx - 110, groundY - 14, groundY - 120);
+    _renderConnectingArcade(canvas, cx + 110, cx + 162, groundY - 14, groundY - 120);
+
+    _renderAuxiliaryBastionTower(canvas, cx - 172, groundY - 14, isLeft: true);
+    _renderAuxiliaryBastionTower(canvas, cx + 172, groundY - 14, isLeft: false);
+  }
+
+  /// 👑 Day 90: Radiant 24K Sovereign Imperial Eagle Crown atop Dome Pinnacle
+  void _renderDay90DomeCrown(Canvas canvas, double cx, double groundY) {
+    final floor2Top = groundY - 134.0;
+    // The central chateau dome peak sits at floor2Top - 24 - 100
+    final crownCenter = Offset(cx, floor2Top - 156);
+    final goldPaint = Paint()..color = const Color(0xFFFFD700);
+    final redPaint = Paint()..color = const Color(0xFFDC2626);
+
+    // Radiant Sunburst Corona Rays
+    final coronaPulse = (math.sin(animTimer * 4.0) + 1.0) / 2.0;
+    final rayPaint = Paint()
+      ..color = const Color(0xFFFFFC00).withValues(alpha: 0.60 + coronaPulse * 0.35)
+      ..strokeWidth = 2.0;
+    for (double a = -math.pi * 0.75; a <= math.pi * 0.75; a += 0.35) {
+      final r1 = 12.0;
+      final r2 = 20.0 + coronaPulse * 6.0;
+      canvas.drawLine(
+        Offset(crownCenter.dx + math.sin(a) * r1, crownCenter.dy - math.cos(a) * r1),
+        Offset(crownCenter.dx + math.sin(a) * r2, crownCenter.dy - math.cos(a) * r2),
+        rayPaint,
+      );
+    }
+
+    // Imperial Crown Base Ring & Jewel
+    canvas.drawCircle(crownCenter, 7.5, goldPaint);
+    canvas.drawCircle(crownCenter, 4.5, redPaint);
+    canvas.drawCircle(crownCenter, 2.2, Paint()..color = const Color(0xFFFFFC00));
+
+    // Sovereign Eagle Crest
+    final eaglePath = Path();
+    eaglePath.moveTo(crownCenter.dx - 8, crownCenter.dy - 2);
+    eaglePath.lineTo(crownCenter.dx, crownCenter.dy - 12);
+    eaglePath.lineTo(crownCenter.dx + 8, crownCenter.dy - 2);
+    eaglePath.lineTo(crownCenter.dx, crownCenter.dy - 6);
+    eaglePath.close();
+    canvas.drawPath(eaglePath, goldPaint);
+  }
+
   void _renderGrandSteps(Canvas canvas, double cx, double groundY) {
     final stepPaint = Paint()..color = const Color(0xFFE2E8F0);
     final border = Paint()..color = const Color(0xFF94A3B8) ..strokeWidth = 1.0;
@@ -1001,112 +1282,7 @@ class HouseMasterComponent extends Component {
   // ============================================================
   // 👑 2B. THE MAJESTIC IMPERIAL PALACE CITADEL (DAYS 81–90)
   // "വലിയൊരു കൊട്ടാരം പോലെ" - Massive multi-building palace citadel
-  // Auxiliary bastion watchtowers, connecting colonnaded arcades,
-  // central imperial dome, clock pavilion, twin fountains, and royal gates.
-  // ============================================================
-  void _renderImperialPalaceCitadel(Canvas canvas, double cx, double groundY) {
-    final availableW = canvasSize.x > 0 ? (canvasSize.x - 12) : 420.0;
-    const estateWidth = 414.0;
-    final scale = math.min(1.0, availableW / estateWidth);
 
-    canvas.save();
-    if (scale < 1.0) {
-      canvas.translate(cx, groundY);
-      canvas.scale(scale);
-      canvas.translate(-cx, -groundY);
-    }
-
-    final baseLeft = cx - estateWidth / 2;
-    final baseRight = cx + estateWidth / 2;
-    const floor1Height = 68.0;
-    const floor2Height = 70.0;
-    final floor1Top = groundY - floor1Height;
-    final floor2Top = floor1Top - floor2Height;
-
-    // --- 1. Imperial Ashlar Stone Foundation Base ---
-    final fRect = Rect.fromLTWH(baseLeft, groundY - 15, estateWidth, 15);
-    canvas.drawRect(fRect, Paint()..color = palette.foundationColor);
-    final fBorder = Paint()..color = Colors.black26 ..strokeWidth = 1.2;
-    for (double x = baseLeft + 18; x < baseRight; x += 18) {
-      canvas.drawLine(Offset(x, groundY - 15), Offset(x, groundY), fBorder);
-    }
-    canvas.drawLine(Offset(baseLeft, groundY - 15), Offset(baseRight, groundY - 15), fBorder);
-
-    // --- 2. Connecting Colonnaded Bridge Arcades (Wings to Towers) ---
-    _renderConnectingArcade(canvas, cx - 150, cx - 96, groundY - 15, floor2Top + 24);
-    _renderConnectingArcade(canvas, cx + 96, cx + 150, groundY - 15, floor2Top + 24);
-
-    // --- 3. Flanking Left & Right 3-Story Fortified Bastion Watchtowers ---
-    _renderAuxiliaryBastionTower(canvas, cx - 174, groundY - 15, isLeft: true);
-    _renderAuxiliaryBastionTower(canvas, cx + 174, groundY - 15, isLeft: false);
-
-    // --- 4. Central Imperial Chateau Main Facade Wall ---
-    const centerWidth = 192.0;
-    final cLeft = cx - centerWidth / 2;
-    final cRight = cx + centerWidth / 2;
-    final facadeRect = Rect.fromLTWH(cLeft, floor2Top, centerWidth, floor1Height + floor2Height - 15);
-    canvas.drawRect(facadeRect, Paint()..color = palette.wallColor);
-
-    // Classical Pilasters & Quoins on Central Palace
-    final quoinPaint = Paint()..color = palette.wallShade;
-    for (double y = floor2Top; y < groundY - 15; y += 12) {
-      canvas.drawRect(Rect.fromLTWH(cLeft, y, 9, 10), quoinPaint);
-      canvas.drawRect(Rect.fromLTWH(cRight - 9, y, 9, 10), quoinPaint);
-      canvas.drawRect(Rect.fromLTWH(cx - 48, y, 5, 10), quoinPaint);
-      canvas.drawRect(Rect.fromLTWH(cx + 43, y, 5, 10), quoinPaint);
-    }
-
-    // --- 5. Second Floor (Piano Nobile) Windows & Royal Balcony ---
-    _renderVictorianSashWindow(canvas, cx - 74, floor2Top + 34, 22, 40);
-    _renderVictorianSashWindow(canvas, cx - 44, floor2Top + 34, 22, 40);
-    _renderVictorianSashWindow(canvas, cx + 44, floor2Top + 34, 22, 40);
-    _renderVictorianSashWindow(canvas, cx + 74, floor2Top + 34, 22, 40);
-
-    // Central Royal French Double Doors & Balcony
-    _renderRoyalBalcony(canvas, cx, floor2Top + 34);
-
-    // --- 6. Left & Right Mansard Roofs on Central Palace Wings ---
-    _renderVictorianMansardRoof(canvas, cx - 56, floor2Top, 78, isLeft: true);
-    _renderVictorianMansardRoof(canvas, cx + 56, floor2Top, 78, isLeft: false);
-
-    // Arched Dormers on Mansards
-    _renderVictorianArchedDormer(canvas, cx - 56, floor2Top - 22, 24, 30);
-    _renderVictorianArchedDormer(canvas, cx + 56, floor2Top - 22, 24, 30);
-
-    // --- 7. Imperial Clock Pavilion & Central Baroque Dome Spire ---
-    _renderCentralImperialDome(canvas, cx, floor2Top);
-
-    // --- 8. 4 Tall Fluted Palace Chimneys ---
-    _renderChimneyShaft(canvas, cx - 88, floor2Top - 36, 16, 44);
-    _renderChimneyShaft(canvas, cx - 54, floor2Top - 46, 16, 52);
-    _renderChimneyShaft(canvas, cx + 54, floor2Top - 46, 16, 52);
-    _renderChimneyShaft(canvas, cx + 88, floor2Top - 36, 16, 44);
-
-    // --- 9. Colonnaded Portico & Grand Royal Portal ---
-    _renderColonnadedPorch(canvas, cx, groundY, centerWidth + 24, floor1Height);
-
-    // --- 10. Grand Courtyard Forecourt (The Imperial Plaza) ---
-    // Sweeping Marble Steps with Crimson Carpet
-    _renderImperialSteps(canvas, cx, groundY);
-
-    // Twin Marble Guardian Lion Pedestals
-    _renderGuardianLionPedestal(canvas, cx - 52, groundY - 14);
-    _renderGuardianLionPedestal(canvas, cx + 52, groundY - 14);
-
-    // Twin Cascading Marble Courtyard Fountains
-    _renderCourtyardFountain(canvas, cx - 134, groundY - 8);
-    _renderCourtyardFountain(canvas, cx + 134, groundY - 8);
-
-    // Wrought Iron Palace Gates with Spear Tips
-    _renderPalaceSpearGates(canvas, cx, groundY, estateWidth);
-
-    // Day 90 Royal Crown & Master Aureole
-    if (day >= 90) {
-      _renderDay90PalaceBanner(canvas, cx, groundY);
-    }
-
-    canvas.restore();
-  }
 
   void _renderAuxiliaryBastionTower(Canvas canvas, double tx, double groundY, {required bool isLeft}) {
     const towerW = 48.0;
@@ -1255,30 +1431,6 @@ class HouseMasterComponent extends Component {
     final p = Paint()..color = const Color(0xFFFFD700);
     canvas.drawOval(Rect.fromCenter(center: Offset(cx, cy), width: 5, height: 7), p);
     canvas.drawRect(Rect.fromCenter(center: Offset(cx, cy + 4), width: 6, height: 2), p);
-  }
-
-  void _renderRoyalBalcony(Canvas canvas, double cx, double cy) {
-    // Grand French double doors
-    final dRect = Rect.fromCenter(center: Offset(cx, cy - 2), width: 28, height: 38);
-    canvas.drawRRect(RRect.fromRectAndRadius(dRect, const Radius.circular(4)), Paint()..color = palette.windowColor);
-    canvas.drawRRect(RRect.fromRectAndRadius(dRect, const Radius.circular(4)), Paint()..style = PaintingStyle.stroke ..color = Colors.white ..strokeWidth = 2.0);
-    canvas.drawLine(Offset(cx, dRect.top), Offset(cx, dRect.bottom), Paint()..color = Colors.white ..strokeWidth = 1.2);
-
-    // Projecting marble balcony slab
-    final bRect = Rect.fromCenter(center: Offset(cx, cy + 19), width: 38, height: 6);
-    canvas.drawRRect(RRect.fromRectAndRadius(bRect, const Radius.circular(2)), Paint()..color = const Color(0xFFF1F5F9));
-    canvas.drawRRect(RRect.fromRectAndRadius(bRect, const Radius.circular(2)), Paint()..style = PaintingStyle.stroke ..color = const Color(0xFF94A3B8) ..strokeWidth = 1.0);
-
-    // Balustrade railing with gold monogram
-    const rH = 13.0;
-    final rTop = bRect.top - rH;
-    canvas.drawLine(Offset(bRect.left + 1, rTop), Offset(bRect.right - 1, rTop), Paint()..color = const Color(0xFFFFD700) ..strokeWidth = 1.5);
-    for (double bx = bRect.left + 4; bx <= bRect.right - 4; bx += 4.5) {
-      canvas.drawLine(Offset(bx, rTop), Offset(bx, bRect.top), Paint()..color = Colors.white ..strokeWidth = 1.2);
-    }
-    // Golden Royal Medallion in center
-    canvas.drawCircle(Offset(cx, rTop + rH / 2), 4.5, Paint()..color = const Color(0xFFFFD700));
-    canvas.drawCircle(Offset(cx, rTop + rH / 2), 2.5, Paint()..color = const Color(0xFFB45309));
   }
 
   void _renderCentralImperialDome(Canvas canvas, double cx, double floor2Top) {
@@ -1513,7 +1665,7 @@ class HouseMasterComponent extends Component {
   }
 
   void _renderDay90PalaceBanner(Canvas canvas, double cx, double groundY) {
-    final bannerRect = Rect.fromCenter(center: Offset(cx, groundY + 18), width: 250, height: 18);
+    final bannerRect = Rect.fromCenter(center: Offset(cx, groundY - 14), width: 250, height: 18);
     final bGradient = const LinearGradient(
       colors: [Color(0xFF78350F), Color(0xFFB45309), Color(0xFF78350F)],
     ).createShader(bannerRect);
@@ -1534,7 +1686,7 @@ class HouseMasterComponent extends Component {
       textDirection: TextDirection.ltr,
     );
     textPainter.layout();
-    textPainter.paint(canvas, Offset(cx - textPainter.width / 2, groundY + 18 - textPainter.height / 2));
+    textPainter.paint(canvas, Offset(cx - textPainter.width / 2, groundY - 14 - textPainter.height / 2));
   }
 
   // ============================================================
@@ -2163,9 +2315,9 @@ class HouseMasterComponent extends Component {
   }
 
   void _renderBushes(Canvas canvas, double cx, double groundY) {
-    final isCitadel = day >= 81;
+    final isCitadel = day >= 84;
     final isManor = day >= 71;
-    final bushOffset = isCitadel ? 214.0 : (isManor ? 162.0 : (day >= 26 ? 155.0 : (day >= 11 ? 120.0 : 92.0)));
+    final bushOffset = isCitadel ? 212.0 : (isManor ? 168.0 : (day >= 26 ? 155.0 : (day >= 11 ? 120.0 : 92.0)));
 
     _drawCartoonBush(canvas, cx - bushOffset, groundY - 6, isCitadel ? 32 : (isManor ? 28 : 24));
     _drawCartoonBush(canvas, cx - bushOffset - 20, groundY - 2, isCitadel ? 24 : (isManor ? 22 : 18));
@@ -2262,14 +2414,21 @@ class _SmokeParticle {
 }
 
 /// 🏡 Seamless Drop-in Widget with In-Place Color Customizer
+/// 🏡 Seamless Drop-in Widget with In-Place Color Customizer
 class FlameEnglishHouseWidget extends StatefulWidget {
   final int currentDay;
   final int streak;
+  final bool? isDamaged;
+  final String? houseId;
+  final String? paletteId;
 
   const FlameEnglishHouseWidget({
     super.key,
     required this.currentDay,
     this.streak = 1,
+    this.isDamaged,
+    this.houseId,
+    this.paletteId,
   });
 
   @override
@@ -2284,12 +2443,22 @@ class _FlameEnglishHouseWidgetState extends State<FlameEnglishHouseWidget> {
   @override
   void initState() {
     super.initState();
-    _loadSavedPalette();
-    _loadDefenseStatus();
+    if (widget.paletteId != null) {
+      _currentPalette = HousePalette.getById(widget.paletteId!);
+    } else {
+      _loadSavedPalette();
+    }
+    
+    // Only load local defense status if isDamaged was not explicitly provided
+    if (widget.isDamaged == null && (widget.houseId == null || widget.houseId == 'me')) {
+      _loadDefenseStatus();
+    }
+
     _game = FlameEnglishHouseGame(
       currentDay: widget.currentDay,
       streak: widget.streak,
       initialPalette: _currentPalette,
+      isDamaged: widget.isDamaged ?? false,
     );
   }
 
@@ -2298,7 +2467,9 @@ class _FlameEnglishHouseWidgetState extends State<FlameEnglishHouseWidget> {
     if (mounted) {
       setState(() {
         _defenseStatus = s;
-        _game.updateDamage(s.isDamaged);
+        if (widget.isDamaged == null) {
+          _game.updateDamage(s.isDamaged);
+        }
       });
     }
   }
@@ -2331,11 +2502,18 @@ class _FlameEnglishHouseWidgetState extends State<FlameEnglishHouseWidget> {
   void didUpdateWidget(covariant FlameEnglishHouseWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.currentDay != widget.currentDay || oldWidget.streak != widget.streak) {
-      _game = FlameEnglishHouseGame(
-        currentDay: widget.currentDay,
-        streak: widget.streak,
-        initialPalette: _currentPalette,
-      );
+      _game.updateDayAndStreak(widget.currentDay, widget.streak);
+      if (widget.isDamaged == null && (widget.houseId == null || widget.houseId == 'me')) {
+        _loadDefenseStatus();
+      }
+      setState(() {});
+    }
+    if (widget.isDamaged != null && widget.isDamaged != oldWidget.isDamaged) {
+      _game.updateDamage(widget.isDamaged!);
+    }
+    if (widget.paletteId != null && widget.paletteId != oldWidget.paletteId) {
+      _currentPalette = HousePalette.getById(widget.paletteId!);
+      _game.updatePalette(_currentPalette);
     }
   }
 
@@ -2439,7 +2617,7 @@ class _FlameEnglishHouseWidgetState extends State<FlameEnglishHouseWidget> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 400,
+      height: 408,
       width: double.infinity,
       child: Stack(
         children: [

@@ -2075,6 +2075,17 @@ class VectorAvatarPainter extends CustomPainter {
       'astral_titan', 'cosmic_unicorn',
     };
 
+    if (species == 'cyber_cat') {
+      _paintCatCharacter(canvas, size);
+      return;
+    } else if (species == 'bored_ape') {
+      _paintApeCharacter(canvas, size);
+      return;
+    } else if (species == 'cosmic_dragon' || species == 'chrono_dragon') {
+      _paintCartoonDragonSideView(canvas, size);
+      return;
+    }
+
     if (canineSpecies.contains(species)) {
       _paintCanineCharacter(canvas, size);
     } else if (felineSpecies.contains(species)) {

@@ -5,9 +5,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.dart';
-// import 'package:pocket_mates_app/flutter_flow/flutter_flow_theme.dart';
-// import 'package:pocket_mates_app/flutter_flow/flutter_flow_util.dart';
-// import 'index.dart'; 
+import 'package:pocket_mates_app/custom_code/widgets/chat/english_hub_level_group_service.dart';
+import 'package:google_fonts/google_fonts.dart'; 
 
 class AdminDashboardPage extends StatefulWidget {
   const AdminDashboardPage({super.key});
@@ -57,6 +56,17 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
   bool isLoadingCourseRequests = false;
   List<Map<String, dynamic>> courseLessons = [];
   bool isLoadingLessons = false;
+
+  // English Hub Level Groups Management State
+  List<EnglishHubLevelGroup> _englishHubLevelGroups = [];
+  Map<String, int> _hubGroupMemberCounts = {};
+  bool _isLoadingHubGroups = false;
+  EnglishHubLevelGroup? _selectedHubGroupForAdminChat;
+  String _hubGroupSearchQuery = '';
+  int _hubStudioSubTab = 0; // 0 = Brackets, 1 = Learner Allocations
+  List<Map<String, dynamic>> _hubLearners = [];
+  bool _isLoadingHubLearners = false;
+  String _hubLearnerSearchQuery = '';
 
   @override
   void initState() {
@@ -151,6 +161,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
       _loadAppUpdateData(),
       _loadGlobalToolConfigs(),
       _loadCourses(),
+      _loadEnglishHubLevelGroups(),
     ]);
   }
 
@@ -435,6 +446,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
   bool isLoadingPermissions = false;
 
   final List<String> allToolNames = [
+    'Admin Panel',
     'Zoyarex POS Admin',
     'Zoyarex Super Admin',
     'Drawing Tool',
@@ -2164,33 +2176,2131 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
     );
   }
 
-  // --- E-Learning Tab UI ---
-  Future<String?> _fetchEnglishHubId() async {
+  // --- English Hub Level Groups Management Studio ---
+  Future<void> _loadEnglishHubLevelGroups() async {
+    if (!mounted) return;
+    setState(() => _isLoadingHubGroups = true);
     try {
-      final res = await supabase.from('groups').select('id').eq('name', 'English Hub').maybeSingle();
-      return res?['id']?.toString();
-    } catch (_) {
-      return null;
+      final groups = await EnglishHubLevelGroupService.getLevelGroups(activeOnly: false);
+      final counts = <String, int>{};
+      for (final g in groups) {
+        final c = await EnglishHubLevelGroupService.getGroupMemberCount(g.groupId);
+        counts[g.groupId] = c;
+      }
+      final learners = await EnglishHubLevelGroupService.getLearnersWithHubGroups(
+        searchQuery: _hubLearnerSearchQuery,
+      );
+      if (mounted) {
+        setState(() {
+          _englishHubLevelGroups = groups;
+          _hubGroupMemberCounts = counts;
+          _hubLearners = learners;
+          _isLoadingHubGroups = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading English Hub groups in admin: $e');
+      if (mounted) setState(() => _isLoadingHubGroups = false);
+    }
+  }
+
+  Future<void> _loadHubLearners() async {
+    if (!mounted) return;
+    setState(() => _isLoadingHubLearners = true);
+    try {
+      final list = await EnglishHubLevelGroupService.getLearnersWithHubGroups(
+        searchQuery: _hubLearnerSearchQuery,
+      );
+      if (mounted) {
+        setState(() {
+          _hubLearners = list;
+          _isLoadingHubLearners = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading hub learners in admin: $e');
+      if (mounted) setState(() => _isLoadingHubLearners = false);
     }
   }
 
   Widget _buildEnglishHubTab() {
-    return FutureBuilder<String?>(
-      future: _fetchEnglishHubId(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        final groupId = snapshot.data;
-        if (groupId == null) {
-          return const Center(child: Text('English Hub not found.', style: TextStyle(color: Colors.white)));
-        }
-        return WhatsAppGroupChat(
-          groupId: groupId,
-          groupName: 'English Hub',
+    // 1. Live Admin Chat View
+    if (_selectedHubGroupForAdminChat != null) {
+      final group = _selectedHubGroupForAdminChat!;
+      return Scaffold(
+        backgroundColor: const Color(0xFF070B0D),
+        appBar: AppBar(
+          backgroundColor: const Color(0xFF121B22),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Color(0xFFFFFC00)),
+            onPressed: () {
+              setState(() => _selectedHubGroupForAdminChat = null);
+              _loadEnglishHubLevelGroups();
+            },
+          ),
+          title: Row(
+            children: [
+              Text(group.iconEmoji, style: const TextStyle(fontSize: 20)),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      group.groupName,
+                      style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      'Admin Moderation • Lvl ${group.minLevel} - ${group.maxLevel} • ${group.stageTitle}',
+                      style: const TextStyle(color: Color(0xFFFFFC00), fontSize: 11),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.info_outline, color: Colors.white70),
+              tooltip: 'Cohort Info',
+              onPressed: () => _showGroupMembersSheet(group),
+            ),
+          ],
+        ),
+        body: WhatsAppGroupChat(
+          groupId: group.groupId,
+          groupName: group.groupName,
           isAdminView: true,
+          showBackButton: false,
+        ),
+      );
+    }
+
+    // 2. English Hub Studio Overview
+    final filteredGroups = _englishHubLevelGroups.where((g) {
+      if (_hubGroupSearchQuery.trim().isEmpty) return true;
+      final q = _hubGroupSearchQuery.toLowerCase().trim();
+      return g.groupName.toLowerCase().contains(q) ||
+          g.stageTitle.toLowerCase().contains(q) ||
+          g.tagBadge.toLowerCase().contains(q) ||
+          '${g.minLevel}'.contains(q) ||
+          '${g.maxLevel}'.contains(q);
+    }).toList();
+
+    final totalLearners = _hubGroupMemberCounts.values.fold(0, (a, b) => a + b);
+    final activeCount = _englishHubLevelGroups.where((g) => g.isActive).length;
+
+    return RefreshIndicator(
+      color: const Color(0xFFFFFC00),
+      onRefresh: _loadEnglishHubLevelGroups,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Hero Studio Header Card
+            Container(
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: const Color(0xFFFFFC00).withValues(alpha: 0.35), width: 1.5),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.4),
+                    blurRadius: 16,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Text('🌐', style: TextStyle(fontSize: 24)),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'English Hub Level Groups Studio',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Scale groups by user volume & level cohorts',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white70,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  // Stats Metrics Row
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildStudioStatChip(
+                          label: 'Brackets',
+                          value: '${_englishHubLevelGroups.length}',
+                          icon: Icons.layers_outlined,
+                          color: const Color(0xFFFFFC00),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _buildStudioStatChip(
+                          label: 'Active',
+                          value: '$activeCount',
+                          icon: Icons.check_circle_outline,
+                          color: const Color(0xFF10B981),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _buildStudioStatChip(
+                          label: 'Enrolled',
+                          value: '$totalLearners',
+                          icon: Icons.people_outline,
+                          color: const Color(0xFF38BDF8),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  // Action Buttons Row
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFFFFC00),
+                            foregroundColor: Colors.black,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            elevation: 4,
+                          ),
+                          icon: const Icon(Icons.add_circle, size: 18, color: Colors.black),
+                          label: const Text(
+                            'Add Custom Bracket',
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                          ),
+                          onPressed: _showCreateCustomGroupDialog,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          side: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
+                          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        icon: const Icon(Icons.restore, size: 16, color: Color(0xFFFFFC00)),
+                        label: const Text('Reset Defaults', style: TextStyle(fontSize: 12)),
+                        onPressed: _confirmSeedDefaults,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  const Divider(color: Colors.white12, height: 1),
+                  const SizedBox(height: 12),
+
+                  // User Voice Directive: Instant Re-Partition Presets
+                  Row(
+                    children: [
+                      const Text('⚡ Quick Partitioning:', style: TextStyle(color: Color(0xFFFFFC00), fontSize: 12, fontWeight: FontWeight.bold)),
+                      const Spacer(),
+                      TextButton.icon(
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        icon: const Icon(Icons.tune, color: Color(0xFFFFFC00), size: 14),
+                        label: const Text('Custom Builder...', style: TextStyle(color: Color(0xFFFFFC00), fontSize: 11, fontWeight: FontWeight.bold)),
+                        onPressed: _showCustomPartitionBuilderDialog,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        _buildPresetChip(
+                          label: '1 Mega Group (1 - 90)',
+                          emoji: '🌟',
+                          subtitle: 'All in 1 Group',
+                          onTap: () => _confirmApplyPartitionPlan(
+                            name: 'Single Unified Hub (1 - 90)',
+                            plan: EnglishHubLevelGroupService.kPresetSingleUnifiedHub,
+                            description: 'Merges all levels 1 to 90 into a single English Hub group. All learners will be moved here and leave old groups.',
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        _buildPresetChip(
+                          label: '2 Cohorts (1-35 & 36-90)',
+                          emoji: '🌱',
+                          subtitle: 'Rookie + Master',
+                          onTap: () => _confirmApplyPartitionPlan(
+                            name: '2 Mega Cohorts (Lvl 1 - 35 & 36 - 90)',
+                            plan: EnglishHubLevelGroupService.kPresetTwoMegaCohorts,
+                            description: 'Splits app into 2 groups: Level 1-35 (Foundations) and Level 36-90 (Mastery). Learners auto-migrate to their respective half.',
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        _buildPresetChip(
+                          label: '3 Cohorts (1-30, 31-60, 61-90)',
+                          emoji: '🏆',
+                          subtitle: 'Tri-Stage Slices',
+                          onTap: () => _confirmApplyPartitionPlan(
+                            name: '3 Cohorts (1-30, 31-60, 61-90)',
+                            plan: EnglishHubLevelGroupService.kPresetThreeCohorts,
+                            description: 'Divides learners into Beginner (1-30), Intermediate (31-60), and Master (61-90) groups.',
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        _buildPresetChip(
+                          label: 'Standard 16 Cohorts',
+                          emoji: '⚙️',
+                          subtitle: '5-Level Granular',
+                          onTap: () => _confirmApplyPartitionPlan(
+                            name: 'Standard 16 Level Cohorts',
+                            plan: EnglishHubLevelGroupService.kDefaultBrackets,
+                            description: 'Restores the 16 standard cohorts in 5-level increments with 71-80 and 81-90 summits.',
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 18),
+
+            // Sub-Tab Switcher: Brackets vs Learner Allocations
+            Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1E242B),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: Colors.white10),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => setState(() => _hubStudioSubTab = 0),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        decoration: BoxDecoration(
+                          color: _hubStudioSubTab == 0
+                              ? const Color(0xFFFFFC00)
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Center(
+                          child: Text(
+                            '🌐 Level Brackets (${_englishHubLevelGroups.length})',
+                            style: TextStyle(
+                              color: _hubStudioSubTab == 0 ? Colors.black : Colors.white70,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() => _hubStudioSubTab = 1);
+                        if (_hubLearners.isEmpty) _loadHubLearners();
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        decoration: BoxDecoration(
+                          color: _hubStudioSubTab == 1
+                              ? const Color(0xFFFFFC00)
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Center(
+                          child: Text(
+                            '👥 Learner Allocation (${_hubLearners.length})',
+                            style: TextStyle(
+                              color: _hubStudioSubTab == 1 ? Colors.black : Colors.white70,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            if (_hubStudioSubTab == 1)
+              _buildLearnerAllocationsView()
+            else ...[
+              // Search Filter & Section Header
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      style: const TextStyle(color: Colors.white, fontSize: 13),
+                      decoration: InputDecoration(
+                        hintText: 'Search bracket or level (e.g. 1, 6, Rookie)...',
+                        hintStyle: const TextStyle(color: Colors.white38, fontSize: 13),
+                        prefixIcon: const Icon(Icons.search, color: Color(0xFFFFFC00), size: 18),
+                        filled: true,
+                        fillColor: const Color(0xFF1E242B),
+                        isDense: true,
+                        contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: Color(0xFFFFFC00), width: 1.5),
+                        ),
+                      ),
+                      onChanged: (val) => setState(() => _hubGroupSearchQuery = val),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  IconButton(
+                    icon: const Icon(Icons.refresh, color: Color(0xFFFFFC00)),
+                    tooltip: 'Reload Groups',
+                    onPressed: _loadEnglishHubLevelGroups,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+
+              // Loading / Groups List
+              if (_isLoadingHubGroups)
+                const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(32),
+                    child: CircularProgressIndicator(color: Color(0xFFFFFC00)),
+                  ),
+                )
+              else if (filteredGroups.isEmpty)
+                Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(32),
+                    child: Column(
+                      children: [
+                        const Text('📭', style: TextStyle(fontSize: 40)),
+                        const SizedBox(height: 12),
+                        const Text(
+                          'No level groups match your query.',
+                          style: TextStyle(color: Colors.white70),
+                        ),
+                        const SizedBox(height: 12),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFFFFC00),
+                            foregroundColor: Colors.black,
+                          ),
+                          onPressed: _confirmSeedDefaults,
+                          child: const Text('Provision Default Brackets'),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              else
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: filteredGroups.length,
+                  itemBuilder: (context, index) {
+                    final g = filteredGroups[index];
+                    final memberCount = _hubGroupMemberCounts[g.groupId] ?? 0;
+                    return _buildLevelGroupCard(g, memberCount);
+                  },
+                ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStudioStatChip({
+    required String label,
+    required String value,
+    required IconData icon,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.25), width: 1),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: color, size: 16),
+          const SizedBox(width: 6),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                value,
+                style: TextStyle(color: color, fontSize: 14, fontWeight: FontWeight.bold),
+              ),
+              Text(
+                label,
+                style: const TextStyle(color: Colors.white60, fontSize: 10),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPresetChip({
+    required String label,
+    required String emoji,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: const Color(0xFF11171D),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFFFFC00).withValues(alpha: 0.3)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(emoji, style: const TextStyle(fontSize: 16)),
+            const SizedBox(width: 8),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(label, style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+                Text(subtitle, style: const TextStyle(color: Colors.white60, fontSize: 10)),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// ⚡ Confirm & Apply Partition Plan
+  void _confirmApplyPartitionPlan({
+    required String name,
+    required List<Map<String, dynamic>> plan,
+    required String description,
+  }) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1E242B),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            const Text('⚡', style: TextStyle(fontSize: 22)),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Apply $name?',
+                style: GoogleFonts.outfit(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(description, style: const TextStyle(color: Colors.white70, fontSize: 12)),
+            const SizedBox(height: 14),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: const Color(0xFF11171D),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.white10),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Resulting Active Groups (${plan.length}):',
+                    style: const TextStyle(color: Color(0xFFFFFC00), fontSize: 11, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 6),
+                  ...plan.map((p) => Padding(
+                        padding: const EdgeInsets.only(bottom: 4),
+                        child: Row(
+                          children: [
+                            Text(p['emoji']?.toString() ?? '💬', style: const TextStyle(fontSize: 12)),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
+                                '${p['name']} (Lvl ${p['min']} - ${p['max']})',
+                                style: const TextStyle(color: Colors.white, fontSize: 11),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFFFFC00),
+              foregroundColor: Colors.black,
+            ),
+            onPressed: () async {
+              final scaffoldMessenger = ScaffoldMessenger.of(context);
+              Navigator.pop(context);
+              final ok = await EnglishHubLevelGroupService.applyCohortPartitionPlan(plan);
+              if (ok) {
+                _loadEnglishHubLevelGroups();
+                if (mounted) {
+                  scaffoldMessenger.showSnackBar(
+                    SnackBar(
+                      content: Text('Successfully re-partitioned learners into ${plan.length} cohorts!'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                }
+              }
+            },
+            child: const Text('Apply & Migrate All', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 🛠️ Custom Partition Plan Builder Dialog
+  void _showCustomPartitionBuilderDialog() {
+    List<Map<String, dynamic>> customSlices = [
+      {
+        'min': 1,
+        'max': 10,
+        'name': 'English Hub (Lvl 1 - 10)',
+        'title': 'Foundations Stage',
+        'tag': 'Beginner',
+        'emoji': '🌱',
+      },
+      {
+        'min': 11,
+        'max': 16,
+        'name': 'English Hub (Lvl 11 - 16)',
+        'title': 'Conversational Stage',
+        'tag': 'Intermediate',
+        'emoji': '⚡',
+      },
+      {
+        'min': 17,
+        'max': 90,
+        'name': 'English Hub (Lvl 17 - 90)',
+        'title': 'Fluency & Mastery',
+        'tag': 'Mastery',
+        'emoji': '👑',
+      },
+    ];
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          backgroundColor: const Color(0xFF1E242B),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Row(
+            children: [
+              const Text('🛠️', style: TextStyle(fontSize: 22)),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Custom Partition Builder',
+                      style: GoogleFonts.outfit(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold),
+                    ),
+                    const Text(
+                      'Slice Levels 1 to 90 into custom groups',
+                      style: TextStyle(color: Color(0xFFFFFC00), fontSize: 11),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Define custom level ranges. When applied, existing English Hub groups are updated and all learners are automatically transferred to their matching slice.',
+                    style: TextStyle(color: Colors.white60, fontSize: 11),
+                  ),
+                  const SizedBox(height: 12),
+                  ...List.generate(customSlices.length, (idx) {
+                    final s = customSlices[idx];
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF11171D),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.white12),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Text(s['emoji'] as String, style: const TextStyle(fontSize: 16)),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  s['name'] as String,
+                                  style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                              if (customSlices.length > 1)
+                                IconButton(
+                                  icon: const Icon(Icons.close, color: Colors.redAccent, size: 16),
+                                  onPressed: () {
+                                    setDialogState(() => customSlices.removeAt(idx));
+                                  },
+                                ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: TextFormField(
+                                  initialValue: '${s['min']}',
+                                  keyboardType: TextInputType.number,
+                                  style: const TextStyle(color: Colors.white, fontSize: 12),
+                                  decoration: InputDecoration(
+                                    labelText: 'Min Lvl',
+                                    labelStyle: const TextStyle(color: Colors.white60, fontSize: 10),
+                                    isDense: true,
+                                    contentPadding: const EdgeInsets.all(8),
+                                    filled: true,
+                                    fillColor: const Color(0xFF1E242B),
+                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                  ),
+                                  onChanged: (val) {
+                                    final n = int.tryParse(val);
+                                    if (n != null) {
+                                      s['min'] = n;
+                                      s['name'] = 'English Hub (Lvl ${s['min']} - ${s['max']})';
+                                    }
+                                  },
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: TextFormField(
+                                  initialValue: '${s['max']}',
+                                  keyboardType: TextInputType.number,
+                                  style: const TextStyle(color: Colors.white, fontSize: 12),
+                                  decoration: InputDecoration(
+                                    labelText: 'Max Lvl',
+                                    labelStyle: const TextStyle(color: Colors.white60, fontSize: 10),
+                                    isDense: true,
+                                    contentPadding: const EdgeInsets.all(8),
+                                    filled: true,
+                                    fillColor: const Color(0xFF1E242B),
+                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                  ),
+                                  onChanged: (val) {
+                                    final n = int.tryParse(val);
+                                    if (n != null) {
+                                      s['max'] = n;
+                                      s['name'] = 'English Hub (Lvl ${s['min']} - ${s['max']})';
+                                    }
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    );
+                  }),
+                  const SizedBox(height: 8),
+                  OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFFFFFC00),
+                      side: const BorderSide(color: Color(0xFFFFFC00)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    icon: const Icon(Icons.add, size: 16),
+                    label: const Text('Add Next Level Slice', style: TextStyle(fontSize: 12)),
+                    onPressed: () {
+                      final lastMax = customSlices.isNotEmpty ? (customSlices.last['max'] as int) : 0;
+                      final nextMin = lastMax + 1;
+                      final nextMax = (nextMin + 10) <= 90 ? (nextMin + 10) : 90;
+                      setDialogState(() {
+                        customSlices.add({
+                          'min': nextMin,
+                          'max': nextMax,
+                          'name': 'English Hub (Lvl $nextMin - $nextMax)',
+                          'title': 'Custom Cohort',
+                          'tag': 'Custom',
+                          'emoji': '💬',
+                          'order': customSlices.length + 1,
+                        });
+                      });
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFFFC00),
+                foregroundColor: Colors.black,
+              ),
+              onPressed: () async {
+                if (customSlices.isEmpty) return;
+                final scaffoldMessenger = ScaffoldMessenger.of(context);
+                Navigator.pop(context);
+                final ok = await EnglishHubLevelGroupService.applyCohortPartitionPlan(customSlices);
+                if (ok) {
+                  _loadEnglishHubLevelGroups();
+                  if (mounted) {
+                    scaffoldMessenger.showSnackBar(
+                      SnackBar(
+                        content: Text('Applied custom plan with ${customSlices.length} cohorts!'),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                  }
+                }
+              },
+              child: const Text('Save & Apply Plan', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 👥 Learner Allocation Management View
+  Widget _buildLearnerAllocationsView() {
+    final manualOverridesCount = _hubLearners.where((l) => l['is_manual'] == true).length;
+    final autoAllocatedCount = _hubLearners.length - manualOverridesCount;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Sub-Stats Bar
+        Row(
+          children: [
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E242B),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.white10),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.flash_on, color: Color(0xFF10B981), size: 18),
+                    const SizedBox(width: 8),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('$autoAllocatedCount',
+                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+                        const Text('Auto-Routed', style: TextStyle(color: Colors.white60, fontSize: 10)),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E242B),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.white10),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.admin_panel_settings, color: Color(0xFFFFFC00), size: 18),
+                    const SizedBox(width: 8),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('$manualOverridesCount',
+                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+                        const Text('Manual Overrides', style: TextStyle(color: Colors.white60, fontSize: 10)),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 14),
+
+        // Search Bar
+        Row(
+          children: [
+            Expanded(
+              child: TextField(
+                style: const TextStyle(color: Colors.white, fontSize: 13),
+                decoration: InputDecoration(
+                  hintText: 'Search learner by name...',
+                  hintStyle: const TextStyle(color: Colors.white38, fontSize: 13),
+                  prefixIcon: const Icon(Icons.search, color: Color(0xFFFFFC00), size: 18),
+                  filled: true,
+                  fillColor: const Color(0xFF1E242B),
+                  isDense: true,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Color(0xFFFFFC00), width: 1.5),
+                  ),
+                ),
+                onSubmitted: (val) {
+                  _hubLearnerSearchQuery = val;
+                  _loadHubLearners();
+                },
+                onChanged: (val) {
+                  _hubLearnerSearchQuery = val;
+                },
+              ),
+            ),
+            const SizedBox(width: 8),
+            IconButton(
+              icon: const Icon(Icons.refresh, color: Color(0xFFFFFC00)),
+              tooltip: 'Reload Learners',
+              onPressed: _loadHubLearners,
+            ),
+          ],
+        ),
+        const SizedBox(height: 14),
+
+        if (_isLoadingHubLearners)
+          const Center(
+            child: Padding(
+              padding: EdgeInsets.all(32),
+              child: CircularProgressIndicator(color: Color(0xFFFFFC00)),
+            ),
+          )
+        else if (_hubLearners.isEmpty)
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.all(32),
+              child: Column(
+                children: [
+                  const Text('👤', style: TextStyle(fontSize: 40)),
+                  const SizedBox(height: 12),
+                  const Text('No learners found.', style: TextStyle(color: Colors.white70)),
+                ],
+              ),
+            ),
+          )
+        else
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: _hubLearners.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 10),
+            itemBuilder: (context, index) {
+              final item = _hubLearners[index];
+              final profile = item['profile'] as Map<String, dynamic>?;
+              final name = profile?['name']?.toString() ?? 'Learner';
+              final photo = profile?['profile_image_url']?.toString();
+              final day = profile?['learning_day']?.toString() ?? '1';
+              final isManual = item['is_manual'] == true;
+              final assignedGroup = item['assigned_group'] as EnglishHubLevelGroup?;
+              final currentGroup = item['current_group'] as EnglishHubLevelGroup?;
+              final activeGroup = assignedGroup ?? currentGroup;
+              final userId = item['user_id']?.toString() ?? '';
+
+              return Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E242B),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: isManual
+                        ? const Color(0xFFFFFC00).withValues(alpha: 0.5)
+                        : Colors.white.withValues(alpha: 0.08),
+                    width: isManual ? 1.5 : 1,
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        CircleAvatar(
+                          backgroundColor: const Color(0xFFFFFC00).withValues(alpha: 0.2),
+                          backgroundImage: (photo != null && photo.isNotEmpty)
+                              ? CachedNetworkImageProvider(photo)
+                              : null,
+                          child: (photo == null || photo.isEmpty)
+                              ? Text(name.isNotEmpty ? name[0].toUpperCase() : 'U',
+                                  style: const TextStyle(color: Color(0xFFFFFC00)))
+                              : null,
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                name,
+                                style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+                              ),
+                              Text(
+                                'Learning Level $day',
+                                style: const TextStyle(color: Colors.white60, fontSize: 11),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Badge: Manual vs Auto
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: isManual
+                                ? const Color(0xFFFFFC00).withValues(alpha: 0.2)
+                                : const Color(0xFF10B981).withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: isManual ? const Color(0xFFFFFC00) : const Color(0xFF10B981),
+                              width: 1,
+                            ),
+                          ),
+                          child: Text(
+                            isManual ? '👑 Manual Override' : '⚡ Auto-Assigned',
+                            style: TextStyle(
+                              color: isManual ? const Color(0xFFFFFC00) : const Color(0xFF10B981),
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF121B22),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(
+                        children: [
+                          Text(activeGroup?.iconEmoji ?? '💬', style: const TextStyle(fontSize: 16)),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              activeGroup != null
+                                  ? '${activeGroup.groupName} (Lvl ${activeGroup.minLevel}-${activeGroup.maxLevel})'
+                                  : 'Not yet joined any group',
+                              style: const TextStyle(color: Colors.white, fontSize: 12),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFFFFC00),
+                              foregroundColor: Colors.black,
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            ),
+                            icon: const Icon(Icons.swap_horiz, size: 16, color: Colors.black),
+                            label: const Text(
+                              'Move to Another Group',
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                            ),
+                            onPressed: () => _showMoveUserDialog(
+                              userId: userId,
+                              userName: name,
+                              currentGroupName: activeGroup?.groupName,
+                              currentGroupId: activeGroup?.groupId,
+                            ),
+                          ),
+                        ),
+                        if (isManual) ...[
+                          const SizedBox(width: 8),
+                          IconButton(
+                            icon: const Icon(Icons.restore, color: Colors.orangeAccent, size: 20),
+                            tooltip: 'Reset to Auto Level Routing',
+                            onPressed: () async {
+                              final scaffoldMessenger = ScaffoldMessenger.of(context);
+                              final ok = await EnglishHubLevelGroupService.resetUserToAutoLevelRouting(userId);
+                              if (ok) {
+                                _loadEnglishHubLevelGroups();
+                                if (mounted) {
+                                  scaffoldMessenger.showSnackBar(
+                                    SnackBar(
+                                      content: Text('Reset $name to automatic level routing'),
+                                      backgroundColor: Colors.orange,
+                                    ),
+                                  );
+                                }
+                              }
+                            },
+                          ),
+                        ],
+                      ],
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+      ],
+    );
+  }
+
+  /// 👑 Dialog: Move/Assign Learner to Any Group (Manual Admin Override)
+  void _showMoveUserDialog({
+    required String userId,
+    required String userName,
+    String? currentGroupName,
+    String? currentGroupId,
+  }) {
+    EnglishHubLevelGroup? selectedGroup;
+    if (_englishHubLevelGroups.isNotEmpty) {
+      selectedGroup = _englishHubLevelGroups.firstWhere(
+        (g) => g.groupId == currentGroupId,
+        orElse: () => _englishHubLevelGroups.first,
+      );
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          backgroundColor: const Color(0xFF1E242B),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Row(
+            children: [
+              const Text('👑', style: TextStyle(fontSize: 22)),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Move Learner',
+                      style: GoogleFonts.outfit(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      userName,
+                      style: const TextStyle(color: Color(0xFFFFFC00), fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (currentGroupName != null)
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.info_outline, color: Colors.white60, size: 16),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Current: $currentGroupName',
+                            style: const TextStyle(color: Colors.white70, fontSize: 12),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                const Text(
+                  'Select target English Hub cohort. The user will be automatically removed from their previous group so they remain in ONE group only.',
+                  style: TextStyle(color: Colors.white60, fontSize: 11),
+                ),
+                const SizedBox(height: 14),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF11171D),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFFFFC00).withValues(alpha: 0.4)),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<EnglishHubLevelGroup>(
+                      isExpanded: true,
+                      dropdownColor: const Color(0xFF1E242B),
+                      value: selectedGroup,
+                      items: _englishHubLevelGroups.map((g) {
+                        return DropdownMenuItem<EnglishHubLevelGroup>(
+                          value: g,
+                          child: Row(
+                            children: [
+                              Text(g.iconEmoji, style: const TextStyle(fontSize: 16)),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  g.groupName,
+                                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  'Lvl ${g.minLevel}-${g.maxLevel}',
+                                  style: const TextStyle(color: Color(0xFFFFFC00), fontSize: 10),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (val) {
+                        if (val != null) setDialogState(() => selectedGroup = val);
+                      },
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+            ),
+            OutlinedButton(
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.orangeAccent,
+                side: const BorderSide(color: Colors.orangeAccent),
+              ),
+              onPressed: () async {
+                final scaffoldMessenger = ScaffoldMessenger.of(context);
+                Navigator.pop(context);
+                final ok = await EnglishHubLevelGroupService.resetUserToAutoLevelRouting(userId);
+                if (ok) {
+                  _loadEnglishHubLevelGroups();
+                  if (mounted) {
+                    scaffoldMessenger.showSnackBar(
+                      SnackBar(content: Text('Reset $userName to automatic level routing'), backgroundColor: Colors.orange),
+                    );
+                  }
+                }
+              },
+              child: const Text('Reset to Auto', style: TextStyle(fontSize: 11)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFFFC00),
+                foregroundColor: Colors.black,
+              ),
+              onPressed: () async {
+                if (selectedGroup == null) return;
+                final scaffoldMessenger = ScaffoldMessenger.of(context);
+                Navigator.pop(context);
+                final ok = await EnglishHubLevelGroupService.assignUserToGroup(
+                  userId: userId,
+                  targetGroupId: selectedGroup!.groupId,
+                  notes: 'Manually assigned via Admin Studio',
+                );
+                if (ok) {
+                  _loadEnglishHubLevelGroups();
+                  if (mounted) {
+                    scaffoldMessenger.showSnackBar(
+                      SnackBar(
+                        content: Text('Transferred $userName to ${selectedGroup!.groupName}'),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                  }
+                }
+              },
+              child: const Text('Confirm Move', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLevelGroupCard(EnglishHubLevelGroup g, int memberCount) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E242B),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: g.isActive
+              ? const Color(0xFFFFFC00).withValues(alpha: 0.25)
+              : Colors.white.withValues(alpha: 0.08),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header Row
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: const Color(0xFFFFFC00).withValues(alpha: 0.4)),
+                ),
+                alignment: Alignment.center,
+                child: Text(g.iconEmoji, style: const TextStyle(fontSize: 20)),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            g.groupName,
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        // Level Range Pill
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFFC00),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            'Lvl ${g.minLevel} - ${g.maxLevel}',
+                            style: const TextStyle(
+                              color: Colors.black,
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Text(
+                          g.stageTitle,
+                          style: const TextStyle(color: Colors.white70, fontSize: 12),
+                        ),
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                          decoration: BoxDecoration(
+                            color: Colors.blueAccent.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            g.tagBadge,
+                            style: const TextStyle(color: Colors.lightBlueAccent, fontSize: 10),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+
+          // Metadata & Controls Row
+          Row(
+            children: [
+              // Member count indicator
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.people, size: 13, color: Color(0xFFFFFC00)),
+                    const SizedBox(width: 4),
+                    Text(
+                      '$memberCount active learners',
+                      style: const TextStyle(color: Colors.white70, fontSize: 11),
+                    ),
+                  ],
+                ),
+              ),
+              const Spacer(),
+              // Active toggle
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    g.isActive ? 'Active' : 'Inactive',
+                    style: TextStyle(
+                      color: g.isActive ? const Color(0xFF10B981) : Colors.grey,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Transform.scale(
+                    scale: 0.75,
+                    child: Switch(
+                      value: g.isActive,
+                      activeThumbColor: const Color(0xFFFFFC00),
+                      onChanged: (val) async {
+                        await EnglishHubLevelGroupService.updateLevelGroup(
+                          id: g.id,
+                          groupId: g.groupId,
+                          groupName: g.groupName,
+                          minLevel: g.minLevel,
+                          maxLevel: g.maxLevel,
+                          stageTitle: g.stageTitle,
+                          tagBadge: g.tagBadge,
+                          iconEmoji: g.iconEmoji,
+                          isActive: val,
+                        );
+                        _loadEnglishHubLevelGroups();
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const Divider(color: Colors.white12, height: 16),
+
+          // Action Buttons
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFFFC00),
+                    foregroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(vertical: 9),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  icon: const Icon(Icons.chat_bubble_outline, size: 15, color: Colors.black),
+                  label: const Text(
+                    'Open Chat (Admin)',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11.5),
+                  ),
+                  onPressed: () {
+                    setState(() => _selectedHubGroupForAdminChat = g);
+                  },
+                ),
+              ),
+              const SizedBox(width: 8),
+              OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  side: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
+                  padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 10),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+                icon: const Icon(Icons.tune, size: 14, color: Color(0xFFFFFC00)),
+                label: const Text('Edit Range', style: TextStyle(fontSize: 11)),
+                onPressed: () => _showEditGroupDialog(g),
+              ),
+              const SizedBox(width: 6),
+              IconButton(
+                icon: const Icon(Icons.people_outline, color: Colors.white70, size: 18),
+                tooltip: 'View Members',
+                onPressed: () => _showGroupMembersSheet(g),
+              ),
+              IconButton(
+                icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 18),
+                tooltip: 'Delete Group',
+                onPressed: () => _confirmDeleteGroup(g),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// ➕ Dialog: Create Custom Bracket
+  void _showCreateCustomGroupDialog() {
+    final nameCtrl = TextEditingController(text: 'English Hub (Lvl )');
+    final minCtrl = TextEditingController(text: '1');
+    final maxCtrl = TextEditingController(text: '5');
+    final titleCtrl = TextEditingController(text: 'Custom Focus Cohort');
+    final tagCtrl = TextEditingController(text: 'Special Stage');
+    final emojiCtrl = TextEditingController(text: '💬');
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1E242B),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            const Text('➕', style: TextStyle(fontSize: 20)),
+            const SizedBox(width: 8),
+            Text(
+              'Add Custom Level Bracket',
+              style: GoogleFonts.outfit(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Create custom level ranges to sub-divide cohorts as user volume grows.',
+                style: TextStyle(color: Colors.white60, fontSize: 12),
+              ),
+              const SizedBox(height: 14),
+              TextField(
+                controller: nameCtrl,
+                style: const TextStyle(color: Colors.white),
+                decoration: const InputDecoration(
+                  labelText: 'Group Name',
+                  labelStyle: TextStyle(color: Color(0xFFFFFC00)),
+                  filled: true,
+                  fillColor: Color(0xFF11171D),
+                ),
+              ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: minCtrl,
+                      keyboardType: TextInputType.number,
+                      style: const TextStyle(color: Colors.white),
+                      decoration: const InputDecoration(
+                        labelText: 'Min Level',
+                        labelStyle: TextStyle(color: Colors.white70),
+                        filled: true,
+                        fillColor: Color(0xFF11171D),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: TextField(
+                      controller: maxCtrl,
+                      keyboardType: TextInputType.number,
+                      style: const TextStyle(color: Colors.white),
+                      decoration: const InputDecoration(
+                        labelText: 'Max Level',
+                        labelStyle: TextStyle(color: Colors.white70),
+                        filled: true,
+                        fillColor: Color(0xFF11171D),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: titleCtrl,
+                style: const TextStyle(color: Colors.white),
+                decoration: const InputDecoration(
+                  labelText: 'Stage Subtitle / Description',
+                  labelStyle: TextStyle(color: Colors.white70),
+                  filled: true,
+                  fillColor: Color(0xFF11171D),
+                ),
+              ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Expanded(
+                    flex: 2,
+                    child: TextField(
+                      controller: tagCtrl,
+                      style: const TextStyle(color: Colors.white),
+                      decoration: const InputDecoration(
+                        labelText: 'Tag / Badge',
+                        labelStyle: TextStyle(color: Colors.white70),
+                        filled: true,
+                        fillColor: Color(0xFF11171D),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    flex: 1,
+                    child: TextField(
+                      controller: emojiCtrl,
+                      style: const TextStyle(color: Colors.white),
+                      decoration: const InputDecoration(
+                        labelText: 'Emoji',
+                        labelStyle: TextStyle(color: Colors.white70),
+                        filled: true,
+                        fillColor: Color(0xFF11171D),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFFFFC00),
+              foregroundColor: Colors.black,
+            ),
+            onPressed: () async {
+              final min = int.tryParse(minCtrl.text.trim()) ?? 1;
+              final max = int.tryParse(maxCtrl.text.trim()) ?? 5;
+              final name = nameCtrl.text.trim();
+              final scaffoldMessenger = ScaffoldMessenger.of(context);
+              if (name.isEmpty || min > max) {
+                scaffoldMessenger.showSnackBar(
+                  const SnackBar(content: Text('Invalid level range or empty name'), backgroundColor: Colors.red),
+                );
+                return;
+              }
+              Navigator.pop(context);
+              final res = await EnglishHubLevelGroupService.createCustomLevelGroup(
+                groupName: name,
+                minLevel: min,
+                maxLevel: max,
+                stageTitle: titleCtrl.text.trim(),
+                tagBadge: tagCtrl.text.trim(),
+                iconEmoji: emojiCtrl.text.trim().isNotEmpty ? emojiCtrl.text.trim() : '💬',
+              );
+              if (res != null) {
+                _loadEnglishHubLevelGroups();
+                if (mounted) {
+                  scaffoldMessenger.showSnackBar(
+                    SnackBar(content: Text('Created: ${res.groupName}'), backgroundColor: Colors.green),
+                  );
+                }
+              }
+            },
+            child: const Text('Create Bracket', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// ✏️ Dialog: Edit Group Range / Info
+  void _showEditGroupDialog(EnglishHubLevelGroup g) {
+    final nameCtrl = TextEditingController(text: g.groupName);
+    final minCtrl = TextEditingController(text: '${g.minLevel}');
+    final maxCtrl = TextEditingController(text: '${g.maxLevel}');
+    final titleCtrl = TextEditingController(text: g.stageTitle);
+    final tagCtrl = TextEditingController(text: g.tagBadge);
+    final emojiCtrl = TextEditingController(text: g.iconEmoji);
+    bool isActive = g.isActive;
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          backgroundColor: const Color(0xFF1E242B),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Row(
+            children: [
+              Text(g.iconEmoji, style: const TextStyle(fontSize: 20)),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Edit Level Bracket',
+                  style: GoogleFonts.outfit(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: nameCtrl,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: const InputDecoration(
+                    labelText: 'Group Name',
+                    labelStyle: TextStyle(color: Color(0xFFFFFC00)),
+                    filled: true,
+                    fillColor: Color(0xFF11171D),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: minCtrl,
+                        keyboardType: TextInputType.number,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: const InputDecoration(
+                          labelText: 'Min Level',
+                          labelStyle: TextStyle(color: Colors.white70),
+                          filled: true,
+                          fillColor: Color(0xFF11171D),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: TextField(
+                        controller: maxCtrl,
+                        keyboardType: TextInputType.number,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: const InputDecoration(
+                          labelText: 'Max Level',
+                          labelStyle: TextStyle(color: Colors.white70),
+                          filled: true,
+                          fillColor: Color(0xFF11171D),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: titleCtrl,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: const InputDecoration(
+                    labelText: 'Stage Title',
+                    labelStyle: TextStyle(color: Colors.white70),
+                    filled: true,
+                    fillColor: Color(0xFF11171D),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Expanded(
+                      flex: 2,
+                      child: TextField(
+                        controller: tagCtrl,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: const InputDecoration(
+                          labelText: 'Tag / Badge',
+                          labelStyle: TextStyle(color: Colors.white70),
+                          filled: true,
+                          fillColor: Color(0xFF11171D),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      flex: 1,
+                      child: TextField(
+                        controller: emojiCtrl,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: const InputDecoration(
+                          labelText: 'Emoji',
+                          labelStyle: TextStyle(color: Colors.white70),
+                          filled: true,
+                          fillColor: Color(0xFF11171D),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                SwitchListTile(
+                  title: const Text('Active Bracket', style: TextStyle(color: Colors.white, fontSize: 13)),
+                  value: isActive,
+                  activeThumbColor: const Color(0xFFFFFC00),
+                  onChanged: (val) => setDialogState(() => isActive = val),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFFFC00),
+                foregroundColor: Colors.black,
+              ),
+              onPressed: () async {
+                final min = int.tryParse(minCtrl.text.trim()) ?? g.minLevel;
+                final max = int.tryParse(maxCtrl.text.trim()) ?? g.maxLevel;
+                final name = nameCtrl.text.trim();
+                final scaffoldMessenger = ScaffoldMessenger.of(context);
+                if (name.isEmpty || min > max) {
+                  scaffoldMessenger.showSnackBar(
+                    const SnackBar(content: Text('Invalid range'), backgroundColor: Colors.red),
+                  );
+                  return;
+                }
+                Navigator.pop(context);
+                final ok = await EnglishHubLevelGroupService.updateLevelGroup(
+                  id: g.id,
+                  groupId: g.groupId,
+                  groupName: name,
+                  minLevel: min,
+                  maxLevel: max,
+                  stageTitle: titleCtrl.text.trim(),
+                  tagBadge: tagCtrl.text.trim(),
+                  iconEmoji: emojiCtrl.text.trim().isNotEmpty ? emojiCtrl.text.trim() : g.iconEmoji,
+                  isActive: isActive,
+                );
+                if (ok) {
+                  _loadEnglishHubLevelGroups();
+                  if (mounted) {
+                    scaffoldMessenger.showSnackBar(
+                      const SnackBar(content: Text('Bracket updated successfully!'), backgroundColor: Colors.green),
+                    );
+                  }
+                }
+              },
+              child: const Text('Save Changes', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 👥 Sheet: Show Active Members
+  void _showGroupMembersSheet(EnglishHubLevelGroup g) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: const Color(0xFF1E242B),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.6,
+          maxChildSize: 0.9,
+          minChildSize: 0.4,
+          expand: false,
+          builder: (context, scrollCtrl) {
+            return FutureBuilder<List<Map<String, dynamic>>>(
+              future: EnglishHubLevelGroupService.getGroupMembersWithLevel(g.groupId),
+              builder: (context, snapshot) {
+                return Column(
+                  children: [
+                    Container(
+                      margin: const EdgeInsets.only(top: 12, bottom: 8),
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.white24,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
+                        children: [
+                          Text(g.iconEmoji, style: const TextStyle(fontSize: 22)),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  g.groupName,
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Text(
+                                  'Level ${g.minLevel} - ${g.maxLevel} Active Cohort Members',
+                                  style: const TextStyle(color: Color(0xFFFFFC00), fontSize: 11),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Divider(color: Colors.white12, height: 1),
+                    Expanded(
+                      child: snapshot.connectionState == ConnectionState.waiting
+                          ? const Center(child: CircularProgressIndicator(color: Color(0xFFFFFC00)))
+                          : (snapshot.data == null || snapshot.data!.isEmpty)
+                              ? const Center(
+                                  child: Text('No active members currently in this level bracket.',
+                                      style: TextStyle(color: Colors.white60)),
+                                )
+                              : ListView.separated(
+                                  controller: scrollCtrl,
+                                  itemCount: snapshot.data!.length,
+                                  separatorBuilder: (_, __) => const Divider(color: Colors.white10, height: 1),
+                                  itemBuilder: (context, index) {
+                                    final m = snapshot.data![index];
+                                    final profile = m['profile'] as Map<String, dynamic>?;
+                                    final name = profile?['name']?.toString() ?? 'Learner';
+                                    final photo = profile?['profile_image_url']?.toString();
+                                    final learningDay = profile?['learning_day']?.toString() ?? '1';
+                                    final role = m['role']?.toString() ?? 'member';
+
+                                    return ListTile(
+                                      leading: CircleAvatar(
+                                        backgroundColor: const Color(0xFFFFFC00).withValues(alpha: 0.2),
+                                        backgroundImage: (photo != null && photo.isNotEmpty)
+                                            ? CachedNetworkImageProvider(photo)
+                                            : null,
+                                        child: (photo == null || photo.isEmpty)
+                                            ? Text(name.isNotEmpty ? name[0].toUpperCase() : 'U',
+                                                style: const TextStyle(color: Color(0xFFFFFC00)))
+                                            : null,
+                                      ),
+                                      title: Text(name, style: const TextStyle(color: Colors.white, fontSize: 14)),
+                                      subtitle: Text(
+                                        'Day $learningDay • Role: $role',
+                                        style: const TextStyle(color: Colors.white60, fontSize: 11),
+                                      ),
+                                      trailing: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
+                                              borderRadius: BorderRadius.circular(12),
+                                            ),
+                                            child: Text(
+                                              'Lvl $learningDay',
+                                              style: const TextStyle(
+                                                color: Color(0xFFFFFC00),
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 4),
+                                          IconButton(
+                                            icon: const Icon(Icons.swap_horiz, color: Color(0xFFFFFC00), size: 18),
+                                            tooltip: 'Move to another group',
+                                            onPressed: () {
+                                              final userId = m['user_id']?.toString() ?? '';
+                                              _showMoveUserDialog(
+                                                userId: userId,
+                                                userName: name,
+                                                currentGroupName: g.groupName,
+                                                currentGroupId: g.groupId,
+                                              );
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                ),
+                    ),
+                  ],
+                );
+              },
+            );
+          },
         );
       },
+    );
+  }
+
+  /// 🗑️ Confirm Delete Bracket
+  void _confirmDeleteGroup(EnglishHubLevelGroup g) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1E242B),
+        title: const Text('Delete Level Bracket?', style: TextStyle(color: Colors.white)),
+        content: Text(
+          'Are you sure you want to delete "${g.groupName}" (Lvl ${g.minLevel} - ${g.maxLevel})? '
+          'Existing messages in the group will be archived.',
+          style: const TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
+            onPressed: () async {
+              final scaffoldMessenger = ScaffoldMessenger.of(context);
+              Navigator.pop(context);
+              final ok = await EnglishHubLevelGroupService.deleteLevelGroup(
+                id: g.id,
+                groupId: g.groupId,
+              );
+              if (ok) {
+                _loadEnglishHubLevelGroups();
+                if (mounted) {
+                  scaffoldMessenger.showSnackBar(
+                    SnackBar(content: Text('Deleted ${g.groupName}'), backgroundColor: Colors.orange),
+                  );
+                }
+              }
+            },
+            child: const Text('Delete', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 🔄 Confirm Seed Defaults
+  void _confirmSeedDefaults() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1E242B),
+        title: const Text('Provision Default Brackets?', style: TextStyle(color: Colors.white)),
+        content: const Text(
+          'This will ensure all standard cohorts (Level 1-6, Level 6-11, and 5-level increments up to Day 90) '
+          'exist in the system. Custom groups will not be overwritten.',
+          style: TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFFFFC00), foregroundColor: Colors.black),
+            onPressed: () async {
+              final scaffoldMessenger = ScaffoldMessenger.of(context);
+              Navigator.pop(context);
+              await EnglishHubLevelGroupService.seedDefaultLevelGroups();
+              _loadEnglishHubLevelGroups();
+              if (mounted) {
+                scaffoldMessenger.showSnackBar(
+                  const SnackBar(content: Text('Default level brackets provisioned!'), backgroundColor: Colors.green),
+                );
+              }
+            },
+            child: const Text('Provision', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
     );
   }
 

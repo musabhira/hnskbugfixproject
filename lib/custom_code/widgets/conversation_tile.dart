@@ -7,6 +7,8 @@ import 'package:timeago/timeago.dart' as timeago;
 import 'package:pocket_mates_app/custom_code/widgets/chat/whats_app_groups_provider.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_snap_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 
 class ConversationTile extends StatefulWidget {
   final ChatConversation conversation;
@@ -14,6 +16,8 @@ class ConversationTile extends StatefulWidget {
   final VoidCallback onTap;
   final VoidCallback? onStatusTap;
   final VoidCallback? onLongPress;
+  final VoidCallback? onSnapCameraTap;
+  final VoidCallback? onSnapViewTap;
 
   const ConversationTile({
     super.key,
@@ -22,6 +26,8 @@ class ConversationTile extends StatefulWidget {
     required this.onTap,
     this.onStatusTap,
     this.onLongPress,
+    this.onSnapCameraTap,
+    this.onSnapViewTap,
   });
 
   @override
@@ -252,8 +258,9 @@ class _ConversationTileState extends State<ConversationTile> {
           return isDark ? const Color(0xFFFFFC00) : const Color(0xFFFFFC00);
       }
     }
-    if (widget.conversation.isNotification)
+    if (widget.conversation.isNotification) {
       return isDark ? const Color(0xFFFFD600) : const Color(0xFFFFF500);
+    }
     return isDark
         ? Colors.white.withValues(alpha: 0.5)
         : Colors.black.withValues(alpha: 0.45);
@@ -276,7 +283,16 @@ class _ConversationTileState extends State<ConversationTile> {
     return material.Material(
       color: Colors.transparent,
       child: material.InkWell(
-        onTap: widget.onTap,
+        onTap: () {
+          final isSnap = widget.conversation.lastMessage?.contains('Snap') == true ||
+              widget.conversation.lastMessage?.contains('🔥 Pocket Snap') == true ||
+              widget.conversation.lastMessage?.contains('⚡ Pocket Snap') == true;
+          if (isSnap && widget.conversation.unreadCount > 0 && widget.onSnapViewTap != null) {
+            widget.onSnapViewTap!();
+          } else {
+            widget.onTap();
+          }
+        },
         onLongPress: widget.onLongPress,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -438,6 +454,60 @@ class _ConversationTileState extends State<ConversationTile> {
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
+                              Builder(
+                                builder: (context) {
+                                  final isRobot = PocketRobotService.isRobotId(widget.conversation.id);
+                                  final isHumanMate = !widget.conversation.isGroup &&
+                                      !widget.conversation.isTool &&
+                                      !widget.conversation.isNotification &&
+                                      !widget.conversation.isActiveTimer &&
+                                      !isRobot;
+                                  if (isRobot) {
+                                    return Container(
+                                      margin: const EdgeInsets.only(left: 6),
+                                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF06B6D4).withValues(alpha: 0.15),
+                                        borderRadius: BorderRadius.circular(4),
+                                        border: Border.all(
+                                          color: const Color(0xFF06B6D4).withValues(alpha: 0.4),
+                                          width: 0.8,
+                                        ),
+                                      ),
+                                      child: Text(
+                                        '🤖 Robot',
+                                        style: GoogleFonts.outfit(
+                                          color: const Color(0xFF06B6D4),
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 9.5,
+                                        ),
+                                      ),
+                                    );
+                                  } else if (isHumanMate) {
+                                    return Container(
+                                      margin: const EdgeInsets.only(left: 6),
+                                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withValues(alpha: 0.06),
+                                        borderRadius: BorderRadius.circular(4),
+                                        border: Border.all(
+                                          color: Colors.white.withValues(alpha: 0.12),
+                                          width: 0.8,
+                                        ),
+                                      ),
+                                      child: Text(
+                                        '👤 Human',
+                                        style: GoogleFonts.outfit(
+                                          color: secondaryTextColor,
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 9.5,
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                  return const SizedBox.shrink();
+                                },
+                              ),
                               if (widget.conversation.isPinned) ...[
                                 const SizedBox(width: 6),
                                 Icon(
@@ -489,27 +559,114 @@ class _ConversationTileState extends State<ConversationTile> {
                             ),
                           ),
                         Expanded(
-                          child: Text(
-                            widget.conversation.isActiveTimer
-                                ? (widget.conversation.taskTitle ??
-                                    'Active Task')
-                                : (widget.conversation.lastMessage ??
-                                    (widget.conversation.isGroup
-                                        ? 'No messages yet'
-                                        : 'Start chatting')),
-                            style: GoogleFonts.outfit(
-                              color: widget.conversation.unreadCount > 0 ||
-                                      widget.conversation.isActiveTimer
-                                  ? unreadTextColor
-                                  : secondaryTextColor,
-                              fontSize: 14,
-                              fontWeight: widget.conversation.unreadCount > 0 ||
-                                      widget.conversation.isActiveTimer
-                                  ? FontWeight.w500
-                                  : FontWeight.normal,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                          child: Builder(
+                            builder: (context) {
+                              final isSnap = widget.conversation.lastMessage?.contains('Snap') == true ||
+                                  widget.conversation.lastMessage?.contains('🔥 Pocket Snap') == true ||
+                                  widget.conversation.lastMessage?.contains('⚡ Pocket Snap') == true;
+
+                              if (isSnap) {
+                                if (widget.conversation.unreadCount > 0) {
+                                  return Row(
+                                    children: [
+                                      Container(
+                                        width: 12,
+                                        height: 12,
+                                        margin: const EdgeInsets.only(right: 6),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFEF4444),
+                                          borderRadius: BorderRadius.circular(3),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: const Color(0xFFEF4444).withValues(alpha: 0.5),
+                                              blurRadius: 4,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      Flexible(
+                                        child: Text(
+                                          'New Snap • Tap to view ⚡',
+                                          style: GoogleFonts.outfit(
+                                            color: const Color(0xFFF87171),
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                } else if (widget.conversation.lastSenderId == widget.currentUserId) {
+                                  return Row(
+                                    children: [
+                                      const Icon(material.Icons.near_me_rounded, size: 12, color: Color(0xFFEF4444)),
+                                      const SizedBox(width: 4),
+                                      Flexible(
+                                        child: Text(
+                                          'Delivered Snap ⚡',
+                                          style: GoogleFonts.outfit(
+                                            color: secondaryTextColor,
+                                            fontSize: 14,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                } else {
+                                  return Row(
+                                    children: [
+                                      Container(
+                                        width: 10,
+                                        height: 10,
+                                        margin: const EdgeInsets.only(right: 6),
+                                        decoration: BoxDecoration(
+                                          border: Border.all(color: secondaryTextColor, width: 1.5),
+                                          borderRadius: BorderRadius.circular(2),
+                                        ),
+                                      ),
+                                      Flexible(
+                                        child: Text(
+                                          'Opened Snap',
+                                          style: GoogleFonts.outfit(
+                                            color: secondaryTextColor,
+                                            fontSize: 14,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                }
+                              }
+
+                              return Text(
+                                widget.conversation.isActiveTimer
+                                    ? (widget.conversation.taskTitle ??
+                                        'Active Task')
+                                    : (widget.conversation.lastMessage ??
+                                        (widget.conversation.isGroup
+                                            ? 'No messages yet'
+                                            : 'Start chatting')),
+                                style: GoogleFonts.outfit(
+                                  color: widget.conversation.unreadCount > 0 ||
+                                          widget.conversation.isActiveTimer
+                                      ? unreadTextColor
+                                      : secondaryTextColor,
+                                  fontSize: 14,
+                                  fontWeight: widget.conversation.unreadCount > 0 ||
+                                          widget.conversation.isActiveTimer
+                                      ? FontWeight.w500
+                                      : FontWeight.normal,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              );
+                            },
                           ),
                         ),
                       ],
@@ -585,6 +742,36 @@ class _ConversationTileState extends State<ConversationTile> {
                   ],
                 ],
               ),
+              // Snapchat-style Camera Button on Personal Chats
+              if (!widget.conversation.isGroup &&
+                  !widget.conversation.isTool &&
+                  !widget.conversation.isNotification &&
+                  !widget.conversation.isActiveTimer) ...[
+                const SizedBox(width: 8),
+                material.IconButton(
+                  icon: const Icon(
+                    material.Icons.camera_alt_rounded,
+                    color: Color(0xFFFFFC00),
+                    size: 20,
+                  ),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(minWidth: 34, minHeight: 34),
+                  onPressed: () {
+                    HapticFeedback.lightImpact();
+                    if (widget.onSnapCameraTap != null) {
+                      widget.onSnapCameraTap!();
+                    } else {
+                      PocketSnapService.launchSnapWorkflow(
+                        context,
+                        userId: widget.currentUserId,
+                        profileId: widget.currentUserId,
+                        preselectedRecipientId: widget.conversation.id,
+                      );
+                    }
+                  },
+                  tooltip: 'Send Snap',
+                ),
+              ],
             ],
           ),
         ),

@@ -293,7 +293,7 @@ class _StagePeerMatchmakerPageState extends State<StagePeerMatchmakerPage> {
                               style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
                             ),
                             Text(
-                              'Chat with 2 English Mates today • +30 XP',
+                              'Chat with at least 3 English Mates today • +30 XP',
                               style: GoogleFonts.inter(color: Colors.white54, fontSize: 11),
                             ),
                           ],
@@ -302,20 +302,20 @@ class _StagePeerMatchmakerPageState extends State<StagePeerMatchmakerPage> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          color: _chatsCompletedToday >= 2
+                          color: _chatsCompletedToday >= 3
                               ? const Color(0xFF10B981).withValues(alpha: 0.2)
                               : const Color(0xFFFFFC00).withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(
-                            color: _chatsCompletedToday >= 2
+                            color: _chatsCompletedToday >= 3
                                 ? const Color(0xFF10B981)
                                 : const Color(0xFFFFFC00),
                           ),
                         ),
                         child: Text(
-                          '$_chatsCompletedToday/2 Done',
+                          '$_chatsCompletedToday/3 Done',
                           style: GoogleFonts.outfit(
-                            color: _chatsCompletedToday >= 2 ? const Color(0xFF10B981) : const Color(0xFFFFFC00),
+                            color: _chatsCompletedToday >= 3 ? const Color(0xFF10B981) : const Color(0xFFFFFC00),
                             fontWeight: FontWeight.w900,
                             fontSize: 11,
                           ),

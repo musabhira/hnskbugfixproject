@@ -24,6 +24,15 @@ class LocalSyncServer {
   Stream<List<ChatConversation>> get conversationStream =>
       _conversationController.stream;
 
+  // Ultra-fast live message stream for zero-lag chat updates (Snapchat speed)
+  final _liveMessageController =
+      StreamController<Map<String, dynamic>>.broadcast();
+  Stream<Map<String, dynamic>> get liveMessageStream =>
+      _liveMessageController.stream;
+
+  // In-Memory Fast Cache for instant 0ms access
+  final Map<String, List<dynamic>> _memoryMessageCache = {};
+
   Future<void> initialize() async {
     if (_isInitialized) return;
 
@@ -131,18 +140,50 @@ class LocalSyncServer {
 
   Future<void> saveMessages(
       String userId, String chatOrGroupId, List<dynamic> messages) async {
+    final key = '${userId}_$chatOrGroupId';
     final List<Map<String, dynamic>> jsonList = messages.map((e) {
       if (e is ChatMessage) return e.toJson();
       return Map<String, dynamic>.from(e);
     }).toList();
-    await _messageBox.put('${userId}_$chatOrGroupId', jsonList);
+
+    // 1. Hot memory cache (0ms immediate latency)
+    _memoryMessageCache[key] = jsonList;
+
+    // 2. Persistent storage
+    await _messageBox.put(key, jsonList);
   }
 
   List<dynamic> getCachedMessages(String userId, String chatOrGroupId) {
+    final key = '${userId}_$chatOrGroupId';
+    // Return from hot memory first
+    if (_memoryMessageCache.containsKey(key)) {
+      return _memoryMessageCache[key]!;
+    }
     if (!_isInitialized) return [];
-    final List<dynamic>? list = _messageBox.get('${userId}_$chatOrGroupId');
+    final List<dynamic>? list = _messageBox.get(key);
     if (list == null) return [];
+    _memoryMessageCache[key] = list;
     return list;
+  }
+
+  /// ⚡ Instant message dispatcher for Snapchat-speed chat UI updates
+  void dispatchInstantMessage({
+    required String userId,
+    required String chatOrGroupId,
+    required Map<String, dynamic> message,
+  }) {
+    final key = '${userId}_$chatOrGroupId';
+    final current = getCachedMessages(userId, chatOrGroupId);
+    final updated = [message, ...current];
+    _memoryMessageCache[key] = updated;
+    saveMessages(userId, chatOrGroupId, updated);
+
+    // Broadcast instant update
+    _liveMessageController.add({
+      'chatId': chatOrGroupId,
+      'message': message,
+      'is_optimistic': true,
+    });
   }
 
   void _handleGlobalMessageUpdate(PostgresChangePayload payload) {
@@ -181,6 +222,13 @@ class LocalSyncServer {
         }
         saveMessages(currentUserId, chatId, updated);
       }
+
+      // Live broadcast for 0-latency chat updates
+      _liveMessageController.add({
+        'chatId': chatId,
+        'message': newData,
+        'is_remote': true,
+      });
     }
   }
 

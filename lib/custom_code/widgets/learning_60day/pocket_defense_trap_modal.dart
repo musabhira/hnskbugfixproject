@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -87,6 +88,9 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
   int? _demoSelectedOption;
   bool? _demoResultSuccess;
 
+  // Inline Validation Error State (Visible inside modal above Deploy button)
+  String? _inlineError;
+
   // Gate definitions with levels and sample hint demos
   static const List<Map<String, dynamic>> _gateDefinitions = [
     {
@@ -144,6 +148,11 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
       if (mounted) setState(() {});
     });
 
+    _questionCtrl.addListener(_clearInlineError);
+    for (final c in _optionCtrls) {
+      c.addListener(_clearInlineError);
+    }
+
     _loadQuestions().then((_) {
       if (widget.editingQuestion != null) {
         _populateForEdit(widget.editingQuestion!);
@@ -151,8 +160,18 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
     });
   }
 
+  void _clearInlineError() {
+    if (_inlineError != null) {
+      setState(() => _inlineError = null);
+    }
+  }
+
   @override
   void dispose() {
+    _questionCtrl.removeListener(_clearInlineError);
+    for (final c in _optionCtrls) {
+      c.removeListener(_clearInlineError);
+    }
     _tabController.dispose();
     _questionCtrl.dispose();
     _explanationCtrl.dispose();
@@ -170,11 +189,12 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
         _isLoading = false;
       });
 
-      // If user has already filled all earned slots and is not completing a level or editing,
+      // If user has already filled capacity and is not completing a level or editing,
       // default to My Shields list so they can view and edit.
+      final maxAllowed = math.max(10, widget.userDay * 3);
       if (widget.editingQuestion == null &&
           !widget.isLevelComplete &&
-          _questions.length >= widget.userDay &&
+          _questions.length >= maxAllowed &&
           _questions.isNotEmpty) {
         _tabController.animateTo(2);
       }
@@ -415,13 +435,18 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
   }
 
   Future<void> _deployShieldQuestion() async {
+    setState(() => _inlineError = null);
     final questionText = _questionCtrl.text.trim();
-    final options = _optionCtrls.map((c) => c.text.trim()).toList();
+    final rawOptions = _optionCtrls.map((c) => c.text.trim()).toList();
+    final activeOptions = rawOptions.where((o) => o.isNotEmpty).toList();
 
     if (questionText.isEmpty) {
+      const msg = '⚠️ Please enter a question for your defense shield!';
+      setState(() => _inlineError = msg);
+      ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('⚠️ Please enter a question for your defense shield!'),
+          content: Text(msg),
           backgroundColor: Color(0xFFDC2626),
           behavior: SnackBarBehavior.floating,
         ),
@@ -429,10 +454,13 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
       return;
     }
 
-    if (options.any((o) => o.isEmpty)) {
+    if (activeOptions.length < 2) {
+      const msg = '⚠️ Please provide at least 2 answer options!';
+      setState(() => _inlineError = msg);
+      ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('⚠️ Please provide all 4 multiple-choice options!'),
+          content: Text(msg),
           backgroundColor: Color(0xFFDC2626),
           behavior: SnackBarBehavior.floating,
         ),
@@ -440,15 +468,16 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
       return;
     }
 
-    // 1 Day = 1 Slot Rule Check (Unless updating existing question)
+    // Defense Slot Capacity Check (User Audio Directive: Up to 10 questions for Day 1 and beyond)
     if (!_isEditMode) {
-      final maxAllowed = widget.userDay;
+      final maxAllowed = math.max(10, widget.userDay * 3);
       if (_questions.length >= maxAllowed && !widget.isLevelComplete) {
+        final msg = '⚠️ Defense Armory Capacity: All $maxAllowed slots are armed for Level ${widget.userDay}. Complete more days or edit existing questions!';
+        setState(() => _inlineError = msg);
+        ScaffoldMessenger.of(context).clearSnackBars();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              '⚠️ 1 Day = 1 Defense Question Rule: All $maxAllowed slots are armed. Complete Day ${widget.userDay + 1} to unlock more, or edit existing questions!',
-            ),
+            content: Text(msg),
             backgroundColor: const Color(0xFFB45309),
             behavior: SnackBarBehavior.floating,
           ),
@@ -457,19 +486,27 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
       }
     }
 
+    int safeCorrectIndex = _correctIndex;
+    if (safeCorrectIndex >= activeOptions.length) {
+      safeCorrectIndex = 0;
+    }
+
     // Validate anti-duplicate & fair play
     final verdict = PocketFortressDefenseService.validateQuestion(
       questionText,
-      options,
-      _correctIndex,
+      activeOptions,
+      safeCorrectIndex,
       existingQuestions: _questions,
       currentQuestionId: _isEditMode ? _editingQuestionId : null,
     );
 
     if (!verdict.isApproved) {
+      final msg = '⚠️ ${verdict.feedback}';
+      setState(() => _inlineError = msg);
+      ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('⚠️ ${verdict.feedback}'),
+          content: Text(msg),
           backgroundColor: const Color(0xFFDC2626),
           behavior: SnackBarBehavior.floating,
         ),
@@ -488,11 +525,11 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
     final questionItem = HouseShieldQuestion(
       id: questionId,
       question: questionText,
-      options: options,
-      correctIndex: _correctIndex,
+      options: activeOptions,
+      correctIndex: safeCorrectIndex,
       explanation: _explanationCtrl.text.trim().isNotEmpty
           ? _explanationCtrl.text.trim()
-          : 'Correct answer: ${options[_correctIndex]}',
+          : 'Correct answer: ${activeOptions[safeCorrectIndex]}',
       category: selectedGate['id'] as String,
       trapType: selectedGate['id'] as String,
       isPresidentApproved: true,
@@ -506,53 +543,67 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
       updated = List<HouseShieldQuestion>.from(_questions)..add(questionItem);
     }
 
-    // 1. Save locally
-    await PocketFortressDefenseService.saveShieldQuestions(updated);
-
-    // 2. Sync to Supabase profile
     try {
-      final myId = SupaFlow.client.auth.currentUser?.id;
-      if (myId != null) {
-        await SupaFlow.client.from('profile').update({
-          'house_shield_questions': updated.map((q) => q.toJson()).toList(),
-        }).eq('id', myId);
+      // 1. Save locally
+      await PocketFortressDefenseService.saveShieldQuestions(updated);
+
+      // 2. Sync to Supabase profile
+      try {
+        final myId = SupaFlow.client.auth.currentUser?.id;
+        if (myId != null) {
+          final payload = {'house_shield_questions': updated.map((q) => q.toJson()).toList()};
+          try {
+            await SupaFlow.client.from('profile').update(payload).eq('user_id', myId);
+          } catch (_) {
+            await SupaFlow.client.from('profile').update(payload).eq('id', myId);
+          }
+        }
+      } catch (e) {
+        debugPrint('Supabase shield sync notice: $e');
       }
-    } catch (e) {
-      debugPrint('Supabase shield sync notice: $e');
-    }
 
-    if (!mounted) return;
+      if (!mounted) return;
 
-    final wasEditing = _isEditMode;
-    setState(() {
-      _questions = updated;
-      _isDeploying = false;
-      _isEditMode = false;
-      _editingQuestionId = null;
-      _editingIndex = null;
-      _questionCtrl.clear();
-      _explanationCtrl.clear();
-      for (final c in _optionCtrls) {
-        c.clear();
-      }
-      _correctIndex = 0;
-      _resetDemoState();
-    });
+      final wasEditing = _isEditMode;
+      setState(() {
+        _questions = updated;
+        _isDeploying = false;
+        _isEditMode = false;
+        _editingQuestionId = null;
+        _editingIndex = null;
+        _inlineError = null;
+        _questionCtrl.clear();
+        _explanationCtrl.clear();
+        for (final c in _optionCtrls) {
+          c.clear();
+        }
+        _correctIndex = 0;
+        _resetDemoState();
+      });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          wasEditing
-              ? '🛡️ Defense Shield Updated & Synced!'
-              : '🛡️ Defense Question Armed & Synced to Home Defense!',
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            wasEditing
+                ? '🛡️ Defense Shield Updated & Synced!'
+                : '🛡️ Defense Question Armed & Synced to Home Defense!',
+          ),
+          backgroundColor: const Color(0xFF10B981),
+          behavior: SnackBarBehavior.floating,
         ),
-        backgroundColor: const Color(0xFF10B981),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+      );
 
-    // Switch to Demo tab or My Shields tab
-    _tabController.animateTo(1);
+      // Switch to Demo tab or My Shields tab
+      _tabController.animateTo(1);
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isDeploying = false;
+          _inlineError = '⚠️ Error saving defense question: $e';
+        });
+      }
+    }
   }
 
   Future<void> _deleteQuestion(int index) async {
@@ -562,9 +613,12 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
     try {
       final myId = SupaFlow.client.auth.currentUser?.id;
       if (myId != null) {
-        await SupaFlow.client.from('profile').update({
-          'house_shield_questions': updated.map((q) => q.toJson()).toList(),
-        }).eq('id', myId);
+        final payload = {'house_shield_questions': updated.map((q) => q.toJson()).toList()};
+        try {
+          await SupaFlow.client.from('profile').update(payload).eq('user_id', myId);
+        } catch (_) {
+          await SupaFlow.client.from('profile').update(payload).eq('id', myId);
+        }
       }
     } catch (e) {
       debugPrint('Supabase delete sync: $e');
@@ -584,7 +638,7 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
 
   @override
   Widget build(BuildContext context) {
-    final maxAllowed = widget.userDay;
+    final maxAllowed = math.max(10, widget.userDay * 3);
     final selectedGate = _gateDefinitions[_selectedGateIdx];
     final canAddNewSlot = widget.isLevelComplete || _questions.length < maxAllowed;
 
@@ -772,7 +826,7 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      '1 Day = 1 Defense Question Slot: You have already armed all ${_questions.length} slots for Day ${widget.userDay}. Complete Day ${widget.userDay + 1} to unlock your next defense question! You can edit any existing question anytime.',
+                      'Defense Armory Capacity: You have armed all ${_questions.length} slots for Level ${widget.userDay}. Complete more days to unlock additional defense slots! You can edit any existing question anytime.',
                       style: GoogleFonts.inter(color: Colors.white70, fontSize: 11, height: 1.3),
                     ),
                   ),
@@ -1058,7 +1112,38 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
               ),
             ),
           ),
-          const SizedBox(height: 6),
+          // Inline Error Message Box (Prominently visible inside modal above the deploy button)
+          if (_inlineError != null) ...[
+            Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: const Color(0xFF7F1D1D).withValues(alpha: 0.95),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFEF4444), width: 1.5),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.error_outline_rounded, color: Color(0xFFFCA5A5), size: 20),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      _inlineError!,
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () => setState(() => _inlineError = null),
+                    child: const Icon(Icons.close, color: Colors.white70, size: 16),
+                  ),
+                ],
+              ),
+            ),
+          ],
 
           // Save & Deploy Button
           SizedBox(

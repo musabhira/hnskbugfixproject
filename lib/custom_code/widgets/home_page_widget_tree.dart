@@ -20,21 +20,21 @@ import 'package:pocket_mates_app/custom_code/widgets/active_users_provider.dart'
 import 'package:pocket_mates_app/custom_code/widgets/zoyarex_admin/zoyarex_login_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/zoyarex_admin/zoyarex_ai_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/teams/teams_service.dart';
-import 'package:pocket_mates_app/custom_code/widgets/share_content_screen.dart';
 import 'package:pocket_mates_app/custom_code/widgets/status_display_widget.dart';
-import 'package:pocket_mates_app/custom_code/widgets/courses_widget.dart';
 import 'dart:io' as io;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:math' as math;
-import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.dart';
-import 'package:pocket_mates_app/custom_code/widgets/native_webrtc_call_screen.dart';
 import 'package:pocket_mates_app/custom_code/widgets/conversation_tile.dart';
-import 'package:pocket_mates_app/custom_code/widgets/voice_assistant/pocket_mates_voice_button.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/english_learning_group_chat.dart';
 import 'package:pocket_mates_app/custom_code/widgets/doodle_background_painter.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_mission_timer_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_daily_mission_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/admin_auth_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_mate_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_snap_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/snap/snap_view_dialog.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 
 // Aliases for WhatsApp Groups Provider to avoid naming conflicts
 typedef ChatConversation = groups_provider.ChatConversation;
@@ -91,12 +91,38 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   final ValueNotifier<String> _vibesFilterNotifier =
       ValueNotifier<String>('Public');
 
+  int _chatCategoryFilterIndex = 0; // 0: All, 1: Unread, 2: Requests, 3: Mates, 4: Groups
+  List<Map<String, dynamic>> _pendingRequests = [];
+  bool _isLoadingRequests = false;
+
+  Future<void> _loadPendingRequests() async {
+    final uid = _currentUserId ?? supabase.auth.currentUser?.id;
+    if (uid == null || uid.isEmpty) return;
+    if (mounted) setState(() => _isLoadingRequests = true);
+    try {
+      await PocketRobotService.ensureIncomingRobotRequests(uid, 1);
+      await PocketRobotService.checkAndTriggerOccasionalRobotSnaps(uid);
+      final reqs = await PocketMateService.getPendingRequests(uid);
+      if (mounted) {
+        setState(() {
+          _pendingRequests = reqs;
+          _isLoadingRequests = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() => _isLoadingRequests = false);
+      }
+    }
+  }
+
   @override
   void initState() {
     super.initState();
     _pageController = PageController(initialPage: _chatTabIndex);
     _loadCachedData();
     _loadAllUserData();
+    _loadPendingRequests();
     _searchController.addListener(_onSearchChanged);
 
     // Add post frame callback to check for updates after initial render
@@ -616,6 +642,11 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     int? initialTab;
 
     switch (title) {
+      case 'Admin Panel':
+      case 'Admin Studio':
+      case 'Admin Dashboard':
+        AdminAuthService.authenticateAndOpen(context);
+        return;
       case 'Zoyrax POS Admin': // Legacy spelling fallback
       case 'Zoyarex POS Admin':
       case 'Zoyarex Super Admin':
@@ -772,9 +803,23 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                       backgroundColor: const Color(0xFFFFFC00),
                       foregroundColor: material.Colors.black,
                       elevation: 6,
-                      icon: const Text('🎭', style: TextStyle(fontSize: 18)),
+                      icon: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text('🎭', style: TextStyle(fontSize: 18)),
+                          const SizedBox(width: 4),
+                          Container(
+                            width: 7,
+                            height: 7,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFF10B981),
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        ],
+                      ),
                       label: Text(
-                        'Anonymous Match',
+                        'Random Match (Live)',
                         style: GoogleFonts.outfit(
                           fontWeight: FontWeight.bold,
                           fontSize: 13,
@@ -862,6 +907,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                       searchQuery: _searchQuery,
                                       isSearching: _isSearchingPeople,
                                       vibesFilterNotifier: _vibesFilterNotifier,
+                                      pendingRequestsCount: _pendingRequests.length,
                                     ),
                                   ),
                                 ];
@@ -918,6 +964,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       await Future.wait([
         ref.refresh(conversationsProvider.future),
         ref.refresh(activeUsersProvider(profileId.toString()).future),
+        _loadPendingRequests(),
       ]);
     } catch (e) {
       debugPrint('Refresh error: $e');
@@ -932,6 +979,717 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       searchQuery: _chatTabIndex == 1 ? _searchQuery : '',
       filterNotifier: _vibesFilterNotifier,
       isVertical: true,
+    );
+  }
+
+  Future<void> _acceptMateRequest(Map<String, dynamic> req) async {
+    HapticFeedback.mediumImpact();
+    final uid = _currentUserId ?? supabase.auth.currentUser?.id ?? '';
+    final senderId = req['sender_id']?.toString() ?? req['source_id']?.toString() ?? '';
+    final notifId = req['id']?.toString() ?? '';
+
+    final success = await PocketMateService.acceptMateRequest(
+      notificationId: notifId,
+      myId: uid,
+      senderId: senderId,
+    );
+
+    if (success) {
+      setState(() {
+        _pendingRequests.removeWhere((r) => r['id'] == notifId);
+      });
+      _handleRefresh();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 18),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    '✨ ${req['sender_name'] ?? 'User'} is now your Pocket Mate! Added to active chats.',
+                    style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: Colors.white),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: const Color(0xFF1E293B),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _declineMateRequest(Map<String, dynamic> req) async {
+    HapticFeedback.lightImpact();
+    final uid = _currentUserId ?? supabase.auth.currentUser?.id ?? '';
+    final notifId = req['id']?.toString() ?? '';
+
+    await PocketMateService.declineMateRequest(
+      notificationId: notifId,
+      myId: uid,
+    );
+
+    setState(() {
+      _pendingRequests.removeWhere((r) => r['id'] == notifId);
+    });
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Request declined',
+            style: GoogleFonts.outfit(color: Colors.white),
+          ),
+          backgroundColor: const Color(0xFF334155),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  void _showConversationActionSheet(ChatConversation conversation) {
+    HapticFeedback.heavyImpact();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF161B26) : Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          border: Border.all(
+            color: isDark ? Colors.white12 : Colors.black12,
+            width: 1,
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 16),
+              decoration: BoxDecoration(
+                color: Colors.grey.withValues(alpha: 0.4),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: 20,
+                  backgroundColor: const Color(0xFFFFFC00).withValues(alpha: 0.2),
+                  backgroundImage: conversation.imageUrl != null
+                      ? NetworkImage(conversation.imageUrl!)
+                      : null,
+                  child: conversation.imageUrl == null
+                      ? Text(
+                          conversation.name.isNotEmpty
+                              ? conversation.name[0].toUpperCase()
+                              : '?',
+                          style: const TextStyle(
+                            color: Color(0xFFFFFC00),
+                            fontWeight: FontWeight.bold,
+                          ),
+                        )
+                      : null,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        conversation.name,
+                        style: GoogleFonts.outfit(
+                          color: isDark ? Colors.white : Colors.black87,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      Text(
+                        conversation.isPinned ? 'Pinned Chat 📌' : 'Pocket Mate Chat',
+                        style: GoogleFonts.outfit(
+                          color: isDark ? Colors.white54 : Colors.black54,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            // Pin / Unpin
+            ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  conversation.isPinned ? Icons.push_pin_outlined : Icons.push_pin_rounded,
+                  color: const Color(0xFFFFFC00),
+                  size: 20,
+                ),
+              ),
+              title: Text(
+                conversation.isPinned ? 'Unpin from Top' : 'Pin to Top',
+                style: GoogleFonts.outfit(
+                  color: isDark ? Colors.white : Colors.black87,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              subtitle: Text(
+                conversation.isPinned
+                    ? 'Remove from top of chats list'
+                    : 'Keep this chat at the very top of your inbox',
+                style: GoogleFonts.outfit(
+                  color: isDark ? Colors.white54 : Colors.black54,
+                  fontSize: 12,
+                ),
+              ),
+              onTap: () async {
+                Navigator.pop(context);
+                final uid = _currentUserId ?? supabase.auth.currentUser?.id ?? '';
+                final isNowPinned = await PocketMateService.togglePinConversation(uid, conversation.id);
+                ref.read(conversationsProvider.notifier).togglePin(conversation.id);
+                _handleRefresh();
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        isNowPinned ? '📌 Pinned to top' : 'Chat unpinned',
+                        style: GoogleFonts.outfit(color: Colors.white),
+                      ),
+                      backgroundColor: const Color(0xFF1E293B),
+                      behavior: SnackBarBehavior.floating,
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
+                }
+              },
+            ),
+            // Send Snap
+            if (!conversation.isGroup && !conversation.isTool && !conversation.isNotification)
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEF4444).withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.camera_alt_rounded,
+                    color: Color(0xFFEF4444),
+                    size: 20,
+                  ),
+                ),
+                title: Text(
+                  'Send Pocket Snap ⚡',
+                  style: GoogleFonts.outfit(
+                    color: isDark ? Colors.white : Colors.black87,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                subtitle: Text(
+                  'Instantly shoot a quick photo/video snap',
+                  style: GoogleFonts.outfit(
+                    color: isDark ? Colors.white54 : Colors.black54,
+                    fontSize: 12,
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  PocketSnapService.launchSnapWorkflow(
+                    context,
+                    userId: _currentUserId ?? '',
+                    profileId: _currentUserId ?? '',
+                    preselectedRecipientId: conversation.id,
+                    onUploaded: _handleRefresh,
+                  );
+                },
+              ),
+            // Mark as Read / Unread
+            ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.blue.withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  conversation.unreadCount > 0 ? Icons.mark_chat_read_rounded : Icons.mark_chat_unread_rounded,
+                  color: Colors.blueAccent,
+                  size: 20,
+                ),
+              ),
+              title: Text(
+                conversation.unreadCount > 0 ? 'Mark as Read' : 'Mark as Unread',
+                style: GoogleFonts.outfit(
+                  color: isDark ? Colors.white : Colors.black87,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                ref.read(conversationsProvider.notifier).markAsRead(conversation.id, conversation.isGroup);
+                _handleRefresh();
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildChatCategoryFilterChips(List<ChatConversation> conversations) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final unreadCount = conversations.where((c) => c.unreadCount > 0).length;
+    final matesCount = conversations
+        .where((c) => !c.isGroup && !c.isTool && !c.isNotification && !c.isActiveTimer)
+        .length;
+    final groupsCount = conversations.where((c) => c.isGroup).length;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 10),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        child: Row(
+          children: [
+            _buildCategoryChipItem(
+              title: 'All',
+              index: 0,
+              icon: Icons.all_inbox_rounded,
+              isDark: isDark,
+            ),
+            const SizedBox(width: 7),
+            _buildCategoryChipItem(
+              title: 'Unread',
+              index: 1,
+              count: unreadCount,
+              icon: Icons.mark_chat_unread_rounded,
+              isDark: isDark,
+            ),
+            const SizedBox(width: 7),
+            _buildCategoryChipItem(
+              title: 'Requests',
+              index: 2,
+              count: _pendingRequests.length,
+              icon: Icons.person_add_alt_1_rounded,
+              highlightBadge: _pendingRequests.isNotEmpty,
+              isDark: isDark,
+            ),
+            const SizedBox(width: 7),
+            _buildCategoryChipItem(
+              title: 'Mates',
+              index: 3,
+              count: matesCount,
+              icon: Icons.people_alt_rounded,
+              isDark: isDark,
+            ),
+            const SizedBox(width: 7),
+            _buildCategoryChipItem(
+              title: 'Groups',
+              index: 4,
+              count: groupsCount,
+              icon: Icons.groups_rounded,
+              isDark: isDark,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCategoryChipItem({
+    required String title,
+    required int index,
+    int? count,
+    required IconData icon,
+    bool highlightBadge = false,
+    required bool isDark,
+  }) {
+    final isSelected = _chatCategoryFilterIndex == index;
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.selectionClick();
+        setState(() {
+          _chatCategoryFilterIndex = index;
+        });
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? const Color(0xFFFFFC00)
+              : (isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9)),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected
+                ? const Color(0xFFFFFC00)
+                : (isDark ? Colors.white10 : Colors.black12),
+            width: 1,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: const Color(0xFFFFFC00).withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  )
+                ]
+              : null,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 14,
+              color: isSelected
+                  ? Colors.black
+                  : (isDark ? Colors.white70 : Colors.black87),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              title,
+              style: GoogleFonts.outfit(
+                color: isSelected
+                    ? Colors.black
+                    : (isDark ? Colors.white : Colors.black87),
+                fontSize: 13,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+              ),
+            ),
+            if (count != null && count > 0) ...[
+              const SizedBox(width: 6),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? Colors.black
+                      : (highlightBadge
+                          ? const Color(0xFFEF4444)
+                          : const Color(0xFFFFFC00)),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  '$count',
+                  style: GoogleFonts.outfit(
+                    color: isSelected
+                        ? const Color(0xFFFFFC00)
+                        : (highlightBadge ? Colors.white : Colors.black),
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAnonymousLiveMatchBanner(bool isDark) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+      child: GestureDetector(
+        onTap: () {
+          HapticFeedback.selectionClick();
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const AnonymousEnglishChatPage(),
+            ),
+          );
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: isDark
+                  ? [const Color(0xFF1E2235), const Color(0xFF141724)]
+                  : [const Color(0xFFF8FAFC), const Color(0xFFE2E8F0)],
+            ),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: const Color(0xFFFFFC00).withValues(alpha: 0.35),
+              width: 1.2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFFFFFC00).withValues(alpha: 0.08),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
+                  border: Border.all(color: const Color(0xFFFFFC00)),
+                ),
+                child: const Center(
+                  child: Text('🎭', style: TextStyle(fontSize: 20)),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          'Random Match',
+                          style: GoogleFonts.outfit(
+                            color: isDark ? Colors.white : Colors.black87,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Container(
+                          width: 6,
+                          height: 6,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF10B981),
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'LIVE',
+                          style: GoogleFonts.inter(
+                            color: const Color(0xFF10B981),
+                            fontSize: 9,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '1-on-1 anonymous text chat with strangers',
+                      style: GoogleFonts.inter(
+                        color: isDark ? Colors.white60 : Colors.black54,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFFC00),
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFFFFC00).withValues(alpha: 0.3),
+                      blurRadius: 6,
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.flash_on_rounded, size: 14, color: Colors.black),
+                    const SizedBox(width: 3),
+                    Text(
+                      'Connect',
+                      style: GoogleFonts.outfit(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 11.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPendingRequestsSliver() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    if (_isLoadingRequests) {
+      return const SliverToBoxAdapter(
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 48),
+          child: Center(
+            child: CircularProgressIndicator(color: Color(0xFFFFFC00)),
+          ),
+        ),
+      );
+    }
+
+    if (_pendingRequests.isEmpty) {
+      return SliverToBoxAdapter(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFFC00).withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Center(
+                  child: Icon(Icons.person_search_rounded, size: 32, color: Color(0xFFFFFC00)),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'No Pending Requests',
+                style: GoogleFonts.outfit(
+                  color: isDark ? Colors.white : Colors.black87,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'When someone inquires about your marketplace items or requests to connect from Anonymous English Chat, they appear here safely.',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.outfit(
+                  color: isDark ? Colors.white54 : Colors.black54,
+                  fontSize: 13,
+                  height: 1.4,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return SliverList(
+      delegate: SliverChildBuilderDelegate(
+        (context, index) {
+          final req = _pendingRequests[index];
+          return Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF1E293B) : Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: isDark ? Colors.white10 : Colors.black12,
+                width: 1,
+              ),
+            ),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 24,
+                  backgroundColor: const Color(0xFFFFFC00).withValues(alpha: 0.2),
+                  backgroundImage: req['sender_profile_image'] != null
+                      ? NetworkImage(req['sender_profile_image'])
+                      : null,
+                  child: req['sender_profile_image'] == null
+                      ? Text(
+                          (req['sender_name'] ?? 'M')[0].toUpperCase(),
+                          style: const TextStyle(
+                            color: Color(0xFFFFFC00),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        )
+                      : null,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        req['sender_name'] ?? 'Pocket Mate',
+                        style: GoogleFonts.outfit(
+                          color: isDark ? Colors.white : Colors.black87,
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        req['message'] ?? 'Wants to become your Pocket Mate',
+                        style: GoogleFonts.outfit(
+                          color: isDark ? Colors.white70 : Colors.black54,
+                          fontSize: 13,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Accept button
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF10B981),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        minimumSize: Size.zero,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        elevation: 0,
+                      ),
+                      onPressed: () => _acceptMateRequest(req),
+                      child: Text(
+                        'Accept',
+                        style: GoogleFonts.outfit(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    // Decline button
+                    IconButton(
+                      icon: const Icon(Icons.close_rounded, size: 18, color: Colors.grey),
+                      constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                      padding: EdgeInsets.zero,
+                      onPressed: () => _declineMateRequest(req),
+                      tooltip: 'Decline',
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          );
+        },
+        childCount: _pendingRequests.length,
+      ),
     );
   }
 
@@ -1081,6 +1839,32 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                 ),
                               );
                             }
+                          },
+                          onLongPress: () => _showConversationActionSheet(conversation),
+                          onSnapCameraTap: () {
+                            PocketSnapService.launchSnapWorkflow(
+                              context,
+                              userId: _currentUserId ?? '',
+                              profileId: _currentUserId ?? '',
+                              preselectedRecipientId: conversation.id,
+                              onUploaded: _handleRefresh,
+                            );
+                          },
+                          onSnapViewTap: () {
+                            SnapViewDialog.show(
+                              context: context,
+                              mediaUrl: conversation.snapMediaUrl ?? conversation.imageUrl ?? '',
+                              caption: conversation.snapCaption,
+                              senderName: conversation.name,
+                              isMe: false,
+                              onBurned: () {
+                                ref.read(conversationsProvider.notifier).markAsRead(conversation.id, false);
+                                if (PocketRobotService.isRobotId(conversation.id)) {
+                                  PocketRobotService.markRobotSnapAsRead(_currentUserId ?? '', conversation.id);
+                                }
+                                _handleRefresh();
+                              },
+                            );
                           },
                           onStatusTap: () {
                             if (conversation.hasStatus &&
@@ -1293,139 +2077,186 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
               ],
             ] else ...[
               // Standard View (No Search Query)
-              if (filteredConversations.isNotEmpty)
-                SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final conversation = filteredConversations[index];
-                      if (conversation.id == 'notifications_aggregator') {
-                        return _buildNotificationsTile(allNotifications.length);
-                      }
-                      return ConversationTile(
-                        key: ValueKey(conversation.id),
-                        conversation: conversation,
-                        currentUserId: _currentUserId ?? '',
-                        onTap: () {
-                          if (conversation.isTool) {
-                            _navigateToTool(conversation.toolTitle ?? '');
-                            return;
-                          }
+              // Category Filter Chips (All, Unread, Requests, Mates)
+              SliverToBoxAdapter(
+                child: _buildChatCategoryFilterChips(combined),
+              ),
 
-                          if (conversation.isNotification) {
-                            _showNotificationDetails(context, conversation);
-                          } else if (conversation.isActiveTimer) {
-                            if (conversation.teamData != null) {
-                              try {
-                                final team =
-                                    Team.fromJson(conversation.teamData!);
-                                Navigator.push(
-                                  context,
-                                  material.MaterialPageRoute(
-                                    builder: (context) =>
-                                        TeamDetailPage(team: team),
-                                  ),
-                                );
-                              } catch (e) {
-                                debugPrint('Team error: $e');
-                              }
-                            }
-                          } else if (conversation.isGroup) {
-                            Navigator.push(
-                              context,
-                              material.MaterialPageRoute(
-                                builder: (context) => WhatsAppGroupChat(
-                                  groupId: conversation.id,
-                                  groupName: conversation.name,
-                                  groupImage: conversation.imageUrl,
-                                ),
-                              ),
-                            );
-                          } else {
-                            // Mark as read
-                            ref
-                                .read(conversationsProvider.notifier)
-                                .markAsRead(conversation.id, false);
-
-                            Navigator.push(
-                              context,
-                              material.MaterialPageRoute(
-                                builder: (context) => WhatsAppGroupChat(
-                                  groupId: 'p:${conversation.id}',
-                                  groupName: conversation.name,
-                                  groupImage: conversation.imageUrl,
-                                ),
-                              ),
-                            );
-                          }
-                        },
-                        onLongPress: () {
-                          ref
-                              .read(conversationsProvider.notifier)
-                              .togglePin(conversation.id);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                                content: Text(conversation.isPinned
-                                    ? 'Chat Unpinned'
-                                    : 'Chat Pinned to Top')),
-                          );
-                        },
-                        onStatusTap: () {
-                          if (conversation.hasStatus &&
-                              conversation.statusData != null) {
-                            Navigator.push(
-                              context,
-                              material.MaterialPageRoute(
-                                builder: (context) => StatusViewerWrapper(
-                                  allStatusGroups: [
-                                    {
-                                      'profile': {
-                                        'id': conversation.id,
-                                        'name': conversation.name,
-                                        'profile_image_url':
-                                            conversation.imageUrl,
-                                      },
-                                      'statuses': conversation.statusData,
-                                      'is_own': false,
-                                    }
-                                  ],
-                                  initialGroupIndex: 0,
-                                  currentUserId: _currentUserId ?? '',
-                                  currentProfileId: profileId ?? '',
-                                  isFromGroup: true,
-                                ),
-                              ),
-                            );
-                          }
-                        },
-                      );
-                    },
-                    childCount: filteredConversations.length,
-                  ),
-                )
-              else
+              if (_chatCategoryFilterIndex == 0)
                 SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 80),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          material.Icons.chat_bubble_rounded,
-                          size: 64,
-                          color: material.Colors.white.withValues(alpha: 0.1),
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'No conversations yet',
-                          style: GoogleFonts.outfit(
-                            fontSize: 16,
-                            color: material.Colors.white.withValues(alpha: 0.3),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  child: _buildAnonymousLiveMatchBanner(isDark),
                 ),
+
+              if (_chatCategoryFilterIndex == 2) ...[
+                // Requests View (Strangers, Marketplace inquiries, Anonymous chat requests)
+                _buildPendingRequestsSliver(),
+              ] else ...[
+                // Active Conversations List
+                Builder(
+                  builder: (context) {
+                    List<ChatConversation> activeFiltered = filteredConversations;
+                    if (_chatCategoryFilterIndex == 1) {
+                      activeFiltered = filteredConversations.where((c) => c.unreadCount > 0).toList();
+                    } else if (_chatCategoryFilterIndex == 3) {
+                      activeFiltered = filteredConversations.where((c) =>
+                          !c.isGroup && !c.isTool && !c.isNotification && !c.isActiveTimer).toList();
+                    } else if (_chatCategoryFilterIndex == 4) {
+                      activeFiltered = filteredConversations.where((c) => c.isGroup).toList();
+                    }
+
+                    if (activeFiltered.isNotEmpty) {
+                      return SliverList(
+                        delegate: SliverChildBuilderDelegate(
+                          (context, index) {
+                            final conversation = activeFiltered[index];
+                            if (conversation.id == 'notifications_aggregator') {
+                              return _buildNotificationsTile(allNotifications.length);
+                            }
+                            return ConversationTile(
+                              key: ValueKey(conversation.id),
+                              conversation: conversation,
+                              currentUserId: _currentUserId ?? '',
+                              onTap: () {
+                                if (conversation.isTool) {
+                                  _navigateToTool(conversation.toolTitle ?? '');
+                                  return;
+                                }
+
+                                if (conversation.isNotification) {
+                                  _showNotificationDetails(context, conversation);
+                                } else if (conversation.isActiveTimer) {
+                                  if (conversation.teamData != null) {
+                                    try {
+                                      final team = Team.fromJson(conversation.teamData!);
+                                      Navigator.push(
+                                        context,
+                                        material.MaterialPageRoute(
+                                          builder: (context) => TeamDetailPage(team: team),
+                                        ),
+                                      );
+                                    } catch (e) {
+                                      debugPrint('Team error: $e');
+                                    }
+                                  }
+                                } else if (conversation.isGroup) {
+                                  Navigator.push(
+                                    context,
+                                    material.MaterialPageRoute(
+                                      builder: (context) => WhatsAppGroupChat(
+                                        groupId: conversation.id,
+                                        groupName: conversation.name,
+                                        groupImage: conversation.imageUrl,
+                                      ),
+                                    ),
+                                  );
+                                } else {
+                                  // Mark as read
+                                  ref.read(conversationsProvider.notifier).markAsRead(conversation.id, false);
+
+                                  Navigator.push(
+                                    context,
+                                    material.MaterialPageRoute(
+                                      builder: (context) => WhatsAppGroupChat(
+                                        groupId: 'p:${conversation.id}',
+                                        groupName: conversation.name,
+                                        groupImage: conversation.imageUrl,
+                                      ),
+                                    ),
+                                  );
+                                }
+                              },
+                              onLongPress: () => _showConversationActionSheet(conversation),
+                              onSnapCameraTap: () {
+                                PocketSnapService.launchSnapWorkflow(
+                                  context,
+                                  userId: _currentUserId ?? '',
+                                  profileId: _currentUserId ?? '',
+                                  preselectedRecipientId: conversation.id,
+                                  onUploaded: _handleRefresh,
+                                );
+                              },
+                              onSnapViewTap: () {
+                                SnapViewDialog.show(
+                                  context: context,
+                                  mediaUrl: conversation.snapMediaUrl ?? conversation.imageUrl ?? '',
+                                  caption: conversation.snapCaption,
+                                  senderName: conversation.name,
+                                  isMe: false,
+                                  onBurned: () {
+                                    ref.read(conversationsProvider.notifier).markAsRead(conversation.id, false);
+                                    if (PocketRobotService.isRobotId(conversation.id)) {
+                                      PocketRobotService.markRobotSnapAsRead(_currentUserId ?? '', conversation.id);
+                                    }
+                                    _handleRefresh();
+                                  },
+                                );
+                              },
+                              onStatusTap: () {
+                                if (conversation.hasStatus &&
+                                    conversation.statusData != null) {
+                                  Navigator.push(
+                                    context,
+                                    material.MaterialPageRoute(
+                                      builder: (context) => StatusViewerWrapper(
+                                        allStatusGroups: [
+                                          {
+                                            'profile': {
+                                              'id': conversation.id,
+                                              'name': conversation.name,
+                                              'profile_image_url': conversation.imageUrl,
+                                            },
+                                            'statuses': conversation.statusData,
+                                            'is_own': false,
+                                          }
+                                        ],
+                                        initialGroupIndex: 0,
+                                        currentUserId: _currentUserId ?? '',
+                                        currentProfileId: profileId ?? '',
+                                        isFromGroup: true,
+                                      ),
+                                    ),
+                                  );
+                                }
+                              },
+                            );
+                          },
+                          childCount: activeFiltered.length,
+                        ),
+                      );
+                    }
+
+                    return SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 80),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              material.Icons.chat_bubble_rounded,
+                              size: 64,
+                              color: material.Colors.white.withValues(alpha: 0.1),
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              _chatCategoryFilterIndex == 1
+                                  ? 'No unread messages'
+                                  : (_chatCategoryFilterIndex == 3
+                                      ? 'No Mates yet. Connect from Anonymous Chat!'
+                                      : (_chatCategoryFilterIndex == 4
+                                          ? 'No groups joined yet'
+                                          : 'No conversations yet')),
+                              style: GoogleFonts.outfit(
+                                fontSize: 16,
+                                color: material.Colors.white.withValues(alpha: 0.3),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ],
             ],
             if (_currentUserId != null && _searchQuery.isEmpty)
               SliverToBoxAdapter(
@@ -2587,6 +3418,7 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
   final String searchQuery;
   final bool isSearching;
   final ValueNotifier<String> vibesFilterNotifier;
+  final int pendingRequestsCount;
 
   _HomeMainHeaderDelegate({
     required this.currentUserId,
@@ -2606,6 +3438,7 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
     required this.searchQuery,
     required this.isSearching,
     required this.vibesFilterNotifier,
+    required this.pendingRequestsCount,
   });
 
   @override
@@ -2713,6 +3546,7 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                         _buildHeaderIconButton(
                           context,
                           icon: material.Icons.notifications_outlined,
+                          badgeCount: pendingRequestsCount,
                           onTap: () {
                             Navigator.push(
                               context,
@@ -2878,13 +3712,44 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                                         width: 1,
                                       ),
                                     ),
-                                    child: Icon(
-                                      material.Icons.notifications_outlined,
-                                      size: 17,
-                                      color: isDark
-                                          ? material.Colors.white
-                                          : material.Colors.black87,
-                                    ),
+                                    child: Stack(
+                                       clipBehavior: Clip.none,
+                                       children: [
+                                         Icon(
+                                           material.Icons.notifications_outlined,
+                                           size: 17,
+                                           color: isDark
+                                               ? material.Colors.white
+                                               : material.Colors.black87,
+                                         ),
+                                         if (pendingRequestsCount > 0)
+                                           Positioned(
+                                             top: -5,
+                                             right: -5,
+                                             child: Container(
+                                               padding: const EdgeInsets.all(2),
+                                               decoration: const BoxDecoration(
+                                                 color: Color(0xFFFF2A55),
+                                                 shape: BoxShape.circle,
+                                               ),
+                                               constraints: const BoxConstraints(
+                                                 minWidth: 14,
+                                                 minHeight: 14,
+                                               ),
+                                               child: Center(
+                                                 child: Text(
+                                                   pendingRequestsCount > 99 ? '99+' : '$pendingRequestsCount',
+                                                   style: GoogleFonts.outfit(
+                                                     color: Colors.white,
+                                                     fontSize: 8,
+                                                     fontWeight: FontWeight.w900,
+                                                   ),
+                                                 ),
+                                               ),
+                                             ),
+                                           ),
+                                       ],
+                                     ),
                                   ),
                                 ),
                                 const SizedBox(width: 8),
@@ -2978,7 +3843,7 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                                 ? 'Search thoughts...'
                                 : selectedIndex == 1
                                     ? 'Search vibes & stories...'
-                                    : 'Search for people, conversations, or tools...',
+                                    : 'Search chats, mates, tools...',
                         hintStyle: GoogleFonts.outfit(
                           color: isDark
                               ? material.Colors.white.withValues(alpha: 0.35)
@@ -3093,35 +3958,9 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
     );
   }
 
-  Widget _buildActiveCounter(int count) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: const Color(0xFF10B981).withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 8,
-            height: 8,
-            decoration: const BoxDecoration(
-                color: Color(0xFF10B981), shape: BoxShape.circle),
-          ),
-          const SizedBox(width: 8),
-          Text('$count Active',
-              style: GoogleFonts.outfit(
-                  color: const Color(0xFF10B981),
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold)),
-        ],
-      ),
-    );
-  }
 
   Widget _buildHeaderIconButton(BuildContext context,
-      {required IconData icon, required VoidCallback onTap}) {
+      {required IconData icon, required VoidCallback onTap, int badgeCount = 0}) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bgColor = isDark
         ? material.Colors.white.withValues(alpha: 0.08)
@@ -3146,7 +3985,45 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
               width: 1,
             ),
           ),
-          child: Icon(icon, color: iconColor, size: 20),
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Icon(icon, color: iconColor, size: 20),
+              if (badgeCount > 0)
+                Positioned(
+                  top: -5,
+                  right: -5,
+                  child: Container(
+                    padding: const EdgeInsets.all(3),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFF2A55),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFFFF2A55).withValues(alpha: 0.6),
+                          blurRadius: 6,
+                          spreadRadius: 1,
+                        ),
+                      ],
+                    ),
+                    constraints: const BoxConstraints(
+                      minWidth: 16,
+                      minHeight: 16,
+                    ),
+                    child: Center(
+                      child: Text(
+                        badgeCount > 99 ? '99+' : '$badgeCount',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 9,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -3159,7 +4036,8 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
         oldDelegate.isSearching != isSearching ||
         oldDelegate.statusRefreshKey != statusRefreshKey ||
         oldDelegate.activeUsersRef != activeUsersRef ||
-        oldDelegate.vibesFilterNotifier != vibesFilterNotifier;
+        oldDelegate.vibesFilterNotifier != vibesFilterNotifier ||
+        oldDelegate.pendingRequestsCount != pendingRequestsCount;
   }
 }
 

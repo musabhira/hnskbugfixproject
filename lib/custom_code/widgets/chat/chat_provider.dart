@@ -6,6 +6,8 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/services/local_sync_server.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
+import 'whats_app_groups_provider.dart';
 
 import 'chat_models.dart';
 
@@ -315,6 +317,15 @@ class ChatMessages extends _$ChatMessages {
     final actualId = isPersonal ? groupId.substring(2) : groupId;
     final uid = ref.read(currentUserIdProvider);
 
+    // 🤖 Pocket Robot: load messages from local storage
+    if (PocketRobotService.isRobotId(actualId)) {
+      final robotHistory = await PocketRobotService.getRobotChatHistory(uid, actualId);
+      final List<ChatMessage> robotMessages = robotHistory.map((data) {
+        return ChatMessage.fromJson(data);
+      }).toList();
+      return robotMessages;
+    }
+
     // If forcing latest (polling), we temporarily look at page 0 without resetting main pagination state
     final int pageToFetch = forceLatest ? 0 : _currentPage;
 
@@ -492,6 +503,44 @@ class ChatMessages extends _$ChatMessages {
     final isPersonal = groupId.startsWith('p:');
     final actualId = isPersonal ? groupId.substring(2) : groupId;
 
+    // 🤖 Pocket Robot chat: handle locally with AI-powered instant human-like response
+    if (PocketRobotService.isRobotId(actualId)) {
+      final robot = PocketRobotService.getRobotById(actualId) ?? PocketRobotService.getRobotByLevel(1);
+      final userMessage = ChatMessage(
+        id: 'msg_${DateTime.now().millisecondsSinceEpoch}',
+        receiverId: actualId,
+        senderId: uid,
+        messageText: text,
+        messageType: messageType,
+        fileUrl: fileUrl,
+        voiceDuration: voiceDuration,
+        replyToMessageId: replyToId,
+        createdAt: DateTime.now(),
+        isOptimistic: false,
+        isRead: true,
+      );
+
+      // Save user message locally
+      await PocketRobotService.saveRobotChatMessage(uid, actualId, userMessage.toJson());
+
+      // Update state with user message immediately
+      state.whenData((messages) {
+        final updated = [userMessage, ...messages];
+        state = AsyncData(updated);
+        _saveToCache(updated);
+      });
+
+      // Asynchronously generate authentic AI response from robot
+      _triggerRobotAiReply(
+        robot: robot,
+        userText: text,
+        uid: uid,
+        robotId: actualId,
+      );
+
+      return userMessage;
+    }
+
     // Create optimistic message
     final optimisticMessage = ChatMessage(
       id: 'temp_${DateTime.now().millisecondsSinceEpoch}',
@@ -666,6 +715,50 @@ class ChatMessages extends _$ChatMessages {
         _saveToCache(updatedList);
       });
       return null;
+    }
+  }
+
+  void _triggerRobotAiReply({
+    required PocketRobot robot,
+    required String userText,
+    required String uid,
+    required String robotId,
+  }) async {
+    try {
+      final history = await PocketRobotService.getRobotChatHistory(uid, robotId);
+      final aiReply = await PocketRobotService.generateRobotReply(
+        robot: robot,
+        userMessage: userText,
+        history: history,
+      );
+
+      final robotMessage = ChatMessage(
+        id: 'robot_msg_${DateTime.now().millisecondsSinceEpoch}',
+        receiverId: uid,
+        senderId: robotId,
+        messageText: aiReply,
+        messageType: 'text',
+        createdAt: DateTime.now(),
+        isRead: false,
+        senderProfile: {
+          'name': robot.name,
+          'profile_image_url': robot.avatarUrl,
+        },
+      );
+
+      await PocketRobotService.saveRobotChatMessage(uid, robotId, robotMessage.toJson());
+
+      state.whenData((messages) {
+        final updated = [robotMessage, ...messages];
+        state = AsyncData(updated);
+        _saveToCache(updated);
+      });
+
+      try {
+        ref.invalidate(conversationsProvider);
+      } catch (_) {}
+    } catch (e) {
+      debugPrint('Error triggering robot AI reply: $e');
     }
   }
 

@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
@@ -27,6 +28,7 @@ import 'package:gal/gal.dart';
 import 'package:dio/dio.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/voice_recorder.dart';
 import 'package:pocket_mates_app/custom_code/services/local_sync_server.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_snap_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/thread_feed_page.dart';
 import '/auth/auth_helper.dart';
 import 'index.dart';
@@ -62,6 +64,7 @@ class _MessageScreenState extends State<MessageScreen> {
   Map<String, dynamic>? hideData;
   Timer? _messageRefreshTimer;
   Timer? _ephemeralCleanupTimer;
+  StreamSubscription? _liveSyncSubscription;
   final StreamController<List<Map<String, dynamic>>> _messagesStreamController =
       StreamController<List<Map<String, dynamic>>>.broadcast();
 
@@ -294,7 +297,25 @@ class _MessageScreenState extends State<MessageScreen> {
   }
 
   void _setupMessageStream() {
-    _messageRefreshTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
+    // 1. High-Speed Dart Server Live Stream (Snapchat speed 0ms lag)
+    _liveSyncSubscription = LocalSyncServer().liveMessageStream.listen((event) {
+      final chatId = event['chatId']?.toString();
+      if (chatId == widget.receiverId || chatId == _senderId) {
+        final newMsg = event['message'];
+        if (newMsg is Map<String, dynamic> && mounted) {
+          final id = newMsg['id']?.toString();
+          final bool exists = _messages.any((m) => m['id']?.toString() == id);
+          if (!exists) {
+            safeSetState(() {
+              _messages.insert(0, newMsg);
+            });
+          }
+        }
+      }
+    });
+
+    // 2. Periodic sync
+    _messageRefreshTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
       if (!_isBlocked && !_isBlockedByOther) {
         _loadMessages();
         _loadEphemeralMessages();
@@ -541,6 +562,15 @@ class _MessageScreenState extends State<MessageScreen> {
       _messages.insert(0, optimisticMessage);
     });
 
+    // ⚡ LocalSyncServer Instant Dispatch (0ms latency)
+    try {
+      LocalSyncServer().dispatchInstantMessage(
+        userId: _senderId,
+        chatOrGroupId: widget.receiverId,
+        message: optimisticMessage,
+      );
+    } catch (_) {}
+
     try {
       debugPrint('Sending message to: ${widget.receiverId}');
 
@@ -609,17 +639,27 @@ class _MessageScreenState extends State<MessageScreen> {
     if (_isBlocked || _isBlockedByOther) return;
 
     try {
-      final status = await Permission.camera.request();
-      if (!status.isGranted) {
-        if (status.isPermanentlyDenied) openAppSettings();
-        _showErrorSnackBar('Camera access denied');
-        return;
+      if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
+        final status = await Permission.camera.request();
+        if (!status.isGranted) {
+          if (status.isPermanentlyDenied) openAppSettings();
+          _showErrorSnackBar('Camera access denied');
+          return;
+        }
       }
 
-      final XFile? photo = await _imagePicker.pickImage(
-        source: ImageSource.camera,
-        imageQuality: 70,
-      );
+      XFile? photo;
+      if (!kIsWeb && Platform.isWindows) {
+        photo = await _imagePicker.pickImage(
+          source: ImageSource.gallery,
+          imageQuality: 85,
+        );
+      } else {
+        photo = await _imagePicker.pickImage(
+          source: ImageSource.camera,
+          imageQuality: 75,
+        );
+      }
 
       if (photo != null) {
         // Optimistic UI for Ephemeral Photo
@@ -1387,6 +1427,7 @@ class _MessageScreenState extends State<MessageScreen> {
     _scrollController.dispose();
     _messageRefreshTimer?.cancel();
     _ephemeralCleanupTimer?.cancel();
+    _liveSyncSubscription?.cancel();
     _messagesStreamController.close();
     _audioRecorder.dispose();
     for (var timer in _scheduledDeletions.values) {
@@ -1591,6 +1632,24 @@ class _MessageScreenState extends State<MessageScreen> {
                             color: _isRecording ? Colors.red : Colors.yellow,
                           ),
                           onPressed: _showMediaOptionsDialog,
+                        ),
+                        // ⚡ Dedicated Snap / Camera button (Snapchat speed)
+                        IconButton(
+                          icon: const Icon(
+                            Icons.camera_alt_rounded,
+                            color: Color(0xFFFFFC00),
+                            size: 22,
+                          ),
+                          tooltip: 'Send Snap ⚡',
+                          onPressed: () {
+                            PocketSnapService.launchSnapWorkflow(
+                              context,
+                              userId: _senderId,
+                              profileId: _senderId,
+                              preselectedRecipientId: widget.receiverId,
+                              onUploaded: _loadMessages,
+                            );
+                          },
                         ),
                         Expanded(
                           child: Container(
@@ -2167,6 +2226,110 @@ class _MessageScreenState extends State<MessageScreen> {
                   ),
                 ),
               ),
+            ],
+          ),
+        );
+      case 'snap':
+        final snapUrl = message['content'] ?? message['media_url'] ?? '';
+        final caption = message['message_text'] ?? message['caption'] ?? '';
+        return Container(
+          width: 230,
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: const Color(0xFF131622),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFFFFC00).withValues(alpha: 0.4), width: 1.5),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFFFFC00),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.flash_on_rounded, color: Colors.black, size: 14),
+                  ),
+                  const SizedBox(width: 8),
+                  const Text(
+                    '⚡ Pocket Snap',
+                    style: TextStyle(
+                      color: Color(0xFFFFFC00),
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              if (snapUrl.toString().isNotEmpty)
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ImageViewer(
+                          imageUrl: snapUrl.toString(),
+                          title: '⚡ Pocket Snap',
+                        ),
+                      ),
+                    );
+                  },
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        CachedNetworkImage(
+                          imageUrl: snapUrl.toString(),
+                          height: 180,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          placeholder: (c, u) => Container(
+                            height: 180,
+                            color: Colors.black26,
+                            child: const Center(
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFFFFFC00)),
+                            ),
+                          ),
+                          errorWidget: (c, u, e) => const Icon(Icons.broken_image, color: Colors.white54),
+                        ),
+                        Positioned(
+                          bottom: 8,
+                          right: 8,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.black87,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.visibility, color: Color(0xFFFFFC00), size: 12),
+                                SizedBox(width: 4),
+                                Text(
+                                  'View Snap',
+                                  style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              if (caption.toString().isNotEmpty && caption != '🔥 Pocket Snap') ...[
+                const SizedBox(height: 6),
+                Text(
+                  caption.toString(),
+                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                ),
+              ],
             ],
           ),
         );

@@ -12,6 +12,7 @@ import 'package:image/image.dart' as img;
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortress_defense_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_snap_service.dart';
 
 class StoryStickerItem {
   final String id;
@@ -689,6 +690,273 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
     }
   }
 
+  Future<void> _showSendSnapToMatesSheet(BuildContext context) async {
+    final bytes = _imageBytes ?? (_selectedFile != null ? await _selectedFile!.readAsBytes() : null);
+    if (bytes == null && _overlayText.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Please take a photo or add stickers before sending Snap!',
+              style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    final mates = await PocketSnapService.getPocketMates(widget.userId);
+    if (!mounted) return;
+
+    final selectedIds = <String>{};
+    bool postToStoryToo = true;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setModalState) {
+          return Container(
+            height: MediaQuery.of(context).size.height * 0.72,
+            decoration: const BoxDecoration(
+              color: Color(0xFF131622),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            child: Column(
+              children: [
+                // Top handle
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.white24,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.flash_on_rounded, color: Color(0xFFFFFC00), size: 24),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Send Snap To',
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        setModalState(() {
+                          if (selectedIds.length == mates.length) {
+                            selectedIds.clear();
+                          } else {
+                            selectedIds.addAll(mates.map((m) => m.id));
+                          }
+                        });
+                      },
+                      child: Text(
+                        selectedIds.length == mates.length ? 'Deselect All' : 'Select All',
+                        style: GoogleFonts.outfit(color: const Color(0xFFFFFC00), fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                // Checkbox: Also post to Story
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.auto_awesome, color: Color(0xFFFFFC00), size: 18),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Also add to My Vibe Story 🌟',
+                          style: GoogleFonts.outfit(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                      Switch(
+                        value: postToStoryToo,
+                        activeColor: const Color(0xFFFFFC00),
+                        onChanged: (val) => setModalState(() => postToStoryToo = val),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                // List of Mates
+                Expanded(
+                  child: mates.isEmpty
+                      ? Center(
+                          child: Text(
+                            'No Pocket Mates found yet.\nConnect with learners in English Hub!',
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.outfit(color: Colors.white54),
+                          ),
+                        )
+                      : ListView.builder(
+                          itemCount: mates.length,
+                          itemBuilder: (context, idx) {
+                            final mate = mates[idx];
+                            final isSelected = selectedIds.contains(mate.id);
+                            return ListTile(
+                              contentPadding: const EdgeInsets.symmetric(vertical: 2, horizontal: 4),
+                              leading: Stack(
+                                children: [
+                                  CircleAvatar(
+                                    radius: 22,
+                                    backgroundImage: mate.imageUrl != null && mate.imageUrl!.isNotEmpty
+                                        ? NetworkImage(mate.imageUrl!)
+                                        : null,
+                                    backgroundColor: const Color(0xFF1E293B),
+                                    child: mate.imageUrl == null
+                                        ? Text(
+                                            mate.name.isNotEmpty ? mate.name[0].toUpperCase() : '?',
+                                            style: const TextStyle(color: Color(0xFFFFFC00), fontWeight: FontWeight.bold),
+                                          )
+                                        : null,
+                                  ),
+                                  if (isSelected)
+                                    Positioned(
+                                      right: 0,
+                                      bottom: 0,
+                                      child: Container(
+                                        padding: const EdgeInsets.all(2),
+                                        decoration: const BoxDecoration(
+                                          color: Color(0xFFFFFC00),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: const Icon(Icons.check, size: 12, color: Colors.black),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                              title: Text(
+                                mate.name,
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                                ),
+                              ),
+                              trailing: IconButton(
+                                icon: Icon(
+                                  isSelected ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
+                                  color: isSelected ? const Color(0xFFFFFC00) : Colors.white38,
+                                ),
+                                onPressed: () {
+                                  setModalState(() {
+                                    if (isSelected) {
+                                      selectedIds.remove(mate.id);
+                                    } else {
+                                      selectedIds.add(mate.id);
+                                    }
+                                  });
+                                },
+                              ),
+                              onTap: () {
+                                setModalState(() {
+                                  if (isSelected) {
+                                    selectedIds.remove(mate.id);
+                                  } else {
+                                    selectedIds.add(mate.id);
+                                  }
+                                });
+                              },
+                            );
+                          },
+                        ),
+                ),
+                const SizedBox(height: 12),
+                // Send button
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    onPressed: (selectedIds.isEmpty && !postToStoryToo)
+                        ? null
+                        : () async {
+                            Navigator.pop(ctx);
+                            setState(() => _isUploading = true);
+                            try {
+                              await PocketSnapService.sendSnapDirectly(
+                                senderId: widget.userId,
+                                senderProfileId: widget.profileId,
+                                recipientIds: selectedIds.toList(),
+                                imageBytes: bytes ?? Uint8List(0),
+                                caption: _captionController.text.trim().isEmpty ? null : _captionController.text.trim(),
+                                postToStoryToo: postToStoryToo,
+                              );
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Row(
+                                      children: [
+                                        const Icon(Icons.flash_on_rounded, color: Colors.black),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: Text(
+                                            '⚡ Snap sent to ${selectedIds.length} Pocket Mates! (+15 FDC)',
+                                            style: GoogleFonts.outfit(color: Colors.black, fontWeight: FontWeight.bold),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    backgroundColor: const Color(0xFFFFFC00),
+                                    behavior: SnackBarBehavior.floating,
+                                  ),
+                                );
+                                widget.onStatusUploaded?.call();
+                                Navigator.pop(context, true);
+                              }
+                            } catch (e) {
+                              debugPrint('Error sending direct snaps: $e');
+                              if (mounted) {
+                                setState(() => _isUploading = false);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Failed to send snap: $e'), backgroundColor: Colors.red),
+                                );
+                              }
+                            }
+                          },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFFFFC00),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+                      elevation: 4,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          selectedIds.isNotEmpty
+                              ? 'Send Snap (${selectedIds.length}) 🚀'
+                              : (postToStoryToo ? 'Post to Story Only 🌟' : 'Select a Mate'),
+                          style: GoogleFonts.outfit(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16),
+                        ),
+                        const SizedBox(width: 8),
+                        const Icon(Icons.arrow_forward_rounded, color: Colors.black),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final filter = _filters[_selectedFilterIndex];
@@ -1172,17 +1440,36 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       Text(
-                                        _isPrivateStory ? 'Post to Pocket Mates 🔒' : 'Post to Story 🌟',
+                                        _isPrivateStory ? 'Post to Mates 🔒' : 'Post to Story 🌟',
                                         style: GoogleFonts.outfit(
                                           color: Colors.black,
                                           fontWeight: FontWeight.bold,
-                                          fontSize: 14,
+                                          fontSize: 13,
                                         ),
                                       ),
                                       const SizedBox(width: 6),
                                       const Icon(Icons.send_rounded, color: Colors.black, size: 18),
                                     ],
                                   ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+
+                      // Direct Snap to Pocket Mates Button (Snapchat style)
+                      SizedBox(
+                        height: 46,
+                        child: ElevatedButton.icon(
+                          onPressed: _isUploading ? null : () => _showSendSnapToMatesSheet(context),
+                          icon: const Icon(Icons.flash_on_rounded, color: Colors.black, size: 18),
+                          label: Text(
+                            'Send Snap ⚡',
+                            style: GoogleFonts.outfit(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 13),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                            elevation: 4,
                           ),
                         ),
                       ),

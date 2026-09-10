@@ -5,12 +5,9 @@ import 'package:pocket_mates_app/pages/home_page/home_page_widget.dart';
 
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/flutter_flow_util.dart';
 import 'package:flutter/material.dart';
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
-
-import 'package:pocket_mates_app/custom_code/widgets/subscription_page.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
@@ -52,7 +49,6 @@ class ProfileCustomWidget extends StatefulWidget {
 }
 
 class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
-  String _currentPlan = 'free';
   Color? _selectedColor = Colors.black;
   String? _colorCode = '#000000';
   Color? _selectedColor1 = Colors.white;
@@ -255,12 +251,6 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
   final TextEditingController instaIdController = TextEditingController();
   final TextEditingController instaLinkController = TextEditingController();
 
-  // Verification State
-  bool _isShopNameVerified = false;
-  String? _shopNameMessage;
-  bool _checkingShopName = false;
-  Color _shopNameMessageColor = const Color(0xFF95A1AC); // Initial grey fallback
-
   // Getters to access the values
   int? get day =>
       _dayController.text.isNotEmpty ? int.tryParse(_dayController.text) : null;
@@ -353,35 +343,22 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
   @override
   void initState() {
     super.initState();
-    _loadCurrentPlan();
-    _getCurrentUser();
+    _currentUserId = _supabase.auth.currentUser?.id;
     _loadProfileData();
     fetchHideStatus();
-  }
-
-  Future<void> _loadCurrentPlan() async {
-    final prefs = await SharedPreferences.getInstance();
-    if (mounted) {
-      safeSetState(() {
-        _currentPlan = prefs.getString('handskill_plan') ?? 'free';
-      });
-    }
-  }
-
-  Future<void> _getCurrentUser() async {
-    final user = _supabase.auth.currentUser;
-    if (user != null) {
-      safeSetState(() {
-        _currentUserId = user.id;
-      });
-    }
   }
 
   Future<void> _loadProfileData() async {
     try {
       safeSetState(() => _isLoading = true);
 
-      if (_currentUserId == null) return;
+      _currentUserId ??= _supabase.auth.currentUser?.id;
+      if (_currentUserId == null) {
+        // Fallback: wait briefly if session is restoring
+        await Future.delayed(const Duration(milliseconds: 300));
+        _currentUserId ??= _supabase.auth.currentUser?.id;
+        if (_currentUserId == null) return;
+      }
 
       // Fetch profile data
       final profileResponse = await _supabase
@@ -646,32 +623,17 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
 
 
 
-    // Check for location
-    if (isValid && (selectedCountry == null || selectedCountry!.isEmpty)) {
+    // Check for location (Country is required; state and city are optional if unavailable)
+    if (isValid && (selectedCountry == null || selectedCountry!.trim().isEmpty)) {
       isValid = false;
       errorMessage = 'Please select your country';
-    } else if (isValid && (selectedState == null || selectedState!.isEmpty)) {
-      isValid = false;
-      errorMessage = 'Please select your state';
-    } else if (isValid && (selectedCity == null || selectedCity!.isEmpty)) {
-      isValid = false;
-      errorMessage = 'Please select your city';
     }
 
-    // Check for colors
-    if (isValid && (_colorCode == null || _colorCode!.isEmpty)) {
-      isValid = false;
-      errorMessage = 'Please select a background color';
-    } else if (isValid && (_colorCode1 == null || _colorCode1!.isEmpty)) {
-      isValid = false;
-      errorMessage = 'Please select a background text color';
-    } else if (isValid && (_colorCode2 == null || _colorCode2!.isEmpty)) {
-      isValid = false;
-      errorMessage = 'Please select a button color';
-    } else if (isValid && (_colorCode3 == null || _colorCode3!.isEmpty)) {
-      isValid = false;
-      errorMessage = 'Please select a button text color';
-    }
+    // Default colors if unselected
+    _colorCode = (_colorCode != null && _colorCode!.isNotEmpty) ? _colorCode : '#000000';
+    _colorCode1 = (_colorCode1 != null && _colorCode1!.isNotEmpty) ? _colorCode1 : '#FFFFFF';
+    _colorCode2 = (_colorCode2 != null && _colorCode2!.isNotEmpty) ? _colorCode2 : '#FFD700';
+    _colorCode3 = (_colorCode3 != null && _colorCode3!.isNotEmpty) ? _colorCode3 : '#000000';
 
     // If validation fails, show error and return
     if (!isValid) {
@@ -691,8 +653,19 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
     try {
       safeSetState(() => _isLoading = true);
 
-      // _currentUserId = 'd4d20f8e-c56c-444f-8a4d-b01ed60fb05b';
-      _currentUserId = _supabase.auth.currentUser!.id;
+      final currentUser = _supabase.auth.currentUser;
+      if (currentUser == null) {
+        if (mounted) {
+          _scaffoldMessengerKey.currentState?.showSnackBar(
+            const SnackBar(
+              content: Text('Please log in to save your profile', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return;
+      }
+      _currentUserId = currentUser.id;
 
       if (_selectedImageBytes != null) {
         try {
@@ -847,49 +820,6 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
         .trim()
         .replaceAll(RegExp(r'\s+'), '-')
         .replaceAll(RegExp(r'[^a-z0-9\-]'), '');
-  }
-
-  Future<void> _checkShopName() async {
-    final shopName = _shopNameController.text.trim();
-    if (shopName.isEmpty) {
-      safeSetState(() {
-        _shopNameMessage = 'Please enter a shop name';
-        _shopNameMessageColor = Colors.red;
-        _isShopNameVerified = false;
-      });
-      return;
-    }
-
-    safeSetState(() => _checkingShopName = true);
-
-    try {
-      final slug = _sanitizeSlug(shopName);
-
-      final response = await _supabase
-          .from('profile')
-          .select('user_id')
-          .eq('slug', slug)
-          .maybeSingle();
-
-      if (response != null && response['user_id'] != _currentUserId) {
-        safeSetState(() {
-          _shopNameMessage = 'Shop name is already taken';
-          _shopNameMessageColor = Colors.red;
-          _isShopNameVerified = false;
-        });
-      } else {
-        safeSetState(() {
-          _shopNameMessage =
-              'Shop name available! Website: handskillapp.web.app/$slug';
-          _shopNameMessageColor = Colors.green;
-          _isShopNameVerified = true;
-        });
-      }
-    } catch (e) {
-      debugPrint('Error checking shop name: $e');
-    } finally {
-      safeSetState(() => _checkingShopName = false);
-    }
   }
 
   // Helper method to check for objectionable content
@@ -1095,8 +1025,6 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
           selectedState = '';
           selectedCity = '';
           _selectedTemplateId = 'default';
-          _shopNameMessage = null;
-          _isShopNameVerified = false;
         });
 
         if (mounted) {
@@ -1248,52 +1176,8 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
     }
   }
 
-// Helper method to build beautiful location tiles
-  Widget _buildLocationTile({
-    required String title,
-    required String value,
-    required IconData icon,
-    required Color color,
-  }) {
-    final theme = DarkModeTheme();
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: color.withValues(alpha: 0.3), width: 1),
-      ),
-      child: ListTile(
-        leading: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.2),
-            shape: BoxShape.circle,
-          ),
-          child: Icon(icon, color: color),
-        ),
-        title: Text(
-          title,
-          style: TextStyle(
-            color: theme.primaryText.withValues(alpha: 0.7),
-            fontSize: 14,
-          ),
-        ),
-        subtitle: Text(
-          value,
-          style: TextStyle(
-            color: theme.primaryText,
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-          ),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    bool isHidden = hideData?['is_hidden'] ?? true;
     final theme = DarkModeTheme();
 
     Color ensureContrast(Color fg, Color bg, {bool isButton = true}) {
@@ -1951,7 +1835,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                                 fontFamily: 'Montserrat',
                                 color: theme.primaryText.withValues(alpha: 0.85),
                                 fontSize: 11.5,
-                                height: 1.4,
+                                lineHeight: 1.4,
                               ),
                             ),
                           ),
@@ -2336,7 +2220,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                     ),
                   ),
 
-                  // 🎯 60-Day English Journey Theme Banner
+                  // 🎯 90-Day Sovereign English Journey Theme Banner
                   Container(
                     margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                     padding: const EdgeInsets.all(14),
@@ -2357,7 +2241,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                             const Text('🎯', style: TextStyle(fontSize: 18)),
                             const SizedBox(width: 8),
                             Text(
-                              '60-Day English Palette Evolution',
+                              '90-Day Sovereign English Palette Evolution',
                               style: GoogleFonts.outfit(
                                 color: const Color(0xFFFFFC00),
                                 fontWeight: FontWeight.bold,
@@ -2382,7 +2266,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                             },
                             icon: const Icon(Icons.auto_awesome, size: 14, color: Color(0xFFFFFC00)),
                             label: Text(
-                              'View 60-Day Dashboard & 20 Palettes',
+                              'View 90-Day Dashboard & 20 Palettes',
                               style: GoogleFonts.outfit(color: const Color(0xFFFFFC00), fontSize: 12, fontWeight: FontWeight.bold),
                             ),
                             style: OutlinedButton.styleFrom(
@@ -2678,319 +2562,6 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildTemplateItem(String id, String name, IconData icon) {
-    final theme = DarkModeTheme();
-    final isSelected = _selectedTemplateId == id;
-    
-    // Build the visual preview representing the template layout
-    Widget previewWidget;
-    switch (id) {
-      case 'default':
-        // React Glassmorphism
-        previewWidget = Container(
-          height: 100,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
-            gradient: const LinearGradient(
-              colors: [Color(0xFF3A1C71), Color(0xFFD76D77), Color(0xFFFFAF7B)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-          child: Stack(
-            children: [
-              Center(
-                child: Container(
-                  width: 100,
-                  height: 60,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(width: 16, height: 16, decoration: const BoxDecoration(shape: BoxShape.circle, color: Colors.white70)),
-                      const SizedBox(height: 4),
-                      Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white70, borderRadius: BorderRadius.circular(2))),
-                      const SizedBox(height: 2),
-                      Container(width: 25, height: 4, decoration: BoxDecoration(color: Colors.white54, borderRadius: BorderRadius.circular(2))),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-        break;
-      case 'minimal':
-        // React Cyber Neon
-        previewWidget = Container(
-          height: 100,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
-            color: const Color(0xFF0D0221),
-          ),
-          child: Stack(
-            children: [
-              // Neon Grid mock
-              Positioned.fill(
-                child: GridView.builder(
-                  physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 4,
-                    crossAxisSpacing: 4,
-                    mainAxisSpacing: 4,
-                  ),
-                  itemCount: 16,
-                  itemBuilder: (context, idx) => Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(color: const Color(0x3300FFFF), width: 0.5),
-                    ),
-                  ),
-                ),
-              ),
-              Center(
-                child: Container(
-                  width: 90,
-                  height: 60,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF140152),
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: const Color(0xFF00FFFF), width: 1.5),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFF00FFFF).withValues(alpha: 0.5),
-                        blurRadius: 6,
-                        spreadRadius: 1,
-                      )
-                    ],
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(width: 14, height: 14, decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0xFFFF007F))),
-                      const SizedBox(height: 4),
-                      Container(width: 50, height: 4, decoration: BoxDecoration(color: const Color(0xFF00FFFF), borderRadius: BorderRadius.circular(2))),
-                      const SizedBox(height: 2),
-                      Container(width: 30, height: 4, decoration: BoxDecoration(color: const Color(0xFF00FFFF).withValues(alpha: 0.7), borderRadius: BorderRadius.circular(2))),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-        break;
-      case 'modern':
-        // Next.js Portfolio
-        previewWidget = Container(
-          height: 100,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
-            color: const Color(0xFFF1F5F9),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(width: 16, height: 16, decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0xFF0F172A))),
-                    const SizedBox(width: 6),
-                    Container(width: 40, height: 6, decoration: BoxDecoration(color: const Color(0xFF0F172A), borderRadius: BorderRadius.circular(2))),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Expanded(
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(color: const Color(0xFFCBD5E1)),
-                          ),
-                          child: const Center(child: Icon(Icons.shopping_bag_outlined, size: 16, color: Color(0xFF64748B))),
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(color: const Color(0xFFCBD5E1)),
-                          ),
-                          child: const Center(child: Icon(Icons.settings_outlined, size: 16, color: Color(0xFF64748B))),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-        break;
-      case 'classic':
-      default:
-        // Three.js 3D Web
-        previewWidget = Container(
-          height: 100,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
-            gradient: const LinearGradient(
-              colors: [Color(0xFF0A0F1D), Color(0xFF070A13)],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-            ),
-          ),
-          child: Stack(
-            children: [
-              // Floating orbital particles
-              Positioned(
-                left: 15,
-                top: 15,
-                child: Container(
-                  width: 20,
-                  height: 20,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: RadialGradient(
-                      colors: [const Color(0xFF8B5CF6).withValues(alpha: 0.8), const Color(0xFF8B5CF6).withValues(alpha: 0)],
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                right: 20,
-                bottom: 15,
-                child: Container(
-                  width: 30,
-                  height: 30,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: RadialGradient(
-                      colors: [const Color(0xFFEC4899).withValues(alpha: 0.6), const Color(0xFFEC4899).withValues(alpha: 0)],
-                    ),
-                  ),
-                ),
-              ),
-              // Floating 3D card layout in perspective
-              Center(
-                child: Transform(
-                  transform: Matrix4.identity()
-                    ..setEntry(3, 2, 0.003)
-                    ..rotateX(0.2)
-                    ..rotateY(-0.2),
-                  alignment: Alignment.center,
-                  child: Container(
-                    width: 70,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.3),
-                          blurRadius: 6,
-                          offset: const Offset(2, 4),
-                        ),
-                      ],
-                    ),
-                    child: Center(
-                      child: Container(
-                        width: 14,
-                        height: 14,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Color(0xFFEC4899),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-        break;
-    }
-
-    return GestureDetector(
-      onTap: () => safeSetState(() => _selectedTemplateId = id),
-      child: Container(
-        width: 160,
-        margin: const EdgeInsets.only(right: 14, bottom: 8),
-        decoration: BoxDecoration(
-          color: theme.secondaryBackground,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isSelected ? theme.primary : theme.alternate,
-            width: 2.5,
-          ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: theme.primary.withValues(alpha: 0.4),
-                    blurRadius: 12,
-                    spreadRadius: 2,
-                  )
-                ]
-              : [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  )
-                ],
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: previewWidget,
-              ),
-              const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    icon,
-                    size: 14,
-                    color: isSelected ? theme.primary : theme.secondaryText,
-                  ),
-                  const SizedBox(width: 4),
-                  Flexible(
-                    child: Text(
-                      name,
-                      textAlign: TextAlign.center,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: isSelected ? theme.primary : theme.primaryText,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

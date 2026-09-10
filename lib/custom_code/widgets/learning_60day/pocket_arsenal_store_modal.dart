@@ -174,7 +174,7 @@ class _PocketArsenalStoreModalState extends State<PocketArsenalStoreModal> {
                         ),
                       ),
                       Text(
-                        'Spend earned coins on House repairs, Army, & Shield upgrades',
+                        'Spend your Pocket Score on House repairs, Army, & Shield upgrades',
                         style: GoogleFonts.inter(
                           color: Colors.white60,
                           fontSize: 11.5,
@@ -201,6 +201,15 @@ class _PocketArsenalStoreModalState extends State<PocketArsenalStoreModal> {
                           color: const Color(0xFFFFD700),
                           fontWeight: FontWeight.w900,
                           fontSize: 14,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        'PTS',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFFFFFC00),
+                          fontWeight: FontWeight.w800,
+                          fontSize: 10,
                         ),
                       ),
                     ],

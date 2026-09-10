@@ -616,56 +616,8 @@ class _FlameProfileBannerWidgetState extends State<FlameProfileBannerWidget> {
             left: 14,
             right: 14,
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                // Active Fortress Perk Pill
-                Flexible(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4.5),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          perk.badgeColor.withValues(alpha: 0.35),
-                          Colors.black.withValues(alpha: 0.65),
-                        ],
-                      ),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: perk.badgeColor.withValues(alpha: 0.8),
-                        width: 1.2,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: perk.badgeColor.withValues(alpha: 0.3),
-                          blurRadius: 10,
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(perk.icon, style: const TextStyle(fontSize: 12)),
-                        const SizedBox(width: 5),
-                        Flexible(
-                          child: Text(
-                            perk.shortBadgeText.toUpperCase(),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.outfit(
-                              color: Colors.white,
-                              fontSize: 9.5,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: 0.6,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                const SizedBox(width: 8),
-
                 // Active Companion Stage Chip
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4.5),

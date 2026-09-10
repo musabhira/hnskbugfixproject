@@ -4,8 +4,8 @@ import 'package:pocket_mates_app/custom_code/widgets/legal_policy_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/index.dart';
 import 'package:go_router/go_router.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:pocket_mates_app/flutter_flow/flutter_flow_theme.dart';
 import 'package:pocket_mates_app/main.dart';
+import 'package:pocket_mates_app/custom_code/widgets/admin_auth_service.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -17,11 +17,18 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   String _appVersion = 'Loading...';
   bool _isProcessing = false;
+  bool _canAccessAdmin = false;
 
   @override
   void initState() {
     super.initState();
     _initPackageInfo();
+    _checkAdminAccess();
+  }
+
+  Future<void> _checkAdminAccess() async {
+    final can = await AdminAuthService.canAccessAdmin();
+    if (mounted) setState(() => _canAccessAdmin = can);
   }
 
   Future<void> _initPackageInfo() async {
@@ -177,35 +184,45 @@ class _SettingsPageState extends State<SettingsPage> {
                 textColor: Colors.red,
                 iconColor: Colors.red,
               ),
+              if (_canAccessAdmin) ...[
+                const SizedBox(height: 24),
+                const _SectionHeader(title: 'Master Control'),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.admin_panel_settings_rounded, color: Color(0xFFFFFC00), size: 20),
+                  ),
+                  title: const Text(
+                    'Admin Panel',
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: const Text(
+                    'System, Curriculum & Cohort Command Center',
+                    style: TextStyle(color: Colors.white54, fontSize: 12),
+                  ),
+                  trailing: const Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFFFFFC00), size: 14),
+                  onTap: () => AdminAuthService.authenticateAndOpen(context),
+                ),
+              ],
               const SizedBox(height: 24),
               const _SectionHeader(title: 'About'),
-              StatefulBuilder(builder: (context, setState) {
-                int versionTapCount = 0;
-                return ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.info_outline, color: Colors.white54),
-                  title: const Text(
-                    'App Version',
-                    style:
-                        TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
-                  ),
-                  trailing: Text(
-                    _appVersion,
-                    style: const TextStyle(color: Colors.white54),
-                  ),
-                  onTap: () {
-                    versionTapCount++;
-                    if (versionTapCount == 10) { // Reduced for easier testing in dev
-                      versionTapCount = 0;
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const AdminDashboardPage()),
-                      );
-                    }
-                  },
-                );
-              }),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.info_outline, color: Colors.white54),
+                title: const Text(
+                  'App Version',
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+                ),
+                trailing: Text(
+                  _appVersion,
+                  style: const TextStyle(color: Colors.white54),
+                ),
+              ),
             ],
           ),
         ),

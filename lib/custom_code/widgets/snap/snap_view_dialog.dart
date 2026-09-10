@@ -16,6 +16,8 @@ class SnapViewDialog extends StatefulWidget {
   final int durationSeconds;
   final VoidCallback onBurned;
 
+  final String? caption;
+
   const SnapViewDialog({
     super.key,
     required this.mediaUrl,
@@ -23,6 +25,7 @@ class SnapViewDialog extends StatefulWidget {
     required this.isMe,
     this.durationSeconds = 8,
     required this.onBurned,
+    this.caption,
   });
 
   static Future<void> show({
@@ -32,6 +35,7 @@ class SnapViewDialog extends StatefulWidget {
     required bool isMe,
     int durationSeconds = 8,
     required VoidCallback onBurned,
+    String? caption,
   }) {
     return showGeneralDialog(
       context: context,
@@ -43,6 +47,7 @@ class SnapViewDialog extends StatefulWidget {
         isMe: isMe,
         durationSeconds: durationSeconds,
         onBurned: onBurned,
+        caption: caption,
       ),
     );
   }
@@ -219,7 +224,33 @@ class _SnapViewDialogState extends State<SnapViewDialog> with SingleTickerProvid
                 ),
               ),
 
-              // 3. Bottom screenshot protection alert
+              // 3. Snapchat-style Caption Banner
+              if (widget.caption != null && widget.caption!.trim().isNotEmpty)
+                Positioned(
+                  bottom: 70,
+                  left: 16,
+                  right: 16,
+                  child: Center(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.75),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        widget.caption!,
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+              // 4. Bottom screenshot protection alert
               Positioned(
                 bottom: 24,
                 left: 20,

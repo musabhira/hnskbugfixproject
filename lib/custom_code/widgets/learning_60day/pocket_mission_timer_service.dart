@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// ⏱️ Persistent Daily 60-Minute Practice Timer Service
+/// ⏱️ Persistent Daily 45-Minute Practice Timer Service
 /// Handles:
 /// 1. Local persistence (SharedPreferences) per learning day.
 /// 2. Automatic pause when the app is sent to the background (lifecycle observer).
-/// 3. Clamping at 60 minutes (does not tick past 60:00 unless user extends).
-/// 4. Extra hour / restart option if subtasks remain incomplete after 60 minutes.
+/// 3. Clamping at 45 minutes (does not tick past 45:00 unless user extends).
+/// 4. Extra session / restart option if subtasks remain incomplete after 45 minutes.
 /// 5. Global state broadcasting to keep in-app navigation connected to the timer.
 class PocketMissionTimerService extends ChangeNotifier with WidgetsBindingObserver {
   static final PocketMissionTimerService _instance = PocketMissionTimerService._internal();
@@ -18,7 +18,7 @@ class PocketMissionTimerService extends ChangeNotifier with WidgetsBindingObserv
     WidgetsBinding.instance.addObserver(this);
   }
 
-  static const int defaultTargetSeconds = 2400; // 40 minutes (Audio Directive)
+  static const int defaultTargetSeconds = 2700; // 45 minutes (Audio Directive: 45 * 60 = 2700)
 
   int _day = 1;
   int _elapsedSeconds = 0;
@@ -69,7 +69,7 @@ class PocketMissionTimerService extends ChangeNotifier with WidgetsBindingObserv
       }
 
       if (_elapsedSeconds >= _targetSeconds) {
-        _pauseReason = '60-Min Target Reached';
+        _pauseReason = '45-Min Target Reached';
       } else if (!_isRunning) {
         _pauseReason = 'Paused';
       }
@@ -97,9 +97,9 @@ class PocketMissionTimerService extends ChangeNotifier with WidgetsBindingObserv
   void startTimer() {
     if (_isRunning) return;
 
-    // If target is already achieved, prompt user to add an hour or restart
+    // If target is already achieved, prompt user to add extra session or restart
     if (hasReachedTarget) {
-      _pauseReason = 'Target already reached! Add extra hour to continue.';
+      _pauseReason = 'Target already reached! Add extra session to continue.';
       notifyListeners();
       return;
     }
@@ -112,13 +112,13 @@ class PocketMissionTimerService extends ChangeNotifier with WidgetsBindingObserv
     _ticker = Timer.periodic(const Duration(seconds: 1), (timer) {
       _elapsedSeconds++;
 
-      // Auto-stop at 60:00 (or current target) as specified by user
+      // Auto-stop at 45:00 (or current target) as specified by user
       if (_elapsedSeconds >= _targetSeconds) {
         _elapsedSeconds = _targetSeconds;
         _ticker?.cancel();
         _ticker = null;
         _isRunning = false;
-        _pauseReason = 'Daily 40-Min Practice Target Reached!';
+        _pauseReason = 'Daily 45-Min Practice Target Reached!';
         _saveState();
         HapticFeedback.heavyImpact();
         notifyListeners();
@@ -161,16 +161,16 @@ class PocketMissionTimerService extends ChangeNotifier with WidgetsBindingObserv
     }
   }
 
-  /// User wants an additional 1-hour practice block (+60 mins)
+  /// User wants an additional practice block (+45 mins)
   void addAnotherHourPractice() {
     pauseTimer(reason: 'Extended practice target');
-    _targetSeconds += defaultTargetSeconds; // Add +3600 seconds
+    _targetSeconds += defaultTargetSeconds; // Add +2700 seconds (45 mins)
     _saveState();
     startTimer();
     notifyListeners();
   }
 
-  /// Restart 1-hour practice session from 0 (if subtasks were incomplete)
+  /// Restart practice session from 0 (if subtasks were incomplete)
   void restartPracticeSession() {
     pauseTimer(reason: 'Session restarted');
     _elapsedSeconds = 0;
@@ -180,14 +180,17 @@ class PocketMissionTimerService extends ChangeNotifier with WidgetsBindingObserv
     notifyListeners();
   }
 
-  /// Reset to standard 60 minutes
-  void resetToSixtyMinutes() {
-    pauseTimer(reason: 'Reset to 60m');
+  /// Reset to standard 45 minutes
+  void resetToFortyFiveMinutes() {
+    pauseTimer(reason: 'Reset to 45m');
     _elapsedSeconds = 0;
     _targetSeconds = defaultTargetSeconds;
     _saveState();
     notifyListeners();
   }
+
+  /// Backward-compatible alias
+  void resetToSixtyMinutes() => resetToFortyFiveMinutes();
 
   /// Lifecycle observer: automatically pause when app is minimized or backgrounded
   @override

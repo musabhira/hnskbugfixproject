@@ -35,6 +35,7 @@ import 'package:pocket_mates_app/custom_code/widgets/zoyarex_admin/zoyarex_ai_pa
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_studio_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/avatar_network_explorer_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/admin_auth_service.dart';
 
 class DoodleBackgroundPainter extends CustomPainter {
   final Color color;
@@ -252,6 +253,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
   List<String> _allowedPrivateTools = [];
   Map<String, Map<String, dynamic>> _globalToolConfigs = {};
   bool _isLoadingTools = false;
+  bool _canAccessAdmin = false;
   String _currentPlan = 'free';
 
   @override
@@ -306,15 +308,20 @@ class _TaskManagerScreenState extends State<ToolsPage> {
         }
       }
 
-      setState(() {
-        _globalToolConfigs = configsMap;
-        _restrictedTools = restricted;
-        _allowedPrivateTools = allowedPrivate;
-        _isLoadingTools = false;
-      });
+      final canAdmin = await AdminAuthService.canAccessAdmin();
+
+      if (mounted) {
+        setState(() {
+          _globalToolConfigs = configsMap;
+          _restrictedTools = restricted;
+          _allowedPrivateTools = allowedPrivate;
+          _canAccessAdmin = canAdmin;
+          _isLoadingTools = false;
+        });
+      }
     } catch (e) {
       debugPrint('Error loading tool permissions: $e');
-      setState(() => _isLoadingTools = false);
+      if (mounted) setState(() => _isLoadingTools = false);
     }
   }
 
@@ -1241,6 +1248,21 @@ class _TaskManagerScreenState extends State<ToolsPage> {
   Widget _buildToolsList() {
     final List<Map<String, dynamic>> allTools = [
       {
+        'title': 'Admin Panel',
+        'subtitle': 'System, Curriculum & Cohort Command Center',
+        'icon': Icons.admin_panel_settings_rounded,
+        'category': 'Executive',
+        'color': const Color(0xFFFFFC00),
+        'gradient': [const Color(0xFFFFFC00), const Color(0xFFFF8906)],
+        'avatar': const VectorAvatarConfig(
+          outfitStyle: 'executive_blazer',
+          auraStyle: 'royal_gold',
+          hairStyle: 'afro_fade',
+          faceShape: 'sharp',
+        ),
+        'onTap': () => AdminAuthService.authenticateAndOpen(context),
+      },
+      {
         'title': 'English Learning Tasks',
         'subtitle': '60-90 Day Plan • Dragon Evolution & Daily Drills',
         'icon': Icons.task_alt_rounded,
@@ -1783,13 +1805,19 @@ class _TaskManagerScreenState extends State<ToolsPage> {
       final isBlocked = _restrictedTools.contains(title);
       final hasPrivateAccess = _allowedPrivateTools.contains(title);
 
-      // Force Zoyarex POS and Super Admin to require private access
+      // Force Admin Panel, Zoyarex POS and Super Admin to require private access
+      if (title == 'Admin Panel') {
+        publicVisible = false;
+      }
       if (title == 'Zoyarex POS Admin' || title == 'Zoyarex Super Admin') {
         publicVisible = false;
       }
 
-      // Rule: Visible if (Publicly Active on platform OR User has private access) AND NOT blocked
-      return (publicVisible || hasPrivateAccess) && !isBlocked;
+      // Rule: Visible if (Publicly Active on platform OR User has private access OR is Mus'ab Hira) AND NOT blocked
+      final hasAccess = publicVisible ||
+          hasPrivateAccess ||
+          (title == 'Admin Panel' && _canAccessAdmin);
+      return hasAccess && !isBlocked;
     }).toList();
 
     final isDark = Theme.of(context).brightness == Brightness.dark;

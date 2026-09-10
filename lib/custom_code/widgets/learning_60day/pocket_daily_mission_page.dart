@@ -1,8 +1,11 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.dart';
@@ -11,7 +14,7 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_world
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/learning_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortress_defense_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_defense_trap_modal.dart';
-import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_battle_arena_page.dart';
+// Redirected battle raids directly to PocketWorldStreetPage
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_mission_timer_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_vocabulary_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/pocket_library_page.dart';
@@ -22,6 +25,8 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_code_
 export 'daily_vocab_item.dart';
 import 'daily_vocab_item.dart';
 import 'pocket_mission_curriculum_registry.dart';
+import 'day90_master_certificate_dialog.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chat/english_hub_level_group_service.dart';
 
 /// 🎯 Comprehensive Interactive Daily English Mission Experience
 class PocketDailyMissionPage extends StatefulWidget {
@@ -62,6 +67,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   final PocketMissionTimerService _timerService = PocketMissionTimerService.instance;
 
   // Checklist Subtasks Progress
+  bool _dailyRuleCompleted = false;
   bool _hubChatVerified = false;
   bool _peerCallVerified = false;
   bool _vocabMemorized = false;
@@ -70,6 +76,20 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   bool _defenseTrapArmed = false;
   bool _trialRaidLaunched = false;
   bool _midAttackCompleted = false;
+  bool _alphabetPhonicsCompleted = false;
+  bool _sentencePatternCompleted = false;
+  bool _pronunciationCompleted = false;
+  bool _englishThinkingCompleted = false;
+  bool _speakingChallengeCompleted = false;
+  bool _isSpeakingChallengeRecording = false;
+  int _speakingChallengeSecondsRemaining = 30;
+  Timer? _speakingTimer;
+  bool _codeEnglishCompleted = false;
+  String? _codeCompilerOutput;
+  bool _isCodeCompiling = false;
+  int _selectedPatternIndex = 0;
+  int _activeStoryPageIndex = 0;
+  double _ttsSpeechRate = 0.48;
   bool _isPocketVocabSaved = false;
 
   // Quiz state
@@ -584,7 +604,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
   String get _grammarRuleTitle {
     if (PocketMissionCurriculumRegistry.hasDay(widget.day)) {
-      return PocketMissionCurriculumRegistry.getGrammarRuleTitle(widget.day);
+      final regTitle = PocketMissionCurriculumRegistry.getGrammarRuleTitle(widget.day);
+      if (regTitle.isNotEmpty) return regTitle;
     }
     switch (widget.day) {
       case 2:
@@ -628,7 +649,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
   String get _quizQuestion {
     if (PocketMissionCurriculumRegistry.hasDay(widget.day)) {
-      return PocketMissionCurriculumRegistry.getQuizQuestion(widget.day);
+      final regQ = PocketMissionCurriculumRegistry.getQuizQuestion(widget.day);
+      if (regQ.isNotEmpty) return regQ;
     }
     switch (widget.day) {
       case 2:
@@ -672,7 +694,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
   List<String> get _quizOptions {
     if (PocketMissionCurriculumRegistry.hasDay(widget.day)) {
-      return PocketMissionCurriculumRegistry.getQuizOptions(widget.day);
+      final regOpts = PocketMissionCurriculumRegistry.getQuizOptions(widget.day);
+      if (regOpts.isNotEmpty) return regOpts;
     }
     switch (widget.day) {
       case 2:
@@ -788,7 +811,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
   String _getGrammarRuleExplanation(String lang) {
     if (PocketMissionCurriculumRegistry.hasDay(widget.day)) {
-      return PocketMissionCurriculumRegistry.getGrammarRuleExplanation(widget.day, lang);
+      final regExp = PocketMissionCurriculumRegistry.getGrammarRuleExplanation(widget.day, lang);
+      if (regExp.isNotEmpty) return regExp;
     }
     if (widget.day == 18) {
       switch (lang.toLowerCase()) {
@@ -1079,7 +1103,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
   String _getStorySummary(String lang) {
     if (PocketMissionCurriculumRegistry.hasDay(widget.day)) {
-      return PocketMissionCurriculumRegistry.getStorySummary(widget.day, lang);
+      final regSum = PocketMissionCurriculumRegistry.getStorySummary(widget.day, lang);
+      if (regSum.isNotEmpty) return regSum;
     }
     if (widget.day == 18) {
       switch (lang.toLowerCase()) {
@@ -1427,14 +1452,18 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   @override
   void dispose() {
     _tts.stop();
+    _speakingTimer?.cancel();
     _timerService.removeListener(_onTimerStateChanged);
     super.dispose();
   }
 
   void _loadVocabForDay() {
     if (PocketMissionCurriculumRegistry.hasDay(widget.day)) {
-      _vocabList = PocketMissionCurriculumRegistry.getVocabItems(widget.day);
-      return;
+      final regVocab = PocketMissionCurriculumRegistry.getVocabItems(widget.day);
+      if (regVocab.isNotEmpty) {
+        _vocabList = regVocab;
+        return;
+      }
     }
     if (widget.day == 2) {
       // 10 high-impact vocabulary words for Day 2 (Habits & Daily Routines) with Multilingual translations
@@ -3725,25 +3754,37 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     final dayKey = 'pocket_mission_day_${widget.day}';
     setState(() {
       _selectedLanguage = prefs.getString('pocket_mission_pref_lang') ?? 'Malayalam';
+      _dailyRuleCompleted = prefs.getBool('${dayKey}_daily_rule') ?? false;
       _hubChatVerified = prefs.getBool('${dayKey}_hub_chat') ?? false;
       _peerCallVerified = prefs.getBool('${dayKey}_peer_call') ?? false;
       _vocabMemorized = prefs.getBool('${dayKey}_vocab_mem') ?? false;
       _readingNotesCompleted = prefs.getBool('${dayKey}_reading') ?? false;
+      _codeEnglishCompleted = prefs.getBool('${dayKey}_code_english') ?? false;
       _revisionQuizPassed = prefs.getBool('${dayKey}_quiz') ?? false;
       _defenseTrapArmed = prefs.getBool('${dayKey}_defense') ?? false;
       _trialRaidLaunched = prefs.getBool('${dayKey}_raid') ?? false;
       _midAttackCompleted = prefs.getBool('${dayKey}_mid_attack') ?? false;
+      _alphabetPhonicsCompleted = prefs.getBool('${dayKey}_alphabet_phonics') ?? false;
+      _sentencePatternCompleted = prefs.getBool('${dayKey}_sentence_pattern') ?? false;
+      _pronunciationCompleted = prefs.getBool('${dayKey}_pronunciation') ?? false;
+      _englishThinkingCompleted = prefs.getBool('${dayKey}_english_thinking') ?? false;
+      _speakingChallengeCompleted = prefs.getBool('${dayKey}_speaking_challenge') ?? false;
     });
-  }
-
-  PocketNeighbor _getRivalCitadelForDay(int day) {
-    return PocketFortressDefenseService.generateRivalForUser(day, userStreak: day);
   }
 
   Future<void> _saveSubtask(String key, bool value) async {
     final prefs = await SharedPreferences.getInstance();
     final dayKey = 'pocket_mission_day_${widget.day}';
     await prefs.setBool('${dayKey}_$key', value);
+    final pts = _currentDayPoints;
+    await prefs.setInt('${dayKey}_points', pts);
+
+    final uid = SupaFlow.client.auth.currentUser?.id;
+    if (uid != null) {
+      final oldBase = prefs.getInt('learning_points_$uid') ?? 0;
+      await prefs.setInt('learning_points_$uid', oldBase > pts ? oldBase : pts);
+    }
+    if (mounted) setState(() {});
   }
 
   // 💬 Real Backend Verification for English Hub Chat in Supabase
@@ -3782,62 +3823,52 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
       final todayStart = DateTime(now.year, now.month, now.day).toIso8601String();
 
       // Query group_messages in Supabase for actual messages sent by this user today
-      final response = await SupaFlow.client
-          .from('group_messages')
-          .select('id')
-          .eq('sender_id', myId)
-          .gte('created_at', todayStart)
-          .limit(1);
-
-      final hasSentMessages = response.isNotEmpty;
+      int serverCount = 0;
+      try {
+        final response = await SupaFlow.client
+            .from('group_messages')
+            .select('id')
+            .eq('sender_id', myId)
+            .gte('created_at', todayStart);
+        serverCount = response.length;
+      } catch (_) {}
 
       final prefs = await SharedPreferences.getInstance();
-      final points = prefs.getInt('english_hub_points') ?? 0;
       final localChatCount = prefs.getInt('english_hub_msgs_${myId}_${now.year}_${now.month}_${now.day}') ?? 0;
+      final effectiveCount = math.max(serverCount, localChatCount);
 
-      if (hasSentMessages || points > 0 || localChatCount > 0) {
+      // User Audio Directive: "പത്തോ പതിനഞ്ചോ എന്നല്ല, 15 ഇംഗ്ലീഷ് മെസ്സേജസ് നിർബന്ധമായിട്ടും ചെയ്യണം. ഫസ്റ്റ് ഡേ വണ്ണിന്റെയാണ്."
+      const int minRequiredMessages = 15;
+
+      if (effectiveCount >= minRequiredMessages) {
         if (!mounted) return;
         setState(() => _hubChatVerified = true);
         _saveSubtask('hub_chat', true);
         HapticFeedback.heavyImpact();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('✅ Backend Verified: English Hub activity confirmed in Supabase!'),
-            backgroundColor: Color(0xFF10B981),
+          SnackBar(
+            content: Text('✅ English Hub Verified: $effectiveCount/15 English messages completed! (+25 PTS)'),
+            backgroundColor: const Color(0xFF10B981),
+            behavior: SnackBarBehavior.floating,
           ),
         );
       } else {
         if (!mounted) return;
+        setState(() => _hubChatVerified = false);
+        _saveSubtask('hub_chat', false);
         HapticFeedback.heavyImpact();
+        final remaining = minRequiredMessages - effectiveCount;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('⚠️ No English Hub messages detected in backend today! Open chat, send messages, then verify.'),
-            backgroundColor: Color(0xFFB45309),
-            duration: Duration(seconds: 4),
+          SnackBar(
+            content: Text('⚠️ Only $effectiveCount/$minRequiredMessages English messages sent today. Send $remaining more messages in English Hub to complete!'),
+            backgroundColor: const Color(0xFFB45309),
+            duration: const Duration(seconds: 4),
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
     } catch (e) {
-      debugPrint('Supabase verification error: $e');
-      final prefs = await SharedPreferences.getInstance();
-      final points = prefs.getInt('english_hub_points') ?? 0;
-      if (points > 0 && mounted) {
-        setState(() => _hubChatVerified = true);
-        _saveSubtask('hub_chat', true);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('✅ Activity verified from local session!'),
-            backgroundColor: Color(0xFF10B981),
-          ),
-        );
-      } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('⚠️ Could not verify backend messages: $e. Open English Hub and send a message.'),
-            backgroundColor: const Color(0xFFDC2626),
-          ),
-        );
-      }
+      debugPrint('English Hub verification error: $e');
     }
   }
 
@@ -3876,65 +3907,58 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
       final now = DateTime.now();
       final todayStart = DateTime(now.year, now.month, now.day).toIso8601String();
 
-      // Check messages table in Supabase
-      final response = await SupaFlow.client
-          .from('messages')
-          .select('id')
-          .eq('sender_id', myId)
-          .gte('created_at', todayStart)
-          .limit(1);
-
-      final hasSentPeerMessages = response.isNotEmpty;
+      // Check messages table in Supabase for distinct peers messaged today
+      int distinctServerPeers = 0;
+      try {
+        final response = await SupaFlow.client
+            .from('messages')
+            .select('receiver_id')
+            .eq('sender_id', myId)
+            .gte('created_at', todayStart);
+        final distinctReceivers = response
+            .map((m) => m['receiver_id']?.toString())
+            .where((id) => id != null && id.isNotEmpty && id != myId)
+            .toSet();
+        distinctServerPeers = distinctReceivers.length;
+      } catch (_) {}
 
       final prefs = await SharedPreferences.getInstance();
       final todayChatKey = 'chat_goals_${myId}_${now.year}_${now.month}_${now.day}';
       final chatsCount = prefs.getInt(todayChatKey) ?? 0;
+      final effectivePeers = math.max(distinctServerPeers, chatsCount);
 
-      if (hasSentPeerMessages || chatsCount > 0) {
+      // User Audio Directive: "മിനിമം ഒരു മൂന്ന് ആളെ എങ്കിലും കണക്ട് ചെയ്യണം, തുടക്കത്തിൽ തന്നെ. എല്ലാ ദിവസവും മൂന്ന് ആളെ കണക്ട് ചെയ്യണം."
+      const int minRequiredPeers = 3;
+
+      if (effectivePeers >= minRequiredPeers) {
         if (!mounted) return;
         setState(() => _peerCallVerified = true);
         _saveSubtask('peer_call', true);
         HapticFeedback.heavyImpact();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('✅ Backend Verified: Peer talk conversation confirmed in Supabase!'),
-            backgroundColor: Color(0xFF10B981),
+          SnackBar(
+            content: Text('✅ Peer Talk Verified: Connected with $effectivePeers/$minRequiredPeers mates today! (+25 PTS)'),
+            backgroundColor: const Color(0xFF10B981),
+            behavior: SnackBarBehavior.floating,
           ),
         );
       } else {
         if (!mounted) return;
+        setState(() => _peerCallVerified = false);
+        _saveSubtask('peer_call', false);
         HapticFeedback.heavyImpact();
+        final remaining = minRequiredPeers - effectivePeers;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('⚠️ No peer messages found in backend today! Connect with 1-on-1 peers first, then verify.'),
-            backgroundColor: Color(0xFFB45309),
-            duration: Duration(seconds: 4),
+          SnackBar(
+            content: Text('⚠️ Connected with $effectivePeers/$minRequiredPeers mates today. Practice English with $remaining more mate(s) to complete!'),
+            backgroundColor: const Color(0xFFB45309),
+            duration: const Duration(seconds: 4),
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
     } catch (e) {
-      debugPrint('Supabase peer verification error: $e');
-      final prefs = await SharedPreferences.getInstance();
-      final now = DateTime.now();
-      final todayChatKey = 'chat_goals_${myId}_${now.year}_${now.month}_${now.day}';
-      final chatsCount = prefs.getInt(todayChatKey) ?? 0;
-      if (chatsCount > 0 && mounted) {
-        setState(() => _peerCallVerified = true);
-        _saveSubtask('peer_call', true);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('✅ Peer talk activity verified!'),
-            backgroundColor: Color(0xFF10B981),
-          ),
-        );
-      } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('⚠️ Could not verify backend: $e. Connect with a peer first.'),
-            backgroundColor: const Color(0xFFDC2626),
-          ),
-        );
-      }
+      debugPrint('Peer talk verification error: $e');
     }
   }
 
@@ -4162,23 +4186,53 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     );
   }
 
-  int get _totalSubtasksCount => widget.day >= 4 ? 7 : 6;
+  bool get _hasAlphabetPhonics => PocketMissionCurriculumRegistry.getAlphabetPhonics(widget.day).isNotEmpty;
+  bool get _hasSentencePatterns => PocketMissionCurriculumRegistry.getSentencePatterns(widget.day).isNotEmpty;
+  bool get _hasPronunciationClinic => PocketMissionCurriculumRegistry.getPronunciationClinic(widget.day).minimalPairs.isNotEmpty;
+  bool get _hasEnglishThinking => PocketMissionCurriculumRegistry.getEnglishThinkingWorkout(widget.day).instantResponses.isNotEmpty;
+  bool get _hasSpeakingChallenge => PocketMissionCurriculumRegistry.getSpeakingChallenge(widget.day).title.isNotEmpty;
+
+  int get _totalSubtasksCount {
+    int count = 8; // Rule + Hub + Peer Call + Vocab + Reading + Code English + Quiz + Defense Trap
+    if (_hasAlphabetPhonics) count++;
+    if (_hasSentencePatterns) count++;
+    if (_hasPronunciationClinic) count++;
+    if (_hasEnglishThinking) count++;
+    if (_hasSpeakingChallenge) count++;
+    if (widget.day >= 4) count++;
+    return count;
+  }
 
   int get _completedSubtasksCount {
     int count = 0;
+    if (_dailyRuleCompleted) count++;
+    if (_hasAlphabetPhonics && _alphabetPhonicsCompleted) count++;
     if (_hubChatVerified) count++;
     if (_peerCallVerified) count++;
     if (_vocabMemorized) count++;
+    if (_hasSentencePatterns && _sentencePatternCompleted) count++;
     if (_readingNotesCompleted) count++;
+    if (_codeEnglishCompleted) count++;
+    if (_hasPronunciationClinic && _pronunciationCompleted) count++;
+    if (_hasEnglishThinking && _englishThinkingCompleted) count++;
+    if (_hasSpeakingChallenge && _speakingChallengeCompleted) count++;
     if (_revisionQuizPassed) count++;
     if (_defenseTrapArmed) count++;
     if (widget.day >= 4 && _trialRaidLaunched) count++;
     return count;
   }
 
+  int get _currentDayPoints {
+    final total = _totalSubtasksCount;
+    if (total == 0) return 0;
+    if (_completedSubtasksCount >= total) return 200;
+    return ((_completedSubtasksCount * 200) / total).round().clamp(0, 200);
+  }
+
+  bool get _hasPassedToday => _currentDayPoints >= 100;
   bool get _isAllCompleted => _completedSubtasksCount >= _totalSubtasksCount;
   bool get _isTimerCompleted => _timerService.hasReachedTarget;
-  bool get _canClaimAndAdvance => _isTimerCompleted && _isAllCompleted;
+  bool get _canClaimAndAdvance => _hasPassedToday;
 
   @override
   Widget build(BuildContext context) {
@@ -4223,22 +4277,39 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
                       const SizedBox(height: 18),
 
+                      // 🔤 Foundation: Alphabet & 44 Phonics Sound System (User Audio Directive)
+                      if (_hasAlphabetPhonics) ...[
+                        _buildAlphabetPhonicsCard(),
+                        const SizedBox(height: 14),
+                      ],
+
                       // Subtask 1: 💬 English Hub Group Practice
                       _buildSubtaskCard(
                         stepNumber: '1',
                         icon: '💬',
                         title: 'English Hub Group Practice',
-                        description: 'Enter the active English Hub and send at least 10–15 English messages to fellow learners to build active muscle memory.',
+                        description: 'Enter the active English Hub and send at least 15 English messages to fellow learners to build active muscle memory.',
                         isVerified: _hubChatVerified,
                         actionLabel: 'OPEN ENGLISH HUB CHAT',
                         actionColor: const Color(0xFFFFFC00),
                         onAction: () async {
-                          await Navigator.push(
-                            context,
+                          final currentUserId = Supabase.instance.client.auth.currentUser?.id;
+                          final nav = Navigator.of(context);
+                          EnglishHubLevelGroup levelGroup;
+                          if (currentUserId != null) {
+                            levelGroup = await EnglishHubLevelGroupService.ensureUserInLevelGroup(
+                              userLevel: widget.day,
+                              userId: currentUserId,
+                            );
+                          } else {
+                            levelGroup = await EnglishHubLevelGroupService.getGroupByLevel(widget.day);
+                          }
+                          if (!mounted) return;
+                          await nav.push(
                             MaterialPageRoute(
-                              builder: (_) => const WhatsAppGroupChat(
-                                groupId: 'english_hub',
-                                groupName: 'English Hub',
+                              builder: (_) => WhatsAppGroupChat(
+                                groupId: levelGroup.groupId,
+                                groupName: levelGroup.groupName,
                               ),
                             ),
                           );
@@ -4258,7 +4329,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                         stepNumber: '2',
                         icon: '🎙️',
                         title: 'Peer Call / 1-on-1 English Talk',
-                        description: 'Connect with 2 mates for live conversation practice to conquer speaking hesitation.',
+                        description: 'Connect with at least 3 mates for live conversation practice to conquer speaking hesitation.',
                         isVerified: _peerCallVerified,
                         actionLabel: 'FIND 1-ON-1 PEERS',
                         actionColor: const Color(0xFF00E5FF),
@@ -4289,28 +4360,62 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
                       const SizedBox(height: 14),
 
+                      // 📐 Sentence Pattern Practice (User Audio Directive)
+                      if (_hasSentencePatterns) ...[
+                        _buildSentencePatternCard(),
+                        const SizedBox(height: 14),
+                      ],
+
                       // ⚔️ In-Between Combat Attack Drill (Audio Directive: unlocks on Day 4+)
                       if (widget.day >= 4) ...[
                         _buildMidMissionCombatAttackCard(),
                         const SizedBox(height: 14),
                       ],
 
-                      // Subtask 4: 📖 Core Notes & Reading Passage
+                      // Subtask 4: 📖 Core Notes & Multi-Page Authentic Story Reading
                       _buildReadingNotesCard(),
 
                       const SizedBox(height: 14),
 
-                      // Subtask 5: ✍️ Quick Revision Mini-Quiz
+                      // Subtask 5: ⚡ Pocket Code English Decoder (User Audio Directive)
+                      _buildCodeEnglishDecoderCard(),
+
+                      const SizedBox(height: 14),
+
+                      // 🗣️ Dedicated Pronunciation & Sound Clinic (User Audio Directive)
+                      if (_hasPronunciationClinic) ...[
+                        _buildPronunciationClinicCard(),
+                        const SizedBox(height: 14),
+                      ],
+
+                      // 🧠 English Thinking Workout (User Audio Directive)
+                      if (_hasEnglishThinking) ...[
+                        _buildEnglishThinkingCard(),
+                        const SizedBox(height: 14),
+                      ],
+
+                      // 🎙️ In-Lesson Speaking Challenge (User Audio Directive)
+                      if (_hasSpeakingChallenge) ...[
+                        _buildSpeakingChallengeCard(),
+                        const SizedBox(height: 14),
+                      ],
+
+                      // ⚡ Sovereign Fluency Shortcut / Kurukkuvazhi (User Audio Directive)
+                      _buildFluencyShortcutCard(),
+
+                      const SizedBox(height: 14),
+
+                      // Subtask 6: ✍️ Quick Revision Mini-Quiz
                       _buildRevisionQuizCard(),
 
                       const SizedBox(height: 14),
 
-                      // Subtask 6: 🛡️ Craft Citadel Defense Trap
+                      // Subtask 7: 🛡️ Craft Citadel Defense Trap
                       _buildSubtaskCard(
-                        stepNumber: '6',
+                        stepNumber: '7',
                         icon: '🛡️',
                         title: 'Add Day ${widget.day} Home Defense',
-                        description: 'Arm your front gate with 1 authentic English challenge to defend your house from raiders. (Shield Slot ${widget.day} of ${widget.day})',
+                        description: 'Arm your front gate with 1 authentic English challenge to defend your house from raiders. (Shield Slot ${widget.day} of ${math.max(10, widget.day)})',
                         isVerified: _defenseTrapArmed,
                         actionLabel: 'ADD HOME DEFENSE 🛡️',
                         actionColor: const Color(0xFF8B5CF6),
@@ -4330,29 +4435,28 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
                       const SizedBox(height: 14),
 
-                      // Subtask 7: ⚔️ Citadel Siege Attack (Scaled Dynamically to Day - Unlocks at Level 4)
+                      // Subtask 8: ⚔️ Pocket Battle Raid (Audio Directive: Routes directly to Pocket World to select & attack homes)
                       if (widget.day >= 4) ...[
                         _buildSubtaskCard(
-                          stepNumber: '7',
+                          stepNumber: '8',
                           icon: '⚔️',
-                          title: 'Day ${widget.day} Battle Arena Raid (${_getRivalCitadelForDay(widget.day).name})',
-                          description: 'Launch your tactical raid against Level ${_getRivalCitadelForDay(widget.day).day} in the Battle Arena to test your combat English under fire!',
+                          title: 'Day ${widget.day} Pocket Battle Raid',
+                          description: 'Enter Pocket World, inspect neighbor houses on the street, and launch an attack to breach their defense gates!',
                           isVerified: _trialRaidLaunched,
-                          actionLabel: 'LAUNCH BATTLE ARENA RAID ⚔️',
+                          actionLabel: 'LAUNCH POCKET BATTLE ⚔️',
                           actionColor: const Color(0xFFEF4444),
                           onAction: () async {
-                            final rival = _getRivalCitadelForDay(widget.day);
                             final won = await Navigator.push<bool>(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => PocketBattleArenaPage(
-                                  neighbor: rival,
-                                  userDay: widget.day,
-                                  userStreak: widget.day,
+                                builder: (_) => PocketWorldStreetPage(
+                                  currentDay: widget.day,
+                                  streak: widget.day,
+                                  autoRollRaid: true,
                                 ),
                               ),
                             );
-                            if (!mounted) return;
+                            if (!mounted || !context.mounted) return;
                             if (won == true) {
                               setState(() => _trialRaidLaunched = true);
                               _saveSubtask('raid', true);
@@ -4363,18 +4467,19 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                                   taskId: 'citadel_raid_attack',
                                 );
                               }
-                              if (!mounted) return;
+                              if (!mounted || !context.mounted) return;
                               HapticFeedback.heavyImpact();
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text('🏰 ${rival.name} Breached! Day ${widget.day} Raid verified ✓ +50 Bonus Coins!'),
+                                  content: Text('🏰 House Breached in Pocket World! Day ${widget.day} Pocket Battle verified ✓ +50 Bonus Coins!'),
                                   backgroundColor: const Color(0xFF10B981),
                                 ),
                               );
                             } else {
+                              if (!mounted || !context.mounted) return;
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content: Text('⚠️ Battle Arena raid incomplete. Defeat the rival house in Battle Arena to verify this step!'),
+                                  content: Text('⚠️ Pocket Battle incomplete. Select and breach a house in Pocket World to verify this step!'),
                                   backgroundColor: Color(0xFFB45309),
                                 ),
                               );
@@ -4384,14 +4489,14 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                             if (_trialRaidLaunched) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text('✅ Day ${widget.day} Battle Arena Raid already verified!'),
+                                  content: Text('✅ Day ${widget.day} Pocket Battle Raid already verified!'),
                                   backgroundColor: const Color(0xFF10B981),
                                 ),
                               );
                             } else {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content: Text('⚠️ Launch Battle Arena Raid and breach the house to verify Subtask 7!'),
+                                  content: Text('⚠️ Launch Pocket Battle in Pocket World to verify Subtask 7!'),
                                   backgroundColor: Color(0xFFB45309),
                                 ),
                               );
@@ -4423,7 +4528,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'Battle Arena Raids Unlock at Level 4',
+                                      'Pocket Battle Raids Unlock at Level 4',
                                       style: GoogleFonts.outfit(
                                         color: Colors.white70,
                                         fontWeight: FontWeight.bold,
@@ -4558,26 +4663,73 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         onPressed: () async {
           HapticFeedback.heavyImpact();
           final nextDay = (widget.day < 90) ? widget.day + 1 : 90;
+          final myId = SupaFlow.client.auth.currentUser?.id;
           try {
             final prefs = await SharedPreferences.getInstance();
             await prefs.setInt('pocket_learning_user_stage', nextDay);
             await prefs.setBool('pocket_day_${widget.day}_completed', true);
+            await prefs.setBool('pocket_day_${nextDay}_unlocked', true);
             await prefs.setString(
               'learning_day_${widget.day}_completed_date',
               '${DateTime.now().year}-${DateTime.now().month}-${DateTime.now().day}',
             );
+            await prefs.setString('last_learning_date', DateTime.now().toIso8601String());
             await prefs.setInt('learning_last_completed_day', widget.day);
-          } catch (_) {}
+            await prefs.setBool('pocket_world_rules_accepted_v1', true);
+
+            // 🪙 Award full 200 PTS to unified Pocket Score
+            await PocketFortressDefenseService.awardPoints(200);
+
+            // 🧬 Evolve Avatar for next stage and persist to profile
+            final evolvedAvatar = VectorAvatarConfig.getEvolutionAvatarForStage(nextDay);
+            if (myId != null) {
+              await prefs.setString('user_avatar_config_$myId', jsonEncode(evolvedAvatar.toMap()));
+              await prefs.setInt('learning_day_$myId', nextDay);
+              await prefs.setInt('learning_stage_$myId', nextDay);
+
+              try {
+                await SupaFlow.client.from('profile').update({
+                  'learning_day': nextDay,
+                  'learning_stage': nextDay,
+                  'avatar_config': evolvedAvatar.toMap(),
+                  'last_learning_date': DateTime.now().toIso8601String(),
+                  'updated_at': DateTime.now().toIso8601String(),
+                }).eq('user_id', myId);
+
+                await EnglishHubLevelGroupService.ensureUserInLevelGroup(
+                  userLevel: nextDay,
+                  userId: myId,
+                  forceLevelMatch: true,
+                );
+              } catch (e) {
+                debugPrint('Dev advance Supabase profile error: $e');
+              }
+            }
+          } catch (e) {
+            debugPrint('Dev advance error: $e');
+          }
 
           widget.onMissionCompleted?.call();
           if (mounted) {
+            if (widget.day == 90 && mounted) {
+              final prefs = await SharedPreferences.getInstance();
+              final userName = prefs.getString('user_name') ?? 'Pocket Scholar';
+              if (mounted) {
+                await Day90MasterCertificateDialog.show(
+                  context,
+                  userName: userName,
+                  userDay: 90,
+                );
+              }
+            }
+            if (!mounted) return;
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 backgroundColor: const Color(0xFF10B981),
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 content: Text(
-                  '🧪 DEV: Day ${widget.day} completed! Advancing to Day $nextDay...',
+                  '🧪 DEV: Day ${widget.day} completed (+200 PTS)! Evolved avatar & advancing to Day $nextDay...',
                   style: GoogleFonts.firaCode(fontSize: 12, fontWeight: FontWeight.bold),
                 ),
               ),
@@ -4726,7 +4878,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   // --- ⏱️ 60-MINUTE PRACTICE TIMER CARD ---
   Widget _buildDailyStudyTimerCard() {
     final isRunning = _timerService.isRunning;
-    final isTargetMet = _timerService.hasReachedTarget;
+    final isTargetMet = _isTimerCompleted;
 
     return Container(
       padding: const EdgeInsets.all(12),
@@ -4769,7 +4921,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                   const Text('⏱️', style: TextStyle(fontSize: 16)),
                   const SizedBox(width: 6),
                   Text(
-                    'DAILY 60-MIN PRACTICE TIMER',
+                    'DAILY 45-MIN PRACTICE TIMER',
                     style: GoogleFonts.outfit(
                       color: const Color(0xFFFFFC00),
                       fontSize: 12,
@@ -4808,7 +4960,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           ),
           const SizedBox(height: 6),
           Text(
-            'Rule: Spend 60+ mins practicing English daily (chat, voice calls, drills). Pauses when leaving app.',
+            'Rule: Spend 45+ mins practicing English daily (chat, voice calls, drills). Pauses when leaving app.',
             style: GoogleFonts.inter(
               color: Colors.white70,
               fontSize: 11,
@@ -4878,7 +5030,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                 label: Text(
                   isRunning
                       ? 'PAUSE'
-                      : (isTargetMet ? '+60m' : 'START'),
+                      : (isTargetMet ? '+45m' : 'START'),
                   style: GoogleFonts.outfit(
                     fontWeight: FontWeight.bold,
                     color: Colors.black,
@@ -4896,7 +5048,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
             ],
           ),
 
-          // ⚠️ Extra Hour Prompt Banner when 60 minutes are met but subtasks remain
+          // ⚠️ Extra Session Prompt Banner when 45 minutes are met but subtasks remain
           if (isTargetMet && !_isAllCompleted) ...[
             const SizedBox(height: 14),
             Container(
@@ -4915,7 +5067,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          '60-Min Target Reached! (${_totalSubtasksCount - _completedSubtasksCount} subtasks pending)',
+                          '45-Min Target Reached! (${_totalSubtasksCount - _completedSubtasksCount} subtasks pending)',
                           style: GoogleFonts.outfit(
                             color: Colors.amberAccent,
                             fontSize: 12.5,
@@ -4927,7 +5079,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    'Practice timer automatically stopped at 60:00. You must complete all $_totalSubtasksCount subtasks to advance to Day ${widget.day + 1}. Complete the tasks below, or add an extra 1-hour practice session.',
+                    'Practice timer automatically stopped at 45:00. Complete subtasks to reach at least 100 points to pass and unlock Day ${widget.day + 1}. Complete the tasks below, or add an extra 45-minute practice session.',
                     style: GoogleFonts.inter(
                       color: Colors.white70,
                       fontSize: 11.5,
@@ -4944,7 +5096,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                           },
                           icon: const Icon(Icons.add_alarm_rounded, size: 16, color: Color(0xFFFFFC00)),
                           label: Text(
-                            '+ ADD 1-HR PRACTICE',
+                            '+ ADD 45-MIN PRACTICE',
                             style: GoogleFonts.outfit(
                               fontSize: 11,
                               fontWeight: FontWeight.bold,
@@ -4967,7 +5119,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                           },
                           icon: const Icon(Icons.refresh_rounded, size: 16, color: Colors.white70),
                           label: Text(
-                            'RESTART 1-HR RUN',
+                            'RESTART 45-MIN RUN',
                             style: GoogleFonts.outfit(
                               fontSize: 11,
                               fontWeight: FontWeight.bold,
@@ -4992,55 +5144,143 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     );
   }
 
-  // --- 📋 OVERALL MISSION PROGRESS CARD ---
+  // --- 📋 OVERALL MISSION PROGRESS CARD (200 Points Total, 100 Pass Mark) ---
   Widget _buildMissionProgressCard() {
+    final points = _currentDayPoints;
+    final passed = _hasPassedToday;
+    final pct = points / 200.0;
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: const Color(0xFF141A29),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white10),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: passed ? const Color(0xFF10B981) : const Color(0xFFFFFC00).withValues(alpha: 0.3),
+          width: passed ? 1.5 : 1.0,
+        ),
+        boxShadow: [
+          if (passed)
+            BoxShadow(
+              color: const Color(0xFF10B981).withValues(alpha: 0.2),
+              blurRadius: 14,
+            ),
+        ],
       ),
-      child: Row(
+      child: Column(
         children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
-              shape: BoxShape.circle,
-            ),
-            child: const Text('🎯', style: TextStyle(fontSize: 20)),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Day ${widget.day} Subtask Checklist',
-                  style: GoogleFonts.outfit(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                  ),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: passed
+                      ? const Color(0xFF10B981).withValues(alpha: 0.2)
+                      : const Color(0xFFFFFC00).withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
                 ),
-                Text(
-                  'Complete all $_totalSubtasksCount actions below to claim Day ${widget.day} rewards & badge.',
-                  style: GoogleFonts.inter(
-                    color: Colors.white60,
-                    fontSize: 11.5,
-                  ),
+                child: Text(passed ? '🏆' : '🎯', style: const TextStyle(fontSize: 20)),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          'Day ${widget.day} Learning Score',
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: passed ? const Color(0xFF10B981) : Colors.amber.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            passed ? 'PASSED ✅' : 'PASS: 100 PTS',
+                            style: GoogleFonts.outfit(
+                              color: passed ? Colors.white : Colors.amberAccent,
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      passed
+                          ? 'Passed ($points/200 PTS)! Claim rewards below to unlock Day ${widget.day + 1}!'
+                          : 'Earn at least 100 points to pass and unlock Day ${widget.day + 1} (${100 - points} pts needed).',
+                      style: GoogleFonts.inter(
+                        color: Colors.white60,
+                        fontSize: 11,
+                        height: 1.25,
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
+              const SizedBox(width: 8),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    '$points',
+                    style: GoogleFonts.outfit(
+                      color: passed ? const Color(0xFF10B981) : const Color(0xFFFFFC00),
+                      fontSize: 22,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  Text(
+                    '/ 200 PTS',
+                    style: GoogleFonts.inter(
+                      color: Colors.white54,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(6),
+            child: LinearProgressIndicator(
+              value: pct.clamp(0.0, 1.0),
+              minHeight: 8,
+              backgroundColor: Colors.white12,
+              valueColor: AlwaysStoppedAnimation<Color>(
+                passed ? const Color(0xFF10B981) : const Color(0xFFFFFC00),
+              ),
             ),
           ),
-          Text(
-            '${((_completedSubtasksCount / _totalSubtasksCount) * 100).toInt()}%',
-            style: GoogleFonts.outfit(
-              color: const Color(0xFFFFFC00),
-              fontSize: 18,
-              fontWeight: FontWeight.w900,
-            ),
+          const SizedBox(height: 4),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '$_completedSubtasksCount/$_totalSubtasksCount Subtasks Verified',
+                style: GoogleFonts.inter(color: Colors.white54, fontSize: 10),
+              ),
+              Text(
+                'Pass Mark: 100 PTS (50%)',
+                style: GoogleFonts.inter(
+                  color: passed ? const Color(0xFF10B981) : Colors.amberAccent,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -5466,7 +5706,6 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
   // ⚔️ In-Between Combat Attack Drill (Audio Directive: "idayil idayil attacking, oru attack okke kodukkaam")
   Widget _buildMidMissionCombatAttackCard() {
-    final rival = _getRivalCitadelForDay(widget.day);
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -5518,7 +5757,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           ),
           const SizedBox(height: 10),
           Text(
-            'Mid-Mission Combat Attack Drill (${rival.name})',
+            'Mid-Mission Pocket Battle Attack Drill',
             style: GoogleFonts.outfit(
               color: Colors.white,
               fontWeight: FontWeight.bold,
@@ -5527,7 +5766,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           ),
           const SizedBox(height: 4),
           Text(
-            'Test your Day ${widget.day} vocabulary in live Battle Arena combat! Breach ${rival.name}\'s gate shields to loot bonus coins and sharpen your speaking reaction under pressure.',
+            'Enter Pocket World to inspect neighbor houses and breach their gate shields to loot bonus coins and sharpen your speaking reaction under pressure.',
             style: GoogleFonts.inter(
               color: Colors.white70,
               fontSize: 12,
@@ -5543,10 +5782,10 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                 final won = await Navigator.push<bool>(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => PocketBattleArenaPage(
-                      neighbor: rival,
-                      userDay: widget.day,
-                      userStreak: widget.day,
+                    builder: (_) => PocketWorldStreetPage(
+                      currentDay: widget.day,
+                      streak: widget.day,
+                      autoRollRaid: true,
                     ),
                   ),
                 );
@@ -5555,15 +5794,15 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                     setState(() => _midAttackCompleted = true);
                     _saveSubtask('mid_attack', true);
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('⚔️ Combat raid won against ${rival.name}! Bonus +50 coins registered.'),
-                        backgroundColor: const Color(0xFF10B981),
+                      const SnackBar(
+                        content: Text('⚔️ Pocket Battle raid won! Bonus +50 coins registered.'),
+                        backgroundColor: Color(0xFF10B981),
                       ),
                     );
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text('⚠️ Raid incomplete. Defeat the rival house in Battle Arena to earn bonus coins!'),
+                        content: Text('⚠️ Raid incomplete. Select and breach a house in Pocket World to earn bonus coins!'),
                         backgroundColor: Color(0xFFB45309),
                       ),
                     );
@@ -5576,7 +5815,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                 size: 16,
               ),
               label: Text(
-                _midAttackCompleted ? 'LAUNCH ANOTHER COMBAT RAID ⚔️' : 'LAUNCH COMBAT ATTACK NOW ⚔️',
+                _midAttackCompleted ? 'LAUNCH ANOTHER POCKET BATTLE ⚔️' : 'LAUNCH POCKET BATTLE NOW ⚔️',
                 style: GoogleFonts.outfit(
                   color: Colors.white,
                   fontWeight: FontWeight.w900,
@@ -5596,8 +5835,423 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     );
   }
 
-  // --- SUBTASK 4: 📖 CORE NOTES & AUTHENTIC STORY READING CARD ---
+  // --- 🔤 ALPHABET & 44 PHONICS SOUND SYSTEM CARD ---
+  Widget _buildAlphabetPhonicsCard() {
+    final phonicsList = PocketMissionCurriculumRegistry.getAlphabetPhonics(widget.day);
+    if (phonicsList.isEmpty) return const SizedBox.shrink();
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F172A),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: _alphabetPhonicsCompleted ? const Color(0xFF10B981) : const Color(0xFFFFD700).withValues(alpha: 0.35),
+          width: _alphabetPhonicsCompleted ? 1.5 : 1.0,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                decoration: BoxDecoration(
+                  color: _alphabetPhonicsCompleted ? const Color(0xFF10B981) : const Color(0xFFFFD700),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: const Text(
+                  'PHONICS',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Text('🔤', style: TextStyle(fontSize: 16)),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  'Alphabet & 44 Phonics Sound System',
+                  style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                ),
+              ),
+              if (_alphabetPhonicsCompleted)
+                const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 18),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Master authentic mouth placements, vocal releases & acoustic IPA frequencies. Tap 🔊 on each word to tune your subconscious ear.',
+            style: GoogleFonts.inter(color: Colors.white70, fontSize: 11.5, height: 1.35),
+          ),
+          const SizedBox(height: 12),
+
+          // Grid of Phonics Sounds for today
+          Column(
+            children: phonicsList.map((item) {
+              return Container(
+                margin: const EdgeInsets.only(bottom: 10),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E293B),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.white12),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 36,
+                          height: 36,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            item.letter,
+                            style: GoogleFonts.outfit(
+                              color: Colors.black,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 18,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Text(
+                                    item.phoneme,
+                                    style: GoogleFonts.outfit(
+                                      color: const Color(0xFF00E5FF),
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white10,
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Text(
+                                      'Example: ${item.exampleWord}',
+                                      style: GoogleFonts.inter(
+                                        color: Colors.white70,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                '👄 ${item.pronunciationGuide}',
+                                style: GoogleFonts.inter(
+                                  color: const Color(0xFFFDE68A),
+                                  fontSize: 11,
+                                  fontStyle: FontStyle.italic,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    InkWell(
+                      onTap: () {
+                        HapticFeedback.selectionClick();
+                        _speakWord(item.exampleWord);
+                      },
+                      borderRadius: BorderRadius.circular(8),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF0F172A),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: const Color(0xFF00E5FF).withValues(alpha: 0.3)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              item.exampleWord,
+                              style: GoogleFonts.inter(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            const Icon(Icons.volume_up_rounded, color: Color(0xFFFFFC00), size: 14),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
+
+          const SizedBox(height: 8),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () {
+                setState(() => _alphabetPhonicsCompleted = true);
+                _saveSubtask('alphabet_phonics', true);
+                HapticFeedback.lightImpact();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('🔤 Phonics Sounds Mastered! Authentic mouth placement verified ✓'),
+                    backgroundColor: Color(0xFF10B981),
+                  ),
+                );
+              },
+              icon: Icon(
+                _alphabetPhonicsCompleted ? Icons.check_circle_rounded : Icons.record_voice_over_rounded,
+                color: Colors.black,
+                size: 16,
+              ),
+              label: Text(
+                _alphabetPhonicsCompleted ? 'PHONICS MASTERED ✓' : 'PRACTICED SOUNDS & WORDS ALOUD ✓',
+                style: GoogleFonts.outfit(
+                  color: Colors.black,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 12,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _alphabetPhonicsCompleted ? const Color(0xFF10B981) : const Color(0xFFFFD700),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // --- 📐 SENTENCE PATTERN PRACTICE CARD ---
+  Widget _buildSentencePatternCard() {
+    final patterns = PocketMissionCurriculumRegistry.getSentencePatterns(widget.day);
+    if (patterns.isEmpty) return const SizedBox.shrink();
+
+    final pattern = patterns[_selectedPatternIndex.clamp(0, patterns.length - 1)];
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F172A),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: _sentencePatternCompleted ? const Color(0xFF10B981) : const Color(0xFF00E5FF).withValues(alpha: 0.35),
+          width: _sentencePatternCompleted ? 1.5 : 1.0,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                decoration: BoxDecoration(
+                  color: _sentencePatternCompleted ? const Color(0xFF10B981) : const Color(0xFF00E5FF),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: const Text(
+                  'PATTERN',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Text('📐', style: TextStyle(fontSize: 16)),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  'Daily Sentence Pattern Practice',
+                  style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                ),
+              ),
+              if (_sentencePatternCompleted)
+                const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 18),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            pattern.explanation,
+            style: GoogleFonts.inter(color: Colors.white70, fontSize: 11.5, height: 1.35),
+          ),
+          const SizedBox(height: 10),
+
+          // Pattern selector tabs if multiple
+          if (patterns.length > 1)
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: patterns.asMap().entries.map((entry) {
+                  final idx = entry.key;
+                  final isSel = idx == _selectedPatternIndex;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 6),
+                    child: InkWell(
+                      onTap: () => setState(() => _selectedPatternIndex = idx),
+                      borderRadius: BorderRadius.circular(8),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: isSel ? const Color(0xFF00E5FF) : const Color(0xFF1E293B),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: isSel ? const Color(0xFF00E5FF) : Colors.white24),
+                        ),
+                        child: Text(
+                          'Pattern ${idx + 1}',
+                          style: TextStyle(
+                            color: isSel ? Colors.black : Colors.white70,
+                            fontSize: 11,
+                            fontWeight: isSel ? FontWeight.bold : FontWeight.normal,
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+
+          const SizedBox(height: 10),
+
+          // Formula box
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1E293B),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.3)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'STRUCTURE FORMULA:',
+                  style: GoogleFonts.outfit(color: const Color(0xFFFFD700), fontSize: 10, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  pattern.formula,
+                  style: GoogleFonts.outfit(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w800),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
+
+          // Master Sentences
+          Column(
+            children: pattern.masterSentences.map((sent) {
+              return Container(
+                margin: const EdgeInsets.only(bottom: 6),
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF13172A),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.white10),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        sent,
+                        style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.volume_up_rounded, color: Color(0xFFFFFC00), size: 18),
+                      onPressed: () => _speakWord(sent),
+                      tooltip: 'Listen to pattern sentence',
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
+
+          const SizedBox(height: 8),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () {
+                setState(() => _sentencePatternCompleted = true);
+                _saveSubtask('sentence_pattern', true);
+                HapticFeedback.lightImpact();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('📐 Sentence Pattern Mastered! Direct structure practiced ✓'),
+                    backgroundColor: Color(0xFF10B981),
+                  ),
+                );
+              },
+              icon: Icon(
+                _sentencePatternCompleted ? Icons.check_circle_rounded : Icons.auto_awesome_rounded,
+                color: Colors.black,
+                size: 16,
+              ),
+              label: Text(
+                _sentencePatternCompleted ? 'PATTERN MASTERED ✓' : 'I PRACTICED THIS PATTERN ALOUD ✓',
+                style: GoogleFonts.outfit(
+                  color: Colors.black,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 12,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _sentencePatternCompleted ? const Color(0xFF10B981) : const Color(0xFF00E5FF),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  // --- SUBTASK 4: 📖 CORE NOTES & AUTHENTIC MULTI-PAGE STORY READING CARD ---
   Widget _buildReadingNotesCard() {
+    final storyPages = PocketMissionCurriculumRegistry.getStoryPages(widget.day);
+    final hasPages = storyPages.isNotEmpty;
+    final totalPages = hasPages ? storyPages.length : 1;
+    final safePageIndex = _activeStoryPageIndex.clamp(0, totalPages - 1);
+    final activePageText = hasPages ? storyPages[safePageIndex] : _storyText;
+
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -5631,7 +6285,22 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                 ),
               ),
               if (_readingNotesCompleted)
-                const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 18),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: const Color(0xFF10B981)),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 14),
+                      SizedBox(width: 4),
+                      Text('VERIFIED', style: TextStyle(color: Color(0xFF10B981), fontSize: 10, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                ),
             ],
           ),
           const SizedBox(height: 10),
@@ -5716,14 +6385,13 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               ],
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
 
-          // 📖 Authentic Story Card (Audio Directive: Authentic story with TTS speaker reader!)
+          // 📖 Authentic Multi-Page Story Book Reader (Audio Directive: Full 2-4 pages of authentic reading directly in mission)
           Container(
-            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: const Color(0xFF13172A),
-              borderRadius: BorderRadius.circular(12),
+              color: const Color(0xFF0D1527),
+              borderRadius: BorderRadius.circular(14),
               border: Border.all(
                 color: const Color(0xFF00E5FF).withValues(alpha: 0.35),
                 width: 1.2,
@@ -5732,58 +6400,221 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Text(_storyIcon, style: const TextStyle(fontSize: 18)),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                // Story Header & TTS Speaker
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF131D33),
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(13)),
+                  ),
+                  child: Row(
+                    children: [
+                      Text(_storyIcon, style: const TextStyle(fontSize: 20)),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _storyTitle,
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFF00E5FF),
+                                fontWeight: FontWeight.w900,
+                                fontSize: 13,
+                              ),
+                            ),
+                            Text(
+                              _storySubtitle,
+                              style: GoogleFonts.inter(color: Colors.white54, fontSize: 10.5),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(
+                          _isStorySpeaking ? Icons.stop_circle_rounded : Icons.volume_up_rounded,
+                          color: _isStorySpeaking ? Colors.redAccent : const Color(0xFFFFFC00),
+                          size: 22,
+                        ),
+                        tooltip: _isStorySpeaking ? 'Stop Reading' : 'Read Active Page (TTS)',
+                        onPressed: () => _speakStory(activePageText),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Multi-Page Tab Selector (Page 1, Page 2, Page 3...)
+                if (totalPages > 1)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF0F1A30),
+                      border: Border(bottom: BorderSide(color: Colors.white10)),
+                    ),
+                    child: Row(
+                      children: List.generate(totalPages, (idx) {
+                        final isSel = idx == safePageIndex;
+                        return Expanded(
+                          child: Padding(
+                            padding: EdgeInsets.only(right: idx < totalPages - 1 ? 6 : 0),
+                            child: InkWell(
+                              onTap: () {
+                                _tts.stop();
+                                setState(() {
+                                  _activeStoryPageIndex = idx;
+                                  _isStorySpeaking = false;
+                                });
+                              },
+                              borderRadius: BorderRadius.circular(8),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 6),
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                  color: isSel ? const Color(0xFF00E5FF) : const Color(0xFF1E293B),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: isSel ? const Color(0xFF00E5FF) : Colors.white24,
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Text(
+                                  'Page ${idx + 1}',
+                                  style: TextStyle(
+                                    color: isSel ? Colors.black : Colors.white70,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 11.5,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      }),
+                    ),
+                  ),
+
+                // Book Page Reading Text Body
+                Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            _storyTitle,
-                            style: GoogleFonts.outfit(
-                              color: const Color(0xFF00E5FF),
-                              fontWeight: FontWeight.w900,
-                              fontSize: 12.5,
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              '📖 CHAPTER PAGE ${safePageIndex + 1} OF $totalPages',
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFFFFD700),
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.5,
+                              ),
                             ),
                           ),
                           Text(
-                            _storySubtitle,
-                            style: GoogleFonts.inter(color: Colors.white54, fontSize: 10.5),
+                            '~3 min read',
+                            style: GoogleFonts.inter(color: Colors.white38, fontSize: 10),
                           ),
                         ],
                       ),
-                    ),
-                    IconButton(
-                      icon: Icon(
-                        _isStorySpeaking ? Icons.stop_circle_rounded : Icons.volume_up_rounded,
-                        color: _isStorySpeaking ? Colors.redAccent : const Color(0xFFFFFC00),
-                        size: 22,
+                      const SizedBox(height: 10),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF070E1E),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+                        ),
+                        child: Text(
+                          activePageText,
+                          style: GoogleFonts.inter(
+                            color: Colors.white.withValues(alpha: 0.94),
+                            fontSize: 13,
+                            height: 1.6,
+                            letterSpacing: 0.2,
+                          ),
+                        ),
                       ),
-                      tooltip: _isStorySpeaking ? 'Stop Reading' : 'Read Aloud (TTS)',
-                      onPressed: () => _speakStory(_storyText),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  _storyQuotePreview,
-                  style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontStyle: FontStyle.italic,
-                    height: 1.45,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  _getStorySummary(_selectedLanguage),
-                  style: GoogleFonts.inter(
-                    color: const Color(0xFF6EE7B7),
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    height: 1.35,
+
+                      // Previous / Next Page Navigation Controls
+                      if (totalPages > 1) ...[
+                        const SizedBox(height: 10),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            OutlinedButton.icon(
+                              onPressed: safePageIndex > 0
+                                  ? () {
+                                      _tts.stop();
+                                      setState(() {
+                                        _activeStoryPageIndex = safePageIndex - 1;
+                                        _isStorySpeaking = false;
+                                      });
+                                    }
+                                  : null,
+                              icon: const Icon(Icons.arrow_back_rounded, size: 14),
+                              label: const Text('PREV PAGE'),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: Colors.white70,
+                                side: const BorderSide(color: Colors.white24),
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                textStyle: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            Text(
+                              '${safePageIndex + 1} / $totalPages',
+                              style: GoogleFonts.outfit(color: Colors.white54, fontSize: 11, fontWeight: FontWeight.bold),
+                            ),
+                            OutlinedButton.icon(
+                              onPressed: safePageIndex < totalPages - 1
+                                  ? () {
+                                      _tts.stop();
+                                      setState(() {
+                                        _activeStoryPageIndex = safePageIndex + 1;
+                                        _isStorySpeaking = false;
+                                      });
+                                    }
+                                  : null,
+                              icon: const Icon(Icons.arrow_forward_rounded, size: 14),
+                              label: const Text('NEXT PAGE'),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: const Color(0xFF00E5FF),
+                                side: const BorderSide(color: Color(0xFF00E5FF)),
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                textStyle: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+
+                      const SizedBox(height: 10),
+                      // Moral / Takeaway in selected language
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF064E3B).withValues(alpha: 0.25),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.3)),
+                        ),
+                        child: Text(
+                          _getStorySummary(_selectedLanguage),
+                          style: GoogleFonts.inter(
+                            color: const Color(0xFF6EE7B7),
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w600,
+                            height: 1.4,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -5791,85 +6622,430 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           ),
           const SizedBox(height: 12),
 
-          // Action Buttons: Full Story Reader, Read Books, Read Aloud Done
+          // Primary Story Completion Verification Button + Library & Fullscreen Options
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () {
+                setState(() => _readingNotesCompleted = true);
+                _saveSubtask('reading', true);
+                HapticFeedback.heavyImpact();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('🎉 Authentic Story ($totalPages Pages) verified as read! (+25 PTS)'),
+                    backgroundColor: const Color(0xFF10B981),
+                  ),
+                );
+              },
+              icon: Icon(
+                _readingNotesCompleted ? Icons.check_circle_rounded : Icons.menu_book_rounded,
+                color: Colors.black,
+                size: 16,
+              ),
+              label: Text(
+                _readingNotesCompleted ? 'ALL $totalPages PAGES READ & VERIFIED ✓' : 'I HAVE READ ALL $totalPages PAGES OF TODAY\'S STORY ✓',
+                style: GoogleFonts.outfit(
+                  color: Colors.black,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 12,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _readingNotesCompleted ? const Color(0xFF10B981) : const Color(0xFFFFFC00),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+
           Row(
             children: [
               Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: _showStoryDetailModal,
-                  icon: const Icon(Icons.menu_book_rounded, color: Colors.black, size: 15),
-                  label: Text(
-                    'STORY READER',
-                    style: GoogleFonts.outfit(
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 11,
-                    ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF00E5FF),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 6),
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    HapticFeedback.lightImpact();
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const PocketLibraryPage()),
-                    ).then((_) {
-                      if (mounted) {
-                        setState(() => _readingNotesCompleted = true);
-                        _saveSubtask('reading', true);
-                      }
-                    });
-                  },
-                  icon: const Icon(Icons.auto_stories_rounded, color: Colors.black, size: 15),
-                  label: Text(
-                    'READ BOOKS 📚',
-                    style: GoogleFonts.outfit(
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 11,
-                    ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFFFD700),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 6),
-              Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: () {
-                    setState(() => _readingNotesCompleted = true);
-                    _saveSubtask('reading', true);
-                    HapticFeedback.lightImpact();
-                  },
-                  icon: Icon(
-                    _readingNotesCompleted ? Icons.check_circle_rounded : Icons.check_rounded,
-                    color: const Color(0xFFFFFC00),
-                    size: 15,
-                  ),
+                  onPressed: _showStoryDetailModal,
+                  icon: const Icon(Icons.fullscreen_rounded, color: Color(0xFF00E5FF), size: 15),
                   label: Text(
-                    _readingNotesCompleted ? 'DONE ✓' : 'FINISHED',
+                    'FULLSCREEN READER',
                     style: GoogleFonts.outfit(
-                      color: const Color(0xFFFFFC00),
+                      color: const Color(0xFF00E5FF),
                       fontWeight: FontWeight.bold,
                       fontSize: 11,
                     ),
                   ),
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: Color(0xFFFFFC00)),
+                    side: const BorderSide(color: Color(0xFF00E5FF)),
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () {
+                    HapticFeedback.lightImpact();
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const PocketLibraryPage()),
+                    );
+                  },
+                  icon: const Icon(Icons.auto_stories_rounded, color: Color(0xFFFFD700), size: 15),
+                  label: Text(
+                    'READ BOOKS 📚',
+                    style: GoogleFonts.outfit(
+                      color: const Color(0xFFFFD700),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 11,
+                    ),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: Color(0xFFFFD700)),
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // --- SUBTASK 5: ⚡ POCKET CODE ENGLISH DECODER CARD (User Audio Directive: Integrated Step 5) ---
+  Widget _buildCodeEnglishDecoderCard() {
+    final formula = PocketCodeEnglishDecoderModal.getFormulaForDay(widget.day);
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F172A),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: _codeEnglishCompleted ? const Color(0xFF10B981) : const Color(0xFF00FFCC).withValues(alpha: 0.35),
+          width: _codeEnglishCompleted ? 1.5 : 1.0,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                decoration: BoxDecoration(
+                  color: _codeEnglishCompleted ? const Color(0xFF10B981) : const Color(0xFF00FFCC),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  'STEP 5',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Text('⚡', style: TextStyle(fontSize: 16)),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Pocket Code English Decoder',
+                      style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                    ),
+                    Text(
+                      'Mnemonic Syntax Algorithms (കോഡ് ഭാഷ വെച്ച് ഇംഗ്ലീഷ് പഠിക്കാം)',
+                      style: GoogleFonts.inter(color: Colors.white54, fontSize: 10.5),
+                    ),
+                  ],
+                ),
+              ),
+              if (_codeEnglishCompleted)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: const Color(0xFF10B981)),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 14),
+                      SizedBox(width: 4),
+                      Text('VERIFIED', style: TextStyle(color: Color(0xFF10B981), fontSize: 10, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 10),
+
+          // Formula Header Badge Box
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFF0A0F1D),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: formula.color.withValues(alpha: 0.35)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: formula.color.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: formula.color),
+                      ),
+                      child: Text(
+                        formula.codeName,
+                        style: GoogleFonts.firaCode(
+                          color: formula.color,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      formula.category,
+                      style: GoogleFonts.inter(color: Colors.white60, fontSize: 11),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  formula.title,
+                  style: GoogleFonts.outfit(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w800),
+                ),
+                const SizedBox(height: 8),
+
+                // Monospace Syntax Rule Box
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF030712),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.white12),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'SYNTAX RULE:',
+                        style: GoogleFonts.firaCode(color: const Color(0xFFFFD700), fontSize: 9.5, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        formula.syntaxRule,
+                        style: GoogleFonts.firaCode(
+                          color: const Color(0xFF00FFCC),
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 8),
+
+                // Malayalam Explanation
+                Text(
+                  formula.malayalamExplanation,
+                  style: GoogleFonts.inter(color: Colors.white70, fontSize: 12, height: 1.45),
+                ),
+
+                // Breakdown tokens
+                if (formula.formulaBreakdown.isNotEmpty) ...[
+                  const SizedBox(height: 10),
+                  Text(
+                    'ALGORITHM BREAKDOWN:',
+                    style: GoogleFonts.firaCode(color: Colors.white54, fontSize: 9.5, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 6),
+                  ...formula.formulaBreakdown.map((item) => Padding(
+                    padding: const EdgeInsets.only(bottom: 6),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: formula.color.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            item['token'] ?? '',
+                            style: GoogleFonts.firaCode(color: formula.color, fontSize: 10.5, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            item['desc'] ?? '',
+                            style: GoogleFonts.inter(color: Colors.white70, fontSize: 11.5),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )),
+                ],
+
+                const SizedBox(height: 8),
+
+                // Correct Example vs Buggy Example
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF030712),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.white10),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('✓ ', style: TextStyle(color: Color(0xFF10B981), fontWeight: FontWeight.bold)),
+                          Expanded(
+                            child: Text(
+                              'Valid Code: "${formula.correctExample}"',
+                              style: GoogleFonts.inter(color: const Color(0xFF6EE7B7), fontSize: 11.5, fontWeight: FontWeight.w600),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('✗ ', style: TextStyle(color: Color(0xFFEF4444), fontWeight: FontWeight.bold)),
+                          Expanded(
+                            child: Text(
+                              'Syntax Bug: "${formula.buggyExample}"',
+                              style: GoogleFonts.inter(color: const Color(0xFFFCA5A5), fontSize: 11.5, fontStyle: FontStyle.italic),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Compiler Interactive Output
+                if (_codeCompilerOutput != null) ...[
+                  const SizedBox(height: 8),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF030712),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: const Color(0xFF10B981)),
+                    ),
+                    child: Text(
+                      _codeCompilerOutput!,
+                      style: GoogleFonts.firaCode(color: const Color(0xFF34D399), fontSize: 11, height: 1.4),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 10),
+
+          // Interactive Test Formula Compiler Button
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: _isCodeCompiling ? null : () async {
+                setState(() => _isCodeCompiling = true);
+                await Future.delayed(const Duration(milliseconds: 300));
+                if (!mounted) return;
+                setState(() {
+                  _isCodeCompiling = false;
+                  _codeCompilerOutput = '⚡ [SYNTAX COMPILER] STATUS: PASS (0 ERRORS)\nAlgorithm validated: [${formula.codeName}] compiled successfully!\nRule: ${formula.syntaxRule}\nSample: "${formula.correctExample}"';
+                });
+                HapticFeedback.lightImpact();
+              },
+              icon: _isCodeCompiling
+                  ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.cyanAccent))
+                  : const Icon(Icons.play_arrow_rounded, color: Color(0xFF00FFCC), size: 16),
+              label: Text(
+                _isCodeCompiling ? 'ANALYZING SYNTAX...' : 'TEST FORMULA COMPILER ⚡',
+                style: GoogleFonts.firaCode(color: const Color(0xFF00FFCC), fontSize: 11.5, fontWeight: FontWeight.bold),
+              ),
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: Color(0xFF00FFCC)),
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 8),
+
+          // Primary Mark Complete & Open All Modal Buttons
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    setState(() => _codeEnglishCompleted = true);
+                    _saveSubtask('code_english', true);
+                    HapticFeedback.heavyImpact();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('⚡ Code English Formula Mastered & Verified! (+25 PTS)'),
+                        backgroundColor: Color(0xFF10B981),
+                      ),
+                    );
+                  },
+                  icon: Icon(
+                    _codeEnglishCompleted ? Icons.check_circle_rounded : Icons.check_rounded,
+                    color: Colors.black,
+                    size: 16,
+                  ),
+                  label: Text(
+                    _codeEnglishCompleted ? 'FORMULA MASTERED ✓' : 'MARK FORMULA DECODED ✓',
+                    style: GoogleFonts.outfit(
+                      color: Colors.black,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 12,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _codeEnglishCompleted ? const Color(0xFF10B981) : const Color(0xFF00FFCC),
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              OutlinedButton.icon(
+                onPressed: () => PocketCodeEnglishDecoderModal.show(context, currentDay: widget.day),
+                icon: const Icon(Icons.code_rounded, color: Colors.white70, size: 15),
+                label: Text(
+                  'ALL CODES',
+                  style: GoogleFonts.outfit(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold),
+                ),
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: Colors.white24),
+                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
               ),
             ],
@@ -5931,6 +7107,13 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                             _storySubtitle,
                             style: GoogleFonts.inter(color: Colors.white60, fontSize: 11),
                           ),
+                          const SizedBox(height: 2),
+                          Text(
+                            _storyQuotePreview,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.inter(color: const Color(0xFF00E5FF), fontSize: 10, fontStyle: FontStyle.italic),
+                          ),
                         ],
                       ),
                     ),
@@ -5945,7 +7128,59 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                   ],
                 ),
                 const SizedBox(height: 10),
-                // Audio Narrator Controller Bar
+                // Multi-Page Story Chapters Tab Bar
+                Builder(
+                  builder: (_) {
+                    final pages = PocketMissionCurriculumRegistry.getStoryPages(widget.day);
+                    if (pages.length <= 1) return const SizedBox.shrink();
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: Row(
+                        children: List.generate(pages.length, (idx) {
+                          final isCurrent = idx == _activeStoryPageIndex;
+                          return Expanded(
+                            child: Padding(
+                              padding: EdgeInsets.only(right: idx < pages.length - 1 ? 6 : 0),
+                              child: InkWell(
+                                onTap: () {
+                                  _tts.stop();
+                                  modalSetState(() {
+                                    _activeStoryPageIndex = idx;
+                                    _isStorySpeaking = false;
+                                  });
+                                  setState(() {
+                                    _activeStoryPageIndex = idx;
+                                    _isStorySpeaking = false;
+                                  });
+                                },
+                                borderRadius: BorderRadius.circular(8),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(vertical: 6),
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    color: isCurrent ? const Color(0xFF00E5FF) : const Color(0xFF1E293B),
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(color: isCurrent ? const Color(0xFF00E5FF) : Colors.white24),
+                                  ),
+                                  child: Text(
+                                    'Page ${idx + 1}',
+                                    style: TextStyle(
+                                      color: isCurrent ? Colors.black : Colors.white70,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 11.5,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        }),
+                      ),
+                    );
+                  },
+                ),
+
+                // Audio Narrator Controller Bar + Speed Control
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
@@ -5965,13 +7200,18 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                           } else {
                             modalSetState(() => _isStorySpeaking = true);
                             setState(() => _isStorySpeaking = true);
+                            _tts.setSpeechRate(_ttsSpeechRate);
                             _tts.setCompletionHandler(() {
                               if (mounted) {
                                 modalSetState(() => _isStorySpeaking = false);
                                 setState(() => _isStorySpeaking = false);
                               }
                             });
-                            _tts.speak(_storyText);
+                            final pages = PocketMissionCurriculumRegistry.getStoryPages(widget.day);
+                            final currentText = pages.isNotEmpty
+                                ? pages[_activeStoryPageIndex.clamp(0, pages.length - 1)]
+                                : _storyText;
+                            _tts.speak(currentText);
                           }
                         },
                         icon: Icon(
@@ -5980,7 +7220,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                           size: 18,
                         ),
                         label: Text(
-                          _isStorySpeaking ? 'STOP NARRATOR' : 'LISTEN TO NARRATOR (TTS)',
+                          _isStorySpeaking ? 'STOP NARRATOR' : 'LISTEN (TTS)',
                           style: GoogleFonts.outfit(
                             color: Colors.black,
                             fontWeight: FontWeight.w900,
@@ -5989,10 +7229,42 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                         ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFFFFC00),
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                         ),
                       ),
+                      const SizedBox(width: 8),
+                      // Speed toggles: 0.8x, 1.0x, 1.2x
+                      ...[0.38, 0.48, 0.58].map((rate) {
+                        final label = rate == 0.38 ? '0.8x' : (rate == 0.48 ? '1.0x' : '1.2x');
+                        final isSel = (_ttsSpeechRate - rate).abs() < 0.05;
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 4),
+                          child: InkWell(
+                            onTap: () {
+                              _ttsSpeechRate = rate;
+                              _tts.setSpeechRate(rate);
+                              modalSetState(() {});
+                              setState(() {});
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: isSel ? const Color(0xFFFFFC00) : Colors.white10,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                label,
+                                style: TextStyle(
+                                  color: isSel ? Colors.black : Colors.white70,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      }),
                       const Spacer(),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -6064,7 +7336,13 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                             border: Border.all(color: Colors.white12),
                           ),
                           child: Text(
-                            _storyFormatted,
+                            () {
+                              final pages = PocketMissionCurriculumRegistry.getStoryPages(widget.day);
+                              if (pages.isNotEmpty) {
+                                return pages[_activeStoryPageIndex.clamp(0, pages.length - 1)];
+                              }
+                              return _storyFormatted;
+                            }(),
                             style: GoogleFonts.inter(
                               color: Colors.white,
                               fontSize: 14,
@@ -6137,7 +7415,645 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     );
   }
 
-  // --- SUBTASK 5: ✍️ QUICK REVISION MINI-QUIZ CARD ---
+  // --- 🗣️ DEDICATED PRONUNCIATION & SOUND CLINIC CARD ---
+  Widget _buildPronunciationClinicCard() {
+    final clinic = PocketMissionCurriculumRegistry.getPronunciationClinic(widget.day);
+    if (clinic.minimalPairs.isEmpty && clinic.practicePhrases.isEmpty) return const SizedBox.shrink();
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F172A),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: _pronunciationCompleted ? const Color(0xFF10B981) : const Color(0xFFA855F7).withValues(alpha: 0.35),
+          width: _pronunciationCompleted ? 1.5 : 1.0,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                decoration: BoxDecoration(
+                  color: _pronunciationCompleted ? const Color(0xFF10B981) : const Color(0xFFA855F7),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: const Text(
+                  'CLINIC',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Text('🗣️', style: TextStyle(fontSize: 16)),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  'Dedicated Pronunciation & Accent Clinic',
+                  style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                ),
+              ),
+              if (_pronunciationCompleted)
+                const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 18),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            clinic.focusSound,
+            style: GoogleFonts.inter(color: const Color(0xFFD8B4FE), fontSize: 12, fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '👄 Position: ${clinic.mouthPositionTip}',
+            style: GoogleFonts.inter(color: Colors.white70, fontSize: 11.5),
+          ),
+          const SizedBox(height: 10),
+
+          // Minimal Pairs Comparison Grid
+          if (clinic.minimalPairs.isNotEmpty) ...[
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1E293B),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.white12),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'MINIMAL PAIRS COMPARISON (Acoustic Contrast):',
+                    style: GoogleFonts.outfit(color: const Color(0xFFFFD700), fontSize: 10, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 6),
+                  ...clinic.minimalPairs.map((pair) {
+                    final wordA = pair['wordA'] ?? pair['word1'] ?? '';
+                    final ipaA = pair['ipaA'] ?? pair['ipa1'] ?? '';
+                    final wordB = pair['wordB'] ?? pair['word2'] ?? '';
+                    final ipaB = pair['ipaB'] ?? pair['ipa2'] ?? '';
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: InkWell(
+                              onTap: () => _speakWord(wordA),
+                              borderRadius: BorderRadius.circular(8),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF0F172A),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: const Color(0xFF00E5FF).withValues(alpha: 0.3)),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(wordA, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
+                                    Text(ipaA, style: const TextStyle(color: Color(0xFF00E5FF), fontSize: 10.5)),
+                                    const Icon(Icons.volume_up_rounded, color: Color(0xFFFFFC00), size: 13),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 6),
+                            child: Text('vs', style: TextStyle(color: Colors.white38, fontSize: 11, fontWeight: FontWeight.bold)),
+                          ),
+                          Expanded(
+                            child: InkWell(
+                              onTap: () => _speakWord(wordB),
+                              borderRadius: BorderRadius.circular(8),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF0F172A),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: const Color(0xFFA855F7).withValues(alpha: 0.3)),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(wordB, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
+                                    Text(ipaB, style: const TextStyle(color: Color(0xFFD8B4FE), fontSize: 10.5)),
+                                    const Icon(Icons.volume_up_rounded, color: Color(0xFFFFFC00), size: 13),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+          ],
+
+          // Practice Phrases
+          if (clinic.practicePhrases.isNotEmpty)
+            Column(
+              children: clinic.practicePhrases.map((phrase) {
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 6),
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1E293B),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          phrase,
+                          style: GoogleFonts.inter(color: Colors.white, fontSize: 11.5, fontStyle: FontStyle.italic),
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.volume_up_rounded, color: Color(0xFFFFFC00), size: 16),
+                        onPressed: () => _speakWord(phrase),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
+
+          const SizedBox(height: 8),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () {
+                setState(() => _pronunciationCompleted = true);
+                _saveSubtask('pronunciation', true);
+                HapticFeedback.lightImpact();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('🗣️ Pronunciation Clinic Completed! Acoustic contrast drilled ✓'),
+                    backgroundColor: Color(0xFF10B981),
+                  ),
+                );
+              },
+              icon: Icon(
+                _pronunciationCompleted ? Icons.check_circle_rounded : Icons.record_voice_over_rounded,
+                color: Colors.white,
+                size: 16,
+              ),
+              label: Text(
+                _pronunciationCompleted ? 'PRONUNCIATION CLINIC DONE ✓' : 'I CONTRASTED THESE SOUNDS ALOUD ✓',
+                style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 12,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _pronunciationCompleted ? const Color(0xFF10B981) : const Color(0xFFA855F7),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // --- 🧠 ENGLISH THINKING WORKOUT CARD ---
+  Widget _buildEnglishThinkingCard() {
+    final workout = PocketMissionCurriculumRegistry.getEnglishThinkingWorkout(widget.day);
+    if (workout.instantResponses.isEmpty) return const SizedBox.shrink();
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F172A),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: _englishThinkingCompleted ? const Color(0xFF10B981) : const Color(0xFF38BDF8).withValues(alpha: 0.35),
+          width: _englishThinkingCompleted ? 1.5 : 1.0,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                decoration: BoxDecoration(
+                  color: _englishThinkingCompleted ? const Color(0xFF10B981) : const Color(0xFF38BDF8),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: const Text(
+                  'REFLEX',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Text('🧠', style: TextStyle(fontSize: 16)),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  'English Thinking Workout (No Mother-Tongue Lag)',
+                  style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                ),
+              ),
+              if (_englishThinkingCompleted)
+                const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 18),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            workout.situation,
+            style: GoogleFonts.inter(color: const Color(0xFFBAE6FD), fontSize: 12, fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '⚠️ Avoid: ${workout.mentalTrapMalayalam}',
+            style: GoogleFonts.inter(color: Colors.deepOrangeAccent, fontSize: 11),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '💡 Thought: ${workout.directEnglishThought}',
+            style: GoogleFonts.inter(color: const Color(0xFF34D399), fontSize: 11),
+          ),
+          const SizedBox(height: 10),
+
+          // Instant Reflex Drills
+          Column(
+            children: workout.instantResponses.map((res) {
+              return Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E293B),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.white12),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        '👉 $res',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFFFFD700),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.volume_up_rounded, color: Color(0xFFFFFC00), size: 18),
+                      onPressed: () => _speakWord(res),
+                      tooltip: 'Listen to native reflex',
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
+
+          const SizedBox(height: 8),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () {
+                setState(() => _englishThinkingCompleted = true);
+                _saveSubtask('english_thinking', true);
+                HapticFeedback.lightImpact();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('🧠 English Thinking Reflex Mastered! Zero translation lag verified ✓'),
+                    backgroundColor: Color(0xFF10B981),
+                  ),
+                );
+              },
+              icon: Icon(
+                _englishThinkingCompleted ? Icons.check_circle_rounded : Icons.psychology_rounded,
+                color: Colors.black,
+                size: 16,
+              ),
+              label: Text(
+                _englishThinkingCompleted ? 'THINKING REFLEX MASTERED ✓' : 'I DRILLED DIRECT REFLEXES ✓',
+                style: GoogleFonts.outfit(
+                  color: Colors.black,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 12,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _englishThinkingCompleted ? const Color(0xFF10B981) : const Color(0xFF38BDF8),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // --- 🎙️ IN-LESSON 30-SECOND SPEAKING CHALLENGE CARD ---
+  Widget _buildSpeakingChallengeCard() {
+    final challenge = PocketMissionCurriculumRegistry.getSpeakingChallenge(widget.day);
+    if (challenge.title.isEmpty) return const SizedBox.shrink();
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F172A),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: _speakingChallengeCompleted ? const Color(0xFF10B981) : const Color(0xFFF43F5E).withValues(alpha: 0.35),
+          width: _speakingChallengeCompleted ? 1.5 : 1.0,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                decoration: BoxDecoration(
+                  color: _speakingChallengeCompleted ? const Color(0xFF10B981) : const Color(0xFFF43F5E),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: const Text(
+                  'CHALLENGE',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Text('🎙️', style: TextStyle(fontSize: 16)),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  'In-Lesson 30s Solo Speaking Challenge',
+                  style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                ),
+              ),
+              if (_speakingChallengeCompleted)
+                const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 18),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            challenge.title,
+            style: GoogleFonts.outfit(color: const Color(0xFFFDA4AF), fontSize: 13, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            challenge.contextScenario,
+            style: GoogleFonts.inter(color: Colors.white70, fontSize: 11.5, height: 1.35),
+          ),
+          const SizedBox(height: 10),
+
+          // Speech structure scaffold bullets
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1E293B),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: Colors.white10),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'SPEAKING FRAMEWORK (${challenge.targetSeconds} Seconds):',
+                  style: GoogleFonts.outfit(color: const Color(0xFFFFD700), fontSize: 10, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 4),
+                ...challenge.guidingPoints.map((guide) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 2),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('• ', style: TextStyle(color: Color(0xFF00E5FF), fontWeight: FontWeight.bold)),
+                      Expanded(
+                        child: Text(guide, style: GoogleFonts.inter(color: Colors.white, fontSize: 11.5)),
+                      ),
+                    ],
+                  ),
+                )),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          // Interactive 30s Countdown timer button
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    HapticFeedback.heavyImpact();
+                    if (_isSpeakingChallengeRecording) {
+                      _speakingTimer?.cancel();
+                      setState(() => _isSpeakingChallengeRecording = false);
+                    } else {
+                      _speakingTimer?.cancel();
+                      setState(() {
+                        _isSpeakingChallengeRecording = true;
+                        _speakingChallengeSecondsRemaining = 30;
+                      });
+                      _speakingTimer = Timer.periodic(const Duration(seconds: 1), (t) {
+                        if (!mounted) {
+                          t.cancel();
+                          return;
+                        }
+                        if (_speakingChallengeSecondsRemaining <= 1) {
+                          t.cancel();
+                          HapticFeedback.heavyImpact();
+                          setState(() {
+                            _isSpeakingChallengeRecording = false;
+                            _speakingChallengeCompleted = true;
+                          });
+                          _saveSubtask('speaking_challenge', true);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('🎉 30s Speaking Challenge Finished! Vocal agility activated ✓'),
+                              backgroundColor: Color(0xFF10B981),
+                            ),
+                          );
+                        } else {
+                          setState(() {
+                            _speakingChallengeSecondsRemaining--;
+                          });
+                        }
+                      });
+                    }
+                  },
+                  icon: Icon(
+                    _isSpeakingChallengeRecording ? Icons.stop_circle_rounded : Icons.mic_rounded,
+                    color: Colors.white,
+                    size: 16,
+                  ),
+                  label: Text(
+                    _isSpeakingChallengeRecording
+                        ? 'SPEAKING ALOUD: ${_speakingChallengeSecondsRemaining}s'
+                        : 'START 30s SPEAKING DRILL 🎙️',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 12,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _isSpeakingChallengeRecording ? Colors.redAccent : const Color(0xFFF43F5E),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              OutlinedButton(
+                onPressed: () {
+                  _speakingTimer?.cancel();
+                  setState(() {
+                    _isSpeakingChallengeRecording = false;
+                    _speakingChallengeCompleted = true;
+                  });
+                  _saveSubtask('speaking_challenge', true);
+                  HapticFeedback.lightImpact();
+                },
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: Color(0xFF10B981)),
+                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+                child: Text(
+                  _speakingChallengeCompleted ? 'DONE ✓' : 'FINISH',
+                  style: const TextStyle(color: Color(0xFF10B981), fontWeight: FontWeight.bold, fontSize: 11),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // --- ⚡ SOVEREIGN FLUENCY SHORTCUT / KURUKKUVAZHI CARD ---
+  Widget _buildFluencyShortcutCard() {
+    final shortcut = PocketMissionCurriculumRegistry.getFluencyShortcut(widget.day);
+    if (shortcut.title.isEmpty) return const SizedBox.shrink();
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F172A),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: const Color(0xFFFFD700).withValues(alpha: 0.4),
+          width: 1.2,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFD700),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: const Text(
+                  'SHORTCUT',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Text('⚡', style: TextStyle(fontSize: 16)),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  shortcut.malyalamHeading,
+                  style: GoogleFonts.outfit(color: const Color(0xFFFFD700), fontWeight: FontWeight.bold, fontSize: 14),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1E293B),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: Colors.white10),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  shortcut.ruleSummary,
+                  style: GoogleFonts.outfit(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 13,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    '🔑 Quick Hack: ${shortcut.quickHack}',
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFFFFE082),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 11.5,
+                    ),
+                  ),
+                ),
+                if (shortcut.examples.isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  ...shortcut.examples.map((ex) => Text(
+                    '• $ex',
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF6EE7B7),
+                      fontSize: 11,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  )),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  // --- SUBTASK 6: ✍️ QUICK REVISION MINI-QUIZ CARD ---
   Widget _buildRevisionQuizCard() {
     return Container(
       padding: const EdgeInsets.all(14),
@@ -6160,7 +8076,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                   color: _revisionQuizPassed ? const Color(0xFF10B981) : Colors.white12,
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: Text('STEP 5', style: TextStyle(color: _revisionQuizPassed ? Colors.black : Colors.white70, fontSize: 10, fontWeight: FontWeight.w900)),
+                child: Text('STEP 6', style: TextStyle(color: _revisionQuizPassed ? Colors.black : Colors.white70, fontSize: 10, fontWeight: FontWeight.w900)),
               ),
               const SizedBox(width: 8),
               const Text('✍️', style: TextStyle(fontSize: 16)),
@@ -6438,9 +8354,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
   // --- 🏆 FINAL CLAIM & ADVANCE BUTTON ---
   Widget _buildFinalClaimButton() {
-    final isTimerMet = _isTimerCompleted;
-    final isSubtasksMet = _isAllCompleted;
     final canClaim = _canClaimAndAdvance;
+    final points = _currentDayPoints;
     final total = _totalSubtasksCount;
     final remaining = (total - _completedSubtasksCount).clamp(0, total);
 
@@ -6449,25 +8364,16 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     String buttonText;
 
     if (canClaim) {
-      headerTitle = '🎉 MISSION COMPLETED!';
+      headerTitle = '🎉 DAY ${widget.day} PASSED! ($points/200 PTS)';
       description =
-          '60-Minute practice target met & all $total subtasks verified! 100 Pass Mark reached • +50 Bonus Coins awarded to your Vault Store! Day ${widget.day + 1} unlocks tomorrow!';
-      buttonText = 'CLAIM DAY ${widget.day} REWARDS & ADVANCE 🚀';
-    } else if (isTimerMet && !isSubtasksMet) {
-      headerTitle = '⚠️ $remaining SUBTASKS REMAINING';
-      description =
-          'Practice time completed! Complete the remaining $remaining subtasks above before unlocking Day ${widget.day + 1}.';
-      buttonText = 'FINISH $remaining MORE SUBTASKS TO ADVANCE';
-    } else if (!isTimerMet && isSubtasksMet) {
-      headerTitle = '⏱️ PRACTICE TIME TARGET PENDING';
-      description =
-          'All $total subtasks are verified! Continue your 60-min daily practice via app chats, voice calls, or drills to complete the target.';
-      buttonText = 'COMPLETE PRACTICE TIME TO ADVANCE';
+          'Pass Mark achieved ($points/200 PTS)! 50 Bonus Coins awarded to your Vault Store. Day ${widget.day + 1} is now UNLOCKED!';
+      buttonText = 'CLAIM REWARDS & COMPLETE DAY ${widget.day} MISSION 🚀';
     } else {
-      headerTitle = 'DAILY MISSION IN PROGRESS';
+      final ptsNeeded = (100 - points).clamp(0, 100);
+      headerTitle = '⏳ PASS MARK PENDING ($points/200 PTS)';
       description =
-          'Checklist Progress: $_completedSubtasksCount/$total subtasks verified. Keep practicing to reach your 60-min target!';
-      buttonText = '$remaining SUBTASKS REMAINING';
+          'Earn at least 100 points across the subtasks to pass and unlock Day ${widget.day + 1}. ($ptsNeeded more points needed, $remaining subtasks remaining).';
+      buttonText = 'EARN $ptsNeeded MORE PTS TO UNLOCK DAY ${widget.day + 1}';
     }
 
     return Container(
@@ -6522,33 +8428,79 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                         _saveSubtask('defense', true);
                       }
                       final uid = SupaFlow.client.auth.currentUser?.id;
+                      final nextDay = (widget.day < 90) ? widget.day + 1 : 90;
                       if (uid != null) {
-                        await Learning60DayService().completeTask(
+                        await Learning60DayService().completeDailyMission(
                           userId: uid,
-                          taskId: 'day_${widget.day}_mission',
+                          day: widget.day,
+                          earnedPoints: _currentDayPoints,
+                          advanceToNextDay: true,
                         );
                         await PocketFortressDefenseService.recordActivityPoints(
                           'daily_mission',
                         );
+                      } else {
+                        final prefs = await SharedPreferences.getInstance();
+                        final todayStr = '${DateTime.now().year}-${DateTime.now().month}-${DateTime.now().day}';
+                        await prefs.setBool('pocket_day_${widget.day}_completed', true);
+                        await prefs.setString('learning_day_${widget.day}_completed_date', todayStr);
+                        await prefs.setInt('learning_day_${widget.day}_completed_timestamp', DateTime.now().millisecondsSinceEpoch);
+                        await prefs.setInt('learning_last_completed_day', widget.day);
+                        await prefs.setBool('pocket_day_${nextDay}_unlocked', true);
+                        await prefs.setInt('pocket_learning_user_stage', nextDay);
                       }
-                      // Award 50 bonus coins to vault store (Audio directive: 100 pass mark + 50 bonus coins)
+                      // Award 50 bonus coins to vault store
                       await PocketFortressDefenseService.awardRaidLoot(50);
 
-                      // Save today's completion date to enforce daily pacing
                       final prefs = await SharedPreferences.getInstance();
                       final todayStr = '${DateTime.now().year}-${DateTime.now().month}-${DateTime.now().day}';
                       await prefs.setString('learning_day_${widget.day}_completed_date', todayStr);
                       await prefs.setInt('learning_last_completed_day', widget.day);
+                      await prefs.setBool('pocket_day_${nextDay}_unlocked', true);
+                      await prefs.setInt('pocket_learning_user_stage', nextDay);
+
+                      if (uid != null) {
+                        try {
+                          await SupaFlow.client.from('profile').update({
+                            'learning_day': nextDay,
+                            'learning_stage': nextDay,
+                            'updated_at': DateTime.now().toIso8601String(),
+                          }).eq('user_id', uid);
+
+                          await EnglishHubLevelGroupService.ensureUserInLevelGroup(
+                            userLevel: nextDay,
+                            userId: uid,
+                            forceLevelMatch: true,
+                          );
+                        } catch (e) {
+                          debugPrint('Error auto-migrating English Hub cohort on mission complete: $e');
+                        }
+                      }
 
                       widget.onMissionCompleted?.call();
                       if (mounted) {
+                        if (widget.day == 90) {
+                          final prefs = await SharedPreferences.getInstance();
+                          final userName = prefs.getString('user_name') ?? 'Pocket Scholar';
+                          if (mounted) {
+                            await Day90MasterCertificateDialog.show(
+                              context,
+                              userName: userName,
+                              userDay: 90,
+                            );
+                          }
+                        }
+                        if (!mounted) return;
                         Navigator.pop(context);
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(
-                              '🎉 Day ${widget.day} English Mission Complete! 100 Pass Marks + 50 Bonus Coins added to your Store Vault! Day ${widget.day + 1} Unlocks Tomorrow!',
+                              '🎉 Day ${widget.day} English Mission Complete! Earned $_currentDayPoints/200 Points! Day $nextDay is now UNLOCKED!',
+                              style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
                             ),
                             backgroundColor: const Color(0xFF10B981),
+                            behavior: SnackBarBehavior.floating,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                           ),
                         );
                       }

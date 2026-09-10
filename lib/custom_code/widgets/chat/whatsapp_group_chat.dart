@@ -9,6 +9,7 @@ import 'voice_player.dart';
 import 'voice_recorder.dart';
 import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/whats_app_groups_provider.dart' hide supabaseClientProvider;
+import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
@@ -50,8 +51,6 @@ import 'package:pocket_mates_app/custom_code/widgets/courses_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/english_learning_hub_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/ads/pocket_ad_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/snap/snap_view_dialog.dart';
-import 'pocket_ambient_flame_background.dart';
-
 import 'package:pocket_mates_app/flutter_flow/flutter_flow_theme.dart';
 import 'package:pocket_mates_app/auth/auth_helper.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortress_defense_service.dart';
@@ -112,6 +111,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   final Set<String> _loadingAnalysisMessageIds = {};
 
   bool _isAdminBlockedFromHub = false;
+  bool get _isEnglishHubGroup => widget.groupName.contains('English Hub');
 
   // Speech-to-Text for English Hub
   final stt.SpeechToText _speechToText = stt.SpeechToText();
@@ -295,7 +295,9 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                 const Text('🇬🇧', style: TextStyle(fontSize: 10.5)),
                 const SizedBox(width: 4),
                 Text(
-                  'ENGLISH HUB',
+                  widget.groupName.contains('Lvl')
+                      ? widget.groupName.replaceAll('English Hub', '').trim()
+                      : 'ENGLISH HUB',
                   style: GoogleFonts.outfit(
                     color: const Color(0xFFFFD700),
                     fontWeight: FontWeight.w800,
@@ -400,7 +402,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   }
 
   Future<void> _checkEnglishHubAdminBlock() async {
-    if (widget.groupName != 'English Hub') return;
+    if (!_isEnglishHubGroup) return;
     try {
       final res = await _supabase
           .from('user_tool_permissions')
@@ -684,7 +686,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   }) async {
     if (_isSending) return null;
 
-    if (widget.groupName == 'English Hub' && text != null && text.trim().isNotEmpty) {
+    if (_isEnglishHubGroup && text != null && text.trim().isNotEmpty) {
       if (!_isEnglishOnly(text)) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -731,11 +733,20 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
             metadata: metadata,
           );
 
-      if (widget.groupName == 'English Hub' && message != null) {
+      if (_isEnglishHubGroup && message != null) {
         final prefs = await SharedPreferences.getInstance();
         int currentPoints = prefs.getInt('english_hub_points') ?? 0;
         int pointsToAdd = messageType == 'voice' ? 5 : 1;
         await prefs.setInt('english_hub_points', currentPoints + pointsToAdd);
+
+        // 📝 Track daily message count for 15-message verification
+        final now = DateTime.now();
+        final key = 'english_hub_msgs_${_currentUserId}_${now.year}_${now.month}_${now.day}';
+        int count = prefs.getInt(key) ?? 0;
+        await prefs.setInt(key, count + 1);
+
+        // Award unified Pocket Score for English group conversation
+        await PocketFortressDefenseService.awardPoints(pointsToAdd);
       }
 
       if (message != null) {
@@ -1147,22 +1158,41 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                   ],
                 ),
                 const SizedBox(height: 2),
-                Text(
-                  widget.groupId.startsWith('p:')
-                      ? '🔒 End-to-End Encrypted'
-                      : (_groupMembers.isEmpty
-                          ? 'Tap for community info'
-                          : '${_groupMembers.length} members • English Lounge'),
-                  style: const TextStyle(
-                    fontSize: 11,
-                    color: Colors.white70,
-                  ),
+                Builder(
+                  builder: (context) {
+                    final targetId = widget.groupId.startsWith('p:') ? widget.groupId.substring(2) : widget.groupId;
+                    final isRobot = PocketRobotService.isRobotId(targetId);
+                    if (isRobot) {
+                      final robot = PocketRobotService.getRobotById(targetId);
+                      final lvl = robot != null ? 'Level ${robot.level}' : '';
+                      final archetype = robot != null ? robot.archetype.label : '';
+                      return Text(
+                        '🤖 AI Pocket Robot • $lvl ($archetype) • Online',
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: Color(0xFF06B6D4),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      );
+                    }
+                    return Text(
+                      widget.groupId.startsWith('p:')
+                          ? '👤 Human Mate • 🔒 End-to-End Encrypted'
+                          : (_groupMembers.isEmpty
+                              ? 'Tap for community info'
+                              : '${_groupMembers.length} members • English Lounge'),
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: Colors.white70,
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
           ),
           actions: [
-            if (widget.groupName == 'English Hub') ...[
+            if (_isEnglishHubGroup) ...[
               IconButton(
                 icon: const Icon(Icons.hub_outlined, color: Colors.lightBlueAccent),
                 tooltip: 'English Hub',
@@ -1279,7 +1309,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                 ),
                 Column(
                   children: [
-                  if (widget.groupName == 'English Hub')
+                  if (_isEnglishHubGroup)
                     _buildEnglishHubHeaderRibbon()
                   else if (!widget.groupId.startsWith('p:'))
                     Container(
@@ -1438,7 +1468,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                       _stagedAudioPath != null)
                     _buildStagedPreview(),
                   if (_showMentionSuggestions) _buildMentionSuggestions(),
-                  if (widget.groupName == 'English Hub')
+                  if (_isEnglishHubGroup)
                     ValueListenableBuilder<TextEditingValue>(
                       valueListenable: _messageController,
                       builder: (context, value, child) {
@@ -3173,7 +3203,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                     child: Icon(_isEditing ? Icons.check : Icons.send, color: Colors.black),
                   ),
                 );
-              } else if (widget.groupName == 'English Hub') {
+              } else if (_isEnglishHubGroup) {
                 // English Hub: Direct Voice-To-English Speech-To-Text Transcriber
                 return GestureDetector(
                   onTap: _toggleEnglishSpeechDictation,

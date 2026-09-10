@@ -260,7 +260,7 @@ class LearningMilestoneStage {
   }
 
   static String _colorToHex(Color color) {
-    return '#${color.value.toRadixString(16).padLeft(8, '0').substring(2).toUpperCase()}';
+    return '#${color.toARGB32().toRadixString(16).padLeft(8, '0').substring(2).toUpperCase()}';
   }
 
   /// Resolves the stage matching a given learning day (1 to 90)
@@ -336,6 +336,32 @@ class UserLearningProgress {
       LearningMilestoneStage.getStageForDay(currentDay);
   LearningMilestoneStage? get nextStage =>
       currentDay < 90 ? LearningMilestoneStage.allStages[currentDay] : null;
+
+  UserLearningProgress copyWith({
+    int? currentDay,
+    int? currentStage,
+    int? streakDays,
+    int? totalPoints,
+    int? minutesPracticedToday,
+    int? targetDailyMinutes,
+    int? missedDaysCount,
+    bool? hasInactivityWarning,
+    DateTime? lastActiveDate,
+    List<DailyEnglishTask>? todayTasks,
+  }) {
+    return UserLearningProgress(
+      currentDay: currentDay ?? this.currentDay,
+      currentStage: currentStage ?? this.currentStage,
+      streakDays: streakDays ?? this.streakDays,
+      totalPoints: totalPoints ?? this.totalPoints,
+      minutesPracticedToday: minutesPracticedToday ?? this.minutesPracticedToday,
+      targetDailyMinutes: targetDailyMinutes ?? this.targetDailyMinutes,
+      missedDaysCount: missedDaysCount ?? this.missedDaysCount,
+      hasInactivityWarning: hasInactivityWarning ?? this.hasInactivityWarning,
+      lastActiveDate: lastActiveDate ?? this.lastActiveDate,
+      todayTasks: todayTasks ?? this.todayTasks,
+    );
+  }
 
   String get currentPhaseTitle {
     if (currentDay < 30) return 'Phase 1: Genesis & Habit (Days 1–29)';

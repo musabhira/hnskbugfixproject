@@ -338,6 +338,7 @@ class Day90MasterCardData {
 class CitadelRaidLogEntry {
   final String id;
   final String attackerId;
+  final String defenderId;
   final String attackerName;
   final String attackerAvatar;
   final String attackerWeapon; // ⚔️ Avatar Combat Weapon / Tool (Audio directive: Cannons, Blasters, Shields)
@@ -349,6 +350,7 @@ class CitadelRaidLogEntry {
   const CitadelRaidLogEntry({
     required this.id,
     this.attackerId = '',
+    this.defenderId = '',
     required this.attackerName,
     required this.attackerAvatar,
     this.attackerWeapon = '💥 Heavy Cannon',
@@ -361,6 +363,7 @@ class CitadelRaidLogEntry {
   Map<String, dynamic> toJson() => {
         'id': id,
         'attackerId': attackerId,
+        'defenderId': defenderId,
         'attackerName': attackerName,
         'attackerAvatar': attackerAvatar,
         'attackerWeapon': attackerWeapon,
@@ -373,6 +376,7 @@ class CitadelRaidLogEntry {
   factory CitadelRaidLogEntry.fromJson(Map<String, dynamic> json) => CitadelRaidLogEntry(
         id: json['id'] ?? '',
         attackerId: json['attackerId'] ?? json['attacker_id'] ?? '',
+        defenderId: json['defenderId'] ?? json['defender_id'] ?? '',
         attackerName: json['attackerName'] ?? json['attacker_name'] ?? 'Rival Raider',
         attackerAvatar: json['attackerAvatar'] ?? json['attacker_avatar'] ?? '⚔️',
         attackerWeapon: json['attackerWeapon'] ?? json['attacker_weapon'] ?? '💥 Heavy Cannon',
@@ -453,7 +457,53 @@ class PocketFortressDefenseService {
   static const String _jailedKey = 'user_house_is_jailed';
   static const String _jailUntilKey = 'user_house_jail_until';
   static const String _jailReasonKey = 'user_house_jail_reason';
+  static const String _isDamagedKey = 'user_house_is_attack_damaged';
+  static const String _pointsKey = 'user_house_points_v1';
   static const String _jailedHousesListKey = 'pocket_jailed_houses_list';
+
+  /// 🪙 Unified Pocket Score (Single coherent currency & progression score across entire app)
+  /// User audio directive: "ഒരു പോക്കറ്റ് സ്കോർ മാത്രമേ ഉള്ളൂ. ചാറ്റ് ചെയ്യുമ്പോൾ, ഗ്രൂപ്പ് ചാറ്റ് ചെയ്യുമ്പോൾ, ലെവൽ കഴിയുമ്പോൾ ഒക്കെയാണ് പോക്കറ്റ് സ്കോർ കൂടുന്നത്."
+  static Future<int> getUnifiedScore([String? uid]) async {
+    final prefs = await SharedPreferences.getInstance();
+    final myId = uid ?? SupaFlow.client.auth.currentUser?.id;
+    final coins = prefs.getInt(_coinsKey) ?? 0;
+    final points = prefs.getInt(_pointsKey) ?? 0;
+    final learningPts = myId != null ? (prefs.getInt('learning_points_$myId') ?? 0) : 0;
+
+    int unified = math.max(coins, math.max(points, learningPts));
+
+    // Keep all local keys in absolute parity
+    await prefs.setInt(_coinsKey, unified);
+    await prefs.setInt(_pointsKey, unified);
+    if (myId != null) {
+      await prefs.setInt('learning_points_$myId', unified);
+    }
+    return unified;
+  }
+
+  /// Update the unified Pocket Score everywhere (Coins, Points, Supabase XP & learning_points)
+  static Future<int> setUnifiedScore(int newScore, [String? uid]) async {
+    final prefs = await SharedPreferences.getInstance();
+    final myId = uid ?? SupaFlow.client.auth.currentUser?.id;
+    final score = math.max(0, newScore);
+
+    await prefs.setInt(_coinsKey, score);
+    await prefs.setInt(_pointsKey, score);
+    if (myId != null) {
+      await prefs.setInt('learning_points_$myId', score);
+      try {
+        await SupaFlow.client.from('profile').update({
+          'learning_points': score,
+          'xp': score,
+        }).eq('user_id', myId);
+        await SupaFlow.client.from('pocket_homes').update({
+          'points': score,
+          'updated_at': DateTime.now().toIso8601String(),
+        }).eq('user_id', myId);
+      } catch (_) {}
+    }
+    return score;
+  }
 
   /// 🛡️ Unlocked Defense Gates based on Challenge Stage:
   /// Gate 1: Days 1–10 (Up to 10 questions)
@@ -477,7 +527,7 @@ class PocketFortressDefenseService {
   /// - Day 50: 50 defense question slots
   /// - Day 90: 90 defense question slots
   static int getMaxQuestionsForStage(int stage) {
-    return stage.clamp(1, 90);
+    return math.max(10, stage.clamp(1, 90));
   }
 
   /// 💖 Attacker Lifelines for Raiding High-Level Citadels (User Audio Request)
@@ -626,6 +676,52 @@ class PocketFortressDefenseService {
     );
   }
 
+  /// 🤖 Dynamic Target Matchmaker & Robot Homes Generator
+  /// User Audio Directive: "നാലാമത്തെ ലെവലിലുള്ള ആൾക്കാർ ആറാമത്തെ ലെവലിലുള്ള ആൾക്കാരെയാണ് അറ്റാക്ക് ചെയ്യേണ്ടത്...
+  /// റാൻഡം ആയിട്ട് സെലക്ട് ചെയ്യാൻ പറ്റണം. അതും ഒറിജിനൽ ആയിരിക്കണം. ഡൈനാമിക് ആയിട്ടാണ് എല്ലാം...
+  /// ഇനി ആൾക്കാരൊന്നും ഇല്ല എന്ന് പറഞ്ഞു കഴിഞ്ഞാൽ റോബോട്ട് ഹോമുകൾ ഡിഫോൾട്ട് ആയിട്ട് ഡെവലപ്പ് ചെയ്തു വെക്കണം."
+  static List<PocketNeighbor> generateDynamicTargetBracketHomes(int userDay, {int count = 6}) {
+    final baseTargetStage = userDay >= 4 ? userDay + 2 : 5; // Level 4 -> Level 6!
+    final palettes = ['terracotta', 'emerald', 'royal_gold', 'cyber_yellow', 'sakura', 'mirror_glass'];
+    final botNames = [
+      'Cyber Valkyrie 🛡️',
+      'Quantum Knight ⚔️',
+      'Apex Sentinel ⚡',
+      'Shadow Falcon 🦅',
+      'Orator Sovereign 👑',
+      'Nova Paladin 🌟',
+      'Zenith Guardian 💎',
+      'Aegis Commander 🛡️',
+    ];
+
+    final List<PocketNeighbor> bots = [];
+    for (int i = 0; i < count; i++) {
+      final stage = (baseTargetStage + (i % 3) - 1).clamp(2, 90);
+      final palette = palettes[(i + stage) % palettes.length];
+      final name = '${botNames[i % botNames.length]} #0${i + 1}';
+      final rank = stage >= 71
+          ? 'Victorian Grandmaster'
+          : (stage >= 40 ? 'Citadel Fortress Keep' : (stage >= 20 ? 'Gabled Manor' : 'Country Residence'));
+
+      bots.add(PocketNeighbor(
+        id: 'robot_citadel_${stage}_$i',
+        name: name,
+        day: stage,
+        streak: stage + (i * 2),
+        rank: rank,
+        paletteId: palette,
+        isMe: false,
+        hasActiveShield: (i % 2 == 0),
+        statusMessage: '🤖 Autonomous English Fortress (Level $stage). Test your syntax against my gates!',
+        isPocketRobo: true,
+        hp: 100,
+        maxHp: 100,
+        isDamaged: false,
+      ));
+    }
+    return bots;
+  }
+
   /// 🚨 Inactivity / Consistency Check (Daily Focus Protection)
   /// If user skips a day, stage downgrades (e.g. Day 6 -> Day 5) with a focus warning!
   static Future<ConsistencyCheckResult> checkDailyConsistency(int currentDay, int streak) async {
@@ -653,9 +749,6 @@ class PocketFortressDefenseService {
       if (differenceInDays >= 2 && currentDay > 1) {
         final downgradedDay = currentDay - 1;
         await prefs.setString(_lastActiveKey, todayStr);
-        // Also apply small house wear & tear penalty on missed days
-        final currentHp = prefs.getInt(_hpKey) ?? 100;
-        await prefs.setInt(_hpKey, math.max(20, currentHp - 15));
 
         return ConsistencyCheckResult(
           didDowngrade: true,
@@ -691,7 +784,16 @@ class PocketFortressDefenseService {
   }) {
     final q = question.trim();
 
-    // 1. Anti-duplicate check across all user's armed defense traps
+    // 1. Language validation: Must be written in English
+    final hasNonEnglish = RegExp(r'[\u0D00-\u0D7F]').hasMatch(q) ||
+        options.any((o) => RegExp(r'[\u0D00-\u0D7F]').hasMatch(o));
+    if (hasNonEnglish) {
+      return PresidentVerdict.warning(
+        'Defense challenges must be written in English! Non-English text detected. Please formulate both the question and all choices in English.',
+      );
+    }
+
+    // 2. Anti-duplicate check across all user's armed defense traps
     final normQ = q.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
     if (existingQuestions != null && normQ.isNotEmpty) {
       for (final eq in existingQuestions) {
@@ -705,14 +807,14 @@ class PocketFortressDefenseService {
       }
     }
 
-    // 2. Minimum length check
-    if (q.length < 8) {
+    // 3. Minimum length check
+    if (q.length < 5) {
       return PresidentVerdict.threat(
-        'Question is suspiciously short (${q.length} chars). Trivial spam questions violate Pocket World fair-play and lead to account bans.',
+        'Question is too short (${q.length} chars). Please formulate a complete English question or sentence challenge.',
       );
     }
 
-    // 3. Gibberish / keyboard mash detector
+    // 4. Gibberish / keyboard mash detector
     final cleanAlpha = q.replaceAll(RegExp(r'[^a-zA-Z]'), '');
     if (cleanAlpha.length > 8) {
       final repeatingChars = RegExp(r'(.)\1{3,}');
@@ -762,15 +864,15 @@ class PocketFortressDefenseService {
       return PresidentVerdict.approved();
     }
 
-    // 5. Options validation for standard 4-choice MCQ & Listening Whisper
-    if (options.length < 4) {
-      return PresidentVerdict.warning('Every defense question must have 4 distinct choices.');
+    // 5. Options validation (supports 2 to 4 choices, e.g. True/False or 4-choice MCQ)
+    if (options.length < 2) {
+      return PresidentVerdict.warning('Every defense question must have at least 2 choices.');
     }
 
     final trimmedOptions = options.map((e) => e.trim().toLowerCase()).toList();
     final uniqueCount = trimmedOptions.toSet().length;
-    if (uniqueCount < 4) {
-      return PresidentVerdict.warning('Duplicate answer options detected. Please write 4 unique, educational answers.');
+    if (uniqueCount < trimmedOptions.length) {
+      return PresidentVerdict.warning('Duplicate answer options detected. Please write unique, educational answers.');
     }
 
     // 6. Empty option check
@@ -795,7 +897,7 @@ class PocketFortressDefenseService {
     final domeTier = prefs.getInt('${_ironDomeKey}_tier') ?? (hasDome ? 1 : 0);
     final knights = prefs.getInt(_armyKey) ?? 2;
     final hasEscorts = prefs.getBool(_escortsKey) ?? false;
-    final coins = prefs.getInt(_coinsKey) ?? 150;
+    final coins = await getUnifiedScore();
     final fdc = prefs.getInt(_activityPointsKey) ?? 80;
     final banned = prefs.getBool(_banKey) ?? false;
     final lifelines = prefs.getInt(_lifelinesKey) ?? 1;
@@ -821,10 +923,15 @@ class PocketFortressDefenseService {
     final bonusHp = (perk.perkType == PerkType.fortressShield ? perk.bonusValue : 0);
     final effectiveMaxHp = 100 + bonusHp;
 
+    // 🛡️ House is ONLY damaged if another user actually attacked and breached it!
+    final isExplicitlyDamaged = prefs.getBool(_isDamagedKey) ?? false;
+    final actualHp = isExplicitlyDamaged ? hp : 100;
+    final effectiveCurrentHp = math.min(actualHp + bonusHp, effectiveMaxHp);
+
     return HouseDefenseStatus(
-      currentHp: math.min(hp + bonusHp, effectiveMaxHp),
+      currentHp: effectiveCurrentHp,
       maxHp: effectiveMaxHp,
-      isDamaged: hp < effectiveMaxHp,
+      isDamaged: isExplicitlyDamaged && actualHp < 100,
       armyKnightsCount: effectiveKnights,
       hasIronDome: effectiveHasDome,
       ironDomeTier: effectiveDomeTier,
@@ -1295,10 +1402,10 @@ class PocketFortressDefenseService {
   /// Enlist Dual Armed Escort Patrol Vehicles/Bikes
   static Future<bool> purchaseArmedEscorts({int coinCost = 120}) async {
     final prefs = await SharedPreferences.getInstance();
-    final currentCoins = prefs.getInt(_coinsKey) ?? 150;
+    final currentCoins = await getUnifiedScore();
     if (currentCoins < coinCost) return false;
 
-    await prefs.setInt(_coinsKey, currentCoins - coinCost);
+    await setUnifiedScore(currentCoins - coinCost);
     await prefs.setBool(_escortsKey, true);
     await prefs.setBool(_day90FleetKey, true);
     return true;
@@ -1356,14 +1463,29 @@ class PocketFortressDefenseService {
       if (currentFdc < fdcCost) return false;
       await prefs.setInt(_activityPointsKey, currentFdc - fdcCost);
     } else {
-      final currentCoins = prefs.getInt(_coinsKey) ?? 150;
+      final currentCoins = await getUnifiedScore();
       if (currentCoins < coinCost) return false;
-      await prefs.setInt(_coinsKey, currentCoins - coinCost);
+      await setUnifiedScore(currentCoins - coinCost);
     }
 
     final currentHp = prefs.getInt(_hpKey) ?? 100;
     final newHp = math.min(100, currentHp + healAmount);
     await prefs.setInt(_hpKey, newHp);
+    if (newHp >= 100) {
+      await prefs.setBool(_isDamagedKey, false);
+    }
+
+    try {
+      final myId = SupaFlow.client.auth.currentUser?.id;
+      if (myId != null) {
+        await SupaFlow.client.from('pocket_homes').update({
+          'hp': newHp,
+          'is_damaged': newHp < 100,
+          'updated_at': DateTime.now().toIso8601String(),
+        }).eq('user_id', myId);
+      }
+    } catch (_) {}
+
     return true;
   }
 
@@ -1376,9 +1498,9 @@ class PocketFortressDefenseService {
       if (currentFdc < fdcCost) return false;
       await prefs.setInt(_activityPointsKey, currentFdc - fdcCost);
     } else {
-      final currentCoins = prefs.getInt(_coinsKey) ?? 150;
+      final currentCoins = await getUnifiedScore();
       if (currentCoins < coinCost) return false;
-      await prefs.setInt(_coinsKey, currentCoins - coinCost);
+      await setUnifiedScore(currentCoins - coinCost);
     }
 
     await prefs.setBool(_ironDomeKey, true);
@@ -1394,9 +1516,9 @@ class PocketFortressDefenseService {
       if (currentFdc < fdcCost) return false;
       await prefs.setInt(_activityPointsKey, currentFdc - fdcCost);
     } else {
-      final currentCoins = prefs.getInt(_coinsKey) ?? 150;
+      final currentCoins = await getUnifiedScore();
       if (currentCoins < coinCost) return false;
-      await prefs.setInt(_coinsKey, currentCoins - coinCost);
+      await setUnifiedScore(currentCoins - coinCost);
     }
 
     final currentKnights = prefs.getInt(_armyKey) ?? 0;
@@ -1413,9 +1535,9 @@ class PocketFortressDefenseService {
 
   static Future<bool> purchaseLifeline({int coinCost = 30}) async {
     final prefs = await SharedPreferences.getInstance();
-    final currentCoins = prefs.getInt(_coinsKey) ?? 150;
+    final currentCoins = await getUnifiedScore();
     if (currentCoins < coinCost) return false;
-    await prefs.setInt(_coinsKey, currentCoins - coinCost);
+    await setUnifiedScore(currentCoins - coinCost);
     final count = prefs.getInt(_lifelinesKey) ?? 1;
     await prefs.setInt(_lifelinesKey, count + 1);
     return true;
@@ -1488,19 +1610,22 @@ class PocketFortressDefenseService {
 
     try {
       final myId = SupaFlow.client.auth.currentUser?.id;
-      if (myId != null) {
-        await SupaFlow.client.from('citadel_raids').insert({
-          'defender_id': myId,
-          if (entry.attackerId.isNotEmpty) 'attacker_id': entry.attackerId,
-          'attacker_name': entry.attackerName,
-          'attacker_avatar': entry.attackerAvatar,
-          'attacker_weapon': entry.attackerWeapon,
-          'breached': entry.breached,
-          'coins_looted': entry.coinsLooted,
-          'iron_dome_blocked': entry.ironDomeBlocked,
-          'created_at': entry.timestamp.toIso8601String(),
-        });
-      }
+      final defId = entry.defenderId.isNotEmpty ? entry.defenderId : (myId ?? 'me');
+      final atkId = entry.attackerId.isNotEmpty ? entry.attackerId : (myId ?? 'me');
+
+      await SupaFlow.client.from('citadel_raids').insert({
+        'defender_id': defId,
+        'attacker_id': atkId,
+        'attacker_name': entry.attackerName,
+        'attacker_avatar': entry.attackerAvatar,
+        'attacker_weapon': entry.attackerWeapon,
+        'breached': entry.breached,
+        'damage_dealt': entry.breached ? 60 : 0,
+        'coins_looted': entry.coinsLooted,
+        'bonus_points': 150,
+        'iron_dome_blocked': entry.ironDomeBlocked,
+        'created_at': entry.timestamp.toIso8601String(),
+      });
     } catch (e) {
       debugPrint('Supabase raid log sync: $e');
     }
@@ -1566,7 +1691,7 @@ class PocketFortressDefenseService {
   }) async {
     final prefs = await SharedPreferences.getInstance();
     final currentHp = prefs.getInt(_hpKey) ?? 100;
-    final currentCoins = prefs.getInt(_coinsKey) ?? 150;
+    final currentCoins = await getUnifiedScore();
     final isSelfDefender = defenderHouseId == 'me';
     final hasDome = isSelfDefender ? (prefs.getBool(_ironDomeKey) ?? false) : defenderHasIronDome;
 
@@ -1605,12 +1730,39 @@ class PocketFortressDefenseService {
 
     if (isSelfDefender) {
       await prefs.setInt(_hpKey, newHp);
-      await prefs.setInt(_coinsKey, remainingCoins);
+      await prefs.setBool(_isDamagedKey, true);
+      await setUnifiedScore(remainingCoins);
+    } else {
+      // Attacking another user's house - update defender in Supabase pocket_homes!
+      if (defenderHouseId.isNotEmpty &&
+          !defenderHouseId.startsWith('pocket_robo') &&
+          !defenderHouseId.startsWith('rival_citadel')) {
+        try {
+          final target = await SupaFlow.client
+              .from('pocket_homes')
+              .select('hp')
+              .eq('user_id', defenderHouseId)
+              .maybeSingle();
+          final targetHp = (target?['hp'] as num?)?.toInt() ?? 100;
+          final updatedHp = math.max(0, targetHp - damageHp);
+
+          await SupaFlow.client.from('pocket_homes').update({
+            'hp': updatedHp,
+            'is_damaged': true,
+            'last_attacked_at': DateTime.now().toIso8601String(),
+            'last_attacker_name': attackerName,
+            'updated_at': DateTime.now().toIso8601String(),
+          }).eq('user_id', defenderHouseId);
+        } catch (e) {
+          debugPrint('Error syncing defender damage to Supabase: $e');
+        }
+      }
     }
 
     final entry = CitadelRaidLogEntry(
       id: 'raid_${DateTime.now().millisecondsSinceEpoch}',
       attackerId: attackerId,
+      defenderId: defenderHouseId,
       attackerName: attackerName,
       attackerAvatar: attackerAvatar,
       attackerWeapon: attackerWeapon,
@@ -1750,6 +1902,27 @@ class PocketFortressDefenseService {
     }
 
     if (!isNeighbor) {
+      // If local cache is empty, attempt to restore from Supabase profile
+      try {
+        final myId = SupaFlow.client.auth.currentUser?.id;
+        if (myId != null) {
+          final profileData = await SupaFlow.client
+              .from('profile')
+              .select('house_shield_questions')
+              .eq('user_id', myId)
+              .maybeSingle();
+          if (profileData != null && profileData['house_shield_questions'] != null) {
+            final listRaw = profileData['house_shield_questions'] as List;
+            final sbList = listRaw
+                .map((e) => HouseShieldQuestion.fromJson(Map<String, dynamic>.from(e)))
+                .toList();
+            if (sbList.isNotEmpty) {
+              await prefs.setString(_trapsKey, jsonEncode(sbList.map((q) => q.toJson()).toList()));
+              return sbList.take(maxAllowed).toList();
+            }
+          }
+        }
+      } catch (_) {}
       return []; // Self-built defense: User begins with empty unlocked slots!
     }
 
@@ -1757,11 +1930,30 @@ class PocketFortressDefenseService {
     return _getDefaultQuestions(maxAllowed);
   }
 
-  /// Save custom shield questions
+  /// Save custom shield questions locally and sync to Supabase
   static Future<void> saveShieldQuestions(List<HouseShieldQuestion> questions) async {
     final prefs = await SharedPreferences.getInstance();
     final jsonStr = jsonEncode(questions.map((q) => q.toJson()).toList());
     await prefs.setString(_trapsKey, jsonStr);
+
+    // Sync to Supabase profile
+    try {
+      final myId = SupaFlow.client.auth.currentUser?.id;
+      if (myId != null) {
+        final jsonList = questions.map((q) => q.toJson()).toList();
+        try {
+          await SupaFlow.client.from('profile').update({
+            'house_shield_questions': jsonList,
+          }).eq('user_id', myId);
+        } catch (_) {
+          await SupaFlow.client.from('profile').update({
+            'house_shield_questions': jsonList,
+          }).eq('id', myId);
+        }
+      }
+    } catch (e) {
+      debugPrint('Supabase shield sync notice: $e');
+    }
   }
 
   /// Starter default questions (Used strictly for neighbor raids)
@@ -2133,6 +2325,171 @@ class PocketFortressDefenseService {
       // Wipe fake defense questions
       await saveShieldQuestions([]);
     }
+  }
+
+  // ============================================================
+  // 🌐 SUPABASE POCKET HOMES & ATTACK INTEGRATION
+  // ============================================================
+
+  /// 🏡 Sync current player's Pocket Home to Supabase
+  static Future<void> syncMyHouseToSupabase({required int day, required int streak}) async {
+    try {
+      final myId = SupaFlow.client.auth.currentUser?.id;
+      if (myId == null || !isValidUuid(myId)) return;
+      final prefs = await SharedPreferences.getInstance();
+      final isDamaged = prefs.getBool(_isDamagedKey) ?? false;
+      final hp = prefs.getInt(_hpKey) ?? 100;
+      final paletteId = prefs.getString('house_theme_palette_id') ?? 'terracotta';
+      final points = prefs.getInt(_pointsKey) ?? 0;
+
+      await SupaFlow.client.from('pocket_homes').upsert({
+        'user_id': myId,
+        'day': day,
+        'streak': streak,
+        'hp': isDamaged ? hp : 100,
+        'max_hp': 100,
+        'is_damaged': isDamaged,
+        'palette_id': paletteId,
+        'points': points,
+        'updated_at': DateTime.now().toIso8601String(),
+      });
+    } catch (e) {
+      debugPrint('syncMyHouseToSupabase error: $e');
+    }
+  }
+
+  /// 🛡️ Validates whether an ID is a standard 36-character UUID
+  static bool isValidUuid(String? id) {
+    if (id == null || id.isEmpty) return false;
+    return RegExp(
+      r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',
+    ).hasMatch(id.trim());
+  }
+
+  /// 🔍 Fetch a user's Pocket Home from Supabase by user_id
+  static Future<Map<String, dynamic>?> getSupabaseHouse(String userId) async {
+    if (!isValidUuid(userId)) return null;
+    try {
+      final res = await SupaFlow.client
+          .from('pocket_homes')
+          .select()
+          .eq('user_id', userId)
+          .maybeSingle();
+      return res;
+    } catch (e) {
+      debugPrint('getSupabaseHouse error: $e');
+      return null;
+    }
+  }
+
+  /// 👥 Fetch real neighbors with their real Pocket Homes from Supabase
+  static Future<List<PocketNeighbor>> fetchSupabaseNeighbors({int limit = 20}) async {
+    try {
+      final myId = SupaFlow.client.auth.currentUser?.id;
+      final res = await SupaFlow.client
+          .from('pocket_homes')
+          .select('user_id, day, streak, hp, max_hp, is_damaged, palette_id, shield_active')
+          .order('day', ascending: false)
+          .limit(limit);
+
+      if (res.isNotEmpty) {
+        final userIds = res.map((r) => r['user_id'].toString()).toList();
+        final profileRes = await SupaFlow.client
+            .from('profile')
+            .select('user_id, name')
+            .inFilter('user_id', userIds);
+
+        final profileMap = {
+          for (var p in profileRes) p['user_id'].toString(): p['name']?.toString() ?? 'User'
+        };
+
+        final List<PocketNeighbor> neighbors = [];
+        for (var r in res) {
+          final uid = r['user_id'].toString();
+          final isMe = uid == myId;
+          final name = isMe ? 'You (Your Pocket Home)' : (profileMap[uid] ?? 'Explorer');
+          final day = (r['day'] as num?)?.toInt() ?? 1;
+          final streak = (r['streak'] as num?)?.toInt() ?? 1;
+          final hp = (r['hp'] as num?)?.toInt() ?? 100;
+          final maxHp = (r['max_hp'] as num?)?.toInt() ?? 100;
+          final isDamaged = (r['is_damaged'] as bool?) ?? false;
+          final palette = r['palette_id']?.toString() ?? 'terracotta';
+          final shield = (r['shield_active'] as bool?) ?? true;
+
+          neighbors.add(PocketNeighbor(
+            id: uid,
+            name: name,
+            day: day,
+            streak: streak,
+            rank: day >= 71 ? 'Victorian Palace' : (day >= 40 ? 'Citadel Keep' : 'Explorer Home'),
+            paletteId: palette,
+            isMe: isMe,
+            hasActiveShield: shield,
+            statusMessage: isDamaged ? '💥 Under siege! House took damage.' : 'Practicing English daily! 🏡',
+            isDamaged: isDamaged,
+            hp: hp,
+            maxHp: maxHp,
+          ));
+        }
+        return neighbors;
+      }
+    } catch (e) {
+      debugPrint('fetchSupabaseNeighbors error: $e');
+    }
+    return [];
+  }
+
+  /// 🌟 Award Points and progress level (Audio: "100 പോയിന്റ് കിട്ടിയാൽ അടുത്ത ലെവൽ... 150 പോയിന്റ്സ് ബോണസ് ആയിട്ട്")
+  static Future<Map<String, dynamic>> awardPoints(int pointsToAdd) async {
+    final prefs = await SharedPreferences.getInstance();
+    final currentPoints = await getUnifiedScore();
+    final newPoints = currentPoints + pointsToAdd;
+    await setUnifiedScore(newPoints);
+
+    bool didLevelUp = false;
+    int currentDay = prefs.getInt('learning_last_completed_day') ?? 1;
+    int newDay = currentDay;
+
+    // Check if points threshold for level up is reached (100 points per level)
+    if (pointsToAdd >= 100 || (newPoints ~/ 100 > currentPoints ~/ 100)) {
+      didLevelUp = true;
+      newDay = math.min(90, currentDay + math.max(1, pointsToAdd ~/ 100));
+      await prefs.setInt('learning_last_completed_day', newDay);
+    }
+
+    try {
+      final myId = SupaFlow.client.auth.currentUser?.id;
+      if (myId != null) {
+        final profile = await SupaFlow.client
+            .from('profile')
+            .select('xp, day')
+            .eq('user_id', myId)
+            .maybeSingle();
+
+        final currentXp = (profile?['xp'] as num?)?.toInt() ?? 0;
+        final updatedXp = currentXp + pointsToAdd;
+
+        await SupaFlow.client.from('profile').update({
+          'xp': updatedXp,
+          if (didLevelUp) 'day': newDay,
+        }).eq('user_id', myId);
+
+        await SupaFlow.client.from('pocket_homes').update({
+          'points': updatedXp,
+          if (didLevelUp) 'day': newDay,
+          'updated_at': DateTime.now().toIso8601String(),
+        }).eq('user_id', myId);
+      }
+    } catch (e) {
+      debugPrint('awardPoints Supabase error: $e');
+    }
+
+    return {
+      'pointsAwarded': pointsToAdd,
+      'totalPoints': newPoints,
+      'didLevelUp': didLevelUp,
+      'newDay': newDay,
+    };
   }
 }
 

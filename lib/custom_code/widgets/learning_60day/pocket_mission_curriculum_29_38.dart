@@ -1,8 +1,256 @@
 import 'daily_vocab_item.dart';
+import 'pocket_mission_curriculum_1_18.dart';
 
 /// 📘 Curriculum Data for Days 29 to 38 (Forensic Debate, Classical Rhetoric & Sovereign Statecraft)
 class PocketCurriculum29To38 {
   static bool handles(int day) => day >= 29 && day <= 38;
+
+  // --- 📖 3-PAGE DEEP LITERATURE STORIES ---
+  static List<String> getStoryPages(int day) {
+    switch (day) {
+      case 29:
+        return const [
+          // PAGE 1: The Hall of Mirrors & Geopolitical Tension (Page 1 of 3)
+          'PAGE 1: THE HALL OF MIRRORS & THE G20 GALA RECEPTION\n\n'
+          'Within the opulent, gilded expanse of the Hall of Mirrors at the Palace of Versailles, three hundred heads of state, foreign ministers, and corporate titans from thirty distinct civilizations gathered for the annual G20 Gala Dinner. Outside, the great fountains of Louis XIV danced in the autumn twilight; inside, crystalline chandeliers cast a shimmering brilliance over delicate geopolitical cross-currents.\n\n'
+          'Daniel accompanied Senior Diplomat Tariq as junior attache. As they navigated the reception, Daniel observed how several novice delegates committed catastrophic social faux pas: some aggressively confronted foreign ministers about contentious maritime trade sanctions during the aperitifs, while others monopolized conversations with boastful self-importance, instantly alienating their dinner partners.\n\n'
+          'Tariq observed the fractured room with serene, smiling composure. "Daniel," Tariq murmured softly, "formal treaties are signed in ministerial boardrooms, but they are born here—in the delicate, velvet art of cross-cultural etiquette and high-table grace."',
+
+          // PAGE 2: The Velvet Architecture of Diplomatic Protocol (Page 2 of 3)
+          'PAGE 2: THE VELVET ARCHITECTURE OF HIGH-TABLE PROTOCOL\n\n'
+          'When Tariq was introduced to Japanese Ambassador Tanaka, he did not launch into demanding treaty clauses. Instead, he deployed the refined protocols of high-table diplomatic etiquette with consummate warmth:\n\n'
+          '"Ambassador Tanaka, it is an immense personal honor to meet you in person. Your recent seminal white paper on sovereign green maritime corridors was profoundly insightful."\n\n'
+          'Ambassador Tanaka\'s eyes lit up with genuine appreciation. Tariq listened with complete, deferential attention, asking thoughtful inquiries about the engineering nuances of clean shipping. Later, when introduced to the French Minister of State, Tariq balanced gentle social wit with substantive multilateral interests:\n\n'
+          '"Madame Minister, your opening address captured the conscience of the assembly. Would your delegation be open to an informal working breakfast tomorrow morning to explore non-binding consensus on clean maritime standards?"\n\n'
+          'Notice the exquisite cadence: Honorific homage ➔ Intellectual deference ➔ Active, non-invasive listening ➔ A graceful invitation to backchannel consensus.',
+
+          // PAGE 3: The Midnight Consensus & The Sovereign Touch (Page 3 of 3)
+          'PAGE 3: THE MIDNIGHT CONSENSUS & ENDURING ALLIANCES\n\n'
+          'By the time the dessert courses were served under the gilded vaulted mirrors, Tariq had achieved the impossible: he had secured informal, enthusiastic backing from seven key nations for his renewable maritime treaty—a breakthrough that six months of aggressive formal negotiations in Geneva had failed to unlock.\n\n'
+          'As they descended the grand marble staircase of Versailles into the crisp Parisian night, Tariq turned to Daniel:\n\n'
+          '"Never forget this truth, Daniel: In the highest circles of global statecraft, arrogance is instantly detected and quietly discarded. True power is never loud; it is polite, respectful, and deeply attuned to the dignity of others."',
+        ];
+      case 30:
+        return const [
+          // PAGE 1: Sixty Million Viewers & The Crucible of the Town Hall (Page 1 of 3)
+          'PAGE 1: SIXTY MILLION VIEWERS & THE NATIONAL ARENA\n\n'
+          'Under the blinding, incandescent glare of automated studio floodlights and sixty million live television viewers across the nation, Prime Ministerial challenger Elena stood behind the center mahogany podium. The Great National Town Hall Debate was the supreme political arena of the generation.\n\n'
+          'Her opponent, Senator Sterling—a veteran orator of thirty years with seven electoral victories—launched an immediate, blistering assault on her economic proposals, accusing her coalition of fiscal naivety and recklessness.\n\n'
+          'Inside Elena\'s debate preparation booth, Daniel watched the live polling telemetry fluctuate wildly. The debate moderator turned to Elena: "Candidate Elena, you have ninety seconds to defend your economic plan against Senator Sterling\'s devastating critique."',
+
+          // PAGE 2: The Symphony of Grand Oratorical Synthesis (Page 2 of 3)
+          'PAGE 2: THE SYMPHONY OF ORATORICAL SYNTHESIS\n\n'
+          'Elena did not flinch. She took a single diaphragmatic breath and synthesized every rhetorical weapon in the sovereign English arsenal into a magnificent verbal crescendo:\n\n'
+          '"My distinguished opponent speaks endlessly of yesterday\'s failures; what we must build today is a sovereign economy where enterprise flourishes, where workers are protected, and where no family is left behind!\n\n'
+          'Seldom in modern history has our democracy stood at so decisive a crossroads.\n\n'
+          'Rarely has the cost of political complacency been so catastrophic, and never will our coalition compromise the economic future of our children!\n\n'
+          'Therefore, I insist that our national assembly enact immediate tax incentives for clean domestic manufacturing, and that every regional worker be guaranteed universal technological retraining vouchers.\n\n'
+          'For it is not through fear that we conquer the future, but through courage; not in bitter division that we prosper, but in unbreakable solidarity; not tomorrow, but tonight!"\n\n'
+          'Notice the majestic synthesis: Cleft focus ("what we must build...") ➔ Negative inversions ("Seldom has...", "Rarely has...", "never will...") ➔ Subjunctive decrees ("assembly enact...", "worker be guaranteed...") ➔ Classical rhythmic tricolon ("not through fear... not in division... not tomorrow...").',
+
+          // PAGE 3: The Landslide Victory & The Triumph of Rhetoric (Page 3 of 3)
+          'PAGE 3: THE HISTORIC TWENTY-POINT LANDSLIDE SURGE\n\n'
+          'The national debate hall fell dead silent, then erupted into deafening, non-partisan applause that the moderators could not gavel down for two full minutes. Senator Sterling sat frozen, dismantled by the sheer harmonic velocity of her synthesis.\n\n'
+          'The post-debate snap polling revealed a historic twenty-point surge in Elena\'s favor—the largest shift in modern electoral polling. Two weeks later, Elena was sworn in as Prime Minister in a landslide victory.\n\n'
+          'In the Prime Minister\'s study, Elena placed her hand upon Daniel\'s shoulder:\n\n'
+          '"Daniel, ordinary politicians use words to fill airtime. A true orator synthesizes grammar into an unstoppable moral symphony. When syntax, rhythm, and moral conviction unite, speech commands the destiny of nations."',
+        ];
+      case 31:
+        return const [
+          // PAGE 1: The War Room Crisis at the Geneva Institute (Page 1 of 3)
+          'PAGE 1: THE WAR ROOM CRISIS AT THE GENEVA INSTITUTE\n\n'
+          'Deep beneath the Alpine bedrock in the subterranean strategic operations facility of the Geneva Institute for Global Risk, high-resolution holographic telemetry walls displayed cascading supply chain failures across four continents. A sudden geopolitical flashpoint had frozen three vital maritime straits, while unprecedented Arctic weather paralyzed continental energy grids.\n\n'
+          'Delegates from twenty central banks sat in panicked paralysis as currency yields surged toward historic default thresholds. Chief Forecaster Nadia convened the emergency crisis council, with Daniel recording the strategic contingency models.\n\n'
+          '"Daniel," Nadia warned, observing the trembling delegates, "in extreme crises, amateurs panic about what is happening right now. Sovereign strategists operate in counterfactual space—modeling what would have happened, what could happen, and what must be preemptively executed."',
+
+          // PAGE 2: The Calculus of Inverted Counterfactuals (Page 2 of 3)
+          'PAGE 2: THE CALCULUS OF INVERTED COUNTERFACTUAL SCENARIOS\n\n'
+          'Nadia stepped before the holographic geopolitical matrix. She discarded simplistic "If" structures and wielded the surgical precision of inverted counterfactual conditionals:\n\n'
+          '"Council members, observe the telemetry: Had our central banking consortium not diversified their sovereign currency reserves twelve months ago, our national debt yields would have collapsed this morning under speculative panic.\n\n'
+          'Were the European energy grid to suffer a secondary freeze this winter, industrial manufacturing output would decline by eighteen percent across thirty metropolitan hubs.\n\n'
+          'Should maritime freight insurers suspend transit coverage for twenty-four more hours, global food distribution lines would fracture irrevocably.\n\n'
+          'Therefore, were we to authorize the immediate deployment of forty million barrels of strategic reserves today, we would neutralize commodity volatility before consumer panic takes root."\n\n'
+          'Notice the inverted counterfactual syntax: "Had our consortium not diversified..." (Third conditional inversion eliminating \'if\'), "Were the grid to suffer..." (Second conditional inversion of extreme hypothetical), "Should insurers suspend..." (First conditional inversion of sovereign contingency).',
+
+          // PAGE 3: The Preemptive Executive Orders & Global Stability (Page 3 of 3)
+          'PAGE 3: THE PREEMPTIVE EXECUTIVE ORDERS & GLOBAL STABILITY\n\n'
+          'The panicked murmuring ceased instantly. Nadia\'s counterfactual scenario modeling replaced emotional terror with cool probabilistic certainty. By stress-testing the cascading trajectories, the council saw the exact levers necessary to avert disaster.\n\n'
+          'Within two hours, five heads of state signed emergency directives authorizing immediate strategic reserve releases and bilateral currency swap lines. By sunrise, global financial markets had fully stabilized.\n\n'
+          'As Nadia powered down the war room displays, she turned to Daniel:\n\n'
+          '"Daniel, counterfactual English is the telescope of strategic foresight. Master \'Had we not...\', \'Were we to...\', and \'Should it occur...\', and you will navigate the storms of the future before they even strike."',
+        ];
+      case 32:
+        return const [
+          // PAGE 1: The Marble Hall of the Supreme Court (Page 1 of 3)
+          'PAGE 1: THE CONSTITUTIONAL TRIBUNAL & CLASSICAL JURISPRUDENCE\n\n'
+          'Beneath the soaring neoclassical marble pediment of the Constitutional Supreme Court, nine robed justices took their seats upon the elevated mahogany bench. The gallery was packed to capacity with legal scholars, civil rights advocates, and technology executives. The case before the bench—Sovereign Privacy vs. Digital Monopolies—would define the boundaries of human liberty in the digital era.\n\n'
+          'Opposing corporate defense counsels had buried the bench beneath twelve thousand pages of arcane statutory cross-references and obfuscating technical jargon. Daniel sat beside Solicitor General Julian at the advocate\'s table. Daniel watched the nine justices rub their foreheads in visible exhaustion.\n\n'
+          '"Daniel," Julian whispered softly as he adjusted his morning suit, "when the law is suffocating beneath technical pettifoggery, an advocate cannot speak in bureaucratic footnotes. We must elevate our argument into the timeless symmetry of classical rhetoric: Chiasmus, Antithesis, and the Judicial Tricolon."',
+
+          // PAGE 2: The Symmetrical Bastion of Chiasmus (Page 2 of 3)
+          'PAGE 2: THE SYMMETRICAL BASTION OF CHIASMUS & ANTITHESIS\n\n'
+          'Julian strode to the bronze rostrum, bowed respectfully to the Chief Justice, and addressed the court without notes. His opening cadences electrified the judicial chamber:\n\n'
+          '"Mr. Chief Justice, and may it please the court:\n\n'
+          'We stand before this constitutional bench today to defend an eternal democratic principle:\n\n'
+          'We must never adapt human liberties to algorithmic demands; we must adapt algorithmic power to human liberties!\n\n'
+          'The respondent corporation appears before this court professing boundless benevolence; yet their business model promises connection, but extracts absolute surveillance; promises consumer convenience, but delivers algorithmic isolation!\n\n'
+          'To safeguard our sovereign constitutional compact for generations yet unborn, this court must speak with moral courage, rule with judicial impartiality, and act with constitutional finality."\n\n'
+          'The chiasmus—"human liberties (A) to algorithmic demands (B); algorithmic power (B) to human liberties (A)"—crystallized the philosophical crisis in fourteen words. The symmetrical antithesis stripped away corporate deception, while the judicial tricolon resonated with immovable constitutional authority.',
+
+          // PAGE 3: The Landmark Unanimous Verdict (Page 3 of 3)
+          'PAGE 3: THE LANDMARK UNANIMOUS VERDICT & MARBLE TRUTH\n\n'
+          'For ten seconds after Julian concluded his argument, not a single justice spoke. The Chief Justice slowly placed down his fountain pen, turned to his fellow justices, and nodded in unmistakable consensus.\n\n'
+          'Three weeks later, the Supreme Court handed down a historic, unanimous 9–0 decision establishing digital privacy as an inalienable constitutional right. In the central marble rotunda outside the courtroom, Julian placed his hand on Daniel\'s shoulder:\n\n'
+          '"Daniel, classical rhetoric is not decorative embroidery. Symmetrical chiasmus and antithesis are the architectural pillars of moral truth. Master them, and your words will stand carved in marble long after temporary laws are forgotten."',
+        ];
+      case 33:
+        return const [
+          // PAGE 1: The Quantum Quagmire at Tokyo Congress (Page 1 of 3)
+          'PAGE 1: THE QUANTUM QUAGMIRE AT WORLD TECH CONGRESS\n\n'
+          'Inside the glass-and-steel auditorium of the Tokyo International Forum, five hundred institutional investors, hedge fund managers, and venture capital partners sat listening to deep-tech presentations at the World Tech Congress. The previous four artificial intelligence research founders had lost the room completely.\n\n'
+          'They had droned on using impenetrable academic jargon—babbling about "eigenstate decoherence", "stochastic non-convex tensor convergence", and "Hamiltonian matrix topologies". Investors rubbed their eyes, checked their financial news feeds, and prepared to leave.\n\n'
+          'Daniel was assisting Principal Research Scientist Dr. Anya backstage. Anya observed the bored audience with calm amusement. "Daniel," Anya smiled, "true technical mastery is not the ability to sound complicated; it is the courage to make miracles crystalline. Today, we demystify deep tech."',
+
+          // PAGE 2: The Labyrinth Analogy & Commercial Transmutation (Page 2 of 3)
+          'PAGE 2: THE LABYRINTH ANALOGY & COMMERCIAL TRANSMUTATION\n\n'
+          'Dr. Anya walked onto the stage carrying neither mathematical equations nor dense slides. She looked directly into the eyes of the sovereign wealth directors and spoke with vivid, physical clarity:\n\n'
+          '"Imagine if your computer was trapped in a pitch-black labyrinth, searching for an exit. A classical supercomputer explores one hallway at a time, turning back after every dead end for months on end.\n\n'
+          'Our quantum neural chip doesn\'t search the maze hallway by hallway—it turns on the lights across the entire labyrinth at once!\n\n'
+          'What does this mean for your enterprise balance sheets? A pharmaceutical drug simulation that currently requires four months of supercomputing time and eighteen million dollars is solved by our chip in seven seconds, slashing drug discovery costs by ninety percent."\n\n'
+          'The crisp analogy illuminated the technology instantly. By translating complex quantum physics into a vivid physical metaphor, and anchoring that metaphor directly in commercial ROI, Anya captured the capital of the entire auditorium.',
+
+          // PAGE 3: Eighty Million in Series B & The Art of Simplicity (Page 3 of 3)
+          'PAGE 3: EIGHTY MILLION IN SERIES B & LUCID GENIUS\n\n'
+          'The auditorium erupted into enthusiastic applause. Chief technology officers of three global pharmaceutical giants immediately requested private bilateral sessions in the VIP executive lounge.\n\n'
+          'Before the evening banquet concluded, Dr. Anya\'s Series B funding round was oversubscribed at eighty million dollars. In the high-speed bullet train back to Kyoto, Anya shared the golden rule of technical translation with Daniel:\n\n'
+          '"Daniel, anyone can memorize technical jargon to appear intelligent. But the world rewards those who can look at unfathomable complexity and explain it so simply that a child can see it and an investor can fund it."',
+        ];
+      case 34:
+        return const [
+          // PAGE 1: The Senate Judiciary Crucible (Page 1 of 3)
+          'PAGE 1: THE SENATE INVESTIGATIVE CRUCIBLE\n\n'
+          'Under the carved mahogany ceiling of the Senate Judiciary Hearing Room on Capitol Hill, television cameras broadcast the high-stakes interrogation of conglomerate CEO Harold Vance. Vance was accused of orchestrating an illegal price-fixing scheme that artificially doubled the price of essential pediatric medicines.\n\n'
+          'Vance arrived with six high-powered defense attorneys, determined to deploy manipulative public relations tactics, emotional distractions, and logical fallacies to evade accountability. Daniel sat directly behind Special Counsel Richard, managing the audited digital evidence binders.\n\n'
+          'Richard leaned back and whispered: "Daniel, corrupt witnesses always hide behind logical fallacies—the Straw Man, the Ad Hominem, and the Red Herring. An investigator never loses their temper; we name the fallacy with serene composure, discard the smoke, and return to the audit."',
+
+          // PAGE 2: The Surgical Dismantling of Manipulative Fallacies (Page 2 of 3)
+          'PAGE 2: SURGICAL DISMANTLING OF THE STRAW MAN FALLACY\n\n'
+          'When Richard pressed Vance regarding unauthorized price-fixing communications, CEO Vance slammed his fist on the mahogany witness table and yelled:\n\n'
+          '"Counselor, your aggressive, hostile questions prove that you hate free-market enterprise and want fifty thousand hardworking manufacturing employees fired and cast onto the street!"\n\n'
+          'The hearing room gasped at the theatrical outburst. Richard did not raise his voice or flinch. He adjusted his glasses and dissected the evasion with surgical coolness:\n\n'
+          '"Mr. Vance, that is a textbook straw man fallacy. My cross-examination has nothing to do with opposing free enterprise; it has everything to do with criminal conspiracy.\n\n'
+          'Let us discard your manufactured theatrics and return to audited server log 402: Did you, or did you not, authorize encrypted price-fixing emails on March 14th from your private terminal?"\n\n'
+          'Vance blinked in stunned silence. His straw man collapsed instantly. By naming the manipulative fallacy and immediately repivoting to documented server logs, Richard pinned the witness against the wall of truth.',
+
+          // PAGE 3: The Full Confession & Forensic Integrity (Page 3 of 3)
+          'PAGE 3: THE FULL CONFESSION & FORENSIC VICTORY\n\n'
+          'Trapped under the spotlight of indisputable facts, CEO Vance looked desperately at his defense lawyers, who bowed their heads in defeat. Vance took a trembling sip of water: "Yes... I authorized the email transmission."\n\n'
+          'The hearing room erupted with camera flashes. Outside the chamber steps, Richard turned to Daniel:\n\n'
+          '"Daniel, when people cannot defeat your facts, they attack your character or invent imaginary straw men. Never argue with their distractions. Name the fallacy with serene composure, discard the smoke, and demand the factual evidence."',
+        ];
+      case 35:
+        return const [
+          // PAGE 1: The Brink of Global Maritime Paralysis (Page 1 of 3)
+          'PAGE 1: THE BRINK OF GLOBAL MARITIME PARALYSIS\n\n'
+          'In the high-security mediation chamber of the International Labor Organization in Geneva, an escalating commercial dock strike across thirty major international maritime ports threatened to halt global food shipments. Inside the room, temperature and tempers were boiling.\n\n'
+          'On one side of the table, dockworkers\' union chiefs were shouting, red-faced with fury over exhausting 80-hour workweeks; on the other side, multinational shipping magnates banged their fists, threatening punitive lawsuits and mass lockouts. Every hour the ports remained closed cost forty million dollars.\n\n'
+          'Daniel assisted Lead Mediator Nathan, who had been dispatched by the UN Secretary-General. "Nathan," Daniel whispered, "they are about to walk out!" Nathan replied with serene empathy: "Daniel, conflict escalates when human pain is ignored. We do not issue heavy-handed orders. We deploy High-EQ Empathetic Mirroring."',
+
+          // PAGE 2: High-EQ Empathetic Mirroring & De-escalation (Page 2 of 3)
+          'PAGE 2: THE HIGH-EQ EMPATHETIC MIRROR & REFRAMING\n\n'
+          'Nathan stood up, walked to the center of the table, and spoke in a low, resonant, deeply calming tone that silenced the shouting:\n\n'
+          '"Gentlemen, look at me. I hear the deep, bone-crushing exhaustion in the voices of our union delegates. I recognize that your crane operators and dock crews have endured inhuman, seventy-hour shifts under sub-zero conditions to keep our nations supplied. Your dignity is non-negotiable.\n\n'
+          'And to our shipowners across the table, I acknowledge your acute contractual penalties—ten million dollars a day in demurrage fees that threaten enterprise solvency.\n\n'
+          'What both sides in this room truly demand is not economic destruction, but an agreement that honors human dignity while keeping global food supply lines alive.\n\n'
+          'Let us step back from ultimatums. Let us examine a three-shift rotation model with guaranteed overtime caps and productivity bonuses."',
+
+          // PAGE 3: The Ratification of the Global Maritime Accord (Page 3 of 3)
+          'PAGE 3: THE RATIFICATION OF THE MARITIME ACCORD\n\n'
+          'The tension in the chamber melted. The union leaders sat down, their exhaustion acknowledged; the corporate shipping CEOs lowered their arms, realizing their contractual concerns were recognized.\n\n'
+          'Over the next six hours of structured dialogue, both parties collaborated on the proposed rotation model. At 4:00 AM, both sides signed the Global Maritime Accord, reopening thirty ports before sunrise. As they exited into the dawn mist, Nathan smiled at Daniel:\n\n'
+          '"Daniel, when people scream, they are crying out to be heard. Validate their pain before you propose your solution, and you can unite the bitterest enemies."',
+        ];
+      case 36:
+        return const [
+          // PAGE 1: The Acoustic Crucible of the TED Main Stage (Page 1 of 3)
+          'PAGE 1: THE ACOUSTIC CRUCIBLE OF THE TED MAIN STAGE\n\n'
+          'Under the dramatic crimson arc of the TED Global Main Stage in Edinburgh, four thousand international scientists, philanthropists, and heads of state sat in anticipation. Environmental philosopher Liam stepped onto the circular red carpet.\n\n'
+          'The audience had already sat through sixteen fast-talking presenters who bombarded them with rapid-fire statistics and frantic stage movement. Liam knew that talking faster would only produce sensory fatigue. Daniel sat at the acoustic monitoring console beside the audio engineering director.\n\n'
+          '"Watch Liam closely, Daniel," the director whispered. "Liam does not rely on slides or frantic energy. He understands that the most powerful instrument in human speech is the acoustic pause."',
+
+          // PAGE 2: The Alchemy of the Pregnant Pause & Dynamic Pitch (Page 2 of 3)
+          'PAGE 2: THE ALCHEMY OF THE PREGNANT PAUSE & VOCAL CRESCENDO\n\n'
+          'Liam looked slowly across the vast auditorium. He did not rush to speak. When he opened his keynote, his voice was warm, intimate, and devastating:\n\n'
+          '"Look around this auditorium...\n\n'
+          'In the time it took you to inhale your last breath... forty thousand mature trees were felled in the Amazon basin."\n\n'
+          'Then, Liam did the unthinkable: He closed his mouth, looked into the audience, and paused for four full seconds of total, unblinking silence.\n\n'
+          'The silence was physical; it fell over the four thousand listeners like a gravity wave. In that silence, every listener felt the weight of the forty thousand trees.\n\n'
+          'When Liam spoke again, he dropped his voice to an intimate whisper: "We cannot afford the luxury of cynical despair..."\n\n'
+          'Then, gradually accelerating his tempo and expanding his vocal resonance, he surged into an inspiring crescendo:\n\n'
+          '"What our generation demands... what our children deserve... is audacious, immediate, and sovereign planetary restoration!"',
+
+          // PAGE 3: The Eight-Minute Standing Ovation & Acoustic Mastery (Page 3 of 3)
+          'PAGE 3: THE EIGHT-MINUTE STANDING OVATION\n\n'
+          'As Liam\'s final words resonated through the acoustic timber of the hall, the four thousand leaders rose to their feet as one, erupting into an unprecedented eight-minute standing ovation.\n\n'
+          'Billionaire philanthropists wept openly; global policymakers pledged billions in conservation capital before leaving the auditorium. Backstage, Liam embraced Daniel:\n\n'
+          '"Daniel, never fear silence. Amateurs rush to fill every empty second with noise because they fear losing attention. Master the deliberate pause, and silence will command the soul of every human being in the room."',
+        ];
+      case 37:
+        return const [
+          // PAGE 1: The UN War Crimes Dossier & Inquest Pressure (Page 1 of 3)
+          'PAGE 1: THE UN WAR CRIMES DOSSIER & INQUEST PRESSURE\n\n'
+          'In the subterranean archives of the United Nations High Commissioner for Human Rights in Geneva, Chief Legal Auditor Miriam examined forty thousand encrypted satellite telemetry images.\n\n'
+          'For six months, an aggressive military junta had bombarded civilian metropolitan sectors, claiming in international press conferences that only military installations were targeted.\n\n'
+          'Sovereign ambassadors and geopolitical lobbies exerted enormous diplomatic pressure on Miriam\'s investigative team. Any trace of subjective anger, partisan rhetoric, or personal judgment would be seized upon by hostile defense counsels to throw the entire war crimes report out of international courts.\n\n'
+          'Miriam assembled her five senior forensic jurists and established the immutable stylistic standard:\n\n'
+          '"Every sentence we submit must be impervious to political attack. We will eliminate every personal pronoun. No \'we found\', no \'I observed\', no \'in our opinion\'. We will deploy the forensic impersonal passive. The facts will speak with absolute, unassailable institutional authority."',
+
+          // PAGE 2: Satellite Telemetry & Impersonal Forensics (Page 2 of 3)
+          'PAGE 2: SATELLITE TELEMETRY & IMPERSONAL FORENSICS\n\n'
+          'Day and night, Miriam drafted the monumental 800-page indictment, crafting every paragraph in the forensic passive register:\n\n'
+          '"It was determined through multi-spectral satellite forensics and crater-depth calculus that civilian electrical grids were systematically targeted across forty-two independent municipalities.\n\n'
+          'Evidence was compiled across four hundred sworn witness testimonies, corroborated by cryptographic communications intercepts dispatched from regimental headquarters.\n\n'
+          'It was established beyond evidentiary dispute that unguided artillery rounds were discharged into crowded market squares twelve minutes after aerial reconnaissance verified civilian presence.\n\n'
+          'It is therefore formally recommended that immediate international arrest warrants be submitted to the International Criminal Court for crimes against humanity."',
+
+          // PAGE 3: The Unanimous Security Council Resolution (Page 3 of 3)
+          'PAGE 3: THE UNANIMOUS SECURITY COUNCIL RESOLUTION\n\n'
+          'When the report was delivered to the United Nations Security Council in New York, the ambassador of the accused regime took the floor, intending to accuse the investigative panel of Western prejudice and personal malice.\n\n'
+          'He opened the dossier and searched line by line for personal accusations, but found none. Every claim was rooted in impersonal, forensic certitude: "It was documented...", "Telemetry was verified...", "Ballistic signatures were matched..."\n\n'
+          'Deprived of any personal target to attack, the defense collapsed. The Security Council voted 15 to 0 to refer the case to the Hague.\n\n'
+          'Watching the historic vote from the gallery, Miriam remarked to her junior counsel:\n\n'
+          '"When truth is dressed in personal passion, it invites debate. But when truth is forged in forensic impersonal precision, it silences emperors."',
+        ];
+      case 38:
+        return const [
+          // PAGE 1: The Sovereign Century Peace Summit in Geneva (Page 1 of 3)
+          'PAGE 1: THE SOVEREIGN CENTURY PEACE SUMMIT\n\n'
+          'At the Palace of Nations in Geneva, fifty heads of state and two hundred foreign ministers gathered in a hall shadowed by decades of ideological hatred, regional proxy conflicts, and crippling economic embargoes.\n\n'
+          'Two nuclear-armed regional superpowers stood on the brink of catastrophic mobilization along their shared alpine border. Cynical commentators across the globe predicted that the summit would implode into acrimonious shouting matches before the afternoon session.\n\n'
+          'At 11:00 AM, Chancellor Kaelen stepped to the marble rostrum as President of the Plenary Assembly. This moment represented the culmination of ninety days of sovereign linguistic mastery.\n\n'
+          'Kaelen looked across the sea of divided delegates—men and women who had refused to shake hands for thirty years. He knew that ordinary diplomacy was dead; only an electrifying dialectic synthesis could bridge the civilizational abyss.',
+
+          // PAGE 2: The Tripartite Synthesis & Moral Crescendo (Page 2 of 3)
+          'PAGE 2: THE TRIPARTITE SYNTHESIS & MORAL CRESCENDO\n\n'
+          'Kaelen spoke, his voice carrying the deep resonance of unshakeable historical purpose:\n\n'
+          '"Excellencies, if our ancestors had not found the moral courage to bridge their bitter divides eighty years ago in the ashes of world war, not one of us would occupy these sovereign seats today.\n\n'
+          'We stand once more upon the knife-edge of generational destiny. We are told by cynics that conflict is inevitable, that national honor demands retribution, and that compromise is surrender.\n\n'
+          'But let history record that on this decisive day, in this sacred hall, we chose not division, but union; not suspicion, but fellowship; not managed decline, but an enduring sovereign peace!\n\n'
+          'Let history record that we refused to bequeath a scorched planet to our sons and daughters, and that when tested by the crucible of fear, we chose the triumph of common humanity!"',
+
+          // PAGE 3: The Signing of the Century Accord & 90-Day Zenith (Page 3 of 3)
+          'PAGE 3: THE SIGNING OF THE CENTURY ACCORD\n\n'
+          'As Kaelen\'s tripartite cadence washed over the assembly, an extraordinary stillness descended upon the hall. The foreign ministers looked at one another, their long-held defensive postures melting away.\n\n'
+          'The Premier of the Northern Alliance stood up, walked across the floor, and offered his hand to his southern rival. The room broke into a deafening roar of applause, tears streaming down the faces of veteran diplomats.\n\n'
+          'Before midnight, all fifty sovereign nations signed the Sovereign Century Accord, demilitarizing the border and inaugurating an era of shared prosperity.\n\n'
+          'Kaelen closed his summit journal with words that would define generations:\n\n'
+          '"Language is not a wall to divide nations; it is the sacred bridge whereby human consciousness conquers fear and forges sovereign destiny."',
+        ];
+      default:
+        final text = getStoryText(day);
+        return text.isNotEmpty ? [text] : const [];
+    }
+  }
 
   // --- 📖 STORIES (Full Text) ---
   static String getStoryText(int day) {
@@ -1834,6 +2082,928 @@ class PocketCurriculum29To38 {
 
       default:
         return const [];
+    }
+  }
+
+  // --- 📐 INTERACTIVE SENTENCE PATTERNS (Subject + Verb + Object Matrices) ---
+  static List<SentencePatternItem> getSentencePatterns(int day) {
+    switch (day) {
+      case 29:
+        return const [
+          SentencePatternItem(
+            formula: '[Honorific / Title], it is an immense personal honor to meet you; your [Work / Contribution] was profoundly insightful',
+            explanation: 'ഉയർന്ന നയതന്ത്രജ്ഞതയോടെയും ബഹുമാനത്തോടെയും വി.ഐ.പികളോട് സംസാരിക്കാൻ (Diplomatic Honorific Salutation).',
+            masterSentences: [
+              'Ambassador Tanaka, it is an immense personal honor to meet you; your recent white paper was profoundly insightful.',
+              'Madame Minister, it is a tremendous privilege to make your acquaintance; your keynote set a visionary tone.',
+            ],
+            subjects: ['Ambassador Tanaka, it is an immense personal honor to meet you in person;', 'Your Excellency, it is a sovereign privilege to welcome your delegation;'],
+            verbs: ['your recent white paper on green maritime corridors was profoundly insightful', 'your address regarding macroeconomic stability resonated with our entire assembly', 'your diplomatic leadership during the summit was nothing short of historic'],
+            objects: ['for our multilateral working group', 'across all thirty signatory delegations', 'in every international economic forum'],
+          ),
+          SentencePatternItem(
+            formula: 'Would your delegation be receptive to exploring [Shared Goal] through informal consultations?',
+            explanation: 'എതിരാളികളോട് തർക്കിക്കാതെ സൗഹൃദപരമായി ചർച്ച തുടങ്ങാൻ (Subtle Consensus Gateway).',
+            masterSentences: [
+              'Would your delegation be receptive to exploring maritime standards through an informal working breakfast?',
+              'Would the Ministry be open to evaluating joint technical guidelines before formal plenary sessions convene?',
+            ],
+            subjects: ['Would your delegation be receptive to exploring non-binding consensus', 'Would your government be open to bilateral consultation'],
+            verbs: ['through an informal working session tomorrow morning', 'over a quiet coffee before the formal plenary votes convene', 'via backchannel technical working groups'],
+            objects: ['to ensure a harmonious ratification', 'for the mutual prosperity of our regional partners', 'with complete institutional transparency'],
+          ),
+          SentencePatternItem(
+            formula: 'While recognizing [Partner\'s Legitimate Interest], could we examine an equitable framework that safeguards [Mutual Value]?',
+            explanation: 'അവരുടെ താല്പര്യങ്ങൾ അംഗീകരിച്ചുകൊണ്ട് നമ്മുടെ ആവശ്യം മുന്നോട്ട് വെയ്ക്കാൻ (Equitable Value Alignment).',
+            masterSentences: [
+              'While recognizing your domestic industrial priorities, could we examine a framework that safeguards clean maritime shipping?',
+              'While respecting your timeline constraints, could we explore an interim protocol that protects supply continuity?',
+            ],
+            subjects: ['While fully acknowledging your nation\'s sovereign economic priorities,', 'While respecting your acute fiscal sensitivities,'],
+            verbs: ['could we examine an equitable compromise that safeguards global supply routes', 'could our committees draft an interim memorandum that harmonizes regulatory oversight', 'could we construct a joint transitional pathway'],
+            objects: ['without imposing punitive tariffs', 'to the benefit of both sovereign trading blocs', 'for generations to come'],
+          ),
+        ];
+      case 30:
+        return const [
+          SentencePatternItem(
+            formula: 'My opponent speaks of [Past / Fear]; what we must build today is [Tricolon Future Vision]',
+            explanation: 'എതിരാളിയുടെ ആരോപണത്തെ മറികടന്ന് ഭാവിയുടെ മഹത്തായ കാഴ്ചപ്പാടിലേക്ക് സംഭാഷണം മാറ്റാൻ (Cleft Saliency Pivot).',
+            masterSentences: [
+              'My opponent speaks endlessly of yesterday\'s failures; what we must build today is an economy where innovation flourishes.',
+              'The cynics focus on short-term obstacles; what our nation demands is courageous moral leadership.',
+            ],
+            subjects: ['My distinguished opponent speaks incessantly of past divisions;', 'Cynical commentators harp on temporary volatility;'],
+            verbs: ['what we must forge today is a sovereign society where every worker is valued', 'what this historic assembly must enact is an economic compact where enterprise thrives', 'what our people demand is uncompromised moral clarity'],
+            objects: ['with jobs that honor human dignity', 'where no family or community is left behind', 'for the future of our children'],
+          ),
+          SentencePatternItem(
+            formula: 'Seldom has our nation faced [Crossroads]; rarely has [Danger] been so acute; never will we [Compromise Duty]',
+            explanation: 'ചരിത്രപരമായ ഗാംഭീര്യത്തോടെ വേദിയിൽ പ്രസംഗിക്കാൻ മൂന്ന് ഇൻവേർഷനുകൾ ഒന്നിച്ച് പ്രയോഗിക്കുക (Triple Inversion Apex).',
+            masterSentences: [
+              'Seldom in modern history has our democracy faced so clear a crossroads, and never will we surrender our ideals.',
+              'Rarely has the cost of complacency been so catastrophic, and under no circumstances will we abandon our allies.',
+            ],
+            subjects: ['Seldom in our modern history has our sovereign nation stood at so decisive a crossroads,', 'Rarely has our democratic compact been tested by such severe economic disruption,'],
+            verbs: ['and never will our administration compromise the territorial sovereignty of our allies', 'and under no circumstances will we capitulate to partisan despair', 'and only through courage can our historic heritage be preserved'],
+            objects: ['before the eyes of the entire world', 'for every citizen who looks to us for leadership', 'with unshakeable institutional conviction'],
+          ),
+          SentencePatternItem(
+            formula: 'It is not through [Fear / Division] that we progress, but through [Courage / Solidarity]; not [A], but [B]',
+            explanation: 'കേൾവിക്കാരെ കോരിത്തരിപ്പിക്കുന്ന ക്ലാസിക്കൽ വാക്യഘടന (Parallel Antithetical Tricolon).',
+            masterSentences: [
+              'For it is not through fear that we conquer the future, but through courage; not in division, but in solidarity; not tomorrow, but tonight!',
+              'It is not in retreat that we find safety, but in bold innovation; not through silence, but through truth!',
+            ],
+            subjects: ['For it is not through fear that our democracy conquers adversity,', 'It is not through passive hesitation that greatness is achieved,'],
+            verbs: ['but through courageous enterprise; not in bitter division, but in solidarity; not tomorrow, but now!', 'but through visionary determination; not in partisan rancor, but in unity; not with excuses, but with results!'],
+            objects: ['for every family across our land', 'to inaugurate an era of sovereign prosperity', 'with lasting constitutional honor'],
+          ),
+        ];
+      case 31:
+        return const [
+          SentencePatternItem(
+            formula: 'Had [Subject] not [V3 Past Participle], [Consequence: would have + V3]',
+            explanation: 'കഴിഞ്ഞ കാലത്തെ ഒരു മുൻകരുതൽ ഇല്ലായിരുന്നെങ്കിൽ സംഭവിക്കുമായിരുന്ന വലിയ ദുരന്തത്തെ കൃത്യമായി വിവരിക്കാൻ (Past Counterfactual Inversion).',
+            masterSentences: [
+              'Had our central banking consortium not diversified reserves twelve months ago, sovereign debt yields would have collapsed.',
+              'Had we not hedged our commodity contracts, our quarterly operating margins would have been obliterated.',
+            ],
+            subjects: ['Had our risk mitigation committee not diversified liquidity reserves twelve months ago,', 'Had our intelligence network not detected the anomalous telemetry spike,'],
+            verbs: ['our national sovereign bond yields would have collapsed under speculative contagion', 'the continental power grid would have experienced an irreversible cascade shutdown', 'our enterprise would have suffered sixty million dollars in unrecoverable losses'],
+            objects: ['before markets could open this morning', 'across forty regional distribution terminals', 'with catastrophic systemic repercussions'],
+          ),
+          SentencePatternItem(
+            formula: 'Were [Subject] to [Verb Infinitive], [Consequence: would + Verb]',
+            explanation: 'ഭാവിയിൽ സംഭവിക്കാൻ സാധ്യതയുള്ള അതീവ സങ്കീർണ്ണമായ ഒരു അപകടം സദസ്സിന് മുന്നിൽ വരച്ചുകാട്ടാൻ (Hypothetical Second Conditional Inversion).',
+            masterSentences: [
+              'Were the European energy grid to suffer a secondary freeze, industrial manufacturing output would decline by eighteen percent.',
+              'Were shipping freight rates to double, global food inflation would destabilize urban markets.',
+            ],
+            subjects: ['Were the regional maritime corridor to experience secondary naval blockades,', 'Were our critical cloud database clusters to suffer unmitigated latency spikes,'],
+            verbs: ['global industrial supply lines would contract by twenty-five percent within a fortnight', 'sovereign equity markets would plunge into an uncontrollable liquidation spiral', 'our operations core would be forced to trigger emergency black-start protocols'],
+            objects: ['across thirty international partner economies', 'causing generational economic dislocation', 'with zero warning for retail consumers'],
+          ),
+          SentencePatternItem(
+            formula: 'Should [Condition occur], [Subject] must immediately [Preemptive Directive]',
+            explanation: 'പെട്ടെന്ന് ഒരു അത്യാഹിതം ഉണ്ടായാൽ ഉടനടി ചെയ്യേണ്ട അടിയന്തര ഉത്തരവുകൾ നൽകാൻ (Contingency First Conditional Inversion).',
+            masterSentences: [
+              'Should maritime freight insurers suspend transit coverage, our council must immediately authorize emergency fuel subsidies.',
+              'Should liquidity tighten by two basis points, the treasury must deploy bilateral swap lines.',
+            ],
+            subjects: ['Should international freight insurers suspend maritime transit coverage for twenty-four more hours,', 'Should consumer panic trigger anomalous banking withdrawals across regional hubs,'],
+            verbs: ['our emergency council must authorize the immediate deployment of forty million barrels of strategic reserves', 'the executive committee must activate sovereign liquidity backstops without ministerial delay', 'our crisis command must initialize distributed decentralized clearing channels'],
+            objects: ['to neutralize market volatility before trading opens', 'to safeguard domestic food distribution channels', 'with complete statutory authority'],
+          ),
+        ];
+      case 32:
+        return const [
+          SentencePatternItem(
+            formula: 'We must never adapt [Value A] to [Power B]; we must adapt [Power B] to [Value A]',
+            explanation: 'വിപരീത പദാവലി അലങ്കാരം (Classical Symmetrical Chiasmus AB-BA) ഉപയോഗിച്ച് അവിസ്മരണീയമായ വാക്യം നിർമ്മിക്കാൻ.',
+            masterSentences: [
+              'We must never adapt human liberties to algorithmic demands; we must adapt algorithmic power to human liberties.',
+              'Let us never negotiate out of fear, but let us never fear to negotiate.',
+            ],
+            subjects: ['We must never subordinate constitutional liberties to bureaucratic expedience;', 'Our jurisprudence must never reduce inviolable human rights to corporate convenience;'],
+            verbs: ['we must demand that statutory power submit to human dignities', 'we must ensure that state authority remains obedient to citizen freedom', 'we must adapt algorithmic governance to democratic sovereignty'],
+            objects: ['under all circumstances', 'for posterity and history', 'with unyielding constitutional integrity'],
+          ),
+          SentencePatternItem(
+            formula: 'The question before this tribunal is not whether [A], but whether [B]; not [Metric], but [Principle]',
+            explanation: 'കോടതിയിലോ ഗവേണിംഗ് ബോഡിയിലോ യഥാർത്ഥ ഭരണഘടനാ തത്വം വ്യക്തമാക്കാൻ (Antithetical Juridical Focus).',
+            masterSentences: [
+              'The question before this tribunal is not whether computational speed is convenient, but whether statutory due process has been preserved.',
+              'The issue before this panel is not whether profits expanded, but whether fiduciary honor remained intact.',
+            ],
+            subjects: ['The paramount question before this constitutional tribunal is not whether algorithmic velocity is commercially advantageous,', 'The solemn inquiry before this judicial bench is not whether data surveillance accelerates state security,'],
+            verbs: ['but whether fundamental due process guarantees have been irrevocably preserved;', 'but whether sovereign human agency remains protected from arbitrary encroachment;', 'but whether statutory safeguards against abuse have been scrupulously upheld;'],
+            objects: ['not as an afterthought, but as the supreme law of the land', 'without compromising civic freedom', 'across every administrative jurisdiction'],
+          ),
+          SentencePatternItem(
+            formula: 'If [Right] is subordinated to [Convenience], then [Freedom] ceases to be a right and degenerates into [Arbitrary Privilege]',
+            explanation: 'ഒരു അടിസ്ഥാന അവകാശം വിട്ടുവീഴ്ച ചെയ്യപ്പെട്ടാൽ ഉണ്ടാകുന്ന അപകടം ചൂണ്ടിക്കാണിക്കാൻ (Subordinated Degeneration Calculus).',
+            masterSentences: [
+              'If digital privacy is subordinated to corporate convenience, then personal autonomy ceases to be a right and degenerates into an arbitrary corporate license.',
+              'If judicial oversight is subordinated to executive speed, then liberty ceases to exist and degenerates into tyranny.',
+            ],
+            subjects: ['If individual bodily privacy is subordinated to predictive surveillance expedience,', 'If statutory procedural justice is subordinated to administrative haste,'],
+            verbs: ['then citizen autonomy ceases to be an inviolable birthright and degenerates into an arbitrary privilege', 'then sovereign due process ceases to protect the vulnerable and degenerates into state overreach', 'then constitutional liberty ceases to endure and degenerates into licensed tyranny'],
+            objects: ['at the discretion of unchecked technocrats', 'before the eyes of an unprotected public', 'with irreparable societal consequences'],
+          ),
+        ];
+      case 33:
+        return const [
+          SentencePatternItem(
+            formula: 'Instead of [Arduous Linear Method], our [System] functions like [Vivid Metaphor], [Dynamic Transformative Action]',
+            explanation: 'സങ്കീർണ്ണമായ സാങ്കേതികതയെ എളുപ്പം മനസ്സിലാകുന്ന ജീവസ്സുറ്റ ഉപമയിലൂടെ വിശദീകരിക്കാൻ (Analogy Demystification Bridge).',
+            masterSentences: [
+              'Instead of searching a maze hallway by hallway, our quantum processor functions like turning on the lights across the entire labyrinth simultaneously.',
+              'Instead of analyzing financial spreadsheets row by row, our neural engine acts like an air traffic controller observing the entire airspace at thirty thousand feet.',
+            ],
+            subjects: ['Instead of processing cryptographic hashes sequentially through bottlenecked silicon transistors,', 'Instead of parsing complex molecular interactions one experimental trial at a time,'],
+            verbs: ['our quantum co-processor functions like flooding the entire labyrinth with coherent photonic illumination simultaneously', 'our distributed neural pipeline operates like an omniscient air traffic command radar', 'our bio-synthetic simulator acts like a molecular wind tunnel'],
+            objects: ['to resolve NP-hard optimization bottlenecks in milliseconds', 'evaluating billions of protein folding permutations in real time', 'with zero computational drift'],
+          ),
+          SentencePatternItem(
+            formula: 'Stripped of [Theoretical Complexity], what this architecture achieves is simple: it converts [Costly Friction] into [Instant Outcome]',
+            explanation: 'സാങ്കേതിക ഗഹനതകളെല്ലാം ഒഴിവാക്കി ബിസിനസ്സ് നേട്ടം വ്യക്തമാക്കാൻ (Executive De-Jargonizing Focus).',
+            masterSentences: [
+              'Stripped of theoretical physics, what this chip achieves is simple: it converts twelve weeks of laboratory synthesis into four seconds of predictive modeling.',
+              'Stripped of algebraic jargon, what our engine delivers is straightforward: it turns terabytes of unstructured logistics data into real-time routing precision.',
+            ],
+            subjects: ['Stripped of theoretical tensor mathematics, what this photonic architecture achieves is remarkably simple:', 'Stripped of cryogenic hardware jargon, what our enterprise quantum platform delivers is straightforward:'],
+            verbs: ['it converts six months of legacy pharmaceutical trial modeling into twelve seconds of deterministic synthesis', 'it compresses multi-billion-dollar supply chain vulnerability into autonomous instant rerouting', 'it transforms opaque petabyte data lakes into crystal-clear predictive enterprise intelligence'],
+            objects: ['at one-fortieth the operational energy expenditure', 'with ninety-nine point nine percent mathematical fidelity', 'across all global enterprise deployment tiers'],
+          ),
+          SentencePatternItem(
+            formula: 'By replacing [Fragile Legacy Process] with [Coherent Neural Flow], we reduce [Metric 1] by [X%] while unlocking [Value 2]',
+            explanation: 'സാങ്കേതിക മാറ്റത്തെ കൃത്യമായ ശതമാനക്കണക്കുകളോടും ബിസിനസ്സ് ലാഭത്തോടും ബന്ധിപ്പിക്കാൻ (Quantitative ROI Synthesis).',
+            masterSentences: [
+              'By replacing serialized transistor gates with parallelized photonic coherence, we reduce server energy consumption by ninety-four percent while unlocking millisecond inference.',
+              'By replacing manual underwriting verification with cryptographic zero-knowledge proofs, we compress settlement time from five days to forty milliseconds.',
+            ],
+            subjects: ['By replacing serialized copper interconnects with low-latency photonic wave-guides,', 'By replacing fragile heuristic heuristics with self-supervised transformer feedback loops,'],
+            verbs: ['we reduce datacenter thermodynamic overhead by eighty-eight percent while unlocking hundred-gigabit streaming inference', 'we compress mission-critical fraud verification from four hours to three milliseconds', 'we decrease enterprise algorithmic drift by ninety-five percent while scaling user concurrency tenfold'],
+            objects: ['without requiring custom developer refactoring', 'under stringent ISO cybersecurity compliance', 'saving forty-eight million dollars in annual cloud expenditure'],
+          ),
+        ];
+      case 34:
+        return const [
+          SentencePatternItem(
+            formula: 'With respect, counselor, that is a textbook [Fallacy Name]; my inquiry has nothing to do with [Distortion], but with [Core Fact]',
+            explanation: 'എതിരാളിയുടെ തന്ത്രപരമായ വ്യതിചലനങ്ങളെയും മിഥ്യാവാദങ്ങളെയും (Fallacies) അപ്പപ്പോൾ തകർക്കാൻ (Surgical Fallacy Neutralization).',
+            masterSentences: [
+              'With respect, counselor, that is a textbook straw man fallacy; my inquiry has nothing to do with opposing enterprise, but with whether you signed the March 14th authorization.',
+              'With respect, that is an obvious red herring; our audit does not question your operational autonomy, but whether public subsidies were commingled with private accounts.',
+            ],
+            subjects: ['With the utmost respect, counselor, that assertion is a textbook straw man fallacy;', 'With all due deference, Mr. Chairman, that characterization is a transparent red herring;'],
+            verbs: ['my inquiry has nothing to do with undermining private commercial innovation, but strictly concerns whether your signature authorized the price-fixing memo', 'our committee is not disparaging foreign manufacturing, but investigating why hazardous emissions logs were concealed for three quarters', 'this deposition is not debating macroeconomic theory, but verifying why forensic backup tapes were incinerated'],
+            objects: ['on the afternoon of March 14th', 'prior to the federal regulatory subpoena', 'without ministerial authorization'],
+          ),
+          SentencePatternItem(
+            formula: 'Attempting to attack [Personal Motive / Divergent Topic] does not alter [Documented Forensic Fact]; let us return to [Core Metric]',
+            explanation: 'വ്യക്തിപരമായ ആക്രമണങ്ങളെയും (Ad Hominem) ശ്രദ്ധ തിരിക്കലുകളെയും അവഗണിച്ച് പ്രധാന തെളിവിലേക്ക് തിരികെ കൊണ്ടുവരാൻ (Ad Hominem Deflector).',
+            masterSentences: [
+              'Attempting to disparage the committee\'s motives does not alter the digital audit trail; let us return to why eighteen servers were wiped on the eve of the subpoena.',
+              'Pivoting to macroeconomic weather anomalies does not explain the missing reserve shortfall; the question remains why the hedge ratio was intentionally bypassed.',
+            ],
+            subjects: ['Attempting to question this investigative panel\'s impartiality does not alter the forensic bank records;', 'Invoking historical geopolitical volatility does not obscure the accounting discrepancy;'],
+            verbs: ['let us return directly to why two hundred million dollars departed the escrow account without co-signatures', 'let us refocus on why internal whistleblower warnings were systematically deleted', 'let us address why the safety bypass switch was manually triggered twelve minutes before the incident'],
+            objects: ['under your explicit executive direction', 'as demonstrated by the sworn telemetry logs', 'in direct contravention of statutory code'],
+          ),
+          SentencePatternItem(
+            formula: 'The sworn documentation before this panel confirms [Irrefutable Evidence]; on what statutory grounds do you assert [Contradictory Claim]?',
+            explanation: 'രേഖാമൂലമുള്ള തെളിവുകൾ നിരത്തി സത്യസന്ധതയില്ലാത്ത വാദങ്ങളെ നിശബ്ദമാക്കാൻ (Evidentiary Anchor Hammer).',
+            masterSentences: [
+              'The sworn documentation before this panel confirms a seven-day delay in reporting the toxic spillage; on what statutory grounds do you assert full compliance?',
+              'The forensic ledger confirms that two hundred million dollars exited the escrow account overnight; on what statutory authority was that transfer executed?',
+            ],
+            subjects: ['The sworn forensic affidavits and encrypted chat logs before this congressional panel confirm an orchestrated suppression of safety data;', 'The unalterable blockchain ledger submitted by independent auditors confirms that reserve collateral was leveraged fivefold;'],
+            verbs: ['on what statutory or constitutional grounds do you continue to assert complete institutional transparency?', 'under what legal mandate did your executive suite authorize the circumvention of federal disclosures?', 'with what evidentiary basis do you deny knowledge of the offshore transactions?'],
+            objects: ['before this legislative body', 'while under solemn federal oath', 'in front of the families impacted by this crisis'],
+          ),
+        ];
+      case 35:
+        return const [
+          SentencePatternItem(
+            formula: 'I hear the profound exhaustion in your voice, and I recognize that [Extreme Condition] has pushed [Group] to the brink',
+            explanation: 'എതിർപക്ഷത്തിന്റെ കഷ്ടപ്പാടും വികാരങ്ങളും ആദ്യമേ അംഗീകരിച്ച് സമാധാനപരമായ അന്തരീക്ഷം സൃഷ്ടിക്കാൻ (Empathetic Affective Mirror).',
+            masterSentences: [
+              'I hear the profound exhaustion and grievance in your voice, and I recognize that seventy-hour shifts have pushed your dockworkers to the absolute brink.',
+              'I recognize the deep frustration behind your words, and I acknowledge that your engineering team has shouldered unreasonable delivery deadlines without adequate support.',
+            ],
+            subjects: ['I hear the profound physical exhaustion and righteous indignation in your words,', 'I recognize the genuine distress and sleepless anxiety echoing through your testimony,'],
+            verbs: ['and I acknowledge without reservation that unbroken seventy-hour maritime shifts have pushed your crews to the absolute edge of human endurance', 'and I validate that months of unfulfilled management promises have shattered your trust in our collective bargaining framework', 'and I concede that your frontline workforce has carried the entire burden of this supply chain crisis'],
+            objects: ['without adequate rest or psychological support', 'while corporate dividends reached record highs', 'in freezing and hazardous harbor conditions'],
+          ),
+          SentencePatternItem(
+            formula: 'Your refusal to accept [Unfair Condition] is entirely rational; neither side in this room can afford [Shared Catastrophe]',
+            explanation: 'അവരുടെ നിലപാട് ന്യായമാണെന്ന് സമ്മതിച്ചുകൊണ്ട് ഇരുവിഭാഗങ്ങളുടെയും പൊതുവായ വിപത്ത് ചൂണ്ടിക്കാണിക്കാൻ (Rational Legitimacy Bridge).',
+            masterSentences: [
+              'Your refusal to accept mandatory twelve-hour shifts is entirely rational; neither side in this room can afford the economic ruin of a prolonged harbor shutdown.',
+              'Your skepticism regarding past executive pledges is fully justified; however, neither party can survive the dissolution of our clinical research partnership.',
+            ],
+            subjects: ['Your refusal to endorse mandatory uncompensated overtime is completely rational and understandable;', 'Your reluctance to sign an ambiguous memorandum of understanding without concrete safety benchmarks is entirely justified;'],
+            verbs: ['yet neither our union delegation nor our commercial carrier consortium can survive the catastrophic economic ruin of a prolonged port freeze', 'yet neither side in this room can afford to witness eighty million metric tons of perishable medical freight spoil at sea', 'yet our entire regional community will suffer irreversible collapse if these container cranes remain idle past dawn'],
+            objects: ['to the detriment of hundreds of thousands of working families', 'with irreparable harm to sovereign trade credibility', 'plunging our national economy into supply bankruptcy'],
+          ),
+          SentencePatternItem(
+            formula: 'What we must construct before midnight is a binding protocol that guarantees [Labor Dignity Metric] while ensuring [Operational Solvency Metric]',
+            explanation: 'തൊഴിലാളികളുടെ ആത്മാഭിമാനവും സ്ഥാപനത്തിന്റെ നിലനിൽപ്പും ഉറപ്പാക്കുന്ന ഒത്തുതീർപ്പ് ഫോർമുല അവതരിപ്പിക്കാൻ (Dual-Anchor Resolution Compact).',
+            masterSentences: [
+              'What we must construct before midnight is a binding protocol that guarantees mandatory rest periods and safety protections while ensuring cargo operations remain solvent.',
+              'What we must co-create today is an equitable compensation baseline that honors your creative contributions while preserving the studio\'s production runway.',
+            ],
+            subjects: ['What we must construct across this mediation table before the midnight strike deadline expires', 'What our joint negotiating steering committee must forge before this plenary concludes'],
+            verbs: ['is an ironclad binding accord that guarantees mandatory eight-hour rest intervals and inflation-indexed danger compensation while ensuring carrier operating margins remain viable', 'is a ratified compromise that codifies strict shift staffing ratios while unlocking twenty-four-hour continuous berth clearances', 'is a sovereign covenant that honors worker bodily dignity while preserving our harbor\'s competitive global solvency'],
+            objects: ['with third-party ombudsman enforcement', 'effective from the six o\'clock morning shift', 'for the mutual prosperity of our entire maritime community'],
+          ),
+        ];
+      case 36:
+        return const [
+          SentencePatternItem(
+            formula: 'In the time it took you to inhale your last breath... [Pause] ...[Staggering Planetary Fact]',
+            explanation: 'പ്രസംഗത്തിൽ ശ്രോതാക്കളുടെ ശ്രദ്ധ പിടിച്ചുപറ്റാൻ അർത്ഥവത്തായ നിശബ്ദതയും (Pregnant Pause) ഞെട്ടിപ്പിക്കുന്ന വസ്തുതയും സമന്വയിപ്പിക്കാൻ (Acoustic Silence Shock).',
+            masterSentences: [
+              'In the time it took you to inhale your last breath... [pause] ...forty-two thousand trees were clear-cut from the Amazon basin.',
+              'Every three seconds on this planet... [pause] ...a child loses access to clean drinking water while billions are spent on ephemeral digital distractions.',
+            ],
+            subjects: ['In the brief six seconds it took you to inhale your last breath...', 'While our auditorium lights dimmed for this presentation...'],
+            verbs: ['[hold four seconds of absolute stillness] forty-two thousand old-growth trees were systematically felled in our planetary lungs', '[pause and look into the balcony] three hundred metric tons of non-biodegradable synthetic polymers entered our ocean currents', '[maintain unbreakable eye contact] sixty families were permanently displaced by desertification'],
+            objects: ['never to be regenerated in our lifetime', 'without a single international headline registering the loss', 'while civilization checks its stock tickers'],
+          ),
+          SentencePatternItem(
+            formula: 'We are told that progress requires [Relentless Velocity]. But look into the silence... [Pause] ...and you discover [Transcendent Truth]',
+            explanation: 'വേഗത കുറച്ച് (Deceleration) ശാന്തതയിലൂടെ കേൾവിക്കാരെ ചിന്തിപ്പിക്കാൻ (Pacing Deceleration Pivot).',
+            masterSentences: [
+              'We are told that technology demands relentless velocity; but listen to the silence of our collapsing ecosystems... [pause] ...and you realize that speed without conscience is sheer self-destruction.',
+              'We measure our lives in quarterly notifications; but step back from the screen for just five seconds... [pause] ...and ask yourself what kind of ancestors we intend to be.',
+            ],
+            subjects: ['We are told by modern technocrats that human evolution requires ceaseless algorithmic velocity and unbroken noise;', 'Our consumer culture whispers that prestige is measured in quarterly earnings and frantic commercial output;'],
+            verbs: ['yet if you pause and listen to the haunting quiet of our drying riverbeds... [deliberate three-second suspension] ...you recognize that acceleration without wisdom is nothing less than collective suicide', 'yet if you stand beneath the quiet canopy of an ancient redwood forest... [deep baritone pause] ...you remember that true majesty belongs not to the hurried, but to the enduring'],
+            objects: ['for our children and all future generations', 'before the final window of ecological redemption closes forever', 'as a sacred covenant with life on Earth'],
+          ),
+          SentencePatternItem(
+            formula: 'The question is not whether the future will [Shallow Outcome]... [Pause] ...the question is whether the future will forgive us',
+            explanation: 'ശബ്ദം ശാന്തമാക്കി (Whispered Injunction) ഹൃദയത്തെ സ്പർശിക്കുന്ന പാരമ്യത്തിലേക്ക് പ്രസംഗം എത്തിക്കാൻ (Whispered Sforzando Apex).',
+            masterSentences: [
+              'The question facing our generation is not whether history will judge us... [pause] ...the question is whether we will leave behind a living world capable of remembering us at all.',
+              'True leadership does not yell to dominate the room; true leadership whispers the moral truth... [pause] ...until every beating heart in the hall falls silent.',
+            ],
+            subjects: ['The ultimate question before this global assembly tonight is not whether our algorithms will achieve artificial superintelligence...', 'The moral judgment confronting every leader gathered in this amphitheater is not whether our stock portfolios will withstand the next fiscal quarter...'],
+            verbs: ['[breathe slowly and whisper into the microphone] ...the question is whether our grandchildren will ever forgive our willful blindness', '[allow the silence to reverberate through the hall] ...the question is whether we will summon the moral courage to preserve the only living sanctuary in the cosmos', '[lower your cadence with absolute solemnity] ...the question is whether we chose our comfort over their survival'],
+            objects: ['when the ledger of history is written', 'before the dawn breaks tomorrow morning', 'for as long as human conscience endures'],
+          ),
+        ];
+      case 37:
+        return const [
+          SentencePatternItem(
+            formula: 'It was determined through [Forensic Method] that [Factual Finding of Violation]',
+            explanation: 'വ്യക്തിപരമായ പക്ഷപാതം ഒഴിവാക്കി വസ്തുതാപരമായ കണ്ടെത്തലുകൾ റിപ്പോർട്ട് ചെയ്യാൻ (Forensic Impersonal Passive Anchor).',
+            masterSentences: [
+              'It was determined through multi-spectral satellite forensics that civilian infrastructure had been systematically targeted.',
+              'It was established through forensic accounting ledgers that public subsidy allocations were illicitly diverted.',
+            ],
+            subjects: ['It was determined through multi-spectral satellite imagery and crater-depth calculus', 'It was established through verified cryptographic telecommunication intercepts', 'It was documented through independent forensic ballistic examinations'],
+            verbs: ['that non-military municipal sectors were subjected to deliberate bombardment', 'that classified export-controlled technologies had been transferred without statutory clearance', 'that safety telemetry monitors had been intentionally disabled prior to the incident'],
+            objects: ['across forty-two administrative districts', 'in direct violation of Geneva Convention covenants', 'with zero warning delivered to surrounding civilian populations'],
+          ),
+          SentencePatternItem(
+            formula: 'Evidence was compiled across [Multiple Sources], and it is formally recommended that [Institutional Remedy]',
+            explanation: 'തെളിവുകൾ ക്രോഡീകരിച്ച് ഔദ്യോഗിക നടപടികൾ ശുപാർശ ചെയ്യാൻ (Corroborated Evidence Mandate).',
+            masterSentences: [
+              'Evidence was compiled across four hundred sworn depositions, and it is formally recommended that immediate arrest warrants be issued.',
+              'Telemetry was verified across six independent listening stations, and it is urged that regulatory sanctions be applied.',
+            ],
+            subjects: ['Evidence was meticulously compiled across four hundred sworn refugee affidavits', 'Forensic ledger corroboration was collected across twelve international banking registries'],
+            verbs: ['and it is formally recommended that immediate prosecutorial referrals be submitted to the International Criminal Court', 'and it is advised that sovereign trading licenses be suspended pending full compliance', 'and it is requested that an unannounced physical inspection be authorized immediately'],
+            objects: ['without diplomatic exemption', 'under Article 7 of the Rome Statute', 'to prevent the ongoing destruction of evidentiary records'],
+          ),
+          SentencePatternItem(
+            formula: 'It is concluded that [Finding], and under no circumstances can [Violation] be justified under [Treaty / Law]',
+            explanation: 'കണ്ടെത്തൽ സംശയങ്ങൾക്കതീതമായി പ്രഖ്യാപിക്കാനും ന്യായീകരണങ്ങളെ തള്ളിക്കളയാനും (Categorical Impersonal Rejection).',
+            masterSentences: [
+              'It is concluded that war crimes occurred, and under no circumstances can civilian bombardment be justified under international maritime law.',
+              'It is confirmed that data was manipulated, and under no circumstances can systemic fraud be rationalized as human error.',
+            ],
+            subjects: ['It is definitively concluded by this international audit panel', 'It is verified beyond reasonable evidentiary contradiction'],
+            verbs: ['that systemic humanitarian violations transpired, and under no circumstances can unguided artillery in populated zones be justified', 'that coordinated price-fixing was orchestrated, and under no circumstances can cartel behavior be excused', 'that environmental toxic discharge was deliberate, and under no legal doctrine can such negligence be defended'],
+            objects: ['under the laws of sovereign armed conflict', 'before any legitimate judicial tribunal', 'to the detriment of international public trust'],
+          ),
+        ];
+      case 38:
+        return const [
+          SentencePatternItem(
+            formula: 'Let history record that on this day, we chose not [Negative 1], but [Positive 1]; not [Negative 2], but [Positive 2]; not [Negative 3], but [Positive 3]',
+            explanation: 'ചരിത്രത്തിൽ അനശ്വരമായി നിൽക്കുന്ന സമാധാന പ്രഖ്യാപനം നടത്താൻ (Sovereign Tripartite Resolution).',
+            masterSentences: [
+              'Let history record that on this day, we chose not division, but union; not suspicion, but fellowship; not decline, but an enduring sovereign peace.',
+              'Let future generations remember that we chose not fear, but courage; not vengeance, but reconciliation; not silence, but moral leadership.',
+            ],
+            subjects: ['Let history record that in this sacred sovereign assembly,', 'Let future generations bear witness that at this historic crossroads,'],
+            verbs: ['we chose not bitter division, but unbreakable union; not cynical suspicion, but fellowship; not managed decline, but enduring peace', 'we chose not destructive vengeance, but restorative justice; not territorial pride, but common survival; not retreat, but bold fraternity'],
+            objects: ['for all peoples across our shared continent', 'before the eyes of the entire civilized world', 'as an inviolable covenant for centuries to come'],
+          ),
+          SentencePatternItem(
+            formula: 'If our ancestors had not [Historical Bridge Act], none of us would stand here today; therefore, we must now [Historic Present Duty]',
+            explanation: 'പൂർവ്വികരുടെ ത്യാഗത്തെ അനുസ്മരിച്ച് ഇന്നത്തെ ബാധ്യത വ്യക്തമാക്കാൻ (Historical Predecessor Duty Synthesis).',
+            masterSentences: [
+              'If our ancestors had not found the courage to bridge their bitter divides eighty years ago, none of us would stand here today; therefore, we must now ratify this generational accord.',
+              'If visionary leaders had not forged the original treaty from the ashes of war, our nations would have perished; therefore, we must now defend this peace.',
+            ],
+            subjects: ['If our courageous ancestors had not reached across smoking trenches eighty years ago to forge peace,', 'If the visionary founders of our international assembly had not subordinated national pride to universal law,'],
+            verbs: ['none of our sovereign delegations would sit in fellowship today; therefore, we must now sign this century accord without delay', 'our civilization would have vanished in atomic fire; therefore, we must now demilitarize our shared frontiers', 'our democratic heritage would have extinguished; therefore, we must now consecrate this generational covenant'],
+            objects: ['for the sake of our children', 'with undivided moral authority', 'in the timeless name of human dignity'],
+          ),
+          SentencePatternItem(
+            formula: 'Language is not [Instrument of Division], but [Engine of Liberation]; not [Barricade], but [Sacred Bridge]',
+            explanation: 'ഭാഷയുടെ യഥാർത്ഥ ലക്ഷ്യത്തെയും മാനവരാശിയെ ഒന്നിപ്പിക്കാനുള്ള ശക്തിയെയും പ്രകീർത്തിക്കാൻ (Language as Sovereign Bridge).',
+            masterSentences: [
+              'Language is not an instrument of domination, but an engine of liberation; not a wall to divide nations, but a sacred bridge to unite human destiny.',
+              'Words are not weapons of partisan deceit, but instruments of truth; not barriers between cultures, but pathways to universal communion.',
+            ],
+            subjects: ['For human language is not a weapon of imperial domination,', 'The sovereign gift of speech was never meant to be a tool of cynical deception,'],
+            verbs: ['but an engine of collective liberation; not a fortified wall to divide our peoples, but a sacred bridge whereby human consciousness conquers fear and forges destiny', 'but a sanctuary of inviolable truth; not an instrument of factional malice, but the living catalyst of global harmony'],
+            objects: ['across all cultures and languages on Earth', 'through ninety days of disciplined dedication', 'for the eternal elevation of humanity'],
+          ),
+        ];
+      default:
+        return const [];
+    }
+  }
+
+  // --- 🗣️ PRONUNCIATION CLINIC (Minimal Pairs & Phonetic Mechanics) ---
+  static PronunciationClinicItem getPronunciationClinic(int day) {
+    switch (day) {
+      case 29:
+        return const PronunciationClinicItem(
+          focusSound: 'High-Table Diplomatic Cadence & Deferential Soft Glides (/pl/ and /v/ in Politeness)',
+          mouthPositionTip: '🏰 നയതന്ത്ര വേദിയിലെ ശബ്ദസൗകുമാര്യം: അത്താഴ വിരുന്നുകളിൽ സംസാരിക്കുമ്പോൾ ഒച്ചയുണ്ടാക്കരുത്. ശബ്ദം പതുക്കെയും എന്നാൽ വ്യക്തതയോടെയും വായയുടെ മുൻഭാഗത്ത് ചുണ്ടുകൾ മൃദുവായി ചലിപ്പിച്ചു പറയുക:\n• "Consummate" (/ˈkɒn.sə.mət/) - സഫിക്സിൽ ദുർബലമായ ഷ്വാ സ്വരം\n• "Etiquette" (/ˈet.ɪ.ket/) - ആദ്യ സിലബിളിൽ ഊന്നൽ നൽകുക\n• "Faux pas" (/ˌfəʊ ˈpɑː/) - ഫ്രഞ്ച് ഉത്ഭവമായതിനാൽ അവസാനത്തെ \'s\' നിശ്ശബ്ദമാണ് (Silent S).',
+          minimalPairs: [
+            {'wordA': 'Consummate (തികഞ്ഞ/വിശിഷ്ടമായ)', 'wordB': 'Consume (ഉപയോഗിക്കുക/ഭക്ഷിക്കുക)', 'contrast': 'Adjective /ˈkɒn.sə.mət/ vs Verb /kənˈsjuːm/'},
+            {'wordA': 'Etiquette (സാമൂഹിക മര്യാദ)', 'wordB': 'Equivocate (സത്യം വളച്ചൊടിക്കുക)', 'contrast': '/ˈet.ɪ.ket/ vs /ɪˈkwɪv.ə.keɪt/'},
+            {'wordA': 'Faux pas (സാമൂഹിക അബദ്ധം)', 'wordB': 'Focus (ശ്രദ്ധ കേന്ദ്രീകരിക്കൽ)', 'contrast': '/ˌfəʊ ˈpɑː/ silent final s vs /ˈfəʊ.kəs/'},
+          ],
+          practicePhrases: [
+            'Ambassador Tanaka, it is an immense personal honor to make your acquaintance.',
+            'Would your delegation be receptive to informal multilateral consultations tomorrow morning?',
+            'Refined cross-cultural etiquette unlocks diplomatic accords that formal debates cannot.',
+          ],
+        );
+      case 30:
+        return const PronunciationClinicItem(
+          focusSound: 'The Grand Oratorical Triad Rhythm & Symphonic Crescendo (Cleft + Inversion + Tricolon)',
+          mouthPositionTip: '👑 രാജകീയ പ്രഭാഷണ ശൈലി: 60 ദശലക്ഷം ആളുകൾക്ക് മുന്നിൽ സംസാരിക്കുമ്പോൾ അടിവയറ്റിൽ നിന്ന് ശ്വാസമെടുത്ത് (Diaphragmatic Projection) പിച്ചിൽ ഘട്ടംഘട്ടമായുള്ള ഉയർച്ച (Symphonic Crescendo) കൊണ്ടുവരിക:\n• "What we must build..." ➔ സമാധാനപരമായ ആരംഭം (Quiet foundation)\n• "Seldom in modern history..." ➔ ഗാംഭീര്യമുള്ള താക്കീത് (Mid-baritone authority)\n• "Not through fear, but courage; not division, but solidarity!" ➔ ഇടിമുഴങ്ങുന്ന പരമകോടി (Thunderous Climax).',
+          minimalPairs: [
+            {'wordA': 'Complacency (അലംഭാവം/അശ്രദ്ധ)', 'wordB': 'Complexity (സങ്കീർണ്ണത)', 'contrast': '/kəmˈpleɪ.sən.si/ vs /kəmˈplek.sə.ti/'},
+            {'wordA': 'Solidarity (ഐക്യദാർഢ്യം)', 'wordB': 'Solitary (ഏകാന്തമായ)', 'contrast': '/ˌsɒl.ɪˈdær.ə.ti/ vs /ˈsɒl.ɪ.tər.i/'},
+            {'wordA': 'Crossroads (നിർണായക സന്ധി)', 'wordB': 'Crossbow (വില്ല്)', 'contrast': '/ˈkrɒs.rəʊdz/ vs /ˈkrɒs.bəʊ/'},
+          ],
+          practicePhrases: [
+            'What we must build today is a sovereign nation where innovation flourishes and workers are protected.',
+            'Seldom in modern history has our democracy stood at so decisive a crossroads, and never will we compromise our ideals.',
+            'Not through fear, but through courage; not in division, but in solidarity; not tomorrow, but tonight!',
+          ],
+        );
+      case 31:
+        return const PronunciationClinicItem(
+          focusSound: 'Counterfactual Inversion Flow & Rapid Contractions (Had we not / Were we to / Should it)',
+          mouthPositionTip: '🌐 റിസ്ക് സിമുലേഷൻ ഉച്ചാരണം: ഇൻവേർട്ടഡ് കണ്ടീഷണൽസ് പറയുമ്പോൾ വാക്കുകൾ ഇടയ്ക്ക് നിർത്തരുത്. അവ ഒന്നിച്ച് ലയിപ്പിച്ചു (Liaison & Smooth Glides) സംസാരിക്കുക:\n• "Had our consortium not" ➔ [hæd ɑː kənˈsɔː.ti.əm nɒt]\n• "Were the grid to suffer" ➔ [wɜː ðə ɡrɪd tuː ˈsʌf.ər]\n• "Should insurers suspend" ➔ [ʃʊd ɪnˈʃʊə.rəz səˈspend].',
+          minimalPairs: [
+            {'wordA': 'Counterfactual (യാഥാർത്ഥ്യത്തിന് വിരുദ്ധമായ)', 'wordB': 'Contractual (കരാർപരമായ)', 'contrast': '/ˌkaʊn.təˈfæk.tʃu.əl/ vs /kənˈtræk.tʃu.əl/'},
+            {'wordA': 'Diversified (വൈവിധ്യവൽക്കരിച്ച)', 'wordB': 'Divested (ഓഹരി പിൻവലിച്ച)', 'contrast': '/daɪˈvɜː.sɪ.faɪd/ vs /daɪˈves.tɪd/'},
+            {'wordA': 'Cascading (ഒന്നിന് പുറകെ ഒന്നായി വീഴുന്ന)', 'wordB': 'Crusading (പോരാടുന്ന)', 'contrast': '/kæˈskeɪ.dɪŋ/ vs /kruːˈseɪ.dɪŋ/'},
+          ],
+          practicePhrases: [
+            'Had our central bank not diversified reserves twelve months ago, sovereign debt yields would have collapsed.',
+            'Were the regional power grid to suffer a secondary freeze, output would decline by eighteen percent.',
+            'Should commodity volatility escalate, our council must authorize immediate strategic reserve deployment.',
+          ],
+        );
+      case 32:
+        return const PronunciationClinicItem(
+          focusSound: 'Symmetrical Inversion Cadence & Spondaic Accentuation (/k/, /z/, and /ʃ/ in Judicial Rhetoric)',
+          mouthPositionTip: '⚖️ പരമോന്നത കോടതിയിലെ വിധിന്യായ ശബ്ദം: ചിട്ടയായ ചിയാസ്മസ് (Chiasmus) പറയുമ്പോൾ വാക്യത്തിന്റെ രണ്ട് ഭാഗങ്ങൾക്കും തുല്യ ഗാംഭീര്യം (Symmetrical Weight) നൽകണം:\n• "Chiasmus" ➔ ആദ്യ അക്ഷരം /k/ സ്വരത്തിൽ തുടങ്ങുന്നു (/kaɪˈæz.məs/)\n• "Judicial" (/dʒuːˈdɪʃ.əl/) vs "Judicious" (/dʒuːˈdɪʃ.əs/)\n• "Inviolable" (/ɪnˈvaɪə.lə.bəl/) - നാല് സിലബസുകളും വ്യക്തമായി വേർതിരിച്ച് ഉച്ചരിക്കുക.',
+          minimalPairs: [
+            {'wordA': 'Chiasmus (വിപരീത പദാലങ്കാരം)', 'wordB': 'Chasm (വലിയ വിള്ളൽ/അഗാധത)', 'contrast': '/kaɪˈæz.məs/ vs /ˈkæz.əm/'},
+            {'wordA': 'Judicial (നീതിന്യായപരമായ)', 'wordB': 'Judicious (വിവേകപൂർണ്ണമായ)', 'contrast': '/dʒuːˈdɪʃ.əl/ vs /dʒuːˈdɪʃ.əs/'},
+            {'wordA': 'Inviolable (ലംഘിക്കാനാവാത്ത)', 'wordB': 'Invisible (അദൃശ്യമായ)', 'contrast': '/ɪnˈvaɪə.lə.bəl/ vs /ɪnˈvɪz.ə.bəl/'},
+          ],
+          practicePhrases: [
+            'We must never adapt human liberties to algorithmic demands; we must adapt algorithmic power to human liberties.',
+            'The question before this constitutional tribunal is not whether speed is convenient, but whether due process is preserved.',
+            'Inviolable liberties degenerate into arbitrary privileges the moment statutory oversight is abandoned.',
+          ],
+        );
+      case 33:
+        return const PronunciationClinicItem(
+          focusSound: 'Crisp Technical Articulation & Metaphoric Glide (/kw/, /st/, and /l/ in Deep-Tech Lexicon)',
+          mouthPositionTip: '🔬 ഡീപ്പ്-ടെക് ആശയങ്ങൾ ലളിതമാക്കുന്ന ശബ്ദശൈലി: കട്ടി വാക്കുകൾ പറയുമ്പോൾ നാക്ക് പല്ലിന് പിന്നിൽ മുട്ടിച്ച് വ്യക്തമായി ഉച്ചരിക്കുക (Crisp Consonant Clusters). തുടർന്ന് ഉപമകളിലേക്ക് മാറുമ്പോൾ സ്വരം ശാന്തമാക്കുക:\n• "Quantum" (/ˈkwɒn.təm/) - വൃത്താകൃതിയിലുള്ള ചുണ്ടുകൾ\n• "Simultaneously" (/ˌsɪm.əlˈteɪ.ni.əs.li/) - സിലബിളുകളിൽ താളം പാലിക്കുക\n• "Labyrinth" (/ˈlæb.ə.rɪnθ/) - അവസാനത്തെ /θ/ സ്വരത്തിൽ വായയിൽ നിന്ന് മൃദുവായി കാറ്റ് പുറത്തുവിടുക.',
+          minimalPairs: [
+            {'wordA': 'Simultaneously (ഒരേ സമയം)', 'wordB': 'Spontaneously (സ്വമേധയാ/പെട്ടെന്ന്)', 'contrast': '/ˌsɪm.əlˈteɪ.ni.əs.li/ vs /spɒnˈteɪ.ni.əs.li/'},
+            {'wordA': 'Heuristic (സ്വയം പഠിക്കുന്ന തത്വം)', 'wordB': 'Holistic (സമഗ്രമായ)', 'contrast': '/hjʊəˈrɪs.tɪk/ vs /həʊˈlɪs.tɪk/'},
+            {'wordA': 'Photonic (പ്രകാശപരമായ)', 'wordB': 'Platonic (ആത്മീയമായ/നിഷ്കളങ്കമായ)', 'contrast': '/fəʊˈtɒn.ɪk/ vs /pləˈtɒn.ɪk/'},
+          ],
+          practicePhrases: [
+            'Instead of searching a maze hallway by hallway, our processor floods the entire labyrinth simultaneously.',
+            'Stripped of theoretical physics, our chip converts twelve weeks of biological synthesis into four seconds.',
+            'Photonic waveguides reduce datacenter thermodynamic overhead by eighty-eight percent.',
+          ],
+        );
+      case 34:
+        return const PronunciationClinicItem(
+          focusSound: 'Steely Forensic Neutrality & Cold Plosives (/p/, /t/, /k/ in Cross-Examination)',
+          mouthPositionTip: '🔍 ക്രോസ്-വിസ്താരത്തിലെ ഗൗരവം: എതിരാളിയെ വിസ്തരിക്കുമ്പോൾ ഒച്ചവെക്കരുത്; മറിച്ച് വാക്കുകൾ മഞ്ഞുപോലെ തണുത്ത പ്ലോസിവുകളോടെ (Cold Crisp Plosives) ഉച്ചരിക്കുക:\n• "Subpoena" (/səˈpiː.nə/) - \'b\' നിശ്ശബ്ദമാണ് (Silent B), \'p\' വ്യക്തമായി അമർത്തി പറയുക\n• "Fallacy" (/ˈfæl.ə.si/) - ഇരട്ട \'l\' മൃദുവായി ഒഴുകണം\n• "Admissible" (/ədˈmɪs.ə.bəl/) vs "Dismissible" (/dɪsˈmɪs.ə.bəl/).',
+          minimalPairs: [
+            {'wordA': 'Subpoena (കോടതി സമൻസ്)', 'wordB': 'Suppression (മറച്ചുവെക്കൽ/അടിച്ചമർത്തൽ)', 'contrast': '/səˈpiː.nə/ (silent b) vs /səˈpreʃ.ən/'},
+            {'wordA': 'Fallacy (തെറ്റായ യുക്തിവാദം)', 'wordB': 'Felony (ഗുരുതരമായ കുറ്റകൃത്യം)', 'contrast': '/ˈfæl.ə.si/ vs /ˈfel.ə.ni/'},
+            {'wordA': 'Admissible (സ്വീകാര്യമായ തെളിവ്)', 'wordB': 'Dismissible (തള്ളിക്കളയാവുന്ന)', 'contrast': '/ədˈmɪs.ə.bəl/ vs /dɪsˈmɪs.ə.bəl/'},
+          ],
+          practicePhrases: [
+            'With respect, counselor, that is a textbook straw man fallacy; my question concerns the March 14th email.',
+            'Attempting to disparage this committee\'s motives does not alter the digital forensic audit trail.',
+            'The sworn ledger confirms that two hundred million dollars departed the escrow account overnight.',
+          ],
+        );
+      case 35:
+        return const PronunciationClinicItem(
+          focusSound: 'Low-Frequency Resonant Empathy & Soft Nasal Glides (/m/, /n/, and /l/ in De-escalation)',
+          mouthPositionTip: '🤝 തൊഴിൽ മധ്യസ്ഥതയിലെ അനുരഞ്ജന ശബ്ദം: സമരം ചെയ്യുന്നവരോട് സംസാരിക്കുമ്പോൾ കണ്ഠനാളത്തിൽ നിന്ന് ആഴത്തിലുള്ള കാരുണ്യം നിറഞ്ഞ ശബ്ദം (Low-Frequency Vocal Resonance) പുറപ്പെടുവിക്കുക:\n• "Conciliatory" (/kənˈsɪl.jə.tər.i/) - മൃദുവായ വോവൽ സ്ട്രെസ്സ്\n• "Grievance" (/ˈɡriː.vəns/) - ദീർഘമായ \'ee\' ശബ്ദം\n• "Equitable" (/ˈek.wɪ.tə.bəl/) - ആദ്യ അക്ഷരത്തിൽ തുല്യതയുടെ ശാന്തത നൽകുക.',
+          minimalPairs: [
+            {'wordA': 'Conciliatory (അനുരഞ്ജനപരമായ)', 'wordB': 'Contradictory (പരസ്പരവിരുദ്ധമായ)', 'contrast': '/kənˈsɪl.jə.tər.i/ vs /ˌkɒn.trəˈdɪk.tər.i/'},
+            {'wordA': 'Equitable (നീതിയുക്തമായ)', 'wordB': 'Equivocal (വ്യക്തതയില്ലാത്ത/ഇരട്ടത്താപ്പുള്ള)', 'contrast': '/ˈek.wɪ.tə.bəl/ vs /ɪˈkwɪv.ə.kəl/'},
+            {'wordA': 'Grievance (പരാതി/സങ്കടം)', 'wordB': 'Grievous (ഗുരുതരമായ/വേദനാജനകമായ)', 'contrast': '/ˈɡriː.vəns/ vs /ˈɡriː.vəs/'},
+          ],
+          practicePhrases: [
+            'I hear the profound exhaustion in your voice, and I recognize that continuous shifts pushed you to the brink.',
+            'Your refusal to accept mandatory twelve-hour shifts is entirely rational; neither side can afford port paralysis.',
+            'What we must construct before midnight is a binding protocol that protects labor dignity while preserving solvency.',
+          ],
+        );
+      case 36:
+        return const PronunciationClinicItem(
+          focusSound: 'Glottal Control, Sub-glottal Breath & Acoustic Deceleration (/θ/, /ð/, and Strategic Silence)',
+          mouthPositionTip: '🎙️ TED വേദിയിലെ ശബ്ദ നിയന്ത്രണം: ലക്ഷക്കണക്കിന് ആളുകളെ ആകർഷിക്കാൻ വാക്കിന്റെ വേഗത പെട്ടെന്ന് കുറച്ച് നിശബ്ദതയിലേക്ക് (Deceleration to Zero) പോവുക:\n• "Breathtaking" (/ˈbreθˌteɪ.kɪŋ/) - വായ നിറയെ ശ്വാസമെടുക്കുക\n• "Reverberate" (/rɪˈvɜː.bər.eɪt/) - സദസ്സിൽ ശബ്ദം പ്രതിധ്വനിക്കാൻ അനുവദിക്കുക\n• "Pregnant Pause": ഞെട്ടിപ്പിക്കുന്ന വസ്തുത പറഞ്ഞതിന് ശേഷം കൃത്യം 4 സെക്കൻഡ് വായ പൂർണ്ണമായി അടച്ച് സദസ്സിനെ നോക്കുക.',
+          minimalPairs: [
+            {'wordA': 'Resonance (ശബ്ദഗാംഭീര്യം/പ്രതിധ്വനി)', 'wordB': 'Resistance (പ്രതിരോധം)', 'contrast': '/ˈrez.ən.əns/ vs /rɪˈzɪs.təns/'},
+            {'wordA': 'Cadence (ശബ്ദതാളം/കവിതാശൈലി)', 'wordB': 'Coincidence (യാദൃശ്ചികത)', 'contrast': '/ˈkeɪ.dəns/ vs /kəʊˈɪn.sɪ.dəns/'},
+            {'wordA': 'Inaudible (കേൾക്കാനാവാത്ത)', 'wordB': 'Invaluable (വിലമതിക്കാനാവാത്ത)', 'contrast': '/ɪnˈɔː.də.bəl/ vs /ɪnˈvæl.jʊ.bəl/'},
+          ],
+          practicePhrases: [
+            'In the time it took you to inhale your last breath... [pause] ...forty-two thousand trees were clear-cut.',
+            'Listen to the silence of our collapsing ecosystems... [pause] ...speed without conscience is self-destruction.',
+            'True leadership does not yell to dominate; true leadership whispers the moral truth... [pause] ...until the room falls silent.',
+          ],
+        );
+      case 37:
+        return const PronunciationClinicItem(
+          focusSound: 'Forensic Passive Elocution & Neutral Sibilant Precision (/s/, /z/, and /ʃ/ in Legal Neutrals)',
+          mouthPositionTip: '📑 ഐക്യരാഷ്ട്രസഭ റിപ്പോർട്ട് ശൈലി: വികാരങ്ങളോ പക്ഷപാതമോ ഇല്ലാതെ തികഞ്ഞ നിഷ്പക്ഷതയോടെ സംസാരിക്കുക. സ്വരത്തിൽ വ്യക്തിഗത ഭാവവ്യത്യാസങ്ങൾ ഒഴിവാക്കി അക്ഷരങ്ങൾ മഞ്ഞുപോലെ തണുത്ത കൃത്യതയോടെ ഉച്ചരിക്കുക:\n• "Forensic" (/fəˈren.zɪk/ or /fəˈren.sɪk/) - \'s\' മൃദുവായി ഒഴുകണം\n• "Systematically" (/ˌsɪs.təˈmæt.ɪ.kəl.i/) - ആറ് സിലബിളുകളും തുല്യ വേഗതയിൽ ഉച്ചരിക്കുക\n• "Impersonal" (/ɪmˈpɜː.sən.əl/) - വ്യക്തിപരമായ ഭാവം ഒഴിവാക്കുന്ന സ്വരം.',
+          minimalPairs: [
+            {'wordA': 'Forensic (ഫോറൻസിക്/നിയമപരമായ തെളിവ്)', 'wordB': 'Frenetic (ഭ്രാന്തമായ/അതിവേഗത്തിലുള്ള)', 'contrast': '/fəˈren.zɪk/ vs /frəˈnet.ɪk/'},
+            {'wordA': 'Statutory (നിയമപ്രകാരമുള്ള)', 'wordB': 'Statuary (പ്രതിമകൾ)', 'contrast': '/ˈstætʃ.ʊ.tər.i/ vs /ˈstætʃ.u.er.i/'},
+            {'wordA': 'Corroborate (തെളിവ് സാധൂകരിക്കുക)', 'wordB': 'Corroborant (ശക്തിപ്പെടുത്തുന്ന ഔഷധം)', 'contrast': '/kəˈrɒb.ə.reɪt/ vs /kəˈrɒb.ər.ənt/'},
+          ],
+          practicePhrases: [
+            'It was determined through satellite forensics that civilian infrastructure had been systematically targeted.',
+            'Evidence was compiled across forty-two municipalities without ministerial interference.',
+            'It is formally recommended that international warrants be submitted to the tribunal immediately.',
+          ],
+        );
+      case 38:
+        return const PronunciationClinicItem(
+          focusSound: 'Sovereign Tripartite Cadence & Symphonic Crescendo (/ð/, /tr/, and Majestic Resonant Vowels)',
+          mouthPositionTip: '🕊️ ജനീവ പീസ് സമ്മിറ്റ് പരമോന്നത പ്രസംഗ ശൈലി: 90 ദിവസത്തെ ഇംഗ്ലീഷ് പഠനത്തിന്റെ പരമോന്നത ഘട്ടമാണിത്. മുഴുവൻ അടിവയറ്റിൽ നിന്നും ശ്വാസമെടുത്ത് രാജകീയമായ സമാധാന പ്രഖ്യാപനം നടത്തുക:\n• "Tripartite" (/traɪˈpɑː.taɪt/) - മൂന്ന് തുല്യ പദഭംഗികൾ\n• "Covenant" (/ˈkʌv.ə.nənt/) - ചരിത്രപരമായ ഉടമ്പടിയുടെ ഗാംഭീര്യം\n• "Inviolable" (/ɪnˈvaɪə.lə.bəl/) - ലംഘിക്കാനാവാത്ത സത്യത്തിന്റെ മുഴക്കം.',
+          minimalPairs: [
+            {'wordA': 'Covenant (പവിത്രമായ ഉടമ്പടി)', 'wordB': 'Covetous (അത്യാഗ്രഹമുള്ള)', 'contrast': '/ˈkʌv.ə.nənt/ vs /ˈkʌv.ɪ.təs/'},
+            {'wordA': 'Sovereignty (പരമാധികാരം)', 'wordB': 'Subservience (ദാസ്യവേല/വിധേയത്വം)', 'contrast': '/ˈsɒv.rɪn.ti/ vs /səbˈsɜː.vi.əns/'},
+            {'wordA': 'Fellowship (സാഹോദര്യം/ഐക്യം)', 'wordB': 'Followership (അനുയായിത്വം)', 'contrast': '/ˈfel.əʊ.ʃɪp/ vs /ˈfɒl.əʊ.ə.ʃɪp/'},
+          ],
+          practicePhrases: [
+            'Let history record that we chose not division, but union; not suspicion, but fellowship; not decline, but peace.',
+            'Language is not a wall to divide nations, but a sacred bridge whereby human consciousness conquers fear.',
+            'We stand at the apex of our awakening, united in common human dignity.',
+          ],
+        );
+      default:
+        return const PronunciationClinicItem(
+          focusSound: 'Standard Fluency Clarity',
+          mouthPositionTip: 'Pronounce each word with active breath.',
+          minimalPairs: [],
+          practicePhrases: ['Fluency is built through daily practice.'],
+        );
+    }
+  }
+
+  // --- 🧠 ENGLISH THINKING WORKOUT (Malayalam-to-English Elimination) ---
+  static EnglishThinkingItem getEnglishThinkingWorkout(int day) {
+    switch (day) {
+      case 29:
+        return const EnglishThinkingItem(
+          situation: 'Attending High-Table Banquets or Interacting with International Dignitaries (വിദേശ പ്രതിനിധികളുമായോ വലിയ കമ്പനി മേധാവികളുമായോ ഡിന്നർ പാർട്ടിയിൽ പങ്കെടുക്കുമ്പോൾ)',
+          mentalTrapMalayalam: '❌ സാധാരണ തെറ്റ്: "നമുക്ക് നാളെ ആ കാര്യം സംസാരിക്കണം, നിങ്ങൾ കരാർ ഒപ്പിടുമോ" എന്ന് വെപ്രാളപ്പെട്ട് "We must talk about our contract right now..." എന്ന് പറഞ്ഞ് മാന്യതയില്ലാതെ സംസാരിക്കുക.',
+          directEnglishThought: '💡 നേരിട്ട് ഇംഗ്ലീഷിൽ ചിന്തിക്കുക: "High-Table Protocol! Deferential homage ➔ Commend their intellectual work ➔ Propose an informal breakfast!"',
+          instantResponses: [
+            '"It is an immense honor to meet you in person; your recent white paper was profoundly insightful."',
+            '"Would your delegation be receptive to informal consultations over breakfast tomorrow?"',
+            '"I have the utmost respect for your sovereign leadership during this summit."',
+          ],
+        );
+      case 30:
+        return const EnglishThinkingItem(
+          situation: 'Addressing a Huge Public Gathering or Leading a Decisive Policy Debate (ഒരു വലിയ സദസ്സിന് മുന്നിൽ പ്രസംഗിക്കുമ്പോഴോ സംവാദത്തിൽ എതിരാളിയെ നേരിടുമ്പോഴോ)',
+          mentalTrapMalayalam: '❌ സാധാരണ തെറ്റ്: "അവർ പറയുന്നത് തെറ്റാണ്, ഞങ്ങളെ വിശ്വസിക്കൂ" എന്ന് ദുർബലമായി ചിന്തിച്ച് "They are talking bad things, please trust us..." എന്ന് പറയുക.',
+          directEnglishThought: '💡 നേരിട്ട് ഇംഗ്ലീഷിൽ ചിന്തിക്കുക: "Grand Oratorical Triad! Cleft focus on our sovereign future ➔ Negative inversion for historical weight ➔ Tricolon crescendo!"',
+          instantResponses: [
+            '"My opponent speaks of yesterday; what we must build today is a thriving, protected economy."',
+            '"Seldom has our nation faced so historic a choice, and never will we compromise our ideals."',
+            '"Not through fear, but courage; not in division, but in solidarity; not tomorrow, but now!"',
+          ],
+        );
+      case 31:
+        return const EnglishThinkingItem(
+          situation: 'Conducting High-Level Risk Forecasting or War-Room Scenario Stress-Testing (പ്രൊജക്റ്റിലോ വിപണിയിലോ ഉണ്ടാകാൻ സാധ്യതയുള്ള ഗുരുതരമായ അപകടങ്ങൾ വിശകലനം ചെയ്യുമ്പോൾ)',
+          mentalTrapMalayalam: '❌ സാധാരണ തെറ്റ്: "ഞങ്ങൾ അത് ചെയ്തില്ലെങ്കിൽ പണി പാളിയേനെ, ഇനി അങ്ങനെ വന്നാൽ എന്ത് ചെയ്യും" എന്ന് ആലോചിച്ച് "If we didn\'t do that maybe it was bad..." എന്ന് സ്കൂൾ ഇംഗ്ലീഷിൽ പറയുക.',
+          directEnglishThought: '💡 നേരിട്ട് ഇംഗ്ലീഷിൽ ചിന്തിക്കുക: "Inverted Counterfactual Calculus! Drop \'if\'! Deploy \'Had we not...\' for past saves and \'Were we to...\' for forward stress-tests!"',
+          instantResponses: [
+            '"Had we not diversified our reserves, our debt yields would have collapsed this morning."',
+            '"Were the energy grid to suffer a secondary shock, output would decline by eighteen percent."',
+            '"Should insurance coverage lapse, we must authorize emergency strategic reserves immediately."',
+          ],
+        );
+      case 32:
+        return const EnglishThinkingItem(
+          situation: 'Defending Fundamental Principles Before High-Level Arbitrators or Courts (കോടതിയിലോ ബോർഡ് റൂമിലോ ഒരു പ്രധാന തത്വത്തെ പ്രതിരോധിച്ച് സംസാരിക്കുമ്പോൾ)',
+          mentalTrapMalayalam: '❌ സാധാരണ തെറ്റ്: "നമ്മൾ എന്തിനാണ് മെഷീൻ പറയുന്ന വഴിക്ക് പോകുന്നത്, മനുഷ്യന്റെ സ്വാതന്ത്ര്യമല്ലേ വലുത്" എന്ന് ലളിതമായി ആലോചിച്ച് "Why we follow machine, human freedom is bigger..." എന്ന് ബാലിശമായി പറയുക.',
+          directEnglishThought: '💡 നേരിട്ട് ഇംഗ്ലീഷിൽ ചിന്തിക്കുക: "Classical Symmetrical Chiasmus! Balance Clause A against Clause B, invert in the second half with solemn judicial cadence!"',
+          instantResponses: [
+            '"We must never adapt human liberties to algorithmic demands; we must adapt algorithmic power to human liberties."',
+            '"The question before this constitutional tribunal is not whether speed is convenient, but whether due process is preserved."',
+            '"If statutory justice is subordinated to administrative haste, liberty degenerates into tyranny."',
+          ],
+        );
+      case 33:
+        return const EnglishThinkingItem(
+          situation: 'Pitching Complex Deep-Tech to Non-Technical Investors or Executives (സങ്കീർണ്ണമായ ഡീപ്പ്-ടെക് ആശയങ്ങൾ ബോർഡ് റൂമിലെ നിക്ഷേപകർക്ക് മുന്നിൽ അവതരിപ്പിക്കുമ്പോൾ)',
+          mentalTrapMalayalam: '❌ സാധാരണ തെറ്റ്: കമ്പ്യൂട്ടർ കോഡും അൽഗോരിതവും മാത്രം നിരത്തി "Our quantum loss function minimizes non-convex matrices..." എന്ന് പറഞ്ഞ് കേൾവിക്കാരെ ബോറടിപ്പിച്ച് ആശയക്കുഴപ്പത്തിലാക്കുക.',
+          directEnglishThought: '💡 നേരിട്ട് ഇംഗ്ലീഷിൽ ചിന്തിക്കുക: "Analogy Bridge! Anchor the complex math to an undeniable physical picture, then pin it directly to commercial ROI!"',
+          instantResponses: [
+            '"Instead of searching a maze hallway by hallway, our chip turns on the lights across the entire labyrinth at once."',
+            '"Stripped of theoretical physics, what this achieves is converting twelve weeks of lab synthesis into four seconds."',
+            '"By replacing copper gates with photonic coherence, we reduce energy costs by eighty-eight percent."',
+          ],
+        );
+      case 34:
+        return const EnglishThinkingItem(
+          situation: 'Cross-Examining or Defending Against Misdirection and Fallacies (സംവാദത്തിലോ ഇൻവെസ്റ്റിഗേറ്റീവ് മീറ്റിംഗിലോ എതിരാളി വിഷയം മാറ്റാൻ ശ്രമിക്കുമ്പോൾ)',
+          mentalTrapMalayalam: '❌ സാധാരണ തെറ്റ്: അവരുടെ വ്യക്തിപരമായ പരിഹാസത്തിൽ ദേഷ്യപ്പെടുകയോ പരിഭ്രമിക്കുകയോ ചെയ്ത് "Why are you shouting at me, you are bad..." എന്ന് പറഞ്ഞ് നിയന്ത്രണം നഷ്ടപ്പെടുക.',
+          directEnglishThought: '💡 നേരിട്ട് ഇംഗ്ലീഷിൽ ചിന്തിക്കുക: "Forensic Disarmament! Name the fallacy coldly ➔ Rebut the false dichotomy ➔ Nail down the documentary timestamp!"',
+          instantResponses: [
+            '"With respect, counselor, that is a textbook straw man fallacy; my question concerns the March 14th email."',
+            '"Attempting to attack this committee\'s motives does not alter the digital forensic audit trail."',
+            '"The sworn ledger confirms two hundred million dollars exited escrow; under what statutory authority did you act?"',
+          ],
+        );
+      case 35:
+        return const EnglishThinkingItem(
+          situation: 'Resolving Bitter Industrial Strikes or Heated Labor Disputes (കടുത്ത തൊഴിൽ തർക്കങ്ങളിലും സമരമുഖങ്ങളിലും മധ്യസ്ഥത വഹിക്കുമ്പോൾ)',
+          mentalTrapMalayalam: '❌ സാധാരണ തെറ്റ്: "നിങ്ങൾ സമരം നിർത്തി പണിക്ക് പോകൂ, അല്ലെങ്കിൽ കമ്പനി പൂട്ടും" എന്ന് ഭീഷണിപ്പെടുത്തി ഇരുപക്ഷത്തെയും കൂടുതൽ ശത്രുക്കളാക്കുക.',
+          directEnglishThought: '💡 നേരിട്ട് ഇംഗ്ലീഷിൽ ചിന്തിക്കുക: "High-EQ Empathetic Mirror! Validate their human pain first ➔ Never argue about feelings ➔ Unify both sides around a shared existential deadline!"',
+          instantResponses: [
+            '"I hear the profound exhaustion in your voice, and I recognize that continuous shifts pushed you to the brink."',
+            '"Your refusal to accept mandatory overtime is entirely rational; neither side can afford prolonged port paralysis."',
+            '"What we must construct before midnight is a binding protocol that protects labor dignity while preserving solvency."',
+          ],
+        );
+      case 36:
+        return const EnglishThinkingItem(
+          situation: 'Delivering a High-Stakes Keynote Before Thousands (ആയിരക്കണക്കിന് ആളുകൾക്ക് മുന്നിൽ സംസാരിക്കുമ്പോൾ പരിഭ്രാന്തരാകാതെ ശാന്തതയോടെ പ്രസംഗിക്കുക)',
+          mentalTrapMalayalam: '❌ സാധാരണ തെറ്റ്: ഭയം കാരണം വാ തോരാതെ അതിവേഗത്തിൽ സംസാരിച്ച് കിതയ്ക്കുകയോ സദസ്സിന് കാര്യങ്ങൾ ഗ്രഹിക്കാൻ സമയം നൽകാതിരിക്കുകയോ ചെയ്യുക.',
+          directEnglishThought: '💡 നേരിട്ട് ഇംഗ്ലീഷിൽ ചിന്തിക്കുക: "Acoustic Silence Command! Decelerate tempo ➔ Drop the devastating truth ➔ Hold eye contact through four beats of unbroken silence ➔ Deliver the resolution in a hushed baritone!"',
+          instantResponses: [
+            '"In the time it took you to inhale your last breath... [pause] ...forty-two thousand trees were clear-cut."',
+            '"Listen to the silence of our collapsing ecosystems... [pause] ...speed without conscience is self-destruction."',
+            '"The question is not whether the future will judge us... [pause] ...the question is whether the future will forgive us."',
+          ],
+        );
+      case 37:
+        return const EnglishThinkingItem(
+          situation: 'Drafting or Presenting High-Stakes Institutional Audit Findings (ഔദ്യോഗിക അന്വേഷണ റിപ്പോർട്ടുകളോ ഓഡിറ്റ് കണ്ടെത്തലുകളോ അന്താരാഷ്ട്ര തലത്തിൽ അവതരിപ്പിക്കുമ്പോൾ)',
+          mentalTrapMalayalam: '❌ സാധാരണ തെറ്റ്: "ഞങ്ങൾ കണ്ടത് ആ കമ്പനി കട്ടതാണ് എന്ന് എനിക്ക് തോന്നുന്നു" എന്ന് സ്വാഭാവികമായി ചിന്തിച്ച് "I think they stole money and in my opinion they did bad things..." എന്ന് പറഞ്ഞ് റിപ്പോർട്ടിന്റെ ആധികാരികത നഷ്ടപ്പെടുത്തുക.',
+          directEnglishThought: '💡 നേരിട്ട് ഇംഗ്ലീഷിൽ ചിന്തിക്കുക: "Forensic Impersonal Passive! Purge all personal pronouns! Frame facts through \'It was determined that...\' and \'Evidence was systematically compiled across...\'!"',
+          instantResponses: [
+            '"It was determined through multi-spectral satellite forensics that civilian infrastructure was targeted."',
+            '"Evidence was compiled across forty-two municipalities without ministerial interference."',
+            '"It is formally recommended that international warrants be submitted to the tribunal immediately."',
+          ],
+        );
+      case 38:
+        return const EnglishThinkingItem(
+          situation: 'Delivering the Grand Sovereign Synthesis at a Milestone or Summit (ചരിത്രപരമായ ഒരു ഉച്ചകോടിയിലോ കോഴ്സിന്റെ സമാപനത്തിലോ ലക്ഷക്കണക്കിന് ആളുകളെ അഭിസംബോധന ചെയ്യുമ്പോൾ)',
+          mentalTrapMalayalam: '❌ സാധാരണ തെറ്റ്: "നമ്മൾ തമ്മിലുള്ള അടി തീർന്നു, ഇനി നല്ല ചങ്ങായിമാരായി സമാധാനത്തോടെ ജീവിക്കാം" എന്ന് സ്കൂൾ തലത്തിൽ ആലോചിച്ച് "Our fighting is over, let us be good friends and have peace..." എന്ന് നിസ്സാരമായി പറയുക.',
+          directEnglishThought: '💡 നേരിട്ട് ഇംഗ്ലീഷിൽ ചിന്തിക്കുക: "Sovereign Tripartite Synthesis! Historical preamble ➔ Parallel antithesis (Not A, but B; not C, but D; not E, but F) ➔ Generational covenant closure!"',
+          instantResponses: [
+            '"Let history record that we chose not division, but union; not suspicion, but fellowship; not decline, but peace."',
+            '"If our ancestors had not bridged their divides, none of us would stand here today; let us consecrate this covenant."',
+            '"Language is not a wall to divide nations, but a sacred bridge whereby human consciousness conquers fear."',
+          ],
+        );
+      default:
+        return const EnglishThinkingItem(
+          situation: 'High-Level Dialogue',
+          mentalTrapMalayalam: 'Do not translate from native language.',
+          directEnglishThought: 'Think directly in English.',
+          instantResponses: ['"I am prepared to deliberate with strategic precision."'],
+        );
+    }
+  }
+
+  // --- 🎙️ IN-LESSON SPEAKING CHALLENGE (Structured Verbal Output) ---
+  static SpeakingChallengeItem getSpeakingChallenge(int day) {
+    switch (day) {
+      case 29:
+        return const SpeakingChallengeItem(
+          title: '60-Second Versailles G20 Gala High-Table Toast & Dialogue',
+          contextScenario: 'വേഴ്സായ് കൊട്ടാരത്തിലെ ജി20 വിരുന്നിൽ ലോക നേതാക്കൾക്ക് മുന്നിൽ ബഹുമാനത്തോടും നയതന്ത്ര ചാതുര്യത്തോടും കൂടി ടോസ്റ്റ് ആശംസിച്ച് സംസാരിക്കുക.',
+          targetSeconds: 60,
+          guidingPoints: [
+            '1. Acknowledge the sovereign honor of the assembly and host nation.',
+            '2. Compliment a partner delegation\'s specific intellectual contribution (Tanaka\'s green ports paper).',
+            '3. Articulate the shared human and economic objective.',
+            '4. Propose informal consultations with respectful warmth.',
+          ],
+          sampleNativeAudioScript: 'Your Excellencies, distinguished ambassadors, and honored guests: It is an immense personal honor to join this sovereign assembly within the historic Hall of Mirrors at Versailles. I wish to express my deepest admiration to Ambassador Tanaka and his delegation for their seminal white paper on green maritime corridors, which has provided our council with an invaluable technical roadmap. While our formal plenary deliberations resume tomorrow, this evening reminds us that enduring international partnerships are anchored in shared human dignity and mutual respect. Would our respective delegations be receptive to an informal working breakfast tomorrow morning to explore non-binding consensus on sustainable port guidelines? Let us raise our glasses to international fellowship, enduring peace, and generational prosperity across all thirty sovereign nations.',
+        );
+      case 30:
+        return const SpeakingChallengeItem(
+          title: '60-Second Prime Ministerial Town Hall Debate Address',
+          contextScenario: '60 ദശലക്ഷം ടെലിവിഷൻ പ്രേക്ഷകർക്ക് മുന്നിൽ എതിരാളിയുടെ ആരോപണങ്ങളെ തകർത്ത് എല്ലാ വ്യാകരണ ഘടനകളും സിന്തസൈസ് ചെയ്ത് ചരിത്രപരമായ പ്രസംഗം നടത്തുക.',
+          targetSeconds: 60,
+          guidingPoints: [
+            '1. Deploy cleft focus rejecting the opponent\'s backward-looking frame.',
+            '2. Launch dual negative inversions ("Seldom in modern history has our democracy stood...", "Rarely has the cost...").',
+            '3. Enunciate dual subjunctive mandates ("I insist that our national assembly enact...").',
+            '4. Deliver the rhythmic tricolon crescendo ("Not through fear, but through courage...").',
+          ],
+          sampleNativeAudioScript: 'My distinguished opponent speaks endlessly of yesterday\'s failures; what we must build today is a sovereign economy where enterprise flourishes, where workers are protected, and where no family is left behind! Seldom in modern history has our democracy stood at so decisive a crossroads. Rarely has the cost of political complacency been so catastrophic, and never will our coalition compromise the economic future of our children! Therefore, I insist that our national assembly enact immediate tax incentives for clean domestic manufacturing, and that every regional worker be guaranteed universal technological retraining vouchers. For it is not through fear that we conquer the future, but through courage; not in bitter division that we prosper, but in unbreakable solidarity; not tomorrow, but tonight! Let us build this nation together.',
+        );
+      case 31:
+        return const SpeakingChallengeItem(
+          title: '60-Second Geneva Institute Global Risk Counterfactual Briefing',
+          contextScenario: 'ജനീവ ഇൻസ്റ്റിറ്റ്യൂട്ടിലെ എമർജൻസി വാർ റൂമിൽ കേന്ദ്ര ബാങ്കർമാർക്ക് മുന്നിൽ ഇൻവേർട്ടഡ് കണ്ടീഷണൽസ് ഉപയോഗിച്ച് ആഗോള പ്രതിസന്ധി വിശകലനം ചെയ്യുക.',
+          targetSeconds: 60,
+          guidingPoints: [
+            '1. Open with past counterfactual inversion ("Had our central banking consortium not diversified...").',
+            '2. Project cascading risk with second conditional inversion ("Were the European energy grid to suffer...").',
+            '3. Trigger immediate contingency with "Should freight insurers suspend...".',
+            '4. Mandate preemptive emergency reserve deployment.',
+          ],
+          sampleNativeAudioScript: 'Council members, observe the cascading telemetry: Had our central banking consortium not diversified sovereign currency reserves twelve months ago, our national debt yields would have collapsed this morning under speculative contagion. Furthermore, were the European energy grid to suffer a secondary freeze this winter, industrial manufacturing output would decline by eighteen percent across thirty key hubs. Should maritime freight insurers suspend transit coverage for twenty-four more hours, global food distribution lines would fracture irrevocably. Therefore, were we to authorize the immediate deployment of forty million barrels of strategic energy reserves today, we would neutralize commodity panic before consumer markets open. Let us execute this preemptive counter-measure without a moment\'s delay.',
+        );
+      case 32:
+        return const SpeakingChallengeItem(
+          title: '60-Second Supreme Court Jurisprudence Oral Argument',
+          contextScenario: 'സുപ്രീം കോടതിയുടെ ഭരണഘടനാ ബെഞ്ചിന് മുന്നിൽ ചിന്തോദ്ദീപകമായ ചിയാസ്മസ് (AB-BA) ഘടന ഉപയോഗിച്ച് ആർട്ടിഫിഷ്യൽ ഇന്റലിജൻസും മനുഷ്യാവകാശങ്ങളും സംബന്ധിച്ച ചരിത്രപ്രസിദ്ധമായ വാദം അവതരിപ്പിക്കുക.',
+          targetSeconds: 60,
+          guidingPoints: [
+            '1. Open with solemn constitutional address to the Chief Justice and bench.',
+            '2. Deliver the signature classical chiasmus ("We must never adapt human liberties to algorithmic demands...").',
+            '3. Frame the antithetical due-process nexus ("The question is not whether speed is convenient, but whether liberty is preserved").',
+            '4. Conclude with the degeneration warning and sovereign imperative.',
+          ],
+          sampleNativeAudioScript: 'Mr. Chief Justice, and may it please the Court: We stand before this constitutional tribunal at an inflection point between technological empire and sovereign human liberty. The Solicitor General argues that administrative efficiency requires automated predictive surveillance. But we must never adapt human liberties to algorithmic demands; we must adapt algorithmic power to human liberties! The paramount question before this Court is not whether computational velocity is convenient for the state, but whether statutory due process remains inviolable for the citizen. If constitutional rights are subordinated to digital convenience, then freedom ceases to be an inalienable birthright and degenerates into an arbitrary executive license. Therefore, we urge this tribunal to hold that the Fourth and Fourteenth Amendments do not retreat before silicon code, but command silicon code to retreat before the sovereign dignity of the human person.',
+        );
+      case 33:
+        return const SpeakingChallengeItem(
+          title: '60-Second World Tech Congress Deep-Tech Executive Demystification',
+          contextScenario: 'വേൾഡ് ടെക് കോൺഗ്രസ്സിൽ 5000 നിക്ഷേപകർക്ക് മുന്നിൽ ക്വാണ്ടം ന്യൂറൽ പ്രൊസസ്സറിന്റെ കരുത്ത് ലളിതമായ ഉപമയിലൂടെയും കൃത്യമായ ബിസിനസ്സ് നേട്ടങ്ങളിലൂടെയും തെളിയിച്ച് സംസാരിക്കുക.',
+          targetSeconds: 60,
+          guidingPoints: [
+            '1. Acknowledge the impenetrable technical jargon in the industry.',
+            '2. Bridge the complexity with the intuitive labyrinth/illumination analogy.',
+            '3. Strip away theoretical physics to showcase concrete time compression.',
+            '4. Deliver quantifiable financial and thermodynamic ROI metrics.',
+          ],
+          sampleNativeAudioScript: 'Distinguished executives and investors: In our industry, quantum computing is often cloaked in impenetrable academic jargon like non-convex manifolds and stochastic Hamiltonian matrices. But let us strip away the theoretical complexity. Instead of searching a massive labyrinth one dark hallway at a time as legacy silicon does, our photonic quantum processor functions like turning on the lights across the entire maze simultaneously. What this delivers to your balance sheet is revolutionary: it converts six months of clinical pharmaceutical molecular synthesis into twelve seconds of deterministic simulation. By replacing serialized copper gates with parallelized light guides, we reduce datacenter energy costs by eighty-eight percent while unlocking millisecond real-time intelligence. We are not selling experimental physics; we are delivering an exponential commercial advantage.',
+        );
+      case 34:
+        return const SpeakingChallengeItem(
+          title: '60-Second Senate Investigative Chamber Cross-Examination',
+          contextScenario: 'സെനറ്റ് അന്വേഷണ സമിതിയിൽ സത്യം മറച്ചുവെക്കാൻ ശ്രമിക്കുന്ന കോർപ്പറേറ്റ് എക്സിക്യൂട്ടീവിന്റെ വാദങ്ങളെ ഓരോന്നായി തകർത്ത് നിർണ്ണായക ചോദ്യം ചോദിക്കുക.',
+          targetSeconds: 60,
+          guidingPoints: [
+            '1. Call out the witness\'s straw man diversion with surgical legal politeness.',
+            '2. Dismiss the ad hominem distraction and re-anchor on documentary facts.',
+            '3. Read the exact timestamp and monetary transfer from the forensic ledger.',
+            '4. Demand the statutory authority under oath.',
+          ],
+          sampleNativeAudioScript: 'With the utmost respect, counselor, that response is a textbook straw man fallacy. My question has nothing to do with whether this committee opposes commercial enterprise or market competition. Attempting to question our motives or deflect to macroeconomic weather anomalies will not alter the immutable digital audit trail. Let us return directly to the forensic facts: Sworn ledger records before this Senate panel confirm that at 3:14 AM on the morning of March 14th, two hundred million dollars departed the customer escrow account and was routed into an offshore entity—twelve minutes after your personal keycard accessed the server room. On what statutory or contractual authority did you authorize that unilateral transfer while under fiduciary obligation? The committee awaits your factual answer under oath.',
+        );
+      case 35:
+        return const SpeakingChallengeItem(
+          title: '60-Second Port Authority Strike Midnight Mediation Address',
+          contextScenario: 'ആഗോള കപ്പൽ ഗതാഗതം സ്തംഭിപ്പിച്ച തൊഴിലാളി യൂണിയൻ നേതാക്കളും ഷിപ്പിംഗ് അസോസിയേഷനും തമ്മിലുള്ള നിർണ്ണായക ചർച്ചയിൽ സമാധാന ഉടമ്പടി ഉറപ്പാക്കി സംസാരിക്കുക.',
+          targetSeconds: 60,
+          guidingPoints: [
+            '1. Begin with deep empathetic mirroring acknowledging physical exhaustion.',
+            '2. Validate the union\'s refusal to accept hazardous conditions as rational.',
+            '3. Highlight the shared existential catastrophe facing both factions if ports close.',
+            '4. Propose the dual-anchor compromise before the midnight deadline.',
+          ],
+          sampleNativeAudioScript: 'Brothers and sisters of the Longshoremen Union, and directors of the Maritime Carrier Alliance: I hear the profound exhaustion and righteous indignation in your voices tonight, and I acknowledge without reservation that seventy-hour shifts in freezing conditions have pushed your crews to the absolute edge of human endurance. Your refusal to accept mandatory uncompensated overtime is completely rational and justified. Yet neither the union nor the carrier alliance can survive the catastrophic economic ruin of a prolonged harbor freeze that destroys eighty million tons of cargo. What we must construct across this table before midnight strikes is a binding accord that guarantees mandatory eight-hour rest periods and indexed danger pay, while preserving our harbor\'s operational solvency. Let us sign this compact together for the dignity of our workers and the prosperity of our nation.',
+        );
+      case 36:
+        return const SpeakingChallengeItem(
+          title: '60-Second TED Global Main Stage Keynote on Planetary Conscience',
+          contextScenario: 'TED ഗ്ലോബൽ വേദിയിൽ ലക്ഷക്കണക്കിന് ആളുകളുടെ ശ്രദ്ധ ആകർഷിച്ച്, കൃത്യമായ നിശബ്ദതയും (Pregnant Pause) ശബ്ദ നിയന്ത്രണവും ഉപയോഗിച്ച് ഹൃദയസ്പർശിയായ സന്ദേശം നൽകുക.',
+          targetSeconds: 60,
+          guidingPoints: [
+            '1. Deliver the shocking temporal hook with deliberate acoustic pacing.',
+            '2. Insert the signature 4-second unbroken pregnant pause.',
+            '3. Contrast relentless noise against the quiet data of ecological collapse.',
+            '4. Deliver the whispered sforzando climax on ancestral moral legacy.',
+          ],
+          sampleNativeAudioScript: 'Look around this room. In the brief six seconds it took you to inhale your last breath... [four-second deliberate pause, holding complete silence] ...forty-two thousand old-growth trees were systematically felled from the lungs of our planet. We are told by modern technocrats that progress demands relentless noise and ceaseless velocity. But listen to the silence of our collapsing ecosystems... [three-second pause] ...and you realize that speed without conscience is nothing less than collective suicide. The paramount question confronting our generation tonight is not whether our algorithms will colonize Mars, nor whether our stock portfolios will withstand the next fiscal quarter. The question... [soft, hushed whisper into the microphone] ...is whether our grandchildren will ever forgive our silence. Let us choose conscience over comfort, before the music of the Earth falls permanently silent.',
+        );
+      case 37:
+        return const SpeakingChallengeItem(
+          title: '60-Second UN Security Council War Crimes Inquest Presentation',
+          contextScenario: 'ഐക്യരാഷ്ട്രസഭ രക്ഷാസമിതിയിൽ വ്യക്തിപരമായ പക്ഷപാതം പൂർണ്ണമായി ഒഴിവാക്കി ഫോറൻസിക് പാസീവ് വോയിസ് ഉപയോഗിച്ച് യുദ്ധക്കുറ്റങ്ങൾ സംബന്ധിച്ച റിപ്പോർട്ട് അവതരിപ്പിക്കുക.',
+          targetSeconds: 60,
+          guidingPoints: [
+            '1. Eliminate all personal pronouns ("I found", "We determined").',
+            '2. Open with satellite telemetry and ballistic evidence anchor.',
+            '3. Detail findings across the 42 municipalities.',
+            '4. Conclude with formal referral recommendations to the International Criminal Court.',
+          ],
+          sampleNativeAudioScript: 'Mr. President and distinguished members of the Security Council: It was determined through high-resolution satellite imagery and ballistic crater analysis that civilian energy and water infrastructure was systematically targeted across forty-two independent municipalities. Evidence was compiled across four hundred sworn eyewitness depositions and corroborated by encrypted regimental transmission logs. It was established that unguided artillery was discharged into densely populated market squares without tactical military justification. It is concluded that systemic violations of international humanitarian law transpired. It is therefore formally recommended that immediate arrest warrants be submitted to the International Criminal Court, and that member states freeze all financial assets linked to the commanding regimental hierarchy. The factual dossier is submitted for immediate resolution.',
+        );
+      case 38:
+        return const SpeakingChallengeItem(
+          title: '60-Second Geneva World Peace Summit Zenith Address',
+          contextScenario: 'ജനീവയിലെ സമാധാന ഉച്ചകോടിയിൽ അമ്പത് ലോക നേതാക്കൾക്ക് മുന്നിൽ 90 ദിവസത്തെ ഇംഗ്ലീഷ് പഠനത്തിന്റെ എല്ലാ ഘടകങ്ങളും സമന്വയിപ്പിച്ച് ചരിത്രപരമായ സമാപന പ്രസംഗം നടത്തുക.',
+          targetSeconds: 60,
+          guidingPoints: [
+            '1. Acknowledge the historical sacrifice of predecessors.',
+            '2. Deliver the signature tripartite parallel antithesis ("we chose not division, but union...").',
+            '3. Proclaim language as a sovereign sacred bridge for humanity.',
+            '4. Call for immediate unanimous ratification of the Century Accord.',
+          ],
+          sampleNativeAudioScript: 'Excellencies, heads of state, and sovereign citizens of the world: If our ancestors had not found the courage to bridge their bitter divides eighty years ago in the ashes of world war, none of us would stand in this historic hall today. We stand once more upon the knife-edge of generational destiny. Let history record that on this day, we chose not division, but union; not suspicion, but fellowship; not decline, but an enduring sovereign peace! For language was never meant to be a wall to divide our nations; it is the sacred bridge whereby human consciousness conquers fear and unites our common destiny. With unshakeable moral purpose, let us sign the Sovereign Century Accord, consecrating this peace for our children, our continent, and our shared future on Earth.',
+        );
+      default:
+        return const SpeakingChallengeItem(
+          title: 'Advanced Statecraft Milestone Speech',
+          contextScenario: 'Speak for 30 seconds delivering today\'s core insight.',
+          targetSeconds: 30,
+          guidingPoints: ['Speak with absolute composure', 'Project unshakeable authority'],
+          sampleNativeAudioScript: 'Today I mastered advanced rhetorical statecraft with sovereign precision.',
+        );
+    }
+  }
+
+  // --- ⚡ SOVEREIGN FLUENCY SHORTCUT / KURUKKUVAZHI (Mnemonic Hacks) ---
+  static FluencyShortcutItem getFluencyShortcut(int day) {
+    switch (day) {
+      case 29:
+        return const FluencyShortcutItem(
+          title: 'The Diplomatic 3-Drop Rule: Defer, Commend, Inquire',
+          malyalamHeading: '⚡ കുറുക്കുവഴി 29: വലിയ വി.ഐ.പികളോടും വിദേശികളോടും സംസാരിക്കുമ്പോൾ ബഹുമാനവും ആദരവും പിടിച്ചുപറ്റാൻ',
+          ruleSummary: 'ഒരു വലിയ ആളോട് നേരിട്ട് ബിസിനസ്സ് പറയാൻ പോകരുത്. 1. Defer (അവരെ കണ്ടതിലുള്ള ആദരവ് പറയുക), 2. Commend (അവരുടെ പ്രസംഗത്തെയോ ലേഖനത്തെയോ പുകഴ്ത്തുക), 3. Inquire (നാളെ കാപ്പി കുടിക്കുമ്പോൾ സംസാരിക്കാമോ എന്ന് ചോദിക്കുക).',
+          quickHack: '💡 "It is an immense honor to meet you; your work on [Topic] was profoundly insightful. Would you be open to an informal chat?" ഈ 3 വാക്യം മതി ഏത് വലിയ അംബാസഡറുടെയും സുഹൃത്താകാൻ!',
+          examples: [
+            'It is an immense honor to meet you in person. (താങ്കളെ നേരിൽ കാണാൻ സാധിച്ചതിൽ അതിയായ സന്തോഷം.)',
+            'Would you be open to informal consultations? (നമുക്ക് അനൗദ്യോഗികമായി കൂടുതൽ ചർച്ച ചെയ്യാൻ താല്പര്യമുണ്ടോ?)',
+          ],
+        );
+      case 30:
+        return const FluencyShortcutItem(
+          title: 'The Grand Oratorical Triad: Cleft, Invert, Tricolon',
+          malyalamHeading: '⚡ കുറുക്കുവഴി 30: ലോകത്തെ പിടിച്ചുലയ്ക്കുന്ന പ്രസംഗങ്ങൾ നടത്താൻ 3 ഘട്ടങ്ങൾ',
+          ruleSummary: 'ഒരു വലിയ വേദിയിൽ സംസാരിക്കുമ്പോൾ: 1. "What we need is..." (Cleft) വെച്ച് തുടങ്ങുക, 2. "Seldom have we..." (Inversion) വെച്ച് ഗൗരവം കൂട്ടുക, 3. "Not A, but B; not C, but D" (Tricolon) വെച്ച് അവസാനിപ്പിക്കുക!',
+          quickHack: '💡 Cleft Focus + Negative Inversion + Tricolon Climax. ഈ മൂന്ന് ഫോർമുലകൾ ചേർത്ത് പറഞ്ഞാൽ ഏത് വലിയ ഹാളും നിങ്ങളെ എഴുന്നേറ്റു നിന്ന് കയ്യടിച്ച് സ്വീകരിക്കും!',
+          examples: [
+            'What we need is unity; seldom have we stood so strong; not in fear, but in triumph!',
+            'What we demand is truth; rarely has justice been so vital; not for ourselves, but for all!',
+          ],
+        );
+      case 31:
+        return const FluencyShortcutItem(
+          title: 'The 3-Inversion Risk Formula: Had, Were, Should',
+          malyalamHeading: '⚡ കുറുക്കുവഴി 31: "If" ഒഴിവാക്കി ലോകോത്തര തന്ത്രജ്ഞരെപ്പോലെ ഭാവി പ്രവചിക്കാൻ 3 വാക്കുകൾ',
+          ruleSummary: '"If" ഉപയോഗിച്ച് സംസാരിക്കുന്നത് ഒഴിവാക്കുക! 1. "Had we not..." (കഴിഞ്ഞ കാലത്തെ അപകടങ്ങൾ സൂചിപ്പിക്കാൻ), 2. "Were we to..." (ഭാവിയിലെ ഹൈപ്പോതെറ്റിക്കൽ അപകടങ്ങൾ സൂചിപ്പിക്കാൻ), 3. "Should it occur..." (പെട്ടെന്ന് ഉണ്ടാകുന്ന അത്യാഹിതങ്ങൾ സൂചിപ്പിക്കാൻ).',
+          quickHack: '💡 "If we had not" എന്നതിന് പകരം "Had we not" എന്നും, "If we do" എന്നതിന് പകരം "Were we to" എന്നും ഉപയോഗിക്കുക. നിങ്ങളുടെ ഇംഗ്ലീഷ് വേൾഡ് ബാങ്ക് അല്ലെങ്കിൽ റിസർവ് ബാങ്ക് അനലിസ്റ്റുകളുടെ നിലവാരത്തിലേക്ക് ഉയരും!',
+          examples: [
+            'Had we not planned ahead, we would have failed. (ഞങ്ങൾ മുൻകൂട്ടി പ്ലാൻ ചെയ്തിരുന്നില്ലെങ്കിൽ ഞങ്ങൾ പരാജയപ്പെടുമായിരുന്നു.)',
+            'Were we to sign now, we would secure a 20% discount. (ഞങ്ങൾ ഇപ്പോൾ ഒപ്പിടുകയാണെങ്കിൽ ഞങ്ങൾക്ക് 20% കിഴിവ് ലഭിക്കും.)',
+          ],
+        );
+      case 32:
+        return const FluencyShortcutItem(
+          title: 'The AB-BA Chiasmus Mirror: Invert and Immortalize',
+          malyalamHeading: '⚡ കുറുക്കുവഴി 32: ചരിത്രത്തിൽ ഓർമ്മിക്കപ്പെടുന്ന ഗംഭീര വാക്യങ്ങൾ നിർമ്മിക്കാൻ AB-BA മിറർ ഫോർമുല',
+          ruleSummary: 'ഒരു പ്രധാന കാര്യം പറയുമ്പോൾ ആദ്യത്തെ പകുതിയിലെ വാക്കുകളെ രണ്ടാമത്തെ പകുതിയിൽ തലതിരിച്ചു പറയുക (AB ➔ BA). 1. A (Human Liberties) + B (Algorithmic Demands), 2. B (Algorithmic Power) + A (Human Liberties).',
+          quickHack: '💡 "We must never adapt A to B; we must adapt B to A!" ഈ മിറർ ടെക്നിക്ക് ഉപയോഗിച്ചാൽ നിങ്ങളുടെ വാക്കുകൾ കെന്നഡിയുടെയോ മാർട്ടിൻ ലൂഥർ കിംഗിന്റെയോ പ്രസംഗം പോലെ ചരിത്രപ്രസിദ്ധമാകും!',
+          examples: [
+            'Never adapt liberties to machines; adapt machines to liberties. (സ്വാതന്ത്ര്യത്തെ യന്ത്രങ്ങൾക്ക് വിട്ടുകൊടുക്കരുത്; യന്ത്രങ്ങളെ സ്വാതന്ത്ര്യത്തിന് കീഴ്പ്പെടുത്തുക.)',
+            'Let us never negotiate out of fear, but never fear to negotiate. (ഭയം കൊണ്ട് ചർച്ച നടത്തരുത്, എന്നാൽ ചർച്ച നടത്താൻ ഒരിക്കലും ഭയപ്പെടരുത്.)',
+          ],
+        );
+      case 33:
+        return const FluencyShortcutItem(
+          title: 'The Deep-Tech Analogy Bridge: Metaphor First, ROI Second',
+          malyalamHeading: '⚡ കുറുക്കുവഴി 33: സങ്കീർണ്ണമായ സാങ്കേതിക വിദ്യ ആർക്കും മനസ്സിലാകുന്ന രീതിയിൽ പറഞ്ഞ് നിക്ഷേപം നേടാൻ',
+          ruleSummary: 'സാങ്കേതിക ജാർഗണുകൾ ഉപേക്ഷിക്കുക! 1. "Instead of [Slow Manual Method]..." 2. "...our system functions like [Vivid Everyday Metaphor]..." 3. "...delivering [Quantifiable Metric: 88% Cost Reduction]".',
+          quickHack: '💡 "Instead of searching room by room, it turns on the lights across the entire building!" സങ്കീർണ്ണമായ കമ്പ്യൂട്ടിംഗിനെ ഒരു സാധാരണ ചിത്രമാക്കി മാറ്റുക; നിക്ഷേപകർ ഉടൻ ചെക്ക് ഒപ്പിട്ടു നൽകും!',
+          examples: [
+            'Instead of checking rows one by one, it views the entire airspace at once. (ഓരോന്നായി നോക്കുന്നതിന് പകരം, ഒരൊറ്റ നോട്ടത്തിൽ ആകാശം മുഴുവൻ കാണുന്നു.)',
+            'It turns 6 months of lab work into 4 seconds of modeling. (6 മാസത്തെ ലാബ് പരീക്ഷണങ്ങളെ 4 സെക്കൻഡാക്കി മാറ്റുന്നു.)',
+          ],
+        );
+      case 34:
+        return const FluencyShortcutItem(
+          title: 'The 4-Part Fallacy Deflector: Label, Reframe, Re-anchor, Demand',
+          malyalamHeading: '⚡ കുറുക്കുവഴി 34: സംവാദങ്ങളിൽ എതിരാളികൾ വിഷയം മാറ്റുകയോ വ്യക്തിഹത്യ നടത്തുകയോ ചെയ്താൽ നിശബ്ദരാക്കാൻ',
+          ruleSummary: 'എതിരാളി വളച്ചൊടിച്ചാൽ ദേഷ്യപ്പെടരുത്: 1. "That is a textbook straw man..." (ലേബൽ ചെയ്യുക), 2. "My question is not about [Distortion]..." (വ്യതിചലനം തള്ളുക), 3. "...but why [Forensic Fact]..." (തെളിവിലേക്ക് കൊണ്ടുവരിക), 4. "The committee awaits your answer under oath."',
+          quickHack: '💡 "That is a straw man fallacy. My question concerns the ledger at 3:14 AM; on what authority did you sign?" ഈ രീതിയിൽ സംസാരിച്ചാൽ ഏത് നുണയനും വിസ്താരത്തിൽ കുടുങ്ങും!',
+          examples: [
+            'That is a straw man. My question is strictly about the contract. (അത് വിഷയത്തിൽ നിന്നുള്ള വ്യതിചലനമാണ്. എന്റെ ചോദ്യം കൃത്യമായി കരാറിനെക്കുറിച്ചാണ്.)',
+            'Attacking our motives does not alter the bank records. (ഞങ്ങളെ വ്യക്തിപരമായി ആക്രമിച്ചതുകൊണ്ട് ബാങ്ക് രേഖകൾ ഇല്ലാതാവില്ല.)',
+          ],
+        );
+      case 35:
+        return const FluencyShortcutItem(
+          title: 'The Empathetic Mirror & Bridge: Hear, Validate, Unify',
+          malyalamHeading: '⚡ കുറുക്കുവഴി 35: രോഷാകുലരായ സമരക്കാരെയും യൂണിയനുകളെയും 30 സെക്കൻഡിൽ ശാന്തരാക്കാൻ',
+          ruleSummary: 'തർക്കങ്ങളിൽ ജയിക്കാൻ ആദ്യം തോറ്റുകൊടുക്കുക: 1. "I hear the deep exhaustion in your voice..." (അവരുടെ ക്ഷീണവും സങ്കടവും അംഗീകരിക്കുക), 2. "Your anger is entirely rational..." (അവരുടെ ന്യായത്തെ ശരിവെക്കുക), 3. "Neither side can survive a shutdown..." (പൊതുവായ അപകടം കാണിച്ച് ഒത്തുതീർപ്പിലെത്തുക).',
+          quickHack: '💡 ഒരിക്കലും "ശാന്തനാകൂ" എന്ന് ദേഷ്യപ്പെടുന്നവരോട് പറയരുത്! പകരം "നിങ്ങളുടെ രോഷം പൂർണ്ണമായും ന്യായമാണ്, നിങ്ങൾ അനുഭവിച്ച കഷ്ടപ്പാട് ഞാൻ കാണുന്നു" എന്ന് പറയുക. എതിർപ്പ് നിമിഷനേരം കൊണ്ട് അലിഞ്ഞുപോകും!',
+          examples: [
+            'I hear your frustration, and 70-hour shifts are unacceptable. (നിങ്ങളുടെ സങ്കടം ഞാൻ മനസ്സിലാക്കുന്നു, 70 മണിക്കൂർ ഷിഫ്റ്റ് അംഗീകരിക്കാനാവില്ല.)',
+            'Neither of us can afford a port shutdown; let us sign this protocol. (തുറമുഖം പൂട്ടുന്നത് ഇരുവർക്കും താങ്ങാനാവില്ല; നമുക്ക് ഈ കരാർ ഒപ്പിടാം.)',
+          ],
+        );
+      case 36:
+        return const FluencyShortcutItem(
+          title: 'The Sovereign Pregnant Pause: 4 Seconds of Unbroken Silence',
+          malyalamHeading: '⚡ കുറുക്കുവഴി 36: പ്രസംഗത്തിൽ ലക്ഷക്കണക്കിന് ആളുകളെ നിശബ്ദരാക്കി ശ്രദ്ധ നേടാൻ സുവർണ്ണ നിമിഷം',
+          ruleSummary: 'നിങ്ങളുടെ ഏറ്റവും പ്രധാനപ്പെട്ട പോയിന്റ് അല്ലെങ്കിൽ ഞെട്ടിപ്പിക്കുന്ന കണക്ക് പറയുക. അതിനുശേഷം വായ പൂർണ്ണമായി അടച്ച് നേരെ സദസ്സിന്റെ കണ്ണുകളിലേക്ക് നോക്കി മനസ്സിൽ 4 എണ്ണുക (1.. 2.. 3.. 4..). തുടർന്ന് പതുക്കെ വിസ്പർ ചെയ്യുക!',
+          quickHack: '💡 Shocking Fact + 4 Seconds Total Silence + Hushed Whisper. ശബ്ദത്തേക്കാൾ ശക്തമാണ് സന്ദർഭോചിതമായ നിശബ്ദത! ലോകോത്തര TED സ്പീക്കർമാരുടെ പരമോന്നത രഹസ്യമാണിത്.',
+          examples: [
+            'In six seconds... [pause 4s] ...40,000 trees were felled. (ആറ് സെക്കൻഡിൽ... [4 സെക്കൻഡ് നിശബ്ദത] ...നാൽപ്പതിനായിരം മരങ്ങൾ വെട്ടിനശിപ്പിക്കപ്പെട്ടു.)',
+            'Listen to the silence... [pause 3s] ...before it is too late. (ആ നിശബ്ദത ശ്രദ്ധിക്കൂ... [3 സെക്കൻഡ് നിശബ്ദത] ...വൈകുന്നതിന് മുൻപ്.)',
+          ],
+        );
+      case 37:
+        return const FluencyShortcutItem(
+          title: 'The Forensic Passive Shield: Drop the "I", State the "It was"',
+          malyalamHeading: '⚡ കുറുക്കുവഴി 37: ഔദ്യോഗിക റിപ്പോർട്ടുകൾ ആരും എതിർക്കാത്ത രീതിയിൽ നിഷ്പക്ഷമായി എഴുതാൻ',
+          ruleSummary: '"I discovered" അല്ലെങ്കിൽ "We found" എന്ന് എഴുതരുത്! പകരം: 1. "It was determined through [Evidence] that...", 2. "Evidence was compiled across [Sources]...", 3. "It is formally recommended that...". വ്യക്തിപരമായ പക്ഷപാതം പൂർണ്ണമായി ഒഴിവാക്കാം.',
+          quickHack: '💡 "I found that the company broke the law" എന്നതിന് പകരം "It was established through forensic audits that regulations were breached" എന്ന് പറയുക. ഇത് ഐക്യരാഷ്ട്രസഭയുടെയും ഇന്റർനാഷണൽ കോർട്ടിന്റെയും നിലവാരമാണ്!',
+          examples: [
+            'It was determined through satellite records that sites were targeted. (സൈറ്റുകൾ ആക്രമിക്കപ്പെട്ടു എന്ന് ഉപഗ്രഹ രേഖകളിലൂടെ തെളിയിക്കപ്പെട്ടു.)',
+            'Evidence was collected across 40 cities. (40 നഗരങ്ങളിൽ നിന്നായി തെളിവുകൾ ശേഖരിക്കപ്പെട്ടു.)',
+          ],
+        );
+      case 38:
+        return const FluencyShortcutItem(
+          title: 'The Sovereign Tripartite Resolution: Not A, but B (x3)',
+          malyalamHeading: '⚡ കുറുക്കുവഴി 38: ലോക നേതാക്കളെ കോരിത്തരിപ്പിക്കുന്ന ചരിത്രപ്രസിദ്ധമായ സമാപന പ്രസംഗ ശൈലി',
+          ruleSummary: '90 ദിവസത്തെ ഇംഗ്ലീഷ് പഠനത്തിന്റെ പരമോന്നത കിരീടം! 1. "Let history record that we chose...", 2. "...not [Negative 1], but [Positive 1];", 3. "...not [Negative 2], but [Positive 2];", 4. "...not [Negative 3], but [Positive 3]!"',
+          quickHack: '💡 "Not division, but union; not suspicion, but fellowship; not decline, but enduring peace!" ഈ മൂന്ന് ജോഡികൾ ഒന്നിച്ച് പറയുക. നിങ്ങളുടെ ശബ്ദം കേട്ട് ഒരു രാജ്യത്തിന് തന്നെ അഭിമാനം തോന്നും!',
+          examples: [
+            'Not fear, but courage; not division, but union! (ഭയമല്ല, ധൈര്യം; ഭിന്നതയല്ല, ഐക്യം!)',
+            'Language is not a wall, but a sacred bridge. (ഭാഷ ഒരു മതിലല്ല, മറിച്ച് അതൊരു പവിത്രമായ പാലമാണ്.)',
+          ],
+        );
+      default:
+        return const FluencyShortcutItem(
+          title: 'Sovereign Statecraft Rule',
+          malyalamHeading: '⚡ കുറുക്കുവഴി: ആധികാരികമായി സംസാരിക്കാൻ',
+          ruleSummary: 'Master high-level sentence synthesis to command respect.',
+          quickHack: 'Combine multiple grammatical structures into one fluent sentence.',
+          examples: ['Disciplined speech commands global destiny.'],
+        );
     }
   }
 }

@@ -14,7 +14,7 @@ class PocketWorldMasterRules {
     '2. 1 Day = 1 Defense Slot':
         'Defense scales linearly from 1 slot on Day 1 to 90 slots across 9 gates on Day 90 (exactly 10 questions per gate).',
     '3. Direct Attacks':
-        'No ringing doorbell required. Direct raid warfare in the Battle Arena against rival houses (+1 to +3 levels higher for combat growth).',
+        'No ringing doorbell required. Direct raid warfare in Pocket Battle against rival houses (+1 to +3 levels higher for combat growth).',
     '4. Pocket Robo Fallback 🤖':
         'If no active peer exists in the player\'s level bracket, Pocket Robo steps in automatically so attacks and rewards are always available.',
     '5. 48-Hour Presidential Police Protection':

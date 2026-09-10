@@ -7,7 +7,8 @@ import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/learning_models.dart';
-import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_mate_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 
 /// Notifications & Mutual Pocket Mate Connection Requests Screen
 class NotificationsPage extends StatefulWidget {
@@ -38,36 +39,38 @@ class _NotificationsPageState extends State<NotificationsPage> {
     }
 
     try {
-      final prefs = await SharedPreferences.getInstance();
-      
-      // Load pending connection requests
-      final reqStr = prefs.getString('pending_pocket_requests_$myId');
+      // 0. Ensure user has peer robot mate requests active
+      await PocketRobotService.ensureIncomingRobotRequests(myId, 1);
+
+      // 1. Fetch real pending mate requests from Supabase via PocketMateService
+      final dbReqs = await PocketMateService.getPendingRequests(myId);
       List<Map<String, dynamic>> requests = [];
-      if (reqStr != null && reqStr.isNotEmpty) {
-        try {
-          requests = List<Map<String, dynamic>>.from(jsonDecode(reqStr));
-        } catch (_) {}
+
+      for (final r in dbReqs) {
+        requests.add({
+          'id': r['id'],
+          'senderId': r['sender_id'] ?? r['source_id'],
+          'senderName': r['sender_name'] ?? 'Pocket Mate',
+          'stage': r['stage'] ?? 1,
+          'message': r['message'] ?? 'Wants to become your Pocket Mate.',
+          'time': r['created_at'] ?? DateTime.now().toIso8601String(),
+          'isRobot': r['is_robot'] == true || PocketRobotService.isRobotId(r['sender_id']?.toString() ?? ''),
+          'archetype': r['archetype'],
+        });
       }
 
-      // If no requests yet, provide a starter demo request for new users to test acceptance
-      if (requests.isEmpty) {
-        requests = [
-          {
-            'id': 'req_demo_1',
-            'senderId': 'demo_mate_1',
-            'senderName': 'Arjun K.',
-            'stage': 16,
-            'avatarConfig': const VectorAvatarConfig(
-              artStyle: 'vector',
-              gender: 'male',
-              hairStyle: 'classic_side',
-              outfitStyle: 'varsity_jacket',
-              outfitColor: '#38BDF8',
-            ).toMap(),
-            'message': 'Matched from Anonymous English Chat: "Great talking with you about travel! Let\'s be Pocket Mates."',
-            'time': DateTime.now().subtract(const Duration(minutes: 25)).toIso8601String(),
-          },
-        ];
+      // Also check local pending requests
+      final prefs = await SharedPreferences.getInstance();
+      final reqStr = prefs.getString('pending_pocket_requests_$myId');
+      if (reqStr != null && reqStr.isNotEmpty) {
+        try {
+          final localReqs = List<Map<String, dynamic>>.from(jsonDecode(reqStr));
+          for (final lr in localReqs) {
+            if (!requests.any((x) => x['id'] == lr['id'])) {
+              requests.add(lr);
+            }
+          }
+        } catch (_) {}
       }
 
       // Default activity alerts
@@ -114,19 +117,18 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
     HapticFeedback.mediumImpact();
     final senderId = req['senderId']?.toString() ?? '';
+    final notifId = req['id']?.toString() ?? '';
 
-    final prefs = await SharedPreferences.getInstance();
-    
-    // Add to Pocket Mates list
-    final key = 'pocket_mates_$myId';
-    final list = prefs.getStringList(key) ?? [];
-    if (!list.contains(senderId)) {
-      list.add(senderId);
-      await prefs.setStringList(key, list);
-    }
+    // Use PocketMateService to accept across Supabase and local cache
+    await PocketMateService.acceptMateRequest(
+      notificationId: notifId,
+      myId: myId,
+      senderId: senderId,
+    );
 
     // Remove from pending
     _connectionRequests.removeWhere((r) => r['id'] == req['id']);
+    final prefs = await SharedPreferences.getInstance();
     await prefs.setString('pending_pocket_requests_$myId', jsonEncode(_connectionRequests));
 
     setState(() {});
@@ -158,8 +160,16 @@ class _NotificationsPageState extends State<NotificationsPage> {
     if (myId == null) return;
 
     HapticFeedback.lightImpact();
+    final notifId = req['id']?.toString() ?? '';
+    final senderId = req['senderId']?.toString() ?? '';
+
+    await PocketMateService.declineMateRequest(
+      notificationId: notifId,
+      myId: myId,
+      senderId: senderId,
+    );
+
     final prefs = await SharedPreferences.getInstance();
-    
     _connectionRequests.removeWhere((r) => r['id'] == req['id']);
     await prefs.setString('pending_pocket_requests_$myId', jsonEncode(_connectionRequests));
 
@@ -274,25 +284,66 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                           ),
                                         ),
                                         const SizedBox(width: 6),
-                                        Icon(Icons.verified, color: stage.tickColor, size: 14),
+                                        if (req['isRobot'] == true)
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFF06B6D4).withValues(alpha: 0.2),
+                                              borderRadius: BorderRadius.circular(4),
+                                              border: Border.all(color: const Color(0xFF06B6D4)),
+                                            ),
+                                            child: Text(
+                                              '🤖 ROBOT',
+                                              style: GoogleFonts.outfit(
+                                                color: const Color(0xFF06B6D4),
+                                                fontWeight: FontWeight.w900,
+                                                fontSize: 8.5,
+                                              ),
+                                            ),
+                                          )
+                                        else
+                                          Icon(Icons.verified, color: stage.tickColor, size: 14),
                                       ],
                                     ),
                                     const SizedBox(height: 2),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                      decoration: BoxDecoration(
-                                        color: stage.buttonColor.withValues(alpha: 0.15),
-                                        borderRadius: BorderRadius.circular(6),
-                                        border: Border.all(color: stage.buttonColor.withValues(alpha: 0.5)),
-                                      ),
-                                      child: Text(
-                                        '${stage.emoji} STAGE $stageNum/90 • ${stage.fluencyTier}',
-                                        style: GoogleFonts.outfit(
-                                          color: stage.buttonColor,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 9.5,
+                                    Row(
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                          decoration: BoxDecoration(
+                                            color: stage.buttonColor.withValues(alpha: 0.15),
+                                            borderRadius: BorderRadius.circular(6),
+                                            border: Border.all(color: stage.buttonColor.withValues(alpha: 0.5)),
+                                          ),
+                                          child: Text(
+                                            '${stage.emoji} STAGE $stageNum/90 • ${stage.fluencyTier}',
+                                            style: GoogleFonts.outfit(
+                                              color: stage.buttonColor,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 9.5,
+                                            ),
+                                          ),
                                         ),
-                                      ),
+                                        if (req['archetype'] != null) ...[
+                                          const SizedBox(width: 6),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                                            decoration: BoxDecoration(
+                                              color: Colors.purple.withValues(alpha: 0.2),
+                                              borderRadius: BorderRadius.circular(6),
+                                              border: Border.all(color: Colors.purple.withValues(alpha: 0.5)),
+                                            ),
+                                            child: Text(
+                                              '${req['archetype']}'.toUpperCase(),
+                                              style: GoogleFonts.outfit(
+                                                color: Colors.purpleAccent,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 9.0,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ],
                                     ),
                                   ],
                                 ),

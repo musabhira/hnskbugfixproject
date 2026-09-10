@@ -1,7 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
+import 'dart:math' as math;
+import 'pocket_fortress_defense_service.dart';
 import 'learning_models.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chat/english_hub_level_group_service.dart';
 
 /// Core Service managing 90-Stage Progression, Pocket Score, Inactivity Decay & Profile UI sync
 class Learning60DayService {
@@ -23,39 +26,25 @@ class Learning60DayService {
         targetMinutes: 35,
       ),
       DailyEnglishTask(
-        id: 'speech_interview_sprint',
-        title: day <= 15
-            ? '🎙️ Self-Introduction & Vocal Confidence'
-            : (day <= 30
-                ? '🎙️ 20-Min Fluency & Pronunciation Sprint'
-                : (day <= 45
-                    ? '🎙️ Mock Interview & Professional Pitch'
-                    : '🎙️ Impromptu Monologue & Debate Sprint')),
-        description: 'Record continuous spoken English without hesitation or native lag',
+        id: 'speaking_drill_$day',
+        title: '🎙️ Master Day $day Speaking Drill',
+        description: 'Record and practice pronunciation for today\'s target phrase',
         emoji: '🎙️',
         points: 30,
-        targetMinutes: 20,
+        targetMinutes: 25,
       ),
-      const DailyEnglishTask(
-        id: 'pocket_library_reading',
-        title: '📖 Pocket Library Word & Audio Reading',
-        description: 'Read 1 classic story or news article aloud with audio reader',
-        emoji: '📖',
-        points: 20,
-        targetMinutes: 15,
-      ),
-      const DailyEnglishTask(
-        id: 'grammar_and_vocab_boost',
-        title: '🧠 Grammar & 5 Smart Vocabulary Words',
-        description: 'Master practical sentence structures and active idioms',
+      DailyEnglishTask(
+        id: 'grammar_mechanics_$day',
+        title: '🧠 Core Thought Mechanics & Grammar',
+        description: 'Understand and apply today\'s structural sentence rule',
         emoji: '🧠',
-        points: 15,
-        targetMinutes: 20,
+        points: 30,
+        targetMinutes: 30,
       ),
     ];
   }
 
-  /// Fetches the user's current 90-Stage progress & evaluates Pocket Score Inactivity Decay
+  /// Fetches real-time user progress from Supabase & SharedPreferences
   Future<UserLearningProgress> fetchProgress(String userId) async {
     final now = DateTime.now();
     try {
@@ -66,13 +55,12 @@ class Learning60DayService {
           .maybeSingle();
 
       int day = 1;
-      int pocketScore = 0;
+      int pocketScore = await PocketFortressDefenseService.getUnifiedScore(userId);
       int streak = 1;
       DateTime lastDate = now;
 
       if (res != null) {
         day = (res['learning_day'] as num?)?.toInt() ?? 1;
-        pocketScore = (res['learning_points'] as num?)?.toInt() ?? 0;
         streak = (res['learning_streak'] as num?)?.toInt() ?? 1;
         if (res['last_learning_date'] != null) {
           lastDate = DateTime.tryParse(res['last_learning_date'].toString()) ?? now;
@@ -80,53 +68,74 @@ class Learning60DayService {
       } else {
         final prefs = await SharedPreferences.getInstance();
         day = prefs.getInt('learning_day_$userId') ?? 1;
-        pocketScore = prefs.getInt('learning_points_$userId') ?? 0;
         streak = prefs.getInt('learning_streak_$userId') ?? 1;
+      }
+
+      final prefs = await SharedPreferences.getInstance();
+      final localStage = prefs.getInt('pocket_learning_user_stage') ?? prefs.getInt('learning_day_$userId') ?? 1;
+      if (localStage > day) {
+        day = localStage;
+      }
+
+      // Midnight Progression: Check if previous day was completed and midnight has passed
+      final lastCompletedDay = prefs.getInt('learning_last_completed_day') ?? 0;
+      if (lastCompletedDay > 0 && lastCompletedDay < 90) {
+        final completedDateStr = prefs.getString('learning_day_${lastCompletedDay}_completed_date');
+        final todayDateStr = '${now.year}-${now.month}-${now.day}';
+        // If completed date is earlier than today, midnight has passed -> enter next day!
+        if (completedDateStr != null && completedDateStr != todayDateStr) {
+          if (day <= lastCompletedDay) {
+            day = lastCompletedDay + 1;
+            await prefs.setInt('learning_day_$userId', day);
+            await prefs.setInt('pocket_learning_user_stage', day);
+            await prefs.setBool('pocket_day_${day}_unlocked', true);
+          }
+        }
       }
 
       // ----------------------------------------------------
       // Pocket Score & Inactivity Decay Engine
       // ----------------------------------------------------
-      final differenceInDays = DateTime(now.year, now.month, now.day)
-          .difference(DateTime(lastDate.year, lastDate.month, lastDate.day))
-          .inDays;
-
       bool hasInactivityPenalty = false;
       int missedDays = 0;
 
-      if (differenceInDays > 1) {
-        missedDays = differenceInDays - 1;
-        hasInactivityPenalty = true;
+      if (res != null && res['last_learning_date'] != null) {
+        final differenceInDays = DateTime(now.year, now.month, now.day)
+            .difference(DateTime(lastDate.year, lastDate.month, lastDate.day))
+            .inDays;
 
-        // Reset streak
-        streak = 1;
-        // Deduct Pocket Score for missed days
-        pocketScore = (pocketScore - (missedDays * 30)).clamp(0, 999999);
-        
-        // If inactive, step back stages/days proportionally (1 day per missed day, minimum 1)
-        day = (day - missedDays).clamp(1, 90);
+        if (differenceInDays > 1 && day > 1) {
+          missedDays = differenceInDays - 1;
+          hasInactivityPenalty = true;
 
-        // Persist decayed values
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setInt('learning_day_$userId', day);
-        await prefs.setInt('learning_points_$userId', pocketScore);
-        await prefs.setInt('learning_streak_$userId', streak);
+          // Reset streak
+          streak = 1;
+          // Deduct Pocket Score for missed days
+          pocketScore = (pocketScore - (missedDays * 30)).clamp(0, 999999);
+          await PocketFortressDefenseService.setUnifiedScore(pocketScore, userId);
 
-        try {
-          await _supabase.from('profile').update({
-            'learning_day': day,
-            'learning_stage': day,
-            'learning_points': pocketScore,
-            'learning_streak': streak,
-            'last_learning_date': now.toIso8601String(),
-          }).eq('user_id', userId);
-        } catch (_) {}
+          // Never decay below localStage if user unlocked it in current session
+          day = math.max(localStage, (day - missedDays).clamp(1, 90));
+
+          // Persist decayed values
+          await prefs.setInt('learning_day_$userId', day);
+          await prefs.setInt('learning_streak_$userId', streak);
+
+          try {
+            await _supabase.from('profile').update({
+              'learning_day': day,
+              'learning_stage': day,
+              'learning_points': pocketScore,
+              'learning_streak': streak,
+              'last_learning_date': now.toIso8601String(),
+            }).eq('user_id', userId);
+          } catch (_) {}
+        }
       }
 
       final currentStage = LearningMilestoneStage.getStageForDay(day);
 
       // Load today's tasks
-      final prefs = await SharedPreferences.getInstance();
       final todayKey = 'tasks_${userId}_${now.year}_${now.month}_${now.day}';
       final completedTaskIds = prefs.getStringList(todayKey) ?? [];
 
@@ -219,6 +228,61 @@ class Learning60DayService {
     return fetchProgress(userId);
   }
 
+  /// Completes a day's mission, records 200 pts / score, unlocks next day, and syncs
+  Future<UserLearningProgress> completeDailyMission({
+    required String userId,
+    required int day,
+    required int earnedPoints, // Up to 200 points
+    bool advanceToNextDay = true,
+  }) async {
+    final now = DateTime.now();
+    final prefs = await SharedPreferences.getInstance();
+    final todayStr = '${now.year}-${now.month}-${now.day}';
+
+    // 1. Mark current day completed
+    await prefs.setBool('pocket_day_${day}_completed', true);
+    await prefs.setString('learning_day_${day}_completed_date', todayStr);
+    await prefs.setInt('learning_day_${day}_completed_timestamp', now.millisecondsSinceEpoch);
+    await prefs.setInt('learning_last_completed_day', day);
+
+    // 2. Unlock next day
+    final nextDay = (day < 90) ? day + 1 : 90;
+    await prefs.setBool('pocket_day_${nextDay}_unlocked', true);
+
+    // 3. Fetch progress & increment points
+    await PocketFortressDefenseService.awardPoints(earnedPoints);
+    var progress = await fetchProgress(userId);
+    final newPoints = progress.totalPoints;
+    final newStreak = progress.streakDays + 1;
+    final targetDay = advanceToNextDay ? nextDay : progress.currentDay;
+    final stage = LearningMilestoneStage.getStageForDay(targetDay);
+
+    await prefs.setInt('learning_day_$userId', targetDay);
+    await prefs.setInt('pocket_learning_user_stage', targetDay);
+    await prefs.setInt('learning_points_$userId', newPoints);
+    await prefs.setInt('learning_streak_$userId', newStreak);
+
+    try {
+      await _supabase.from('profile').update({
+        'learning_day': targetDay,
+        'learning_stage': stage.stageNumber,
+        'learning_points': newPoints,
+        'learning_streak': newStreak,
+        'last_learning_date': now.toIso8601String(),
+      }).eq('user_id', userId);
+
+      await EnglishHubLevelGroupService.ensureUserInLevelGroup(
+        userLevel: targetDay,
+        userId: userId,
+        forceLevelMatch: true,
+      );
+    } catch (e) {
+      debugPrint('completeDailyMission sync error: $e');
+    }
+
+    return fetchProgress(userId);
+  }
+
   /// Sets a specific day for testing / fast-forwarding
   Future<void> jumpToDay(String userId, int targetDay) async {
     final prefs = await SharedPreferences.getInstance();
@@ -226,12 +290,24 @@ class Learning60DayService {
     final stage = LearningMilestoneStage.getStageForDay(clamped);
 
     await prefs.setInt('learning_day_$userId', clamped);
+    await prefs.setInt('pocket_learning_user_stage', clamped);
+    await prefs.setBool('pocket_day_${clamped}_unlocked', true);
+    await prefs.setBool('pocket_world_rules_accepted_v1', true);
+    await prefs.setString('last_learning_date', DateTime.now().toIso8601String());
+
     try {
       await _supabase.from('profile').update({
         'learning_day': clamped,
         'learning_stage': stage.stageNumber,
+        'last_learning_date': DateTime.now().toIso8601String(),
         'updated_at': DateTime.now().toIso8601String(),
       }).eq('user_id', userId);
+
+      await EnglishHubLevelGroupService.ensureUserInLevelGroup(
+        userLevel: clamped,
+        userId: userId,
+        forceLevelMatch: true,
+      );
     } catch (e) {
       debugPrint('jumpToDay error: $e');
     }

@@ -7,6 +7,7 @@ import 'learning_service.dart';
 import 'pocket_fortress_defense_service.dart';
 import 'pocket_defense_trap_modal.dart';
 import 'pocket_daily_mission_page.dart';
+import 'day90_master_certificate_dialog.dart';
 
 /// Interactive Sheet & Dashboard for the 90-Day English Transformation & Profile Palette System
 class Learning60DayDashboardSheet extends StatefulWidget {
@@ -755,11 +756,174 @@ class _Learning60DayDashboardSheetState extends State<Learning60DayDashboardShee
   }
 }
 
+/// 🌳 Helper Model for Progressive English Tree Growth Stages (Audio Requirement!)
+class EnglishTreeGrowthStage {
+  final String emoji;
+  final String treeName;
+  final String growthPhase;
+  final String taskFocus;
+  final Color accentColor;
+
+  const EnglishTreeGrowthStage({
+    required this.emoji,
+    required this.treeName,
+    required this.growthPhase,
+    required this.taskFocus,
+    required this.accentColor,
+  });
+
+  static EnglishTreeGrowthStage forDay(int day) {
+    if (day >= 90) {
+      return const EnglishTreeGrowthStage(
+        emoji: '🌟👑',
+        treeName: 'Golden Imperial Bodhi Tree',
+        growthPhase: 'C2 Grandmaster Eloquence • Full Bloom',
+        taskFocus: 'Sovereign Oratory & Jurisprudence',
+        accentColor: Color(0xFFFFD700),
+      );
+    } else if (day >= 71) {
+      return const EnglishTreeGrowthStage(
+        emoji: '🌴',
+        treeName: 'Mighty Royal Oak',
+        growthPhase: 'Imperial Canopy & Fruit Blooming',
+        taskFocus: 'Cross-Cultural High Diplomacy',
+        accentColor: Color(0xFFEC4899),
+      );
+    } else if (day >= 46) {
+      return const EnglishTreeGrowthStage(
+        emoji: '🌲',
+        treeName: 'Majestic Evergreen Pine',
+        growthPhase: 'Leadership Foliage Expansion',
+        taskFocus: 'Executive Oratory & Debate Cadence',
+        accentColor: Color(0xFFF59E0B),
+      );
+    } else if (day >= 21) {
+      return const EnglishTreeGrowthStage(
+        emoji: '🌳',
+        treeName: 'Young Flourishing Tree',
+        growthPhase: 'Firm Trunk & Branching Canopy',
+        taskFocus: 'Diplomatic Softeners & Registers',
+        accentColor: Color(0xFFA855F7),
+      );
+    } else if (day >= 8) {
+      return const EnglishTreeGrowthStage(
+        emoji: '🌿',
+        treeName: 'Branching Sapling',
+        growthPhase: 'Early Stems & Fresh Foliage',
+        taskFocus: 'Habit Anchor & Conversational Fluency',
+        accentColor: Color(0xFF38BDF8),
+      );
+    } else {
+      return const EnglishTreeGrowthStage(
+        emoji: '🌱',
+        treeName: 'Sprouting Seedling',
+        growthPhase: 'Root Formation & Native-Tongue Detachment',
+        taskFocus: 'Hesitation Elimination & Daily Drills',
+        accentColor: Color(0xFF10B981),
+      );
+    }
+  }
+}
+
+/// 📈 Mini Smooth Sparkline Curve showing English Growth across 90 Days
+class EnglishGrowthSparklinePainter extends CustomPainter {
+  final int currentDay;
+  final Color accentColor;
+
+  EnglishGrowthSparklinePainter({required this.currentDay, required this.accentColor});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (size.width <= 0 || size.height <= 0) return;
+
+    final basePaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.12)
+      ..strokeWidth = 1.4
+      ..style = PaintingStyle.stroke;
+
+    final progressPaint = Paint()
+      ..color = accentColor
+      ..strokeWidth = 2.0
+      ..style = PaintingStyle.stroke;
+
+    final fillPaint = Paint()
+      ..shader = LinearGradient(
+        colors: [accentColor.withValues(alpha: 0.22), accentColor.withValues(alpha: 0.0)],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height))
+      ..style = PaintingStyle.fill;
+
+    double getProgressY(double dayRatio) {
+      // Smooth S-curve trajectory
+      final curve = (dayRatio * dayRatio * (3 - 2 * dayRatio));
+      return size.height - (curve * (size.height - 6)) - 3;
+    }
+
+    final path = Path();
+    final fillPath = Path();
+
+    path.moveTo(0, getProgressY(0.01));
+    fillPath.moveTo(0, size.height);
+    fillPath.lineTo(0, getProgressY(0.01));
+
+    const steps = 30;
+    for (int i = 1; i <= steps; i++) {
+      final ratio = i / steps.toDouble();
+      final x = ratio * size.width;
+      final y = getProgressY(ratio);
+      path.lineTo(x, y);
+      fillPath.lineTo(x, y);
+    }
+    fillPath.lineTo(size.width, size.height);
+    fillPath.close();
+
+    canvas.drawPath(fillPath, fillPaint);
+    canvas.drawPath(path, basePaint);
+
+    // Active progress line up to current day
+    final curRatio = (currentDay / 90.0).clamp(0.01, 1.0);
+    final curX = curRatio * size.width;
+    final curY = getProgressY(curRatio);
+
+    final activePath = Path();
+    activePath.moveTo(0, getProgressY(0.01));
+    for (int i = 1; i <= steps; i++) {
+      final ratio = i / steps.toDouble();
+      if (ratio > curRatio) break;
+      final x = ratio * size.width;
+      final y = getProgressY(ratio);
+      activePath.lineTo(x, y);
+    }
+    activePath.lineTo(curX, curY);
+    canvas.drawPath(activePath, progressPaint);
+
+    // Glowing position marker dot
+    canvas.drawCircle(Offset(curX, curY), 5.0, Paint()..color = accentColor.withValues(alpha: 0.35));
+    canvas.drawCircle(Offset(curX, curY), 2.8, Paint()..color = Colors.white);
+    canvas.drawCircle(Offset(curX, curY), 1.6, Paint()..color = accentColor);
+  }
+
+  @override
+  bool shouldRepaint(covariant EnglishGrowthSparklinePainter oldDelegate) {
+    return oldDelegate.currentDay != currentDay || oldDelegate.accentColor != accentColor;
+  }
+}
+
 /// Compact Banner Card embedded directly inside MainProfileWidget
 class Learning60DayProfileCard extends StatefulWidget {
   final String userId;
+  final int? currentDay;
+  final String? userName;
+  final VoidCallback? onProgressUpdated;
 
-  const Learning60DayProfileCard({super.key, required this.userId});
+  const Learning60DayProfileCard({
+    super.key,
+    required this.userId,
+    this.currentDay,
+    this.userName,
+    this.onProgressUpdated,
+  });
 
   @override
   State<Learning60DayProfileCard> createState() => _Learning60DayProfileCardState();
@@ -775,9 +939,44 @@ class _Learning60DayProfileCardState extends State<Learning60DayProfileCard> {
     _fetch();
   }
 
+  @override
+  void didUpdateWidget(Learning60DayProfileCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.currentDay != widget.currentDay && widget.currentDay != null) {
+      if (_progress != null) {
+        setState(() {
+          _progress = _createOverriddenProgress(_progress!, widget.currentDay!);
+        });
+      }
+    }
+  }
+
+  UserLearningProgress _createOverriddenProgress(UserLearningProgress base, int day) {
+    return UserLearningProgress(
+      currentDay: day,
+      currentStage: day,
+      streakDays: base.streakDays,
+      totalPoints: base.totalPoints,
+      minutesPracticedToday: base.minutesPracticedToday,
+      targetDailyMinutes: base.targetDailyMinutes,
+      missedDaysCount: base.missedDaysCount,
+      hasInactivityWarning: base.hasInactivityWarning,
+      lastActiveDate: base.lastActiveDate,
+      todayTasks: base.todayTasks,
+    );
+  }
+
   Future<void> _fetch() async {
     final p = await Learning60DayService().fetchProgress(widget.userId);
-    if (mounted) setState(() { _progress = p; _isLoading = false; });
+    if (mounted) {
+      final effectiveProgress = widget.currentDay != null
+          ? _createOverriddenProgress(p, widget.currentDay!)
+          : p;
+      setState(() {
+        _progress = effectiveProgress;
+        _isLoading = false;
+      });
+    }
   }
 
   @override
@@ -787,7 +986,10 @@ class _Learning60DayProfileCardState extends State<Learning60DayProfileCard> {
     }
 
     final p = _progress!;
-    final stage = p.activeStage;
+    final effectiveDay = widget.currentDay ?? p.currentDay;
+    final stage = LearningMilestoneStage.getStageForDay(effectiveDay);
+    final treeStage = EnglishTreeGrowthStage.forDay(effectiveDay);
+    final progressPct = (effectiveDay / 90.0).clamp(0.0, 1.0);
 
     return GestureDetector(
       onTap: () => Learning60DayDashboardSheet.show(
@@ -797,85 +999,178 @@ class _Learning60DayProfileCardState extends State<Learning60DayProfileCard> {
       ),
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              stage.bgColor.withValues(alpha: 0.9),
-              const Color(0xFF161824),
+              stage.bgColor.withValues(alpha: 0.95),
+              const Color(0xFF111422),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: stage.buttonColor.withValues(alpha: 0.5), width: 1.2),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: stage.buttonColor.withValues(alpha: 0.6), width: 1.4),
           boxShadow: [
             BoxShadow(
-              color: stage.buttonColor.withValues(alpha: 0.15),
-              blurRadius: 10,
-              offset: const Offset(0, 2),
+              color: stage.buttonColor.withValues(alpha: 0.16),
+              blurRadius: 12,
+              offset: const Offset(0, 3),
             ),
           ],
         ),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: stage.buttonColor.withValues(alpha: 0.2),
-                shape: BoxShape.circle,
-              ),
-              child: Text(stage.emoji, style: const TextStyle(fontSize: 20)),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
+            // Row 1: Tree Growth & Stage Info
+            Row(
+              children: [
+                // 🌳 Dynamic Growing Tree Stage Emblem
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: treeStage.accentColor.withValues(alpha: 0.18),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: treeStage.accentColor.withValues(alpha: 0.5), width: 1),
+                  ),
+                  child: Text(treeStage.emoji, style: const TextStyle(fontSize: 20)),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Day ${p.currentDay}/90 • Stage ${stage.stageNumber}',
-                        style: GoogleFonts.outfit(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
-                        decoration: BoxDecoration(
-                          color: stage.buttonColor.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(6),
-                          border: Border.all(color: stage.buttonColor.withValues(alpha: 0.5), width: 0.8),
-                        ),
-                        child: Text(
-                          stage.stageName,
-                          style: GoogleFonts.outfit(
-                            color: stage.buttonColor,
-                            fontWeight: FontWeight.w900,
-                            fontSize: 9,
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              'Day $effectiveDay/90 • ${treeStage.treeName}',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                              ),
+                            ),
                           ),
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                            decoration: BoxDecoration(
+                              color: stage.buttonColor.withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(color: stage.buttonColor.withValues(alpha: 0.5), width: 0.8),
+                            ),
+                            child: Text(
+                              'Stage ${stage.stageNumber}',
+                              style: GoogleFonts.outfit(
+                                color: stage.buttonColor,
+                                fontWeight: FontWeight.w900,
+                                fontSize: 9,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '🌱 ${treeStage.growthPhase} • Focus: ${treeStage.taskFocus}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.inter(
+                          color: Colors.white70,
+                          fontSize: 10.5,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 6),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
-                    child: LinearProgressIndicator(
-                      value: p.progressPercentage,
-                      minHeight: 5,
-                      backgroundColor: Colors.white12,
-                      valueColor: AlwaysStoppedAnimation<Color>(stage.buttonColor),
-                    ),
-                  ),
-                ],
+                ),
+                const SizedBox(width: 6),
+                const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white54, size: 13),
+              ],
+            ),
+
+            const SizedBox(height: 10),
+
+            // 📈 Mini English Growth Sparkline Graph
+            Container(
+              height: 38,
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+              ),
+              child: CustomPaint(
+                painter: EnglishGrowthSparklinePainter(
+                  currentDay: effectiveDay,
+                  accentColor: treeStage.accentColor,
+                ),
               ),
             ),
-            const SizedBox(width: 8),
-            const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white54, size: 13),
+
+            const SizedBox(height: 8),
+
+            // Row 3: Progress Bar & Percentage Marker
+            Row(
+              children: [
+                Expanded(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: LinearProgressIndicator(
+                      value: progressPct,
+                      minHeight: 5,
+                      backgroundColor: Colors.white12,
+                      valueColor: AlwaysStoppedAnimation<Color>(treeStage.accentColor),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  '${(progressPct * 100).toInt()}% Fluency Curve',
+                  style: GoogleFonts.outfit(
+                    color: treeStage.accentColor,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
+
+            // 🎓 Day 90 Official Certificate Launcher (Visible when at Day 90)
+            if (effectiveDay >= 90) ...[
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                height: 38,
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFFD700),
+                    foregroundColor: Colors.black,
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  onPressed: () {
+                    Day90MasterCertificateDialog.show(
+                      context,
+                      userName: widget.userName ?? 'Sovereign Grandmaster',
+                      userDay: effectiveDay,
+                    );
+                  },
+                  icon: const Text('🎓', style: TextStyle(fontSize: 14)),
+                  label: Text(
+                    'VIEW & DOWNLOAD OFFICIAL C2 CERTIFICATE',
+                    style: GoogleFonts.outfit(
+                      fontWeight: FontWeight.w900,
+                      fontSize: 11,
+                      letterSpacing: 0.4,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       ),

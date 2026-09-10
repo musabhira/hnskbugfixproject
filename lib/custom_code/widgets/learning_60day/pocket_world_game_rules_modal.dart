@@ -3,73 +3,431 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// 📜 POCKET WORLD GAME RULES & 90-DAY SOVEREIGN CHARTER MODAL
-///
-/// Deeply explains:
-/// 1. 90-Day Guaranteed Transformation & Completion Certificate (100% Fluency Assurance).
-/// 2. The English Home & Home Defense Architecture (1 Day = 1 Defense Slot, Breaches, Loot).
-/// 3. Direct Attack Raids (No Doorbell Delay) & Pocket Robo Fallback 🤖.
-/// 4. 48-Hour Presidential Police Protection (Stationed Police Guards).
-/// 5. Daily 40–60 Minute Practice Rule (The Focus Timer Commitment).
-/// 6. Multi-Language Explanations (Malayalam, Tamil, Hindi, Telugu, Kannada, English).
-/// 7. Interactive Sovereign Pledge Acceptance.
-class PocketWorldGameRulesModal extends StatefulWidget {
+/// 📜 Model for Comprehensive Game Rules with Native Translations
+class PocketWorldRuleItem {
+  final String id;
+  final String icon;
+  final String category;
+  final Color themeColor;
+  final String titleEn;
+  final String descEn;
+  final Map<String, String> translationTitle;
+  final Map<String, String> translationDesc;
+  final String dailyTaskEn;
+  final String dailyTaskMl;
+  final String growthOutcomeEn;
+  final String growthOutcomeMl;
+
+  const PocketWorldRuleItem({
+    required this.id,
+    required this.icon,
+    required this.category,
+    required this.themeColor,
+    required this.titleEn,
+    required this.descEn,
+    required this.translationTitle,
+    required this.translationDesc,
+    this.dailyTaskEn = 'Complete daily interactive practice drills and vocabulary challenges.',
+    this.dailyTaskMl = 'ദിവസേനയുള്ള ഇംഗ്ലീഷ് പരിശീലന ടാസ്കുകൾ മുടങ്ങാതെ പൂർത്തിയാക്കുക.',
+    this.growthOutcomeEn = 'Builds natural spoken fluency, eliminates hesitation, and cements grammatical agility.',
+    this.growthOutcomeMl = 'സംസാരത്തിലുള്ള മടി പൂർണ്ണമായി മാറുകയും മാതൃഭാഷയിൽ ചിന്തിക്കാതെ ഇംഗ്ലീഷ് സംസാരിക്കാൻ സാധിക്കുകയും ചെയ്യുന്നു.',
+  });
+}
+
+/// Complete List of 12 Comprehensive Game Rules Implemented in the App
+final List<PocketWorldRuleItem> kPocketWorldMasterRulesList = [
+  const PocketWorldRuleItem(
+    id: 'rule_1_guarantee',
+    icon: '🏆',
+    category: 'Accreditation',
+    themeColor: Color(0xFFFFD700),
+    titleEn: '100% Fluency Assurance & Official Certificate',
+    descEn: 'Complete the 90-day progressive curriculum to unlock your official Certificate of Fluency Mastery. 100% confidence in professional speaking, grammar, and workplace English is guaranteed.',
+    translationTitle: {
+      'malayalam': '100% ഫ്ലുവെൻസി ഗ്യാരണ്ടിയും ഒഫീഷ്യൽ സർട്ടിഫിക്കറ്റും',
+      'tamil': '100% சரள ஆங்கில உத்தரவாதம் மற்றும் சான்றிதழ்',
+      'telugu': '100% ఆంగ్ల ప్రావీణ్య హామీ & అధికారిక సర్టిఫికెట్',
+      'kannada': '100% ಇಂಗ್ಲಿಷ್ ನಿರರ್ಗಳತೆ ಭರವಸೆ & ಅಧಿಕೃತ ಪ್ರಮಾಣಪತ್ರ',
+      'hindi': '100% धाराप्रवाह अंग्रेजी गारंटी और आधिकारिक प्रमाण पत्र',
+    },
+    translationDesc: {
+      'malayalam': '90 ദിവസത്തെ സമ്പൂർണ്ണ കരിക്കുലം പൂർത്തിയാക്കുന്ന ഓരോ പഠിതാവിനും ഒഫീഷ്യൽ അക്രഡിറ്റഡ് സർട്ടിഫിക്കറ്റ് ലഭിക്കും. സംസാരത്തിലും എഴുത്തിലും ഇന്റർവ്യൂവിലും 100% ആത്മവിശ്വാസം ഉറപ്പ്!',
+      'tamil': '90 நாள் பாடத்திட்டத்தை முடிக்கும் ஒவ்வொருவருக்கும் அதிகாரப்பூர்வ சான்றிதழ் வழங்கப்படும். நேர்காணல் மற்றும் அன்றாட பேச்சில் 100% தன்னம்பிக்கை உறுதி!',
+      'telugu': '90 రోజుల కోర్సు పూర్తి చేసిన ప్రతి ఒక్కరికీ అధికారిక సర్టిఫికెట్ లభిస్తుంది. ఇంగ్లీష్ మాట్లాడటంలో మరియు ఇంటర్వ్యూలలో 100% విశ్వాసం గ్యారెంటీ!',
+      'kannada': '90 ದಿನಗಳ ಕೋರ್ಸ್ ಪೂರ್ಣಗೊಳಿಸುವ ಪ್ರತಿಯೊಬ್ಬರಿಗೂ ಅಧಿಕೃತ ಪ್ರಮಾಣಪತ್ರ ದೊರೆಯುತ್ತದೆ. ಇಂಗ್ಲಿಷ್ ಮಾತನಾಡುವಲ್ಲಿ 100% ಆತ್ಮವಿಶ್ವಾಸ ಖಚಿತ!',
+      'hindi': '90 दिनों का संपूर्ण पाठ्यक्रम पूरा करने पर आधिकारिक प्रमाण पत्र प्राप्त होगा। अंग्रेजी बोलने और साक्षात्कारों में 100% आत्मविश्वास की गारंटी!',
+    },
+    dailyTaskEn: 'Complete 1 daily speaking synthesis and 1 audio speech shadowing drill.',
+    dailyTaskMl: 'ദിവസേനയുള്ള സ്പീക്കിംഗ് മിഷനുകളും ഓഡിയോ ഷാഡോയിംഗും പൂർത്തിയാക്കുക.',
+    growthOutcomeEn: 'Unlocks official CEFR C2 certificate; eliminates mother-tongue translation lag.',
+    growthOutcomeMl: 'ഒഫീഷ്യൽ C2 സർട്ടിഫിക്കറ്റ് ലഭിക്കുന്നു; മാതൃഭാഷയിൽ നിന്നുള്ള ചിന്താ താമസം ഇല്ലാതാവുന്നു.',
+  ),
+
+  const PocketWorldRuleItem(
+    id: 'rule_2_matrix',
+    icon: '📈',
+    category: 'Progression',
+    themeColor: Color(0xFF10B981),
+    titleEn: '4-Stage Progressive Transformation Matrix',
+    descEn: 'Stage 1 (Days 1–15: Foundation Agility), Stage 2 (Days 16–30: Conversational Register & Softeners), Stage 3 (Days 31–60: Executive Oratory & Interview Mastery), Stage 4 (Days 61–90: Sovereign Grandmaster Fluency).',
+    translationTitle: {
+      'malayalam': '4 ഘട്ടങ്ങളായുള്ള ഘടനാപരമായ വളർച്ച',
+      'tamil': '4 நிலைகள் கொண்ட படிப்படியான வளர்ச்சி',
+      'telugu': '4 దశల వారీ ప్రగతిశీల పరివర్తన',
+      'kannada': '4 ಹಂತಗಳ ಪ್ರಗತಿಪರ ಕಲಿಕಾ ಚೌಕಟ್ಟು',
+      'hindi': '4-चरणीय प्रगतिशील परिवर्तन मैट्रिक्स',
+    },
+    translationDesc: {
+      'malayalam': 'ഘട്ടം 1 (അടിസ്ഥാനം & മടി മാറ്റൽ), ഘട്ടം 2 (നയതന്ത്ര മൃദുഭാഷണം), ഘട്ടം 3 (എക്സിക്യൂട്ടീവ് സ്പീക്കിംഗ് & ഇന്റർവ്യൂ), ഘട്ടം 4 (ഗ്രാൻഡ് മാസ്റ്റർ പ്രൊഫഷണൽ ഇംഗ്ലീഷ്).',
+      'tamil': 'நிலை 1 (அடிப்படை & தயக்கம் போக்குதல்), நிலை 2 (மென்மையான உரையாடல்), நிலை 3 (தலைமைப் பேச்சு & நேர்காணல்), நிலை 4 (முழுமையான வல்லமை).',
+      'telugu': 'దశ 1 (పునాది & బెరుకు తొలగించుట), దశ 2 (వినయపూర్వక సంభాషణ), దశ 3 (నాయకత్వ శైలి & ఇంటర్వ్యూలు), దశ 4 (పరిపూర్ణ ప్రావీణ్యం).',
+      'kannada': 'ಹಂತ 1 (ಮೂಲತತ್ವ & ಸಂಕೋಚ ಮುಕ್ತಿ), ಹಂತ 2 (ರಾಜತಾಂತ್ರಿಕ ಭಾಷೆ), ಹಂತ 3 (ನಾಯಕತ್ವ ಇಂಗ್ಲಿಷ್), ಹಂತ 4 (ಸಂಪೂರ್ಣ ಪ್ರಾವೀಣ್ಯತೆ).',
+      'hindi': 'चरण 1 (बुनियाद और झिझक दूर करना), चरण 2 (संवाद शैली), चरण 3 (कार्यकारी भाषण और साक्षात्कार), चरण 4 (पूर्ण संप्रभु प्रवीणता)।',
+    },
+  ),
+
+  const PocketWorldRuleItem(
+    id: 'rule_3_home_defense',
+    icon: '🏠',
+    category: 'Home Defense',
+    themeColor: Color(0xFF8B5CF6),
+    titleEn: '1 Day = 1 Defense Slot (Your English Castle)',
+    descEn: 'Every player owns a virtual home on the street. 1 Day completed unlocks 1 Home Defense Slot. Day 1 has 1 trap; Day 90 commands 90 defense slots across 9 gates! You arm your house with real English questions you learned.',
+    translationTitle: {
+      'malayalam': '1 ദിവസം = 1 ഡിഫൻസ് സ്ലോട്ട് (നിങ്ങളുടെ ഇംഗ്ലീഷ് വീട്)',
+      'tamil': '1 நாள் = 1 பாதுகாப்பு ஸ்லாட் (உங்கள் ஆங்கில இல்லம்)',
+      'telugu': '1 రోజు = 1 రక్షణ స్లాట్ (మీ ఇంగ్లీష్ ఇల్లు)',
+      'kannada': '1 ದಿನ = 1 ರಕ್ಷಣಾ ಸ್ಲಾಟ್ (ನಿಮ್ಮ ಇಂಗ್ಲಿಷ್ ಮನೆ)',
+      'hindi': '1 दिन = 1 रक्षा स्लॉट (आपका अंग्रेजी घर)',
+    },
+    translationDesc: {
+      'malayalam': 'പോക്കറ്റ് വേൾഡിൽ എല്ലാവർക്കും സ്വന്തമായി വീടുണ്ട്. നിങ്ങൾ പഠിക്കുന്ന ഇംഗ്ലീഷ് ചോദ്യങ്ങളാണ് നിങ്ങളുടെ വീടിന്റെ കോട്ടമതിലുകൾ. ഡേ 90 എത്തുമ്പോൾ 9 ഗേറ്റുകളിലായി 90 ഡിഫൻസ് സ്ലോട്ടുകൾ ഉണ്ടാകും!',
+      'tamil': 'பாக்கெட் வேர்ல்டில் அனைவருக்கும் ஒரு வீடு உண்டு. நீங்கள் கற்கும் கேள்விகளே உங்கள் வீட்டின் பாதுகாப்புக் கோட்டைகள். நாள் 90-ல் 90 ஸ்லாட்டுகள் அமையும்!',
+      'telugu': 'పాకెట్ వరల్డ్‌లో ప్రతి ఒక్కరికీ ఒక ఇల్లు ఉంటుంది. మీరు నేర్చుకునే ప్రశ్నలే మీ ఇంటి రక్షణ గోడలు. 90వ రోజుకు 90 రక్షణ స్లాట్‌లు లభిస్తాయి!',
+      'kannada': 'ಪಾಕೆಟ್ ವರ್ಲ್ಡ್‌ನಲ್ಲಿ ಪ್ರತಿಯೊಬ್ಬರಿಗೂ ಮನೆಯಿದೆ. ನೀವು ಕಲಿಯುವ ಪ್ರಶ್ನೆಗಳೇ ನಿಮ್ಮ ಮನೆಯ ರಕ್ಷಣಾ ಗೋಡೆಗಳು. ಡೇ 90 ರಲ್ಲಿ 90 ರಕ್ಷಣಾ ಸ್ಲಾಟ್‌ಗಳು ಸಿದ್ಧವಾಗುತ್ತವೆ!',
+      'hindi': 'पॉकेट वर्ल्ड में हर किसी का अपना घर है। आपके द्वारा सीखे गए प्रश्न ही आपके घर की दीवारें हैं। 90वें दिन तक आपके पास 90 रक्षा स्लॉट होंगे!',
+    },
+  ),
+
+  const PocketWorldRuleItem(
+    id: 'rule_4_house_hp_coins',
+    icon: '🪙',
+    category: 'Home Defense',
+    themeColor: Color(0xFFF59E0B),
+    titleEn: 'House 100 HP & Vault Coins Loot',
+    descEn: 'Every home has 100 HP. If an attacker solves your defense traps and breaches your gate, they loot 45 coins from your vault. If the attacker fails, their raid is defeated and your vault remains secure.',
+    translationTitle: {
+      'malayalam': 'വീടിന്റെ 100 HP-യും നാണയ കൊള്ളയും',
+      'tamil': 'வீட்டின் 100 HP மற்றும் நாணயப் பாதுகாப்பு',
+      'telugu': 'ఇంటి 100 HP మరియు ఖజానా నాణేలు',
+      'kannada': 'ಮನೆಯ 100 HP ಮತ್ತು ನಾಣ್ಯಗಳ ಭದ್ರತೆ',
+      'hindi': 'घर का 100 HP और तिजोरी के सिक्के',
+    },
+    translationDesc: {
+      'malayalam': 'ഓരോ വീടിനും 100 HP ഉണ്ട്. ശത്രുക്കൾ നിങ്ങളുടെ ഡിഫൻസ് ചോദ്യങ്ങൾ ശരിയായി ഉത്തരം നൽകി ബ്രീച്ച് ചെയ്താൽ 45 കോയിൻ നഷ്ടപ്പെടും. ചോദ്യങ്ങളിൽ അവർ തോറ്റാൽ കോയിനുകൾ സുരക്ഷിതമായിരിക്കും!',
+      'tamil': 'ஒவ்வொரு வீட்டிற்கும் 100 HP உள்ளது. எதிரி உங்கள் கேள்விகளுக்கு சரியான விடையளித்து நுழைந்தால் 45 நாணயங்கள் பறிபோகும். தவறினால் உங்கள் நாணயங்கள் பாதுகாப்பாக இருக்கும்!',
+      'telugu': 'ప్రతి ఇంటికి 100 HP ఉంటుంది. శత్రువు మీ రక్షణ ప్రశ్నలను ఛేదిస్తే 45 నాణేలు కోల్పోతారు. వారు విఫలమైతే మీ నాణేలు సురక్షితం!',
+      'kannada': 'ಪ್ರತಿಯೊಂದು ಮನೆಗೂ 100 HP ಇರುತ್ತದೆ. ಶತ್ರುಗಳು ನಿಮ್ಮ ಪ್ರಶ್ನೆಗಳನ್ನು ಭೇದಿಸಿದರೆ 45 ನಾಣ್ಯಗಳನ್ನು ಕಳೆದುಕೊಳ್ಳುತ್ತೀರಿ. ಅವರು ಸೋತರೆ ನಿಮ್ಮ ನಾಣ್ಯಗಳು ಸುರಕ್ಷಿತ!',
+      'hindi': 'प्रत्येक घर में 100 HP होते हैं। यदि कोई हमलावर आपके जाल को भेदता है, तो 45 सिक्के कट जाएंगे। असफल होने पर आपकी तिजोरी सुरक्षित रहेगी!',
+    },
+  ),
+
+  const PocketWorldRuleItem(
+    id: 'rule_5_street_navigation',
+    icon: '⚔️',
+    category: 'Pocket Battle',
+    themeColor: Color(0xFFEF4444),
+    titleEn: 'Pocket World Street Navigation (Pocket Battle / Attack)',
+    descEn: 'All attack actions route directly to the Pocket World Street. View neighboring citadels along the boulevard, inspect their house tier and defenses, ring the doorbell, and engage in direct English battles.',
+    translationTitle: {
+      'malayalam': 'പോക്കറ്റ് വേൾഡ് തെരുവും അറ്റാക്കും (Pocket Battle)',
+      'tamil': 'பாக்கெட் வேர்ல்ட் வீதி மற்றும் நேரடித் தாக்குதல்',
+      'telugu': 'పాకెట్ వరల్డ్ వీధి మరియు ప్రత్యక్ష దాడి',
+      'kannada': 'ಪಾಕೆಟ್ ವರ್ಲ್ಡ್ ರಸ್ತೆ ಮತ್ತು ನೇರ ಆಕ್ರಮಣ',
+      'hindi': 'पॉकेट वर्ल्ड स्ट्रीट और सीधा हमला (Pocket Battle)',
+    },
+    translationDesc: {
+      'malayalam': 'എല്ലാ അറ്റാക്ക് ബട്ടണുകളും ഡയറക്റ്റ് പോക്കറ്റ് വേൾഡ് തെരുവിലേക്ക് പോകുന്നു. റോഡിലൂടെ നടന്ന് വീടുകൾ കാണുക, ശത്രുവിനെ തിരഞ്ഞെടുക്കുക, ഡോർബെല്ലടിച്ച് ഇംഗ്ലീഷ് ചോദ്യങ്ങൾ ജയിച്ച് ഗേറ്റ് തകർക്കുക!',
+      'tamil': 'அனைத்து தாக்குதல்களும் நேரடியாக பாக்கெட் வேர்ல்ட் வீதிக்குச் செல்லும். வீடுகளைப் பார்த்து, தேர்வு செய்து, மணியடித்து ஆங்கிலப் போரில் வெற்றி பெறுங்கள்!',
+      'telugu': 'అన్ని దాడి బటన్‌లు నేరుగా పాకెట్ వరల్డ్ వీధికి వెళ్తాయి. ఇళ్లను చూసి, ఎంచుకుని, డోర్‌బెల్ కొట్టి ఆంగ్ల ప్రశ్నలతో గెలవండి!',
+      'kannada': 'ಎಲ್ಲಾ ದಾಳಿಗಳು ನೇರವಾಗಿ ಪಾಕೆಟ್ ವರ್ಲ್ಡ್ ರಸ್ತೆಗೆ ಹೋಗುತ್ತವೆ. ಮನೆಗಳನ್ನು ನೋಡಿ, ಆಯ್ಕೆ ಮಾಡಿ, ಬೆಲ್ ಬಾರಿಸಿ ಇಂಗ್ಲಿಷ್ ಯುದ್ಧದಲ್ಲಿ ಗೆಲ್ಲಿರಿ!',
+      'hindi': 'सभी हमले सीधे पॉकेट वर्ल्ड स्ट्रीट पर जाते हैं। घरों को देखें, विरोधी चुनें, डोरबेल बजाएं और अंग्रेजी मुकाबले में जीत हासिल करें!',
+    },
+  ),
+
+  const PocketWorldRuleItem(
+    id: 'rule_6_matchmaking',
+    icon: '🎯',
+    category: 'Pocket Battle',
+    themeColor: Color(0xFF38BDF8),
+    titleEn: 'Target Matchmaking Rule (Higher Citadels Before Day 20)',
+    descEn: 'Attacks unlock at Level 4. Before Day 20 (Days 1–19), players cannot attack same-level peers; you must challenge tougher citadels (+1 to +3 levels higher) to stretch your vocabulary. Day 20+ unlocks open matchmaking.',
+    translationTitle: {
+      'malayalam': 'മാച്ച് മേക്കിംഗ് നിയമം (ഡേ 20-ന് മുമ്പ് ഉയർന്ന ലെവലുകൾ)',
+      'tamil': 'மேட்ச்மேக்கிங் விதி (நாள் 20-க்கு முன் உயர் நிலைகள்)',
+      'telugu': 'మ్యాచ్ మేకింగ్ నిబంధన (డే 20 కి ముందు పై స్థాయిలు)',
+      'kannada': 'ಹೊಂದಾಣಿಕೆ ನಿಯಮ (ದಿನ 20 ಕ್ಕಿಂತ ಮೊದಲು ಉನ್ನತ ಮಟ್ಟಗಳು)',
+      'hindi': 'मैचमेकिंग नियम (दिन 20 से पहले उच्च स्तर)',
+    },
+    translationDesc: {
+      'malayalam': 'അറ്റാക്ക് ലെവൽ 4-ൽ അൺലോക്കാകുന്നു. ഡേ 20-ന് മുമ്പ് നിങ്ങളെക്കാൾ ഉയർന്ന ലെവൽ വീടുകളെ മാത്രമേ അറ്റാക്ക് ചെയ്യാവൂ (+1 മുതൽ +3 ലെവലുകൾ വരെ). ഡേ 20-ന് ശേഷം ആരെയും തിരഞ്ഞെടുക്കാം.',
+      'tamil': 'லெவல் 4-ல் தாக்குதல் திறக்கப்படும். நாள் 20-க்கு முன் உங்களை விட உயர்ந்த (+1 முதல் +3) நிலைகளை மட்டுமே தாக்க முடியும். நாள் 20-க்கு பின் முழு சுதந்திரம்.',
+      'telugu': 'లెవల్ 4 లో దాడి అన్‌లాక్ అవుతుంది. డే 20 కంటే ముందు మీ కంటే పై స్థాయి (+1 నుండి +3) ఇళ్లపైనే దాడి చేయాలి. 20వ రోజు తర్వాత ఎవరినైనా ఎంచుకోవచ్చు.',
+      'kannada': 'ಲೆವೆಲ್ 4 ರಲ್ಲಿ ಆಕ್ರಮಣ ಅನ್‌ಲಾಕ್ ಆಗುತ್ತದೆ. ಡೇ 20 ಕ್ಕಿಂತ ಮೊದಲು ನಿಮ್ಮಗಿಂತ ಉನ್ನತ (+1 ರಿಂದ +3) ಮನೆಗಳನ್ನಷ್ಟೇ ಆಕ್ರಮಿಸಬೇಕು. ನಂತರ ಮುಕ್ತ ಆಯ್ಕೆ.',
+      'hindi': 'लेवल 4 पर हमला अनलॉक होता है। दिन 20 से पहले केवल अपने से उच्च (+1 से +3) स्तर के घरों पर ही हमला किया जा सकता है।',
+    },
+  ),
+
+  const PocketWorldRuleItem(
+    id: 'rule_7_pocket_robo',
+    icon: '🤖',
+    category: 'Pocket Battle',
+    themeColor: Color(0xFFEC4899),
+    titleEn: 'Pocket Robo 🤖 24/7 AI Citadel Fallback',
+    descEn: 'If no real peer is active in your target level bracket, Pocket Robo automatically steps in as an authentic AI home defender calibrated to your exact curriculum. Raids and coin rewards never stall!',
+    translationTitle: {
+      'malayalam': 'പോക്കറ്റ് റോബോ 🤖 24/7 AI കാവൽക്കാരൻ',
+      'tamil': 'பாக்கெட் ரோபோ 🤖 24/7 AI பாதுகாவலர்',
+      'telugu': 'పాకెట్ రోబో 🤖 24/7 AI రక్షకుడు',
+      'kannada': 'ಪಾಕೆಟ್ ರೋಬೋ 🤖 24/7 AI ರಕ್ಷಕ',
+      'hindi': 'पॉकेट रोबो 🤖 24/7 AI रक्षक',
+    },
+    translationDesc: {
+      'malayalam': 'നിങ്ങളുടെ ലെവലിൽ കളിക്കാൻ റിയൽ പ്ലെയേഴ്സ് ഇല്ലെങ്കിലും കളി നിന്നുപോകില്ല. പോക്കറ്റ് റോബോ കൃത്യമായ ചോദ്യങ്ങളുമായി വീടിന് കാവൽ നിൽക്കും. പ്രാക്ടീസും നാണയങ്ങളും 24 മണിക്കൂറും റെഡി!',
+      'tamil': 'உங்கள் லெவலில் வீரர்கள் இல்லாதபோதும், பாக்கெட் ரோபோ தானாகவே வந்து பாதுகாக்கும். பயிற்சிகளும் நாணயப் பரிசுகளும் எப்போதும் கிடைக்கும்!',
+      'telugu': 'మీ స్థాయిలో నిజమైన ఆటగాళ్ళు లేకపోయినా, పాకెట్ రోబో రక్షణగా నిలుస్తుంది. ప్రాక్టీస్ మరియు నాణేలు 24 గంటలూ అందుబాటులో ఉంటాయి!',
+      'kannada': 'ನಿಮ್ಮ ಮಟ್ಟದಲ್ಲಿ ನೈಜ ಆಟಗಾರರು ಇಲ್ಲದಿದ್ದರೂ, ಪಾಕೆಟ್ ರೋಬೋ ರಕ್ಷಣೆಗೆ ನಿಲ್ಲುತ್ತದೆ. ಅಭ್ಯಾಸ ಮತ್ತು ನಾಣ್ಯಗಳು ಯಾವಾಗಲೂ ಲಭ್ಯ!',
+      'hindi': 'आपके स्तर पर खिलाड़ी न होने पर भी पॉकेट रोबो स्वचालित रूप से उपस्थित होगा। अभ्यास और पुरस्कार कभी नहीं रुकेंगे!',
+    },
+  ),
+
+  const PocketWorldRuleItem(
+    id: 'rule_8_police_protection',
+    icon: '👮‍♂️',
+    category: 'President Guard',
+    themeColor: Color(0xFF00E5FF),
+    titleEn: '48-Hour Presidential Police Protection',
+    descEn: 'Once a home suffers a raid breach, a Police Cruiser with 2 armed officers stations outside for 48 hours. Rivals cannot raid or loot during this immunity window, granting full peace to study and rebuild.',
+    translationTitle: {
+      'malayalam': '48-മണിക്കൂർ പ്രസിഡൻഷ്യൽ പോലീസ് പ്രൊട്ടക്ഷൻ',
+      'tamil': '48 மணிநேர காவல் துறை பாதுகாப்பு',
+      'telugu': '48 గంటల పోలీసు రక్షణ కవచం',
+      'kannada': '48 ಗಂಟೆಗಳ ಅಧ್ಯಕ್ಷೀಯ ಪೊಲೀಸ್ ಭದ್ರತೆ',
+      'hindi': '48 घंटे की राष्ट्रपति पुलिस सुरक्षा',
+    },
+    translationDesc: {
+      'malayalam': 'ഒരു തവണ വീട് ബ്രീച്ച് ചെയ്യപ്പെട്ടാൽ ഉടൻ പോലീസ് ജീപ്പും 2 സായുധ പോലീസുകാരും 48 മണിക്കൂർ കാവൽ നിൽക്കും. ഈ സമയത്ത് ആരും നിങ്ങളെ അറ്റാക്ക് ചെയ്യില്ല. സമാധാനമായി പഠിച്ച് വീട് പുനർനിർമ്മിക്കാം!',
+      'tamil': 'வீடு தாக்கப்பட்டவுடன், 48 மணிநேரத்திற்கு காவல் துறை வாகனம் மற்றும் காவலர்கள் பாதுகாப்பு தருவர். யாரும் தாக்க முடியாது. நிம்மதியாகப் படித்து பலப்படுத்தலாம்!',
+      'telugu': 'ఇల్లు దాడికి గురైన వెంటనే, 48 గంటల పాటు పోలీసు జీపు మరియు సిబ్బంది రక్షణగా ఉంటారు. ఎవరూ దాడి చేయలేరు. ప్రశాంతంగా చదువుకోవచ్చు!',
+      'kannada': 'ಮನೆ ಭೇದಿಸಲ್ಪಟ್ಟಾಗ, 48 ಗಂಟೆಗಳ ಕಾಲ ಪೊಲೀಸ್ ಜೀಪ್ ಮತ್ತು ಸಶಸ್ತ್ರ ಸಿಬ್ಬಂದಿ ಭದ್ರತೆ ನೀಡುತ್ತಾರೆ. ಯಾರೂ ಆಕ್ರಮಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ. ನೆಮ್ಮದಿಯಿಂದ ಕಲಿಯಿರಿ!',
+      'hindi': 'घर पर हमला होने के बाद 48 घंटे के लिए पुलिस वाहन और सशस्त्र गार्ड सुरक्षा देते हैं। इस दौरान कोई हमला नहीं कर सकता।',
+    },
+  ),
+
+  const PocketWorldRuleItem(
+    id: 'rule_9_daily_timer',
+    icon: '⏱️',
+    category: 'Focus Habit',
+    themeColor: Color(0xFFF97316),
+    titleEn: 'Daily 40–60 Minute Active Learning Timer',
+    descEn: 'Fluency requires consistent neurological wiring. The timer records genuine practice inside the app (Reading, Speaking, Code English, Writing) and pauses automatically if backgrounded.',
+    translationTitle: {
+      'malayalam': 'ദിവസേനയുള്ള 40–60 മിനിറ്റ് ഫോക്കസ് ടൈമർ',
+      'tamil': 'தினசரி 40–60 நிமிட கவனக் கற்றல் டைமர்',
+      'telugu': 'రోజువారీ 40–60 నిమిషాల ఫోకస్ టైమర్',
+      'kannada': 'ದೈನಂದಿನ 40–60 ನಿಮಿಷಗಳ ಏಕಾಗ್ರತೆ ಟೈಮರ್',
+      'hindi': 'दैनिक 40–60 मिनट का अध्ययन टाइमर',
+    },
+    translationDesc: {
+      'malayalam': 'ഇംഗ്ലീഷ് മനസ്സിൽ ഉറയ്ക്കാൻ ദിവസവും 40 മുതൽ 60 മിനിറ്റ് വരെ ശ്രദ്ധയോടെ പഠിക്കണം. ആപ്പ് ബാക്ക്ഗ്രൗണ്ടിലേക്ക് പോയാൽ ടൈമർ തനിയെ പോസ് ആകും. സത്യസന്ധമായ പരിശീലനം മാത്രം!',
+      'tamil': 'ஆங்கிலம் முழுமையாக வசப்பட தினமும் 40-60 நிமிடங்கள் ஆப்பில் படிக்க வேண்டும். ஆப் பின்னணியில் சென்றால் டைமர் நிற்கும். உண்மையான பயிற்சி மட்டுமே கணக்கிடப்படும்!',
+      'telugu': 'ఆంగ్లంలో నైపుణ్యం సాధించడానికి రోజుకు 40-60 నిమిషాలు శ్రద్ధగా చదవాలి. యాప్ వెనుకకు వెళ్తే టైమర్ ఆగిపోతుంది. నిజాయితీ గల అభ్యాసమే లెక్కించబడుతుంది!',
+      'kannada': 'ಇಂಗ್ಲಿಷ್ ಸ್ಪಷ್ಟವಾಗಿ ಕರಗತವಾಗಲು ದಿನಕ್ಕೆ 40-60 ನಿಮಿಷ ಕಲಿಯಬೇಕು. ಆ್ಯಪ್ ಹಿನ್ನೆಲೆಗೆ ಹೋದರೆ ಟೈಮರ್ ನಿಲ್ಲುತ್ತದೆ. ನೈಜ ಅಭ್ಯಾಸಕ್ಕೆ ಮಾತ್ರ ಮಾನ್ಯತೆ!',
+      'hindi': 'धाराप्रवाह अंग्रेजी के लिए रोजाना 40 से 60 मिनट ऐप में ध्यानपूर्वक अभ्यास आवश्यक है। बैकग्राउंड में जाने पर टाइमर रुक जाता है।',
+    },
+  ),
+
+  const PocketWorldRuleItem(
+    id: 'rule_10_consistency',
+    icon: '🔥',
+    category: 'Focus Habit',
+    themeColor: Color(0xFFEF4444),
+    titleEn: 'Daily Consistency & Habit Anchor Rule',
+    descEn: 'Skipping daily missions triggers consistency demotion warnings and resets unanchored streaks. Studying daily maintains your flame streak, awards +50 bonus coins, and unlocks rare animal avatars.',
+    translationTitle: {
+      'malayalam': 'ദിവസേനയുള്ള സ്ഥിരതയും ഫ്ലേം സ്ട്രീക്കും',
+      'tamil': 'தினசரி விடாமுயற்சி மற்றும் ஸ்ட்ரீக் விதி',
+      'telugu': 'రోజువారీ స్థిరత్వం & ఫ్లేమ్ స్ట్రీక్ నియమం',
+      'kannada': 'ದೈನಂದಿನ ಸ್ಥಿರತೆ ಮತ್ತು ಸತತ ಕಲಿಕೆಯ ನಿಯಮ',
+      'hindi': 'दैनिक निरंतरता और स्ट्रीक नियम',
+    },
+    translationDesc: {
+      'malayalam': 'പഠനം മുടങ്ങിയാൽ റാങ്ക് താഴേക്ക് പോകും. എന്നാൽ ദിവസവും മുടങ്ങാതെ പഠിച്ചാൽ ഫ്ലേം സ്ട്രീക്കും ബോണസ് കോയിനുകളും അപൂർവ്വ ആനിമൽ അവതാറുകളും ലഭിക്കും!',
+      'tamil': 'பயிற்சியைத் தவறவிட்டால் நிலைகள் குறையும். தினமும் தொடர்ந்து படித்தால் ஸ்ட்ரீக், கூடுதல் நாணயங்கள் மற்றும் புதிய அவதாரங்கள் கிடைக்கும்!',
+      'telugu': 'రోజువారీ ప్రాక్టీస్ తప్పితే ర్యాంక్ పడిపోతుంది. క్రమం తప్పకుండా చదివితే ఫ్లేమ్ స్ట్రీక్, బోనస్ నాణేలు మరియు కొత్త అవతారాలు లభిస్తాయి!',
+      'kannada': 'ಕಲಿಕೆ ತಪ್ಪಿದರೆ ಶ್ರೇಣಿ ಕುಸಿಯುತ್ತದೆ. ನಿತ್ಯವೂ ಕಲಿತರೆ ಸತತ ಸ್ಟ್ರೀಕ್, ಬೋನಸ್ ನಾಣ್ಯಗಳು ಮತ್ತು ವಿಶಿಷ್ಟ ಅವತಾರಗಳು ನಿಮ್ಮದಾಗುತ್ತವೆ!',
+      'hindi': 'अभ्यास छोड़ने पर रैंक कम हो सकती है। लेकिन रोज पढ़ने पर स्ट्रीक, बोनस सिक्के और दुर्लभ अवतार अनलॉक होंगे!',
+    },
+  ),
+
+  const PocketWorldRuleItem(
+    id: 'rule_11_lifelines',
+    icon: '💖',
+    category: 'Pocket Battle',
+    themeColor: Color(0xFFFF69B4),
+    titleEn: 'Attacker Combat Lifelines (Level 25+ Raids)',
+    descEn: 'Challenging high-level citadels (Level 25+) grants combat lifelines to forgive mistakes or reset the timer, ensuring dedicated learners have a strategic second chance to conquer tough defenses.',
+    translationTitle: {
+      'malayalam': 'കോംബാറ്റ് ലൈഫ്‌ലൈനുകൾ (ലെവൽ 25+ അറ്റാക്കുകൾ)',
+      'tamil': 'தாக்குதல் லைஃப்லைன்கள் (லெவல் 25+ போர்கள்)',
+      'telugu': 'పోరాట లైఫ్‌లైన్‌లు (లెవల్ 25+ దాడులు)',
+      'kannada': 'ಯುದ್ಧ ಲೈಫ್‌ಲೈನ್‌ಗಳು (ಲೆವೆಲ್ 25+ ಆಕ್ರಮಣಗಳು)',
+      'hindi': 'हमलावर लाइफलाइन (लेवल 25+ हमले)',
+    },
+    translationDesc: {
+      'malayalam': 'ഉയർന്ന ലെവൽ വീടുകളെ അറ്റാക്ക് ചെയ്യുമ്പോൾ (ലെവൽ 25+) തെറ്റ് വന്നാൽ രക്ഷപ്പെടാൻ ലൈഫ്‌ലൈനുകൾ സഹായിക്കും. ടൈമർ റീസെറ്റ് ചെയ്യാനും ഇത് അവസരം തരുന്നു!',
+      'tamil': 'உயர் நிலை வீடுகளைத் தாக்கும்போது (லெவல் 25+) தவறுகளை மன்னிக்கவும், டைமரை மீட்டமைக்கவும் லைஃப்லைன்கள் கைகொடுக்கும்!',
+      'telugu': 'ఉన్నత స్థాయి ఇళ్లపై దాడి చేసేటప్పుడు (లెవల్ 25+) తప్పులను సరిదిద్దుకోవడానికి మరియు టైమర్ రీసెట్ చేయడానికి లైఫ్‌లైన్‌లు ఉపయోగపడతాయి!',
+      'kannada': 'ಉನ್ನತ ಮಟ್ಟದ ಮನೆಗಳನ್ನು ಆಕ್ರಮಿಸುವಾಗ (ಲೆವೆಲ್ 25+) ತಪ್ಪುಗಳನ್ನು ಸರಿಪಡಿಸಲು ಮತ್ತು ಟೈಮರ್ ಮರುಹೊಂದಿಸಲು ಲೈಫ್‌ಲೈನ್‌ಗಳು ನೆರವಾಗುತ್ತವೆ!',
+      'hindi': 'उच्च स्तर के घरों पर हमले के दौरान (लेवल 25+) गलतियों से बचने और टाइमर को रीसेट करने के लिए लाइफलाइन मिलती हैं!',
+    },
+  ),
+
+  const PocketWorldRuleItem(
+    id: 'rule_12_anti_cheat',
+    icon: '📞',
+    category: 'Integrity',
+    themeColor: Color(0xFF6366F1),
+    titleEn: 'President Call Anti-Cheat & Quality Audit',
+    descEn: 'If a neighbor equips abusive, nonsensical, or grammatically broken defense questions, report them directly via President Call for instant audit, trap purging, and integrity penalties.',
+    translationTitle: {
+      'malayalam': 'പ്രസിഡന്റ് കോൾ ആന്റി-ചീറ്റ് സിസ്റ്റം',
+      'tamil': 'பிரசிடென்ட் கால் தரக்கட்டுப்பாட்டு வசதி',
+      'telugu': 'ప్రెసిడెంట్ కాల్ మోసాల నిరోధక వ్యవస్థ',
+      'kannada': 'ಅಧ್ಯಕ್ಷೀಯ ಕಾಲ್ ಗುಣಮಟ್ಟ ಪರಿಶೀಲನೆ ವ್ಯವಸ್ಥೆ',
+      'hindi': 'प्रेसिडेंट कॉल धोखाधड़ी निवारण प्रणाली',
+    },
+    translationDesc: {
+      'malayalam': 'ആരെങ്കിലും അർത്ഥമില്ലാത്തതോ തെറ്റായതോ ആയ ചോദ്യങ്ങൾ വെച്ചാൽ "President Call" വഴി ഉടൻ റിപ്പോർട്ട് ചെയ്യാം. നിയമവിരുദ്ധ ചോദ്യങ്ങൾ ഉടനടി നീക്കം ചെയ്യപ്പെടും.',
+      'tamil': 'யாராவது தவறான அல்லது தரம் குறைந்த கேள்விகளை வைத்தால் "President Call" மூலம் புகார் செய்யலாம். போலி கேள்விகள் உடனே அகற்றப்படும்.',
+      'telugu': 'ఎవరైనా అసమంజసమైన లేదా తప్పుడు ప్రశ్నలను పెడితే "President Call" ద్వారా వెంటనే నివేదించవచ్చు. అలాంటివి వెంటనే తొలగించబడతాయి.',
+      'kannada': 'ಯಾರಾದರೂ ತಪ್ಪಾದ ಅಥವಾ ಅನುಚಿತ ಪ್ರಶ್ನೆಗಳನ್ನು ಇಟ್ಟರೆ "President Call" ಮೂಲಕ ವರದಿ ಮಾಡಬಹುದು. ನಿಯಮಬಾಹಿರ ಪ್ರಶ್ನೆಗಳನ್ನು ತೆಗೆದುಹಾಕಲಾಗುತ್ತದೆ.',
+      'hindi': 'यदि कोई अनुचित या गलत प्रश्न रखता है, तो "President Call" द्वारा तुरंत रिपोर्ट करें। फर्जी प्रश्नों को हटा दिया जाएगा।',
+    },
+  ),
+];
+
+/// 📜 Interactive Pocket World Rules & Sovereign Pledge Page
+/// Full screen page allowing user to filter translations (Malayalam, Tamil, Telugu, Kannada, Hindi, English),
+/// interactively check/tick all rules, and officially accept the 90-day learning charter!
+class PocketWorldGameRulesPage extends StatefulWidget {
   final int currentDay;
   final VoidCallback? onPledgeAccepted;
 
-  const PocketWorldGameRulesModal({
+  const PocketWorldGameRulesPage({
     super.key,
     this.currentDay = 1,
     this.onPledgeAccepted,
   });
 
-  static Future<bool?> show(BuildContext context, {int currentDay = 1, VoidCallback? onPledgeAccepted}) {
-    return showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => PocketWorldGameRulesModal(
-        currentDay: currentDay,
-        onPledgeAccepted: onPledgeAccepted,
+  /// Open full page route
+  static Future<bool?> open(
+    BuildContext context, {
+    int currentDay = 1,
+    VoidCallback? onPledgeAccepted,
+  }) {
+    return Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (ctx) => PocketWorldGameRulesPage(
+          currentDay: currentDay,
+          onPledgeAccepted: onPledgeAccepted,
+        ),
       ),
     );
   }
 
+  /// Backward compatible show helper that pushes the full page
+  static Future<bool?> show(
+    BuildContext context, {
+    int currentDay = 1,
+    VoidCallback? onPledgeAccepted,
+  }) =>
+      open(context,
+          currentDay: currentDay, onPledgeAccepted: onPledgeAccepted);
+
   @override
-  State<PocketWorldGameRulesModal> createState() => _PocketWorldGameRulesModalState();
+  State<PocketWorldGameRulesPage> createState() =>
+      _PocketWorldGameRulesPageState();
 }
 
-class _PocketWorldGameRulesModalState extends State<PocketWorldGameRulesModal>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+/// Backwards compatibility alias
+typedef PocketWorldGameRulesModal = PocketWorldGameRulesPage;
+
+class _PocketWorldGameRulesPageState extends State<PocketWorldGameRulesPage> {
   String _selectedLanguage = 'malayalam';
   bool _hasAcceptedPledge = false;
   bool _isSavingPledge = false;
+  final Set<String> _checkedRuleIds = {};
 
   static const String kPrefsRulesAccepted = 'pocket_world_rules_accepted_v1';
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 5, vsync: this);
     _loadPledgeStatus();
   }
 
   Future<void> _loadPledgeStatus() async {
     final prefs = await SharedPreferences.getInstance();
+    final accepted = prefs.getBool(kPrefsRulesAccepted) ?? false;
     if (mounted) {
       setState(() {
-        _hasAcceptedPledge = prefs.getBool(kPrefsRulesAccepted) ?? false;
+        _hasAcceptedPledge = accepted;
+        // If already accepted, tick all rules by default
+        if (accepted) {
+          _checkedRuleIds.addAll(kPocketWorldMasterRulesList.map((r) => r.id));
+        }
       });
     }
   }
 
+  void _toggleRule(String id) {
+    HapticFeedback.selectionClick();
+    setState(() {
+      if (_checkedRuleIds.contains(id)) {
+        _checkedRuleIds.remove(id);
+      } else {
+        _checkedRuleIds.add(id);
+      }
+    });
+  }
+
+  void _selectAllRules() {
+    HapticFeedback.mediumImpact();
+    setState(() {
+      if (_checkedRuleIds.length == kPocketWorldMasterRulesList.length) {
+        _checkedRuleIds.clear();
+      } else {
+        _checkedRuleIds.addAll(kPocketWorldMasterRulesList.map((r) => r.id));
+      }
+    });
+  }
+
   Future<void> _acceptPledge() async {
+    // If not all rules checked, tick all and proceed
+    if (_checkedRuleIds.length < kPocketWorldMasterRulesList.length) {
+      setState(() {
+        _checkedRuleIds.addAll(kPocketWorldMasterRulesList.map((r) => r.id));
+      });
+    }
+
     setState(() => _isSavingPledge = true);
     HapticFeedback.mediumImpact();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(kPrefsRulesAccepted, true);
     await Future.delayed(const Duration(milliseconds: 300));
+
     if (mounted) {
       setState(() {
         _hasAcceptedPledge = true;
@@ -87,8 +445,12 @@ class _PocketWorldGameRulesModalState extends State<PocketWorldGameRulesModal>
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  'Sovereign Pledge Accepted! Your 90-Day English journey is locked in.',
-                  style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                  'Sovereign Rules Accepted! 90-Day English Journey Locked In 🎉',
+                  style: GoogleFonts.outfit(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
                 ),
               ),
             ],
@@ -100,630 +462,609 @@ class _PocketWorldGameRulesModalState extends State<PocketWorldGameRulesModal>
   }
 
   @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.90,
-      decoration: const BoxDecoration(
-        color: Color(0xFF0F172A),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-        border: Border(top: BorderSide(color: Color(0xFF38BDF8), width: 2)),
-      ),
-      child: Column(
-        children: [
-          // Drag handle
-          Center(
-            child: Container(
-              margin: const EdgeInsets.only(top: 10, bottom: 6),
-              width: 44,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.25),
-                borderRadius: BorderRadius.circular(2),
+    final totalRules = kPocketWorldMasterRulesList.length;
+    final checkedCount = _checkedRuleIds.length;
+    final allChecked = checkedCount == totalRules;
+
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        Navigator.pop(context, _hasAcceptedPledge);
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFF070B14),
+        appBar: AppBar(
+          backgroundColor: const Color(0xFF0F172A),
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                color: Colors.white, size: 20),
+            onPressed: () => Navigator.pop(context, _hasAcceptedPledge),
+          ),
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Text('📜 ', style: TextStyle(fontSize: 18)),
+                  Text(
+                    'Pocket World Rules',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
               ),
+              Text(
+                '90-Day Sovereign English Charter',
+                style: GoogleFonts.inter(
+                  color: const Color(0xFF38BDF8),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.close_rounded, color: Colors.white70, size: 22),
+              onPressed: () => Navigator.pop(context, _hasAcceptedPledge),
+            ),
+            const SizedBox(width: 6),
+          ],
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(1),
+            child: Container(
+              color: Colors.white10,
+              height: 1,
             ),
           ),
-
-          // Header
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF38BDF8).withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.4)),
+        ),
+        body: SafeArea(
+          child: Column(
+            children: [
+              // Top Overview Banner
+              Container(
+                margin: const EdgeInsets.fromLTRB(14, 12, 14, 4),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-                  child: const Text('📜', style: TextStyle(fontSize: 22)),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                      color: const Color(0xFF38BDF8).withValues(alpha: 0.3)),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'POCKET WORLD RULES & PLEDGE',
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF38BDF8).withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Text('🏛️', style: TextStyle(fontSize: 22)),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Sovereign English Constitution',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            '12 Fair Play & Learning Guarantees. Tick to pledge and begin Day 1.',
+                            style: GoogleFonts.inter(
+                              color: Colors.white70,
+                              fontSize: 11,
+                              height: 1.3,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // 🌐 Horizontal Language Category Selector (Audio Directive: right below Sovereign English Constitution)
+              _buildHorizontalLanguageCategoryBar(),
+
+              // Action Bar: Checklist Progress & Tick All Button
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E293B),
+                  borderRadius: BorderRadius.circular(12),
+                  border:
+                      Border.all(color: Colors.white.withValues(alpha: 0.08)),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          allChecked
+                              ? Icons.check_circle_rounded
+                              : Icons.checklist_rounded,
+                          color: allChecked
+                              ? const Color(0xFF10B981)
+                              : const Color(0xFF38BDF8),
+                          size: 18,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          '$checkedCount of $totalRules Rules Checked',
+                          style: GoogleFonts.outfit(
+                            color: allChecked
+                                ? const Color(0xFF10B981)
+                                : Colors.white,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                    InkWell(
+                      onTap: _selectAllRules,
+                      borderRadius: BorderRadius.circular(8),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: allChecked
+                              ? Colors.white.withValues(alpha: 0.08)
+                              : const Color(0xFF38BDF8).withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: allChecked
+                                ? Colors.white24
+                                : const Color(0xFF38BDF8).withValues(alpha: 0.4),
+                          ),
+                        ),
+                        child: Text(
+                          allChecked ? 'Deselect All' : 'Tick All Rules ✓',
+                          style: GoogleFonts.outfit(
+                            color: allChecked
+                                ? Colors.white70
+                                : const Color(0xFF38BDF8),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Scrollable Rules List with Checkboxes & Translations
+              Expanded(
+                child: ListView.builder(
+                  padding: const EdgeInsets.fromLTRB(14, 4, 14, 16),
+                  physics: const BouncingScrollPhysics(),
+                  itemCount: kPocketWorldMasterRulesList.length,
+                  itemBuilder: (context, index) {
+                    final rule = kPocketWorldMasterRulesList[index];
+                    final isChecked = _checkedRuleIds.contains(rule.id);
+                    return _buildRuleCard(rule, isChecked);
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+        bottomNavigationBar:
+            _buildPledgeAgreementFooter(allChecked, checkedCount, totalRules),
+      ),
+    );
+  }
+
+  static const List<Map<String, String>> _kRuleLanguages = [
+    {'code': 'malayalam', 'label': 'മലയാളം', 'flag': '🌴'},
+    {'code': 'english', 'label': 'English', 'flag': '🇬🇧'},
+    {'code': 'tamil', 'label': 'தமிழ்', 'flag': '🪔'},
+    {'code': 'hindi', 'label': 'हिन्दी', 'flag': '🇮🇳'},
+    {'code': 'telugu', 'label': 'తెలుగు', 'flag': '🌸'},
+    {'code': 'kannada', 'label': 'ಕನ್ನಡ', 'flag': '🏛️'},
+  ];
+
+  Widget _buildHorizontalLanguageCategoryBar() {
+    return Container(
+      height: 42,
+      margin: const EdgeInsets.fromLTRB(0, 4, 0, 4),
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        physics: const BouncingScrollPhysics(),
+        itemCount: _kRuleLanguages.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        itemBuilder: (context, index) {
+          final lang = _kRuleLanguages[index];
+          final code = lang['code']!;
+          final isSelected = _selectedLanguage == code;
+
+          return GestureDetector(
+            onTap: () {
+              HapticFeedback.selectionClick();
+              setState(() => _selectedLanguage = code);
+            },
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeOutCubic,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+              decoration: BoxDecoration(
+                gradient: isSelected
+                    ? const LinearGradient(
+                        colors: [Color(0xFF0284C7), Color(0xFF0EA5E9)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      )
+                    : const LinearGradient(
+                        colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: isSelected
+                      ? const Color(0xFF38BDF8)
+                      : Colors.white.withValues(alpha: 0.12),
+                  width: isSelected ? 1.6 : 1.0,
+                ),
+                boxShadow: [
+                  if (isSelected)
+                    BoxShadow(
+                      color: const Color(0xFF0284C7).withValues(alpha: 0.45),
+                      blurRadius: 10,
+                      offset: const Offset(0, 2),
+                    ),
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    lang['flag']!,
+                    style: const TextStyle(fontSize: 13),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    lang['label']!,
+                    style: GoogleFonts.outfit(
+                      color: isSelected ? Colors.white : Colors.white70,
+                      fontSize: 12.5,
+                      fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                    ),
+                  ),
+                  if (isSelected) ...[
+                    const SizedBox(width: 5),
+                    const Icon(
+                      Icons.check_circle_rounded,
+                      color: Colors.white,
+                      size: 13,
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildRuleCard(PocketWorldRuleItem rule, bool isChecked) {
+    final translatedTitle = _selectedLanguage == 'english'
+        ? null
+        : rule.translationTitle[_selectedLanguage];
+    final translatedDesc = _selectedLanguage == 'english'
+        ? null
+        : rule.translationDesc[_selectedLanguage];
+
+    String langLabel;
+    switch (_selectedLanguage) {
+      case 'malayalam':
+        langLabel = 'മലയാളം അർത്ഥം';
+        break;
+      case 'tamil':
+        langLabel = 'தமிழ் விளக்கம்';
+        break;
+      case 'telugu':
+        langLabel = 'తెలుగు వివరణ';
+        break;
+      case 'kannada':
+        langLabel = 'ಕನ್ನಡ ವಿವರಣೆ';
+        break;
+      case 'hindi':
+        langLabel = 'हिन्दी अर्थ';
+        break;
+      default:
+        langLabel = 'Meaning';
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: isChecked
+            ? const Color(0xFF1E293B)
+            : const Color(0xFF161E2E).withValues(alpha: 0.8),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isChecked
+              ? rule.themeColor.withValues(alpha: 0.45)
+              : Colors.white.withValues(alpha: 0.08),
+          width: isChecked ? 1.4 : 0.8,
+        ),
+        boxShadow: isChecked
+            ? [
+                BoxShadow(
+                  color: rule.themeColor.withValues(alpha: 0.08),
+                  blurRadius: 10,
+                  offset: const Offset(0, 2),
+                )
+              ]
+            : null,
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _toggleRule(rule.id),
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Top Row: Category Pill + Rule Icon + Checkbox
+                Row(
+                  children: [
+                    Text(rule.icon, style: const TextStyle(fontSize: 20)),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 7, vertical: 2.5),
+                      decoration: BoxDecoration(
+                        color: rule.themeColor.withValues(alpha: 0.16),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        rule.category.toUpperCase(),
                         style: GoogleFonts.outfit(
-                          color: Colors.white,
-                          fontSize: 16,
+                          color: rule.themeColor,
+                          fontSize: 9.5,
                           fontWeight: FontWeight.w900,
                           letterSpacing: 0.5,
                         ),
                       ),
-                      Text(
-                        '90-Day English Mastery & Home Defense Charter',
-                        style: GoogleFonts.inter(
-                          color: const Color(0xFF94A3B8),
-                          fontSize: 11,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                // Language Dropdown
-                _buildLanguageSelector(),
-              ],
-            ),
-          ),
-
-          // Tab Bar
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1E293B),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: TabBar(
-              controller: _tabController,
-              isScrollable: true,
-              tabAlignment: TabAlignment.start,
-              indicatorSize: TabBarIndicatorSize.tab,
-              indicator: BoxDecoration(
-                color: const Color(0xFF38BDF8),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              labelColor: const Color(0xFF0F172A),
-              unselectedLabelColor: const Color(0xFF94A3B8),
-              labelStyle: GoogleFonts.outfit(fontWeight: FontWeight.w800, fontSize: 11.5),
-              unselectedLabelStyle: GoogleFonts.outfit(fontWeight: FontWeight.w600, fontSize: 11.5),
-              tabs: const [
-                Tab(icon: Text('🎓'), text: '90-Day Guarantee'),
-                Tab(icon: Text('🏠'), text: 'Home Defense'),
-                Tab(icon: Text('⚔️'), text: 'Raids & Robo'),
-                Tab(icon: Text('👮‍♂️'), text: 'President Guard'),
-                Tab(icon: Text('⏱️'), text: '40-60m Immersion'),
-              ],
-            ),
-          ),
-
-          // Tab Content
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                _build90DayGuaranteeTab(),
-                _buildHomeDefenseTab(),
-                _buildRaidsAndRoboTab(),
-                _buildPresidentGuardTab(),
-                _buildTimeCommitmentTab(),
-              ],
-            ),
-          ),
-
-          // Bottom Pledge Agreement Bar
-          _buildPledgeAgreementFooter(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLanguageSelector() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1E293B),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.3)),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: _selectedLanguage,
-          dropdownColor: const Color(0xFF1E293B),
-          icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF38BDF8), size: 16),
-          style: GoogleFonts.inter(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
-          onChanged: (val) {
-            if (val != null) setState(() => _selectedLanguage = val);
-          },
-          items: const [
-            DropdownMenuItem(value: 'malayalam', child: Text('മലയാളം')),
-            DropdownMenuItem(value: 'english', child: Text('English')),
-            DropdownMenuItem(value: 'tamil', child: Text('தமிழ்')),
-            DropdownMenuItem(value: 'hindi', child: Text('हिन्दी')),
-            DropdownMenuItem(value: 'telugu', child: Text('తెలుగు')),
-            DropdownMenuItem(value: 'kannada', child: Text('ಕನ್ನಡ')),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // TAB 1: 90-Day Guarantee & Certificate
-  Widget _build90DayGuaranteeTab() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildHeroBanner(
-            badge: '100% FLUENCY ASSURANCE',
-            title: _selectedLanguage == 'malayalam'
-                ? '90 ദിവസം കൊണ്ട് പ്രൊഫഷണൽ ഇംഗ്ലീഷ് ഗ്യാരണ്ടി'
-                : '100% Guaranteed Professional English Fluency in 90 Days',
-            subtitle: _selectedLanguage == 'malayalam'
-                ? '90 ദിവസത്തെ സമ്പൂർണ്ണ കരിക്കുലം പൂർത്തിയാക്കുന്ന ഓരോ പഠിതാവിനും ഒഫീഷ്യൽ സർട്ടിഫിക്കറ്റ് ലഭിക്കും. സംസാരത്തിലും എഴുത്തിലും 100% ആത്മവിശ്വാസം!'
-                : 'Complete the 90-day progressive curriculum to unlock your official Certificate of Fluency Mastery. Professional speaking, grammar, and writing guaranteed.',
-            icon: '🏆',
-            color: const Color(0xFFFFD700),
-          ),
-          const SizedBox(height: 14),
-
-          _buildSectionHeader('📈 4-Stage Progressive Transformation Matrix', const Color(0xFF38BDF8)),
-          _buildProgressionStep(
-            stage: 'STAGE 1 (Days 1–15)',
-            tier: 'Foundation & Conversational Agility',
-            desc: _selectedLanguage == 'malayalam'
-                ? 'അടിസ്ഥാന വാക്യഘടന, ദിനചര്യകൾ, സംസാരിക്കാനുള്ള മടി മാറ്റൽ, 150 പുതിയ ഹൈ-ഇംപാക്ട് വാക്കുകൾ.'
-                : 'Core S-V-O syntax, daily routines, breaking hesitation, 150 high-frequency spoken vocabulary words.',
-            color: const Color(0xFF10B981),
-            icon: '🌱',
-          ),
-          _buildProgressionStep(
-            stage: 'STAGE 2 (Days 16–30)',
-            tier: 'Nuanced Register & Polite Diplomacy',
-            desc: _selectedLanguage == 'malayalam'
-                ? 'നയതന്ത്ര മൃദുഭാഷണം (Softeners), Cleft Sentences, മിക്സഡ് കണ്ടീഷണലുകൾ, ശ്രോതാക്കളെ ആകർഷിക്കുന്ന സംസാരം.'
-                : 'Diplomatic softeners, cleft sentences, mixed conditionals, persuasive conversational flow.',
-            color: const Color(0xFF3B82F6),
-            icon: '⚔️',
-          ),
-          _buildProgressionStep(
-            stage: 'STAGE 3 (Days 31–60)',
-            tier: 'Executive Spotlight & Leadership Oratory',
-            desc: _selectedLanguage == 'malayalam'
-                ? 'ഇന്റർവ്യൂ മാസ്റ്ററി (STAR ടെക്നിക്ക്), മീറ്റിംഗ് പ്രസന്റേഷൻ, നെഗറ്റീവ് ഇൻവേർഷൻ, തെറ്റ് കണ്ടെത്താനുള്ള കഴിവ്.'
-                : 'Job interview mastery (STAR method), executive meetings, negative inversion, deep error detection.',
-            color: const Color(0xFF8B5CF6),
-            icon: '👑',
-          ),
-          _buildProgressionStep(
-            stage: 'STAGE 4 (Days 61–90)',
-            tier: 'Grandmaster Celestial & Global Eloquence',
-            desc: _selectedLanguage == 'malayalam'
-                ? 'ഉന്നത ഭരണതന്ത്ര വാഗ്മിത്വം, പോളിസി ചർച്ചകൾ, പ്രൊഫഷണൽ ഇംഗ്ലീഷ് സമ്പൂർണ്ണ സിദ്ധിയും ഒഫീഷ്യൽ സർട്ടിഫിക്കറ്റും!'
-                : 'Sovereign diplomacy, constitutional jurisprudence, native executive presence + Accredited Day 90 Certificate!',
-            color: const Color(0xFFFFD700),
-            icon: '🐉',
-          ),
-        ],
-      ),
-    );
-  }
-
-  // TAB 2: Home Defense Concept
-  Widget _buildHomeDefenseTab() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildHeroBanner(
-            badge: 'POCKET WORLD SANCTUARY',
-            title: _selectedLanguage == 'malayalam'
-                ? 'എന്താണ് നിങ്ങളുടെ ഇംഗ്ലീഷ് വീട്? (Home Defense)'
-                : 'What is Your English Home & Home Defense?',
-            subtitle: _selectedLanguage == 'malayalam'
-                ? 'പോക്കറ്റ് വേൾഡിൽ ഓരോ പഠിതാവിനും സ്വന്തമായി ഒരു വീടുണ്ട്. നിങ്ങൾ പഠിക്കുന്ന ഇംഗ്ലീഷ് ചോദ്യങ്ങളാണ് നിങ്ങളുടെ വീടിന്റെ കോട്ടമതിലുകൾ!'
-                : 'In Pocket World, every learner owns a virtual home on the street. Your English skills are your castle walls!',
-            icon: '🏠',
-            color: const Color(0xFF8B5CF6),
-          ),
-          const SizedBox(height: 14),
-
-          _buildRuleCard(
-            title: '1 Day = 1 Defense Slot (ഹോം ഡിഫൻസ് സ്ലോട്ടുകൾ)',
-            desc: _selectedLanguage == 'malayalam'
-                ? 'Day 1 ൽ 1 ഡിഫൻസ് സ്ലോട്ട്. Day 10 ൽ 10 എണ്ണം. Day 90 ൽ 90 സ്ലോട്ടുകൾ (9 ഗേറ്റുകൾ)! ഓരോ ദിവസത്തെയും പാഠം വെച്ച് നിങ്ങൾ സ്വന്തം വീടിന് കാവലൊരുക്കുന്നു.'
-                : 'Day 1 = 1 slot. Day 10 = 10 slots. Day 90 = 90 slots across 9 challenge gates! You arm your house with authentic English questions you learned.',
-            icon: '🛡️',
-          ),
-          _buildRuleCard(
-            title: 'House HP & Vault Coins (ആരോഗ്യവും നാണയങ്ങളും)',
-            desc: _selectedLanguage == 'malayalam'
-                ? 'ഓരോ വീടിനും 100 HP ഉണ്ട്. റൈഡർമാർ നിങ്ങളുടെ ഡിഫൻസ് ചോദ്യങ്ങൾ ശരിയായി ഉത്തരം നൽകി ബ്രീച്ച് ചെയ്താൽ 45 കോയിൻ നഷ്ടപ്പെടും. ചോദ്യങ്ങൾ പരാജയപ്പെട്ടാൽ അവർക്ക് നാശം!'
-                : 'Every home has 100 HP. If an attacker solves your defense traps, they breach your vault for 45 coins. If they fail, their raid ends in defeat!',
-            icon: '🪙',
-          ),
-          _buildRuleCard(
-            title: 'No Complex Academic Jargon (ലളിതമായ പേര്)',
-            desc: _selectedLanguage == 'malayalam'
-                ? '"Citadel Defense Shield" പോലുള്ള കഠിനമായ വാക്കുകൾ മാറ്റി എല്ലാവർക്കും പെട്ടെന്ന് മനസ്സിലാകുന്ന "Home Defense" എന്ന് മാറ്റിയിരിക്കുന്നു.'
-                : 'Confusing terms like "Citadel Defense Shield" are replaced with simple, crystal-clear "Home Defense" for effortless understanding.',
-            icon: '✨',
-          ),
-        ],
-      ),
-    );
-  }
-
-  // TAB 3: Direct Raids & Pocket Robo
-  Widget _buildRaidsAndRoboTab() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildHeroBanner(
-            badge: 'NO DOORBELL • DIRECT BATTLES',
-            title: _selectedLanguage == 'malayalam'
-                ? 'ഡയറക്റ്റ് അറ്റാക്കും പോക്കറ്റ് റോബോയും 🤖'
-                : 'Direct Raids & Pocket Robo AI Fallback 🤖',
-            subtitle: _selectedLanguage == 'malayalam'
-                ? 'ബെല്ലടിക്കേണ്ട ആവശ്യമില്ല, നേരിട്ട് അറ്റാക്ക് ചെയ്യുക! നിങ്ങൾ ഉയർന്ന ലെവലിൽ എത്തുമ്പോൾ ശത്രുക്കൾ ഇല്ലെങ്കിൽ പോക്കറ്റ് റോബോ വരും!'
-                : 'No doorbell delays. Direct action raids in the Battle Arena. If no peers exist at your level, Pocket Robo defends automatically!',
-            icon: '⚔️',
-            color: const Color(0xFFEF4444),
-          ),
-          const SizedBox(height: 14),
-
-          _buildRuleCard(
-            title: 'Direct Attack (ഡോർബെൽ ഇല്ലാതെ നേരിട്ട് അറ്റാക്ക്)',
-            desc: _selectedLanguage == 'malayalam'
-                ? 'വീട്ടിലേക്ക് നോക്കുക, അറ്റാക്ക് ബട്ടൺ ക്ലിക്ക് ചെയ്യുക. ബാറ്റിൽ അരീനയിൽ അവരുടെ ചോദ്യങ്ങൾ തോൽപ്പിച്ച് നാണയങ്ങൾ പിടിച്ചെടുക്കുക!'
-                : 'Tap Attack on any neighbor. Step into the Battle Arena, conquer their defense traps, and claim vault loot!',
-            icon: '⚡',
-          ),
-          _buildRuleCard(
-            title: 'Pocket Robo 🤖 (പോക്കറ്റ് റോബോ കാവൽക്കാരൻ)',
-            desc: _selectedLanguage == 'malayalam'
-                ? 'നിങ്ങൾ ലെവൽ 18, 40, 60 ഒക്കെ എത്തുമ്പോൾ ആ ലെവലിൽ റിയൽ പ്ലെയേഴ്സ് ഇല്ലെങ്കിലും കളി നിന്നുപോകില്ല. പോക്കറ്റ് റോബോ ശരിയായ ലെവൽ ചോദ്യങ്ങളുമായി റെഡിയായി നിൽക്കും!'
-                : 'When you advance to high levels where few human players exist, Pocket Robo automatically generates authentic level-matched challenges so progress never stops!',
-            icon: '🤖',
-          ),
-          _buildRuleCard(
-            title: 'Daily Attack Limit (ദിവസം 2 അറ്റാക്ക് മാത്രം)',
-            desc: _selectedLanguage == 'malayalam'
-                ? 'പഠനത്തിന് പ്രാധാന്യം നൽകാൻ ദിവസം പരമാവധി 2 അറ്റാക്കുകൾ മാത്രമേ അനുവദിക്കൂ. ഓരോ അറ്റാക്കും ഉയർന്ന ചിന്താശേഷി ആവശ്യപ്പെടുന്നു.'
-                : 'Maximum 2 attacks per day to guarantee focused, quality learning over mindless spamming.',
-            icon: '🎯',
-          ),
-        ],
-      ),
-    );
-  }
-
-  // TAB 4: 48-Hour Presidential Police Protection
-  Widget _buildPresidentGuardTab() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildHeroBanner(
-            badge: 'SECURITY ASSURANCE',
-            title: _selectedLanguage == 'malayalam'
-                ? '48-മണിക്കൂർ പ്രസിഡൻഷ്യൽ പോലീസ് പ്രൊട്ടക്ഷൻ 👮‍♂️'
-                : '48-Hour Presidential Police Protection 👮‍♂️',
-            subtitle: _selectedLanguage == 'malayalam'
-                ? 'ഒരു തവണ വീട് ബ്രീച്ച് ചെയ്യപ്പെട്ടാൽ ഉടൻ പോലീസ് കാവൽ നിലവിൽ വരും. 48 മണിക്കൂർ ആരും നിങ്ങളെ അറ്റാക്ക് ചെയ്യില്ല!'
-                : 'Once your home is breached in a raid, it enters 48-hour Presidential Immunity with stationed police guards so you can rebuild in peace.',
-            icon: '👮‍♂️',
-            color: const Color(0xFF38BDF8),
-          ),
-          const SizedBox(height: 14),
-
-          _buildRuleCard(
-            title: 'Stationed Police Guards (പോലീസ് കാവൽ)',
-            desc: _selectedLanguage == 'malayalam'
-                ? 'ബ്രീച്ച് ചെയ്യപ്പെട്ട വീട്ടിൽ പോലീസ് കാവൽക്കാരുടെ ചിഹ്നം തെളിയും. മറ്റ് പ്ലെയേഴ്സിന് ആ വീട് അറ്റാക്ക് ചെയ്യാൻ കഴിയില്ല.'
-                : 'A prominent Presidential Guard barrier appears on the house. Rivals cannot raid or loot while protection is active.',
-            icon: '🛡️',
-          ),
-          _buildRuleCard(
-            title: 'Peaceful Recovery Period (സുരക്ഷിതമായി പുനർനിർമ്മിക്കുക)',
-            desc: _selectedLanguage == 'malayalam'
-                ? 'തുടരെത്തുടരെ അറ്റാക്ക് ചെയ്യപ്പെട്ട് നാണയങ്ങൾ നഷ്ടപ്പെടില്ല. 48 മണിക്കൂറിനുള്ളിൽ നിങ്ങളുടെ ചുമരുകൾ നന്നാക്കാനും പുതിയ ചോദ്യങ്ങൾ സ്ഥാപിക്കാനും സമയം ലഭിക്കും.'
-                : 'Prevents repeated farming. You have full 48 hours to study daily lessons, repair your walls, and arm new traps without fear.',
-            icon: '🕊️',
-          ),
-          _buildRuleCard(
-            title: 'President Call Anti-Cheat (പ്രസിഡന്റ് റിപ്പോർട്ടിംഗ്)',
-            desc: _selectedLanguage == 'malayalam'
-                ? 'ആരെങ്കിലും മോശം വാക്കുകളോ നിലവാരമില്ലാത്ത തെറ്റായ ചോദ്യങ്ങളോ സ്ഥാപിച്ചാൽ "President Call" വഴി റിപ്പോർട്ട് ചെയ്യാം. നിയമനടപടികൾ ഉടൻ ഉണ്ടാകും.'
-                : 'Encounter offensive or nonsense defense questions? Report them via President Call for instant review and penalties.',
-            icon: '📞',
-          ),
-        ],
-      ),
-    );
-  }
-
-  // TAB 5: 40-60 Minute Immersion Commitment
-  Widget _buildTimeCommitmentTab() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildHeroBanner(
-            badge: 'DAILY FOCUS PROTOCOL',
-            title: _selectedLanguage == 'malayalam'
-                ? 'എന്തിനാണ് ഡെയിലി 40–60 മിനിറ്റ് ടൈമർ? ⏱️'
-                : 'Why the Daily 40–60 Minute Study Timer? ⏱️',
-            subtitle: _selectedLanguage == 'malayalam'
-                ? 'ഇംഗ്ലീഷ് മനസ്സിൽ ഉറയ്ക്കണമെങ്കിൽ ദിവസേന 40 മുതൽ 60 മിനിറ്റ് വരെ ശ്രദ്ധയോടെയുള്ള പരിശീലനം അത്യന്താപേക്ഷിതമാണ്. ഇത് വെറുമൊരു ഗെയിമല്ല, വിദ്യാഭ്യാസമാണ്!'
-                : 'Fluency requires consistent daily cognitive immersion. Spending 40 to 60 minutes daily ensures irreversible neurological language wiring.',
-            icon: '⏱️',
-            color: const Color(0xFFF59E0B),
-          ),
-          const SizedBox(height: 14),
-
-          _buildRuleCard(
-            title: 'Automatic Focus Timer (ഫോക്കസ് ടൈമർ പ്രവർത്തനം)',
-            desc: _selectedLanguage == 'malayalam'
-                ? 'നിങ്ങൾ ആപ്പിൽ പഠിക്കുമ്പോൾ ടൈമർ തനിയെ സമയം കണക്കാക്കും. ബാക്ക്ഗ്രൗണ്ടിലേക്ക് പോയാൽ ടൈമർ തനിയെ പോസ് ആകും. സത്യസന്ധമായ പരിശീലനം മാത്രം!'
-                : 'The timer runs only while you are actively learning inside the app. Backgrounding pauses the timer automatically to ensure genuine practice.',
-            icon: '⏳',
-          ),
-          _buildRuleCard(
-            title: 'Multi-Skill Daily Habit (വായന, എഴുത്ത്, സംസാരം)',
-            desc: _selectedLanguage == 'malayalam'
-                ? '• 📚 റീഡിങ് ലൈബ്രറി: കഥകളും കവിതകളും വായിക്കുക\n• 🗣️ സ്പീക്കിംഗ്: ഡ്യുവൽ വോയിസ് പ്രാക്ടീസ്\n• ⚡ കോഡ് ഇംഗ്ലീഷ്: ഫോർമുലകൾ വെച്ച് വ്യാകരണം ഓർക്കുക\n• ✍️ റൈറ്റിംഗ്: സ്വന്തം ചിന്തകൾ ഇംഗ്ലീഷിൽ കുറിക്കുക'
-                : '• 📚 Reading Library: Books, stories, poems\n• 🗣️ Speaking: AI Voice duels & roleplays\n• ⚡ Code English: Grammar formula mnemonics\n• ✍️ Writing: Daily reflective sentences',
-            icon: '📖',
-          ),
-          _buildRuleCard(
-            title: 'Reward for 40-60 Min Completion (പ്രതിഫലം)',
-            desc: _selectedLanguage == 'malayalam'
-                ? 'ദിവസേന ടാർഗെറ്റ് തികയ്ക്കുമ്പോൾ +50 ബോണസ് കോയിനുകളും സ്ട്രീക്ക് പോയിന്റുകളും ലഭിക്കും. 90 ദിവസവും പൂർത്തിയാക്കാൻ ഇത് നിങ്ങളെ സഹായിക്കും!'
-                : 'Completing your 40-60 min daily target awards +50 Bonus Coins and keeps your sovereign streak alive toward the Day 90 Certificate!',
-            icon: '💎',
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Helper widgets
-  Widget _buildHeroBanner({
-    required String badge,
-    required String title,
-    required String subtitle,
-    required String icon,
-    required Color color,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [color.withValues(alpha: 0.20), color.withValues(alpha: 0.05)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: color.withValues(alpha: 0.4), width: 1.2),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.25),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Text(icon, style: const TextStyle(fontSize: 28)),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.3),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    badge,
-                    style: GoogleFonts.outfit(
-                      color: color,
-                      fontWeight: FontWeight.w900,
-                      fontSize: 10,
-                      letterSpacing: 0.5,
                     ),
-                  ),
+                    const Spacer(),
+                    // Interactive Checkbox
+                    GestureDetector(
+                      onTap: () => _toggleRule(rule.id),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        width: 24,
+                        height: 24,
+                        decoration: BoxDecoration(
+                          color: isChecked
+                              ? const Color(0xFF10B981)
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(7),
+                          border: Border.all(
+                            color: isChecked
+                                ? const Color(0xFF10B981)
+                                : Colors.white38,
+                            width: 1.8,
+                          ),
+                        ),
+                        child: isChecked
+                            ? const Icon(Icons.check,
+                                color: Colors.white, size: 16)
+                            : null,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 6),
+
+                const SizedBox(height: 8),
+
+                // Primary Rule Title (English)
                 Text(
-                  title,
+                  rule.titleEn,
                   style: GoogleFonts.outfit(
                     color: Colors.white,
-                    fontSize: 15,
+                    fontSize: 14,
                     fontWeight: FontWeight.w800,
-                    height: 1.2,
+                    height: 1.25,
                   ),
                 ),
+
                 const SizedBox(height: 4),
+
+                // Primary Rule Description (English)
                 Text(
-                  subtitle,
+                  rule.descEn,
                   style: GoogleFonts.inter(
                     color: const Color(0xFFCBD5E1),
                     fontSize: 11.5,
                     height: 1.35,
                   ),
                 ),
+
+                // Native Translation Section (When not English)
+                if (translatedDesc != null) ...[
+                  const SizedBox(height: 10),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: rule.themeColor.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: rule.themeColor.withValues(alpha: 0.22),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text('🌐', style: const TextStyle(fontSize: 11)),
+                            const SizedBox(width: 4),
+                            Text(
+                              langLabel,
+                              style: GoogleFonts.outfit(
+                                color: rule.themeColor,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (translatedTitle != null) ...[
+                          const SizedBox(height: 3),
+                          Text(
+                            translatedTitle,
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                        const SizedBox(height: 3),
+                        Text(
+                          translatedDesc,
+                          style: GoogleFonts.inter(
+                            color: const Color(0xFFE2E8F0),
+                            fontSize: 11,
+                            height: 1.35,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+
+                // 🎯 Daily Mission Task
+                Container(
+                  margin: const EdgeInsets.only(top: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0F172A),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: rule.themeColor.withValues(alpha: 0.35)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Text('🎯', style: TextStyle(fontSize: 12)),
+                          const SizedBox(width: 5),
+                          Text(
+                            _selectedLanguage == 'malayalam'
+                                ? 'പ്രതിദിന ദൗത്യം (Daily Task)'
+                                : 'Daily Mission Task',
+                            style: GoogleFonts.outfit(
+                              color: rule.themeColor,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 10.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        _selectedLanguage == 'malayalam' ? rule.dailyTaskMl : rule.dailyTaskEn,
+                        style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 11,
+                          height: 1.3,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // 🚀 Linguistic Growth Outcome
+                Container(
+                  margin: const EdgeInsets.only(top: 6),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF064E3B).withValues(alpha: 0.35),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.4)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Text('🚀', style: TextStyle(fontSize: 12)),
+                          const SizedBox(width: 5),
+                          Text(
+                            _selectedLanguage == 'malayalam'
+                                ? 'ഭാഷാ വളർച്ചയും നേട്ടവും (Growth Outcome)'
+                                : 'Linguistic Growth Outcome',
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFF34D399),
+                              fontWeight: FontWeight.w900,
+                              fontSize: 10.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        _selectedLanguage == 'malayalam' ? rule.growthOutcomeMl : rule.growthOutcomeEn,
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFFE2E8F0),
+                          fontSize: 11,
+                          height: 1.3,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSectionHeader(String title, Color color) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10, top: 4),
-      child: Text(
-        title,
-        style: GoogleFonts.outfit(
-          color: color,
-          fontSize: 13.5,
-          fontWeight: FontWeight.w800,
-          letterSpacing: 0.5,
         ),
       ),
     );
   }
 
-  Widget _buildProgressionStep({
-    required String stage,
-    required String tier,
-    required String desc,
-    required Color color,
-    required String icon,
-  }) {
+  Widget _buildPledgeAgreementFooter(
+      bool allChecked, int checkedCount, int totalRules) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1E293B),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: color.withValues(alpha: 0.35)),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Text(icon, style: const TextStyle(fontSize: 18)),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Text(
-                      stage,
-                      style: GoogleFonts.outfit(
-                        color: color,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        '• $tier',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.inter(
-                          color: Colors.white,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  desc,
-                  style: GoogleFonts.inter(
-                    color: const Color(0xFF94A3B8),
-                    fontSize: 11,
-                    height: 1.35,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRuleCard({
-    required String title,
-    required String desc,
-    required String icon,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1E293B),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(icon, style: const TextStyle(fontSize: 20)),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: GoogleFonts.outfit(
-                    color: Colors.white,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  desc,
-                  style: GoogleFonts.inter(
-                    color: const Color(0xFF94A3B8),
-                    fontSize: 11,
-                    height: 1.35,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPledgeAgreementFooter() {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
       decoration: const BoxDecoration(
         color: Color(0xFF0F172A),
         border: Border(top: BorderSide(color: Color(0xFF1E293B), width: 1.5)),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
+      child: SafeArea(
+        top: false,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
           if (_hasAcceptedPledge)
             Container(
               margin: const EdgeInsets.only(bottom: 8),
@@ -731,15 +1072,17 @@ class _PocketWorldGameRulesModalState extends State<PocketWorldGameRulesModal>
               decoration: BoxDecoration(
                 color: const Color(0xFF10B981).withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.4)),
+                border: Border.all(
+                    color: const Color(0xFF10B981).withValues(alpha: 0.4)),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.verified, color: Color(0xFF10B981), size: 16),
+                  const Icon(Icons.verified,
+                      color: Color(0xFF10B981), size: 16),
                   const SizedBox(width: 6),
                   Text(
-                    'You have accepted the 90-Day Sovereign English Pledge',
+                    'You have officially verified & accepted all rules',
                     style: GoogleFonts.inter(
                       color: const Color(0xFF10B981),
                       fontSize: 11.5,
@@ -755,17 +1098,12 @@ class _PocketWorldGameRulesModalState extends State<PocketWorldGameRulesModal>
             child: ElevatedButton(
               onPressed: _isSavingPledge ? null : _acceptPledge,
               style: ElevatedButton.styleFrom(
-                backgroundColor: _hasAcceptedPledge
-                    ? const Color(0xFF1E293B)
-                    : const Color(0xFF10B981),
-                foregroundColor: Colors.white,
+                backgroundColor: allChecked || _hasAcceptedPledge
+                    ? const Color(0xFF10B981)
+                    : const Color(0xFF38BDF8),
+                foregroundColor: Colors.black,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
-                  side: BorderSide(
-                    color: _hasAcceptedPledge
-                        ? const Color(0xFF10B981).withValues(alpha: 0.6)
-                        : Colors.transparent,
-                  ),
                 ),
                 elevation: 0,
               ),
@@ -773,22 +1111,25 @@ class _PocketWorldGameRulesModalState extends State<PocketWorldGameRulesModal>
                   ? const SizedBox(
                       width: 20,
                       height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: Colors.black),
                     )
                   : Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          _hasAcceptedPledge ? '✓' : '📜',
+                          allChecked || _hasAcceptedPledge ? '✓' : '📜',
                           style: const TextStyle(fontSize: 16),
                         ),
                         const SizedBox(width: 8),
                         Text(
                           _hasAcceptedPledge
                               ? 'RE-AFFIRM SOVEREIGN PLEDGE'
-                              : 'I ACCEPT THE 90-DAY PLEDGE & RULES',
+                              : (allChecked
+                                  ? 'I ACCEPT ALL 12 RULES & PLEDGE'
+                                  : 'TICK ALL & ACCEPT ($checkedCount/$totalRules)'),
                           style: GoogleFonts.outfit(
-                            fontSize: 13,
+                            fontSize: 12.5,
                             fontWeight: FontWeight.w900,
                             letterSpacing: 0.5,
                           ),
@@ -798,6 +1139,7 @@ class _PocketWorldGameRulesModalState extends State<PocketWorldGameRulesModal>
             ),
           ),
         ],
+      ),
       ),
     );
   }
