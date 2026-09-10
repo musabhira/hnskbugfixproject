@@ -260,8 +260,11 @@ class _CareerAdventureGamePageState extends State<CareerAdventureGamePage>
       if (_combo > _bestCombo) _bestCombo = _combo;
 
       int earned = challenge.xpReward;
-      if (_combo >= 3) earned += 15;
-      else if (_combo >= 2) earned += 10;
+      if (_combo >= 3) {
+        earned += 15;
+      } else if (_combo >= 2) {
+        earned += 10;
+      }
       _scoreXp += earned;
 
       _playerAnim = PlayerAnimationState.celebrating;
@@ -1097,8 +1100,11 @@ class _CareerAdventureGamePageState extends State<CareerAdventureGamePage>
   Widget _buildLevelCompleteOverlay() {
     final accuracy = _totalAttempts > 0 ? ((_correctCount / _totalAttempts) * 100).round() : 100;
     int stars = 1;
-    if (accuracy >= 85 && _lives >= 2) stars = 3;
-    else if (accuracy >= 70) stars = 2;
+    if (accuracy >= 85 && _lives >= 2) {
+      stars = 3;
+    } else if (accuracy >= 70) {
+      stars = 2;
+    }
 
     return Container(
       color: Colors.black.withValues(alpha: 0.82),

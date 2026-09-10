@@ -7,7 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'adventure_models.dart';
 import 'city_navigator_models.dart';
 
-/// 🏙️ Level 2: City Navigator 2D Mobile Game Screen
+/// 🏙️ Level 2: City Navigator – Metro Pursuit 2D Mobile Game Screen
 class CityNavigatorGamePage extends StatefulWidget {
   final AdventureLevelData levelData;
   final ValueChanged<int>? onCompleted;
@@ -34,11 +34,12 @@ class _CityNavigatorGamePageState extends State<CityNavigatorGamePage>
 
   // Player State
   double _playerX = 140.0;
-  double _playerY = 285.0; // on the main road
+  double _playerY = 285.0; // on the main boulevard
   PlayerFacing _playerFacing = PlayerFacing.right;
   PlayerAnimationState _playerAnim = PlayerAnimationState.idle;
   double _playerWalkCycle = 0.0;
   Offset? _targetWaypoint;
+  bool _isDashing = false;
 
   // Virtual Joystick
   double _joystickDx = 0.0;
@@ -53,12 +54,13 @@ class _CityNavigatorGamePageState extends State<CityNavigatorGamePage>
   int _bestCombo = 0;
   int _correctCount = 0;
   int _totalAttempts = 0;
-  int _wrongTurnCount = 0;
   bool _isLevelFinished = false;
 
-  // Navigation Direction Warning Toast
-  String? _directionWarning;
-  Timer? _directionWarningTimer;
+  // Collectible street tokens
+  late final List<StreetToken> _streetTokens;
+  String? _floatingPickupText;
+  Offset? _floatingPickupPos;
+  Timer? _floatingTextTimer;
 
   // Active Challenge Modal State
   bool _isChallengeModalOpen = false;
@@ -70,26 +72,31 @@ class _CityNavigatorGamePageState extends State<CityNavigatorGamePage>
   List<String> _builtRouteTiles = [];
   List<String> _availableRouteTiles = [];
 
-  // Timed Navigation (Challenge 8: 60 seconds)
+  // Timed Navigation (Challenge 8: 15s)
   Timer? _timedCountdown;
-  int _timeRemainingSeconds = 60;
+  int _timeRemainingSeconds = 15;
   bool _isTimedChallengeActive = false;
-
-  // Highlighted Landmark (e.g., Pharmacy in Challenge 2, Library in Challenge 4)
-  String? _highlightedLandmarkId;
-  Timer? _highlightTimer;
-
-  // Minimap Visibility
-  bool _showMinimap = true;
 
   // Audio Mute & Listening Subtitles
   bool _isMuted = false;
   bool _showListeningSubtitles = false;
 
+  // Metro Train Animation
+  double _metroTrainX = -300.0;
+
   @override
   void initState() {
     super.initState();
     _initTts();
+
+    // Populate collectible street tokens
+    _streetTokens = [
+      StreetToken(id: 't1', label: 'Briefcase Alpha', position: const Offset(260, 280), icon: '💼', xp: 15),
+      StreetToken(id: 't2', label: 'Transit Pass', position: const Offset(440, 270), icon: '🎫', xp: 15),
+      StreetToken(id: 't3', label: 'GPS Chip', position: const Offset(630, 300), icon: '📡', xp: 15),
+      StreetToken(id: 't4', label: 'Tech Data Key', position: const Offset(870, 280), icon: '🔑', xp: 15),
+      StreetToken(id: 't5', label: 'Encrypted USB', position: const Offset(1080, 290), icon: '💾', xp: 15),
+    ];
 
     _ticker = AnimationController(
       vsync: this,
@@ -100,7 +107,7 @@ class _CityNavigatorGamePageState extends State<CityNavigatorGamePage>
     // Opening briefing after layout
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _speakDialogue(
-        'Your meeting starts at 11:00 AM at the City Business Center. Walk straight, follow the English clues, and navigate the city.',
+        'Welcome to City Navigator! Navigate along the neon boulevard, collect dispatch briefcases, and solve directional challenges.',
       );
     });
   }
@@ -108,7 +115,7 @@ class _CityNavigatorGamePageState extends State<CityNavigatorGamePage>
   Future<void> _initTts() async {
     try {
       await _tts.setLanguage('en-US');
-      await _tts.setSpeechRate(0.44);
+      await _tts.setSpeechRate(0.46);
       await _tts.setVolume(1.0);
       await _tts.setPitch(1.0);
     } catch (_) {}
@@ -125,249 +132,171 @@ class _CityNavigatorGamePageState extends State<CityNavigatorGamePage>
   @override
   void dispose() {
     _ticker.dispose();
-    _directionWarningTimer?.cancel();
     _timedCountdown?.cancel();
-    _highlightTimer?.cancel();
-    try {
-      _tts.stop();
-    } catch (_) {}
+    _floatingTextTimer?.cancel();
+    _tts.stop();
     super.dispose();
   }
 
-  // --- GAME LOOP & PHYSICS ---
+  // ─── GAME LOOP ─────────────────────────────────────────────────────────────
   void _gameLoop() {
     if (!mounted || _isLevelFinished) return;
 
-    double vx = 0.0;
-    double vy = 0.0;
-    const double speed = 3.6;
-
-    if (_isJoystickActive) {
-      vx = _joystickDx * speed;
-      vy = _joystickDy * speed;
-    } else if (_targetWaypoint != null) {
-      final dx = _targetWaypoint!.dx - _playerX;
-      final dy = _targetWaypoint!.dy - _playerY;
-      final dist = math.sqrt(dx * dx + dy * dy);
-      if (dist < 4.0) {
-        _targetWaypoint = null;
-      } else {
-        vx = (dx / dist) * speed;
-        vy = (dy / dist) * speed;
-      }
-    }
-
-    if (vx != 0.0 || vy != 0.0) {
-      _playerWalkCycle += 0.22;
-      _playerAnim = PlayerAnimationState.walking;
-
-      if (vx.abs() > vy.abs()) {
-        _playerFacing = vx > 0 ? PlayerFacing.right : PlayerFacing.left;
-      } else {
-        _playerFacing = vy > 0 ? PlayerFacing.down : PlayerFacing.up;
+    setState(() {
+      // Animate Metro train along top elevated line
+      _metroTrainX += 4.5;
+      if (_metroTrainX > _worldWidth + 200) {
+        _metroTrainX = -400;
       }
 
-      final newX = (_playerX + vx).clamp(40.0, _worldWidth - 40.0);
-      final newY = (_playerY + vy).clamp(80.0, _worldHeight - 50.0);
+      if (_isChallengeModalOpen) return;
 
-      // Simple building boundary collision check
-      bool collidesWithBuilding = false;
-      for (final lm in kCityLandmarks) {
-        final rect = Rect.fromLTWH(
-          lm.position.dx,
-          lm.position.dy,
-          lm.size.width,
-          lm.size.height,
-        );
-        // Allow walking on road / plaza, collide with solid walls
-        if (lm.id != 'start_plaza' && rect.inflate(-10).contains(Offset(newX, newY))) {
-          collidesWithBuilding = true;
-          break;
+      double moveX = 0.0;
+      double moveY = 0.0;
+      final speedMultiplier = _isDashing ? 6.2 : 3.6;
+
+      if (_isJoystickActive) {
+        moveX = _joystickDx * speedMultiplier;
+        moveY = _joystickDy * speedMultiplier;
+      } else if (_targetWaypoint != null) {
+        final dx = _targetWaypoint!.dx - _playerX;
+        final dy = _targetWaypoint!.dy - _playerY;
+        final dist = math.sqrt(dx * dx + dy * dy);
+
+        if (dist > 6.0) {
+          moveX = (dx / dist) * speedMultiplier;
+          moveY = (dy / dist) * speedMultiplier;
+        } else {
+          _targetWaypoint = null;
         }
       }
 
-      if (!collidesWithBuilding) {
-        _playerX = newX;
-        _playerY = newY;
+      if (moveX != 0.0 || moveY != 0.0) {
+        _playerX = (_playerX + moveX).clamp(60.0, _worldWidth - 60.0);
+        _playerY = (_playerY + moveY).clamp(160.0, _worldHeight - 80.0);
+
+        if (moveX.abs() > moveY.abs()) {
+          _playerFacing = moveX > 0 ? PlayerFacing.right : PlayerFacing.left;
+        } else {
+          _playerFacing = moveY > 0 ? PlayerFacing.down : PlayerFacing.up;
+        }
+
+        _playerAnim = PlayerAnimationState.walking;
+        _playerWalkCycle += 0.22;
+      } else {
+        _playerAnim = PlayerAnimationState.idle;
       }
 
-      // Check wrong direction during navigation challenges
-      _checkDirectionHeading(vx);
-    } else if (!_isChallengeModalOpen) {
-      _playerAnim = PlayerAnimationState.idle;
-    }
-
-    // Camera smoothly follows player
-    final screenWidth = MediaQuery.of(context).size.width;
-    final targetCameraX = (_playerX - screenWidth / 2)
-        .clamp(0.0, math.max(0.0, _worldWidth - screenWidth));
-    _cameraX += (targetCameraX - _cameraX) * 0.12;
-
-    setState(() {});
-  }
-
-  void _checkDirectionHeading(double vx) {
-    // If on Challenge 1 ("Go straight and turn right") and player moves far left backwards:
-    if (_currentChallengeIndex == 0 && vx < -2.0 && _playerX < 120.0) {
-      _triggerWrongDirectionWarning();
-    }
-  }
-
-  void _triggerWrongDirectionWarning() {
-    if (_directionWarningTimer != null && _directionWarningTimer!.isActive) return;
-    _wrongTurnCount++;
-    HapticFeedback.mediumImpact();
-
-    String warningMsg = 'Wrong direction. Recalculating route...';
-    if (_wrongTurnCount >= 3) {
-      warningMsg = 'Wrong direction! -1 Life. Follow the signs.';
-      if (_lives > 1) {
-        _lives--;
+      // Check collectible tokens
+      for (final token in _streetTokens) {
+        if (!token.isCollected) {
+          final dist = math.sqrt(
+            math.pow(_playerX - token.position.dx, 2) +
+            math.pow(_playerY - token.position.dy, 2),
+          );
+          if (dist < 38) {
+            token.isCollected = true;
+            _scoreXp += token.xp;
+            _combo++;
+            if (_combo > _bestCombo) _bestCombo = _combo;
+            HapticFeedback.lightImpact();
+            _triggerFloatingPickup('${token.icon} +${token.xp} XP!', token.position);
+          }
+        }
       }
-    } else if (_wrongTurnCount == 2) {
-      warningMsg = 'Wrong direction. Minor navigation delay (-5 XP).';
-      _scoreXp = math.max(0, _scoreXp - 5);
-    }
 
+      // Smooth camera follow
+      final screenWidth = MediaQuery.of(context).size.width;
+      final targetCamX = (_playerX - screenWidth / 2).clamp(0.0, _worldWidth - screenWidth);
+      _cameraX += (targetCamX - _cameraX) * 0.14;
+    });
+  }
+
+  void _triggerFloatingPickup(String text, Offset pos) {
     setState(() {
-      _directionWarning = warningMsg;
+      _floatingPickupText = text;
+      _floatingPickupPos = pos;
     });
-
-    _directionWarningTimer = Timer(const Duration(seconds: 3), () {
-      if (mounted) {
-        setState(() {
-          _directionWarning = null;
-        });
-      }
+    _floatingTextTimer?.cancel();
+    _floatingTextTimer = Timer(const Duration(milliseconds: 1200), () {
+      if (mounted) setState(() => _floatingPickupText = null);
     });
   }
 
-  // --- NPC / CHALLENGE INTERACTION ---
-  AdventureNpc? _getNearbyNpc() {
-    for (final npc in widget.levelData.npcs) {
-      final dist = math.sqrt(
-        math.pow(_playerX - npc.worldX, 2) + math.pow(_playerY - npc.worldY, 2),
-      );
-      if (dist < 90.0) return npc;
+  // ─── CHALLENGE TRIGGERING ──────────────────────────────────────────────────
+  AdventureChallenge get _activeCurrentChallenge {
+    if (_currentChallengeIndex < widget.levelData.challenges.length) {
+      return widget.levelData.challenges[_currentChallengeIndex];
     }
-    return null;
+    return widget.levelData.challenges.last;
   }
 
-  void _interactWithNearbyNpc() {
-    final npc = _getNearbyNpc();
-    if (npc == null || _currentChallengeIndex >= widget.levelData.challenges.length) {
-      return;
-    }
-
-    final challenge = widget.levelData.challenges[_currentChallengeIndex];
-    HapticFeedback.selectionClick();
-
+  void _openChallengeModal(AdventureChallenge challenge) {
     setState(() {
       _activeChallenge = challenge;
       _isChallengeModalOpen = true;
       _selectedOptionIndex = null;
       _hasAnsweredCurrent = false;
-      _playerAnim = PlayerAnimationState.talking;
       _showListeningSubtitles = false;
 
-      // Initialize sentence / route builder tiles if needed
       if (challenge.type == AdventureChallengeType.sentenceBuilder &&
           challenge.sentenceTiles != null) {
-        _builtRouteTiles = [];
         _availableRouteTiles = List.from(challenge.sentenceTiles!)..shuffle();
+        _builtRouteTiles = [];
       }
 
-      // Initialize 60s timer if Challenge 8
-      if (challenge.timeLimitSeconds != null && challenge.timeLimitSeconds! > 0) {
-        _startTimedChallenge(challenge.timeLimitSeconds!);
+      if (challenge.type == AdventureChallengeType.quickResponse) {
+        _startTimedCountdown(challenge.timeLimitSeconds ?? 15);
       }
     });
 
-    // Speak audio prompt or NPC dialogue
-    final speech = challenge.audioPrompt ?? challenge.npcDialogue;
-    _speakDialogue(speech);
+    HapticFeedback.mediumImpact();
+    if (challenge.type == AdventureChallengeType.listening && challenge.audioPrompt != null) {
+      _speakDialogue(challenge.audioPrompt!);
+    } else {
+      _speakDialogue(challenge.npcDialogue);
+    }
   }
 
-  void _startTimedChallenge(int seconds) {
+  void _startTimedCountdown(int seconds) {
     _timedCountdown?.cancel();
     _timeRemainingSeconds = seconds;
     _isTimedChallengeActive = true;
 
     _timedCountdown = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (!mounted) {
-        timer.cancel();
-        return;
-      }
+      if (!mounted) return;
       setState(() {
         if (_timeRemainingSeconds > 0) {
           _timeRemainingSeconds--;
         } else {
           timer.cancel();
           _isTimedChallengeActive = false;
-          // Timeout penalty
-          if (!_hasAnsweredCurrent) {
-            _onOptionSelected(1); // pick incorrect option on timeout
-          }
+          _handleAnswer(false, 'Time expired! Keep your eyes on the road signs.');
         }
       });
     });
   }
 
-  void _onOptionSelected(int index) {
-    if (_hasAnsweredCurrent || _activeChallenge == null) return;
-    final opt = _activeChallenge!.options[index];
-
+  void _handleAnswer(bool isCorrect, String feedback) {
     _timedCountdown?.cancel();
     _isTimedChallengeActive = false;
+    _totalAttempts++;
 
     setState(() {
-      _selectedOptionIndex = index;
       _hasAnsweredCurrent = true;
-      _totalAttempts++;
-
-      if (opt.isCorrect) {
+      if (isCorrect) {
         _correctCount++;
         _combo++;
         if (_combo > _bestCombo) _bestCombo = _combo;
-
-        int earned = _activeChallenge!.xpReward;
-        // Fast completion bonus on timed challenge
-        if (_activeChallenge!.timeLimitSeconds != null && _timeRemainingSeconds > 30) {
-          earned += 25;
-        }
-        _scoreXp += earned;
-        _playerAnim = PlayerAnimationState.celebrating;
+        final xpGain = _activeChallenge?.xpReward ?? 25;
+        _scoreXp += xpGain + (_combo > 2 ? 10 : 0);
         HapticFeedback.heavyImpact();
-
-        // Highlight landmark if relevant
-        if (_activeChallenge!.id == 2) {
-          _highlightLandmark('pharmacy');
-        } else if (_activeChallenge!.id == 4) {
-          _highlightLandmark('library');
-        }
+        _speakDialogue('Correct! ${_activeChallenge?.options.firstWhere((o) => o.isCorrect).reaction ?? ""}');
       } else {
         _combo = 0;
-        _playerAnim = PlayerAnimationState.confused;
         _lives = math.max(0, _lives - 1);
         HapticFeedback.vibrate();
-      }
-    });
-
-    if (opt.reaction != null) {
-      _speakDialogue(opt.reaction!);
-    }
-  }
-
-  void _highlightLandmark(String landmarkId) {
-    _highlightTimer?.cancel();
-    setState(() {
-      _highlightedLandmarkId = landmarkId;
-    });
-    _highlightTimer = Timer(const Duration(seconds: 4), () {
-      if (mounted) {
-        setState(() {
-          _highlightedLandmarkId = null;
-        });
+        _speakDialogue('Incorrect. $feedback');
       }
     });
   }
@@ -376,969 +305,994 @@ class _CityNavigatorGamePageState extends State<CityNavigatorGamePage>
     setState(() {
       _isChallengeModalOpen = false;
       _activeChallenge = null;
-      _selectedOptionIndex = null;
-      _hasAnsweredCurrent = false;
       _currentChallengeIndex++;
-      _playerAnim = PlayerAnimationState.idle;
 
       if (_currentChallengeIndex >= widget.levelData.challenges.length) {
         _isLevelFinished = true;
-        _scoreXp += 50; // Completion master bonus
+        widget.onCompleted?.call(_scoreXp);
+        _speakDialogue('City Navigator mission completed! You are a certified Urban Navigation Specialist.');
       }
     });
-
-    if (_isLevelFinished) {
-      widget.onCompleted?.call(_scoreXp);
-      _speakDialogue('Mission Complete! You are now a certified City Navigator.');
-    }
   }
 
-  // --- UI BUILDER ---
+  // ─── UI BUILD ──────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
-    final nearbyNpc = _getNearbyNpc();
-    final activeTarget = _getActiveDestination();
+    final screenSize = MediaQuery.of(context).size;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0B0F19),
-      body: SafeArea(
-        child: Stack(
-          children: [
-            // 2D City Canvas World
-            GestureDetector(
-              onTapDown: (details) {
-                if (_isChallengeModalOpen) return;
-                final touchWorldX = details.localPosition.dx + _cameraX;
-                final touchWorldY = details.localPosition.dy;
-                setState(() {
-                  _targetWaypoint = Offset(touchWorldX, touchWorldY);
-                });
-              },
-              child: CustomPaint(
-                size: Size(MediaQuery.of(context).size.width, _worldHeight),
-                painter: _CityWorldPainter(
-                  cameraX: _cameraX,
-                  playerX: _playerX,
-                  playerY: _playerY,
-                  playerFacing: _playerFacing,
-                  playerAnim: _playerAnim,
-                  walkCycle: _playerWalkCycle,
-                  targetWaypoint: _targetWaypoint,
-                  landmarks: kCityLandmarks,
-                  signs: kCitySigns,
-                  npcs: widget.levelData.npcs,
-                  highlightedLandmarkId: _highlightedLandmarkId,
-                  activeTargetPos: activeTarget?.position,
+      backgroundColor: const Color(0xFF0A0F1D),
+      body: Stack(
+        children: [
+          // 1. 2D City Canvas & World Layer
+          GestureDetector(
+            onTapDown: (details) {
+              if (!_isChallengeModalOpen) {
+                final worldTap = Offset(details.localPosition.dx + _cameraX, details.localPosition.dy);
+                setState(() => _targetWaypoint = worldTap);
+                HapticFeedback.selectionClick();
+              }
+            },
+            child: CustomPaint(
+              size: screenSize,
+              painter: _CityMetroWorldPainter(
+                worldWidth: _worldWidth,
+                worldHeight: _worldHeight,
+                cameraX: _cameraX,
+                playerX: _playerX,
+                playerY: _playerY,
+                playerFacing: _playerFacing,
+                playerAnim: _playerAnim,
+                playerWalkCycle: _playerWalkCycle,
+                targetWaypoint: _targetWaypoint,
+                landmarks: kCityLandmarks,
+                signs: kCitySigns,
+                npcs: widget.levelData.npcs,
+                streetTokens: _streetTokens,
+                metroTrainX: _metroTrainX,
+                currentChallengeIndex: _currentChallengeIndex,
+                isDashing: _isDashing,
+              ),
+            ),
+          ),
+
+          // 2. Floating Pickup Notification
+          if (_floatingPickupText != null && _floatingPickupPos != null)
+            Positioned(
+              left: _floatingPickupPos!.dx - _cameraX - 40,
+              top: _floatingPickupPos!.dy - 50,
+              child: IgnorePointer(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF10B981).withValues(alpha: 0.9),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(color: const Color(0xFF10B981).withValues(alpha: 0.4), blurRadius: 8),
+                    ],
+                  ),
+                  child: Text(
+                    _floatingPickupText!,
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
                 ),
               ),
             ),
 
-            // Top Minimal HUD
-            _buildMinimalTopHud(),
+          // 3. Top Clean Minimal App Bar (Overflow-Proof)
+          _buildCleanTopBar(),
 
-            // Minimap Radar Overlay (Top Right)
-            if (_showMinimap) _buildMinimapHud(),
+          // 4. Active Quest Prompt Banner
+          if (!_isLevelFinished && !_isChallengeModalOpen)
+            _buildActiveQuestBanner(),
 
-            // Direction Warning Banner
-            if (_directionWarning != null) _buildDirectionWarningBanner(),
+          // 5. On-Screen Virtual Controls (Joystick + Dash + Action Button)
+          if (!_isLevelFinished && !_isChallengeModalOpen)
+            _buildControlHUD(),
 
-            // Proximity NPC Prompt Button
-            if (nearbyNpc != null && !_isChallengeModalOpen && !_isLevelFinished)
-              _buildNpcProximityAction(nearbyNpc),
+          // 6. Challenge Interactive Modal Sheet
+          if (_isChallengeModalOpen && _activeChallenge != null)
+            _buildChallengeModal(context),
 
-            // Virtual Joystick Controller (Bottom Left)
-            if (!_isChallengeModalOpen && !_isLevelFinished)
-              Positioned(
-                left: 20,
-                bottom: 24,
-                child: _buildVirtualJoystick(),
-              ),
-
-            // Tap-to-move hint / quick controls (Bottom Right)
-            if (!_isChallengeModalOpen && !_isLevelFinished)
-              Positioned(
-                right: 20,
-                bottom: 24,
-                child: _buildNavigationHintPill(),
-              ),
-
-            // Active Challenge Modal / Dialog
-            if (_isChallengeModalOpen && _activeChallenge != null)
-              _buildChallengeOverlay(),
-
-            // Mission Finished Summary Modal
-            if (_isLevelFinished) _buildMissionCompleteModal(),
-          ],
-        ),
+          // 7. Level Finished Certification Screen
+          if (_isLevelFinished)
+            _buildLevelCompleteScreen(),
+        ],
       ),
     );
   }
 
-  CityLandmark? _getActiveDestination() {
-    if (_currentChallengeIndex >= widget.levelData.challenges.length) {
-      return kCityLandmarks.firstWhere((l) => l.id == 'business_center');
-    }
-    final c = widget.levelData.challenges[_currentChallengeIndex];
-    if (c.id == 1 || c.id == 5) {
-      return kCityLandmarks.firstWhere((l) => l.id == 'bank');
-    } else if (c.id == 2) {
-      return kCityLandmarks.firstWhere((l) => l.id == 'pharmacy');
-    } else if (c.id == 3) {
-      return kCityLandmarks.firstWhere((l) => l.id == 'bus_stop');
-    } else if (c.id == 4) {
-      return kCityLandmarks.firstWhere((l) => l.id == 'library');
-    } else if (c.id == 6) {
-      return kCityLandmarks.firstWhere((l) => l.id == 'metro_station');
-    } else {
-      return kCityLandmarks.firstWhere((l) => l.id == 'business_center');
-    }
-  }
+  // ─── 🏆 CLEAN TOP APP BAR (NO OVERFLOW) ─────────────────────────────────────
+  Widget _buildCleanTopBar() {
+    final progress = (_currentChallengeIndex / widget.levelData.challenges.length).clamp(0.0, 1.0);
 
-  // --- MINIMAL TOP HUD ---
-  Widget _buildMinimalTopHud() {
-    return Positioned(
-      top: 12,
-      left: 12,
-      right: 12,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          // Back button & Mission Title
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(
-              color: const Color(0xFF0F172A).withValues(alpha: 0.88),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.white12),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                  icon: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 20),
-                  onPressed: () => Navigator.pop(context),
-                ),
-                const SizedBox(width: 8),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'MISSION 02: CITY NAVIGATOR',
-                      style: GoogleFonts.outfit(
-                        color: const Color(0xFF38BDF8),
-                        fontSize: 11,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                    Text(
-                      'Target: City Business Center (11:00 AM)',
-                      style: GoogleFonts.inter(
-                        color: Colors.white70,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-
-          // Stats Pill: XP & Lives
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        child: Row(
+          children: [
+            // Left: Back button + Minimal Title
+            Flexible(
+              flex: 3,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF0F172A).withValues(alpha: 0.88),
+                  color: const Color(0xFF0F172A).withValues(alpha: 0.9),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: Colors.white12),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.stars_rounded, color: Color(0xFFFFD700), size: 16),
-                    const SizedBox(width: 4),
-                    Text(
-                      '$_scoreXp XP',
-                      style: GoogleFonts.outfit(
-                        color: const Color(0xFFFFD700),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w800,
-                      ),
+                    IconButton(
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      icon: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 20),
+                      onPressed: () => Navigator.pop(context),
                     ),
-                    const SizedBox(width: 10),
-                    Row(
-                      children: List.generate(
-                        3,
-                        (i) => Icon(
-                          Icons.favorite_rounded,
-                          color: i < _lives ? const Color(0xFFEF4444) : Colors.white24,
-                          size: 14,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 6),
-              // Minimap toggle
-              IconButton(
-                style: IconButton.styleFrom(
-                  backgroundColor: const Color(0xFF0F172A).withValues(alpha: 0.88),
-                  padding: const EdgeInsets.all(8),
-                ),
-                icon: Icon(
-                  _showMinimap ? Icons.map_rounded : Icons.map_outlined,
-                  color: const Color(0xFF38BDF8),
-                  size: 18,
-                ),
-                onPressed: () {
-                  setState(() => _showMinimap = !_showMinimap);
-                },
-              ),
-              // Mute toggle
-              IconButton(
-                style: IconButton.styleFrom(
-                  backgroundColor: const Color(0xFF0F172A).withValues(alpha: 0.88),
-                  padding: const EdgeInsets.all(8),
-                ),
-                icon: Icon(
-                  _isMuted ? Icons.volume_off_rounded : Icons.volume_up_rounded,
-                  color: Colors.white70,
-                  size: 18,
-                ),
-                onPressed: () {
-                  setState(() => _isMuted = !_isMuted);
-                },
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  // --- MINIMAP RADAR HUD ---
-  Widget _buildMinimapHud() {
-    return Positioned(
-      top: 66,
-      right: 12,
-      child: Container(
-        width: 130,
-        height: 60,
-        padding: const EdgeInsets.all(4),
-        decoration: BoxDecoration(
-          color: const Color(0xFF0F172A).withValues(alpha: 0.92),
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.4)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.4),
-              blurRadius: 8,
-            ),
-          ],
-        ),
-        child: CustomPaint(
-          painter: _MinimapPainter(
-            worldWidth: _worldWidth,
-            worldHeight: _worldHeight,
-            playerX: _playerX,
-            playerY: _playerY,
-            landmarks: kCityLandmarks,
-            activeTarget: _getActiveDestination()?.position,
-          ),
-        ),
-      ),
-    );
-  }
-
-  // --- DIRECTION WARNING TOAST ---
-  Widget _buildDirectionWarningBanner() {
-    return Positioned(
-      top: 80,
-      left: 20,
-      right: 160,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: const Color(0xFFB91C1C).withValues(alpha: 0.9),
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: const Color(0xFFEF4444)),
-        ),
-        child: Row(
-          children: [
-            const Icon(Icons.warning_amber_rounded, color: Colors.white, size: 16),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                _directionWarning!,
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // --- NPC PROXIMITY ACTION BUTTON ---
-  Widget _buildNpcProximityAction(AdventureNpc npc) {
-    return Positioned(
-      bottom: 24,
-      left: 0,
-      right: 0,
-      child: Center(
-        child: ElevatedButton.icon(
-          onPressed: _interactWithNearbyNpc,
-          icon: Text(npc.avatarEmoji, style: const TextStyle(fontSize: 18)),
-          label: Text(
-            'TALK TO ${npc.name.toUpperCase()}',
-            style: GoogleFonts.outfit(
-              color: Colors.black,
-              fontSize: 12,
-              fontWeight: FontWeight.w900,
-              letterSpacing: 0.5,
-            ),
-          ),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF38BDF8),
-            foregroundColor: Colors.black,
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
-            ),
-            elevation: 6,
-          ),
-        ),
-      ),
-    );
-  }
-
-  // --- VIRTUAL JOYSTICK ---
-  Widget _buildVirtualJoystick() {
-    return Container(
-      width: 100,
-      height: 100,
-      decoration: BoxDecoration(
-        color: const Color(0xFF0F172A).withValues(alpha: 0.65),
-        shape: BoxShape.circle,
-        border: Border.all(color: Colors.white24, width: 2),
-      ),
-      child: GestureDetector(
-        onPanStart: (details) {
-          _isJoystickActive = true;
-          _updateJoystick(details.localPosition, 50.0);
-        },
-        onPanUpdate: (details) {
-          _updateJoystick(details.localPosition, 50.0);
-        },
-        onPanEnd: (_) {
-          setState(() {
-            _isJoystickActive = false;
-            _joystickDx = 0.0;
-            _joystickDy = 0.0;
-          });
-        },
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            // Center stick
-            Transform.translate(
-              offset: Offset(_joystickDx * 28.0, _joystickDy * 28.0),
-              child: Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  gradient: const RadialGradient(
-                    colors: [Color(0xFF38BDF8), Color(0xFF0284C7)],
-                  ),
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF38BDF8).withValues(alpha: 0.4),
-                      blurRadius: 10,
-                    ),
-                  ],
-                ),
-                child: const Icon(Icons.navigation_rounded, color: Colors.white, size: 20),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _updateJoystick(Offset localPos, double radius) {
-    final dx = localPos.dx - radius;
-    final dy = localPos.dy - radius;
-    final distance = math.sqrt(dx * dx + dy * dy);
-
-    if (distance == 0) {
-      _joystickDx = 0;
-      _joystickDy = 0;
-    } else {
-      final clampedDist = math.min(distance, radius);
-      _joystickDx = (dx / distance) * (clampedDist / radius);
-      _joystickDy = (dy / distance) * (clampedDist / radius);
-    }
-  }
-
-  Widget _buildNavigationHintPill() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: const Color(0xFF0F172A).withValues(alpha: 0.75),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.white10),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.touch_app_rounded, color: Color(0xFF38BDF8), size: 14),
-          const SizedBox(width: 4),
-          Text(
-            'Tap road to walk',
-            style: GoogleFonts.inter(color: Colors.white70, fontSize: 10),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // --- CHALLENGE MODAL OVERLAY ---
-  Widget _buildChallengeOverlay() {
-    final challenge = _activeChallenge!;
-    final isRouteBuilder = challenge.type == AdventureChallengeType.sentenceBuilder;
-
-    return Positioned.fill(
-      child: Container(
-        color: Colors.black.withValues(alpha: 0.75),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 520),
-            child: Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.6), width: 1.5),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF38BDF8).withValues(alpha: 0.2),
-                    blurRadius: 20,
-                  ),
-                ],
-              ),
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Challenge Header
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF38BDF8).withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            challenge.title.toUpperCase(),
-                            style: GoogleFonts.outfit(
-                              color: const Color(0xFF38BDF8),
-                              fontSize: 11,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                        ),
-                        if (_isTimedChallengeActive)
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFEF4444).withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Row(
-                              children: [
-                                const Icon(Icons.timer_rounded, color: Color(0xFFEF4444), size: 14),
-                                const SizedBox(width: 4),
-                                Text(
-                                  '${_timeRemainingSeconds}s',
-                                  style: GoogleFonts.outfit(
-                                    color: const Color(0xFFEF4444),
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w900,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-
-                    // NPC Speech / Audio prompt
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.black26,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.white12),
-                      ),
+                    const SizedBox(width: 8),
+                    Flexible(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Row(
-                            children: [
-                              const Icon(Icons.volume_up_rounded, color: Color(0xFF38BDF8), size: 18),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  challenge.audioPrompt != null && !_showListeningSubtitles
-                                      ? '🔊 Spoken direction played. Listen and select.'
-                                      : challenge.npcDialogue,
-                                  style: GoogleFonts.inter(
-                                    color: Colors.white,
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ),
-                              IconButton(
-                                constraints: const BoxConstraints(),
-                                padding: EdgeInsets.zero,
-                                icon: const Icon(Icons.replay_rounded, color: Color(0xFF38BDF8), size: 20),
-                                onPressed: () {
-                                  _speakDialogue(challenge.audioPrompt ?? challenge.npcDialogue);
-                                },
-                              ),
-                            ],
-                          ),
-                          if (challenge.audioPrompt != null && !_showListeningSubtitles)
-                            TextButton.icon(
-                              style: TextButton.styleFrom(padding: EdgeInsets.zero),
-                              onPressed: () {
-                                setState(() => _showListeningSubtitles = true);
-                              },
-                              icon: const Icon(Icons.subtitles_rounded, size: 14, color: Colors.white54),
-                              label: Text(
-                                'Show subtitles',
-                                style: GoogleFonts.inter(color: Colors.white54, fontSize: 10),
-                              ),
+                          Text(
+                            'City Navigator',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFF38BDF8),
+                              fontSize: 13,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.3,
                             ),
+                          ),
+                          const SizedBox(height: 2),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(3),
+                            child: LinearProgressIndicator(
+                              value: progress,
+                              backgroundColor: Colors.white12,
+                              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF38BDF8)),
+                              minHeight: 3,
+                            ),
+                          ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 14),
-
-                    // Question
-                    Text(
-                      challenge.question,
-                      style: GoogleFonts.outfit(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-
-                    // Route Builder Tiles if Challenge 7
-                    if (isRouteBuilder) ...[
-                      _buildRouteBuilderSection(),
-                      const SizedBox(height: 12),
-                    ] else ...[
-                      // Multiple Choice Options
-                      ...List.generate(challenge.options.length, (i) {
-                        final opt = challenge.options[i];
-                        final isSelected = _selectedOptionIndex == i;
-                        Color btnBg = const Color(0xFF1E293B);
-                        Color borderColor = Colors.white12;
-
-                        if (_hasAnsweredCurrent) {
-                          if (opt.isCorrect) {
-                            btnBg = const Color(0xFF065F46);
-                            borderColor = const Color(0xFF10B981);
-                          } else if (isSelected) {
-                            btnBg = const Color(0xFF7F1D1D);
-                            borderColor = const Color(0xFFEF4444);
-                          }
-                        }
-
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 8.0),
-                          child: InkWell(
-                            onTap: () => _onOptionSelected(i),
-                            borderRadius: BorderRadius.circular(10),
-                            child: Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                              decoration: BoxDecoration(
-                                color: btnBg,
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(color: borderColor),
-                              ),
-                              child: Text(
-                                opt.text,
-                                style: GoogleFonts.inter(
-                                  color: Colors.white,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
-                      }),
-                    ],
-
-                    // Feedback & Continue
-                    if (_hasAnsweredCurrent) ...[
-                      const SizedBox(height: 8),
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: (_activeChallenge!.options[_selectedOptionIndex ?? 0].isCorrect)
-                              ? const Color(0xFF10B981).withValues(alpha: 0.2)
-                              : const Color(0xFFEF4444).withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Text(
-                          _activeChallenge!.options[_selectedOptionIndex ?? 0].feedback,
-                          style: GoogleFonts.inter(
-                            color: Colors.white70,
-                            fontSize: 11,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 14),
-                      SizedBox(
-                        width: double.infinity,
-                        height: 40,
-                        child: ElevatedButton(
-                          onPressed: _advanceToNextChallenge,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF38BDF8),
-                            foregroundColor: Colors.black,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          child: Text(
-                            'CONTINUE NAVIGATION ➔',
-                            style: GoogleFonts.outfit(
-                              fontWeight: FontWeight.w800,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
                   ],
                 ),
               ),
             ),
+
+            const SizedBox(width: 6),
+
+            // Right: Lives + Combo + XP + Mute
+            Flexible(
+              flex: 4,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  // Lives
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0F172A).withValues(alpha: 0.9),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: Colors.white12),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: List.generate(3, (i) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 1),
+                          child: Text(
+                            i < _lives ? '❤️' : '🤍',
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                        );
+                      }),
+                    ),
+                  ),
+
+                  const SizedBox(width: 4),
+
+                  // XP Score
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF10B981),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      '+$_scoreXp XP',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(width: 4),
+
+                  // Mute toggle
+                  InkWell(
+                    onTap: () => setState(() => _isMuted = !_isMuted),
+                    borderRadius: BorderRadius.circular(10),
+                    child: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0F172A).withValues(alpha: 0.9),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.white12),
+                      ),
+                      child: Icon(
+                        _isMuted ? Icons.volume_off_rounded : Icons.volume_up_rounded,
+                        color: Colors.white70,
+                        size: 16,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ─── 📍 ACTIVE QUEST BANNER ────────────────────────────────────────────────
+  Widget _buildActiveQuestBanner() {
+    final challenge = _activeCurrentChallenge;
+    final targetNpc = widget.levelData.npcs.firstWhere(
+      (n) => n.id == challenge.npcId,
+      orElse: () => widget.levelData.npcs.first,
+    );
+
+    return Positioned(
+      top: 60,
+      left: 12,
+      right: 12,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: const Color(0xFF0F172A).withValues(alpha: 0.94),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.4)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.5),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Text(targetNpc.avatarEmoji, style: const TextStyle(fontSize: 22)),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        'STOP ${_currentChallengeIndex + 1}/10',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFF38BDF8),
+                          fontSize: 10,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Flexible(
+                        child: Text(
+                          challenge.title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Text(
+                    'Approach ${targetNpc.name} (${targetNpc.role}) to unlock.',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.inter(
+                      color: Colors.white70,
+                      fontSize: 10,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 6),
+            ElevatedButton(
+              onPressed: () => _openChallengeModal(challenge),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF0284C7),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+              child: Text(
+                'INTERACT ➔',
+                style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 11,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ─── 🎮 VIRTUAL CONTROLS & HUD ─────────────────────────────────────────────
+  Widget _buildControlHUD() {
+    return Positioned(
+      bottom: 20,
+      left: 16,
+      right: 16,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          // Virtual Analog Joystick
+          Container(
+            width: 110,
+            height: 110,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: const Color(0xFF0F172A).withValues(alpha: 0.7),
+              border: Border.all(color: Colors.white12, width: 2),
+            ),
+            child: GestureDetector(
+              onPanStart: (details) {
+                setState(() => _isJoystickActive = true);
+                _updateJoystick(details.localPosition, const Size(110, 110));
+              },
+              onPanUpdate: (details) {
+                _updateJoystick(details.localPosition, const Size(110, 110));
+              },
+              onPanEnd: (_) {
+                setState(() {
+                  _isJoystickActive = false;
+                  _joystickDx = 0.0;
+                  _joystickDy = 0.0;
+                });
+              },
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Container(
+                    width: 38,
+                    height: 38,
+                    transform: Matrix4.translationValues(_joystickDx * 28, _joystickDy * 28, 0),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: const Color(0xFF38BDF8),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF38BDF8).withValues(alpha: 0.5),
+                          blurRadius: 10,
+                        ),
+                      ],
+                    ),
+                    child: const Icon(Icons.navigation_rounded, color: Colors.white, size: 20),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // Right Controls: Dash / Sprint Button
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              GestureDetector(
+                onTapDown: (_) => setState(() => _isDashing = true),
+                onTapUp: (_) => setState(() => _isDashing = false),
+                onTapCancel: () => setState(() => _isDashing = false),
+                child: Container(
+                  width: 58,
+                  height: 58,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      colors: _isDashing
+                          ? [const Color(0xFFF59E0B), const Color(0xFFEA580C)]
+                          : [const Color(0xFF0284C7), const Color(0xFF0369A1)],
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: (_isDashing ? const Color(0xFFF59E0B) : const Color(0xFF0284C7))
+                            .withValues(alpha: 0.5),
+                        blurRadius: 12,
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.bolt_rounded, color: Colors.white, size: 24),
+                      Text(
+                        'SPRINT',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 9,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              // Direct Interact Button
+              ElevatedButton.icon(
+                onPressed: () => _openChallengeModal(_activeCurrentChallenge),
+                icon: const Icon(Icons.chat_bubble_rounded, size: 16, color: Colors.black),
+                label: Text(
+                  'TALK',
+                  style: GoogleFonts.outfit(
+                    color: Colors.black,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF38BDF8),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _updateJoystick(Offset localPos, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final rawDx = localPos.dx - center.dx;
+    final rawDy = localPos.dy - center.dy;
+    final dist = math.sqrt(rawDx * rawDx + rawDy * rawDy);
+    final maxDist = size.width / 2;
+
+    setState(() {
+      if (dist > 0) {
+        _joystickDx = (rawDx / dist) * math.min(1.0, dist / maxDist);
+        _joystickDy = (rawDy / dist) * math.min(1.0, dist / maxDist);
+      } else {
+        _joystickDx = 0.0;
+        _joystickDy = 0.0;
+      }
+    });
+  }
+
+  // ─── 🧩 CHALLENGE MODAL (Interactive) ──────────────────────────────────────
+  Widget _buildChallengeModal(BuildContext context) {
+    final challenge = _activeChallenge!;
+    final npc = widget.levelData.npcs.firstWhere(
+      (n) => n.id == challenge.npcId,
+      orElse: () => widget.levelData.npcs.first,
+    );
+
+    return Container(
+      color: Colors.black54,
+      alignment: Alignment.bottomCenter,
+      child: Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.85,
+        ),
+        margin: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFF0F172A),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.5), width: 1.5),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.8),
+              blurRadius: 24,
+              offset: const Offset(0, -4),
+            ),
+          ],
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Header
+              Row(
+                children: [
+                  Text(npc.avatarEmoji, style: const TextStyle(fontSize: 28)),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          npc.name,
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        Text(
+                          npc.role,
+                          style: GoogleFonts.inter(
+                            color: const Color(0xFF38BDF8),
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded, color: Colors.white54),
+                    onPressed: () => setState(() => _isChallengeModalOpen = false),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 12),
+
+              // Dialogue Box
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E293B),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: Colors.white12),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      challenge.npcDialogue,
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 13,
+                        height: 1.4,
+                      ),
+                    ),
+                    if (challenge.type == AdventureChallengeType.listening &&
+                        challenge.audioPrompt != null) ...[
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          ElevatedButton.icon(
+                            onPressed: () => _speakDialogue(challenge.audioPrompt!),
+                            icon: const Icon(Icons.volume_up_rounded, size: 16),
+                            label: const Text('REPLAY AUDIO'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF0284C7),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            ),
+                          ),
+                          const Spacer(),
+                          TextButton(
+                            onPressed: () => setState(() => _showListeningSubtitles = !_showListeningSubtitles),
+                            child: Text(
+                              _showListeningSubtitles ? 'Hide Subtitles' : 'Show Subtitles',
+                              style: const TextStyle(fontSize: 11, color: Colors.white54),
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (_showListeningSubtitles)
+                        Container(
+                          margin: const EdgeInsets.only(top: 6),
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.black38,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            '"${challenge.audioPrompt}"',
+                            style: GoogleFonts.inter(color: Colors.amberAccent, fontSize: 12),
+                          ),
+                        ),
+                    ],
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 12),
+
+              // Question
+              Text(
+                challenge.question,
+                style: GoogleFonts.outfit(
+                  color: const Color(0xFFF8FAFC),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+
+              // Timed Countdown Indicator (Challenge 8)
+              if (_isTimedChallengeActive)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            '⚡ RAPID TIMEOUT:',
+                            style: GoogleFonts.outfit(color: Colors.amber, fontWeight: FontWeight.bold, fontSize: 11),
+                          ),
+                          Text(
+                            '${_timeRemainingSeconds}s',
+                            style: GoogleFonts.outfit(color: Colors.amber, fontWeight: FontWeight.w900, fontSize: 13),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: LinearProgressIndicator(
+                          value: _timeRemainingSeconds / 15,
+                          backgroundColor: Colors.white12,
+                          valueColor: const AlwaysStoppedAnimation<Color>(Colors.amber),
+                          minHeight: 5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+              const SizedBox(height: 10),
+
+              // Route Builder (Challenge 7)
+              if (challenge.type == AdventureChallengeType.sentenceBuilder) ...[
+                _buildRouteBuilderSection(challenge),
+              ] else ...[
+                // Standard Multiple Choice Options
+                ...List.generate(challenge.options.length, (idx) {
+                  final option = challenge.options[idx];
+                  final isSelected = _selectedOptionIndex == idx;
+
+                  Color btnColor = const Color(0xFF1E293B);
+                  BorderSide border = const BorderSide(color: Colors.white12);
+
+                  if (_hasAnsweredCurrent) {
+                    if (option.isCorrect) {
+                      btnColor = const Color(0xFF065F46);
+                      border = const BorderSide(color: Color(0xFF10B981), width: 1.5);
+                    } else if (isSelected && !option.isCorrect) {
+                      btnColor = const Color(0xFF7F1D1D);
+                      border = const BorderSide(color: Color(0xFFEF4444), width: 1.5);
+                    }
+                  }
+
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: InkWell(
+                      onTap: _hasAnsweredCurrent
+                          ? null
+                          : () {
+                              setState(() => _selectedOptionIndex = idx);
+                              _handleAnswer(option.isCorrect, option.feedback);
+                            },
+                      borderRadius: BorderRadius.circular(14),
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: btnColor,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.fromBorderSide(border),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 26,
+                              height: 26,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.white12,
+                              ),
+                              child: Text(
+                                String.fromCharCode(65 + idx),
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                option.text,
+                                style: GoogleFonts.inter(
+                                  color: Colors.white,
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+              ],
+
+              // Feedback & Advance Button
+              if (_hasAnsweredCurrent) ...[
+                const SizedBox(height: 10),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1E293B),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.3)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '💡 VOCABULARY & GRAMMAR NOTE:',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFF38BDF8),
+                          fontSize: 10,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        challenge.vocabularyMeaning,
+                        style: GoogleFonts.inter(color: Colors.white70, fontSize: 11),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                ElevatedButton(
+                  onPressed: _advanceToNextChallenge,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF10B981),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  ),
+                  child: Text(
+                    _currentChallengeIndex >= widget.levelData.challenges.length - 1
+                        ? 'FINISH MISSION 🚀'
+                        : 'CONTINUE EXPEDITION ➔',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+              ],
+            ],
           ),
         ),
       ),
     );
   }
 
-  // --- ROUTE BUILDER TILE INTERACTION ---
-  Widget _buildRouteBuilderSection() {
+  // ─── 🧭 ROUTE BUILDER (Challenge 7) ────────────────────────────────────────
+  Widget _buildRouteBuilderSection(AdventureChallenge challenge) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // Assembled slots
+        // Built Sequence Container
         Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(12),
+          constraints: const BoxConstraints(minHeight: 60),
+          padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: Colors.black38,
-            borderRadius: BorderRadius.circular(10),
+            color: const Color(0xFF1E293B),
+            borderRadius: BorderRadius.circular(14),
             border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.4)),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'YOUR ROUTE ORDER:',
-                style: GoogleFonts.outfit(
-                  color: const Color(0xFF38BDF8),
-                  fontSize: 10,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              const SizedBox(height: 6),
-              Wrap(
-                spacing: 6,
-                runSpacing: 6,
-                children: _builtRouteTiles.isEmpty
-                    ? [
-                        Text(
-                          'Tap tiles below to order the route...',
-                          style: GoogleFonts.inter(color: Colors.white38, fontSize: 11),
-                        ),
-                      ]
-                    : _builtRouteTiles
-                        .map(
-                          (t) => Chip(
-                            label: Text(
-                              t,
-                              style: GoogleFonts.outfit(
-                                color: Colors.black,
-                                fontSize: 11,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                            backgroundColor: const Color(0xFF38BDF8),
-                            deleteIcon: const Icon(Icons.close_rounded, size: 14, color: Colors.black),
-                            onDeleted: () {
+          child: _builtRouteTiles.isEmpty
+              ? Center(
+                  child: Text(
+                    'Tap the step tiles below in correct sequence...',
+                    style: GoogleFonts.inter(color: Colors.white38, fontSize: 11),
+                  ),
+                )
+              : Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: _builtRouteTiles.asMap().entries.map((entry) {
+                    return Chip(
+                      label: Text(
+                        '${entry.key + 1}. ${entry.value}',
+                        style: const TextStyle(color: Colors.white, fontSize: 11),
+                      ),
+                      backgroundColor: const Color(0xFF0284C7),
+                      deleteIcon: const Icon(Icons.close_rounded, size: 14, color: Colors.white70),
+                      onDeleted: _hasAnsweredCurrent
+                          ? null
+                          : () {
                               setState(() {
-                                _builtRouteTiles.remove(t);
-                                _availableRouteTiles.add(t);
+                                final removed = _builtRouteTiles.removeAt(entry.key);
+                                _availableRouteTiles.add(removed);
                               });
                             },
-                          ),
-                        )
-                        .toList(),
-              ),
-            ],
-          ),
+                    );
+                  }).toList(),
+                ),
         ),
+
         const SizedBox(height: 10),
 
-        // Available tiles
+        // Available Tiles
         Wrap(
           spacing: 6,
           runSpacing: 6,
-          children: _availableRouteTiles
-              .map(
-                (tile) => ActionChip(
-                  label: Text(
-                    tile,
-                    style: GoogleFonts.outfit(
-                      color: Colors.white,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  backgroundColor: const Color(0xFF1E293B),
-                  side: const BorderSide(color: Colors.white24),
-                  onPressed: () {
-                    setState(() {
-                      _availableRouteTiles.remove(tile);
-                      _builtRouteTiles.add(tile);
-                    });
-
-                    // Check if complete
-                    if (_builtRouteTiles.length == 3) {
-                      final builtStr = _builtRouteTiles.join(' ');
-                      final isMatch = builtStr == 'GO STRAIGHT TURN RIGHT CROSS THE ROAD';
-                      _onOptionSelected(isMatch ? 0 : 1);
-                    }
-                  },
-                ),
-              )
-              .toList(),
+          children: _availableRouteTiles.map((tile) {
+            return ActionChip(
+              label: Text(tile, style: const TextStyle(color: Colors.white, fontSize: 11)),
+              backgroundColor: const Color(0xFF334155),
+              onPressed: _hasAnsweredCurrent
+                  ? null
+                  : () {
+                      setState(() {
+                        _availableRouteTiles.remove(tile);
+                        _builtRouteTiles.add(tile);
+                      });
+                    },
+            );
+          }).toList(),
         ),
+
+        const SizedBox(height: 10),
+
+        if (!_hasAnsweredCurrent)
+          ElevatedButton(
+            onPressed: _builtRouteTiles.length == (challenge.sentenceTiles?.length ?? 4)
+                ? () {
+                    final fullBuilt = _builtRouteTiles.join(' ');
+                    final isMatch = fullBuilt.trim() == (challenge.targetSentence?.trim() ?? '');
+                    _handleAnswer(
+                      isMatch,
+                      isMatch
+                          ? 'Flawless route sequence!'
+                          : 'Review the step order: exit station ➔ turn right ➔ walk past library ➔ enter lobby.',
+                    );
+                  }
+                : null,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF0284C7),
+              padding: const EdgeInsets.symmetric(vertical: 10),
+            ),
+            child: const Text('SUBMIT ROUTE SEQUENCE', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
       ],
     );
   }
 
-  // --- MISSION COMPLETE SCREEN ---
-  Widget _buildMissionCompleteModal() {
-    final navScore = ((_correctCount / math.max(1, _totalAttempts)) * 100).toInt();
-    final listeningScore = math.min(100, 85 + (_combo * 3));
-    final commScore = math.min(100, 88 + (_lives * 3));
-
-    return Positioned.fill(
+  // ─── 🎓 LEVEL COMPLETE CERTIFICATION ───────────────────────────────────────
+  Widget _buildLevelCompleteScreen() {
+    return Container(
+      color: Colors.black87,
+      alignment: Alignment.center,
+      padding: const EdgeInsets.all(24),
       child: Container(
-        color: Colors.black.withValues(alpha: 0.85),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 28),
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 480),
-            child: Container(
-              padding: const EdgeInsets.all(22),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF0F172A), Color(0xFF064E3B)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(22),
-                border: Border.all(color: const Color(0xFF10B981), width: 2),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF10B981).withValues(alpha: 0.3),
-                    blurRadius: 24,
-                  ),
-                ],
+        constraints: const BoxConstraints(maxWidth: 420),
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: const Color(0xFF0F172A),
+          borderRadius: BorderRadius.circular(28),
+          border: Border.all(color: const Color(0xFF10B981), width: 2),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF10B981).withValues(alpha: 0.3),
+              blurRadius: 30,
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('🏆', style: TextStyle(fontSize: 48)),
+            const SizedBox(height: 8),
+            Text(
+              'CITY NAVIGATOR COMPLETE!',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.outfit(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 0.5,
               ),
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text('🏙️', style: TextStyle(fontSize: 40)),
-                    const SizedBox(height: 6),
-                    Text(
-                      'MISSION 02 COMPLETE!',
-                      style: GoogleFonts.outfit(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                    Text(
-                      'City Navigator Certification Achieved',
-                      style: GoogleFonts.inter(
-                        color: const Color(0xFF38BDF8),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-
-                    // Stars
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(
-                        3,
-                        (i) => const Icon(Icons.star_rounded, color: Color(0xFFFFD700), size: 30),
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-
-                    // Score Cards Grid
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        _buildStatBox('Navigation', '$navScore%'),
-                        _buildStatBox('Listening', '$listeningScore%'),
-                        _buildStatBox('Communication', '$commScore%'),
-                      ],
-                    ),
-                    const SizedBox(height: 14),
-
-                    // Target Vocabulary Bank
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.black26,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.white12),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'VOCABULARY LEARNED (20 WORDS)',
-                            style: GoogleFonts.outfit(
-                              color: const Color(0xFFFFD700),
-                              fontSize: 10,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Wrap(
-                            spacing: 4,
-                            runSpacing: 4,
-                            children: kCityTargetVocabulary
-                                .take(12)
-                                .map(
-                                  (w) => Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white10,
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    child: Text(
-                                      w,
-                                      style: GoogleFonts.inter(color: Colors.white, fontSize: 10),
-                                    ),
-                                  ),
-                                )
-                                .toList(),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 18),
-
-                    // Return / Unlock button
-                    SizedBox(
-                      width: double.infinity,
-                      height: 44,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.pop(context, true);
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF10B981),
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          elevation: 6,
-                        ),
-                        child: Text(
-                          'CLAIM CERTIFICATE & UNLOCK LEVEL 3 ✓',
-                          style: GoogleFonts.outfit(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Certified Urban Navigation Specialist',
+              style: GoogleFonts.inter(
+                color: const Color(0xFF10B981),
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildStatBox('XP EARNED', '+$_scoreXp', const Color(0xFFF59E0B)),
+                _buildStatBox('MAX COMBO', '🔥 $_bestCombo', const Color(0xFFEA580C)),
+                _buildStatBox('ACCURACY', '${((_correctCount / math.max(1, _totalAttempts)) * 100).toInt()}%', const Color(0xFF10B981)),
+              ],
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF10B981),
+                minimumSize: const Size(double.infinity, 48),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              ),
+              child: Text(
+                'CLAIM CERTIFICATE ➔',
+                style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w900,
                 ),
               ),
             ),
-          ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildStatBox(String title, String value) {
+  Widget _buildStatBox(String label, String value, Color color) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.black26,
-        borderRadius: BorderRadius.circular(8),
+        color: const Color(0xFF1E293B),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(color: Colors.white12),
       ),
       child: Column(
         children: [
-          Text(title, style: GoogleFonts.inter(color: Colors.white54, fontSize: 10)),
-          const SizedBox(height: 2),
           Text(
             value,
             style: GoogleFonts.outfit(
-              color: const Color(0xFF38BDF8),
-              fontSize: 14,
-              fontWeight: FontWeight.w800,
+              color: color,
+              fontSize: 16,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: GoogleFonts.inter(
+              color: Colors.white54,
+              fontSize: 9,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],
@@ -1347,34 +1301,44 @@ class _CityNavigatorGamePageState extends State<CityNavigatorGamePage>
   }
 }
 
-// --- 2D CANVAS CITY WORLD PAINTER ---
-class _CityWorldPainter extends CustomPainter {
+// ─────────────────────────────────────────────────────────────────────────────
+// 🎨 2D CITY METRO WORLD PAINTER
+// ─────────────────────────────────────────────────────────────────────────────
+class _CityMetroWorldPainter extends CustomPainter {
+  final double worldWidth;
+  final double worldHeight;
   final double cameraX;
   final double playerX;
   final double playerY;
   final PlayerFacing playerFacing;
   final PlayerAnimationState playerAnim;
-  final double walkCycle;
+  final double playerWalkCycle;
   final Offset? targetWaypoint;
   final List<CityLandmark> landmarks;
   final List<CitySign> signs;
   final List<AdventureNpc> npcs;
-  final String? highlightedLandmarkId;
-  final Offset? activeTargetPos;
+  final List<StreetToken> streetTokens;
+  final double metroTrainX;
+  final int currentChallengeIndex;
+  final bool isDashing;
 
-  _CityWorldPainter({
+  _CityMetroWorldPainter({
+    required this.worldWidth,
+    required this.worldHeight,
     required this.cameraX,
     required this.playerX,
     required this.playerY,
     required this.playerFacing,
     required this.playerAnim,
-    required this.walkCycle,
+    required this.playerWalkCycle,
     required this.targetWaypoint,
     required this.landmarks,
     required this.signs,
     required this.npcs,
-    required this.highlightedLandmarkId,
-    required this.activeTargetPos,
+    required this.streetTokens,
+    required this.metroTrainX,
+    required this.currentChallengeIndex,
+    required this.isDashing,
   });
 
   @override
@@ -1382,311 +1346,306 @@ class _CityWorldPainter extends CustomPainter {
     canvas.save();
     canvas.translate(-cameraX, 0);
 
-    // 1. Background Paving / Terrain
-    final bgPaint = Paint()..color = const Color(0xFF0F172A);
-    canvas.drawRect(Rect.fromLTWH(0, 0, 1600, 560), bgPaint);
+    // 1. Dark Asphalt Metropolis Ground
+    final groundPaint = Paint()..color = const Color(0xFF0F172A);
+    canvas.drawRect(Rect.fromLTWH(0, 0, worldWidth, worldHeight), groundPaint);
 
-    // 2. Roads & Sidewalks
-    _drawCityRoads(canvas);
+    // 2. Elevated Metro Track at Top
+    _drawElevatedMetroLine(canvas);
 
-    // 3. Landmarks & Buildings
-    _drawBuildings(canvas);
+    // 3. Wide Neon Boulevard (Main Road)
+    final roadPaint = Paint()..color = const Color(0xFF1E293B);
+    const roadRect = Rect.fromLTWH(0, 240, 1600, 100);
+    canvas.drawRect(roadRect, roadPaint);
 
-    // 4. Street Signs
-    _drawStreetSigns(canvas);
-
-    // 5. Active Target Waypoint Pulse
-    if (activeTargetPos != null) {
-      _drawWaypointPulse(canvas, activeTargetPos!);
+    // Road Markings (Glowing Neon Center Dashes)
+    final dashPaint = Paint()
+      ..color = const Color(0xFF38BDF8).withValues(alpha: 0.6)
+      ..strokeWidth = 3;
+    for (double x = 20; x < worldWidth; x += 40) {
+      canvas.drawLine(Offset(x, 290), Offset(x + 20, 290), dashPaint);
     }
 
-    // 6. Tap-to-move Waypoint Marker
+    // Pedestrian Zebra Crosswalks
+    _drawCrosswalk(canvas, 280, 240, 100);
+    _drawCrosswalk(canvas, 750, 240, 100);
+    _drawCrosswalk(canvas, 1140, 240, 100);
+
+    // Sidewalk Borders
+    final curbPaint = Paint()
+      ..color = const Color(0xFF334155)
+      ..strokeWidth = 4;
+    canvas.drawLine(const Offset(0, 240), Offset(worldWidth, 240), curbPaint);
+    canvas.drawLine(const Offset(0, 340), Offset(worldWidth, 340), curbPaint);
+
+    // 4. City Buildings & Landmarks
+    for (final lm in landmarks) {
+      _drawLandmark(canvas, lm);
+    }
+
+    // 5. Street Signs
+    for (final sign in signs) {
+      _drawStreetSign(canvas, sign);
+    }
+
+    // 6. Collectible Street Tokens (Briefcases / Energy Orbs)
+    for (final token in streetTokens) {
+      if (!token.isCollected) {
+        _drawStreetToken(canvas, token);
+      }
+    }
+
+    // 7. Interactive NPCs
+    for (final npc in npcs) {
+      _drawNpc(canvas, npc);
+    }
+
+    // 8. Tap Target Waypoint Ring
     if (targetWaypoint != null) {
-      _drawTargetMarker(canvas, targetWaypoint!);
+      final wpPaint = Paint()
+        ..color = const Color(0xFF38BDF8).withValues(alpha: 0.6)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.5;
+      canvas.drawCircle(targetWaypoint!, 14, wpPaint);
+      canvas.drawCircle(targetWaypoint!, 5, Paint()..color = const Color(0xFF38BDF8));
     }
 
-    // 7. NPCs
-    _drawNpcs(canvas);
-
-    // 8. Player Character
+    // 9. Player Avatar
     _drawPlayer(canvas);
 
     canvas.restore();
   }
 
-  void _drawCityRoads(Canvas canvas) {
-    // Grand Avenue (horizontal central road)
-    final roadPaint = Paint()..color = const Color(0xFF1E2430);
-    canvas.drawRect(const Rect.fromLTWH(0, 250, 1600, 90), roadPaint);
+  void _drawElevatedMetroLine(Canvas canvas) {
+    // Metro Track Rails
+    final trackPaint = Paint()
+      ..color = const Color(0xFF0284C7).withValues(alpha: 0.4)
+      ..strokeWidth = 4;
+    canvas.drawLine(const Offset(0, 70), Offset(worldWidth, 70), trackPaint);
+    canvas.drawLine(const Offset(0, 85), Offset(worldWidth, 85), trackPaint);
 
-    // Sidewalk curbs
-    final curbPaint = Paint()
-      ..color = const Color(0xFF334155)
-      ..strokeWidth = 3
-      ..style = PaintingStyle.stroke;
-    canvas.drawLine(const Offset(0, 250), const Offset(1600, 250), curbPaint);
-    canvas.drawLine(const Offset(0, 340), const Offset(1600, 340), curbPaint);
-
-    // Dashed center road dividers
-    final dashPaint = Paint()
-      ..color = const Color(0xFFFCD34D).withValues(alpha: 0.6)
+    // Track Ties
+    final tiePaint = Paint()
+      ..color = const Color(0xFF1E293B)
       ..strokeWidth = 2;
-    for (double x = 10; x < 1600; x += 30) {
-      canvas.drawLine(Offset(x, 295), Offset(x + 16, 295), dashPaint);
+    for (double x = 0; x < worldWidth; x += 18) {
+      canvas.drawLine(Offset(x, 66), Offset(x, 89), tiePaint);
     }
 
-    // Zebra Crosswalks at intersections (x: 270, 770, 1120)
-    final zebraPaint = Paint()..color = Colors.white.withValues(alpha: 0.4);
-    for (final cx in [270.0, 770.0, 1120.0]) {
-      for (double y = 254; y < 336; y += 14) {
-        canvas.drawRect(Rect.fromLTWH(cx, y, 22, 7), zebraPaint);
-      }
-    }
-  }
-
-  void _drawBuildings(Canvas canvas) {
-    for (final lm in landmarks) {
-      final rect = Rect.fromLTWH(
-        lm.position.dx,
-        lm.position.dy,
-        lm.size.width,
-        lm.size.height,
+    // Glowing Metro Train
+    if (metroTrainX > -250 && metroTrainX < worldWidth + 250) {
+      final trainRect = RRect.fromRectAndRadius(
+        Rect.fromLTWH(metroTrainX, 60, 180, 30),
+        const Radius.circular(8),
       );
-
-      final isHighlighted = lm.id == highlightedLandmarkId;
-
-      // Glow if highlighted
-      if (isHighlighted) {
-        final glowPaint = Paint()
-          ..color = const Color(0xFF10B981).withValues(alpha: 0.5)
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 16);
+      canvas.drawRRect(
+        trainRect,
+        Paint()..color = const Color(0xFF0284C7),
+      );
+      // Train Headlights
+      canvas.drawCircle(
+        Offset(metroTrainX + 175, 75),
+        4,
+        Paint()..color = const Color(0xFFFDE047),
+      );
+      // Windows
+      for (int i = 0; i < 4; i++) {
         canvas.drawRRect(
-          RRect.fromRectAndRadius(rect.inflate(8), const Radius.circular(12)),
-          glowPaint,
+          RRect.fromRectAndRadius(
+            Rect.fromLTWH(metroTrainX + 15 + i * 38, 66, 26, 14),
+            const Radius.circular(3),
+          ),
+          Paint()..color = const Color(0xFFE0F2FE),
         );
       }
+    }
+  }
 
-      // Building Base
-      final basePaint = Paint()..color = const Color(0xFF1E293B);
+  void _drawCrosswalk(Canvas canvas, double x, double y, double height) {
+    final stripePaint = Paint()..color = const Color(0xFFE2E8F0).withValues(alpha: 0.85);
+    for (double dy = 6; dy < height; dy += 16) {
       canvas.drawRRect(
-        RRect.fromRectAndRadius(rect, const Radius.circular(10)),
-        basePaint,
-      );
-
-      // Building Accent Trim
-      final trimPaint = Paint()
-        ..color = lm.primaryColor
-        ..strokeWidth = isHighlighted ? 3 : 1.5
-        ..style = PaintingStyle.stroke;
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(rect, const Radius.circular(10)),
-        trimPaint,
-      );
-
-      // Label on building top
-      final textPainter = TextPainter(
-        text: TextSpan(
-          text: lm.signLabel,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 9,
-            fontWeight: FontWeight.w900,
-            letterSpacing: 0.5,
-          ),
-        ),
-        textDirection: TextDirection.ltr,
-      )..layout();
-      textPainter.paint(
-        canvas,
-        Offset(
-          lm.position.dx + (lm.size.width - textPainter.width) / 2,
-          lm.position.dy + 8,
-        ),
+        RRect.fromRectAndRadius(Rect.fromLTWH(x, y + dy, 40, 8), const Radius.circular(2)),
+        stripePaint,
       );
     }
   }
 
-  void _drawStreetSigns(Canvas canvas) {
-    for (final sign in signs) {
-      // Pole
-      final polePaint = Paint()
-        ..color = Colors.white70
-        ..strokeWidth = 2;
-      canvas.drawLine(sign.position, sign.position + const Offset(0, 20), polePaint);
+  void _drawLandmark(Canvas canvas, CityLandmark lm) {
+    final rect = Rect.fromLTWH(lm.position.dx, lm.position.dy, lm.size.width, lm.size.height);
+    final rrect = RRect.fromRectAndRadius(rect, const Radius.circular(12));
 
-      // Sign Badge
-      final badgeRect = Rect.fromLTWH(sign.position.dx - 22, sign.position.dy - 12, 44, 16);
-      final badgePaint = Paint()..color = const Color(0xFF0284C7);
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(badgeRect, const Radius.circular(4)),
-        badgePaint,
-      );
+    // Building Shadow & Glow
+    final glowPaint = Paint()
+      ..color = lm.primaryColor.withValues(alpha: 0.25)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 12);
+    canvas.drawRRect(rrect, glowPaint);
 
-      final tp = TextPainter(
-        text: TextSpan(
-          text: sign.text,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 8,
-            fontWeight: FontWeight.w900,
-          ),
-        ),
-        textDirection: TextDirection.ltr,
-      )..layout();
-      tp.paint(
-        canvas,
-        Offset(
-          badgeRect.left + (badgeRect.width - tp.width) / 2,
-          badgeRect.top + (badgeRect.height - tp.height) / 2,
-        ),
-      );
+    // Building Body
+    final bodyPaint = Paint()..color = const Color(0xFF1E293B);
+    canvas.drawRRect(rrect, bodyPaint);
+
+    // Building Roof Accent Trim
+    final trimPaint = Paint()..color = lm.primaryColor;
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(lm.position.dx, lm.position.dy, lm.size.width, 10),
+        const Radius.circular(4),
+      ),
+      trimPaint,
+    );
+
+    // Building Windows Grid
+    final winPaint = Paint()..color = lm.primaryColor.withValues(alpha: 0.4);
+    for (double wx = lm.position.dx + 12; wx < lm.position.dx + lm.size.width - 20; wx += 24) {
+      for (double wy = lm.position.dy + 20; wy < lm.position.dy + lm.size.height - 30; wy += 22) {
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(Rect.fromLTWH(wx, wy, 14, 12), const Radius.circular(2)),
+          winPaint,
+        );
+      }
     }
+
+    // Glowing Neon Sign Label
+    final tp = TextPainter(
+      text: TextSpan(
+        text: lm.signLabel,
+        style: GoogleFonts.outfit(
+          color: lm.primaryColor,
+          fontSize: 10,
+          fontWeight: FontWeight.w900,
+          letterSpacing: 0.5,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    tp.paint(canvas, Offset(lm.position.dx + (lm.size.width - tp.width) / 2, lm.position.dy + lm.size.height - 18));
   }
 
-  void _drawWaypointPulse(Canvas canvas, Offset pos) {
-    final ringPaint = Paint()
-      ..color = const Color(0xFF38BDF8).withValues(alpha: 0.45)
+  void _drawStreetSign(Canvas canvas, CitySign sign) {
+    final rect = RRect.fromRectAndRadius(
+      Rect.fromLTWH(sign.position.dx, sign.position.dy, 75, 20),
+      const Radius.circular(6),
+    );
+    canvas.drawRRect(rect, Paint()..color = const Color(0xFF0F172A));
+    canvas.drawRRect(
+      rect,
+      Paint()
+        ..color = const Color(0xFF38BDF8)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.5,
+    );
+
+    final tp = TextPainter(
+      text: TextSpan(
+        text: sign.text,
+        style: GoogleFonts.outfit(
+          color: Colors.white,
+          fontSize: 8.5,
+          fontWeight: FontWeight.w900,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    tp.paint(canvas, Offset(sign.position.dx + (75 - tp.width) / 2, sign.position.dy + 4));
+  }
+
+  void _drawStreetToken(Canvas canvas, StreetToken token) {
+    // Pulsing Glow
+    final glowPaint = Paint()
+      ..color = const Color(0xFFF59E0B).withValues(alpha: 0.4)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
+    canvas.drawCircle(token.position, 14, glowPaint);
+
+    final tp = TextPainter(
+      text: TextSpan(text: token.icon, style: const TextStyle(fontSize: 16)),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    tp.paint(canvas, Offset(token.position.dx - tp.width / 2, token.position.dy - tp.height / 2));
+  }
+
+  void _drawNpc(Canvas canvas, AdventureNpc npc) {
+    final pos = Offset(npc.worldX, npc.worldY);
+
+    // Active Quest Indicator Ring
+    final pulsePaint = Paint()
+      ..color = const Color(0xFF38BDF8).withValues(alpha: 0.6)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.5;
-    canvas.drawCircle(pos + const Offset(50, 40), 22, ringPaint);
-  }
+      ..strokeWidth = 2;
+    canvas.drawCircle(pos, 22, pulsePaint);
 
-  void _drawTargetMarker(Canvas canvas, Offset target) {
-    final markerPaint = Paint()
-      ..color = const Color(0xFF10B981)
-      ..style = PaintingStyle.fill;
-    canvas.drawCircle(target, 5, markerPaint);
-  }
+    // Avatar Emoji
+    final tp = TextPainter(
+      text: TextSpan(text: npc.avatarEmoji, style: const TextStyle(fontSize: 24)),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    tp.paint(canvas, Offset(pos.dx - tp.width / 2, pos.dy - tp.height / 2));
 
-  void _drawNpcs(Canvas canvas) {
-    for (final npc in npcs) {
-      final pos = Offset(npc.worldX, npc.worldY);
-
-      // Proximity aura
-      final auraPaint = Paint()
-        ..color = const Color(0xFF38BDF8).withValues(alpha: 0.15);
-      canvas.drawCircle(pos, 28, auraPaint);
-
-      // Avatar emoji
-      final tp = TextPainter(
-        text: TextSpan(
-          text: npc.avatarEmoji,
-          style: const TextStyle(fontSize: 22),
+    // Name Label Pill
+    final nameTp = TextPainter(
+      text: TextSpan(
+        text: npc.name,
+        style: GoogleFonts.outfit(
+          color: Colors.white,
+          fontSize: 9,
+          fontWeight: FontWeight.w800,
         ),
-        textDirection: TextDirection.ltr,
-      )..layout();
-      tp.paint(canvas, pos - Offset(tp.width / 2, tp.height / 2));
-
-      // Name label
-      final nameTp = TextPainter(
-        text: TextSpan(
-          text: npc.name,
-          style: const TextStyle(color: Colors.white70, fontSize: 8, fontWeight: FontWeight.w600),
-        ),
-        textDirection: TextDirection.ltr,
-      )..layout();
-      nameTp.paint(canvas, Offset(pos.dx - nameTp.width / 2, pos.dy + 14));
-    }
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    final nameBg = RRect.fromRectAndRadius(
+      Rect.fromLTWH(pos.dx - nameTp.width / 2 - 4, pos.dy + 16, nameTp.width + 8, 14),
+      const Radius.circular(4),
+    );
+    canvas.drawRRect(nameBg, Paint()..color = const Color(0xFF0F172A));
+    nameTp.paint(canvas, Offset(pos.dx - nameTp.width / 2, pos.dy + 17));
   }
 
   void _drawPlayer(Canvas canvas) {
     final pos = Offset(playerX, playerY);
 
-    // Player shadow
-    final shadowPaint = Paint()..color = Colors.black38;
+    // Dash trail effects
+    if (isDashing) {
+      final trailPaint = Paint()
+        ..color = const Color(0xFF38BDF8).withValues(alpha: 0.3)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
+      canvas.drawCircle(Offset(playerX - (playerFacing == PlayerFacing.right ? 18 : -18), playerY), 16, trailPaint);
+    }
+
+    // Shadow
     canvas.drawOval(
-      Rect.fromCenter(center: pos + const Offset(0, 16), width: 22, height: 8),
-      shadowPaint,
+      Rect.fromCenter(center: Offset(pos.dx, pos.dy + 16), width: 28, height: 10),
+      Paint()..color = Colors.black45,
     );
 
-    // Player torso/head (Clean modern traveler character)
+    // Avatar Body
     final bodyPaint = Paint()..color = const Color(0xFF0284C7);
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromCenter(center: pos, width: 18, height: 26),
-        const Radius.circular(6),
-      ),
-      bodyPaint,
-    );
+    canvas.drawCircle(pos, 14, bodyPaint);
 
-    // Head
-    final headPaint = Paint()..color = const Color(0xFFFFDBAC);
-    canvas.drawCircle(pos - const Offset(0, 15), 8, headPaint);
+    // Head / Visor
+    final visorPaint = Paint()..color = const Color(0xFF38BDF8);
+    final visorOffset = playerFacing == PlayerFacing.right
+        ? const Offset(4, -2)
+        : playerFacing == PlayerFacing.left
+            ? const Offset(-4, -2)
+            : const Offset(0, -2);
+    canvas.drawCircle(pos + visorOffset, 5, visorPaint);
 
-    // Eyes direction
-    final eyePaint = Paint()..color = Colors.black87;
-    final eyeOffset = playerFacing == PlayerFacing.left
-        ? const Offset(-3, -15)
-        : playerFacing == PlayerFacing.right
-            ? const Offset(3, -15)
-            : const Offset(0, -15);
-    canvas.drawCircle(pos + eyeOffset, 1.5, eyePaint);
+    // Direction Pointer
+    final dirPaint = Paint()
+      ..color = const Color(0xFFFDE047)
+      ..strokeWidth = 2.5
+      ..strokeCap = StrokeCap.round;
+    final dirOffset = playerFacing == PlayerFacing.right
+        ? const Offset(12, 0)
+        : playerFacing == PlayerFacing.left
+            ? const Offset(-12, 0)
+            : playerFacing == PlayerFacing.down
+                ? const Offset(0, 12)
+                : const Offset(0, -12);
+    canvas.drawLine(pos, pos + dirOffset, dirPaint);
   }
 
   @override
-  bool shouldRepaint(covariant _CityWorldPainter oldDelegate) => true;
-}
-
-// --- MINIMAP PAINTER ---
-class _MinimapPainter extends CustomPainter {
-  final double worldWidth;
-  final double worldHeight;
-  final double playerX;
-  final double playerY;
-  final List<CityLandmark> landmarks;
-  final Offset? activeTarget;
-
-  _MinimapPainter({
-    required this.worldWidth,
-    required this.worldHeight,
-    required this.playerX,
-    required this.playerY,
-    required this.landmarks,
-    required this.activeTarget,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final scaleX = size.width / worldWidth;
-    final scaleY = size.height / worldHeight;
-
-    // Road strip
-    final roadPaint = Paint()..color = const Color(0xFF334155);
-    canvas.drawRect(Rect.fromLTWH(0, 250 * scaleY, size.width, 90 * scaleY), roadPaint);
-
-    // Landmarks
-    for (final lm in landmarks) {
-      final lmPaint = Paint()..color = lm.primaryColor.withValues(alpha: 0.8);
-      canvas.drawRect(
-        Rect.fromLTWH(
-          lm.position.dx * scaleX,
-          lm.position.dy * scaleY,
-          lm.size.width * scaleX,
-          lm.size.height * scaleY,
-        ),
-        lmPaint,
-      );
-    }
-
-    // Active Target Pin
-    if (activeTarget != null) {
-      final pinPaint = Paint()..color = const Color(0xFFFFD700);
-      canvas.drawCircle(
-        Offset(activeTarget!.dx * scaleX, activeTarget!.dy * scaleY),
-        3.5,
-        pinPaint,
-      );
-    }
-
-    // Player Blip
-    final playerPaint = Paint()..color = const Color(0xFF10B981);
-    canvas.drawCircle(
-      Offset(playerX * scaleX, playerY * scaleY),
-      3.0,
-      playerPaint,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant _MinimapPainter oldDelegate) => true;
+  bool shouldRepaint(covariant _CityMetroWorldPainter oldDelegate) => true;
 }

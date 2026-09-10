@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'adventure_models.dart';
 
-/// 🏙️ City Landmark Model
+/// 🏙️ City Landmark Model for 2D Metro World
 class CityLandmark {
   final String id;
   final String name;
@@ -41,6 +41,25 @@ class CitySign {
   });
 }
 
+/// 💎 Collectible Street Token (Briefcases & Energy Orbs)
+class StreetToken {
+  final String id;
+  final String label;
+  final Offset position;
+  final String icon;
+  final int xp;
+  bool isCollected;
+
+  StreetToken({
+    required this.id,
+    required this.label,
+    required this.position,
+    required this.icon,
+    this.xp = 15,
+    this.isCollected = false,
+  });
+}
+
 /// 🧭 Route Builder Step Tile
 class RouteTileStep {
   final String id;
@@ -54,7 +73,7 @@ class RouteTileStep {
   });
 }
 
-/// 🎯 LEVEL 2 CURRICULUM: Mission 02 – City Navigator
+/// 🎯 LEVEL 2 CURRICULUM: City Navigator
 /// 20 target vocabulary words
 const List<String> kCityTargetVocabulary = [
   'left',
@@ -143,7 +162,7 @@ const List<CityLandmark> kCityLandmarks = [
     signLabel: 'SUPERMARKET',
     icon: Icons.shopping_cart_rounded,
     primaryColor: Color(0xFF16A34A),
-    description: 'Fresh groceries, bakery, and pharmacy convenience mart.',
+    description: 'Fresh groceries, bakery, and convenience mart.',
   ),
   CityLandmark(
     id: 'bank',
@@ -179,451 +198,471 @@ const List<CityLandmark> kCityLandmarks = [
     description: '24/7 medical store located right beside the Central Bank.',
   ),
   CityLandmark(
-    id: 'library',
-    name: 'Metropolitan Library',
-    category: 'Education',
-    position: Offset(840, 140),
-    size: Size(150, 110),
-    signLabel: 'LIBRARY',
-    icon: Icons.local_library_rounded,
-    primaryColor: Color(0xFF7C3AED),
-    description: 'Grand public library with knowledge archives and quiet study zones.',
-  ),
-  CityLandmark(
-    id: 'metro_station',
-    name: 'Grand Central Station',
+    id: 'subway_station',
+    name: 'Grand Metro Station',
     category: 'Transit',
-    position: Offset(1020, 140),
-    size: Size(140, 105),
-    signLabel: 'STATION',
-    icon: Icons.train_rounded,
+    position: Offset(800, 150),
+    size: Size(150, 100),
+    signLabel: 'METRO STATION',
+    icon: Icons.subway_rounded,
     primaryColor: Color(0xFF2563EB),
-    description: 'Underground rail terminal with direct express lines.',
+    description: 'Main underground rapid rail interchange and ticket gates.',
   ),
   CityLandmark(
-    id: 'business_center',
+    id: 'library',
+    name: 'Public Library',
+    category: 'Education',
+    position: Offset(960, 360),
+    size: Size(140, 100),
+    signLabel: 'LIBRARY',
+    icon: Icons.menu_book_rounded,
+    primaryColor: Color(0xFF7C3AED),
+    description: 'Grand civic library with quiet study archives.',
+  ),
+  CityLandmark(
+    id: 'tech_office',
     name: 'City Business Center',
-    category: 'Workplace',
-    position: Offset(1200, 350),
-    size: Size(170, 120),
-    signLabel: 'BUSINESS CENTER',
-    icon: Icons.apartment_rounded,
-    primaryColor: Color(0xFF0284C7),
-    description: 'Glass-facade corporate headquarters where your 11:00 AM meeting is held.',
+    category: 'Office',
+    position: Offset(1180, 150),
+    size: Size(160, 120),
+    signLabel: 'TECH TOWER',
+    icon: Icons.business_rounded,
+    primaryColor: Color(0xFF0D9488),
+    description: 'Executive corporate tower & dispatch delivery destination.',
   ),
 ];
 
-/// 🪧 City Road Signs
+/// 🚏 Visual Street Signs
 const List<CitySign> kCitySigns = [
   CitySign(
     id: 'sign_bank',
-    text: 'BANK',
-    position: Offset(530, 330),
+    text: 'BANK ➔',
+    position: Offset(440, 290),
     targetLandmarkId: 'bank',
   ),
   CitySign(
     id: 'sign_library',
-    text: 'LIBRARY',
-    position: Offset(850, 260),
+    text: 'LIBRARY ➔',
+    position: Offset(900, 290),
     targetLandmarkId: 'library',
   ),
   CitySign(
     id: 'sign_pharmacy',
-    text: 'PHARMACY',
-    position: Offset(380, 330),
+    text: 'PHARMACY ➔',
+    position: Offset(310, 290),
     targetLandmarkId: 'pharmacy',
   ),
   CitySign(
     id: 'sign_station',
-    text: 'STATION',
-    position: Offset(1030, 260),
-    targetLandmarkId: 'metro_station',
+    text: 'METRO ⬆',
+    position: Offset(760, 290),
+    targetLandmarkId: 'subway_station',
   ),
 ];
 
-/// 🧩 10 Sequential Challenges for Mission 02 – City Navigator
-const List<AdventureChallenge> kMission02Challenges = [
-  // Challenge 1: Follow Directions (Walking along the road)
+/// 🧩 10 Sequential Challenges for City Navigator
+const List<AdventureChallenge> kCityChallenges = [
+  // ── Challenge 1: Follow Written Directions ────────────────────────────
   AdventureChallenge(
     id: 1,
     type: AdventureChallengeType.directionHelp,
-    title: 'Challenge 1: Follow Written Directions',
+    title: 'Challenge 1: Decipher GPS Route',
     npcId: 'officer_harris',
-    npcDialogue: 'Go straight and turn right at the next corner.',
-    question: 'How should you navigate according to Officer Harris’s command?',
+    npcDialogue:
+        'Officer Harris greets you: "Welcome to the City Center! The GPS note reads: \'Walk straight along Main Street, then turn right at the corner opposite the bus stop.\' Which direction should you take?"',
+    question: 'According to the directions, where should you turn right?',
     options: [
       AdventureOption(
-        text: 'Proceed straight, then make a right turn at the corner.',
+        text: 'At the corner opposite the bus stop',
         isCorrect: true,
         feedback:
-            'Spot on! "Go straight" means maintain your current heading, and "turn right at the corner" guides you at the road intersection.',
-        reaction: 'Safe travels! Watch for the pedestrian crossing.',
+            'Spot on! "Opposite" means facing directly across the street. Proceeding towards Central Bank.',
+        reaction: 'Officer Harris nods: "Great eye! Keep moving forward."',
       ),
       AdventureOption(
-        text: 'Turn left immediately and walk backwards.',
+        text: 'Inside the subway entrance',
         isCorrect: false,
-        feedback: 'Incorrect. The instruction states "turn right", not left or backwards.',
-        reaction: 'Hold on! You are heading in the wrong direction.',
-      ),
-      AdventureOption(
-        text: 'Stop and remain stationary in the middle of the street.',
-        isCorrect: false,
-        feedback: 'Incorrect. "Go straight" instructs continuous forward movement.',
-        reaction: 'Please do not block traffic! Keep moving forward.',
-      ),
-    ],
-    targetVocabulary: 'corner',
-    vocabularyMeaning: 'The point or angle where two roads or streets meet.',
-    xpReward: 20,
-  ),
-
-  // Challenge 2: Direction Choice (Map Location)
-  AdventureChallenge(
-    id: 2,
-    type: AdventureChallengeType.conversationChoice,
-    title: 'Challenge 2: Direction Choice',
-    npcId: 'officer_harris',
-    npcDialogue: 'Excuse me! Do you know where the pharmacy is located?',
-    question: 'Select the correct, grammatically sound English response:',
-    options: [
-      AdventureOption(
-        text: 'It is next to the bank.',
-        isCorrect: true,
         feedback:
-            'Perfect! "Next to" (or "beside") accurately describes two adjacent physical buildings.',
-        reaction: 'Thank you very much! I see the green cross sign now.',
+            'The note says "turn right at the corner opposite the bus stop", not into the subway.',
       ),
       AdventureOption(
-        text: 'It is yesterday.',
+        text: 'Behind the supermarket parking lot',
         isCorrect: false,
-        feedback: '"Yesterday" refers to time in the past, not a physical spatial location.',
-        reaction: 'Pardon me? I asked where it is, not when.',
-      ),
-      AdventureOption(
-        text: 'It is very quickly.',
-        isCorrect: false,
-        feedback: '"Quickly" is an adverb of speed, not a preposition of place.',
-        reaction: 'That doesn’t help me find the location.',
-      ),
-    ],
-    targetVocabulary: 'pharmacy',
-    vocabularyMeaning: 'A store where medicines and healthcare items are prepared and sold.',
-    xpReward: 20,
-  ),
-
-  // Challenge 3: Listening Navigation (Audio Clue)
-  AdventureChallenge(
-    id: 3,
-    type: AdventureChallengeType.listening,
-    title: 'Challenge 3: Listening Navigation',
-    npcId: 'transit_elena',
-    npcDialogue: 'Listen carefully to the audio directions from transit control.',
-    audioPrompt: 'Walk past the restaurant and turn left after the bus stop.',
-    question: 'What should you do after the bus stop?',
-    options: [
-      AdventureOption(
-        text: 'Turn left',
-        isCorrect: true,
         feedback:
-            'Excellent listening! Elena clearly instructed: "turn left after the bus stop".',
-        reaction: 'Great ear! You understood the spoken imperative.',
+            '"Behind" means at the back. The note explicitly states "opposite the bus stop".',
       ),
       AdventureOption(
-        text: 'Turn right',
+        text: 'Turn left before the fountain',
         isCorrect: false,
-        feedback: 'Listen again. The prompt said "turn left", not right.',
-        reaction: 'Check your audio direction again.',
-      ),
-      AdventureOption(
-        text: 'Go back',
-        isCorrect: false,
-        feedback: 'Incorrect. The prompt instructed forward progress past the restaurant.',
-        reaction: 'Going back would take you away from your destination.',
-      ),
-      AdventureOption(
-        text: 'Stop and wait',
-        isCorrect: false,
-        feedback: 'Incorrect. You need to execute an active direction turn.',
-        reaction: 'Do not stop yet! Turn left.',
-      ),
-    ],
-    targetVocabulary: 'bus stop',
-    vocabularyMeaning: 'A designated spot on the roadside where buses stop for passengers.',
-    xpReward: 25,
-  ),
-
-  // Challenge 4: Sign Hunt (Locate the Library)
-  AdventureChallenge(
-    id: 4,
-    type: AdventureChallengeType.information,
-    title: 'Challenge 4: Sign Hunt – Find the Library',
-    npcId: 'transit_elena',
-    npcDialogue: 'Mission: Identify and reach the grand LIBRARY sign on North Avenue.',
-    question: 'Which landmark sign corresponds to the public knowledge archive?',
-    options: [
-      AdventureOption(
-        text: 'Look for the "LIBRARY" sign near North Avenue.',
-        isCorrect: true,
         feedback:
-            'Location found! Signs use bold capitalized English nouns to guide pedestrians.',
-        reaction: 'You found the Library! 🏛️ Location recorded.',
-      ),
-      AdventureOption(
-        text: 'Enter the "SUPERMARKET" to read books.',
-        isCorrect: false,
-        feedback: 'A supermarket sells groceries and food, not public book collections.',
-        reaction: 'That is a grocery market, not the library.',
-      ),
-      AdventureOption(
-        text: 'Walk towards the "STATION" tracks.',
-        isCorrect: false,
-        feedback: 'The station is for trains and transit.',
-        reaction: 'That sign says STATION, not LIBRARY.',
-      ),
-    ],
-    targetVocabulary: 'library',
-    vocabularyMeaning: 'A building containing collections of books and periodicals for reading or borrowing.',
-    xpReward: 30,
-  ),
-
-  // Challenge 5: Preposition Puzzle (Scene Analysis)
-  AdventureChallenge(
-    id: 5,
-    type: AdventureChallengeType.vocabularyInContext,
-    title: 'Challenge 5: Preposition Puzzle',
-    npcId: 'officer_harris',
-    npcDialogue: 'Observe the city street layout carefully.',
-    question: 'Looking at the buildings, where is the bank located?',
-    options: [
-      AdventureOption(
-        text: 'Beside the restaurant',
-        isCorrect: true,
-        feedback:
-            'Correct! "Beside" means at the side of, or adjacent to another structure.',
-        reaction: 'Accurate spatial awareness!',
-      ),
-      AdventureOption(
-        text: 'Under the restaurant',
-        isCorrect: false,
-        feedback: '"Under" means beneath or at a lower level vertically.',
-        reaction: 'The bank is a separate building on ground level.',
-      ),
-      AdventureOption(
-        text: 'Inside the restaurant',
-        isCorrect: false,
-        feedback: '"Inside" indicates an interior room, but the bank is its own building.',
-        reaction: 'No, they are two independent establishments.',
-      ),
-      AdventureOption(
-        text: 'Behind the station',
-        isCorrect: false,
-        feedback: '"Behind" means at the back of. The bank is across the avenue from the station.',
-        reaction: 'Check your map compass directions.',
-      ),
-    ],
-    targetVocabulary: 'beside',
-    vocabularyMeaning: 'At the side of; right next to someone or something.',
-    xpReward: 25,
-  ),
-
-  // Challenge 6: Ask for Directions (Polite Spoken English)
-  AdventureChallenge(
-    id: 6,
-    type: AdventureChallengeType.conversationChoice,
-    title: 'Challenge 6: Ask for Directions',
-    npcId: 'transit_elena',
-    npcDialogue: 'Can I help you with city transit?',
-    question: 'How do you ask for directions politely and professionally?',
-    options: [
-      AdventureOption(
-        text: 'Yes. Could you tell me how to get to the station?',
-        isCorrect: true,
-        feedback:
-            'Superb! "Could you tell me how to get to..." is standard, polite, professional English for asking directions.',
-        reaction: 'Certainly! Walk straight down Grand Avenue and you will see the station on your right.',
-      ),
-      AdventureOption(
-        text: 'Yes. Tell station where.',
-        isCorrect: false,
-        feedback: 'Too blunt and grammatically incomplete. Use a polite modal like "Could you please tell me...".',
-        reaction: 'Could you rephrase that politely, please?',
-      ),
-      AdventureOption(
-        text: 'I station going.',
-        isCorrect: false,
-        feedback: 'Broken grammar. The correct phrase is "I am going to the station" or "How do I get to the station?".',
-        reaction: 'I am not sure what you mean.',
-      ),
-    ],
-    targetVocabulary: 'station',
-    vocabularyMeaning: 'A regular stopping place on a public transport route, especially for trains.',
-    xpReward: 25,
-  ),
-
-  // Challenge 7: Route Builder Mini-Game
-  AdventureChallenge(
-    id: 7,
-    type: AdventureChallengeType.sentenceBuilder,
-    title: 'Challenge 7: Interactive Route Builder',
-    npcId: 'officer_harris',
-    npcDialogue: 'Construct the route sequence: "Go straight, turn right, then cross the road."',
-    question: 'Arrange the navigation action tiles into the exact correct sequence:',
-    options: [
-      AdventureOption(
-        text: 'GO STRAIGHT → TURN RIGHT → CROSS THE ROAD',
-        isCorrect: true,
-        feedback:
-            'Brilliant navigation logic! You chained the three directional imperatives in exact chronological order.',
-        reaction: 'Route unlocked! Proceed safely.',
-      ),
-      AdventureOption(
-        text: 'TURN RIGHT → CROSS THE ROAD → GO STRAIGHT',
-        isCorrect: false,
-        feedback: 'Incorrect order. You must "go straight" first.',
-      ),
-      AdventureOption(
-        text: 'CROSS THE ROAD → GO STRAIGHT → TURN RIGHT',
-        isCorrect: false,
-        feedback: 'Crossing the road occurs last in the given route.',
-      ),
-    ],
-    sentenceTiles: [
-      'GO STRAIGHT',
-      'TURN RIGHT',
-      'CROSS THE ROAD',
-      'TURN LEFT',
-    ],
-    targetSentence: 'GO STRAIGHT TURN RIGHT CROSS THE ROAD',
-    targetVocabulary: 'across',
-    vocabularyMeaning: 'From one side to the other of a road, street, or area.',
-    xpReward: 35,
-  ),
-
-  // Challenge 8: Time Pressure (60-second Countdown Navigation)
-  AdventureChallenge(
-    id: 8,
-    type: AdventureChallengeType.quickResponse,
-    title: 'Challenge 8: Timed Navigation – 60s to Meeting',
-    npcId: 'security_marcus',
-    npcDialogue: 'Your meeting is at 11:00 AM sharp! You have 60 seconds to reach the office entrance.',
-    audioPrompt: 'Go straight, turn left at the bank, cross the road, and enter the building.',
-    question: 'Follow the rapid navigation sequence:',
-    options: [
-      AdventureOption(
-        text: 'Go straight → Turn left at the bank → Cross the road → Enter the building',
-        isCorrect: true,
-        feedback:
-            'Fantastic speed and precision! You successfully followed all 4 directional steps under time pressure.',
-        reaction: 'Access verified! The automatic security doors are opening.',
-      ),
-      AdventureOption(
-        text: 'Turn right at the library → Stop at the cafe → Exit the city center',
-        isCorrect: false,
-        feedback: 'Incorrect! That route leads away from the Business Center.',
-        reaction: 'Time is ticking! Wrong path.',
-      ),
-      AdventureOption(
-        text: 'Walk backwards → Wait at the bus stop → Wander aimlessly',
-        isCorrect: false,
-        feedback: 'You will miss the 11:00 AM interview if you delay!',
-        reaction: 'Hurry, the meeting is starting!',
-      ),
-    ],
-    timeLimitSeconds: 60,
-    targetVocabulary: 'entrance',
-    vocabularyMeaning: 'An opening, such as a door or gate, that provides access to a building.',
-    xpReward: 40,
-  ),
-
-  // Challenge 9: Workplace / Office NPC Interaction
-  AdventureChallenge(
-    id: 9,
-    type: AdventureChallengeType.conversationChoice,
-    title: 'Challenge 9: Security Check & Floor Directions',
-    npcId: 'security_marcus',
-    npcDialogue: 'Do you know where the conference meeting room is located?',
-    question: 'Select the professional and concise English response:',
-    options: [
-      AdventureOption(
-        text: 'Yes. It is on the second floor.',
-        isCorrect: true,
-        feedback:
-            'Spot on! "On the [ordinal number] floor" is the standard English prepositional phrase for building levels.',
-        reaction: 'Correct. Take elevator B on your right. Good luck with your meeting!',
-      ),
-      AdventureOption(
-        text: 'Yes, I am meeting.',
-        isCorrect: false,
-        feedback: 'Grammatically confused. "Meeting" is an event you attend, not what you are.',
-        reaction: 'I asked where the room is, not what you are doing.',
-      ),
-      AdventureOption(
-        text: 'Second floor meeting?',
-        isCorrect: false,
-        feedback: 'Too informal for corporate check-in. Use a full affirmative sentence: "Yes, it is on the second floor."',
-        reaction: 'Please confirm clearly for our guest visitor log.',
-      ),
-    ],
-    targetVocabulary: 'office',
-    vocabularyMeaning: 'A room, set of rooms, or building used as a place for commercial or professional work.',
-    xpReward: 30,
-  ),
-
-  // Challenge 10: Final Challenge – City Escape & Master Navigation
-  AdventureChallenge(
-    id: 10,
-    type: AdventureChallengeType.finalInterview,
-    title: 'Final Challenge: Master City Navigator',
-    npcId: 'security_marcus',
-    npcDialogue: 'Listen to the 4-stage master navigation briefing to verify your city certification.',
-    audioPrompt:
-        'Go straight to the square. Turn left at the bank. Walk past the library. The office is opposite the restaurant.',
-    question: 'Based on the multi-step spoken directions, where is the office located?',
-    options: [
-      AdventureOption(
-        text: 'Opposite the restaurant',
-        isCorrect: true,
-        feedback:
-            'Mission Accomplished! You have mastered city directions, street signs, listening comprehension, and spatial prepositions!',
-        reaction: '🎉 City Navigator Certification unlocked! You navigated flawlessly!',
-      ),
-      AdventureOption(
-        text: 'Inside the underground subway tunnel',
-        isCorrect: false,
-        feedback: 'The final spoken instruction stated: "The office is opposite the restaurant."',
-      ),
-      AdventureOption(
-        text: 'Behind the pharmacy dumpster',
-        isCorrect: false,
-        feedback: 'Incorrect location.',
-      ),
-      AdventureOption(
-        text: 'Under the fountain plaza',
-        isCorrect: false,
-        feedback: 'Incorrect location.',
+            'The instruction is to turn right at the corner, not left before the fountain.',
       ),
     ],
     targetVocabulary: 'opposite',
-    vocabularyMeaning: 'Situated directly on the other side of something or someone, usually separated by a space or street.',
-    xpReward: 50,
+    vocabularyMeaning: 'facing or on the other side of an area or street (എതിർവശത്ത്)',
+    xpReward: 25,
+  ),
+
+  // ── Challenge 2: Spatial Landmark Identification ───────────────────────
+  AdventureChallenge(
+    id: 2,
+    type: AdventureChallengeType.vocabularyInContext,
+    title: 'Challenge 2: Locate the Pharmacy',
+    npcId: 'officer_harris',
+    npcDialogue:
+        'Officer Harris points to the road map: "You need to collect courier documents from the Pharmacy. The city guide states: \'The Pharmacy is located between the Central Bank and City Square.\'"',
+    question: 'Where is the Pharmacy situated according to the guide?',
+    options: [
+      AdventureOption(
+        text: 'Between the Central Bank and City Square',
+        isCorrect: true,
+        feedback:
+            'Correct! "Between" refers to the middle space separating two distinct places. Documents secured.',
+        reaction: 'Officer Harris gives a thumbs-up: "Pharmacy location confirmed!"',
+      ),
+      AdventureOption(
+        text: 'Opposite the high school football ground',
+        isCorrect: false,
+        feedback:
+            'There is no school in this commercial district. The pharmacy is "between the Central Bank and City Square".',
+      ),
+      AdventureOption(
+        text: 'Behind the underground subway terminal',
+        isCorrect: false,
+        feedback:
+            'The pharmacy is on the south street front, not behind the subway.',
+      ),
+      AdventureOption(
+        text: 'Next to the rooftop helipad',
+        isCorrect: false,
+        feedback:
+            'The pharmacy is at ground level between the Bank and the Square.',
+      ),
+    ],
+    targetVocabulary: 'between',
+    vocabularyMeaning: 'in the space separating two points, objects, or places (ഇടയിൽ)',
+    xpReward: 25,
+  ),
+
+  // ── Challenge 3: Listening Navigation ──────────────────────────────────
+  AdventureChallenge(
+    id: 3,
+    type: AdventureChallengeType.listening,
+    title: 'Challenge 3: Audio Transit Advisory',
+    npcId: 'transit_elena',
+    npcDialogue:
+        'Elena Torres broadcasts an urgent transit update over the loudspeaker. Listen carefully to the audio clue:',
+    audioPrompt:
+        'Attention pedestrian! To reach Grand Metro Station, walk straight for two blocks and take the entrance on your left, beside the supermarket.',
+    question: 'Where is the Grand Metro Station entrance according to Elena?',
+    options: [
+      AdventureOption(
+        text: 'On your left, beside the supermarket',
+        isCorrect: true,
+        feedback:
+            'Excellent listening! "Beside" means next to or at the side of. Station entrance located.',
+        reaction: 'Elena smiles: "Great job! The metro line is operating smoothly."',
+      ),
+      AdventureOption(
+        text: 'On your right, behind the central library',
+        isCorrect: false,
+        feedback:
+            'Elena clearly said "on your left, beside the supermarket".',
+      ),
+      AdventureOption(
+        text: 'Inside the underground parking garage',
+        isCorrect: false,
+        feedback:
+            'The broadcast indicated the entrance is beside the supermarket.',
+      ),
+      AdventureOption(
+        text: 'Across the river on North Boulevard',
+        isCorrect: false,
+        feedback:
+            'Listen again — the station is two blocks ahead on your left.',
+      ),
+    ],
+    targetVocabulary: 'beside',
+    vocabularyMeaning: 'at the side of; next to (അടുത്ത് / തൊട്ടടുത്ത്)',
+    xpReward: 30,
+  ),
+
+  // ── Challenge 4: Sign Hunt — Public Library ────────────────────────────
+  AdventureChallenge(
+    id: 4,
+    type: AdventureChallengeType.vocabularyInContext,
+    title: 'Challenge 4: Spot the Library Sign',
+    npcId: 'transit_elena',
+    npcDialogue:
+        'Elena checks her tablet: "Before proceeding to Tech Tower, drop off the research ledger at the Public Library. Check the overhead city signboards."',
+    question: 'Which sign indicates the direction toward the Public Library?',
+    options: [
+      AdventureOption(
+        text: 'LIBRARY ➔ (Walk straight east toward the avenue)',
+        isCorrect: true,
+        feedback:
+            'Correct! The purple landmark sign points directly toward the Public Library entrance.',
+        reaction: 'Elena validates the route: "Ledger recorded. Keep going!"',
+      ),
+      AdventureOption(
+        text: 'EXIT ⬇ (Underground maintenance tunnel)',
+        isCorrect: false,
+        feedback:
+            'An "EXIT" sign marks a way out of an enclosed area, not the library direction.',
+      ),
+      AdventureOption(
+        text: 'NO PARKING ⛔ (Tow-away zone)',
+        isCorrect: false,
+        feedback:
+            'This is a parking traffic restriction, not a destination signboard.',
+      ),
+      AdventureOption(
+        text: 'BUS STOP ➔ (Transit boarding bay)',
+        isCorrect: false,
+        feedback:
+            'The bus stop sign points to transit, not the library.',
+      ),
+    ],
+    targetVocabulary: 'library',
+    vocabularyMeaning: 'a building containing collections of books and periodicals for reading or study (ലൈബ്രറി / വായനശാല)',
+    xpReward: 25,
+  ),
+
+  // ── Challenge 5: Spatial Preposition Mastery ───────────────────────────
+  AdventureChallenge(
+    id: 5,
+    type: AdventureChallengeType.vocabularyInContext,
+    title: 'Challenge 5: Analyze the Street Layout',
+    npcId: 'transit_elena',
+    npcDialogue:
+        'Elena asks you to verify your position: "Looking across the boulevard, Bistro Gourmet is located directly ___ the Central Bank."',
+    question: 'Which preposition accurately describes Bistro Gourmet relative to Central Bank?',
+    options: [
+      AdventureOption(
+        text: 'beside',
+        isCorrect: true,
+        feedback:
+            'Perfect! Both Bistro Gourmet and Central Bank are adjacent along the southern side of the road.',
+        reaction: 'Elena nods: "Exact spatial awareness!"',
+      ),
+      AdventureOption(
+        text: 'inside',
+        isCorrect: false,
+        feedback:
+            'Bistro Gourmet is an independent restaurant building, not located inside the bank.',
+      ),
+      AdventureOption(
+        text: 'behind',
+        isCorrect: false,
+        feedback:
+            '"Behind" means at the rear. Bistro Gourmet is right next to the bank along the street frontage.',
+      ),
+      AdventureOption(
+        text: 'under',
+        isCorrect: false,
+        feedback:
+            '"Under" implies beneath the ground. Both venues are street-level establishments.',
+      ),
+    ],
+    targetVocabulary: 'beside',
+    vocabularyMeaning: 'by the side of; adjacent to (തൊട്ടടുത്ത്)',
+    xpReward: 25,
+  ),
+
+  // ── Challenge 6: Asking for Directions Politely ────────────────────────
+  AdventureChallenge(
+    id: 6,
+    type: AdventureChallengeType.conversationChoice,
+    title: 'Challenge 6: Inquire Politely',
+    npcId: 'officer_harris',
+    npcDialogue:
+        'You approach Officer Harris at the intersection to ask how to reach the City Business Center. Which phrasing is most polite and professional?',
+    question: 'Choose the most professional way to ask for directions:',
+    options: [
+      AdventureOption(
+        text: 'Excuse me, could you please direct me to the City Business Center?',
+        isCorrect: true,
+        feedback:
+            'Superb! Using "Excuse me", modal "could", and polite "please" is the gold standard of professional English.',
+        reaction: 'Officer Harris smiles warmly: "Certainly! Cross the street and head straight ahead."',
+      ),
+      AdventureOption(
+        text: 'Hey! Tell me where the business center is right now.',
+        isCorrect: false,
+        feedback:
+            'This imperative command sounds demanding and rude in professional communication.',
+      ),
+      AdventureOption(
+        text: 'Where business center? I need go fast.',
+        isCorrect: false,
+        feedback:
+            'This lacks grammatical structure and essential polite modal phrases.',
+      ),
+      AdventureOption(
+        text: 'Show road now, I am in hurry.',
+        isCorrect: false,
+        feedback:
+            'Too abrupt and impolite. Always begin with "Excuse me" or "Pardon me".',
+      ),
+    ],
+    targetVocabulary: 'straight',
+    vocabularyMeaning: 'in a continuous line without curving or turning (നേരെ)',
+    xpReward: 30,
+  ),
+
+  // ── Challenge 7: Interactive Route Builder ────────────────────────────
+  AdventureChallenge(
+    id: 7,
+    type: AdventureChallengeType.sentenceBuilder,
+    title: 'Challenge 7: Sequence the Route',
+    npcId: 'transit_elena',
+    npcDialogue:
+        'Elena Chen asks you to organize the step-by-step route directions from Grand Metro Station to City Business Center:',
+    question: 'Arrange the direction tiles in the logical sequence to reach the destination:',
+    sentenceTiles: [
+      'Exit the station',
+      'turn right at the corner',
+      'walk straight past the library',
+      'and enter the main lobby',
+    ],
+    targetSentence:
+        'Exit the station turn right at the corner walk straight past the library and enter the main lobby',
+    options: [
+      AdventureOption(
+        text: 'Exit the station ➔ turn right at the corner ➔ walk straight past the library ➔ and enter the main lobby',
+        isCorrect: true,
+        feedback:
+            'Flawless route sequencing! You have organized the multi-step navigation plan perfectly.',
+        reaction: 'Elena cheers: "Route compiled! You are ready for the final rush."',
+      ),
+    ],
+    targetVocabulary: 'corner',
+    vocabularyMeaning: 'the place where two streets or edges meet (മൂല / തിരിവ്)',
+    xpReward: 35,
+  ),
+
+  // ── Challenge 8: Timed Navigation Challenge ───────────────────────────
+  AdventureChallenge(
+    id: 8,
+    type: AdventureChallengeType.quickResponse,
+    title: 'Challenge 8: Rapid Transit Decision (15s)',
+    npcId: 'transit_elena',
+    npcDialogue:
+        'RAPID DISPATCH ALERT: The delivery window closes in 15 seconds! The road sign flashes: "For City Business Center Lobby, proceed ___ across the pedestrian crossing."',
+    question: 'Select the correct direction word before the timer expires:',
+    timeLimitSeconds: 15,
+    options: [
+      AdventureOption(
+        text: 'straight',
+        isCorrect: true,
+        feedback:
+            'Brilliant quick reflex! "Proceed straight across" guides you directly to the entrance plaza on time.',
+        reaction: 'Elena signals: "Dispatch on schedule! Proceed to security check."',
+      ),
+      AdventureOption(
+        text: 'backward',
+        isCorrect: false,
+        feedback:
+            '"Backward" would take you away from your destination.',
+      ),
+      AdventureOption(
+        text: 'circle',
+        isCorrect: false,
+        feedback:
+            'Walking in circles will cause you to miss the delivery window.',
+      ),
+    ],
+    targetVocabulary: 'straight',
+    vocabularyMeaning: 'moving in one direction without turning (നേരെ)',
+    xpReward: 30,
+  ),
+
+  // ── Challenge 9: Security Entrance Interaction ────────────────────────
+  AdventureChallenge(
+    id: 9,
+    type: AdventureChallengeType.conversationChoice,
+    title: 'Challenge 9: Security Clearance',
+    npcId: 'security_marcus',
+    npcDialogue:
+        'Chief Marcus greets you at the security desk: "Good morning. Please confirm which entrance and department you are visiting today."',
+    question: 'How should you clearly and professionally state your arrival?',
+    options: [
+      AdventureOption(
+        text: 'Good morning. I am delivering an encrypted dispatch to the executive boardroom on the 4th floor.',
+        isCorrect: true,
+        feedback:
+            'Clear, courteous, and precise! Marcus validates your badge and unlocks the elevator gate.',
+        reaction: 'Marcus swipes your pass: "Clearance approved. Elevator B is on your right."',
+      ),
+      AdventureOption(
+        text: 'Open the gate, I have package.',
+        isCorrect: false,
+        feedback:
+            'Unprofessional and abrupt. State your purpose with full courtesy.',
+      ),
+      AdventureOption(
+        text: 'I just walk anywhere in this building.',
+        isCorrect: false,
+        feedback:
+            'Security protocol requires a specific floor and purpose statement.',
+      ),
+    ],
+    targetVocabulary: 'entrance',
+    vocabularyMeaning: 'an opening, such as a door or gate, that allows access to a place (പ്രവേശന കവാടം)',
+    xpReward: 25,
+  ),
+
+  // ── Challenge 10: Final Executive Dispatch Delivery ────────────────────
+  AdventureChallenge(
+    id: 10,
+    type: AdventureChallengeType.finalInterview,
+    title: 'Challenge 10: Executive Handover',
+    npcId: 'security_marcus',
+    npcDialogue:
+        'Marcus accompanies you to the boardroom. The Executive Director requests a brief delivery summary: "Please explain your navigation route across the city."',
+    question: 'Select the most articulate and complete summary of your journey:',
+    options: [
+      AdventureOption(
+        text: 'I navigated from City Square, followed the road signs opposite the bus stop, passed beside the central bank, and arrived directly at the tech center entrance.',
+        isCorrect: true,
+        feedback:
+            'Outstanding mastery of English spatial prepositions, directional flow, and professional vocabulary!',
+        reaction: '🎉 City Navigator Complete! You are a certified Urban Navigation Specialist.',
+      ),
+      AdventureOption(
+        text: 'I just walked on roads and found this big house.',
+        isCorrect: false,
+        feedback:
+            'Lacks precision, spatial terms, and professional articulation.',
+      ),
+      AdventureOption(
+        text: 'City was big and confusing so I ran fast.',
+        isCorrect: false,
+        feedback:
+            'Demonstrate the specific navigation prepositions you learned throughout the city.',
+      ),
+    ],
+    targetVocabulary: 'office',
+    vocabularyMeaning: 'a room, set of rooms, or building used as a place for commercial or professional work (ഓഫീസ്)',
+    xpReward: 40,
   ),
 ];
 
-/// 🗺️ Complete Level 2 Data Container
+/// 🗺️ Complete Level Data for Day 2
 const AdventureLevelData kMission02CityData = AdventureLevelData(
   levelNumber: 2,
-  title: 'Mission 02 – City Navigator',
-  subtitle: 'Modern Explorable City Hub',
-  environmentName: 'Metropolitan District & Grand Avenue',
+  title: 'City Navigator',
+  subtitle: 'Metro Pursuit & Urban Exploration',
+  environmentName: 'Metro City Center – District 1',
   storyIntro:
-      'Your crucial meeting starts at 11:00 AM at the City Business Center. Receive spoken instructions from city officers, read street signs, navigate bustling roads, and discover your destination!',
+      'You are on an urgent mission across the metropolis to deliver a critical encrypted dispatch to the Executive Boardroom at the City Business Center. Street signals are active, traffic is bustling, and directional signs will guide your way. Follow written directions, listen to transit alerts, ask for directions politely, and reach your destination on time!',
   objective:
-      'Follow the English clues, read signs, ask and understand directions, and reach the City Business Center before 11:00 AM.',
+      'Explore the 2D neon city, interact with guides, collect tokens, and solve 10 directional English navigation challenges.',
   targetVocabularyList: kCityTargetVocabulary,
   npcs: [
     kCityNpcOfficerHarris,
     kCityNpcElena,
     kCityNpcMarcus,
   ],
-  challenges: kMission02Challenges,
+  challenges: kCityChallenges,
 );

@@ -1,4 +1,9 @@
-import 'package:flutter/foundation.dart';
+
+/// 🕹️ Player facing direction (used by all game pages)
+enum PlayerFacing { up, down, left, right }
+
+/// 🎭 Player animation state (used by all game pages)
+enum PlayerAnimationState { idle, walking, talking, celebrating, confused }
 
 /// 🎯 Challenge Types supported by the 2D Adventure Game Engine
 enum AdventureChallengeType {

@@ -33,8 +33,22 @@ import 'career_adventure/adventure_models.dart';
 import 'career_adventure/career_adventure_game_page.dart';
 import 'career_adventure/city_navigator_models.dart';
 import 'career_adventure/city_navigator_game_page.dart';
+import 'career_adventure/cyber_vocab_models.dart';
+import 'career_adventure/cyber_vocab_game_page.dart';
 import 'career_adventure/memory_break_in_models.dart';
 import 'career_adventure/memory_break_in_game_page.dart';
+import 'career_adventure/word_factory_models.dart';
+import 'career_adventure/word_factory_game_page.dart';
+import 'career_adventure/signal_hunt_models.dart';
+import 'career_adventure/signal_hunt_game_page.dart';
+import 'career_adventure/lost_package_models.dart';
+import 'career_adventure/lost_package_game_page.dart';
+import 'career_adventure/busy_day_models.dart';
+import 'career_adventure/busy_day_game_page.dart';
+import 'career_adventure/fast_fix_models.dart';
+import 'career_adventure/fast_fix_game_page.dart';
+import 'career_adventure/market_master_models.dart';
+import 'career_adventure/market_master_game_page.dart';
 
 /// 🎯 Comprehensive Interactive Daily English Mission Experience
 class PocketDailyMissionPage extends StatefulWidget {
@@ -72,7 +86,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   final FlutterTts _tts = FlutterTts();
 
   // ⏱️ Shared 60-Minute Daily Practice Timer Service
-  final PocketMissionTimerService _timerService = PocketMissionTimerService.instance;
+  final PocketMissionTimerService _timerService =
+      PocketMissionTimerService.instance;
 
   // Checklist Subtasks Progress
   bool _dailyRuleCompleted = false;
@@ -93,6 +108,12 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   bool _careerAdventureCompleted = false;
   bool _cityNavigatorCompleted = false;
   bool _memoryBreakInCompleted = false;
+  bool _wordFactoryCompleted = false;
+  bool _signalHuntCompleted = false;
+  bool _lostPackageCompleted = false;
+  bool _busyDayCompleted = false;
+  bool _fastFixCompleted = false;
+  bool _marketMasterCompleted = false;
   bool _isSpeakingChallengeRecording = false;
   int _speakingChallengeSecondsRemaining = 30;
   Timer? _speakingTimer;
@@ -109,8 +130,10 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   bool _quizSubmitted = false;
 
   // 🌐 Multilingual Category Preferences (Audio Requirement)
-  static List<String> get kSupportedLanguages => PocketDailyMissionPage.kSupportedLanguages;
-  static Map<String, String> get kLanguageLabels => PocketDailyMissionPage.kLanguageLabels;
+  static List<String> get kSupportedLanguages =>
+      PocketDailyMissionPage.kSupportedLanguages;
+  static Map<String, String> get kLanguageLabels =>
+      PocketDailyMissionPage.kLanguageLabels;
 
   String _selectedLanguage = 'Malayalam';
   bool _isStorySpeaking = false;
@@ -119,8 +142,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   static const String _kDay1StoryText =
       'A young student once stood by a tall bamboo tree, hesitant to practice speaking English. He was afraid of making mistakes in front of others. A wise mentor approached him and smiled. Look at this bamboo, the mentor said. For four years, its roots grow deep underground in silence. Then, in the fifth year, it shoots up eighty feet into the sky! Your daily English practice is just like that seed. Every day you speak, read, and listen for sixty minutes, you are building unseen roots. Soon, your fluency will soar higher than you ever imagined. The student took a deep breath, spoke his first sentence with courage, and stepped fearlessly onto his ninety day path.';
 
-  static const String _kDay1StoryFormatted =
-      '🌱 Part 1: The Hesitant Learner\n'
+  static const String _kDay1StoryFormatted = '🌱 Part 1: The Hesitant Learner\n'
       'A young student once stood by a tall bamboo tree, hesitant to practice speaking English. He was afraid of making mistakes in front of others.\n\n'
       '🎋 Part 2: The Wisdom of the Bamboo\n'
       'A wise mentor approached him and smiled. "Look at this bamboo," the mentor said. "For four years, its roots grow deep underground in silence. Then, in the fifth year, it shoots up eighty feet into the sky!"\n\n'
@@ -132,8 +154,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   static const String _kDay2StoryText =
       'Marcus was an ambitious learner who struggled to find time for English. Every evening he felt exhausted and postponed his speaking practice to tomorrow. One day, his grandfather handed him an empty notebook with golden edges. Marcus, the old man said gently, we do not decide our future. We decide our daily habits, and our habits decide our future. Dedicate the very first sixty minutes of your sunrise to what you wish to master. Marcus accepted the wisdom. He placed the notebook on his desk and woke up thirty minutes earlier each dawn. In the quiet morning, he read aloud, spoke to the mirror, and practiced his vocabulary sentences. Within weeks, what once felt impossible became effortless. Marcus realized that mastery does not require giant leaps, only unbroken daily rituals.';
 
-  static const String _kDay2StoryFormatted =
-      '🌅 Part 1: The Evening Struggle\n'
+  static const String _kDay2StoryFormatted = '🌅 Part 1: The Evening Struggle\n'
       'Marcus was an ambitious learner who struggled to find time for English. Every evening he felt exhausted and postponed his speaking practice to tomorrow.\n\n'
       '📖 Part 2: The Golden Notebook\n'
       'One day, his grandfather handed him an empty notebook with golden edges. "Marcus," the old man said gently, "we do not decide our future. We decide our daily habits, and our habits decide our future."\n\n'
@@ -145,8 +166,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   static const String _kDay3StoryText =
       'Elena felt overwhelmed by constant notifications and shallow digital noise. She tried studying English while scrolling through social media, but her mind remained scattered. One evening, an architect named Paul showed her the blueprints of a grand cathedral. Notice how thick the stone walls are, Paul said. Without silence and deep focus, monumental beauty cannot be constructed. Elena decided to become the architect of her own mind. She placed her phone in another room, entered her study chamber, and gave sixty minutes of unbroken concentration to English speech and debate. In that deep silence, her cognitive abilities flourished. She realized that shallow multitasking is worthless, but sustained immersion builds unstoppable fluency.';
 
-  static const String _kDay3StoryFormatted =
-      '📵 Part 1: The Scattered Mind\n'
+  static const String _kDay3StoryFormatted = '📵 Part 1: The Scattered Mind\n'
       'Elena felt overwhelmed by constant notifications and shallow digital noise. She tried studying English while scrolling through social media, but her mind remained scattered.\n\n'
       '🏛️ Part 2: The Cathedral Blueprints\n'
       'An architect named Paul showed her the blueprints of a grand cathedral. "Notice how thick the stone walls are," Paul said. "Without silence and deep focus, monumental beauty cannot be constructed."\n\n'
@@ -158,8 +178,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   static const String _kDay4StoryText =
       'In the town council assembly, young Kaelen was passionate about protecting the ancient forest. At first, he raised his voice, interrupted his opponents, and demanded immediate agreement. The council rejected his proposal. An elder diplomat pulled Kaelen aside and offered advice. Persuasion is not a battlefield of loud voices, Kaelen; it is a bridge built of diplomatic precision, careful listening, and eloquent concession. The next morning, Kaelen spoke calmly. He acknowledged the economic concerns of the council members before presenting his sustainable plan. By choosing articulate words over anger, he built consensus. The council unanimously approved the protection decree. Kaelen learned that true power in English communication lies not in shouting, but in the art of persuasive reasoning.';
 
-  static const String _kDay4StoryFormatted =
-      '⚡ Part 1: The Loud Approach\n'
+  static const String _kDay4StoryFormatted = '⚡ Part 1: The Loud Approach\n'
       'In the town council assembly, young Kaelen was passionate about protecting the ancient forest. He raised his voice and interrupted opponents, but the council rejected his plea.\n\n'
       '🤝 Part 2: The Diplomat\'s Secret\n'
       'An elder diplomat offered advice: "Persuasion is not a battlefield of loud voices. It is a bridge built of diplomatic precision, careful listening, and eloquent concession."\n\n'
@@ -171,8 +190,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   static const String _kDay5StoryText =
       'The merchant galleon was trapped in a fierce midnight gale near treacherous coral reefs. Panic spread among the sailors as waves crashed over the wooden deck. Amidst the chaos, Captain Sarah climbed to the helm. She did not panic. With unwavering fortitude and decisive English commands, she directed the crew: Secure the main sail immediately! Man the bilge pumps! Navigator, plot the course toward Citadel Harbor! Her calm voice became a beacon of certainty in the dark. Every crew member executed their role with strategic precision. By dawn, the ship glided smoothly into the calm waters of the harbor. The sailors cheered. Sarah reminded them that in every great storm of life, decisive communication and resolute courage turn adversity into triumph.';
 
-  static const String _kDay5StoryFormatted =
-      '🌊 Part 1: Midnight Chaos\n'
+  static const String _kDay5StoryFormatted = '🌊 Part 1: Midnight Chaos\n'
       'The merchant galleon was trapped in a fierce midnight gale near treacherous reefs. Panic spread among the sailors as waves crashed over the wooden deck.\n\n'
       '⚓ Part 2: The Calm Commander\n'
       'Captain Sarah climbed to the helm with unwavering fortitude. She did not panic. With decisive English commands, she directed the crew through the howling storm.\n\n'
@@ -210,8 +228,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   static const String _kDay8StoryText =
       'At the International Symposium on Future Ethics in Geneva, world leaders struggled with a complex dilemma: balancing rapid artificial intelligence autonomy with human dignity. The debate was paralyzed by a false dichotomy between reckless technological velocity and rigid technological stagnation. Dr. Evelyn Vance, a philosopher and systems architect, approached the rostrum. "It is imperative that our generation synthesize visionary technological innovation with timeless ethical wisdom," Dr. Vance declared. She proposed an adaptive global governance framework that empowered autonomous systems while safeguarding human well-being as a paramount prerequisite. Rather than viewing machine intelligence as an adversary, she articulated an enlightened paradigm where technology acts as an amplifier of human compassion. Her address synthesized philosophy, law, and science with sublime intellectual rigor. The assembly adopted the Geneva Synthesis by acclamation, establishing an enduring blueprint for generations to come.';
 
-  static const String _kDay8StoryFormatted =
-      '🌐 Part 1: The Global Dilemma\n'
+  static const String _kDay8StoryFormatted = '🌐 Part 1: The Global Dilemma\n'
       'At the International Symposium on Future Ethics, global delegates were paralyzed by a false dichotomy: reckless technological speed versus rigid technological stagnation.\n\n'
       '🧠 Part 2: The Subjunctive Call\n'
       'Dr. Evelyn Vance approached the rostrum with sublime rigor: "It is imperative that our generation synthesize visionary innovation with timeless ethical wisdom."\n\n'
@@ -223,8 +240,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   static const String _kDay9StoryText =
       'At the Oxford International Colloquium, scholars gathered to debate the ethical regulation of synthetic bio-engineering. While populist commentators demanded immediate simplistic bans or unchecked commercialization, Professor Julian Vance took the podium with dispassionate poise. "What we fail to comprehend in binary arguments," Julian asserted, "is that true wisdom lives in the crucible of nuance and ambiguity." He demonstrated that sweeping generalizations collapse under rigorous scrutiny. Through measured cleft sentences and empirical evidence, he juxtaposed potential agricultural breakthroughs against ecological vulnerabilities. Rather than offering superficial dogmas, he challenged the assembly to formulate nuanced, adaptable policy frameworks. His cognitive depth and articulate balance galvanized the scholars to abandon ideological polarization. Julian demonstrated that genuine English mastery is not merely fluency in straightforward opinions, but the intellectual stamina to navigate intricate grey areas with clarity and grace.';
 
-  static const String _kDay9StoryFormatted =
-      '⚖️ Part 1: The Binary Dilemma\n'
+  static const String _kDay9StoryFormatted = '⚖️ Part 1: The Binary Dilemma\n'
       'At the Oxford International Colloquium, scholars debated synthetic bio-engineering ethics. Populist speakers clashed violently with simplistic, all-or-nothing ultimatums.\n\n'
       '🔬 Part 2: The Cleft Assertion\n'
       'Professor Julian Vance took the podium with dispassionate poise: "What we fail to comprehend in loud binary debates is that true wisdom resides in the crucible of nuance and ambiguity."\n\n'
@@ -262,8 +278,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   static const String _kDay12StoryText =
       'Within the historic debate chamber of the Oxford Union, hundreds of seasoned intellectuals gathered for the annual world championship of forensic dialectic. Scholar Rowan stood before the dispatched dispatch box, facing an opponent known for employing specious fallacies and intimidating rhetorical volume. Rather than matching the aggression, Rowan dismantled the opponent\'s argument with surgical calm. "Were it not for foundational logic and empirical integrity," Rowan declared, "even the most eloquent rhetoric would dissolve into empty deception. Be that as it may, we must examine the unexamined assumptions beneath this motion." Through masterful subjunctive structures and concessive refutations, Rowan isolated the logical contradiction in the opponent\'s premise. Rowan demonstrated that conceding minor points gracefully disarms adversaries, while holding firm on core truth commands universal respect. When Rowan concluded, the entire assembly erupted in admiration. Rowan established that true mastery in debate is not bluster, but perspicacious clarity that exposes specious claims and elevates reasoned dialogue.';
 
-  static const String _kDay12StoryFormatted =
-      '🏛️ Part 1: The Oxford Arena\n'
+  static const String _kDay12StoryFormatted = '🏛️ Part 1: The Oxford Arena\n'
       'Within the Oxford Union debate chamber, hundreds of intellectuals convened. Rowan faced a formidable adversary renowned for aggressive, specious arguments.\n\n'
       '⚖️ Part 2: The Subjunctive Opening\n'
       'Stepping to the dispatch box, Rowan spoke with surgical composure: "Were it not for empirical rigor, eloquent rhetoric would collapse into hollow deception. Be that as it may, let us dissect the underlying premises."\n\n'
@@ -275,8 +290,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   static const String _kDay13StoryText =
       'At the Cambridge Institute for Epistemic Inquiry, senior researcher Dr. Elena Rostova spent months investigating an anomalous paradox in quantum neural networks. Conventional academic wisdom dismissed the anomaly as mere experimental noise, urging her team to abandon the project. Unwavering in her scientific empiricism, Dr. Elena persisted. Addressing the international fellowship of scientists, she opened with commanding rhetorical inversion: "Not only did our control measurements fail to eliminate the anomaly, but never in modern computational history have we witnessed such reproducible defiance of classical theory. Under no circumstances should an investigator discard contradictory data simply because it disrupts a comfortable paradigm." By structuring her scientific argument with negative inversion, she infused her rigorous mathematical proofs with profound drama and gravitas. Her peer researchers scrutinized her findings and were compelled to corroborate her hypothesis. Elena proved that when profound intellectual rigor meets masterful English expression, an investigator can shift the paradigms of an entire generation.';
 
-  static const String _kDay13StoryFormatted =
-      '🔬 Part 1: The Quantum Paradox\n'
+  static const String _kDay13StoryFormatted = '🔬 Part 1: The Quantum Paradox\n'
       'At the Cambridge Institute for Epistemic Inquiry, Dr. Elena Rostova unraveled an anomalous paradox dismissed by conventional scholars as experimental noise.\n\n'
       '⚡ Part 2: The Negative Inversion\n'
       'Addressing the world fellowship of scientists, she commanded the room: "Not only did our control trials confirm the anomaly, but never in modern history have we witnessed such reproducible defiance of classical models."\n\n'
@@ -288,8 +302,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   static const String _kDay14StoryText =
       'At the Grand Multilateral Summit in Geneva, delegates from opposing geopolitical blocs confronted a critical deadline to prevent an international trade embargo. Seventy-two consecutive hours of tense negotiations had brought the delegates to the brink of utter exhaustion. As cynicism began to settle across the council, Ambassador Kaelen and Chief Counsel Lyra took the floor. They employed rhetorical fronting and exquisite syntactic cohesion to galvanize the plenary hall. "Exhausted though we all are," Kaelen began, "reach a durable accord we must. Far and wide, millions of families await the outcome of this room. At stake stands not our pride, but our collective prosperity." Lyra then introduced a balanced multilateral compromise, using fronted prepositional phrases to place the human stakes center stage. Recalcitrant delegates set aside their stubborn posturing. By midnight, the landmark Geneva Treaty of Mutual Sovereignty was signed by all ninety nations. Kaelen and Lyra proved that oratorical rhetoric, when tempered by genuine empathy and grammatical elegance, has the power to bridge the deepest chasms of human discord.';
 
-  static const String _kDay14StoryFormatted =
-      '🌐 Part 1: The Geneva Deadline\n'
+  static const String _kDay14StoryFormatted = '🌐 Part 1: The Geneva Deadline\n'
       'At the Grand Multilateral Summit in Geneva, delegates faced an imminent midnight deadline on an international trade embargo after seventy-two hours of gridlock.\n\n'
       '⚡ Part 2: Rhetorical Fronting\n'
       'Ambassador Kaelen took the podium with electrifying presence: "Exhausted though we all are, reach a durable accord we must. Front and center stand not our egos, but our collective future."\n\n'
@@ -301,8 +314,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   static const String _kDay15StoryText =
       'In the historic diplomatic halls of Vienna, young diplomat Maya recognized that true resonance demanded conversational register. At first, her proposals were delivered in stiff, scholastic decrees that alienated her counterparts. An elder ambassador observed her frustration and shared an invaluable insight: "True authority in English is not wielded through rigid ultimatums, Maya. It flourishes through diplomatic softeners, polite register, and subtle nuance." Taking this counsel to heart, Maya transformed her communication. Instead of commanding, she opened conversations with grace: "I was wondering if we might explore an interim custodial partnership," and "Would you happen to know if the energy council has finalized the draft parameters?" The atmosphere transformed instantly. Her conversational warmth and linguistic tact melted defensive barriers. The assembly reached a breakthrough consensus before dusk. Maya discovered that conversational register and diplomatic softeners build unbreakable bridges of international trust.';
 
-  static const String _kDay15StoryFormatted =
-      '🏛️ Part 1: The Formal Dilemma\n'
+  static const String _kDay15StoryFormatted = '🏛️ Part 1: The Formal Dilemma\n'
       'In the historic diplomatic halls of Vienna, young diplomat Maya faced stubborn resistance. Her rigid, scholastic speeches alienated foreign delegates and brought negotiations to a standstill.\n\n'
       '🕊️ Part 2: The Ambassador\'s Counsel\n'
       'An elder statesman shared an enduring secret: "True authority in English is not wielded through cold ultimatums. It flourishes through diplomatic softeners, conversational register, and subtle nuance."\n\n'
@@ -616,7 +628,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
   String get _grammarRuleTitle {
     if (PocketMissionCurriculumRegistry.hasDay(widget.day)) {
-      final regTitle = PocketMissionCurriculumRegistry.getGrammarRuleTitle(widget.day);
+      final regTitle =
+          PocketMissionCurriculumRegistry.getGrammarRuleTitle(widget.day);
       if (regTitle.isNotEmpty) return regTitle;
     }
     switch (widget.day) {
@@ -706,7 +719,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
   List<String> get _quizOptions {
     if (PocketMissionCurriculumRegistry.hasDay(widget.day)) {
-      final regOpts = PocketMissionCurriculumRegistry.getQuizOptions(widget.day);
+      final regOpts =
+          PocketMissionCurriculumRegistry.getQuizOptions(widget.day);
       if (regOpts.isNotEmpty) return regOpts;
     }
     switch (widget.day) {
@@ -823,7 +837,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
   String _getGrammarRuleExplanation(String lang) {
     if (PocketMissionCurriculumRegistry.hasDay(widget.day)) {
-      final regExp = PocketMissionCurriculumRegistry.getGrammarRuleExplanation(widget.day, lang);
+      final regExp = PocketMissionCurriculumRegistry.getGrammarRuleExplanation(
+          widget.day, lang);
       if (regExp.isNotEmpty) return regExp;
     }
     if (widget.day == 18) {
@@ -1115,7 +1130,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
   String _getStorySummary(String lang) {
     if (PocketMissionCurriculumRegistry.hasDay(widget.day)) {
-      final regSum = PocketMissionCurriculumRegistry.getStorySummary(widget.day, lang);
+      final regSum =
+          PocketMissionCurriculumRegistry.getStorySummary(widget.day, lang);
       if (regSum.isNotEmpty) return regSum;
     }
     if (widget.day == 18) {
@@ -1414,7 +1430,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       try {
         final prefs = await SharedPreferences.getInstance();
-        final hasAccepted = prefs.getBool('pocket_world_rules_accepted_v1') ?? false;
+        final hasAccepted =
+            prefs.getBool('pocket_world_rules_accepted_v1') ?? false;
         if (!hasAccepted && widget.day == 1 && mounted) {
           PocketWorldGameRulesModal.show(context, currentDay: widget.day);
         }
@@ -1471,7 +1488,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
   void _loadVocabForDay() {
     if (PocketMissionCurriculumRegistry.hasDay(widget.day)) {
-      final regVocab = PocketMissionCurriculumRegistry.getVocabItems(widget.day);
+      final regVocab =
+          PocketMissionCurriculumRegistry.getVocabItems(widget.day);
       if (regVocab.isNotEmpty) {
         _vocabList = regVocab;
         return;
@@ -1489,7 +1507,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           hindiMeaning: 'दिनचर्या / नियम',
           teluguMeaning: 'దినచర్య / నిత్యకృత్యం',
           kannadaMeaning: 'ದಿನಚರಿ / ವಾಡಿಕೆ',
-          exampleSentence: 'A morning routine gives you focus for the entire day.',
+          exampleSentence:
+              'A morning routine gives you focus for the entire day.',
           phonetic: '/ruːˈtiːn/',
         ),
         DailyVocabItem(
@@ -1501,7 +1520,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           hindiMeaning: 'आदत / स्वभाव',
           teluguMeaning: 'అలవాటు',
           kannadaMeaning: 'ಅಭ್ಯಾಸ / ರೂಢಿ',
-          exampleSentence: 'Speaking English daily will soon become a natural habit.',
+          exampleSentence:
+              'Speaking English daily will soon become a natural habit.',
           phonetic: '/ˈhæb.ɪt/',
         ),
         DailyVocabItem(
@@ -1513,7 +1533,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           hindiMeaning: 'कालक्रमानुसार',
           teluguMeaning: 'కాలక్రమానుసారమైన',
           kannadaMeaning: 'ಕಾಲಾನುಕ್ರಮದ',
-          exampleSentence: 'Describe your daily activities in chronological order.',
+          exampleSentence:
+              'Describe your daily activities in chronological order.',
           phonetic: '/ˌkrɒn.əˈlɒdʒ.ɪ.kəl/',
         ),
         DailyVocabItem(
@@ -1525,7 +1546,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           hindiMeaning: 'बार-बार / अक्सर',
           teluguMeaning: 'తరచుగా',
           kannadaMeaning: 'ಆಗಾಗ್ಗೆ / ಪದೇ ಪದೇ',
-          exampleSentence: 'He frequently speaks with language mates to gain fluency.',
+          exampleSentence:
+              'He frequently speaks with language mates to gain fluency.',
           phonetic: '/ˈfriː.kwənt.li/',
         ),
         DailyVocabItem(
@@ -1537,7 +1559,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           hindiMeaning: 'कभी-कभार / शायद ही कभी',
           teluguMeaning: 'అరుదుగా',
           kannadaMeaning: 'ಅಪರೂಪವಾಗಿ',
-          exampleSentence: 'Confident speakers seldom worry about little mistakes.',
+          exampleSentence:
+              'Confident speakers seldom worry about little mistakes.',
           phonetic: '/ˈsel.dəm/',
         ),
         DailyVocabItem(
@@ -1561,19 +1584,22 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           hindiMeaning: 'समय सारणी / योजना',
           teluguMeaning: 'సమయ పట్టిక',
           kannadaMeaning: 'ವೇಳಾಪಟ್ಟಿ',
-          exampleSentence: 'Set a daily schedule for reading and speaking practice.',
+          exampleSentence:
+              'Set a daily schedule for reading and speaking practice.',
           phonetic: '/ˈʃedʒ.uːl/',
         ),
         DailyVocabItem(
           word: 'Prioritize',
           partOfSpeech: 'verb',
-          definition: 'To designate or treat as more important than other things.',
+          definition:
+              'To designate or treat as more important than other things.',
           malayalamMeaning: 'മുൻഗണന നൽകുക',
           tamilMeaning: 'முன்னுரிமை அளித்தல்',
           hindiMeaning: 'प्राथमिकता देना',
           teluguMeaning: 'ప్రాధాన్యత ఇచ్చు',
           kannadaMeaning: 'ಆದ್ಯತೆ ನೀಡು',
-          exampleSentence: 'Prioritize speaking over silent grammar memorization.',
+          exampleSentence:
+              'Prioritize speaking over silent grammar memorization.',
           phonetic: '/praɪˈɒr.ɪ.taɪz/',
         ),
         DailyVocabItem(
@@ -1585,7 +1611,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           hindiMeaning: 'उत्पादक / फलदायी',
           teluguMeaning: 'ఉత్పాదకమైన / ఉపయోగకరమైన',
           kannadaMeaning: 'ಉತ್ಪಾದಕ / ಪ್ರಯೋಜನಕಾರಿ',
-          exampleSentence: 'Joining the audio call made my evening truly productive.',
+          exampleSentence:
+              'Joining the audio call made my evening truly productive.',
           phonetic: '/prəˈdʌk.tɪv/',
         ),
         DailyVocabItem(
@@ -1597,7 +1624,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           hindiMeaning: 'विचार करना / मंथन करना',
           teluguMeaning: 'ఆలోచించు / సమీక్షించు',
           kannadaMeaning: 'ಆಲೋಚಿಸು / ಪರಿಶೀಲಿಸು',
-          exampleSentence: 'Reflect on what you learned at the end of each mission.',
+          exampleSentence:
+              'Reflect on what you learned at the end of each mission.',
           phonetic: '/rɪˈflekt/',
         ),
       ];
@@ -1610,49 +1638,57 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         DailyVocabItem(
           word: 'Cognitive',
           partOfSpeech: 'adjective',
-          definition: 'Related to mental processes of perception, memory, and judgment.',
+          definition:
+              'Related to mental processes of perception, memory, and judgment.',
           malayalamMeaning: 'വൈജ്ഞാനികമായ / ബുദ്ധിപരമായ',
           tamilMeaning: 'அறிவாற்றல் சார்ந்த',
           hindiMeaning: 'संज्ञानात्मक / मानसिक',
           teluguMeaning: 'జ్ఞాన సంబంధిత / మేధోపరమైన',
           kannadaMeaning: 'ಜ್ಞಾನಗ್ರಹಣದ / ಬುದ್ಧಿಶಕ್ತಿಯ',
-          exampleSentence: 'Deep English reading strengthens your cognitive agility.',
+          exampleSentence:
+              'Deep English reading strengthens your cognitive agility.',
           phonetic: '/ˈkɒɡ.nə.tɪv/',
         ),
         DailyVocabItem(
           word: 'Distraction',
           partOfSpeech: 'noun',
-          definition: 'A thing that prevents someone from giving full attention to something.',
+          definition:
+              'A thing that prevents someone from giving full attention to something.',
           malayalamMeaning: 'ശ്രദ്ധതിരിവ് / വ്യതിചലനം',
           tamilMeaning: 'கவனச்சிதறல்',
           hindiMeaning: 'ध्यान भटकाव',
           teluguMeaning: 'దృష్టి మళ్లింపు / అంతరాయం',
           kannadaMeaning: 'ಗಮನ ವಿಚಲನೆ',
-          exampleSentence: 'Turn off notifications to eliminate every spoken distraction.',
+          exampleSentence:
+              'Turn off notifications to eliminate every spoken distraction.',
           phonetic: '/dɪˈstræk.ʃən/',
         ),
         DailyVocabItem(
           word: 'Immersive',
           partOfSpeech: 'adjective',
-          definition: 'Generating deep personal involvement or full mental absorption.',
+          definition:
+              'Generating deep personal involvement or full mental absorption.',
           malayalamMeaning: 'പൂർണ്ണമായി മുഴുകിനിൽക്കുന്ന',
           tamilMeaning: 'ஆழ்ந்து ஈடுபடும்',
           hindiMeaning: 'तल्लीन करने वाला / गहरा',
           teluguMeaning: 'పూర్తిగా లీనమయ్యే',
           kannadaMeaning: 'ಸಂಪೂರ್ಣ ತೊಡಗಿಸಿಕೊಳ್ಳುವ',
-          exampleSentence: 'An immersive 60-minute session accelerates conversational speed.',
+          exampleSentence:
+              'An immersive 60-minute session accelerates conversational speed.',
           phonetic: '/ɪˈmɜː.sɪv/',
         ),
         DailyVocabItem(
           word: 'Meticulous',
           partOfSpeech: 'adjective',
-          definition: 'Showing great attention to detail; very careful and precise.',
+          definition:
+              'Showing great attention to detail; very careful and precise.',
           malayalamMeaning: 'അതീവ സൂക്ഷ്മതയുള്ള',
           tamilMeaning: 'நுணுக்கமான / கவனமான',
           hindiMeaning: 'अत्यंत सावधान / सूक्ष्म',
           teluguMeaning: 'అత్యంత నిశితమైన',
           kannadaMeaning: 'ಅತೀವ ಜಾಗರೂಕತೆಯುಳ್ಳ',
-          exampleSentence: 'He is meticulous about his English vowel pronunciation.',
+          exampleSentence:
+              'He is meticulous about his English vowel pronunciation.',
           phonetic: '/məˈtɪk.jə.ləs/',
         ),
         DailyVocabItem(
@@ -1664,19 +1700,22 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           hindiMeaning: 'टालमटोल करना',
           teluguMeaning: 'వాయిదా వేయు',
           kannadaMeaning: 'ಮುಂದೂಡುವುದು',
-          exampleSentence: 'Do not procrastinate; start your speaking drill right now.',
+          exampleSentence:
+              'Do not procrastinate; start your speaking drill right now.',
           phonetic: '/prəˈkræs.tɪ.neɪt/',
         ),
         DailyVocabItem(
           word: 'Resilience',
           partOfSpeech: 'noun',
-          definition: 'The capacity to withstand or recover quickly from difficulties.',
+          definition:
+              'The capacity to withstand or recover quickly from difficulties.',
           malayalamMeaning: 'പ്രതിസന്ധികളെ അതിജീവിക്കാനുള്ള കരുത്ത്',
           tamilMeaning: 'மீண்டு வரும் திறன்',
           hindiMeaning: 'लचीलापन / सहनशक्ति',
           teluguMeaning: 'తట్టుకునే శక్తి / దృఢత్వం',
           kannadaMeaning: 'ಪುಟಿದೇಳುವ ಸಾಮರ್ಥ್ಯ',
-          exampleSentence: 'Fluency requires resilience whenever you make grammar mistakes.',
+          exampleSentence:
+              'Fluency requires resilience whenever you make grammar mistakes.',
           phonetic: '/rɪˈzɪl.jəns/',
         ),
         DailyVocabItem(
@@ -1688,7 +1727,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           hindiMeaning: 'निरंतर / सतत',
           teluguMeaning: 'నిరంతరాయమైన',
           kannadaMeaning: 'ನಿರಂತರವಾದ',
-          exampleSentence: 'Sustained focus for 60 minutes yields remarkable results.',
+          exampleSentence:
+              'Sustained focus for 60 minutes yields remarkable results.',
           phonetic: '/səˈsteɪnd/',
         ),
         DailyVocabItem(
@@ -1700,31 +1740,36 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           hindiMeaning: 'सतही / उथला',
           teluguMeaning: 'పైపైన / లోతులేని',
           kannadaMeaning: 'ಮೇಲ್ನೋಟದ',
-          exampleSentence: 'Superficial memorization cannot replace active conversation.',
+          exampleSentence:
+              'Superficial memorization cannot replace active conversation.',
           phonetic: '/ˌsuː.pəˈfɪʃ.əl/',
         ),
         DailyVocabItem(
           word: 'Discipline',
           partOfSpeech: 'noun',
-          definition: 'The practice of training oneself to obey rules or codes of conduct.',
+          definition:
+              'The practice of training oneself to obey rules or codes of conduct.',
           malayalamMeaning: 'അച്ചടക്കം / ആത്മനിയന്ത്രണം',
           tamilMeaning: 'ஒழுக்கம் / சுயக்கட்டுப்பாடு',
           hindiMeaning: 'अनुशासन / आत्म-नियंत्रण',
           teluguMeaning: 'క్రమశిక్షణ',
           kannadaMeaning: 'ಶಿಸ್ತು / ಸ್ವಯಂ ನಿಯಂತ್ರಣ',
-          exampleSentence: 'Daily discipline separates dreamers from fluent speakers.',
+          exampleSentence:
+              'Daily discipline separates dreamers from fluent speakers.',
           phonetic: '/ˈdɪs.ə.plɪn/',
         ),
         DailyVocabItem(
           word: 'Velocity',
           partOfSpeech: 'noun',
-          definition: 'The speed of something in a given direction; swift pace.',
+          definition:
+              'The speed of something in a given direction; swift pace.',
           malayalamMeaning: 'വേഗത / ചലനവേഗം',
           tamilMeaning: 'வேகம் / விரைவு',
           hindiMeaning: 'वेग / गति',
           teluguMeaning: 'వేగము',
           kannadaMeaning: 'ವೇಗ / ಚಲನೆ',
-          exampleSentence: 'Your speaking velocity improves as thinking in English becomes natural.',
+          exampleSentence:
+              'Your speaking velocity improves as thinking in English becomes natural.',
           phonetic: '/vəˈlɒs.ə.ti/',
         ),
       ];
@@ -1737,37 +1782,43 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         DailyVocabItem(
           word: 'Articulate',
           partOfSpeech: 'adjective',
-          definition: 'Having or showing the ability to speak fluently and coherently.',
+          definition:
+              'Having or showing the ability to speak fluently and coherently.',
           malayalamMeaning: 'സ്പഷ്ടമായി വ്യക്തമാക്കുന്ന',
           tamilMeaning: 'தெளிவாகப் பேசும்',
           hindiMeaning: 'सुस्पष्ट / स्पष्ट बोलने वाला',
           teluguMeaning: 'స్పష్టంగా మాట్లాడే',
           kannadaMeaning: 'ಸ್ಪಷ್ಟವಾಗಿ ಅಭಿವ್ಯಕ್ತಿಸುವ',
-          exampleSentence: 'An articulate leader explains complex plans with ease.',
+          exampleSentence:
+              'An articulate leader explains complex plans with ease.',
           phonetic: '/ɑːˈtɪk.jə.lət/',
         ),
         DailyVocabItem(
           word: 'Concede',
           partOfSpeech: 'verb',
-          definition: 'Admit that something is true or valid after first resisting it.',
+          definition:
+              'Admit that something is true or valid after first resisting it.',
           malayalamMeaning: 'സമ്മതിക്കുക / അംഗീകരിക്കുക',
           tamilMeaning: 'ஒப்புக்கொள்ளுதல்',
           hindiMeaning: 'स्वीकार करना / मान लेना',
           teluguMeaning: 'అంగీకరించు / ఒప్పుకొను',
           kannadaMeaning: 'ಒಪ್ಪಿಕೊಳ್ಳು',
-          exampleSentence: 'A skilled negotiator knows when to concede minor points.',
+          exampleSentence:
+              'A skilled negotiator knows when to concede minor points.',
           phonetic: '/kənˈsiːd/',
         ),
         DailyVocabItem(
           word: 'Diplomatic',
           partOfSpeech: 'adjective',
-          definition: 'Skilled at dealing with sensitive situations and people.',
+          definition:
+              'Skilled at dealing with sensitive situations and people.',
           malayalamMeaning: 'നയതന്ത്രപരമായ / വിവേകപൂർവ്വമായ',
           tamilMeaning: 'சாதுரியமான / நயமான',
           hindiMeaning: 'कूटनीतिक / व्यवहारकुशल',
           teluguMeaning: 'చాకచక్యమైన / సంభాషణా చాతుర్యం',
           kannadaMeaning: 'ರಾಜತಾಂತ್ರಿಕ / ಜಾಣ್ಮೆಯ',
-          exampleSentence: 'Use diplomatic phrases to disagree politely without offense.',
+          exampleSentence:
+              'Use diplomatic phrases to disagree politely without offense.',
           phonetic: '/ˌdɪp.ləˈmæt.ɪk/',
         ),
         DailyVocabItem(
@@ -1791,7 +1842,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           hindiMeaning: 'प्रेरक / समझाने वाला',
           teluguMeaning: 'ఒప్పించగల / మెప్పించగల',
           kannadaMeaning: 'ಮನವೊಲಿಸುವ',
-          exampleSentence: 'Give persuasive reasons supported by real examples.',
+          exampleSentence:
+              'Give persuasive reasons supported by real examples.',
           phonetic: '/pəˈsweɪ.sɪv/',
         ),
         DailyVocabItem(
@@ -1803,7 +1855,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           hindiMeaning: 'सर्वसम्मति / आम सहमति',
           teluguMeaning: 'ఏకాభిప్రాయం / సర్వసమ్మతి',
           kannadaMeaning: 'ಒಮ್ಮತ / ಸರ್ವಾನುಮತ',
-          exampleSentence: 'The team reached a consensus after a productive discussion.',
+          exampleSentence:
+              'The team reached a consensus after a productive discussion.',
           phonetic: '/kənˈsen.səs/',
         ),
         DailyVocabItem(
@@ -1815,13 +1868,15 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           hindiMeaning: 'सूक्ष्म भेद / बारीकी',
           teluguMeaning: 'సూక్ష్మభేదం',
           kannadaMeaning: 'ಸೂಕ್ಷ್ಮ ವ್ಯತ್ಯಾಸ',
-          exampleSentence: 'Mastering conversational tone requires understanding every nuance.',
+          exampleSentence:
+              'Mastering conversational tone requires understanding every nuance.',
           phonetic: '/ˈnjuː.ɑːns/',
         ),
         DailyVocabItem(
           word: 'Assertive',
           partOfSpeech: 'adjective',
-          definition: 'Confidently and directly expressing thoughts and opinions.',
+          definition:
+              'Confidently and directly expressing thoughts and opinions.',
           malayalamMeaning: 'ദൃഢനിശ്ചയത്തോടെ സംസാരിക്കുന്ന',
           tamilMeaning: 'உறுதியான பேச்சுடைய',
           hindiMeaning: 'मुखर / दृढ़निश्चयी',
@@ -1839,19 +1894,22 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           hindiMeaning: 'खंडन / प्रतिवाद',
           teluguMeaning: 'తిరస్కార వాదన / ప్రతిస్పందన',
           kannadaMeaning: 'ಖಂಡನೆ / ಮರುವಾದ',
-          exampleSentence: 'He delivered a calm and reasoned rebuttal to the criticism.',
+          exampleSentence:
+              'He delivered a calm and reasoned rebuttal to the criticism.',
           phonetic: '/rɪˈbʌt.əl/',
         ),
         DailyVocabItem(
           word: 'Substantive',
           partOfSpeech: 'adjective',
-          definition: 'Having a firm basis in reality; meaningful and significant.',
+          definition:
+              'Having a firm basis in reality; meaningful and significant.',
           malayalamMeaning: 'അർത്ഥവത്തായ / കാമ്പുള്ള',
           tamilMeaning: 'ஆழமான / அர்த்தமுள்ள',
           hindiMeaning: 'ठोस / सार्थक / मूल',
           teluguMeaning: 'అర్థవంతమైన / గట్టి పునాది గల',
           kannadaMeaning: 'ಸಾರಯುತವಾದ / ಮಹತ್ವದ',
-          exampleSentence: 'Focus your speech on substantive insights rather than fluff.',
+          exampleSentence:
+              'Focus your speech on substantive insights rather than fluff.',
           phonetic: '/səbˈstæn.tɪv/',
         ),
       ];
@@ -1864,13 +1922,15 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         DailyVocabItem(
           word: 'Decisive',
           partOfSpeech: 'adjective',
-          definition: 'Having or showing the ability to make clear decisions quickly.',
+          definition:
+              'Having or showing the ability to make clear decisions quickly.',
           malayalamMeaning: 'നിർണായകമായ / ദൃഢമായ തീരുമാനം എടുക്കുന്ന',
           tamilMeaning: 'தீர்க்கமான முடிவெடுக்கும்',
           hindiMeaning: 'निर्णायक / दृढ़',
           teluguMeaning: 'నిర్ణయాత్మకమైన / స్పష్టమైన',
           kannadaMeaning: 'ನಿರ್ಣಾಯಕವಾದ',
-          exampleSentence: 'In moments of crisis, a decisive speaker restores calm.',
+          exampleSentence:
+              'In moments of crisis, a decisive speaker restores calm.',
           phonetic: '/dɪˈsaɪ.sɪv/',
         ),
         DailyVocabItem(
@@ -1882,7 +1942,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           hindiMeaning: 'विपत्ति / कठिनाई',
           teluguMeaning: 'ఆపద / ప్రతికూలత',
           kannadaMeaning: 'ಕಷ್ಟಕಾಲ / ವಿಪತ್ತು',
-          exampleSentence: 'True leaders discover their voice during periods of adversity.',
+          exampleSentence:
+              'True leaders discover their voice during periods of adversity.',
           phonetic: '/ədˈvɜː.sə.ti/',
         ),
         DailyVocabItem(
@@ -1894,19 +1955,22 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           hindiMeaning: 'धैर्य / आत्मबल',
           teluguMeaning: 'మనోస్థైర్యం / ధైర్యం',
           kannadaMeaning: 'ಮನೋಧೈರ್ಯ / ಸಹನಶಕ್ತಿ',
-          exampleSentence: 'She faced the difficult interview with quiet fortitude.',
+          exampleSentence:
+              'She faced the difficult interview with quiet fortitude.',
           phonetic: '/ˈfɔː.tɪ.tʃuːd/',
         ),
         DailyVocabItem(
           word: 'Strategic',
           partOfSpeech: 'adjective',
-          definition: 'Carefully planned to serve a major purpose or gain advantage.',
+          definition:
+              'Carefully planned to serve a major purpose or gain advantage.',
           malayalamMeaning: 'തന്ത്രപരമായ',
           tamilMeaning: 'வியூகரீதியான',
           hindiMeaning: 'रणनीतिक / योजनाबद्ध',
           teluguMeaning: 'వ్యూహాత్మక',
           kannadaMeaning: 'ಕಾರ್ಯತಂತ್ರದ',
-          exampleSentence: 'Choose strategic vocabulary that elevates your spoken authority.',
+          exampleSentence:
+              'Choose strategic vocabulary that elevates your spoken authority.',
           phonetic: '/strəˈtiː.dʒɪk/',
         ),
         DailyVocabItem(
@@ -1918,19 +1982,22 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           hindiMeaning: 'अडिग / स्थिर',
           teluguMeaning: 'నిశ్చలమైన / స్థిరమైన',
           kannadaMeaning: 'ಅಚಲವಾದ / ದೃಢವಾದ',
-          exampleSentence: 'Maintain an unwavering commitment to your 90-day goal.',
+          exampleSentence:
+              'Maintain an unwavering commitment to your 90-day goal.',
           phonetic: '/ʌnˈweɪ.vər.ɪŋ/',
         ),
         DailyVocabItem(
           word: 'Prerequisite',
           partOfSpeech: 'noun',
-          definition: 'A required prior condition for something else to happen.',
+          definition:
+              'A required prior condition for something else to happen.',
           malayalamMeaning: 'മുൻവ്യവസ്ഥ / നിർബന്ധിത നിബന്ധന',
           tamilMeaning: 'முன்நிபந்தனை',
           hindiMeaning: 'अनिवार्य शर्त / पूर्वपेक्षा',
           teluguMeaning: 'ముందస్తు షరతు',
           kannadaMeaning: 'ಪೂರ್ವಭಾವಿ ಷರತ್ತು',
-          exampleSentence: 'Active listening is a prerequisite for genuine fluency.',
+          exampleSentence:
+              'Active listening is a prerequisite for genuine fluency.',
           phonetic: '/ˌpriːˈrek.wɪ.zɪt/',
         ),
         DailyVocabItem(
@@ -1942,7 +2009,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           hindiMeaning: 'आकस्मिक योजना',
           teluguMeaning: 'ఆకస్మిక ప్రణాళిక',
           kannadaMeaning: 'ತುರ್ತು ಸಿದ್ಧತೆ',
-          exampleSentence: 'Always prepare a contingency response when speaking publicly.',
+          exampleSentence:
+              'Always prepare a contingency response when speaking publicly.',
           phonetic: '/kənˈtɪn.dʒən.si/',
         ),
         DailyVocabItem(
@@ -1954,7 +2022,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           hindiMeaning: 'सर्वोपरि / अत्यधिक महत्वपूर्ण',
           teluguMeaning: 'అత్యంత ముఖ్యమైన / సర్వోన్నత',
           kannadaMeaning: 'ಅತ್ಯಂತ ಮುಖ್ಯವಾದ / ಅಗ್ರಗಣ್ಯ',
-          exampleSentence: 'Consistency of daily effort is of paramount importance.',
+          exampleSentence:
+              'Consistency of daily effort is of paramount importance.',
           phonetic: '/ˈpær.ə.maʊnt/',
         ),
         DailyVocabItem(
@@ -1966,7 +2035,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           hindiMeaning: 'उत्प्रेरक / गति देने वाला',
           teluguMeaning: 'ఉత్ప్రేరకం / మార్పుకు కారకం',
           kannadaMeaning: 'ವೇಗವರ್ಧಕ / ಪ್ರೇರಕ',
-          exampleSentence: 'Peer conversations acted as a catalyst for his confidence.',
+          exampleSentence:
+              'Peer conversations acted as a catalyst for his confidence.',
           phonetic: '/ˈkæt.əl.ɪst/',
         ),
         DailyVocabItem(
@@ -1978,7 +2048,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           hindiMeaning: 'दूरदर्शिता / भविष्य-दृष्टि',
           teluguMeaning: 'ముందుచూపు',
           kannadaMeaning: 'ದೂರದೃಷ್ಟಿ',
-          exampleSentence: 'Great speakers use foresight to anticipate their listeners\' questions.',
+          exampleSentence:
+              'Great speakers use foresight to anticipate their listeners\' questions.',
           phonetic: '/ˈfɔː.saɪt/',
         ),
       ];
@@ -1991,13 +2062,15 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         DailyVocabItem(
           word: 'Compromise',
           partOfSpeech: 'noun',
-          definition: 'An agreement or settlement of a dispute reached by mutual concession.',
+          definition:
+              'An agreement or settlement of a dispute reached by mutual concession.',
           malayalamMeaning: 'വിട്ടുവീഴ്ച / ഒത്തുതീർപ്പ്',
           tamilMeaning: 'சமரச உடன்படிக்கை',
           hindiMeaning: 'समझौता / सुलह',
           teluguMeaning: 'రాజీ / సర్దుబాటు',
           kannadaMeaning: 'ರಾಜಿ / ಹೊಂದಾಣಿಕೆ',
-          exampleSentence: 'A fair compromise protected the interests of both delegations.',
+          exampleSentence:
+              'A fair compromise protected the interests of both delegations.',
           phonetic: '/ˈkɒm.prə.maɪz/',
         ),
         DailyVocabItem(
@@ -2009,43 +2082,50 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           hindiMeaning: 'अस्पष्ट / संदिग्ध',
           teluguMeaning: 'అస్పష్టమైన / సందేహాస్పద',
           kannadaMeaning: 'ಅಸ್ಪಷ್ಟ / ಸಂದಿಗ್ಧ',
-          exampleSentence: 'Avoid equivocal phrasing when drafting formal agreements.',
+          exampleSentence:
+              'Avoid equivocal phrasing when drafting formal agreements.',
           phonetic: '/ɪˈkwɪv.ə.kəl/',
         ),
         DailyVocabItem(
           word: 'Leverage',
           partOfSpeech: 'noun',
-          definition: 'The power or influence to influence others and achieve a desired result.',
+          definition:
+              'The power or influence to influence others and achieve a desired result.',
           malayalamMeaning: 'സ്വാധീനശക്തി / അനുകൂല നേട്ടം',
           tamilMeaning: 'சாதகமான செல்வாக்கு',
           hindiMeaning: 'रणनीतिक लाभ / प्रभाव',
           teluguMeaning: 'అనుకూల పరపతి / పలుకుబడి',
           kannadaMeaning: 'ಪ್ರಭಾವ / ಅನುಕೂಲಕರ ಶಕ್ತಿ',
-          exampleSentence: 'Thorough preparation gives you leverage in difficult debates.',
+          exampleSentence:
+              'Thorough preparation gives you leverage in difficult debates.',
           phonetic: '/ˈliː.vər.ɪdʒ/',
         ),
         DailyVocabItem(
           word: 'Pragmatic',
           partOfSpeech: 'adjective',
-          definition: 'Dealing with things sensibly and realistically based on practical results.',
+          definition:
+              'Dealing with things sensibly and realistically based on practical results.',
           malayalamMeaning: 'പ്രായോഗികമായ / കാര്യക്ഷമമായ',
           tamilMeaning: 'நடைமுறைக்கு ஏற்ற',
           hindiMeaning: 'व्यावहारिक / यथार्थवादी',
           teluguMeaning: 'ఆచరణాత్మకమైన',
           kannadaMeaning: 'ಪ್ರಾಯೋಗಿಕ / ವಾಸ್ತವಿಕ',
-          exampleSentence: 'Adopt a pragmatic stance to overcome ideological division.',
+          exampleSentence:
+              'Adopt a pragmatic stance to overcome ideological division.',
           phonetic: '/præɡˈmæt.ɪk/',
         ),
         DailyVocabItem(
           word: 'Stipulate',
           partOfSpeech: 'verb',
-          definition: 'Demand or specify a requirement typically as part of a formal bargain.',
+          definition:
+              'Demand or specify a requirement typically as part of a formal bargain.',
           malayalamMeaning: 'വ്യവസ്ഥ ചെയ്യുക',
           tamilMeaning: 'நிபந்தனை விதித்தல்',
           hindiMeaning: 'शर्त लगाना / निर्धारित करना',
           teluguMeaning: 'నిబంధన విధించు',
           kannadaMeaning: 'ಷರತ್ತು ವಿಧಿಸು',
-          exampleSentence: 'The treaty stipulations ensured safe passage for all traders.',
+          exampleSentence:
+              'The treaty stipulations ensured safe passage for all traders.',
           phonetic: '/ˈstɪp.jə.leɪt/',
         ),
         DailyVocabItem(
@@ -2057,43 +2137,50 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           hindiMeaning: 'सहमत होना',
           teluguMeaning: 'ఏకీభవించు / అంగీకరించు',
           kannadaMeaning: 'ಒಪ್ಪಿಕೊಳ್ಳು / ಸಮ್ಮತಿಸು',
-          exampleSentence: 'All committee members concurred with the proposed compromise.',
+          exampleSentence:
+              'All committee members concurred with the proposed compromise.',
           phonetic: '/kənˈkɜːr/',
         ),
         DailyVocabItem(
           word: 'Impasse',
           partOfSpeech: 'noun',
-          definition: 'A situation in which no progress is possible due to disagreement.',
+          definition:
+              'A situation in which no progress is possible due to disagreement.',
           malayalamMeaning: 'പ്രതിസന്ധി / വഴിമുട്ടിയ അവസ്ഥ',
           tamilMeaning: 'முட்டுக்கட்டை / முடிவு காண முடியாத நிலை',
           hindiMeaning: 'गतिरोध / बंद गली',
           teluguMeaning: 'ప్రతిష్టంభన',
           kannadaMeaning: 'ಬಿಕ್ಕಟ್ಟು / ಕಗ್ಗಂಟು',
-          exampleSentence: 'A skilled mediator can break an impasse and restore dialogue.',
+          exampleSentence:
+              'A skilled mediator can break an impasse and restore dialogue.',
           phonetic: '/æmˈpɑːs/',
         ),
         DailyVocabItem(
           word: 'Unilateral',
           partOfSpeech: 'adjective',
-          definition: 'Performed by or affecting only one party without agreement from others.',
+          definition:
+              'Performed by or affecting only one party without agreement from others.',
           malayalamMeaning: 'ഏകപക്ഷീയമായ',
           tamilMeaning: 'ஒருதலைப்பட்சமான',
           hindiMeaning: 'एकतरफा / एकपक्षीय',
           teluguMeaning: 'ఏకపక్ష',
           kannadaMeaning: 'ಏಕಪಕ್ಷೀಯ',
-          exampleSentence: 'Unilateral decisions alienate partners and fracture trust.',
+          exampleSentence:
+              'Unilateral decisions alienate partners and fracture trust.',
           phonetic: '/ˌjuː.nɪˈlæt.ər.əl/',
         ),
         DailyVocabItem(
           word: 'Arbitration',
           partOfSpeech: 'noun',
-          definition: 'The use of an independent person to officially settle a dispute.',
+          definition:
+              'The use of an independent person to officially settle a dispute.',
           malayalamMeaning: 'മധ്യസ്ഥത / തർക്കപരിഹാരം',
           tamilMeaning: 'மத்தியஸ்தம் / நடுவர் தீர்ப்பு',
           hindiMeaning: 'मध्यस्थता / पंच फैसला',
           teluguMeaning: 'మధ్యవర్తిత్వం',
           kannadaMeaning: 'ಮಧ್ಯಸ್ಥಿಕೆ',
-          exampleSentence: 'The dispute was successfully resolved through international arbitration.',
+          exampleSentence:
+              'The dispute was successfully resolved through international arbitration.',
           phonetic: '/ˌɑː.bɪˈtreɪ.ʃən/',
         ),
         DailyVocabItem(
@@ -2105,7 +2192,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           hindiMeaning: 'न्यायसंगत / निष्पक्ष',
           teluguMeaning: 'సమన్యాయమైన / న్యాయబద్ధమైన',
           kannadaMeaning: 'ನ್ಯಾಯಸಮ್ಮತವಾದ',
-          exampleSentence: 'They created an equitable distribution of resources across the region.',
+          exampleSentence:
+              'They created an equitable distribution of resources across the region.',
           phonetic: '/ˈek.wɪ.tə.bəl/',
         ),
       ];
@@ -2124,19 +2212,23 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           hindiMeaning: 'वाक्पटु / सुवक्ता',
           teluguMeaning: 'వాక్చాతుర్యం గల / మనోహరంగా మాట్లాడే',
           kannadaMeaning: 'ವಾಗ್ಮಿತ್ವದ / ಸ್ಪಷ್ಟ ವಾಕ್ಪಟುತ್ವದ',
-          exampleSentence: 'Her eloquent address moved the entire international forum.',
+          exampleSentence:
+              'Her eloquent address moved the entire international forum.',
           phonetic: '/ˈel.ə.kwənt/',
         ),
         DailyVocabItem(
           word: 'Perspicacious',
           partOfSpeech: 'adjective',
-          definition: 'Having a ready insight into and deep understanding of things.',
-          malayalamMeaning: 'സൂക്ഷ്മദൃഷ്ടിയുള്ള / കാര്യങ്ങൾ വേഗത്തിൽ ഗ്രഹിക്കുന്ന',
+          definition:
+              'Having a ready insight into and deep understanding of things.',
+          malayalamMeaning:
+              'സൂക്ഷ്മദൃഷ്ടിയുള്ള / കാര്യങ്ങൾ വേഗത്തിൽ ഗ്രഹിക്കുന്ന',
           tamilMeaning: 'கூர்மதி கொண்ட / ஆழமான அறிவுள்ள',
           hindiMeaning: 'कुशाग्रबुद्धि / तीक्ष्ण दृष्टि वाला',
           teluguMeaning: 'సూక్ష్మబుద్ధి గల / తీక్షణమైన అవగాహన గల',
           kannadaMeaning: 'ತೀಕ್ಷ್ಣಮತಿಯ / ಒಳನೋಟವುಳ್ಳ',
-          exampleSentence: 'The perspicacious analyst uncovered the underlying trend.',
+          exampleSentence:
+              'The perspicacious analyst uncovered the underlying trend.',
           phonetic: '/ˌpɜː.spɪˈkeɪ.ʃəs/',
         ),
         DailyVocabItem(
@@ -2148,19 +2240,22 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           hindiMeaning: 'वक्तृत्व कला / भाषा-कौशल',
           teluguMeaning: 'భాషణ కళా నైపుణ్యం',
           kannadaMeaning: 'ಭಾಷಣ ಕಲೆ / ವಾಕ್ಶೈಲಿ',
-          exampleSentence: 'Master the principles of classical rhetoric to inspire crowds.',
+          exampleSentence:
+              'Master the principles of classical rhetoric to inspire crowds.',
           phonetic: '/ˈret.ər.ɪk/',
         ),
         DailyVocabItem(
           word: 'Resonate',
           partOfSpeech: 'verb',
-          definition: 'Evoke or suggest images, memories, and emotions in listeners.',
+          definition:
+              'Evoke or suggest images, memories, and emotions in listeners.',
           malayalamMeaning: 'മനസ്സിൽ പ്രതിധ്വനിക്കുക / സ്വാധീനിക്കുക',
           tamilMeaning: 'மனதில் எதிரொலித்தல்',
           hindiMeaning: 'गूंजना / मन को छू जाना',
           teluguMeaning: 'హృదయంలో ప్రతిధ్వనించు / ఆకట్టుకొను',
           kannadaMeaning: 'ಮನಸ್ಸಿನಲ್ಲಿ ಪ್ರತಿಧ್ವನಿಸು / ಪ್ರಭಾವಿಸು',
-          exampleSentence: 'Her heartfelt words resonated with learners across every culture.',
+          exampleSentence:
+              'Her heartfelt words resonated with learners across every culture.',
           phonetic: '/ˈrez.ən.eɪt/',
         ),
         DailyVocabItem(
@@ -2172,67 +2267,78 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           hindiMeaning: 'सम्मोहक / अकाट्य / प्रभावशाली',
           teluguMeaning: 'బలమైన / ఆకట్టుకునే',
           kannadaMeaning: 'ಬಲವಾದ / ಸೆಳೆಯುವ',
-          exampleSentence: 'She presented a compelling case for conversational immersion.',
+          exampleSentence:
+              'She presented a compelling case for conversational immersion.',
           phonetic: '/kəmˈpel.ɪŋ/',
         ),
         DailyVocabItem(
           word: 'Discourse',
           partOfSpeech: 'noun',
-          definition: 'Written or spoken communication or debate on an intellectual topic.',
+          definition:
+              'Written or spoken communication or debate on an intellectual topic.',
           malayalamMeaning: 'പ്രഭാഷണം / വിജ്ഞാനപ്രദമായ ചർച്ച',
           tamilMeaning: 'உரையாடல் / கருத்தாடல்',
           hindiMeaning: 'प्रवचन / गंभीर विमर्श',
           teluguMeaning: 'విద్వత్ గోష్ఠి / చర్చ',
           kannadaMeaning: 'ಸಂವಾದ / ತಾತ್ವಿಕ ಚರ್ಚೆ',
-          exampleSentence: 'Constructive discourse bridges cultural and linguistic divides.',
+          exampleSentence:
+              'Constructive discourse bridges cultural and linguistic divides.',
           phonetic: '/ˈdɪs.kɔːs/',
         ),
         DailyVocabItem(
           word: 'Vindicate',
           partOfSpeech: 'verb',
-          definition: 'Clear of blame, suspicion, or show to be right through proof.',
+          definition:
+              'Clear of blame, suspicion, or show to be right through proof.',
           malayalamMeaning: 'ന്യായീകരിക്കുക / ശരിയാണെന്ന് തെളിയിക്കുക',
           tamilMeaning: 'உண்மையை நிரூபித்தல் / நியாயப்படுத்துதல்',
           hindiMeaning: 'दोषमुक्त करना / सत्य साबित करना',
           teluguMeaning: 'నిర్దోషిగా రుజువు చేయు / సమర్థించు',
           kannadaMeaning: 'ದೋಷಮುಕ್ತಗೊಳಿಸು / ಸರಿ ಎಂದು ತೋರಿಸು',
-          exampleSentence: 'Rigorous empirical research vindicated her controversial thesis.',
+          exampleSentence:
+              'Rigorous empirical research vindicated her controversial thesis.',
           phonetic: '/ˈvɪn.dɪ.keɪt/',
         ),
         DailyVocabItem(
           word: 'Profound',
           partOfSpeech: 'adjective',
-          definition: 'Having or showing great knowledge, insight, or emotional depth.',
+          definition:
+              'Having or showing great knowledge, insight, or emotional depth.',
           malayalamMeaning: 'ഗാഢമായ / അഗാധമായ',
           tamilMeaning: 'ஆழமான / மகத்தான',
           hindiMeaning: 'गहरा / गंभीर / प्रकांड',
           teluguMeaning: 'లోతైన / ప్రగాఢమైన',
           kannadaMeaning: 'ಆಳವಾದ / ಪ್ರಗಾಢ',
-          exampleSentence: 'A profound understanding of phonetics refines native accents.',
+          exampleSentence:
+              'A profound understanding of phonetics refines native accents.',
           phonetic: '/prəˈfaʊnd/',
         ),
         DailyVocabItem(
           word: 'Exemplary',
           partOfSpeech: 'adjective',
-          definition: 'Serving as a desirable model; representing the best of its kind.',
+          definition:
+              'Serving as a desirable model; representing the best of its kind.',
           malayalamMeaning: 'മാതൃകാപരമായ',
           tamilMeaning: 'முன்மாதிரியான / போற்றத்தக்க',
           hindiMeaning: 'अनुकरणीय / आदर्श',
           teluguMeaning: 'ఆదర్శవంతమైన / ఆదర్శప్రాయ',
           kannadaMeaning: 'ಮಾದರಿಯಾದ / ಆದರ್ಶಪ್ರಾಯ',
-          exampleSentence: 'His exemplary dedication inspired every member of the hub.',
+          exampleSentence:
+              'His exemplary dedication inspired every member of the hub.',
           phonetic: '/ɪɡˈzem.plər.i/',
         ),
         DailyVocabItem(
           word: 'Articulate',
           partOfSpeech: 'adjective',
-          definition: 'Expressing oneself clearly, coherently, and effectively.',
+          definition:
+              'Expressing oneself clearly, coherently, and effectively.',
           malayalamMeaning: 'വ്യക്തമായി ആശയങ്ങൾ പ്രകടിപ്പിക്കുന്ന',
           tamilMeaning: 'தெளிவாக எடுத்துரைக்கும்',
           hindiMeaning: 'स्पष्टवादी / सुस्पष्ट',
           teluguMeaning: 'స్పష్టంగా భావాలు తెలిపే',
           kannadaMeaning: 'ಸ್ಪಷ್ಟವಾಗಿ ಅಭಿವ್ಯಕ್ತಿಸುವ',
-          exampleSentence: 'An articulate orator commands respect without raising their voice.',
+          exampleSentence:
+              'An articulate orator commands respect without raising their voice.',
           phonetic: '/ɑːˈtɪk.jə.lət/',
         ),
       ];
@@ -2245,13 +2351,15 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         DailyVocabItem(
           word: 'Paradigm',
           partOfSpeech: 'noun',
-          definition: 'A distinct set of concepts, theories, or thought patterns.',
+          definition:
+              'A distinct set of concepts, theories, or thought patterns.',
           malayalamMeaning: 'ചിന്താരീതി / മാതൃക',
           tamilMeaning: 'சிந்தனை மாதிரி / கோட்பாடு',
           hindiMeaning: 'विचारधारा / दृष्टिकोण का ढांचा',
           teluguMeaning: 'దృక్పథ నమూనా',
           kannadaMeaning: 'ಚಿಂತನಾ ಮಾದರಿ',
-          exampleSentence: 'Interactive peer speaking created a new paradigm in language learning.',
+          exampleSentence:
+              'Interactive peer speaking created a new paradigm in language learning.',
           phonetic: '/ˈpær.ə.daɪm/',
         ),
         DailyVocabItem(
@@ -2263,7 +2371,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           hindiMeaning: 'सर्वव्यापी',
           teluguMeaning: 'సర్వవ్యాప్తమైన',
           kannadaMeaning: 'ಸರ್ವವ್ಯಾಪಿ',
-          exampleSentence: 'English has become a ubiquitous global bridge for knowledge.',
+          exampleSentence:
+              'English has become a ubiquitous global bridge for knowledge.',
           phonetic: '/juːˈbɪk.wɪ.təs/',
         ),
         DailyVocabItem(
@@ -2275,31 +2384,36 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           hindiMeaning: 'क्षणिक / अल्पकालिक',
           teluguMeaning: 'క్షణికమైన / అల్పకాలిక',
           kannadaMeaning: 'ಕ್ಷಣಿಕವಾದ / ಅಲ್ಪಕಾಲದ',
-          exampleSentence: 'Do not chase ephemeral applause; cultivate lasting speaking mastery.',
+          exampleSentence:
+              'Do not chase ephemeral applause; cultivate lasting speaking mastery.',
           phonetic: '/ɪˈfem.ər.əl/',
         ),
         DailyVocabItem(
           word: 'Dichotomy',
           partOfSpeech: 'noun',
-          definition: 'A division or contrast between two things represented as opposed.',
+          definition:
+              'A division or contrast between two things represented as opposed.',
           malayalamMeaning: 'വിഭജനം / വിരുദ്ധ ചേരിതിരിവ്',
           tamilMeaning: 'இருதுருவ வேறுபாடு',
           hindiMeaning: 'द्विभाजन / दो विपरीत पक्ष',
           teluguMeaning: 'ద్వైదీభావం / విభజన',
           kannadaMeaning: 'ದ್ವಿಮುಖತೆ / ವಿಭಜನೆ',
-          exampleSentence: 'The debate dismantled the false dichotomy between speed and accuracy.',
+          exampleSentence:
+              'The debate dismantled the false dichotomy between speed and accuracy.',
           phonetic: '/daɪˈkɒt.ə.mi/',
         ),
         DailyVocabItem(
           word: 'Synthesize',
           partOfSpeech: 'verb',
-          definition: 'Combine multiple ideas, elements, or systems into a coherent whole.',
+          definition:
+              'Combine multiple ideas, elements, or systems into a coherent whole.',
           malayalamMeaning: 'സമന്വയിപ്പിക്കുക',
           tamilMeaning: 'ஒருங்கிணைத்தல் / தொகுத்தல்',
           hindiMeaning: 'संश्लेषण करना / जोड़ना',
           teluguMeaning: 'సమన్వయపరచు',
           kannadaMeaning: 'ಸಂಶ್ಲೇಷಿಸು / ಸಮನ್ವಯಗೊಳಿಸು',
-          exampleSentence: 'Synthesize grammar rules with real conversation to achieve fluency.',
+          exampleSentence:
+              'Synthesize grammar rules with real conversation to achieve fluency.',
           phonetic: '/ˈsɪn.θə.saɪz/',
         ),
         DailyVocabItem(
@@ -2311,7 +2425,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           hindiMeaning: 'स्वायत्त / स्वतंत्र',
           teluguMeaning: 'స్వయంప్రతిపత్తి గల',
           kannadaMeaning: 'ಸ್ವಾಯತ್ತ / ಸ್ವತಂತ್ರ',
-          exampleSentence: 'After 90 days, you will become an autonomous English communicator.',
+          exampleSentence:
+              'After 90 days, you will become an autonomous English communicator.',
           phonetic: '/ɔːˈtɒn.ə.məs/',
         ),
         DailyVocabItem(
@@ -2323,19 +2438,22 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           hindiMeaning: 'सर्वत्र विद्यमान',
           teluguMeaning: 'సర్వత్రా వ్యాపించియున్న',
           kannadaMeaning: 'ಎಲ್ಲೆಡೆ ಉಪಸ್ಥಿತವಿರುವ',
-          exampleSentence: 'Technology is an omnipresent reality in modern communication.',
+          exampleSentence:
+              'Technology is an omnipresent reality in modern communication.',
           phonetic: '/ˌɒm.nɪˈprez.ənt/',
         ),
         DailyVocabItem(
           word: 'Anachronistic',
           partOfSpeech: 'adjective',
-          definition: 'Belonging to an earlier period; conspicuously out of date.',
+          definition:
+              'Belonging to an earlier period; conspicuously out of date.',
           malayalamMeaning: 'കാലഹരണപ്പെട്ട',
           tamilMeaning: 'காலத்திற்கு ஒவ்வாத / பழமையான',
           hindiMeaning: 'पुराना / कालभ्रमित',
           teluguMeaning: 'కాలం చెల్లిన',
           kannadaMeaning: 'ಕಾಲಕ್ಕೆ ಹೊಂದದ / ಹಳತಾದ',
-          exampleSentence: 'Passive rote learning is an anachronistic approach to spoken fluency.',
+          exampleSentence:
+              'Passive rote learning is an anachronistic approach to spoken fluency.',
           phonetic: '/əˌnæk.rəˈnɪs.tɪk/',
         ),
         DailyVocabItem(
@@ -2347,19 +2465,22 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           hindiMeaning: 'शीर्ष / सर्वोच्च शिखर',
           teluguMeaning: 'శిఖరాగ్రం / అత్యున్నత స్థానం',
           kannadaMeaning: 'ಶಿಖರ / ಪರಮೋಚ್ಛ ಹಂತ',
-          exampleSentence: 'Confident international debate marks the apex of linguistic mastery.',
+          exampleSentence:
+              'Confident international debate marks the apex of linguistic mastery.',
           phonetic: '/ˈeɪ.peks/',
         ),
         DailyVocabItem(
           word: 'Prerequisite',
           partOfSpeech: 'noun',
-          definition: 'A thing required as a prior condition for something else to exist.',
+          definition:
+              'A thing required as a prior condition for something else to exist.',
           malayalamMeaning: 'മുൻവ്യവസ്ഥ',
           tamilMeaning: 'முன்நிபந்தனை',
           hindiMeaning: 'पूर्वपेक्षा / आवश्यक पूर्वशर्त',
           teluguMeaning: 'ముందస్తు షరతు',
           kannadaMeaning: 'ಪೂರ್ವಭಾವಿ ಷರತ್ತು',
-          exampleSentence: 'Unbroken focus is a vital prerequisite for complex problem solving.',
+          exampleSentence:
+              'Unbroken focus is a vital prerequisite for complex problem solving.',
           phonetic: '/ˌpriːˈrek.wɪ.zɪt/',
         ),
       ];
@@ -2372,25 +2493,29 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         DailyVocabItem(
           word: 'Nuance',
           partOfSpeech: 'noun',
-          definition: 'A subtle difference in or shade of meaning, expression, or sound.',
+          definition:
+              'A subtle difference in or shade of meaning, expression, or sound.',
           malayalamMeaning: 'സൂക്ഷ്മഭേദം / അർത്ഥവ്യത്യാസം',
           tamilMeaning: 'நுண்ணிய வேறுபாடு',
           hindiMeaning: 'सूक्ष्म भेद / बारीकी',
           teluguMeaning: 'సూక్ష్మ భేదం',
           kannadaMeaning: 'ಸೂಕ್ಷ್ಮ ವ್ಯತ್ಯಾಸ',
-          exampleSentence: 'Master speakers appreciate the nuance between assertiveness and aggression.',
+          exampleSentence:
+              'Master speakers appreciate the nuance between assertiveness and aggression.',
           phonetic: '/ˈnjuː.ɑːns/',
         ),
         DailyVocabItem(
           word: 'Paradox',
           partOfSpeech: 'noun',
-          definition: 'A seemingly absurd or contradictory statement that may prove to be true.',
+          definition:
+              'A seemingly absurd or contradictory statement that may prove to be true.',
           malayalamMeaning: 'വിരോധാഭാസം',
           tamilMeaning: 'முரண்போலி',
           hindiMeaning: 'विरोधाभास',
           teluguMeaning: 'విరోధాభాసం',
           kannadaMeaning: 'ವಿರೋಧಾಭಾಸ',
-          exampleSentence: 'The paradox of fluency is that making mistakes accelerates learning.',
+          exampleSentence:
+              'The paradox of fluency is that making mistakes accelerates learning.',
           phonetic: '/ˈpær.ə.dɒks/',
         ),
         DailyVocabItem(
@@ -2402,7 +2527,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           hindiMeaning: 'अवगत / जानकार',
           teluguMeaning: 'పూర్తి స్పృహ గల / తెలిసిన',
           kannadaMeaning: 'ಅರಿವುಳ್ಳ / ತಿಳಿದಿರುವ',
-          exampleSentence: 'Be cognizant of your listener\'s background when speaking.',
+          exampleSentence:
+              'Be cognizant of your listener\'s background when speaking.',
           phonetic: '/ˈkɒɡ.nɪ.zənt/',
         ),
         DailyVocabItem(
@@ -2414,55 +2540,64 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           hindiMeaning: 'विश्वसनीय / संभव',
           teluguMeaning: 'నమ్మదగిన / సమంజసమైన',
           kannadaMeaning: 'ನಂಬಲರ್ಹ / ಸಮಂಜಸವಾದ',
-          exampleSentence: 'She formulated a plausible explanation grounded in empirical facts.',
+          exampleSentence:
+              'She formulated a plausible explanation grounded in empirical facts.',
           phonetic: '/ˈplɔː.zə.bəl/',
         ),
         DailyVocabItem(
           word: 'Ambiguity',
           partOfSpeech: 'noun',
-          definition: 'The quality of being open to more than one interpretation; inexactness.',
+          definition:
+              'The quality of being open to more than one interpretation; inexactness.',
           malayalamMeaning: 'അവ്യക്തത',
           tamilMeaning: 'தெளிவின்மை / குழப்பமான நிலை',
           hindiMeaning: 'अस्पष्टता / द्वयर्थकता',
           teluguMeaning: 'సందేహం / అస్పష్టత',
           kannadaMeaning: 'ಅಸ್ಪಷ್ಟತೆ',
-          exampleSentence: 'Eliminate ambiguity by selecting precise, definitive adjectives.',
+          exampleSentence:
+              'Eliminate ambiguity by selecting precise, definitive adjectives.',
           phonetic: '/ˌæm.bɪˈɡjuː.ə.ti/',
         ),
         DailyVocabItem(
           word: 'Substantiate',
           partOfSpeech: 'verb',
-          definition: 'Provide evidence to support or prove the truth of an assertion.',
+          definition:
+              'Provide evidence to support or prove the truth of an assertion.',
           malayalamMeaning: 'തെളിവുകൾ നിരത്തി സ്ഥാപിക്കുക',
           tamilMeaning: 'ஆதாரத்துடன் நிரூபித்தல்',
           hindiMeaning: 'सिद्ध करना / पुष्ट करना',
           teluguMeaning: 'ఆధారాలతో నిరూపించు',
           kannadaMeaning: 'ಆಧಾರ ಸಹಿತ ಸಾಬೀತುಪಡಿಸು',
-          exampleSentence: 'Always substantiate your debating points with real-world examples.',
+          exampleSentence:
+              'Always substantiate your debating points with real-world examples.',
           phonetic: '/səbˈstæn.ʃi.eɪt/',
         ),
         DailyVocabItem(
           word: 'Juxtapose',
           partOfSpeech: 'verb',
-          definition: 'Place close together or side by side for contrasting effect.',
+          definition:
+              'Place close together or side by side for contrasting effect.',
           malayalamMeaning: 'താരതമ്യത്തിനായി ചേർത്തുവെക്കുക',
           tamilMeaning: 'ஒப்பிட்டுப் பார்த்தல்',
           hindiMeaning: 'तुलना के लिए पास रखना',
           teluguMeaning: 'పోల్చి చూచు',
           kannadaMeaning: 'ಹೋಲಿಕೆಗಾಗಿ ಪಕ್ಕದಲ್ಲಿಡು',
-          exampleSentence: 'The orator juxtaposed the ancient proverb with modern realities.',
+          exampleSentence:
+              'The orator juxtaposed the ancient proverb with modern realities.',
           phonetic: '/ˈdʒʌk.stə.pəʊz/',
         ),
         DailyVocabItem(
           word: 'Dispassionate',
           partOfSpeech: 'adjective',
-          definition: 'Not influenced by strong emotion, and so able to be rational and impartial.',
+          definition:
+              'Not influenced by strong emotion, and so able to be rational and impartial.',
           malayalamMeaning: 'വികാരങ്ങൾക്ക് അടിപ്പെടാത്ത / നിഷ്പക്ഷമായ',
           tamilMeaning: 'உணர்ச்சிவசப்படாத / நடுநிலையான',
           hindiMeaning: 'निष्पक्ष / शांतचित्त',
           teluguMeaning: 'నిష్పాక్షిక / శాంతచిత్త',
           kannadaMeaning: 'ನಿರ್ಲಿಪ್ತ / ಶಾಂತಚಿತ್ತದ',
-          exampleSentence: 'A dispassionate analysis enables fair resolution of heated disputes.',
+          exampleSentence:
+              'A dispassionate analysis enables fair resolution of heated disputes.',
           phonetic: '/dɪsˈpæʃ.ən.ət/',
         ),
         DailyVocabItem(
@@ -2474,19 +2609,22 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           hindiMeaning: 'दृढ़ / अटूट',
           teluguMeaning: 'పట్టువదలని',
           kannadaMeaning: 'ಛಲಬಿಡದ / ದೃಢವಾದ',
-          exampleSentence: 'Tenacious students overcome initial hesitation and attain fluency.',
+          exampleSentence:
+              'Tenacious students overcome initial hesitation and attain fluency.',
           phonetic: '/təˈneɪ.ʃəs/',
         ),
         DailyVocabItem(
           word: 'Discreet',
           partOfSpeech: 'adjective',
-          definition: 'Careful and prudent in one\'s speech or actions to avoid offense.',
+          definition:
+              'Careful and prudent in one\'s speech or actions to avoid offense.',
           malayalamMeaning: 'സൂക്ഷ്മതയോടെ പെരുമാറുന്ന',
           tamilMeaning: 'விவேகமுள்ள / அடக்கமான',
           hindiMeaning: 'विचारशील / चौकस',
           teluguMeaning: 'విచక్షణ గల',
           kannadaMeaning: 'ವಿವೇಚನಾಯುಕ್ತ / ಎಚ್ಚರಿಕೆಯ',
-          exampleSentence: 'Diplomats remain discreet even when facing provocative questions.',
+          exampleSentence:
+              'Diplomats remain discreet even when facing provocative questions.',
           phonetic: '/dɪˈskriːt/',
         ),
       ];
@@ -2499,61 +2637,71 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         DailyVocabItem(
           word: 'Statesmanship',
           partOfSpeech: 'noun',
-          definition: 'Skill in managing public affairs and conducting international relations.',
+          definition:
+              'Skill in managing public affairs and conducting international relations.',
           malayalamMeaning: 'ഭരണതന്ത്രജ്ഞത / രാഷ്ട്രതന്ത്രജ്ഞത',
           tamilMeaning: 'அரசியல் சாதுரியம் / தலைமைப் பண்பு',
           hindiMeaning: 'राजमर्मज्ञता / कूटनीतिक कुशलता',
           teluguMeaning: 'రాజనీతిజ్ఞత',
           kannadaMeaning: 'ರಾಜನೀತಿಜ್ಞತೆ',
-          exampleSentence: 'Executive statesmanship unites opposing factions toward common prosperity.',
+          exampleSentence:
+              'Executive statesmanship unites opposing factions toward common prosperity.',
           phonetic: '/ˈsteɪts.mən.ʃɪp/',
         ),
         DailyVocabItem(
           word: 'Unanimous',
           partOfSpeech: 'adjective',
-          definition: 'Fully in agreement; held or carried by everyone involved.',
+          definition:
+              'Fully in agreement; held or carried by everyone involved.',
           malayalamMeaning: 'ഐകകണ്ഠ്യേനയുള്ള',
           tamilMeaning: 'ஒருமனதான',
           hindiMeaning: 'सर्वसम्मत / एकमत',
           teluguMeaning: 'ఏకగ్రీవమైన',
           kannadaMeaning: 'ಸರ್ವಾನುಮತದ',
-          exampleSentence: 'The peace treaty received the unanimous approval of the general assembly.',
+          exampleSentence:
+              'The peace treaty received the unanimous approval of the general assembly.',
           phonetic: '/juːˈnæn.ɪ.məs/',
         ),
         DailyVocabItem(
           word: 'Cohesive',
           partOfSpeech: 'adjective',
-          definition: 'Characterized by or causing parts to stick together in unity.',
+          definition:
+              'Characterized by or causing parts to stick together in unity.',
           malayalamMeaning: 'കെട്ടുറപ്പുള്ള / ഒത്തൊരുമയുള്ള',
           tamilMeaning: 'ஒற்றுமையான / பிணைப்பான',
           hindiMeaning: 'सुगठित / एकजुट',
           teluguMeaning: 'సమైక్యమైన / కలసికట్టుగా ఉండే',
           kannadaMeaning: 'ಒಗ್ಗಟ್ಟಿನ / ಸುಸಂಬದ್ಧ',
-          exampleSentence: 'A cohesive team navigates high-stakes challenges with confidence.',
+          exampleSentence:
+              'A cohesive team navigates high-stakes challenges with confidence.',
           phonetic: '/kəʊˈhiː.sɪv/',
         ),
         DailyVocabItem(
           word: 'Concession',
           partOfSpeech: 'noun',
-          definition: 'A thing that is granted, especially in response to demands.',
+          definition:
+              'A thing that is granted, especially in response to demands.',
           malayalamMeaning: 'വിട്ടുവീഴ്ച / ഇളവ്',
           tamilMeaning: 'விட்டுக்கொடுத்தல் / சலுகை',
           hindiMeaning: 'रियायत / छूट',
           teluguMeaning: 'రాయితీ / సర్దుబాటు',
           kannadaMeaning: 'ರಿಯಾಯಿತಿ / ಸಡಿಲಿಕೆ',
-          exampleSentence: 'Strategic concessions are sometimes required to unlock historic accords.',
+          exampleSentence:
+              'Strategic concessions are sometimes required to unlock historic accords.',
           phonetic: '/kənˈseʃ.ən/',
         ),
         DailyVocabItem(
           word: 'Galvanize',
           partOfSpeech: 'verb',
-          definition: 'Shock or excite someone into taking rapid, purposeful action.',
+          definition:
+              'Shock or excite someone into taking rapid, purposeful action.',
           malayalamMeaning: 'പ്രവർത്തന സജ്ജമാക്കുക / ഉണർത്തുക',
           tamilMeaning: 'செயல்படத் தூண்டுதல்',
           hindiMeaning: 'प्रेरित करना / जोश भरना',
           teluguMeaning: 'ఉత్తేజపరచు / కార్యోన్ముఖుడిని చేయు',
           kannadaMeaning: 'ಪ್ರೇರೇಪಿಸು / ಚುರುಕುಗೊಳಿಸು',
-          exampleSentence: 'Her inspirational keynote galvanized the entire movement.',
+          exampleSentence:
+              'Her inspirational keynote galvanized the entire movement.',
           phonetic: '/ˈɡæl.və.naɪz/',
         ),
         DailyVocabItem(
@@ -2565,43 +2713,50 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           hindiMeaning: 'अति आवश्यक / अनिवार्य',
           teluguMeaning: 'అత్యవసరమైన / అనివార్యమైన',
           kannadaMeaning: 'ಅತ್ಯಗತ್ಯವಾದ / ಕಡ್ಡಾಯ',
-          exampleSentence: 'Daily speaking practice is imperative for conversational naturalness.',
+          exampleSentence:
+              'Daily speaking practice is imperative for conversational naturalness.',
           phonetic: '/ɪmˈper.ə.tɪv/',
         ),
         DailyVocabItem(
           word: 'Benchmark',
           partOfSpeech: 'noun',
-          definition: 'A standard or point of reference against which things may be compared.',
+          definition:
+              'A standard or point of reference against which things may be compared.',
           malayalamMeaning: 'മാനദണ്ഡം',
           tamilMeaning: 'அளவுகோல்',
           hindiMeaning: 'मानक / पैमाना',
           teluguMeaning: 'ప్రామాణికం',
           kannadaMeaning: 'ಮಾನದಂಡ',
-          exampleSentence: 'Completing Day 10 sets a golden benchmark for your 90-day journey.',
+          exampleSentence:
+              'Completing Day 10 sets a golden benchmark for your 90-day journey.',
           phonetic: '/ˈbentʃ.mɑːk/',
         ),
         DailyVocabItem(
           word: 'Formidable',
           partOfSpeech: 'adjective',
-          definition: 'Inspiring fear or respect through being impressively large or capable.',
+          definition:
+              'Inspiring fear or respect through being impressively large or capable.',
           malayalamMeaning: 'ശക്തമായ / അതിശക്തമായ',
           tamilMeaning: 'அஞ்சத்தக்க / மாபெரும்',
           hindiMeaning: 'अजेय / दुर्जेय',
           teluguMeaning: 'అజేయమైన / బలమైన',
           kannadaMeaning: 'ಅಜೇಯ / ಪ್ರಬಲ',
-          exampleSentence: 'With consistent dedication, you become a formidable communicator.',
+          exampleSentence:
+              'With consistent dedication, you become a formidable communicator.',
           phonetic: '/fɔːˈmɪd.ə.bəl/',
         ),
         DailyVocabItem(
           word: 'Reconcile',
           partOfSpeech: 'verb',
-          definition: 'Restore friendly relations between; harmonize conflicting elements.',
+          definition:
+              'Restore friendly relations between; harmonize conflicting elements.',
           malayalamMeaning: 'പൊരുത്തപ്പെടുത്തുക / രമ്യതയിലെത്തുക',
           tamilMeaning: 'சமாதானப்படுத்துதல் / இணைத்தல்',
           hindiMeaning: 'सामंजस्य बैठाना / समाधान करना',
           teluguMeaning: 'సమన్వయించు / రాజీ చేయు',
           kannadaMeaning: 'ಹೊಂದಾಣಿಕೆ ಮಾಡು / ಸಮಾಧಾನಗೊಳಿಸು',
-          exampleSentence: 'The ambassador reconciled the contradictory trade proposals.',
+          exampleSentence:
+              'The ambassador reconciled the contradictory trade proposals.',
           phonetic: '/ˈrek.ən.saɪl/',
         ),
         DailyVocabItem(
@@ -2613,7 +2768,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           hindiMeaning: 'स्मरणीय / ऐतिहासिक / महान',
           teluguMeaning: 'అపూర్వమైన / చారిత్రాత్మక',
           kannadaMeaning: 'ಐತಿಹಾಸಿಕ / ಅದ್ಭುತ',
-          exampleSentence: 'Reaching the 10-day milestone is a monumental achievement in fluency.',
+          exampleSentence:
+              'Reaching the 10-day milestone is a monumental achievement in fluency.',
           phonetic: '/ˌmɒn.jəˈmen.təl/',
         ),
       ];
@@ -2626,121 +2782,141 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         DailyVocabItem(
           word: 'Synthesis',
           partOfSpeech: 'noun',
-          definition: 'The combination of ideas, principles, or elements into a coherent whole.',
+          definition:
+              'The combination of ideas, principles, or elements into a coherent whole.',
           malayalamMeaning: 'സംയോജനം / സമന്വയം',
           tamilMeaning: 'ஒருங்கிணைப்பு / தொகுப்பு',
           hindiMeaning: 'संश्लेषण / संयोजन',
           teluguMeaning: 'సమన్వయం / సంశ్లేషణ',
           kannadaMeaning: 'ಸಂಶ್ಲೇಷಣೆ / ಸಂಯೋಜನೆ',
-          exampleSentence: 'The treatise is an exquisite synthesis of classical and modern statecraft.',
+          exampleSentence:
+              'The treatise is an exquisite synthesis of classical and modern statecraft.',
           phonetic: '/ˈsɪn.θə.sɪs/',
         ),
         DailyVocabItem(
           word: 'Legacy',
           partOfSpeech: 'noun',
-          definition: 'Something handed down from predecessors; enduring heritage.',
+          definition:
+              'Something handed down from predecessors; enduring heritage.',
           malayalamMeaning: 'പൈതൃകം / പിന്തുടർച്ച',
           tamilMeaning: 'பாரம்பரியம் / வழிவழியாக வந்த சொத்து',
           hindiMeaning: 'विरासत / धरोहर',
           teluguMeaning: 'వారసత్వం',
           kannadaMeaning: 'ಪರಂಪರೆ / ಆಸ್ತಿ',
-          exampleSentence: 'The peace treaty became the crown jewel of their historical legacy.',
+          exampleSentence:
+              'The peace treaty became the crown jewel of their historical legacy.',
           phonetic: '/ˈleɡ.ə.si/',
         ),
         DailyVocabItem(
           word: 'Retrospective',
           partOfSpeech: 'adjective',
-          definition: 'Looking back on, contemplating, or dealing with past events.',
+          definition:
+              'Looking back on, contemplating, or dealing with past events.',
           malayalamMeaning: 'ഭൂതകാലാവലോകനപരമായ',
           tamilMeaning: 'பின்னோக்கிய / கடந்த காலத்தை நோக்கும்',
           hindiMeaning: 'भूतलक्षी / अतीतदर्शी',
           teluguMeaning: 'గతావలోకన',
           kannadaMeaning: 'ಸಿಂಹಾವಲೋಕನದ',
-          exampleSentence: 'A retrospective audit proved that every sacrifice had been justified.',
+          exampleSentence:
+              'A retrospective audit proved that every sacrifice had been justified.',
           phonetic: '/ˌret.rəˈspek.tɪv/',
         ),
         DailyVocabItem(
           word: 'Sovereign',
           partOfSpeech: 'adjective',
-          definition: 'Possessing supreme, independent authority and self-determination.',
+          definition:
+              'Possessing supreme, independent authority and self-determination.',
           malayalamMeaning: 'പരമാധികാരമുള്ള / സ്വതന്ത്രമായ',
           tamilMeaning: 'இறையாண்மையுள்ள / தன்னாட்சி',
           hindiMeaning: 'संप्रभु / स्वायत्त',
           teluguMeaning: 'సార్వభౌమ / స్వతంత్ర',
           kannadaMeaning: 'ಸಾರ್ವಭೌಮ / ಸ್ವತಂತ್ರ',
-          exampleSentence: 'Sovereign nations maintain the inalienable right to chart their destinies.',
+          exampleSentence:
+              'Sovereign nations maintain the inalienable right to chart their destinies.',
           phonetic: '/ˈsɒv.rɪn/',
         ),
         DailyVocabItem(
           word: 'Fortification',
           partOfSpeech: 'noun',
-          definition: 'A defensive wall or reinforcement built to safeguard against invasion.',
+          definition:
+              'A defensive wall or reinforcement built to safeguard against invasion.',
           malayalamMeaning: 'കോട്ടകെട്ടി സുരക്ഷിതമാക്കൽ / പ്രതിരോധം',
           tamilMeaning: 'கோட்டை கொத்தளம் / அரண்',
           hindiMeaning: 'किलेबंदी / मोर्चाबंदी',
           teluguMeaning: 'కోట రక్షణ / బలపరచడం',
           kannadaMeaning: 'ಕೋಟೆ ನಿರ್ಮಾಣ / ರಕ್ಷಣೆ',
-          exampleSentence: 'Intellectual fortification shields the mind against deceptive fallacies.',
+          exampleSentence:
+              'Intellectual fortification shields the mind against deceptive fallacies.',
           phonetic: '/ˌfɔː.tɪ.fɪˈkeɪ.ʃən/',
         ),
         DailyVocabItem(
           word: 'Transcendent',
           partOfSpeech: 'adjective',
-          definition: 'Beyond or above the range of normal, physical, or ordinary experience.',
+          definition:
+              'Beyond or above the range of normal, physical, or ordinary experience.',
           malayalamMeaning: 'അതീതമായ / പരമോന്നതമായ',
           tamilMeaning: 'அளப்பரிய / எல்லையைக் கடந்த',
           hindiMeaning: 'सर्वोत्कृष्ट / अतींद्रिय',
           teluguMeaning: 'అతీతమైన / సర్వోన్నత',
           kannadaMeaning: 'ಅತೀತವಾದ / ಶ್ರೇಷ್ಠ',
-          exampleSentence: 'The poet captured a transcendent moment of human courage.',
+          exampleSentence:
+              'The poet captured a transcendent moment of human courage.',
           phonetic: '/trænˈsen.dənt/',
         ),
         DailyVocabItem(
           word: 'Epoch',
           partOfSpeech: 'noun',
-          definition: 'A particular period of time in history characterized by notable events.',
+          definition:
+              'A particular period of time in history characterized by notable events.',
           malayalamMeaning: 'യുഗം / ചരിത്രഘട്ടം',
           tamilMeaning: 'வரலாற்று சகாப்தம்',
           hindiMeaning: 'युग / नया दौर',
           teluguMeaning: 'యుగం / చారిత్రక ఘట్టம்',
           kannadaMeaning: 'ಯುಗ / ಹೊಸ ಕಾಲಘಟ್ಟ',
-          exampleSentence: 'Their breakthrough inaugurated an epoch of interplanetary exploration.',
+          exampleSentence:
+              'Their breakthrough inaugurated an epoch of interplanetary exploration.',
           phonetic: '/ˈiː.pɒk/',
         ),
         DailyVocabItem(
           word: 'Visionary',
           partOfSpeech: 'noun',
-          definition: 'A person with original, far-seeing ideas about the future.',
+          definition:
+              'A person with original, far-seeing ideas about the future.',
           malayalamMeaning: 'ദീർഘദർശി / ഭാവനാസമ്പന്നൻ',
           tamilMeaning: 'தொலைநோக்கு சிந்தனையாளர்',
           hindiMeaning: 'दूरदर्शी / स्वप्नदृष्टा',
           teluguMeaning: 'దూరదృష్టిగల వ్యక్తి',
           kannadaMeaning: 'ದೂರದರ್ಶಿ / ಭವಿಷ್ಯ ಚಿಂತಕ',
-          exampleSentence: 'Only a visionary could foresee how digital tools would empower voices.',
+          exampleSentence:
+              'Only a visionary could foresee how digital tools would empower voices.',
           phonetic: '/ˈvɪʒ.ən.ri/',
         ),
         DailyVocabItem(
           word: 'Inviolable',
           partOfSpeech: 'adjective',
-          definition: 'Never to be broken, infringed, or dishonored; sacred and absolute.',
+          definition:
+              'Never to be broken, infringed, or dishonored; sacred and absolute.',
           malayalamMeaning: 'ലംഘിക്കാനാവാത്ത / പവിത്രമായ',
           tamilMeaning: 'மீற முடியாத / புனிதமான',
           hindiMeaning: 'अनुल्लंघनीय / पवित्र',
           teluguMeaning: 'ఉల్లంఘించలేని / పవిత్రమైన',
           kannadaMeaning: 'ಉಲ್ಲಂಘಿಸಲಾಗದ / ಪವಿತ್ರ',
-          exampleSentence: 'The human rights treaty declared human dignity to be inviolable.',
+          exampleSentence:
+              'The human rights treaty declared human dignity to be inviolable.',
           phonetic: '/ɪnˈvaɪ.ə.lə.bəl/',
         ),
         DailyVocabItem(
           word: 'Culmination',
           partOfSpeech: 'noun',
-          definition: 'The highest, crowning point of something attained after protracted effort.',
+          definition:
+              'The highest, crowning point of something attained after protracted effort.',
           malayalamMeaning: 'പാരമ്യം / പരിസമാപ്തി',
           tamilMeaning: 'உச்சக்கட்டம் / நிறைவு',
           hindiMeaning: 'चरम सीमा / परिणति',
           teluguMeaning: 'పరాకాష్ట / ముగింపు',
           kannadaMeaning: 'ಪರಾಕಾಷ್ಠೆ / ಅಂತಿಮ ಹಂತ',
-          exampleSentence: 'Day 18 marks the culmination of advanced grammatical mastery.',
+          exampleSentence:
+              'Day 18 marks the culmination of advanced grammatical mastery.',
           phonetic: '/ˌkʌl.mɪˈneɪ.ʃən/',
         ),
       ];
@@ -2753,13 +2929,15 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         DailyVocabItem(
           word: 'Symmetry',
           partOfSpeech: 'noun',
-          definition: 'The quality of being made up of exactly similar parts facing each other or around an axis.',
+          definition:
+              'The quality of being made up of exactly similar parts facing each other or around an axis.',
           malayalamMeaning: 'സമമിതി / സന്തുലിതാവസ്ഥ',
           tamilMeaning: 'சமச்சீர்மை',
           hindiMeaning: 'समरूपता / संतुलन',
           teluguMeaning: 'సౌష్ఠవం / సమతుల్యత',
           kannadaMeaning: 'ಸಮಪಾತಳಿ / ಸಮರೂಪತೆ',
-          exampleSentence: 'Syntactic symmetry renders political rhetoric impossible to forget.',
+          exampleSentence:
+              'Syntactic symmetry renders political rhetoric impossible to forget.',
           phonetic: '/ˈsɪm.ə.tri/',
         ),
         DailyVocabItem(
@@ -2771,55 +2949,64 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           hindiMeaning: 'स्वर-लहरी / लयबद्धता',
           teluguMeaning: 'స్వర విన్యాసం / లయ',
           kannadaMeaning: 'ಧ್ವನಿ ಏರಿಳಿತ / ಲಯ',
-          exampleSentence: 'The courtroom fell silent as the cadence of her argument gathered speed.',
+          exampleSentence:
+              'The courtroom fell silent as the cadence of her argument gathered speed.',
           phonetic: '/ˈkeɪ.dəns/',
         ),
         DailyVocabItem(
           word: 'Obfuscation',
           partOfSpeech: 'noun',
-          definition: 'The action of making something obscure, unclear, or unintelligible.',
+          definition:
+              'The action of making something obscure, unclear, or unintelligible.',
           malayalamMeaning: 'അവ്യക്തതയുണ്ടാക്കൽ / പുകമറസൃഷ്ടിക്കൽ',
           tamilMeaning: 'குழப்பம் உண்டாக்குதல்',
           hindiMeaning: 'भ्रम पैदा करना / अस्पष्टता',
           teluguMeaning: 'గందరగోళ పరచడం',
           kannadaMeaning: 'ಗೊಂದಲ ಉಂಟುಮಾಡುವುದು',
-          exampleSentence: 'The defense sought not justice, but deliberate obfuscation.',
+          exampleSentence:
+              'The defense sought not justice, but deliberate obfuscation.',
           phonetic: '/ˌɒb.fʌsˈkeɪ.ʃən/',
         ),
         DailyVocabItem(
           word: 'Equanimity',
           partOfSpeech: 'noun',
-          definition: 'Mental calmness, composure, and evenness of temper in difficult situations.',
+          definition:
+              'Mental calmness, composure, and evenness of temper in difficult situations.',
           malayalamMeaning: 'സമചിത്തത / മനശാന്തി',
           tamilMeaning: 'மன அமைதி / சலனமற்ற நிலை',
           hindiMeaning: 'समभाव / मानसिक संतुलन',
           teluguMeaning: 'సమచిత్తత / ప్రశాంతత',
           kannadaMeaning: 'ಮನಸ್ಸಿನ ಶಾಂತಿ / ಸಮಾಧಾನ',
-          exampleSentence: 'She received praise and condemnation with equal equanimity.',
+          exampleSentence:
+              'She received praise and condemnation with equal equanimity.',
           phonetic: '/ˌek.wəˈnɪm.ə.ti/',
         ),
         DailyVocabItem(
           word: 'Rectitude',
           partOfSpeech: 'noun',
-          definition: 'Morally correct behaviour or thinking; unblemished integrity.',
+          definition:
+              'Morally correct behaviour or thinking; unblemished integrity.',
           malayalamMeaning: 'ധാർമ്മികശുദ്ധി / നീതിനിഷ്ഠ',
           tamilMeaning: 'நேர்மை / அறநெறி',
           hindiMeaning: 'सदाचार / सत्यनिष्ठा',
           teluguMeaning: 'ధర్మనిష్ఠ / నిజాయితీ',
           kannadaMeaning: 'ಸದಾಚಾರ / ನಿಷ್ಠೆ',
-          exampleSentence: 'The magistrate was revered for unflinching judicial rectitude.',
+          exampleSentence:
+              'The magistrate was revered for unflinching judicial rectitude.',
           phonetic: '/ˈrek.tɪ.tʃuːd/',
         ),
         DailyVocabItem(
           word: 'Juxtaposition',
           partOfSpeech: 'noun',
-          definition: 'The fact of placing two or more things side by side to highlight comparison or contrast.',
+          definition:
+              'The fact of placing two or more things side by side to highlight comparison or contrast.',
           malayalamMeaning: 'താരതമ്യപ്പെടുത്തൽ / ഒരുമിച്ചു ചേർത്തുനിർത്തൽ',
           tamilMeaning: 'ஒப்பீடு செய்ய அருகருகே வைத்தல்',
           hindiMeaning: 'समीपस्थापन / तुलनात्मक मिलान',
           teluguMeaning: 'పోలిక కోసం పక్కపక్కనే ఉంచుట',
           kannadaMeaning: 'ಹೋಲಿಕೆಗಾಗಿ ಪಕ್ಕಪಕ್ಕದಲ್ಲಿ ಇಡುವುದು',
-          exampleSentence: 'The juxtaposition of opulent promises and harsh reality exposed the deceit.',
+          exampleSentence:
+              'The juxtaposition of opulent promises and harsh reality exposed the deceit.',
           phonetic: '/ˌdʒʌk.stə.pəˈzɪʃ.ən/',
         ),
         DailyVocabItem(
@@ -2831,19 +3018,22 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           hindiMeaning: 'सुवक्तृत्व / वाक्पटुता',
           teluguMeaning: 'వాగ్ధాటి / ప్రావీణ్యం',
           kannadaMeaning: 'ಮಾತಿನ ಜಾಣ್ಮೆ / ವಾಗ್ಝರಿ',
-          exampleSentence: 'Her natural eloquence stirred thousands into purposeful collective action.',
+          exampleSentence:
+              'Her natural eloquence stirred thousands into purposeful collective action.',
           phonetic: '/ˈel.ə.kwəns/',
         ),
         DailyVocabItem(
           word: 'Unflinching',
           partOfSpeech: 'adjective',
-          definition: 'Not showing fear, hesitation, or compromise in facing difficulty.',
+          definition:
+              'Not showing fear, hesitation, or compromise in facing difficulty.',
           malayalamMeaning: 'പതറാത്ത / അചഞ്ചലമായ',
           tamilMeaning: 'அஞ்சாத / உறுதியான',
           hindiMeaning: 'अडिग / निडर',
           teluguMeaning: 'అచంచలమైన / నిర్భయమైన',
           kannadaMeaning: 'ಅಚಲ / ಹೆದರದ',
-          exampleSentence: 'She offered unflinching testimony before the constitutional bench.',
+          exampleSentence:
+              'She offered unflinching testimony before the constitutional bench.',
           phonetic: '/ʌnˈflɪn.tʃɪŋ/',
         ),
         DailyVocabItem(
@@ -2855,19 +3045,22 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           hindiMeaning: 'त्रिमूर्ति / त्रिक',
           teluguMeaning: 'త్రిమూర్తి / మూడింటి సముదాయం',
           kannadaMeaning: 'ಮೂರರ ಗುಂಪು / ತ್ರಿವಳಿ',
-          exampleSentence: 'Orators use the rhetorical triad: truth, clarity, and decisive action.',
+          exampleSentence:
+              'Orators use the rhetorical triad: truth, clarity, and decisive action.',
           phonetic: '/ˈtraɪ.æd/',
         ),
         DailyVocabItem(
           word: 'Resonance',
           partOfSpeech: 'noun',
-          definition: 'The quality in a sound or idea of being deep, full, and reverberating.',
+          definition:
+              'The quality in a sound or idea of being deep, full, and reverberating.',
           malayalamMeaning: 'അനുരണനം / പ്രതിധ്വനി',
           tamilMeaning: 'எதிரொலி / ஆழ்ந்த தாக்கம்',
           hindiMeaning: 'गूंज / गहरा प्रभाव',
           teluguMeaning: 'ప్రతిధ్వని / గాఢ ప్రభావం',
           kannadaMeaning: 'ಪ್ರತಿಧ್ವನಿ / ಆಳವಾದ ಪ್ರಭಾವ',
-          exampleSentence: 'Her closing remarks achieved timeless emotional resonance.',
+          exampleSentence:
+              'Her closing remarks achieved timeless emotional resonance.',
           phonetic: '/ˈrez.ən.əns/',
         ),
       ];
@@ -2880,37 +3073,43 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         DailyVocabItem(
           word: 'Pivotal',
           partOfSpeech: 'adjective',
-          definition: 'Of crucial importance in relation to the development or outcome of something.',
+          definition:
+              'Of crucial importance in relation to the development or outcome of something.',
           malayalamMeaning: 'സുപ്രധാനമായ / നിർണ്ണായകമായ',
           tamilMeaning: 'முக்கியமான / திருப்புமுனையான',
           hindiMeaning: 'निर्णायक / आधारभूत',
           teluguMeaning: 'కీలకమైన',
           kannadaMeaning: 'ಪ್ರಮುಖ / ತಿರುವು ನೀಡುವ',
-          exampleSentence: 'It was her pivotal intervention that restored parliamentary order.',
+          exampleSentence:
+              'It was her pivotal intervention that restored parliamentary order.',
           phonetic: '/ˈpɪv.ə.təl/',
         ),
         DailyVocabItem(
           word: 'Catalyst',
           partOfSpeech: 'noun',
-          definition: 'A person or event that precipitates significant change or action.',
+          definition:
+              'A person or event that precipitates significant change or action.',
           malayalamMeaning: 'ഉൽപ്രേരകം / മാറ്റത്തിനു കാരണമാകുന്ന ഘടകം',
           tamilMeaning: 'மாற்றத்தை தூண்டும் காரணி',
           hindiMeaning: 'उत्प्रेरक / बदलाव लाने वाला',
           teluguMeaning: 'ఉత్ప్రేరకం',
           kannadaMeaning: 'ಉತ್ಪ್ರೇರಕ',
-          exampleSentence: 'What served as the true catalyst was public accountability.',
+          exampleSentence:
+              'What served as the true catalyst was public accountability.',
           phonetic: '/ˈkæt.əl.ɪst/',
         ),
         DailyVocabItem(
           word: 'Oratorical',
           partOfSpeech: 'adjective',
-          definition: 'Relating to the art, practice, or style of public speaking.',
+          definition:
+              'Relating to the art, practice, or style of public speaking.',
           malayalamMeaning: 'പ്രസംഗകലപരമായ / വാഗ്മിത്വമുള്ള',
           tamilMeaning: 'பேச்சாற்றல் சார்ந்த',
           hindiMeaning: 'वक्तृत्व संबंधी / भाषण कला',
           teluguMeaning: 'ఉపన్యాస కళకు చెందిన',
           kannadaMeaning: 'ಭಾಷಣ ಕಲೆಗೆ ಸಂಬಂಧಿಸಿದ',
-          exampleSentence: 'Cleft sentences elevate oratorical speeches above ordinary chatter.',
+          exampleSentence:
+              'Cleft sentences elevate oratorical speeches above ordinary chatter.',
           phonetic: '/ˌɒr.əˈtɒr.ɪ.kəl/',
         ),
         DailyVocabItem(
@@ -2922,7 +3121,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           hindiMeaning: 'गहन जांच / सूक्ष्म निरीक्षण',
           teluguMeaning: 'సూక్ష్మ పరిశీలన',
           kannadaMeaning: 'ಸೂಕ್ಷ್ಮ ಪರಿಶೀಲನೆ',
-          exampleSentence: 'It is under rigorous scrutiny that flawed policies crumble.',
+          exampleSentence:
+              'It is under rigorous scrutiny that flawed policies crumble.',
           phonetic: '/ˈskruː.tɪ.ni/',
         ),
         DailyVocabItem(
@@ -2934,7 +3134,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           hindiMeaning: 'प्रमुख / मुख्य',
           teluguMeaning: 'ప్రముఖమైన',
           kannadaMeaning: 'ಪ್ರಮುಖವಾದ',
-          exampleSentence: 'What remains salient is our commitment to grid modernization.',
+          exampleSentence:
+              'What remains salient is our commitment to grid modernization.',
           phonetic: '/ˈseɪ.li.ənt/',
         ),
         DailyVocabItem(
@@ -2946,55 +3147,64 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           hindiMeaning: 'स्पष्ट करना / व्याख्या करना',
           teluguMeaning: 'స్పష్టం చేయు / వివరించు',
           kannadaMeaning: 'ಸ್ಪಷ್ಟಪಡಿಸು / ವಿವರಿಸು',
-          exampleSentence: 'It was the engineer who elucidated the cascading transformer failure.',
+          exampleSentence:
+              'It was the engineer who elucidated the cascading transformer failure.',
           phonetic: '/ɪˈluː.sɪ.deɪt/',
         ),
         DailyVocabItem(
           word: 'Paradox',
           partOfSpeech: 'noun',
-          definition: 'A statement that seems self-contradictory but in reality expresses a possible truth.',
+          definition:
+              'A statement that seems self-contradictory but in reality expresses a possible truth.',
           malayalamMeaning: 'വിരോധാഭാസം',
           tamilMeaning: 'முரண்போலி / முரண்பாடு',
           hindiMeaning: 'विरोधाभास',
           teluguMeaning: 'విరోధాభాసం',
           kannadaMeaning: 'ವಿರೋಧಾಭಾಸ',
-          exampleSentence: 'It is a strange paradox that simpler words wield greater force.',
+          exampleSentence:
+              'It is a strange paradox that simpler words wield greater force.',
           phonetic: '/ˈpær.ə.dɒks/',
         ),
         DailyVocabItem(
           word: 'Resilience',
           partOfSpeech: 'noun',
-          definition: 'The capacity to withstand or recover quickly from difficult conditions.',
+          definition:
+              'The capacity to withstand or recover quickly from difficult conditions.',
           malayalamMeaning: 'പ്രതിരോധശേഷി / അതിജീവനക്കരുത്ത്',
           tamilMeaning: 'மீண்டெழும் திறன்',
           hindiMeaning: 'लचीलापन / प्रतिरोधक क्षमता',
           teluguMeaning: 'స్థితిస్థాపకత / పుంజుకునే శక్తి',
           kannadaMeaning: 'ಚೇತರಿಸಿಕೊಳ್ಳುವ ಶಕ್ತಿ',
-          exampleSentence: 'What saved the city was the enduring resilience of its citizenry.',
+          exampleSentence:
+              'What saved the city was the enduring resilience of its citizenry.',
           phonetic: '/rɪˈzɪl.jəns/',
         ),
         DailyVocabItem(
           word: 'Impervious',
           partOfSpeech: 'adjective',
-          definition: 'Unable to be affected or influenced by criticism or harm.',
+          definition:
+              'Unable to be affected or influenced by criticism or harm.',
           malayalamMeaning: 'ബാധിക്കപ്പെടാത്ത / അടിയറവു പറയാത്ത',
           tamilMeaning: 'பாதிக்கப்படாத',
           hindiMeaning: 'अभैद्य / अप्रभावित',
           teluguMeaning: 'ప్రభావితం కాని',
           kannadaMeaning: 'ಅಭೇದ್ಯ / ಪ್ರಭಾವಕ್ಕೆ ಒಳಗಾಗದ',
-          exampleSentence: 'The bedrock foundation proved impervious to seasonal tremors.',
+          exampleSentence:
+              'The bedrock foundation proved impervious to seasonal tremors.',
           phonetic: '/ɪmˈpɜː.vi.əs/',
         ),
         DailyVocabItem(
           word: 'Vindication',
           partOfSpeech: 'noun',
-          definition: 'Proof that someone or something is right, reasonable, or justified.',
+          definition:
+              'Proof that someone or something is right, reasonable, or justified.',
           malayalamMeaning: 'സാധൂകരണം / നീതീകരണം',
           tamilMeaning: 'நிரூபணம் / நியாயப்படுத்தல்',
           hindiMeaning: 'पुष्टि / दोषमुक्ति',
           teluguMeaning: 'సమర్థన / నిరూపణ',
           kannadaMeaning: 'ಸಮರ್ಥನೆ / ದೋಷಮುಕ್ತಿ',
-          exampleSentence: 'It was historical vindication that the banished scientist received.',
+          exampleSentence:
+              'It was historical vindication that the banished scientist received.',
           phonetic: '/ˌvɪn.dɪˈkeɪ.ʃən/',
         ),
       ];
@@ -3007,61 +3217,71 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         DailyVocabItem(
           word: 'Nuance',
           partOfSpeech: 'noun',
-          definition: 'A subtle distinction or variation in meaning, expression, or tone.',
+          definition:
+              'A subtle distinction or variation in meaning, expression, or tone.',
           malayalamMeaning: 'സൂക്ഷ്മഭേദം / അർത്ഥവ്യത്യാസം',
           tamilMeaning: 'நுட்பமான வேறுபாடு',
           hindiMeaning: 'सूक्ष्म भेद / बारीकी',
           teluguMeaning: 'సూక్ష్మ భేదం',
           kannadaMeaning: 'ಸೂಕ್ಷ್ಮ ವ್ಯತ್ಯಾಸ',
-          exampleSentence: 'Mastering conversational register requires grasping linguistic nuance.',
+          exampleSentence:
+              'Mastering conversational register requires grasping linguistic nuance.',
           phonetic: '/ˈnjuː.ɑːns/',
         ),
         DailyVocabItem(
           word: 'Diplomatic',
           partOfSpeech: 'adjective',
-          definition: 'Having or showing an ability to deal with people tactfully and sensitively.',
+          definition:
+              'Having or showing an ability to deal with people tactfully and sensitively.',
           malayalamMeaning: 'നയതന്ത്രപരമായ / വിവേകപൂർവ്വമായ',
           tamilMeaning: 'சமரச உணர்வுள்ள / ராஜதந்திர',
           hindiMeaning: 'कूटनीतिक / विनम्र',
           teluguMeaning: 'దౌత్యపరమైన',
           kannadaMeaning: 'ರಾಜತಾಂತ್ರಿಕ',
-          exampleSentence: 'Her diplomatic reply eased the tension in the boardroom.',
+          exampleSentence:
+              'Her diplomatic reply eased the tension in the boardroom.',
           phonetic: '/ˌdɪp.ləˈmæt.ɪk/',
         ),
         DailyVocabItem(
           word: 'Hedging',
           partOfSpeech: 'noun',
-          definition: 'The use of cautious, softening language to avoid direct assertion or offense.',
+          definition:
+              'The use of cautious, softening language to avoid direct assertion or offense.',
           malayalamMeaning: 'മയപ്പെടുത്തിയ ഭാഷാപ്രയോഗം',
           tamilMeaning: 'எச்சரிக்கையான நயவுரை',
           hindiMeaning: 'सतर्क भाषा-प्रयोग',
           teluguMeaning: 'హెడ్జింగ్ / మృదువైన వ్యక్తీకరణ',
           kannadaMeaning: 'ಎಚ್ಚರಿಕೆಯ ಭಾಷಾಪ್ರಯೋಗ',
-          exampleSentence: 'Using modal verbs is an effective hedging strategy in British English.',
+          exampleSentence:
+              'Using modal verbs is an effective hedging strategy in British English.',
           phonetic: '/ˈhedʒ.ɪŋ/',
         ),
         DailyVocabItem(
           word: 'Tactful',
           partOfSpeech: 'adjective',
-          definition: 'Showing sensitivity and skill in dealing with others or difficult issues.',
+          definition:
+              'Showing sensitivity and skill in dealing with others or difficult issues.',
           malayalamMeaning: 'കൗശലപൂർവ്വമായ / സമയോചിതമായ',
           tamilMeaning: 'சாமர்த்தியமான / கனிவான',
           hindiMeaning: 'विनम्र / कुशल',
           teluguMeaning: 'సమయస్ఫూర్తిగల',
           kannadaMeaning: 'ಚತುರ / ಜಾಣ್ಮೆಯ',
-          exampleSentence: 'A tactful question opens doors that aggressive demands shut.',
+          exampleSentence:
+              'A tactful question opens doors that aggressive demands shut.',
           phonetic: '/ˈtækt.fəl/',
         ),
         DailyVocabItem(
           word: 'Equivocal',
           partOfSpeech: 'adjective',
-          definition: 'Open to more than one interpretation; deliberately ambiguous.',
+          definition:
+              'Open to more than one interpretation; deliberately ambiguous.',
           malayalamMeaning: 'വ്യക്തതയില്ലാത്ത / ഇരുതലവാചകമായ',
           tamilMeaning: 'இருபொருள் படத்தக்க',
           hindiMeaning: 'அस्पष्ट / संदिग्ध',
           teluguMeaning: 'సందిగ్ధమైన',
           kannadaMeaning: 'ಸಂದಿಗ್ಧವಾದ',
-          exampleSentence: 'Diplomats sometimes prefer equivocal phrasing during early talks.',
+          exampleSentence:
+              'Diplomats sometimes prefer equivocal phrasing during early talks.',
           phonetic: '/ɪˈkwɪv.ə.kəl/',
         ),
         DailyVocabItem(
@@ -3073,43 +3293,50 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           hindiMeaning: 'सहमत होना',
           teluguMeaning: 'ఏకీభవించు',
           kannadaMeaning: 'ಒಪ್ಪಿಕೊ / ಸಮ್ಮತಿಸು',
-          exampleSentence: 'I respectfully concur with your strategic evaluation.',
+          exampleSentence:
+              'I respectfully concur with your strategic evaluation.',
           phonetic: '/kənˈkɜːr/',
         ),
         DailyVocabItem(
           word: 'Pragmatic',
           partOfSpeech: 'adjective',
-          definition: 'Dealing with matters sensibly and realistically based on practical considerations.',
+          definition:
+              'Dealing with matters sensibly and realistically based on practical considerations.',
           malayalamMeaning: 'പ്രായോഗികമായ / അനുഭവവേദ്യമായ',
           tamilMeaning: 'நடைமுறைக்குரிய / எதார்த்தமான',
           hindiMeaning: 'व्यावहारिक / यथार्थवादी',
           teluguMeaning: 'ఆచరణాత్మక',
           kannadaMeaning: 'ಪ್ರಾಯೋಗಿಕ',
-          exampleSentence: 'We chose a pragmatic compromise to preserve goodwill.',
+          exampleSentence:
+              'We chose a pragmatic compromise to preserve goodwill.',
           phonetic: '/præɡˈmæt.ɪk/',
         ),
         DailyVocabItem(
           word: 'Deference',
           partOfSpeech: 'noun',
-          definition: 'Polite submission and respectful regard shown to another.',
+          definition:
+              'Polite submission and respectful regard shown to another.',
           malayalamMeaning: 'ആദരവ് / ബഹുമാനപൂർവ്വമായ വണക്കം',
           tamilMeaning: 'மரியாதை / அடிபணிவு',
           hindiMeaning: 'सम्मान / आदरभाव',
           teluguMeaning: 'గౌరవభావం',
           kannadaMeaning: 'ಗೌರವ / ಆದರ',
-          exampleSentence: 'The junior delegate spoke with consummate deference to the elder statesman.',
+          exampleSentence:
+              'The junior delegate spoke with consummate deference to the elder statesman.',
           phonetic: '/ˈdef.ər.əns/',
         ),
         DailyVocabItem(
           word: 'Circumspect',
           partOfSpeech: 'adjective',
-          definition: 'Wary and cautious; unwilling to take unnecessary conversational risks.',
+          definition:
+              'Wary and cautious; unwilling to take unnecessary conversational risks.',
           malayalamMeaning: 'ജാഗ്രതയുള്ള / കരുതലോടെയുള്ള',
           tamilMeaning: 'எச்சரிக்கையான / விழிப்புடைய',
           hindiMeaning: 'सावधान / सतर्क',
           teluguMeaning: 'జాగరూకత గల',
           kannadaMeaning: 'ಎಚ್ಚರಿಕೆಯುಳ್ಳ',
-          exampleSentence: 'In tense negotiations, circumspect phrasing prevents diplomatic fallout.',
+          exampleSentence:
+              'In tense negotiations, circumspect phrasing prevents diplomatic fallout.',
           phonetic: '/ˈsɜː.kəm.spekt/',
         ),
         DailyVocabItem(
@@ -3121,7 +3348,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           hindiMeaning: 'सौहार्दपूर्वक / प्रेमपूर्वक',
           teluguMeaning: 'ఆప్యాయంగా / హృదయపూర్వకంగా',
           kannadaMeaning: 'ಆತ್ಮೀಯವಾಗಿ / ಸೌಹಾರ್ದಯುತವಾಗಿ',
-          exampleSentence: 'We cordially invite your delegation to review our amendments.',
+          exampleSentence:
+              'We cordially invite your delegation to review our amendments.',
           phonetic: '/ˈkɔː.di.ə.li/',
         ),
       ];
@@ -3140,31 +3368,36 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           hindiMeaning: 'वाक्पटुता / प्रभावकारी वक्तृत्व',
           teluguMeaning: 'వాక్చాతుర్యం / ఉపన్యాస కళ',
           kannadaMeaning: 'ವಾಕ್ಚಾತುರ್ಯ / ಭಾಷಣ ಕಲೆ',
-          exampleSentence: 'Masterful rhetoric aligns divergent factions toward a noble common goal.',
+          exampleSentence:
+              'Masterful rhetoric aligns divergent factions toward a noble common goal.',
           phonetic: '/ˈret.ər.ɪk/',
         ),
         DailyVocabItem(
           word: 'Acumen',
           partOfSpeech: 'noun',
-          definition: 'The ability to make good judgements and take quick, accurate decisions.',
+          definition:
+              'The ability to make good judgements and take quick, accurate decisions.',
           malayalamMeaning: 'തീക്ഷ്ണബുദ്ധി / വിവേചനപാടവം',
           tamilMeaning: 'நுட்பமான மதிநுட்பம் / கூர்மை',
           hindiMeaning: 'कुशाग्रता / निर्णय क्षमता',
           teluguMeaning: 'సమయస్ఫూర్తి / తీక్షణ ప్రతిభ',
           kannadaMeaning: 'ಕುಶಾಗ್ರಮತಿ / ಚಾಣಾಕ್ಷತೆ',
-          exampleSentence: 'Her diplomatic acumen prevented an imminent international breakdown.',
+          exampleSentence:
+              'Her diplomatic acumen prevented an imminent international breakdown.',
           phonetic: '/ˈæk.jə.mən/',
         ),
         DailyVocabItem(
           word: 'Multilateral',
           partOfSpeech: 'adjective',
-          definition: 'Agreed upon or participated in by three or more parties or sovereign nations.',
+          definition:
+              'Agreed upon or participated in by three or more parties or sovereign nations.',
           malayalamMeaning: 'ബഹുമുഖമായ / പല കക്ഷികൾ ചേർന്ന',
           tamilMeaning: 'பலதரப்பு உடன்படிக்கை சார்ந்த',
           hindiMeaning: 'बहुपक्षीय',
           teluguMeaning: 'బహుపాక్షిక',
           kannadaMeaning: 'ಬಹುಪಕ್ಷೀಯ',
-          exampleSentence: 'The multilateral accord unified ninety nations in maritime protection.',
+          exampleSentence:
+              'The multilateral accord unified ninety nations in maritime protection.',
           phonetic: '/ˌmʌl.tiˈlæt.ər.əl/',
         ),
         DailyVocabItem(
@@ -3176,55 +3409,64 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           hindiMeaning: 'सहगामी / सहवर्ती',
           teluguMeaning: 'సహజంగా తోడుండే',
           kannadaMeaning: 'ಜೊತೆಯಾಗಿ ಬರುವ',
-          exampleSentence: 'Great executive influence carries concomitant moral responsibilities.',
+          exampleSentence:
+              'Great executive influence carries concomitant moral responsibilities.',
           phonetic: '/kənˈkɒm.ɪ.tənt/',
         ),
         DailyVocabItem(
           word: 'Impasse',
           partOfSpeech: 'noun',
-          definition: 'A situation in which no progress is possible, especially due to disagreement.',
+          definition:
+              'A situation in which no progress is possible, especially due to disagreement.',
           malayalamMeaning: 'സ്തംഭനാവസ്ഥ / വഴിമുട്ടിയ അവസ്ഥ',
           tamilMeaning: 'முட்டுக்கட்டை / முன்னேற முடியாத நிலை',
           hindiMeaning: 'गतिरोध / बंद गली',
           teluguMeaning: 'ప్రతిష్టంభన / అడ్డంకి',
           kannadaMeaning: 'ಬಿಕ್ಕಟ್ಟು / ಮುಗ್ಗಟ್ಟು',
-          exampleSentence: 'Creative compromise broke the three-day diplomatic impasse in Geneva.',
+          exampleSentence:
+              'Creative compromise broke the three-day diplomatic impasse in Geneva.',
           phonetic: '/ˈæm.pɑːs/',
         ),
         DailyVocabItem(
           word: 'Solicitous',
           partOfSpeech: 'adjective',
-          definition: 'Characterized by showing sincere interest, care, or concern for others.',
+          definition:
+              'Characterized by showing sincere interest, care, or concern for others.',
           malayalamMeaning: 'ശ്രദ്ധാലുവായ / കരുതലുള്ള',
           tamilMeaning: 'அக்கறையுள்ள / பரிவுள்ள',
           hindiMeaning: 'चिंतित / हितैषी / परवाह करने वाला',
           teluguMeaning: 'శ్రద్ధాసక్తులు గల / సంరక్షించే',
           kannadaMeaning: 'ಕಾಳಜಿಯುಳ್ಳ / ಹಿತೈಷಿ',
-          exampleSentence: 'A solicitous leader addresses the legitimate grievances of every citizen.',
+          exampleSentence:
+              'A solicitous leader addresses the legitimate grievances of every citizen.',
           phonetic: '/səˈlɪs.ɪ.təs/',
         ),
         DailyVocabItem(
           word: 'Efficacy',
           partOfSpeech: 'noun',
-          definition: 'The ability to produce a desired or intended result; effectiveness.',
+          definition:
+              'The ability to produce a desired or intended result; effectiveness.',
           malayalamMeaning: 'ഫലപ്രാപ്തി / കാര്യക്ഷമത',
           tamilMeaning: 'செயல்திறன் / பலன் தரும் தன்மை',
           hindiMeaning: 'प्रभावोत्पादकता / प्रभावकारिता',
           teluguMeaning: 'ఫలిత సామర్థ్యం / కార్యాచరణ',
           kannadaMeaning: 'ಪರಿಣಾಮಕಾರಿತ್ವ / ಸಾಮರ್ಥ್ಯ',
-          exampleSentence: 'The clinical efficacy of the protocol was established across three trials.',
+          exampleSentence:
+              'The clinical efficacy of the protocol was established across three trials.',
           phonetic: '/ˈef.ɪ.kə.si/',
         ),
         DailyVocabItem(
           word: 'Recalcitrant',
           partOfSpeech: 'adjective',
-          definition: 'Having an obstinately uncooperative attitude toward authority or consensus.',
+          definition:
+              'Having an obstinately uncooperative attitude toward authority or consensus.',
           malayalamMeaning: 'വാശിയുള്ള / വഴങ്ങാത്ത',
           tamilMeaning: 'அடங்காத / வழிக்கு வராத',
           hindiMeaning: 'हठी / आज्ञा न मानने वाला',
           teluguMeaning: 'మొండిపట్టుదలగల / లొంగని',
           kannadaMeaning: 'ಹಟಮಾರಿ / ಒಪ್ಪಿಕೊಳ್ಳದ',
-          exampleSentence: 'Lyra\'s eloquence swayed even the most recalcitrant ministers.',
+          exampleSentence:
+              'Lyra\'s eloquence swayed even the most recalcitrant ministers.',
           phonetic: '/rɪˈkæl.sɪ.trənt/',
         ),
         DailyVocabItem(
@@ -3236,7 +3478,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           hindiMeaning: 'सर्वसम्मति / आम सहमति',
           teluguMeaning: 'ఏకాభిప్రాయం',
           kannadaMeaning: 'ಸರ್ವಸಮ್ಮತಿ / ಒಮ್ಮತ',
-          exampleSentence: 'Building consensus requires deep listening alongside persuasive speech.',
+          exampleSentence:
+              'Building consensus requires deep listening alongside persuasive speech.',
           phonetic: '/kənˈsen.səs/',
         ),
         DailyVocabItem(
@@ -3248,7 +3491,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           hindiMeaning: 'संप्रभुता / सार्वभौमिकता',
           teluguMeaning: 'సార్వభౌమాధికారం',
           kannadaMeaning: 'ಸಾರ್ವಭೌಮತ್ವ',
-          exampleSentence: 'The treaty firmly safeguarded the national sovereignty of each republic.',
+          exampleSentence:
+              'The treaty firmly safeguarded the national sovereignty of each republic.',
           phonetic: '/ˈsɒv.rən.ti/',
         ),
       ];
@@ -3261,13 +3505,15 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         DailyVocabItem(
           word: 'Epistemological',
           partOfSpeech: 'adjective',
-          definition: 'Relating to the theory of knowledge, its validity and methods.',
+          definition:
+              'Relating to the theory of knowledge, its validity and methods.',
           malayalamMeaning: 'ജ്ഞാനശാസ്ത്രപരമായ',
           tamilMeaning: 'அறிவாராய்ச்சியியல் சார்ந்த',
           hindiMeaning: 'ज्ञानमीमांसीय / ज्ञान-सिद्धांत संबंधी',
           teluguMeaning: 'జ్ఞానమీమాంసకు సంబంధించిన',
           kannadaMeaning: 'ಜ್ಞಾನಮೀಮಾಂಸೆಯ',
-          exampleSentence: 'The discovery triggered a deep epistemological shift across neuroscience.',
+          exampleSentence:
+              'The discovery triggered a deep epistemological shift across neuroscience.',
           phonetic: '/ɪˌpɪs.tə.məˈlɒdʒ.ɪ.kəl/',
         ),
         DailyVocabItem(
@@ -3279,103 +3525,120 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           hindiMeaning: 'प्रतिमान / वैचारिक ढांचा',
           teluguMeaning: 'ఆదర్శ నమూనా / ఆలోచనా విధానం',
           kannadaMeaning: 'ಚಿಂತನೆಯ ಚೌಕಟ್ಟು / ಮಾದರಿ',
-          exampleSentence: 'Quantum computing introduces a revolutionary paradigm to computation.',
+          exampleSentence:
+              'Quantum computing introduces a revolutionary paradigm to computation.',
           phonetic: '/ˈpær.ə.daɪm/',
         ),
         DailyVocabItem(
           word: 'Empiricism',
           partOfSpeech: 'noun',
-          definition: 'The theory that all knowledge is derived from sense-experience and evidence.',
+          definition:
+              'The theory that all knowledge is derived from sense-experience and evidence.',
           malayalamMeaning: 'പ്രത്യക്ഷാനുഭവവാദം',
           tamilMeaning: 'அனுபவவாத உண்மை / ஆய்வு நெறி',
           hindiMeaning: 'अनुभववाद / प्रयोगमूलक प्रमाण',
           teluguMeaning: 'అనుభవవాదం / ప్రయోగాధారిత జ్ఞానం',
           kannadaMeaning: 'ಅನುಭವಜನ್ಯ ಸಿದ್ಧಾಂತ',
-          exampleSentence: 'Scientific progress relies upon unyielding empiricism rather than superstition.',
+          exampleSentence:
+              'Scientific progress relies upon unyielding empiricism rather than superstition.',
           phonetic: '/ɪmˈpɪr.ɪ.sɪ.zəm/',
         ),
         DailyVocabItem(
           word: 'Corroborate',
           partOfSpeech: 'verb',
-          definition: 'Confirm or give support to a statement, theory, or finding.',
+          definition:
+              'Confirm or give support to a statement, theory, or finding.',
           malayalamMeaning: 'സ്ഥിരീകരിക്കുക / തെളിവുനൽകി ഉറപ്പിക്കുക',
           tamilMeaning: 'உறுதிப்படுத்துதல் / சான்றுடன் மெய்ப்பித்தல்',
           hindiMeaning: 'पुष्टि करना / समर्थन देना',
           teluguMeaning: 'ధృవీకరించు / సమర్థించు',
           kannadaMeaning: 'ದೃಢೀಕರಿಸು / ಸಾಕ್ಷ್ಯಾಧಾರ ನೀಡು',
-          exampleSentence: 'Subsequent independent trials corroborated Dr. Elena\'s radical thesis.',
+          exampleSentence:
+              'Subsequent independent trials corroborated Dr. Elena\'s radical thesis.',
           phonetic: '/kəˈrɒb.ə.reɪt/',
         ),
         DailyVocabItem(
           word: 'Incongruous',
           partOfSpeech: 'adjective',
-          definition: 'Not in harmony or keeping with the surroundings or other aspects.',
+          definition:
+              'Not in harmony or keeping with the surroundings or other aspects.',
           malayalamMeaning: 'പൊരുത്തമില്ലാത്ത / ചേർച്ചയില്ലാത്ത',
           tamilMeaning: 'பொருத்தமற்ற / முரண்பாடான',
           hindiMeaning: 'बेमेल / असंगत',
           teluguMeaning: 'పొంతనలేని / అసంగతమైన',
           kannadaMeaning: 'ಹೊಂದಿಕೆಯಾಗದ / ಅಸಂಗತ',
-          exampleSentence: 'The anomalous data point seemed incongruous alongside classical models.',
+          exampleSentence:
+              'The anomalous data point seemed incongruous alongside classical models.',
           phonetic: '/ɪnˈkɒŋ.ɡru.əs/',
         ),
         DailyVocabItem(
           word: 'Juxtaposition',
           partOfSpeech: 'noun',
-          definition: 'The fact of two things being placed close together with contrasting effect.',
+          definition:
+              'The fact of two things being placed close together with contrasting effect.',
           malayalamMeaning: 'താരതമ്യപ്പെടുത്തൽ / അടുത്തടുത്തുള്ള വെയ്ക്കൽ',
           tamilMeaning: 'முரண்களை ஒப்பிட்டு நோக்குதல்',
           hindiMeaning: 'तुलनात्मक सन्निकटता / विषमता दर्शाना',
           teluguMeaning: 'పోలిక కోసం పక్కపక్కన ఉంచడం',
           kannadaMeaning: 'ವ್ಯತ್ಯಾಸ ತೋರಲು ಅಕ್ಕಪಕ್ಕ ಇಡುವುದು',
-          exampleSentence: 'The juxtaposition of ancient traditions and cybernetic tools was striking.',
+          exampleSentence:
+              'The juxtaposition of ancient traditions and cybernetic tools was striking.',
           phonetic: '/ˌdʒʌk.stə.pəˈzɪʃ.ən/',
         ),
         DailyVocabItem(
           word: 'Anomaly',
           partOfSpeech: 'noun',
-          definition: 'Something that deviates from what is standard, normal, or expected.',
+          definition:
+              'Something that deviates from what is standard, normal, or expected.',
           malayalamMeaning: 'അസ്വാഭാവികത / വ്യതിയാനം',
           tamilMeaning: 'வழக்கத்திற்கு மாறான நிகழ்வு',
           hindiMeaning: 'विसंगति / अनियमिता',
           teluguMeaning: 'అసాధారణ వైపరీత్యం',
           kannadaMeaning: 'ಅಸಹಜತೆ / ವಿಪರ್ಯಾಸ',
-          exampleSentence: 'Investigating the gravitational anomaly led to the new physics breakthrough.',
+          exampleSentence:
+              'Investigating the gravitational anomaly led to the new physics breakthrough.',
           phonetic: '/əˈnɒm.ə.li/',
         ),
         DailyVocabItem(
           word: 'Lucid',
           partOfSpeech: 'adjective',
-          definition: 'Expressed clearly; easy to understand; showing clear thought.',
+          definition:
+              'Expressed clearly; easy to understand; showing clear thought.',
           malayalamMeaning: 'വ്യക്തമായ / തെളിഞ്ഞ',
           tamilMeaning: 'தெளிவான / எளிதில் விளங்கும்',
           hindiMeaning: 'स्पष्ट / सुबोध',
           teluguMeaning: 'స్పష్టమైన / సులభగ్రాహ్య',
           kannadaMeaning: 'ಸ್ಪಷ್ಟವಾದ / ಸರಳ ತಿಳುವಳಿಕೆಯ',
-          exampleSentence: 'Her lucid presentation made the intricate quantum formula crystal clear.',
+          exampleSentence:
+              'Her lucid presentation made the intricate quantum formula crystal clear.',
           phonetic: '/ˈluː.sɪd/',
         ),
         DailyVocabItem(
           word: 'Disquisition',
           partOfSpeech: 'noun',
-          definition: 'A long or elaborate essay or discussion on a particular subject.',
+          definition:
+              'A long or elaborate essay or discussion on a particular subject.',
           malayalamMeaning: 'വിശദമായ പ്രബന്ധം / ശാസ്ത്രീയ ചർച്ച',
           tamilMeaning: 'ஆழ்ந்த விரிவுரை / விரிவான ஆய்வுக்கட்டுரை',
           hindiMeaning: 'गंभीर शोध प्रबंध / विस्तृत व्याख्या',
           teluguMeaning: 'విస్తృత పరిశోధనా వ్యాసం',
           kannadaMeaning: 'ವಿಸ್ತಾರವಾದ ಪ್ರಬಂಧ / ಗಂಭೀರ ಚರ್ಚೆ',
-          exampleSentence: 'The professor published an authoritative disquisition on epistemic truth.',
+          exampleSentence:
+              'The professor published an authoritative disquisition on epistemic truth.',
           phonetic: '/ˌdɪs.kwɪˈzɪʃ.ən/',
         ),
         DailyVocabItem(
           word: 'Vindicate',
           partOfSpeech: 'verb',
-          definition: 'Clear someone of blame or show/prove to be right and justified.',
+          definition:
+              'Clear someone of blame or show/prove to be right and justified.',
           malayalamMeaning: 'ന്യായീകരിക്കുക / കുറ്റവിമുക്തനാക്കുക',
           tamilMeaning: 'நிரூபித்து நியாயப்படுத்துதல்',
           hindiMeaning: 'सही साबित करना / दोषमुक्त करना',
           teluguMeaning: 'సరైనదని నిరూపించు / నిర్దోషిగా తేల్చు',
           kannadaMeaning: 'ಸರಿಯೆಂದು ಸಾಬೀತುಪಡಿಸು',
-          exampleSentence: 'Years of patient experimentation vindicated her disputed findings.',
+          exampleSentence:
+              'Years of patient experimentation vindicated her disputed findings.',
           phonetic: '/ˈvɪn.dɪ.keɪt/',
         ),
       ];
@@ -3388,25 +3651,29 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         DailyVocabItem(
           word: 'Specious',
           partOfSpeech: 'adjective',
-          definition: 'Superficially plausible, but actually wrong or deceptive.',
+          definition:
+              'Superficially plausible, but actually wrong or deceptive.',
           malayalamMeaning: 'ബാഹ്യമായി ശരിയെന്നു തോന്നുന്ന എന്നാൽ തെറ്റായ',
           tamilMeaning: 'மேலோட்டமாக சரியெனத் தோன்றும் ஆனால் தவறான',
           hindiMeaning: 'दिखावटी / भ्रामक',
           teluguMeaning: 'పైకి నిజమనిపించే మోసపూరితమైన',
           kannadaMeaning: 'ಮೇಲ್ನೋಟಕ್ಕೆ ಸರಿ ಎನಿಸುವ ಆದರೆ ತಪ್ಪಾದ',
-          exampleSentence: 'A master debater quickly dismantles specious arguments with hard facts.',
+          exampleSentence:
+              'A master debater quickly dismantles specious arguments with hard facts.',
           phonetic: '/ˈspiː.ʃəs/',
         ),
         DailyVocabItem(
           word: 'Hegemony',
           partOfSpeech: 'noun',
-          definition: 'Leadership or dominance, especially by one state or group over others.',
+          definition:
+              'Leadership or dominance, especially by one state or group over others.',
           malayalamMeaning: 'ആധിപത്യം / മേധാവിത്വം',
           tamilMeaning: 'மேலாதிக்கம் / தலைமைப்பீடம்',
           hindiMeaning: 'आधिपत्य / प्रभुत्व',
           teluguMeaning: 'ఆధిపత్యం / పెత్తనం',
           kannadaMeaning: 'ಮೇಲಾಧಿಪತ್ಯ / ಪ್ರಾಬಲ್ಯ',
-          exampleSentence: 'The council challenged the corporate hegemony in global communications.',
+          exampleSentence:
+              'The council challenged the corporate hegemony in global communications.',
           phonetic: '/hɪˈdʒem.ə.ni/',
         ),
         DailyVocabItem(
@@ -3418,91 +3685,106 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           hindiMeaning: 'तर्कहीन / भ्रामक',
           teluguMeaning: 'తప్పుదోవ పట్టించే / దోషపూరిత',
           kannadaMeaning: 'ತರ್ಕಹೀನ / ದೋಷಯುಕ್ತ',
-          exampleSentence: 'Rowan exposed the fallacious logic concealed within the draft motion.',
+          exampleSentence:
+              'Rowan exposed the fallacious logic concealed within the draft motion.',
           phonetic: '/fəˈleɪ.ʃəs/',
         ),
         DailyVocabItem(
           word: 'Prevaricate',
           partOfSpeech: 'verb',
-          definition: 'Speak or act in an evasive way in order to avoid telling the truth.',
+          definition:
+              'Speak or act in an evasive way in order to avoid telling the truth.',
           malayalamMeaning: 'വളച്ചൊടിച്ചു സംസാരിക്കുക / സത്യം മറച്ചുവെക്കുക',
           tamilMeaning: 'வார்த்தைகளை மாற்றிப் பேசுதல் / உண்மையை மறைத்தல்',
           hindiMeaning: 'टालमटोल करना / छल-कपट से बात घुमाना',
           teluguMeaning: 'దాటవేయు / మాటమార్చు',
           kannadaMeaning: 'ತಪ್ಪಿಸಿಕೊಳ್ಳುವಂತೆ ಮಾತನಾಡು / ವಿಷಯ ತಿರುಚು',
-          exampleSentence: 'Instead of prevaricating under questioning, state your thesis directly.',
+          exampleSentence:
+              'Instead of prevaricating under questioning, state your thesis directly.',
           phonetic: '/prɪˈvær.ɪ.keɪt/',
         ),
         DailyVocabItem(
           word: 'Equivocal',
           partOfSpeech: 'adjective',
-          definition: 'Open to more than one interpretation; deliberately ambiguous.',
+          definition:
+              'Open to more than one interpretation; deliberately ambiguous.',
           malayalamMeaning: 'വ്യക്തതയില്ലാത്ത / രണ്ടർത്ഥമുള്ള',
           tamilMeaning: 'தெளிவற்ற / இருபொருள் தரும்',
           hindiMeaning: 'द्व्यर्थी / अस्पष्ट',
           teluguMeaning: 'ద్వంద్వార్థమిచ్చే / అస్పష్టమైన',
           kannadaMeaning: 'ದ್ವಂದ್ವಾರ್ಥದ / ಅಸ್ಪಷ್ಟ',
-          exampleSentence: 'His equivocal response failed to reassure the international committee.',
+          exampleSentence:
+              'His equivocal response failed to reassure the international committee.',
           phonetic: '/ɪˈkwɪv.ə.kəl/',
         ),
         DailyVocabItem(
           word: 'Anathema',
           partOfSpeech: 'noun',
-          definition: 'Something or someone vehemently disliked or completely opposed.',
+          definition:
+              'Something or someone vehemently disliked or completely opposed.',
           malayalamMeaning: 'പൂർണ്ണമായി എതിർക്കപ്പെടേണ്ട കാര്യം',
           tamilMeaning: 'முற்றிலும் வெறுக்கத்தக்க ஒன்று',
           hindiMeaning: 'अत्यंत घृणित / अभिशाप',
           teluguMeaning: 'తీవ్రంగా వ్యతిరేకించవలసినది',
           kannadaMeaning: 'ಅತ್ಯಂತ ಹೇಯವಾದದ್ದು',
-          exampleSentence: 'Censorship of honest intellectual inquiry is anathema to free scholars.',
+          exampleSentence:
+              'Censorship of honest intellectual inquiry is anathema to free scholars.',
           phonetic: '/əˈnæθ.ə.mə/',
         ),
         DailyVocabItem(
           word: 'Pragmatic',
           partOfSpeech: 'adjective',
-          definition: 'Dealing with things sensibly and realistically based on practical considerations.',
+          definition:
+              'Dealing with things sensibly and realistically based on practical considerations.',
           malayalamMeaning: 'പ്രായോഗികമായ / അനുഭവവേദ്യമായ',
           tamilMeaning: 'நடைமுறைக்கு உகந்த / யதார்த்தமான',
           hindiMeaning: 'व्यावहारिक / यथार्थवादी',
           teluguMeaning: 'ఆచరణాత్మకమైన / వాస్తవిక',
           kannadaMeaning: 'ಪ್ರಾಯೋಗಿಕ / ವಾಸ್ತವಿಕ',
-          exampleSentence: 'Diplomats require pragmatic solutions rather than rigid ideologies.',
+          exampleSentence:
+              'Diplomats require pragmatic solutions rather than rigid ideologies.',
           phonetic: '/præɡˈmæt.ɪk/',
         ),
         DailyVocabItem(
           word: 'Discomfit',
           partOfSpeech: 'verb',
-          definition: 'Make someone feel uneasy, embarrassed, or confused in debate.',
+          definition:
+              'Make someone feel uneasy, embarrassed, or confused in debate.',
           malayalamMeaning: 'പരുങ്ങലിലാക്കുക / ആശയക്കുഴപ്പത്തിലാക്കുക',
           tamilMeaning: 'சங்கடப்படுத்துதல் / குழப்பத்தில் ஆழ்த்துதல்',
           hindiMeaning: 'असमंजस में डालना / घबराना',
           teluguMeaning: 'ఇరకాటంలో పడేయు / తికమకపెట్టు',
           kannadaMeaning: 'ಇಕ್ಕಟ್ಟಿಗೆ ಸಿಲುಕಿಸು / ಕಸಿವಿಸಿಗೊಳಿಸು',
-          exampleSentence: 'Sharp cross-examination discomfited the unprepared speaker.',
+          exampleSentence:
+              'Sharp cross-examination discomfited the unprepared speaker.',
           phonetic: '/dɪsˈkʌm.fɪt/',
         ),
         DailyVocabItem(
           word: 'Perspicacity',
           partOfSpeech: 'noun',
-          definition: 'The quality of having a ready insight into things; shrewd discernment.',
+          definition:
+              'The quality of having a ready insight into things; shrewd discernment.',
           malayalamMeaning: 'സൂക്ഷ്മബുദ്ധി / കാര്യഗ്രഹണശേഷി',
           tamilMeaning: 'கூர்மதி / நுண்ணறிவு',
           hindiMeaning: 'तीक्ष्ण बुद्धि / दूरदर्शिता',
           teluguMeaning: 'సూక్ష్మబుద్ధి / చురుకుదనం',
           kannadaMeaning: 'ತೀಕ್ಷ್ಣಮತಿ / ಸೂಕ್ಷ್ಮಗ್ರಹಿಕೆ',
-          exampleSentence: 'Her perspicacity enabled her to foresee the economic crisis months ahead.',
+          exampleSentence:
+              'Her perspicacity enabled her to foresee the economic crisis months ahead.',
           phonetic: '/ˌpɜː.spɪˈkæs.ə.ti/',
         ),
         DailyVocabItem(
           word: 'Concession',
           partOfSpeech: 'noun',
-          definition: 'A thing that is granted, especially in response to demands.',
+          definition:
+              'A thing that is granted, especially in response to demands.',
           malayalamMeaning: 'വിട്ടുവീഴ്ച / ഇളവ്',
           tamilMeaning: 'சமரசம் / விட்டுக்கொடுத்தல்',
           hindiMeaning: 'रियायत / समझौता',
           teluguMeaning: 'రాయితీ / సడలింపు',
           kannadaMeaning: 'ರಿಯಾಯಿತಿ / ಹೊಂದಾಣಿಕೆ',
-          exampleSentence: 'Mutual concession is the fundamental cornerstone of every peace treaty.',
+          exampleSentence:
+              'Mutual concession is the fundamental cornerstone of every peace treaty.',
           phonetic: '/kənˈseʃ.ən/',
         ),
       ];
@@ -3515,49 +3797,57 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         DailyVocabItem(
           word: 'Virtuosity',
           partOfSpeech: 'noun',
-          definition: 'Great skill in music, speech, or another artistic pursuit.',
+          definition:
+              'Great skill in music, speech, or another artistic pursuit.',
           malayalamMeaning: 'പ്രത്യേക പാടവം / വൈദഗ്ധ്യം',
           tamilMeaning: 'கைதேர்ந்த கலைத்திறன்',
           hindiMeaning: 'असाधारण प्रवीणता / कलात्मक कौशल',
           teluguMeaning: 'అద్భుత ప్రావీణ్యం',
           kannadaMeaning: 'ಅಸಾಧಾರಣ ಪಾಂಡಿತ್ಯ',
-          exampleSentence: 'She commanded the podium with linguistic virtuosity and effortless charm.',
+          exampleSentence:
+              'She commanded the podium with linguistic virtuosity and effortless charm.',
           phonetic: '/ˌvɜː.tʃuˈɒs.ə.ti/',
         ),
         DailyVocabItem(
           word: 'Metamorphosis',
           partOfSpeech: 'noun',
-          definition: 'A change of the form or nature of a thing into a completely different one.',
+          definition:
+              'A change of the form or nature of a thing into a completely different one.',
           malayalamMeaning: 'രൂപാന്തരം / കാതലായ മാറ്റം',
           tamilMeaning: 'முழுமையான உருமாற்றம்',
           hindiMeaning: 'कायापलट / रूपांतरण',
           teluguMeaning: 'రూపాంతరం / సమూల మార్పు',
           kannadaMeaning: 'ಸಂಪೂರ್ಣ ರೂಪಾಂತರ',
-          exampleSentence: 'Over 90 days, your speaking will undergo a radical metamorphosis.',
+          exampleSentence:
+              'Over 90 days, your speaking will undergo a radical metamorphosis.',
           phonetic: '/ˌmet.əˈmɔː.fə.sɪs/',
         ),
         DailyVocabItem(
           word: 'Inexorable',
           partOfSpeech: 'adjective',
-          definition: 'Impossible to stop or prevent; relentlessly progressive.',
+          definition:
+              'Impossible to stop or prevent; relentlessly progressive.',
           malayalamMeaning: 'തടയാനാവാത്ത / അനിവാര്യമായ',
           tamilMeaning: 'தடுக்க முடியாத / தவிர்க்க இயலாத',
           hindiMeaning: 'अप्रतिरोध्य / जिसे रोका न जा सके',
           teluguMeaning: 'ఆపలేని / అనివార్యమైన',
           kannadaMeaning: 'ತಡೆಯಲಾಗದ / ಅನಿವಾರ್ಯ',
-          exampleSentence: 'Consistent daily immersion produces an inexorable march toward fluency.',
+          exampleSentence:
+              'Consistent daily immersion produces an inexorable march toward fluency.',
           phonetic: '/ɪnˈek.sər.ə.bəl/',
         ),
         DailyVocabItem(
           word: 'Epiphany',
           partOfSpeech: 'noun',
-          definition: 'A moment of sudden and profound revelation or realization.',
+          definition:
+              'A moment of sudden and profound revelation or realization.',
           malayalamMeaning: 'പെട്ടെന്നുണ്ടാകുന്ന ഉൾക്കാഴ്ച',
           tamilMeaning: 'திடீர் ஞானோதயம்',
           hindiMeaning: 'अचानक आत्मज्ञान / दिव्य दृष्टि',
           teluguMeaning: 'క్షణిక జ్ఞానోదయం',
           kannadaMeaning: 'ಕ್ಷಣಿಕ ಜ್ಞಾನೋದಯ',
-          exampleSentence: 'His epiphany was that language is an extension of empathy.',
+          exampleSentence:
+              'His epiphany was that language is an extension of empathy.',
           phonetic: '/ɪˈpɪf.ən.i/',
         ),
         DailyVocabItem(
@@ -3569,7 +3859,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           hindiMeaning: 'सीमाओं से परे जाना',
           teluguMeaning: 'పరిమితులను దాటిపోవు',
           kannadaMeaning: 'ಮಿತಿಗಳನ್ನು ಮೀರು',
-          exampleSentence: 'Great literature allows human beings to transcend geographical borders.',
+          exampleSentence:
+              'Great literature allows human beings to transcend geographical borders.',
           phonetic: '/trænˈsend/',
         ),
         DailyVocabItem(
@@ -3581,55 +3872,64 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           hindiMeaning: 'अदम्य / जिसे हराया न जा सके',
           teluguMeaning: 'లొంగని / అజేయమైన',
           kannadaMeaning: 'ಅದಮ್ಯ / ಸೋಲಿಸಲಾಗದ',
-          exampleSentence: 'An indomitable spirit guarantees mastery in any global discipline.',
+          exampleSentence:
+              'An indomitable spirit guarantees mastery in any global discipline.',
           phonetic: '/ɪnˈdɒm.ɪ.tə.bəl/',
         ),
         DailyVocabItem(
           word: 'Erudite',
           partOfSpeech: 'adjective',
-          definition: 'Having or showing great knowledge or learning; scholarly.',
+          definition:
+              'Having or showing great knowledge or learning; scholarly.',
           malayalamMeaning: 'പണ്ഡിതോചിതമായ / അഗാധ ജ്ഞാനമുള്ള',
           tamilMeaning: 'கல்விச் செறிவுடைய / பாண்டித்தியம் மிக்க',
           hindiMeaning: 'विद्वत्तापूर्ण / ज्ञानी',
           teluguMeaning: 'విద్వత్సంపన్నమైన / విజ్ఞానవంతమైన',
           kannadaMeaning: 'ಪಾಂಡಿತ್ಯಪೂರ್ಣ / ಜ್ಞಾನಿ',
-          exampleSentence: 'Her erudite lecture illuminated ancient linguistic evolution.',
+          exampleSentence:
+              'Her erudite lecture illuminated ancient linguistic evolution.',
           phonetic: '/ˈer.uː.daɪt/',
         ),
         DailyVocabItem(
           word: 'Quintessential',
           partOfSpeech: 'adjective',
-          definition: 'Representing the most perfect or typical example of a quality or class.',
+          definition:
+              'Representing the most perfect or typical example of a quality or class.',
           malayalamMeaning: 'ഉത്തമോദാഹരണമായ',
           tamilMeaning: 'முழுமையான முன்மாதிரியான',
           hindiMeaning: 'सर्वोत्कृष्ट उदाहरण',
           teluguMeaning: 'సర్వోత్కృష్ట నిదర్శనమైన',
           kannadaMeaning: 'ಪರಿಪೂರ್ಣ ನಿದರ್ಶನವಾದ',
-          exampleSentence: 'The speech was the quintessential blend of logic and emotion.',
+          exampleSentence:
+              'The speech was the quintessential blend of logic and emotion.',
           phonetic: '/ˌkwɪn.tɪˈsen.ʃəl/',
         ),
         DailyVocabItem(
           word: 'Perseverance',
           partOfSpeech: 'noun',
-          definition: 'Persistence in doing something despite difficulty or delay in achieving success.',
+          definition:
+              'Persistence in doing something despite difficulty or delay in achieving success.',
           malayalamMeaning: 'സ്ഥിരോത്സാഹം / അക്ഷീണ പ്രയത്നം',
           tamilMeaning: 'விடாமுயற்சி / தளராத உழைப்பு',
           hindiMeaning: 'लगन / सतत प्रयास',
           teluguMeaning: 'పట్టుదల / అవిరళ కృషి',
           kannadaMeaning: 'ಅಚಲ ಪ್ರಯತ್ನ / ಛಲ',
-          exampleSentence: 'Fluency is the natural reward of steady perseverance.',
+          exampleSentence:
+              'Fluency is the natural reward of steady perseverance.',
           phonetic: '/ˌpɜː.sɪˈvɪə.rəns/',
         ),
         DailyVocabItem(
           word: 'Enlightened',
           partOfSpeech: 'adjective',
-          definition: 'Having or showing a rational, modern, and well-informed outlook.',
+          definition:
+              'Having or showing a rational, modern, and well-informed outlook.',
           malayalamMeaning: 'പ്രബുദ്ധമായ / വിവേകമുള്ള',
           tamilMeaning: 'அறிவுக்கண் திறந்த / தெளிவடைந்த',
           hindiMeaning: 'प्रबुद्ध / विचारवान',
           teluguMeaning: 'ప్రబుద్ధ / జ్ఞానవంతమైన',
           kannadaMeaning: 'ಪ್ರಬುದ್ಧ / ವಿವೇಕಯುತ',
-          exampleSentence: 'Enlightened communicators listen deeply before answering.',
+          exampleSentence:
+              'Enlightened communicators listen deeply before answering.',
           phonetic: '/ɪnˈlaɪ.tənd/',
         ),
       ];
@@ -3647,7 +3947,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         hindiMeaning: 'महत्वाकांक्षा / बड़ा लक्ष्य',
         teluguMeaning: 'గొప్ప ఆశయం / ఆకాంక్ష',
         kannadaMeaning: 'ಉನ್ನತ ಆಕಾಂಕ್ಷೆ / ಗುರಿ',
-        exampleSentence: 'Her ambition is to speak fluent English with confidence.',
+        exampleSentence:
+            'Her ambition is to speak fluent English with confidence.',
         phonetic: '/æmˈbɪʃ.ən/',
       ),
       DailyVocabItem(
@@ -3659,7 +3960,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         hindiMeaning: 'साहस / हिम्मत',
         teluguMeaning: 'ధైర్యం',
         kannadaMeaning: 'ಧೈರ್ಯ / ಸಾಹಸ',
-        exampleSentence: 'Have the courage to speak without fear of making mistakes.',
+        exampleSentence:
+            'Have the courage to speak without fear of making mistakes.',
         phonetic: '/ˈkʌr.ɪdʒ/',
       ),
       DailyVocabItem(
@@ -3671,7 +3973,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         hindiMeaning: 'परिश्रमी / मेहनती',
         teluguMeaning: 'శ్రద్ధగల / కష్టపడి పనిచేసే',
         kannadaMeaning: 'ಪರಿಶ್ರಮಿ / ಜಾಗರೂಕ',
-        exampleSentence: 'A diligent student practices English every single day.',
+        exampleSentence:
+            'A diligent student practices English every single day.',
         phonetic: '/ˈdɪl.ə.dʒənt/',
       ),
       DailyVocabItem(
@@ -3683,19 +3986,22 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         hindiMeaning: 'व्यक्त करना / कहना',
         teluguMeaning: 'వ్యక్తీకరించు / తెలుపు',
         kannadaMeaning: 'ವ್ಯಕ್ತಪಡಿಸು / ಪ್ರಕಟಿಸು',
-        exampleSentence: 'Reading books will help you express your thoughts easily.',
+        exampleSentence:
+            'Reading books will help you express your thoughts easily.',
         phonetic: '/ɪkˈspres/',
       ),
       DailyVocabItem(
         word: 'Fluency',
         partOfSpeech: 'noun',
-        definition: 'The ability to speak or write a language easily and accurately.',
+        definition:
+            'The ability to speak or write a language easily and accurately.',
         malayalamMeaning: 'സരളത / അനായാസമായ സംസാരം',
         tamilMeaning: 'சரளம் / தடையற்ற பேச்சு',
         hindiMeaning: 'धाराप्रवाह / सहज बोलना',
         teluguMeaning: 'ధారాళత / నిరాటంక సంభాషణ',
         kannadaMeaning: 'ನಿರರ್ಗಳತೆ / ಸರಾಗ ಮಾತು',
-        exampleSentence: 'Consistency across 90 days creates unstoppable fluency.',
+        exampleSentence:
+            'Consistency across 90 days creates unstoppable fluency.',
         phonetic: '/ˈfluː.ən.si/',
       ),
       DailyVocabItem(
@@ -3707,19 +4013,22 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         hindiMeaning: 'आभारी / कृतज्ञ',
         teluguMeaning: 'కృతజ్ఞత గల',
         kannadaMeaning: 'ಕೃತಜ್ಞ / ಧನ್ಯವಾದ',
-        exampleSentence: 'I am grateful for every mate who helps me practice speaking.',
+        exampleSentence:
+            'I am grateful for every mate who helps me practice speaking.',
         phonetic: '/ˈɡreɪt.fəl/',
       ),
       DailyVocabItem(
         word: 'Hesitate',
         partOfSpeech: 'verb',
-        definition: 'To pause before saying or doing something through uncertainty.',
+        definition:
+            'To pause before saying or doing something through uncertainty.',
         malayalamMeaning: 'മടിക്കുക / സംശയിച്ചു നിൽക്കുക',
         tamilMeaning: 'தயங்குதல் / தயக்கம்',
         hindiMeaning: 'हिचकिचाना / झिझकना',
         teluguMeaning: 'సంకోచించు / తటపటాయించు',
         kannadaMeaning: 'ಹಿಂಜರಿಯು / ಅನುಮಾನಿಸು',
-        exampleSentence: 'Do not hesitate when speaking; just let the words flow.',
+        exampleSentence:
+            'Do not hesitate when speaking; just let the words flow.',
         phonetic: '/ˈhez.ə.teɪt/',
       ),
       DailyVocabItem(
@@ -3737,25 +4046,29 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
       DailyVocabItem(
         word: 'Journey',
         partOfSpeech: 'noun',
-        definition: 'An act of traveling from one place or milestone to another.',
+        definition:
+            'An act of traveling from one place or milestone to another.',
         malayalamMeaning: 'യാത്ര / ഘട്ടം',
         tamilMeaning: 'பயணம் / வளர்ச்சிப் பாதை',
         hindiMeaning: 'यात्रा / सफर',
         teluguMeaning: 'ప్రయాణం / ప్రస్థానం',
         kannadaMeaning: 'ಪ್ರಯಾಣ / ಹಂತ',
-        exampleSentence: 'Your transformative 90-day English journey begins today.',
+        exampleSentence:
+            'Your transformative 90-day English journey begins today.',
         phonetic: '/ˈdʒɜː.ni/',
       ),
       DailyVocabItem(
         word: 'Knowledge',
         partOfSpeech: 'noun',
-        definition: 'Facts, information, and skills acquired through experience.',
+        definition:
+            'Facts, information, and skills acquired through experience.',
         malayalamMeaning: 'അറിവ്',
         tamilMeaning: 'அறிவு / ஞானம்',
         hindiMeaning: 'ज्ञान / विद्या',
         teluguMeaning: 'జ్ఞానము',
         kannadaMeaning: 'ಜ್ಞಾನ / ತಿಳುವಳಿಕೆ',
-        exampleSentence: 'Knowledge is gained by learning, and fluency by speaking.',
+        exampleSentence:
+            'Knowledge is gained by learning, and fluency by speaking.',
         phonetic: '/ˈnɒl.ɪdʒ/',
       ),
     ];
@@ -3765,26 +4078,42 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     final prefs = await SharedPreferences.getInstance();
     final dayKey = 'pocket_mission_day_${widget.day}';
     setState(() {
-      _selectedLanguage = prefs.getString('pocket_mission_pref_lang') ?? 'Malayalam';
+      _selectedLanguage =
+          prefs.getString('pocket_mission_pref_lang') ?? 'Malayalam';
       _dailyRuleCompleted = prefs.getBool('${dayKey}_daily_rule') ?? false;
       _hubChatVerified = prefs.getBool('${dayKey}_hub_chat') ?? false;
       _peerCallVerified = prefs.getBool('${dayKey}_peer_call') ?? false;
       _vocabMemorized = prefs.getBool('${dayKey}_vocab_mem') ?? false;
       _wordCatcherCompleted = prefs.getBool('${dayKey}_word_catcher') ?? false;
-      _careerAdventureCompleted = prefs.getBool('${dayKey}_career_adventure') ?? _wordCatcherCompleted;
-      _cityNavigatorCompleted = prefs.getBool('${dayKey}_city_navigator') ?? false;
-      _memoryBreakInCompleted = prefs.getBool('${dayKey}_memory_break_in') ?? false;
+      _careerAdventureCompleted =
+          prefs.getBool('${dayKey}_career_adventure') ?? _wordCatcherCompleted;
+      _cityNavigatorCompleted =
+          prefs.getBool('${dayKey}_city_navigator') ?? false;
+      _memoryBreakInCompleted =
+          prefs.getBool('${dayKey}_memory_break_in') ?? false;
+      _wordFactoryCompleted = prefs.getBool('${dayKey}_word_factory') ?? false;
+      _signalHuntCompleted = prefs.getBool('${dayKey}_signal_hunt') ?? false;
+      _lostPackageCompleted = prefs.getBool('${dayKey}_lost_package') ?? false;
+      _busyDayCompleted = prefs.getBool('${dayKey}_busy_day') ?? false;
+      _fastFixCompleted = prefs.getBool('${dayKey}_fast_fix') ?? false;
+      _marketMasterCompleted =
+          prefs.getBool('${dayKey}_market_master') ?? false;
       _readingNotesCompleted = prefs.getBool('${dayKey}_reading') ?? false;
       _codeEnglishCompleted = prefs.getBool('${dayKey}_code_english') ?? false;
       _revisionQuizPassed = prefs.getBool('${dayKey}_quiz') ?? false;
       _defenseTrapArmed = prefs.getBool('${dayKey}_defense') ?? false;
       _trialRaidLaunched = prefs.getBool('${dayKey}_raid') ?? false;
       _midAttackCompleted = prefs.getBool('${dayKey}_mid_attack') ?? false;
-      _alphabetPhonicsCompleted = prefs.getBool('${dayKey}_alphabet_phonics') ?? false;
-      _sentencePatternCompleted = prefs.getBool('${dayKey}_sentence_pattern') ?? false;
-      _pronunciationCompleted = prefs.getBool('${dayKey}_pronunciation') ?? false;
-      _englishThinkingCompleted = prefs.getBool('${dayKey}_english_thinking') ?? false;
-      _speakingChallengeCompleted = prefs.getBool('${dayKey}_speaking_challenge') ?? false;
+      _alphabetPhonicsCompleted =
+          prefs.getBool('${dayKey}_alphabet_phonics') ?? false;
+      _sentencePatternCompleted =
+          prefs.getBool('${dayKey}_sentence_pattern') ?? false;
+      _pronunciationCompleted =
+          prefs.getBool('${dayKey}_pronunciation') ?? false;
+      _englishThinkingCompleted =
+          prefs.getBool('${dayKey}_english_thinking') ?? false;
+      _speakingChallengeCompleted =
+          prefs.getBool('${dayKey}_speaking_challenge') ?? false;
     });
   }
 
@@ -3809,7 +4138,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     if (myId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('⚠️ Please sign in to verify your English Hub messages.'),
+          content:
+              Text('⚠️ Please sign in to verify your English Hub messages.'),
           backgroundColor: Color(0xFFDC2626),
         ),
       );
@@ -3823,7 +4153,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
             SizedBox(
               width: 16,
               height: 16,
-              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+              child: CircularProgressIndicator(
+                  strokeWidth: 2, color: Colors.white),
             ),
             SizedBox(width: 10),
             Text('Verifying English Hub messages in Supabase...'),
@@ -3836,7 +4167,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
     try {
       final now = DateTime.now();
-      final todayStart = DateTime(now.year, now.month, now.day).toIso8601String();
+      final todayStart =
+          DateTime(now.year, now.month, now.day).toIso8601String();
 
       // Query group_messages in Supabase for actual messages sent by this user today
       int serverCount = 0;
@@ -3850,7 +4182,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
       } catch (_) {}
 
       final prefs = await SharedPreferences.getInstance();
-      final localChatCount = prefs.getInt('english_hub_msgs_${myId}_${now.year}_${now.month}_${now.day}') ?? 0;
+      final localChatCount = prefs.getInt(
+              'english_hub_msgs_${myId}_${now.year}_${now.month}_${now.day}') ??
+          0;
       final effectiveCount = math.max(serverCount, localChatCount);
 
       // User Audio Directive: "പത്തോ പതിനഞ്ചോ എന്നല്ല, 15 ഇംഗ്ലീഷ് മെസ്സേജസ് നിർബന്ധമായിട്ടും ചെയ്യണം. ഫസ്റ്റ് ഡേ വണ്ണിന്റെയാണ്."
@@ -3863,7 +4197,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         HapticFeedback.heavyImpact();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('✅ English Hub Verified: $effectiveCount/15 English messages completed! (+25 PTS)'),
+            content: Text(
+                '✅ English Hub Verified: $effectiveCount/15 English messages completed! (+25 PTS)'),
             backgroundColor: const Color(0xFF10B981),
             behavior: SnackBarBehavior.floating,
           ),
@@ -3876,7 +4211,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         final remaining = minRequiredMessages - effectiveCount;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('⚠️ Only $effectiveCount/$minRequiredMessages English messages sent today. Send $remaining more messages in English Hub to complete!'),
+            content: Text(
+                '⚠️ Only $effectiveCount/$minRequiredMessages English messages sent today. Send $remaining more messages in English Hub to complete!'),
             backgroundColor: const Color(0xFFB45309),
             duration: const Duration(seconds: 4),
             behavior: SnackBarBehavior.floating,
@@ -3894,7 +4230,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     if (myId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('⚠️ Please sign in to verify peer conversation activity.'),
+          content:
+              Text('⚠️ Please sign in to verify peer conversation activity.'),
           backgroundColor: Color(0xFFDC2626),
         ),
       );
@@ -3908,7 +4245,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
             SizedBox(
               width: 16,
               height: 16,
-              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+              child: CircularProgressIndicator(
+                  strokeWidth: 2, color: Colors.white),
             ),
             SizedBox(width: 10),
             Text('Verifying peer conversations in Supabase...'),
@@ -3921,7 +4259,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
     try {
       final now = DateTime.now();
-      final todayStart = DateTime(now.year, now.month, now.day).toIso8601String();
+      final todayStart =
+          DateTime(now.year, now.month, now.day).toIso8601String();
 
       // Check messages table in Supabase for distinct peers messaged today
       int distinctServerPeers = 0;
@@ -3939,7 +4278,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
       } catch (_) {}
 
       final prefs = await SharedPreferences.getInstance();
-      final todayChatKey = 'chat_goals_${myId}_${now.year}_${now.month}_${now.day}';
+      final todayChatKey =
+          'chat_goals_${myId}_${now.year}_${now.month}_${now.day}';
       final chatsCount = prefs.getInt(todayChatKey) ?? 0;
       final effectivePeers = math.max(distinctServerPeers, chatsCount);
 
@@ -3953,7 +4293,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         HapticFeedback.heavyImpact();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('✅ Peer Talk Verified: Connected with $effectivePeers/$minRequiredPeers mates today! (+25 PTS)'),
+            content: Text(
+                '✅ Peer Talk Verified: Connected with $effectivePeers/$minRequiredPeers mates today! (+25 PTS)'),
             backgroundColor: const Color(0xFF10B981),
             behavior: SnackBarBehavior.floating,
           ),
@@ -3966,7 +4307,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         final remaining = minRequiredPeers - effectivePeers;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('⚠️ Connected with $effectivePeers/$minRequiredPeers mates today. Practice English with $remaining more mate(s) to complete!'),
+            content: Text(
+                '⚠️ Connected with $effectivePeers/$minRequiredPeers mates today. Practice English with $remaining more mate(s) to complete!'),
             backgroundColor: const Color(0xFFB45309),
             duration: const Duration(seconds: 4),
             behavior: SnackBarBehavior.floating,
@@ -3977,7 +4319,6 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
       debugPrint('Peer talk verification error: $e');
     }
   }
-
 
   // 📖 Pocket Vocabulary Vault & Rewind Modal (Offline Local Storage)
   void _showPocketVocabularyModal() async {
@@ -3995,7 +4336,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
             decoration: const BoxDecoration(
               color: Color(0xFF0F172A),
               borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-              border: Border(top: BorderSide(color: Color(0xFFFFFC00), width: 1.5)),
+              border:
+                  Border(top: BorderSide(color: Color(0xFFFFFC00), width: 1.5)),
             ),
             child: Column(
               children: [
@@ -4016,7 +4358,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
+                          color:
+                              const Color(0xFFFFFC00).withValues(alpha: 0.15),
                           shape: BoxShape.circle,
                         ),
                         child: const Text('📖', style: TextStyle(fontSize: 20)),
@@ -4045,7 +4388,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                         ),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.close_rounded, color: Colors.white70),
+                        icon: const Icon(Icons.close_rounded,
+                            color: Colors.white70),
                         onPressed: () => Navigator.pop(ctx),
                       ),
                     ],
@@ -4073,7 +4417,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                             const SizedBox(height: 6),
                             Text(
                               'Tap "Save to Pocket Vocabulary" in Step 3 to store today\'s words on your device for offline review!',
-                              style: GoogleFonts.inter(color: Colors.white60, fontSize: 12),
+                              style: GoogleFonts.inter(
+                                  color: Colors.white60, fontSize: 12),
                               textAlign: TextAlign.center,
                             ),
                             const SizedBox(height: 16),
@@ -4083,9 +4428,13 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                                 foregroundColor: Colors.black,
                               ),
                               onPressed: () async {
-                                final wordsMap = _vocabList.map((v) => v.toMap()).toList();
-                                await PocketVocabularyService.instance.saveWords(widget.day, wordsMap);
-                                final updated = await PocketVocabularyService.instance.getSavedWords();
+                                final wordsMap =
+                                    _vocabList.map((v) => v.toMap()).toList();
+                                await PocketVocabularyService.instance
+                                    .saveWords(widget.day, wordsMap);
+                                final updated = await PocketVocabularyService
+                                    .instance
+                                    .getSavedWords();
                                 setModalState(() {
                                   savedWords.clear();
                                   savedWords.addAll(updated);
@@ -4124,12 +4473,18 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 2),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
+                                  color: const Color(0xFFFFFC00)
+                                      .withValues(alpha: 0.15),
                                   borderRadius: BorderRadius.circular(6),
                                 ),
-                                child: Text('D$dayVal', style: const TextStyle(color: Color(0xFFFFFC00), fontSize: 10, fontWeight: FontWeight.bold)),
+                                child: Text('D$dayVal',
+                                    style: const TextStyle(
+                                        color: Color(0xFFFFFC00),
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold)),
                               ),
                               const SizedBox(width: 10),
                               Expanded(
@@ -4158,33 +4513,45 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                                         const SizedBox(width: 6),
                                         Text(
                                           '(${vocabItem.partOfSpeech})',
-                                          style: const TextStyle(color: Colors.white38, fontSize: 10),
+                                          style: const TextStyle(
+                                              color: Colors.white38,
+                                              fontSize: 10),
                                         ),
                                       ],
                                     ),
                                     const SizedBox(height: 3),
                                     Text(
                                       '📖 ${vocabItem.definition}',
-                                      style: const TextStyle(color: Colors.white, fontSize: 12),
+                                      style: const TextStyle(
+                                          color: Colors.white, fontSize: 12),
                                     ),
                                     const SizedBox(height: 3),
                                     Text(
                                       '🗣️ Meaning ($_selectedLanguage): ${vocabItem.getMeaning(_selectedLanguage)}',
-                                      style: const TextStyle(color: Color(0xFFFFD700), fontSize: 11.5, fontWeight: FontWeight.w600),
+                                      style: const TextStyle(
+                                          color: Color(0xFFFFD700),
+                                          fontSize: 11.5,
+                                          fontWeight: FontWeight.w600),
                                     ),
-                                    if (vocabItem.exampleSentence.isNotEmpty) ...[
+                                    if (vocabItem
+                                        .exampleSentence.isNotEmpty) ...[
                                       const SizedBox(height: 2),
                                       Text(
                                         '💡 "${vocabItem.exampleSentence}"',
-                                        style: const TextStyle(color: Colors.white60, fontSize: 11, fontStyle: FontStyle.italic),
+                                        style: const TextStyle(
+                                            color: Colors.white60,
+                                            fontSize: 11,
+                                            fontStyle: FontStyle.italic),
                                       ),
                                     ],
                                   ],
                                 ),
                               ),
                               IconButton(
-                                icon: const Icon(Icons.volume_up_rounded, color: Color(0xFFFFFC00), size: 20),
-                                onPressed: () => _speakWord('${vocabItem.word}. ${vocabItem.exampleSentence}'),
+                                icon: const Icon(Icons.volume_up_rounded,
+                                    color: Color(0xFFFFFC00), size: 20),
+                                onPressed: () => _speakWord(
+                                    '${vocabItem.word}. ${vocabItem.exampleSentence}'),
                                 tooltip: 'Listen',
                               ),
                             ],
@@ -4202,15 +4569,28 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     );
   }
 
-  bool get _hasAlphabetPhonics => PocketMissionCurriculumRegistry.getAlphabetPhonics(widget.day).isNotEmpty;
-  bool get _hasSentencePatterns => PocketMissionCurriculumRegistry.getSentencePatterns(widget.day).isNotEmpty;
-  bool get _hasPronunciationClinic => PocketMissionCurriculumRegistry.getPronunciationClinic(widget.day).minimalPairs.isNotEmpty;
-  bool get _hasEnglishThinking => PocketMissionCurriculumRegistry.getEnglishThinkingWorkout(widget.day).instantResponses.isNotEmpty;
-  bool get _hasSpeakingChallenge => PocketMissionCurriculumRegistry.getSpeakingChallenge(widget.day).title.isNotEmpty;
+  bool get _hasAlphabetPhonics =>
+      PocketMissionCurriculumRegistry.getAlphabetPhonics(widget.day).isNotEmpty;
+  bool get _hasSentencePatterns =>
+      PocketMissionCurriculumRegistry.getSentencePatterns(widget.day)
+          .isNotEmpty;
+  bool get _hasPronunciationClinic =>
+      PocketMissionCurriculumRegistry.getPronunciationClinic(widget.day)
+          .minimalPairs
+          .isNotEmpty;
+  bool get _hasEnglishThinking =>
+      PocketMissionCurriculumRegistry.getEnglishThinkingWorkout(widget.day)
+          .instantResponses
+          .isNotEmpty;
+  bool get _hasSpeakingChallenge =>
+      PocketMissionCurriculumRegistry.getSpeakingChallenge(widget.day)
+          .title
+          .isNotEmpty;
 
   int get _totalSubtasksCount {
-    int count = 8; // Rule + Hub + Peer Call + Vocab + Reading + Code English + Quiz + Defense Trap
-    if (widget.day == 1 || widget.day == 2 || widget.day == 3) count++; // 🕹️ Level 1, 2 & 3 2D Adventure Game
+    int count =
+        8; // Rule + Hub + Peer Call + Vocab + Reading + Code English + Quiz + Defense Trap
+    if (widget.day >= 1 && widget.day <= 9) count++; // 🕹️ Level 1–9 2D Adventure Game
     if (_hasAlphabetPhonics) count++;
     if (_hasSentencePatterns) count++;
     if (_hasPronunciationClinic) count++;
@@ -4227,9 +4607,34 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     if (_hubChatVerified) count++;
     if (_peerCallVerified) count++;
     if (_vocabMemorized) count++;
-    if (widget.day == 1 && (_careerAdventureCompleted || _wordCatcherCompleted)) count++; // 🏢 Level 1 Career Adventure Game
-    if (widget.day == 2 && _cityNavigatorCompleted) count++; // 🏙️ Level 2 City Navigator Game
-    if (widget.day == 3 && _memoryBreakInCompleted) count++; // 🧠 Level 3 Memory Break-In Game
+    if (widget.day == 1 &&
+        (_careerAdventureCompleted || _wordCatcherCompleted)) {
+      count++; // 🏢 Level 1 Career Adventure Game
+    }
+    if (widget.day == 2 && _cityNavigatorCompleted) {
+      count++; // 🏙️ Level 2 City Navigator Game
+    }
+    if (widget.day == 3 && _memoryBreakInCompleted) {
+      count++; // 🧠 Level 3 Memory Break-In Game
+    }
+    if (widget.day == 4 && _wordFactoryCompleted) {
+      count++; // 🏭 Level 4 Word Factory Game
+    }
+    if (widget.day == 5 && _signalHuntCompleted) {
+      count++; // 📡 Level 5 Signal Hunt Game
+    }
+    if (widget.day == 6 && _lostPackageCompleted) {
+      count++; // 📦 Level 6 The Lost Package Game
+    }
+    if (widget.day == 7 && _busyDayCompleted) {
+      count++; // 🗓️ Level 7 The Busy Day Game
+    }
+    if (widget.day == 8 && _fastFixCompleted) {
+      count++; // ⚡ Level 8 Fast Fix Game
+    }
+    if (widget.day == 9 && _marketMasterCompleted) {
+      count++; // 🛒 Level 9 Market Master Game
+    }
     if (_hasSentencePatterns && _sentencePatternCompleted) count++;
     if (_readingNotesCompleted) count++;
     if (_codeEnglishCompleted) count++;
@@ -4308,21 +4713,25 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                         stepNumber: '1',
                         icon: '💬',
                         title: 'English Hub Group Practice',
-                        description: 'Enter the active English Hub and send at least 15 English messages to fellow learners to build active muscle memory.',
+                        description:
+                            'Enter the active English Hub and send at least 15 English messages to fellow learners to build active muscle memory.',
                         isVerified: _hubChatVerified,
                         actionLabel: 'OPEN ENGLISH HUB CHAT',
                         actionColor: const Color(0xFFFFFC00),
                         onAction: () async {
-                          final currentUserId = Supabase.instance.client.auth.currentUser?.id;
+                          final currentUserId =
+                              Supabase.instance.client.auth.currentUser?.id;
                           final nav = Navigator.of(context);
                           EnglishHubLevelGroup levelGroup;
                           if (currentUserId != null) {
-                            levelGroup = await EnglishHubLevelGroupService.ensureUserInLevelGroup(
+                            levelGroup = await EnglishHubLevelGroupService
+                                .ensureUserInLevelGroup(
                               userLevel: widget.day,
                               userId: currentUserId,
                             );
                           } else {
-                            levelGroup = await EnglishHubLevelGroupService.getGroupByLevel(widget.day);
+                            levelGroup = await EnglishHubLevelGroupService
+                                .getGroupByLevel(widget.day);
                           }
                           if (!mounted) return;
                           await nav.push(
@@ -4349,13 +4758,15 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                         stepNumber: '2',
                         icon: '🎙️',
                         title: 'Peer Call / 1-on-1 English Talk',
-                        description: 'Connect with at least 3 mates for live conversation practice to conquer speaking hesitation.',
+                        description:
+                            'Connect with at least 3 mates for live conversation practice to conquer speaking hesitation.',
                         isVerified: _peerCallVerified,
                         actionLabel: 'FIND 1-ON-1 PEERS',
                         actionColor: const Color(0xFF00E5FF),
                         onAction: () async {
                           // Auto-start 40-min practice timer as instructed in audio
-                          if (!_timerService.isRunning && !_timerService.hasReachedTarget) {
+                          if (!_timerService.isRunning &&
+                              !_timerService.hasReachedTarget) {
                             _timerService.toggleTimer();
                           }
                           await Navigator.push(
@@ -4395,6 +4806,42 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                       // Subtask 4: 🧠 Mission 03 – Memory Break-In (2D Memory & Vocabulary Game)
                       if (widget.day == 3) ...[
                         _buildMemoryBreakInCard(),
+                        const SizedBox(height: 14),
+                      ],
+
+                      // Subtask 4: 🏭 Mission 04 – Word Factory (2D Language Repair Game)
+                      if (widget.day == 4) ...[
+                        _buildWordFactoryCard(),
+                        const SizedBox(height: 14),
+                      ],
+
+                      // Subtask 4: 📡 Mission 05 – Signal Hunt (2D Flame Listening Game)
+                      if (widget.day == 5) ...[
+                        _buildSignalHuntCard(),
+                        const SizedBox(height: 14),
+                      ],
+
+                      // Subtask 4: 📦 Mission 06 – The Lost Package (2D Flame Investigation Game)
+                      if (widget.day == 6) ...[
+                        _buildLostPackageCard(),
+                        const SizedBox(height: 14),
+                      ],
+
+                      // Subtask 4: 🗓️ Mission 07 – The Busy Day (2D Flame Decision Game)
+                      if (widget.day == 7) ...[
+                        _buildBusyDayCard(),
+                        const SizedBox(height: 14),
+                      ],
+
+                      // Subtask 4: ⚡ Mission 08 – Fast Fix (2D Flame Error Repair Game)
+                      if (widget.day == 8) ...[
+                        _buildFastFixCard(),
+                        const SizedBox(height: 14),
+                      ],
+
+                      // Subtask 4: 🛒 Mission 09 – Market Master (2D Flame Supermarket Shopping Game)
+                      if (widget.day == 9) ...[
+                        _buildMarketMasterCard(),
                         const SizedBox(height: 14),
                       ],
 
@@ -4453,12 +4900,14 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                         stepNumber: '7',
                         icon: '🛡️',
                         title: 'Add Day ${widget.day} Home Defense',
-                        description: 'Arm your front gate with 1 authentic English challenge to defend your house from raiders. (Shield Slot ${widget.day} of ${math.max(10, widget.day)})',
+                        description:
+                            'Arm your front gate with 1 authentic English challenge to defend your house from raiders. (Shield Slot ${widget.day} of ${math.max(10, widget.day)})',
                         isVerified: _defenseTrapArmed,
                         actionLabel: 'ADD HOME DEFENSE 🛡️',
                         actionColor: const Color(0xFF8B5CF6),
                         onAction: () async {
-                          await PocketDefenseTrapModal.show(context, widget.day);
+                          await PocketDefenseTrapModal.show(
+                              context, widget.day);
                           if (mounted) {
                             setState(() => _defenseTrapArmed = true);
                             _saveSubtask('defense', true);
@@ -4479,7 +4928,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                           stepNumber: '8',
                           icon: '⚔️',
                           title: 'Day ${widget.day} Pocket Battle Raid',
-                          description: 'Enter Pocket World, inspect neighbor houses on the street, and launch an attack to breach their defense gates!',
+                          description:
+                              'Enter Pocket World, inspect neighbor houses on the street, and launch an attack to breach their defense gates!',
                           isVerified: _trialRaidLaunched,
                           actionLabel: 'LAUNCH POCKET BATTLE ⚔️',
                           actionColor: const Color(0xFFEF4444),
@@ -4509,7 +4959,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                               HapticFeedback.heavyImpact();
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text('🏰 House Breached in Pocket World! Day ${widget.day} Pocket Battle verified ✓ +50 Bonus Coins!'),
+                                  content: Text(
+                                      '🏰 House Breached in Pocket World! Day ${widget.day} Pocket Battle verified ✓ +50 Bonus Coins!'),
                                   backgroundColor: const Color(0xFF10B981),
                                 ),
                               );
@@ -4517,7 +4968,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                               if (!mounted || !context.mounted) return;
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content: Text('⚠️ Pocket Battle incomplete. Select and breach a house in Pocket World to verify this step!'),
+                                  content: Text(
+                                      '⚠️ Pocket Battle incomplete. Select and breach a house in Pocket World to verify this step!'),
                                   backgroundColor: Color(0xFFB45309),
                                 ),
                               );
@@ -4527,14 +4979,16 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                             if (_trialRaidLaunched) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text('✅ Day ${widget.day} Pocket Battle Raid already verified!'),
+                                  content: Text(
+                                      '✅ Day ${widget.day} Pocket Battle Raid already verified!'),
                                   backgroundColor: const Color(0xFF10B981),
                                 ),
                               );
                             } else {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content: Text('⚠️ Launch Pocket Battle in Pocket World to verify Subtask 7!'),
+                                  content: Text(
+                                      '⚠️ Launch Pocket Battle in Pocket World to verify Subtask 7!'),
                                   backgroundColor: Color(0xFFB45309),
                                 ),
                               );
@@ -4558,7 +5012,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                                   color: Colors.white.withValues(alpha: 0.05),
                                   shape: BoxShape.circle,
                                 ),
-                                child: const Text('🔒', style: TextStyle(fontSize: 20)),
+                                child: const Text('🔒',
+                                    style: TextStyle(fontSize: 20)),
                               ),
                               const SizedBox(width: 12),
                               Expanded(
@@ -4649,7 +5104,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               color: const Color(0xFF00FFCC),
               onTap: () {
                 HapticFeedback.lightImpact();
-                PocketCodeEnglishDecoderModal.show(context, currentDay: widget.day);
+                PocketCodeEnglishDecoderModal.show(context,
+                    currentDay: widget.day);
               },
             ),
           ],
@@ -4711,7 +5167,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               'learning_day_${widget.day}_completed_date',
               '${DateTime.now().year}-${DateTime.now().month}-${DateTime.now().day}',
             );
-            await prefs.setString('last_learning_date', DateTime.now().toIso8601String());
+            await prefs.setString(
+                'last_learning_date', DateTime.now().toIso8601String());
             await prefs.setInt('learning_last_completed_day', widget.day);
             await prefs.setBool('pocket_world_rules_accepted_v1', true);
 
@@ -4719,9 +5176,11 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
             await PocketFortressDefenseService.awardPoints(200);
 
             // 🧬 Evolve Avatar for next stage and persist to profile
-            final evolvedAvatar = VectorAvatarConfig.getEvolutionAvatarForStage(nextDay);
+            final evolvedAvatar =
+                VectorAvatarConfig.getEvolutionAvatarForStage(nextDay);
             if (myId != null) {
-              await prefs.setString('user_avatar_config_$myId', jsonEncode(evolvedAvatar.toMap()));
+              await prefs.setString('user_avatar_config_$myId',
+                  jsonEncode(evolvedAvatar.toMap()));
               await prefs.setInt('learning_day_$myId', nextDay);
               await prefs.setInt('learning_stage_$myId', nextDay);
 
@@ -4765,10 +5224,12 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               SnackBar(
                 backgroundColor: const Color(0xFF10B981),
                 behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
                 content: Text(
                   '🧪 DEV: Day ${widget.day} completed (+200 PTS)! Evolved avatar & advancing to Day $nextDay...',
-                  style: GoogleFonts.firaCode(fontSize: 12, fontWeight: FontWeight.bold),
+                  style: GoogleFonts.firaCode(
+                      fontSize: 12, fontWeight: FontWeight.bold),
                 ),
               ),
             );
@@ -4787,7 +5248,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           side: BorderSide(color: Colors.amber.withValues(alpha: 0.5)),
           backgroundColor: Colors.amber.withValues(alpha: 0.08),
           padding: const EdgeInsets.symmetric(vertical: 12),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -4824,7 +5286,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
       child: Row(
         children: [
           IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
+            icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                color: Colors.white, size: 20),
             onPressed: () => Navigator.pop(context),
           ),
           const SizedBox(width: 4),
@@ -4836,7 +5299,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 7, vertical: 2),
                       decoration: BoxDecoration(
                         color: const Color(0xFFFFFC00),
                         borderRadius: BorderRadius.circular(6),
@@ -4882,7 +5346,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
             decoration: BoxDecoration(
               color: const Color(0xFF1E293B),
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: Colors.amberAccent.withValues(alpha: 0.4)),
+              border:
+                  Border.all(color: Colors.amberAccent.withValues(alpha: 0.4)),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -4970,7 +5435,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                 ],
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
                 decoration: BoxDecoration(
                   color: isRunning
                       ? Colors.green.withValues(alpha: 0.2)
@@ -4988,7 +5454,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                   style: TextStyle(
                     color: isRunning
                         ? Colors.greenAccent
-                        : (isTargetMet ? const Color(0xFF10B981) : Colors.white54),
+                        : (isTargetMet
+                            ? const Color(0xFF10B981)
+                            : Colors.white54),
                     fontSize: 9,
                     fontWeight: FontWeight.bold,
                   ),
@@ -5061,14 +5529,14 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                 icon: Icon(
                   isRunning
                       ? Icons.pause_rounded
-                      : (isTargetMet ? Icons.add_alarm_rounded : Icons.play_arrow_rounded),
+                      : (isTargetMet
+                          ? Icons.add_alarm_rounded
+                          : Icons.play_arrow_rounded),
                   color: Colors.black,
                   size: 18,
                 ),
                 label: Text(
-                  isRunning
-                      ? 'PAUSE'
-                      : (isTargetMet ? '+45m' : 'START'),
+                  isRunning ? 'PAUSE' : (isTargetMet ? '+45m' : 'START'),
                   style: GoogleFonts.outfit(
                     fontWeight: FontWeight.bold,
                     color: Colors.black,
@@ -5078,9 +5546,13 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: isRunning
                       ? Colors.amberAccent
-                      : (isTargetMet ? const Color(0xFF10B981) : const Color(0xFFFFFC00)),
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      : (isTargetMet
+                          ? const Color(0xFF10B981)
+                          : const Color(0xFFFFFC00)),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
                 ),
               ),
             ],
@@ -5094,14 +5566,16 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               decoration: BoxDecoration(
                 color: const Color(0xFFFEF3C7).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.amberAccent.withValues(alpha: 0.4)),
+                border: Border.all(
+                    color: Colors.amberAccent.withValues(alpha: 0.4)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.info_outline_rounded, color: Colors.amberAccent, size: 18),
+                      const Icon(Icons.info_outline_rounded,
+                          color: Colors.amberAccent, size: 18),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
@@ -5132,7 +5606,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                             HapticFeedback.mediumImpact();
                             _timerService.addAnotherHourPractice();
                           },
-                          icon: const Icon(Icons.add_alarm_rounded, size: 16, color: Color(0xFFFFFC00)),
+                          icon: const Icon(Icons.add_alarm_rounded,
+                              size: 16, color: Color(0xFFFFFC00)),
                           label: Text(
                             '+ ADD 45-MIN PRACTICE',
                             style: GoogleFonts.outfit(
@@ -5144,7 +5619,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                           style: OutlinedButton.styleFrom(
                             side: const BorderSide(color: Color(0xFFFFFC00)),
                             padding: const EdgeInsets.symmetric(vertical: 8),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8)),
                           ),
                         ),
                       ),
@@ -5155,7 +5631,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                             HapticFeedback.mediumImpact();
                             _timerService.restartPracticeSession();
                           },
-                          icon: const Icon(Icons.refresh_rounded, size: 16, color: Colors.white70),
+                          icon: const Icon(Icons.refresh_rounded,
+                              size: 16, color: Colors.white70),
                           label: Text(
                             'RESTART 45-MIN RUN',
                             style: GoogleFonts.outfit(
@@ -5167,7 +5644,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                           style: OutlinedButton.styleFrom(
                             side: const BorderSide(color: Colors.white24),
                             padding: const EdgeInsets.symmetric(vertical: 8),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8)),
                           ),
                         ),
                       ),
@@ -5194,7 +5672,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         color: const Color(0xFF141A29),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: passed ? const Color(0xFF10B981) : const Color(0xFFFFFC00).withValues(alpha: 0.3),
+          color: passed
+              ? const Color(0xFF10B981)
+              : const Color(0xFFFFFC00).withValues(alpha: 0.3),
           width: passed ? 1.5 : 1.0,
         ),
         boxShadow: [
@@ -5217,7 +5697,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                       : const Color(0xFFFFFC00).withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                 ),
-                child: Text(passed ? '🏆' : '🎯', style: const TextStyle(fontSize: 20)),
+                child: Text(passed ? '🏆' : '🎯',
+                    style: const TextStyle(fontSize: 20)),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -5236,9 +5717,12 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                         ),
                         const SizedBox(width: 8),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
-                            color: passed ? const Color(0xFF10B981) : Colors.amber.withValues(alpha: 0.2),
+                            color: passed
+                                ? const Color(0xFF10B981)
+                                : Colors.amber.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
@@ -5273,7 +5757,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                   Text(
                     '$points',
                     style: GoogleFonts.outfit(
-                      color: passed ? const Color(0xFF10B981) : const Color(0xFFFFFC00),
+                      color: passed
+                          ? const Color(0xFF10B981)
+                          : const Color(0xFFFFFC00),
                       fontSize: 22,
                       fontWeight: FontWeight.w900,
                     ),
@@ -5382,7 +5868,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               ),
               if (isVerified)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
                     color: const Color(0xFF10B981).withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(6),
@@ -5391,9 +5878,14 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 14),
+                      Icon(Icons.check_circle_rounded,
+                          color: Color(0xFF10B981), size: 14),
                       SizedBox(width: 4),
-                      Text('VERIFIED', style: TextStyle(color: Color(0xFF10B981), fontSize: 10, fontWeight: FontWeight.bold)),
+                      Text('VERIFIED',
+                          style: TextStyle(
+                              color: Color(0xFF10B981),
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold)),
                     ],
                   ),
                 ),
@@ -5402,7 +5894,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           const SizedBox(height: 8),
           Text(
             description,
-            style: GoogleFonts.inter(color: Colors.white70, fontSize: 12, height: 1.4),
+            style: GoogleFonts.inter(
+                color: Colors.white70, fontSize: 12, height: 1.4),
           ),
           const SizedBox(height: 12),
           Row(
@@ -5414,20 +5907,26 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                     foregroundColor: actionColor,
                     side: BorderSide(color: actionColor),
                     padding: const EdgeInsets.symmetric(vertical: 10),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)),
                   ),
                   child: Text(
                     actionLabel,
-                    style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.bold),
+                    style: GoogleFonts.outfit(
+                        fontSize: 12, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
               const SizedBox(width: 10),
               IconButton.filled(
                 onPressed: onVerify,
-                icon: Icon(isVerified ? Icons.check_rounded : Icons.done_all_rounded, color: Colors.black, size: 18),
+                icon: Icon(
+                    isVerified ? Icons.check_rounded : Icons.done_all_rounded,
+                    color: Colors.black,
+                    size: 18),
                 style: IconButton.styleFrom(
-                  backgroundColor: isVerified ? const Color(0xFF10B981) : Colors.white24,
+                  backgroundColor:
+                      isVerified ? const Color(0xFF10B981) : Colors.white24,
                 ),
                 tooltip: 'Mark Complete',
               ),
@@ -5495,12 +5994,17 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                     onTap: () => _onLanguageSelected(lang),
                     borderRadius: BorderRadius.circular(8),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 5),
                       decoration: BoxDecoration(
-                        color: isSelected ? const Color(0xFFFFFC00) : const Color(0xFF0F172A),
+                        color: isSelected
+                            ? const Color(0xFFFFFC00)
+                            : const Color(0xFF0F172A),
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                          color: isSelected ? const Color(0xFFFFFC00) : Colors.white24,
+                          color: isSelected
+                              ? const Color(0xFFFFFC00)
+                              : Colors.white24,
                           width: 1,
                         ),
                       ),
@@ -5509,7 +6013,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                         style: GoogleFonts.outfit(
                           color: isSelected ? Colors.black : Colors.white70,
                           fontSize: 11.5,
-                          fontWeight: isSelected ? FontWeight.w900 : FontWeight.w500,
+                          fontWeight:
+                              isSelected ? FontWeight.w900 : FontWeight.w500,
                         ),
                       ),
                     ),
@@ -5531,7 +6036,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         color: const Color(0xFF0F172A),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: _vocabMemorized ? const Color(0xFF10B981) : const Color(0xFFFF8906).withValues(alpha: 0.5),
+          color: _vocabMemorized
+              ? const Color(0xFF10B981)
+              : const Color(0xFFFF8906).withValues(alpha: 0.5),
           width: _vocabMemorized ? 1.5 : 1.0,
         ),
       ),
@@ -5543,10 +6050,16 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                 decoration: BoxDecoration(
-                  color: _vocabMemorized ? const Color(0xFF10B981) : const Color(0xFFFF8906),
+                  color: _vocabMemorized
+                      ? const Color(0xFF10B981)
+                      : const Color(0xFFFF8906),
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: const Text('STEP 3', style: TextStyle(color: Colors.black, fontSize: 10, fontWeight: FontWeight.w900)),
+                child: const Text('STEP 3',
+                    style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w900)),
               ),
               const SizedBox(width: 8),
               const Text('🧠', style: TextStyle(fontSize: 16)),
@@ -5554,11 +6067,15 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               Expanded(
                 child: Text(
                   '10 Core Vocabulary Words to Memorize',
-                  style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                  style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14),
                 ),
               ),
               if (_vocabMemorized)
-                const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 18),
+                const Icon(Icons.check_circle_rounded,
+                    color: Color(0xFF10B981), size: 18),
             ],
           ),
           const SizedBox(height: 6),
@@ -5597,7 +6114,11 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                         color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
                         shape: BoxShape.circle,
                       ),
-                      child: Text('${idx + 1}', style: const TextStyle(color: Color(0xFFFFFC00), fontSize: 11, fontWeight: FontWeight.bold)),
+                      child: Text('${idx + 1}',
+                          style: const TextStyle(
+                              color: Color(0xFFFFFC00),
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold)),
                     ),
                     const SizedBox(width: 10),
                     Expanded(
@@ -5608,41 +6129,57 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                             children: [
                               Text(
                                 v.word,
-                                style: GoogleFonts.outfit(color: Colors.amberAccent, fontSize: 14, fontWeight: FontWeight.bold),
+                                style: GoogleFonts.outfit(
+                                    color: Colors.amberAccent,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold),
                               ),
                               const SizedBox(width: 6),
                               Text(
                                 v.phonetic,
-                                style: GoogleFonts.inter(color: Colors.white54, fontSize: 11, fontStyle: FontStyle.italic),
+                                style: GoogleFonts.inter(
+                                    color: Colors.white54,
+                                    fontSize: 11,
+                                    fontStyle: FontStyle.italic),
                               ),
                               const SizedBox(width: 6),
                               Text(
                                 '(${v.partOfSpeech})',
-                                style: GoogleFonts.inter(color: Colors.white38, fontSize: 10),
+                                style: GoogleFonts.inter(
+                                    color: Colors.white38, fontSize: 10),
                               ),
                             ],
                           ),
                           const SizedBox(height: 2),
                           Text(
                             '📖 ${v.definition}',
-                            style: GoogleFonts.inter(color: Colors.white, fontSize: 12),
+                            style: GoogleFonts.inter(
+                                color: Colors.white, fontSize: 12),
                           ),
                           const SizedBox(height: 2),
                           Text(
                             '🗣️ Meaning ($_selectedLanguage): ${v.getMeaning(_selectedLanguage)}',
-                            style: GoogleFonts.inter(color: const Color(0xFFFFD700), fontSize: 11.5, fontWeight: FontWeight.w600),
+                            style: GoogleFonts.inter(
+                                color: const Color(0xFFFFD700),
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w600),
                           ),
                           const SizedBox(height: 2),
                           Text(
                             '💡 "${v.exampleSentence}"',
-                            style: GoogleFonts.inter(color: Colors.white60, fontSize: 11, fontStyle: FontStyle.italic),
+                            style: GoogleFonts.inter(
+                                color: Colors.white60,
+                                fontSize: 11,
+                                fontStyle: FontStyle.italic),
                           ),
                         ],
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.volume_up_rounded, color: Color(0xFFFFFC00), size: 20),
-                      onPressed: () => _speakWord('${v.word}. ${v.exampleSentence}'),
+                      icon: const Icon(Icons.volume_up_rounded,
+                          color: Color(0xFFFFFC00), size: 20),
+                      onPressed: () =>
+                          _speakWord('${v.word}. ${v.exampleSentence}'),
                       tooltip: 'Pronounce',
                     ),
                   ],
@@ -5657,7 +6194,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                 child: ElevatedButton.icon(
                   onPressed: () async {
                     final wordsMap = _vocabList.map((v) => v.toMap()).toList();
-                    final count = await PocketVocabularyService.instance.saveWords(widget.day, wordsMap);
+                    final count = await PocketVocabularyService.instance
+                        .saveWords(widget.day, wordsMap);
                     if (mounted) {
                       setState(() {
                         _vocabMemorized = true;
@@ -5667,40 +6205,55 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                       HapticFeedback.mediumImpact();
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('✨ Saved ${count > 0 ? count : 10} words to offline Pocket Vocabulary! Rewind anytime.'),
+                          content: Text(
+                              '✨ Saved ${count > 0 ? count : 10} words to offline Pocket Vocabulary! Rewind anytime.'),
                           backgroundColor: const Color(0xFF10B981),
                         ),
                       );
                     }
                   },
                   icon: Icon(
-                    _isPocketVocabSaved ? Icons.bookmark_added_rounded : Icons.bookmark_add_rounded,
+                    _isPocketVocabSaved
+                        ? Icons.bookmark_added_rounded
+                        : Icons.bookmark_add_rounded,
                     color: Colors.black,
                     size: 16,
                   ),
                   label: Text(
-                    _isPocketVocabSaved ? 'SAVED TO VAULT ✓' : 'SAVE TO POCKET VOCABULARY',
-                    style: GoogleFonts.outfit(fontWeight: FontWeight.w900, color: Colors.black, fontSize: 11.5),
+                    _isPocketVocabSaved
+                        ? 'SAVED TO VAULT ✓'
+                        : 'SAVE TO POCKET VOCABULARY',
+                    style: GoogleFonts.outfit(
+                        fontWeight: FontWeight.w900,
+                        color: Colors.black,
+                        fontSize: 11.5),
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFFFFC00),
                     padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)),
                   ),
                 ),
               ),
               const SizedBox(width: 8),
               OutlinedButton.icon(
                 onPressed: () => _showPocketVocabularyModal(),
-                icon: const Icon(Icons.menu_book_rounded, color: Color(0xFFFFD700), size: 16),
+                icon: const Icon(Icons.menu_book_rounded,
+                    color: Color(0xFFFFD700), size: 16),
                 label: Text(
                   'OPEN VAULT',
-                  style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: const Color(0xFFFFD700), fontSize: 11.5),
+                  style: GoogleFonts.outfit(
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFFFFD700),
+                      fontSize: 11.5),
                 ),
                 style: OutlinedButton.styleFrom(
                   side: const BorderSide(color: Color(0xFFFFD700)),
-                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
                 ),
               ),
             ],
@@ -5714,26 +6267,46 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                 _saveSubtask('vocab_mem', true);
                 // Also auto-save to local pocket vocabulary
                 final wordsMap = _vocabList.map((v) => v.toMap()).toList();
-                await PocketVocabularyService.instance.saveWords(widget.day, wordsMap);
+                await PocketVocabularyService.instance
+                    .saveWords(widget.day, wordsMap);
                 if (!mounted) return;
                 setState(() => _isPocketVocabSaved = true);
                 HapticFeedback.lightImpact();
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('🎉 10 Vocabulary Words memorized & saved to Pocket Vocabulary!'),
+                    content: Text(
+                        '🎉 10 Vocabulary Words memorized & saved to Pocket Vocabulary!'),
                     backgroundColor: Color(0xFF10B981),
                   ),
                 );
               },
-              icon: Icon(_vocabMemorized ? Icons.check_circle_rounded : Icons.done_all_rounded, color: _vocabMemorized ? const Color(0xFF10B981) : Colors.white70, size: 16),
+              icon: Icon(
+                  _vocabMemorized
+                      ? Icons.check_circle_rounded
+                      : Icons.done_all_rounded,
+                  color: _vocabMemorized
+                      ? const Color(0xFF10B981)
+                      : Colors.white70,
+                  size: 16),
               label: Text(
-                _vocabMemorized ? '10 WORDS VERIFIED ✓' : 'MARK ALL 10 WORDS MEMORIZED',
-                style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: _vocabMemorized ? const Color(0xFF10B981) : Colors.white70, fontSize: 12),
+                _vocabMemorized
+                    ? '10 WORDS VERIFIED ✓'
+                    : 'MARK ALL 10 WORDS MEMORIZED',
+                style: GoogleFonts.outfit(
+                    fontWeight: FontWeight.bold,
+                    color: _vocabMemorized
+                        ? const Color(0xFF10B981)
+                        : Colors.white70,
+                    fontSize: 12),
               ),
               style: OutlinedButton.styleFrom(
-                side: BorderSide(color: _vocabMemorized ? const Color(0xFF10B981) : Colors.white24),
+                side: BorderSide(
+                    color: _vocabMemorized
+                        ? const Color(0xFF10B981)
+                        : Colors.white24),
                 padding: const EdgeInsets.symmetric(vertical: 10),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
               ),
             ),
           ),
@@ -5749,14 +6322,22 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: _midAttackCompleted
-              ? [const Color(0xFF064E3B).withValues(alpha: 0.6), const Color(0xFF022C22).withValues(alpha: 0.6)]
-              : [const Color(0xFF450A0A).withValues(alpha: 0.8), const Color(0xFF180808)],
+              ? [
+                  const Color(0xFF064E3B).withValues(alpha: 0.6),
+                  const Color(0xFF022C22).withValues(alpha: 0.6)
+                ]
+              : [
+                  const Color(0xFF450A0A).withValues(alpha: 0.8),
+                  const Color(0xFF180808)
+                ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: _midAttackCompleted ? const Color(0xFF10B981) : const Color(0xFFEF4444).withValues(alpha: 0.6),
+          color: _midAttackCompleted
+              ? const Color(0xFF10B981)
+              : const Color(0xFFEF4444).withValues(alpha: 0.6),
           width: 1.2,
         ),
       ),
@@ -5768,7 +6349,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: _midAttackCompleted ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+                  color: _midAttackCompleted
+                      ? const Color(0xFF10B981)
+                      : const Color(0xFFEF4444),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Row(
@@ -5776,15 +6359,23 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                   children: [
                     const Text('⚔️ ', style: TextStyle(fontSize: 10)),
                     Text(
-                      _midAttackCompleted ? 'COMBAT RAID CLEARED ✓' : 'RAPID COMBAT ATTACK',
-                      style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 0.5),
+                      _midAttackCompleted
+                          ? 'COMBAT RAID CLEARED ✓'
+                          : 'RAPID COMBAT ATTACK',
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.5),
                     ),
                   ],
                 ),
               ),
               const Spacer(),
               Text(
-                _midAttackCompleted ? '+50 BONUS COINS EARNED' : '+50 BONUS COINS',
+                _midAttackCompleted
+                    ? '+50 BONUS COINS EARNED'
+                    : '+50 BONUS COINS',
                 style: GoogleFonts.outfit(
                   color: const Color(0xFFFFD700),
                   fontWeight: FontWeight.bold,
@@ -5833,14 +6424,16 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                     _saveSubtask('mid_attack', true);
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text('⚔️ Pocket Battle raid won! Bonus +50 coins registered.'),
+                        content: Text(
+                            '⚔️ Pocket Battle raid won! Bonus +50 coins registered.'),
                         backgroundColor: Color(0xFF10B981),
                       ),
                     );
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text('⚠️ Raid incomplete. Select and breach a house in Pocket World to earn bonus coins!'),
+                        content: Text(
+                            '⚠️ Raid incomplete. Select and breach a house in Pocket World to earn bonus coins!'),
                         backgroundColor: Color(0xFFB45309),
                       ),
                     );
@@ -5848,12 +6441,16 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                 }
               },
               icon: Icon(
-                _midAttackCompleted ? Icons.check_circle_rounded : Icons.flash_on_rounded,
+                _midAttackCompleted
+                    ? Icons.check_circle_rounded
+                    : Icons.flash_on_rounded,
                 color: Colors.white,
                 size: 16,
               ),
               label: Text(
-                _midAttackCompleted ? 'LAUNCH ANOTHER POCKET BATTLE ⚔️' : 'LAUNCH POCKET BATTLE NOW ⚔️',
+                _midAttackCompleted
+                    ? 'LAUNCH ANOTHER POCKET BATTLE ⚔️'
+                    : 'LAUNCH POCKET BATTLE NOW ⚔️',
                 style: GoogleFonts.outfit(
                   color: Colors.white,
                   fontWeight: FontWeight.w900,
@@ -5862,9 +6459,12 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                 ),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: _midAttackCompleted ? const Color(0xFF059669) : const Color(0xFFDC2626),
+                backgroundColor: _midAttackCompleted
+                    ? const Color(0xFF059669)
+                    : const Color(0xFFDC2626),
                 padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
               ),
             ),
           ),
@@ -5875,7 +6475,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
   // --- 🔤 ALPHABET & 44 PHONICS SOUND SYSTEM CARD ---
   Widget _buildAlphabetPhonicsCard() {
-    final phonicsList = PocketMissionCurriculumRegistry.getAlphabetPhonics(widget.day);
+    final phonicsList =
+        PocketMissionCurriculumRegistry.getAlphabetPhonics(widget.day);
     if (phonicsList.isEmpty) return const SizedBox.shrink();
 
     return Container(
@@ -5884,7 +6485,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         color: const Color(0xFF0F172A),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: _alphabetPhonicsCompleted ? const Color(0xFF10B981) : const Color(0xFFFFD700).withValues(alpha: 0.35),
+          color: _alphabetPhonicsCompleted
+              ? const Color(0xFF10B981)
+              : const Color(0xFFFFD700).withValues(alpha: 0.35),
           width: _alphabetPhonicsCompleted ? 1.5 : 1.0,
         ),
       ),
@@ -5896,7 +6499,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                 decoration: BoxDecoration(
-                  color: _alphabetPhonicsCompleted ? const Color(0xFF10B981) : const Color(0xFFFFD700),
+                  color: _alphabetPhonicsCompleted
+                      ? const Color(0xFF10B981)
+                      : const Color(0xFFFFD700),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: const Text(
@@ -5914,17 +6519,22 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               Expanded(
                 child: Text(
                   'Alphabet & 44 Phonics Sound System',
-                  style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                  style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14),
                 ),
               ),
               if (_alphabetPhonicsCompleted)
-                const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 18),
+                const Icon(Icons.check_circle_rounded,
+                    color: Color(0xFF10B981), size: 18),
             ],
           ),
           const SizedBox(height: 6),
           Text(
             'Master authentic mouth placements, vocal releases & acoustic IPA frequencies. Tap 🔊 on each word to tune your subconscious ear.',
-            style: GoogleFonts.inter(color: Colors.white70, fontSize: 11.5, height: 1.35),
+            style: GoogleFonts.inter(
+                color: Colors.white70, fontSize: 11.5, height: 1.35),
           ),
           const SizedBox(height: 12),
 
@@ -5982,7 +6592,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                                   ),
                                   const SizedBox(width: 8),
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 6, vertical: 2),
                                     decoration: BoxDecoration(
                                       color: Colors.white10,
                                       borderRadius: BorderRadius.circular(4),
@@ -6020,11 +6631,14 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                       },
                       borderRadius: BorderRadius.circular(8),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 6),
                         decoration: BoxDecoration(
                           color: const Color(0xFF0F172A),
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: const Color(0xFF00E5FF).withValues(alpha: 0.3)),
+                          border: Border.all(
+                              color: const Color(0xFF00E5FF)
+                                  .withValues(alpha: 0.3)),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -6038,7 +6652,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                               ),
                             ),
                             const SizedBox(width: 6),
-                            const Icon(Icons.volume_up_rounded, color: Color(0xFFFFFC00), size: 14),
+                            const Icon(Icons.volume_up_rounded,
+                                color: Color(0xFFFFFC00), size: 14),
                           ],
                         ),
                       ),
@@ -6059,18 +6674,23 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                 HapticFeedback.lightImpact();
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('🔤 Phonics Sounds Mastered! Authentic mouth placement verified ✓'),
+                    content: Text(
+                        '🔤 Phonics Sounds Mastered! Authentic mouth placement verified ✓'),
                     backgroundColor: Color(0xFF10B981),
                   ),
                 );
               },
               icon: Icon(
-                _alphabetPhonicsCompleted ? Icons.check_circle_rounded : Icons.record_voice_over_rounded,
+                _alphabetPhonicsCompleted
+                    ? Icons.check_circle_rounded
+                    : Icons.record_voice_over_rounded,
                 color: Colors.black,
                 size: 16,
               ),
               label: Text(
-                _alphabetPhonicsCompleted ? 'PHONICS MASTERED ✓' : 'PRACTICED SOUNDS & WORDS ALOUD ✓',
+                _alphabetPhonicsCompleted
+                    ? 'PHONICS MASTERED ✓'
+                    : 'PRACTICED SOUNDS & WORDS ALOUD ✓',
                 style: GoogleFonts.outfit(
                   color: Colors.black,
                   fontWeight: FontWeight.w900,
@@ -6078,9 +6698,12 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                 ),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: _alphabetPhonicsCompleted ? const Color(0xFF10B981) : const Color(0xFFFFD700),
+                backgroundColor: _alphabetPhonicsCompleted
+                    ? const Color(0xFF10B981)
+                    : const Color(0xFFFFD700),
                 padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
               ),
             ),
           ),
@@ -6091,10 +6714,12 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
   // --- 📐 SENTENCE PATTERN PRACTICE CARD ---
   Widget _buildSentencePatternCard() {
-    final patterns = PocketMissionCurriculumRegistry.getSentencePatterns(widget.day);
+    final patterns =
+        PocketMissionCurriculumRegistry.getSentencePatterns(widget.day);
     if (patterns.isEmpty) return const SizedBox.shrink();
 
-    final pattern = patterns[_selectedPatternIndex.clamp(0, patterns.length - 1)];
+    final pattern =
+        patterns[_selectedPatternIndex.clamp(0, patterns.length - 1)];
 
     return Container(
       padding: const EdgeInsets.all(14),
@@ -6102,7 +6727,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         color: const Color(0xFF0F172A),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: _sentencePatternCompleted ? const Color(0xFF10B981) : const Color(0xFF00E5FF).withValues(alpha: 0.35),
+          color: _sentencePatternCompleted
+              ? const Color(0xFF10B981)
+              : const Color(0xFF00E5FF).withValues(alpha: 0.35),
           width: _sentencePatternCompleted ? 1.5 : 1.0,
         ),
       ),
@@ -6114,7 +6741,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                 decoration: BoxDecoration(
-                  color: _sentencePatternCompleted ? const Color(0xFF10B981) : const Color(0xFF00E5FF),
+                  color: _sentencePatternCompleted
+                      ? const Color(0xFF10B981)
+                      : const Color(0xFF00E5FF),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: const Text(
@@ -6132,17 +6761,22 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               Expanded(
                 child: Text(
                   'Daily Sentence Pattern Practice',
-                  style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                  style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14),
                 ),
               ),
               if (_sentencePatternCompleted)
-                const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 18),
+                const Icon(Icons.check_circle_rounded,
+                    color: Color(0xFF10B981), size: 18),
             ],
           ),
           const SizedBox(height: 6),
           Text(
             pattern.explanation,
-            style: GoogleFonts.inter(color: Colors.white70, fontSize: 11.5, height: 1.35),
+            style: GoogleFonts.inter(
+                color: Colors.white70, fontSize: 11.5, height: 1.35),
           ),
           const SizedBox(height: 10),
 
@@ -6160,18 +6794,25 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                       onTap: () => setState(() => _selectedPatternIndex = idx),
                       borderRadius: BorderRadius.circular(8),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 5),
                         decoration: BoxDecoration(
-                          color: isSel ? const Color(0xFF00E5FF) : const Color(0xFF1E293B),
+                          color: isSel
+                              ? const Color(0xFF00E5FF)
+                              : const Color(0xFF1E293B),
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: isSel ? const Color(0xFF00E5FF) : Colors.white24),
+                          border: Border.all(
+                              color: isSel
+                                  ? const Color(0xFF00E5FF)
+                                  : Colors.white24),
                         ),
                         child: Text(
                           'Pattern ${idx + 1}',
                           style: TextStyle(
                             color: isSel ? Colors.black : Colors.white70,
                             fontSize: 11,
-                            fontWeight: isSel ? FontWeight.bold : FontWeight.normal,
+                            fontWeight:
+                                isSel ? FontWeight.bold : FontWeight.normal,
                           ),
                         ),
                       ),
@@ -6190,19 +6831,26 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
             decoration: BoxDecoration(
               color: const Color(0xFF1E293B),
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.3)),
+              border: Border.all(
+                  color: const Color(0xFFFFD700).withValues(alpha: 0.3)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'STRUCTURE FORMULA:',
-                  style: GoogleFonts.outfit(color: const Color(0xFFFFD700), fontSize: 10, fontWeight: FontWeight.bold),
+                  style: GoogleFonts.outfit(
+                      color: const Color(0xFFFFD700),
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 3),
                 Text(
                   pattern.formula,
-                  style: GoogleFonts.outfit(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w800),
+                  style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800),
                 ),
               ],
             ),
@@ -6233,7 +6881,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.volume_up_rounded, color: Color(0xFFFFFC00), size: 18),
+                      icon: const Icon(Icons.volume_up_rounded,
+                          color: Color(0xFFFFFC00), size: 18),
                       onPressed: () => _speakWord(sent),
                       tooltip: 'Listen to pattern sentence',
                     ),
@@ -6253,18 +6902,23 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                 HapticFeedback.lightImpact();
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('📐 Sentence Pattern Mastered! Direct structure practiced ✓'),
+                    content: Text(
+                        '📐 Sentence Pattern Mastered! Direct structure practiced ✓'),
                     backgroundColor: Color(0xFF10B981),
                   ),
                 );
               },
               icon: Icon(
-                _sentencePatternCompleted ? Icons.check_circle_rounded : Icons.auto_awesome_rounded,
+                _sentencePatternCompleted
+                    ? Icons.check_circle_rounded
+                    : Icons.auto_awesome_rounded,
                 color: Colors.black,
                 size: 16,
               ),
               label: Text(
-                _sentencePatternCompleted ? 'PATTERN MASTERED ✓' : 'I PRACTICED THIS PATTERN ALOUD ✓',
+                _sentencePatternCompleted
+                    ? 'PATTERN MASTERED ✓'
+                    : 'I PRACTICED THIS PATTERN ALOUD ✓',
                 style: GoogleFonts.outfit(
                   color: Colors.black,
                   fontWeight: FontWeight.w900,
@@ -6272,9 +6926,12 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                 ),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: _sentencePatternCompleted ? const Color(0xFF10B981) : const Color(0xFF00E5FF),
+                backgroundColor: _sentencePatternCompleted
+                    ? const Color(0xFF10B981)
+                    : const Color(0xFF00E5FF),
                 padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
               ),
             ),
           ),
@@ -6282,6 +6939,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
       ),
     );
   }
+
   // --- SUBTASK 4: 🏢 MISSION 01 CAREER ADVENTURE 2D GAME CARD (User Audio Directive: Mature Level 1 Game) ---
   Widget _buildCareerAdventureCard() {
     final isDone = _careerAdventureCompleted || _wordCatcherCompleted;
@@ -6298,12 +6956,15 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         ),
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: isDone ? const Color(0xFF10B981) : const Color(0xFF38BDF8).withValues(alpha: 0.6),
+          color: isDone
+              ? const Color(0xFF10B981)
+              : const Color(0xFF38BDF8).withValues(alpha: 0.6),
           width: isDone ? 1.6 : 1.2,
         ),
         boxShadow: [
           BoxShadow(
-            color: (isDone ? const Color(0xFF10B981) : const Color(0xFF38BDF8)).withValues(alpha: 0.15),
+            color: (isDone ? const Color(0xFF10B981) : const Color(0xFF38BDF8))
+                .withValues(alpha: 0.15),
             blurRadius: 16,
           ),
         ],
@@ -6316,7 +6977,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: isDone ? const Color(0xFF10B981) : const Color(0xFF38BDF8),
+                  color: isDone
+                      ? const Color(0xFF10B981)
+                      : const Color(0xFF38BDF8),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
@@ -6356,7 +7019,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               ),
               if (isDone)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
                     color: const Color(0xFF10B981).withValues(alpha: 0.25),
                     borderRadius: BorderRadius.circular(6),
@@ -6365,21 +7029,26 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 14),
+                      Icon(Icons.check_circle_rounded,
+                          color: Color(0xFF10B981), size: 14),
                       SizedBox(width: 4),
                       Text('VERIFIED',
                           style: TextStyle(
-                              color: Color(0xFF10B981), fontSize: 10, fontWeight: FontWeight.bold)),
+                              color: Color(0xFF10B981),
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold)),
                     ],
                   ),
                 )
               else
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFD700).withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.6)),
+                    border: Border.all(
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.6)),
                   ),
                   child: Text(
                     '+50 PTS',
@@ -6414,7 +7083,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                 const SizedBox(height: 6),
                 Row(
                   children: [
-                    const Icon(Icons.stars_rounded, color: Color(0xFFFFD700), size: 14),
+                    const Icon(Icons.stars_rounded,
+                        color: Color(0xFFFFD700), size: 14),
                     const SizedBox(width: 4),
                     Text(
                       '10 Workplace Vocabulary Words · Practical Spoken English',
@@ -6462,11 +7132,13 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: isDone ? const Color(0xFF1E293B) : const Color(0xFF0284C7),
+                backgroundColor:
+                    isDone ? const Color(0xFF1E293B) : const Color(0xFF0284C7),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                   side: BorderSide(
-                    color: isDone ? const Color(0xFF10B981) : Colors.transparent,
+                    color:
+                        isDone ? const Color(0xFF10B981) : Colors.transparent,
                   ),
                 ),
                 elevation: isDone ? 0 : 4,
@@ -6475,20 +7147,22 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
-                    isDone ? Icons.replay_rounded : Icons.sports_esports_rounded,
+                    isDone
+                        ? Icons.replay_rounded
+                        : Icons.sports_esports_rounded,
                     color: isDone ? const Color(0xFF10B981) : Colors.white,
                     size: 18,
                   ),
                   const SizedBox(width: 8),
-                    Text(
-                      isDone ? 'REPLAY MISSION 1 🔄' : 'PLAY MISSION 1 🎮',
-                      style: GoogleFonts.outfit(
-                        color: isDone ? const Color(0xFF10B981) : Colors.white,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 0.5,
-                      ),
+                  Text(
+                    isDone ? 'REPLAY MISSION 1 🔄' : 'PLAY MISSION 1 🎮',
+                    style: GoogleFonts.outfit(
+                      color: isDone ? const Color(0xFF10B981) : Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.5,
                     ),
+                  ),
                 ],
               ),
             ),
@@ -6514,12 +7188,15 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         ),
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: isDone ? const Color(0xFF10B981) : const Color(0xFF38BDF8).withValues(alpha: 0.6),
+          color: isDone
+              ? const Color(0xFF10B981)
+              : const Color(0xFF38BDF8).withValues(alpha: 0.6),
           width: isDone ? 1.6 : 1.2,
         ),
         boxShadow: [
           BoxShadow(
-            color: (isDone ? const Color(0xFF10B981) : const Color(0xFF38BDF8)).withValues(alpha: 0.15),
+            color: (isDone ? const Color(0xFF10B981) : const Color(0xFF38BDF8))
+                .withValues(alpha: 0.15),
             blurRadius: 16,
           ),
         ],
@@ -6532,7 +7209,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: isDone ? const Color(0xFF10B981) : const Color(0xFF38BDF8),
+                  color: isDone
+                      ? const Color(0xFF10B981)
+                      : const Color(0xFF38BDF8),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
@@ -6545,14 +7224,14 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                 ),
               ),
               const SizedBox(width: 8),
-              const Text('🏙️', style: TextStyle(fontSize: 18)),
+              const Text('⚡', style: TextStyle(fontSize: 18)),
               const SizedBox(width: 6),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Mission 02 – City Navigator',
+                      'Mission 02 – Cyber Vocab Striker',
                       style: GoogleFonts.outfit(
                         color: Colors.white,
                         fontWeight: FontWeight.w800,
@@ -6560,7 +7239,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                       ),
                     ),
                     Text(
-                      '2D City Navigation · Modern Map & Directions',
+                      'Flame Arcade Action · 10 High-Impact Words',
                       style: GoogleFonts.inter(
                         color: const Color(0xFF38BDF8),
                         fontSize: 11,
@@ -6572,7 +7251,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               ),
               if (isDone)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
                     color: const Color(0xFF10B981).withValues(alpha: 0.25),
                     borderRadius: BorderRadius.circular(6),
@@ -6581,21 +7261,26 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 14),
+                      Icon(Icons.check_circle_rounded,
+                          color: Color(0xFF10B981), size: 14),
                       SizedBox(width: 4),
                       Text('VERIFIED',
                           style: TextStyle(
-                              color: Color(0xFF10B981), fontSize: 10, fontWeight: FontWeight.bold)),
+                              color: Color(0xFF10B981),
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold)),
                     ],
                   ),
                 )
               else
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFD700).withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.6)),
+                    border: Border.all(
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.6)),
                   ),
                   child: Text(
                     '+50 PTS',
@@ -6620,7 +7305,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Navigate Grand Avenue, read signs, follow spoken directions, build routes, and reach the City Business Center before 11:00 AM!',
+                  'Pilot the Cyber Interceptor, blast corrupted data nodes, and master 10 high-impact vocabulary words with 60FPS Flame action!',
                   style: GoogleFonts.inter(
                     color: Colors.white70,
                     fontSize: 11,
@@ -6630,10 +7315,11 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                 const SizedBox(height: 6),
                 Row(
                   children: [
-                    const Icon(Icons.navigation_rounded, color: Color(0xFFFFD700), size: 14),
+                    const Icon(Icons.bolt_rounded,
+                        color: Color(0xFFFFD700), size: 14),
                     const SizedBox(width: 4),
                     Text(
-                      '20 City Vocabulary Words · Practical Directions',
+                      '10 Key Vocabulary Words · Arcade Action & Audio TTS',
                       style: GoogleFonts.inter(
                         color: const Color(0xFFFFD700),
                         fontSize: 10,
@@ -6655,8 +7341,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                 final completed = await Navigator.push<bool>(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => const CityNavigatorGamePage(
-                      levelData: kMission02CityData,
+                    builder: (_) => const CyberVocabGamePage(
+                      levelData: kMission02VocabStrikerData,
                     ),
                   ),
                 );
@@ -6669,18 +7355,20 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text(
-                          '🎉 Mission 02 City Navigator Completed! Step 4 Verified ✓ +50 Points!'),
+                          '🎉 Mission 02 Cyber Vocab Striker Completed! Step 4 Verified ✓ +50 Points!'),
                       backgroundColor: Color(0xFF10B981),
                     ),
                   );
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: isDone ? const Color(0xFF1E293B) : const Color(0xFF0284C7),
+                backgroundColor:
+                    isDone ? const Color(0xFF1E293B) : const Color(0xFF0284C7),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                   side: BorderSide(
-                    color: isDone ? const Color(0xFF10B981) : Colors.transparent,
+                    color:
+                        isDone ? const Color(0xFF10B981) : Colors.transparent,
                   ),
                 ),
                 elevation: isDone ? 0 : 4,
@@ -6728,12 +7416,15 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         ),
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: isDone ? const Color(0xFF10B981) : const Color(0xFF38BDF8).withValues(alpha: 0.6),
+          color: isDone
+              ? const Color(0xFF10B981)
+              : const Color(0xFF38BDF8).withValues(alpha: 0.6),
           width: isDone ? 1.6 : 1.2,
         ),
         boxShadow: [
           BoxShadow(
-            color: (isDone ? const Color(0xFF10B981) : const Color(0xFF38BDF8)).withValues(alpha: 0.15),
+            color: (isDone ? const Color(0xFF10B981) : const Color(0xFF38BDF8))
+                .withValues(alpha: 0.15),
             blurRadius: 16,
           ),
         ],
@@ -6746,7 +7437,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: isDone ? const Color(0xFF10B981) : const Color(0xFF38BDF8),
+                  color: isDone
+                      ? const Color(0xFF10B981)
+                      : const Color(0xFF38BDF8),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
@@ -6786,7 +7479,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               ),
               if (isDone)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
                     color: const Color(0xFF10B981).withValues(alpha: 0.25),
                     borderRadius: BorderRadius.circular(6),
@@ -6795,21 +7489,26 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 14),
+                      Icon(Icons.check_circle_rounded,
+                          color: Color(0xFF10B981), size: 14),
                       SizedBox(width: 4),
                       Text('VERIFIED',
                           style: TextStyle(
-                              color: Color(0xFF10B981), fontSize: 10, fontWeight: FontWeight.bold)),
+                              color: Color(0xFF10B981),
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold)),
                     ],
                   ),
                 )
               else
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFD700).withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.6)),
+                    border: Border.all(
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.6)),
                   ),
                   child: Text(
                     '+50 PTS',
@@ -6844,7 +7543,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                 const SizedBox(height: 6),
                 Row(
                   children: [
-                    const Icon(Icons.psychology_rounded, color: Color(0xFFFFD700), size: 14),
+                    const Icon(Icons.psychology_rounded,
+                        color: Color(0xFFFFD700), size: 14),
                     const SizedBox(width: 4),
                     Text(
                       '15 Workplace Vocabulary Words · Visual Recall',
@@ -6890,11 +7590,13 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: isDone ? const Color(0xFF1E293B) : const Color(0xFF0284C7),
+                backgroundColor:
+                    isDone ? const Color(0xFF1E293B) : const Color(0xFF0284C7),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                   side: BorderSide(
-                    color: isDone ? const Color(0xFF10B981) : Colors.transparent,
+                    color:
+                        isDone ? const Color(0xFF10B981) : Colors.transparent,
                   ),
                 ),
                 elevation: isDone ? 0 : 4,
@@ -6926,9 +7628,1343 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     );
   }
 
+  // --- SUBTASK 4: 🏭 MISSION 04 WORD FACTORY 2D GAME CARD (Day 4) ---
+  Widget _buildWordFactoryCard() {
+    final isDone = _wordFactoryCompleted;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: isDone
+              ? const [Color(0xFF0F172A), Color(0xFF431407)]
+              : const [Color(0xFF0F172A), Color(0xFF1E293B)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: isDone ? const Color(0xFFFF6B35) : Colors.white12,
+          width: isDone ? 1.5 : 1.0,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: isDone
+                        ? const [Color(0xFFFF6B35), Color(0xFFEA4C0B)]
+                        : const [Color(0xFF1E293B), Color(0xFF0F172A)],
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: isDone ? const Color(0xFFFF6B35) : Colors.white24,
+                  ),
+                ),
+                child: Center(
+                  child: Text(
+                    '🏭',
+                    style: TextStyle(
+                      fontSize: isDone ? 22 : 20,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          'SUBTASK 4',
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFFFF6B35),
+                            fontSize: 10,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        if (isDone)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFF6B35)
+                                  .withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              '✓ COMPLETE',
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFFFF6B35),
+                                fontSize: 9,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                    Text(
+                      'Mission 04: Word Factory',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    Text(
+                      'Repair broken sentences. Restore the grid.',
+                      style: GoogleFonts.inter(
+                        color: Colors.white54,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          // Badges row
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: [
+              _miniTag('🔧 Word Repair'),
+              _miniTag('📦 Collect Words'),
+              _miniTag('⚗️ Grammar Lab'),
+              _miniTag('🖥️ Control Room'),
+              _miniTag('💬 TTS Audio'),
+              _miniTag('⏱️ Timed Override'),
+            ],
+          ),
+          const SizedBox(height: 14),
+          SizedBox(
+            width: double.infinity,
+            height: 44,
+            child: ElevatedButton(
+              onPressed: () async {
+                HapticFeedback.lightImpact();
+                final completed = await Navigator.push<bool>(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const WordFactoryGamePage(
+                      levelData: kMission04WordFactoryData,
+                    ),
+                  ),
+                );
+                if (completed == true && mounted) {
+                  setState(() {
+                    _wordFactoryCompleted = true;
+                  });
+                  _saveSubtask('word_factory', true);
+                  HapticFeedback.heavyImpact();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                          '🏭 Mission 04 Word Factory Complete! Grid Restored ✓ +50 Points!'),
+                      backgroundColor: Color(0xFFFF6B35),
+                    ),
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor:
+                    isDone ? const Color(0xFF1E293B) : const Color(0xFFFF6B35),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(
+                    color:
+                        isDone ? const Color(0xFFFF6B35) : Colors.transparent,
+                  ),
+                ),
+                elevation: isDone ? 0 : 4,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    isDone
+                        ? Icons.replay_rounded
+                        : Icons.precision_manufacturing_rounded,
+                    color: isDone ? const Color(0xFFFF6B35) : Colors.white,
+                    size: 18,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    isDone ? 'REPLAY MISSION 4 🔄' : 'PLAY MISSION 4 🎮',
+                    style: GoogleFonts.outfit(
+                      color: isDone ? const Color(0xFFFF6B35) : Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // --- SUBTASK 4: 📡 MISSION 05 SIGNAL HUNT 2D FLAME GAME CARD (Day 5) ---
+  Widget _buildSignalHuntCard() {
+    final isDone = _signalHuntCompleted;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: isDone
+              ? const [Color(0xFF0F172A), Color(0xFF064E3B)]
+              : const [Color(0xFF0F172A), Color(0xFF1E293B)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: isDone
+              ? const Color(0xFF10B981)
+              : const Color(0xFF38BDF8).withValues(alpha: 0.6),
+          width: isDone ? 1.6 : 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: (isDone ? const Color(0xFF10B981) : const Color(0xFF38BDF8))
+                .withValues(alpha: 0.15),
+            blurRadius: 16,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: isDone
+                      ? const Color(0xFF10B981)
+                      : const Color(0xFF38BDF8),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  'STEP 4',
+                  style: TextStyle(
+                    color: isDone ? Colors.white : Colors.black,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Text('📡', style: TextStyle(fontSize: 18)),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Mission 05 – Signal Hunt',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 14,
+                      ),
+                    ),
+                    Text(
+                      '2D Flame Listening Adventure · City Hub',
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFF38BDF8),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (isDone)
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF10B981).withValues(alpha: 0.25),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: const Color(0xFF10B981)),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.check_circle_rounded,
+                          color: Color(0xFF10B981), size: 14),
+                      SizedBox(width: 4),
+                      Text('VERIFIED',
+                          style: TextStyle(
+                              color: Color(0xFF10B981),
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                )
+              else
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.6)),
+                  ),
+                  child: Text(
+                    '+50 PTS',
+                    style: GoogleFonts.outfit(
+                      color: const Color(0xFFFFD700),
+                      fontSize: 10,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1E293B).withValues(alpha: 0.85),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.white12),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Listen to spoken directions, phone calls, and announcements. Filter out distractions, explore the 2D Hub, and find Room 204 before the meeting starts!',
+                  style: GoogleFonts.inter(
+                    color: Colors.white70,
+                    fontSize: 11,
+                    height: 1.35,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    const Icon(Icons.hearing_rounded,
+                        color: Color(0xFFFFD700), size: 14),
+                    const SizedBox(width: 4),
+                    Text(
+                      '17 Target Vocabulary Words · Real-Life Listening',
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFFFFD700),
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          SizedBox(
+            width: double.infinity,
+            height: 44,
+            child: ElevatedButton(
+              onPressed: () async {
+                HapticFeedback.lightImpact();
+                final completed = await Navigator.push<bool>(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const SignalHuntGamePage(
+                      levelData: kMission05SignalHuntData,
+                    ),
+                  ),
+                );
+                if (completed == true && mounted) {
+                  setState(() {
+                    _signalHuntCompleted = true;
+                  });
+                  _saveSubtask('signal_hunt', true);
+                  HapticFeedback.heavyImpact();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                          '🎉 Mission 05 Signal Hunt Complete! Step 4 Verified ✓ +50 Points!'),
+                      backgroundColor: Color(0xFF10B981),
+                    ),
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor:
+                    isDone ? const Color(0xFF1E293B) : const Color(0xFF0284C7),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(
+                    color:
+                        isDone ? const Color(0xFF10B981) : Colors.transparent,
+                  ),
+                ),
+                elevation: isDone ? 0 : 4,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    isDone ? Icons.replay_rounded : Icons.radar_rounded,
+                    color: isDone ? const Color(0xFF10B981) : Colors.white,
+                    size: 18,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    isDone ? 'REPLAY MISSION 5 🔄' : 'PLAY MISSION 5 🎮',
+                    style: GoogleFonts.outfit(
+                      color: isDone ? const Color(0xFF10B981) : Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // --- SUBTASK 4: 📦 MISSION 06 THE LOST PACKAGE 2D FLAME GAME CARD (Day 6) ---
+  Widget _buildLostPackageCard() {
+    final isDone = _lostPackageCompleted;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: isDone
+              ? const [Color(0xFF0F172A), Color(0xFF064E3B)]
+              : const [Color(0xFF0F172A), Color(0xFF1E1B4B)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: isDone
+              ? const Color(0xFF10B981)
+              : const Color(0xFFF59E0B).withValues(alpha: 0.7),
+          width: isDone ? 1.6 : 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: (isDone ? const Color(0xFF10B981) : const Color(0xFFF59E0B))
+                .withValues(alpha: 0.15),
+            blurRadius: 16,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: isDone
+                      ? const Color(0xFF10B981)
+                      : const Color(0xFFF59E0B),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  'STEP 4',
+                  style: TextStyle(
+                    color: isDone ? Colors.white : Colors.black,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Text('📦', style: TextStyle(fontSize: 18)),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Mission 06 – The Lost Package',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 14,
+                      ),
+                    ),
+                    Text(
+                      '2D Flame Investigation · Delivery Hub',
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFFFBBF24),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (isDone)
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF10B981).withValues(alpha: 0.25),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: const Color(0xFF10B981)),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.check_circle_rounded,
+                          color: Color(0xFF10B981), size: 14),
+                      SizedBox(width: 4),
+                      Text('VERIFIED',
+                          style: TextStyle(
+                              color: Color(0xFF10B981),
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                )
+              else
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.6)),
+                  ),
+                  child: Text(
+                    '+50 PTS',
+                    style: GoogleFonts.outfit(
+                      color: const Color(0xFFFFD700),
+                      fontSize: 10,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1E293B).withValues(alpha: 0.85),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.white12),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Follow the delivery notification, read the address board, scan package labels, communicate with the receptionist, and unlock Locker 24 to recover your parcel!',
+                  style: GoogleFonts.inter(
+                    color: Colors.white70,
+                    fontSize: 11,
+                    height: 1.35,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    const Icon(Icons.markunread_mailbox_rounded,
+                        color: Color(0xFFFFD700), size: 14),
+                    const SizedBox(width: 4),
+                    Text(
+                      '20 Target Vocabulary Words · Reading & Investigation',
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFFFFD700),
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          SizedBox(
+            width: double.infinity,
+            height: 44,
+            child: ElevatedButton(
+              onPressed: () async {
+                HapticFeedback.lightImpact();
+                final completed = await Navigator.push<bool>(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const LostPackageGamePage(
+                      levelData: kMission06LostPackageData,
+                    ),
+                  ),
+                );
+                if (completed == true && mounted) {
+                  setState(() {
+                    _lostPackageCompleted = true;
+                  });
+                  _saveSubtask('lost_package', true);
+                  HapticFeedback.heavyImpact();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                          '🎉 Mission 06 The Lost Package Complete! Step 4 Verified ✓ +50 Points!'),
+                      backgroundColor: Color(0xFF10B981),
+                    ),
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor:
+                    isDone ? const Color(0xFF1E293B) : const Color(0xFFD97706),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(
+                    color:
+                        isDone ? const Color(0xFF10B981) : Colors.transparent,
+                  ),
+                ),
+                elevation: isDone ? 0 : 4,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    isDone ? Icons.replay_rounded : Icons.inventory_2_rounded,
+                    color: isDone ? const Color(0xFF10B981) : Colors.white,
+                    size: 18,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    isDone ? 'REPLAY MISSION 6 🔄' : 'PLAY MISSION 6 🎮',
+                    style: GoogleFonts.outfit(
+                      color: isDone ? const Color(0xFF10B981) : Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // --- SUBTASK 4: 🗓️ MISSION 07 THE BUSY DAY 2D FLAME GAME CARD (Day 7) ---
+  Widget _buildBusyDayCard() {
+    final isDone = _busyDayCompleted;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: isDone
+              ? const [Color(0xFF0F172A), Color(0xFF064E3B)]
+              : const [Color(0xFF0F172A), Color(0xFF0C4A6E)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: isDone
+              ? const Color(0xFF10B981)
+              : const Color(0xFF0EA5E9).withValues(alpha: 0.7),
+          width: isDone ? 1.6 : 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: (isDone ? const Color(0xFF10B981) : const Color(0xFF0EA5E9))
+                .withValues(alpha: 0.15),
+            blurRadius: 16,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: isDone
+                      ? const Color(0xFF10B981)
+                      : const Color(0xFF0EA5E9),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  'STEP 4',
+                  style: TextStyle(
+                    color: isDone ? Colors.white : Colors.black,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Text('🗓️', style: TextStyle(fontSize: 18)),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Mission 07 – The Busy Day',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 14,
+                      ),
+                    ),
+                    Text(
+                      '2D Flame Decision & Communication Adventure',
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFF38BDF8),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (isDone)
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF10B981).withValues(alpha: 0.25),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: const Color(0xFF10B981)),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.check_circle_rounded,
+                          color: Color(0xFF10B981), size: 14),
+                      SizedBox(width: 4),
+                      Text('VERIFIED',
+                          style: TextStyle(
+                              color: Color(0xFF10B981),
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                )
+              else
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.6)),
+                  ),
+                  child: Text(
+                    '+50 PTS',
+                    style: GoogleFonts.outfit(
+                      color: const Color(0xFFFFD700),
+                      fontSize: 10,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1E293B).withValues(alpha: 0.85),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.white12),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Wake up to a packed workday schedule. Respond naturally to morning alerts, handle transit delays, order lunch, solve workplace mistakes, and prioritize executive meetings!',
+                  style: GoogleFonts.inter(
+                    color: Colors.white70,
+                    fontSize: 11,
+                    height: 1.35,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    const Icon(Icons.access_time_filled_rounded,
+                        color: Color(0xFFFFD700), size: 14),
+                    const SizedBox(width: 4),
+                    Text(
+                      '24 Target Vocabulary Words · Everyday Decisions',
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFFFFD700),
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          SizedBox(
+            width: double.infinity,
+            height: 44,
+            child: ElevatedButton(
+              onPressed: () async {
+                HapticFeedback.lightImpact();
+                final completed = await Navigator.push<bool>(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => BusyDayGamePage(
+                      levelData: kMission07BusyDayData,
+                    ),
+                  ),
+                );
+                if (completed == true && mounted) {
+                  setState(() {
+                    _busyDayCompleted = true;
+                  });
+                  _saveSubtask('busy_day', true);
+                  HapticFeedback.heavyImpact();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                          '🎉 Mission 07 The Busy Day Complete! Step 4 Verified ✓ +50 Points!'),
+                      backgroundColor: Color(0xFF10B981),
+                    ),
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor:
+                    isDone ? const Color(0xFF1E293B) : const Color(0xFF0284C7),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(
+                    color:
+                        isDone ? const Color(0xFF10B981) : Colors.transparent,
+                  ),
+                ),
+                elevation: isDone ? 0 : 4,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    isDone ? Icons.replay_rounded : Icons.today_rounded,
+                    color: isDone ? const Color(0xFF10B981) : Colors.white,
+                    size: 18,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    isDone ? 'REPLAY MISSION 7 🔄' : 'PLAY MISSION 7 🎮',
+                    style: GoogleFonts.outfit(
+                      color: isDone ? const Color(0xFF10B981) : Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // --- SUBTASK 4: ⚡ MISSION 08 FAST FIX 2D FLAME GAME CARD (Day 8) ---
+  Widget _buildFastFixCard() {
+    final isDone = _fastFixCompleted;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: isDone
+              ? const [Color(0xFF0F172A), Color(0xFF064E3B)]
+              : const [Color(0xFF0F172A), Color(0xFF082F49)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: isDone
+              ? const Color(0xFF10B981)
+              : const Color(0xFF0EA5E9).withValues(alpha: 0.7),
+          width: isDone ? 1.6 : 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: (isDone ? const Color(0xFF10B981) : const Color(0xFF0EA5E9))
+                .withValues(alpha: 0.15),
+            blurRadius: 16,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: isDone
+                      ? const Color(0xFF10B981)
+                      : const Color(0xFF0EA5E9),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  'STEP 4',
+                  style: TextStyle(
+                    color: isDone ? Colors.white : Colors.black,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Text('⚡', style: TextStyle(fontSize: 18)),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Mission 08 – Fast Fix',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 14,
+                      ),
+                    ),
+                    Text(
+                      '2D Flame Grammar & Error Repair Operations',
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFF38BDF8),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (isDone)
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF10B981).withValues(alpha: 0.25),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: const Color(0xFF10B981)),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.check_circle_rounded,
+                          color: Color(0xFF10B981), size: 14),
+                      SizedBox(width: 4),
+                      Text('VERIFIED',
+                          style: TextStyle(
+                              color: Color(0xFF10B981),
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                )
+              else
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.6)),
+                  ),
+                  child: Text(
+                    '+50 PTS',
+                    style: GoogleFonts.outfit(
+                      color: const Color(0xFFFFD700),
+                      fontSize: 10,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1E293B).withValues(alpha: 0.85),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.white12),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Enter the Operations Center to diagnose and fix corrupt system communications. Repair grammar, detect missing words, choose precise vocabulary, and execute system overrides!',
+                  style: GoogleFonts.inter(
+                    color: Colors.white70,
+                    fontSize: 11,
+                    height: 1.35,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    const Icon(Icons.build_circle_rounded,
+                        color: Color(0xFFFFD700), size: 14),
+                    const SizedBox(width: 4),
+                    Text(
+                      '20 Target Vocabulary Words · Rapid Error Repair',
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFFFFD700),
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          SizedBox(
+            width: double.infinity,
+            height: 44,
+            child: ElevatedButton(
+              onPressed: () async {
+                HapticFeedback.lightImpact();
+                final completed = await Navigator.push<bool>(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => FastFixGamePage(
+                      levelData: kMission08FastFixData,
+                    ),
+                  ),
+                );
+                if (completed == true && mounted) {
+                  setState(() {
+                    _fastFixCompleted = true;
+                  });
+                  _saveSubtask('fast_fix', true);
+                  HapticFeedback.heavyImpact();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                          '🎉 Mission 08 Fast Fix Complete! Step 4 Verified ✓ +50 Points!'),
+                      backgroundColor: Color(0xFF10B981),
+                    ),
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor:
+                    isDone ? const Color(0xFF1E293B) : const Color(0xFF0284C7),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(
+                    color:
+                        isDone ? const Color(0xFF10B981) : Colors.transparent,
+                  ),
+                ),
+                elevation: isDone ? 0 : 4,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    isDone ? Icons.replay_rounded : Icons.build_circle_rounded,
+                    color: isDone ? const Color(0xFF10B981) : Colors.white,
+                    size: 18,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    isDone ? 'REPLAY MISSION 8 🔄' : 'PLAY MISSION 8 🎮',
+                    style: GoogleFonts.outfit(
+                      color: isDone ? const Color(0xFF10B981) : Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // --- SUBTASK 4: 🛒 MISSION 09 MARKET MASTER 2D FLAME GAME CARD (Day 9) ---
+  Widget _buildMarketMasterCard() {
+    final isDone = _marketMasterCompleted;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: isDone
+              ? const [Color(0xFF0F172A), Color(0xFF064E3B)]
+              : const [Color(0xFF0F172A), Color(0xFF0C4A6E)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: isDone
+              ? const Color(0xFF10B981)
+              : const Color(0xFF0EA5E9).withValues(alpha: 0.7),
+          width: isDone ? 1.6 : 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: (isDone ? const Color(0xFF10B981) : const Color(0xFF0EA5E9))
+                .withValues(alpha: 0.15),
+            blurRadius: 16,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: isDone
+                      ? const Color(0xFF10B981)
+                      : const Color(0xFF0EA5E9),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  'STEP 4',
+                  style: TextStyle(
+                    color: isDone ? Colors.white : Colors.black,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Text('🛒', style: TextStyle(fontSize: 18)),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Mission 09 – Market Master',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 14,
+                      ),
+                    ),
+                    Text(
+                      '2D Flame Supermarket Shopping & Communication',
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFF38BDF8),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (isDone)
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0xFF10B981)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.check_circle_rounded,
+                          color: Color(0xFF10B981), size: 14),
+                      const SizedBox(width: 4),
+                      Text(
+                        'DONE',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFF10B981),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 10,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.white10),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Enter a modern supermarket with your family guest dinner list. Explore aisles, inspect shelf products and prices, ask clerks for help, listen to directions, calculate the bill, and complete checkout!',
+                  style: GoogleFonts.inter(
+                    color: Colors.white70,
+                    fontSize: 11,
+                    height: 1.35,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    const Icon(Icons.shopping_bag_rounded,
+                        color: Color(0xFFFFD700), size: 14),
+                    const SizedBox(width: 4),
+                    Text(
+                      '22 Target Vocabulary Words · Real-life Supermarket English',
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFFFFD700),
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          SizedBox(
+            width: double.infinity,
+            height: 44,
+            child: ElevatedButton(
+              onPressed: () async {
+                HapticFeedback.lightImpact();
+                final completed = await Navigator.push<bool>(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => MarketMasterGamePage(
+                      levelData: kMission09MarketMasterData,
+                    ),
+                  ),
+                );
+                if (completed == true && mounted) {
+                  setState(() {
+                    _marketMasterCompleted = true;
+                  });
+                  _saveSubtask('market_master', true);
+                  HapticFeedback.heavyImpact();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                          '🎉 Mission 09 Market Master Complete! Step 4 Verified ✓ +50 Points!'),
+                      backgroundColor: Color(0xFF10B981),
+                    ),
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor:
+                    isDone ? const Color(0xFF1E293B) : const Color(0xFF0284C7),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(
+                    color:
+                        isDone ? const Color(0xFF10B981) : Colors.transparent,
+                  ),
+                ),
+                elevation: isDone ? 0 : 4,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    isDone ? Icons.replay_rounded : Icons.shopping_cart_rounded,
+                    color: isDone ? const Color(0xFF10B981) : Colors.white,
+                    size: 18,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    isDone ? 'REPLAY MISSION 9 🔄' : 'PLAY MISSION 9 🎮',
+                    style: GoogleFonts.outfit(
+                      color: isDone ? const Color(0xFF10B981) : Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _miniTag(String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: Colors.white12),
+      ),
+      child: Text(
+        label,
+        style: GoogleFonts.inter(
+          color: Colors.white60,
+          fontSize: 10,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+
   // --- SUBTASK 4/5: 📖 CORE NOTES & AUTHENTIC MULTI-PAGE STORY READING CARD ---
   Widget _buildReadingNotesCard() {
-    final storyPages = PocketMissionCurriculumRegistry.getStoryPages(widget.day);
+    final storyPages =
+        PocketMissionCurriculumRegistry.getStoryPages(widget.day);
     final hasPages = storyPages.isNotEmpty;
     final totalPages = hasPages ? storyPages.length : 1;
     final safePageIndex = _activeStoryPageIndex.clamp(0, totalPages - 1);
@@ -6940,7 +8976,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         color: const Color(0xFF0F172A),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: _readingNotesCompleted ? const Color(0xFF10B981) : Colors.white12,
+          color:
+              _readingNotesCompleted ? const Color(0xFF10B981) : Colors.white12,
           width: _readingNotesCompleted ? 1.5 : 1.0,
         ),
       ),
@@ -6952,10 +8989,18 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                 decoration: BoxDecoration(
-                  color: _readingNotesCompleted ? const Color(0xFF10B981) : Colors.white12,
+                  color: _readingNotesCompleted
+                      ? const Color(0xFF10B981)
+                      : Colors.white12,
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: Text(widget.day == 1 ? 'STEP 5' : 'STEP 4', style: TextStyle(color: _readingNotesCompleted ? Colors.black : Colors.white70, fontSize: 10, fontWeight: FontWeight.w900)),
+                child: Text(widget.day == 1 ? 'STEP 5' : 'STEP 4',
+                    style: TextStyle(
+                        color: _readingNotesCompleted
+                            ? Colors.black
+                            : Colors.white70,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w900)),
               ),
               const SizedBox(width: 8),
               const Text('📖', style: TextStyle(fontSize: 16)),
@@ -6963,12 +9008,16 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               Expanded(
                 child: Text(
                   'Grammar Notes & Authentic Story Reading',
-                  style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                  style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14),
                 ),
               ),
               if (_readingNotesCompleted)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
                     color: const Color(0xFF10B981).withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(6),
@@ -6977,9 +9026,14 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 14),
+                      Icon(Icons.check_circle_rounded,
+                          color: Color(0xFF10B981), size: 14),
                       SizedBox(width: 4),
-                      Text('VERIFIED', style: TextStyle(color: Color(0xFF10B981), fontSize: 10, fontWeight: FontWeight.bold)),
+                      Text('VERIFIED',
+                          style: TextStyle(
+                              color: Color(0xFF10B981),
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold)),
                     ],
                   ),
                 ),
@@ -6992,12 +9046,19 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
             children: [
               Text(
                 'EXPLANATION LANGUAGE:',
-                style: GoogleFonts.outfit(color: Colors.white60, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+                style: GoogleFonts.outfit(
+                    color: Colors.white60,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5),
               ),
               const Spacer(),
               Text(
                 _selectedLanguage,
-                style: GoogleFonts.outfit(color: const Color(0xFFFFD700), fontSize: 11, fontWeight: FontWeight.bold),
+                style: GoogleFonts.outfit(
+                    color: const Color(0xFFFFD700),
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold),
               ),
             ],
           ),
@@ -7013,12 +9074,17 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                     onTap: () => _onLanguageSelected(lang),
                     borderRadius: BorderRadius.circular(8),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 5),
                       decoration: BoxDecoration(
-                        color: isSelected ? const Color(0xFFFFFC00) : const Color(0xFF1E293B),
+                        color: isSelected
+                            ? const Color(0xFFFFFC00)
+                            : const Color(0xFF1E293B),
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                          color: isSelected ? const Color(0xFFFFFC00) : Colors.white24,
+                          color: isSelected
+                              ? const Color(0xFFFFFC00)
+                              : Colors.white24,
                           width: 1,
                         ),
                       ),
@@ -7027,7 +9093,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                         style: TextStyle(
                           color: isSelected ? Colors.black : Colors.white70,
                           fontSize: 11,
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                          fontWeight:
+                              isSelected ? FontWeight.bold : FontWeight.normal,
                         ),
                       ),
                     ),
@@ -7051,18 +9118,23 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.school_rounded, color: Colors.amberAccent, size: 16),
+                    const Icon(Icons.school_rounded,
+                        color: Colors.amberAccent, size: 16),
                     const SizedBox(width: 6),
                     Text(
                       _grammarRuleTitle,
-                      style: GoogleFonts.outfit(color: Colors.amberAccent, fontWeight: FontWeight.bold, fontSize: 13),
+                      style: GoogleFonts.outfit(
+                          color: Colors.amberAccent,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13),
                     ),
                   ],
                 ),
                 const SizedBox(height: 4),
                 Text(
                   _getGrammarRuleExplanation(_selectedLanguage),
-                  style: GoogleFonts.inter(color: Colors.white70, fontSize: 12, height: 1.4),
+                  style: GoogleFonts.inter(
+                      color: Colors.white70, fontSize: 12, height: 1.4),
                 ),
               ],
             ),
@@ -7084,10 +9156,12 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               children: [
                 // Story Header & TTS Speaker
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                   decoration: const BoxDecoration(
                     color: Color(0xFF131D33),
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(13)),
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(13)),
                   ),
                   child: Row(
                     children: [
@@ -7107,18 +9181,25 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                             ),
                             Text(
                               _storySubtitle,
-                              style: GoogleFonts.inter(color: Colors.white54, fontSize: 10.5),
+                              style: GoogleFonts.inter(
+                                  color: Colors.white54, fontSize: 10.5),
                             ),
                           ],
                         ),
                       ),
                       IconButton(
                         icon: Icon(
-                          _isStorySpeaking ? Icons.stop_circle_rounded : Icons.volume_up_rounded,
-                          color: _isStorySpeaking ? Colors.redAccent : const Color(0xFFFFFC00),
+                          _isStorySpeaking
+                              ? Icons.stop_circle_rounded
+                              : Icons.volume_up_rounded,
+                          color: _isStorySpeaking
+                              ? Colors.redAccent
+                              : const Color(0xFFFFFC00),
                           size: 22,
                         ),
-                        tooltip: _isStorySpeaking ? 'Stop Reading' : 'Read Active Page (TTS)',
+                        tooltip: _isStorySpeaking
+                            ? 'Stop Reading'
+                            : 'Read Active Page (TTS)',
                         onPressed: () => _speakStory(activePageText),
                       ),
                     ],
@@ -7128,7 +9209,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                 // Multi-Page Tab Selector (Page 1, Page 2, Page 3...)
                 if (totalPages > 1)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                     decoration: const BoxDecoration(
                       color: Color(0xFF0F1A30),
                       border: Border(bottom: BorderSide(color: Colors.white10)),
@@ -7138,7 +9220,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                         final isSel = idx == safePageIndex;
                         return Expanded(
                           child: Padding(
-                            padding: EdgeInsets.only(right: idx < totalPages - 1 ? 6 : 0),
+                            padding: EdgeInsets.only(
+                                right: idx < totalPages - 1 ? 6 : 0),
                             child: InkWell(
                               onTap: () {
                                 _tts.stop();
@@ -7149,20 +9232,26 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                               },
                               borderRadius: BorderRadius.circular(8),
                               child: Container(
-                                padding: const EdgeInsets.symmetric(vertical: 6),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 6),
                                 alignment: Alignment.center,
                                 decoration: BoxDecoration(
-                                  color: isSel ? const Color(0xFF00E5FF) : const Color(0xFF1E293B),
+                                  color: isSel
+                                      ? const Color(0xFF00E5FF)
+                                      : const Color(0xFF1E293B),
                                   borderRadius: BorderRadius.circular(8),
                                   border: Border.all(
-                                    color: isSel ? const Color(0xFF00E5FF) : Colors.white24,
+                                    color: isSel
+                                        ? const Color(0xFF00E5FF)
+                                        : Colors.white24,
                                     width: 1,
                                   ),
                                 ),
                                 child: Text(
                                   'Page ${idx + 1}',
                                   style: TextStyle(
-                                    color: isSel ? Colors.black : Colors.white70,
+                                    color:
+                                        isSel ? Colors.black : Colors.white70,
                                     fontWeight: FontWeight.bold,
                                     fontSize: 11.5,
                                   ),
@@ -7185,9 +9274,11 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                              color: const Color(0xFFFFD700)
+                                  .withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
@@ -7202,7 +9293,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                           ),
                           Text(
                             '~3 min read',
-                            style: GoogleFonts.inter(color: Colors.white38, fontSize: 10),
+                            style: GoogleFonts.inter(
+                                color: Colors.white38, fontSize: 10),
                           ),
                         ],
                       ),
@@ -7212,7 +9304,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                         decoration: BoxDecoration(
                           color: const Color(0xFF070E1E),
                           borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+                          border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.08)),
                         ),
                         child: Text(
                           activePageText,
@@ -7236,41 +9329,53 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                                   ? () {
                                       _tts.stop();
                                       setState(() {
-                                        _activeStoryPageIndex = safePageIndex - 1;
+                                        _activeStoryPageIndex =
+                                            safePageIndex - 1;
                                         _isStorySpeaking = false;
                                       });
                                     }
                                   : null,
-                              icon: const Icon(Icons.arrow_back_rounded, size: 14),
+                              icon: const Icon(Icons.arrow_back_rounded,
+                                  size: 14),
                               label: const Text('PREV PAGE'),
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: Colors.white70,
                                 side: const BorderSide(color: Colors.white24),
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                textStyle: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.bold),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 6),
+                                textStyle: GoogleFonts.outfit(
+                                    fontSize: 11, fontWeight: FontWeight.bold),
                               ),
                             ),
                             Text(
                               '${safePageIndex + 1} / $totalPages',
-                              style: GoogleFonts.outfit(color: Colors.white54, fontSize: 11, fontWeight: FontWeight.bold),
+                              style: GoogleFonts.outfit(
+                                  color: Colors.white54,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold),
                             ),
                             OutlinedButton.icon(
                               onPressed: safePageIndex < totalPages - 1
                                   ? () {
                                       _tts.stop();
                                       setState(() {
-                                        _activeStoryPageIndex = safePageIndex + 1;
+                                        _activeStoryPageIndex =
+                                            safePageIndex + 1;
                                         _isStorySpeaking = false;
                                       });
                                     }
                                   : null,
-                              icon: const Icon(Icons.arrow_forward_rounded, size: 14),
+                              icon: const Icon(Icons.arrow_forward_rounded,
+                                  size: 14),
                               label: const Text('NEXT PAGE'),
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: const Color(0xFF00E5FF),
-                                side: const BorderSide(color: Color(0xFF00E5FF)),
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                textStyle: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.bold),
+                                side:
+                                    const BorderSide(color: Color(0xFF00E5FF)),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 6),
+                                textStyle: GoogleFonts.outfit(
+                                    fontSize: 11, fontWeight: FontWeight.bold),
                               ),
                             ),
                           ],
@@ -7282,9 +9387,12 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                       Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF064E3B).withValues(alpha: 0.25),
+                          color:
+                              const Color(0xFF064E3B).withValues(alpha: 0.25),
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.3)),
+                          border: Border.all(
+                              color: const Color(0xFF10B981)
+                                  .withValues(alpha: 0.3)),
                         ),
                         child: Text(
                           _getStorySummary(_selectedLanguage),
@@ -7314,18 +9422,23 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                 HapticFeedback.heavyImpact();
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('🎉 Authentic Story ($totalPages Pages) verified as read! (+25 PTS)'),
+                    content: Text(
+                        '🎉 Authentic Story ($totalPages Pages) verified as read! (+25 PTS)'),
                     backgroundColor: const Color(0xFF10B981),
                   ),
                 );
               },
               icon: Icon(
-                _readingNotesCompleted ? Icons.check_circle_rounded : Icons.menu_book_rounded,
+                _readingNotesCompleted
+                    ? Icons.check_circle_rounded
+                    : Icons.menu_book_rounded,
                 color: Colors.black,
                 size: 16,
               ),
               label: Text(
-                _readingNotesCompleted ? 'ALL $totalPages PAGES READ & VERIFIED ✓' : 'I HAVE READ ALL $totalPages PAGES OF TODAY\'S STORY ✓',
+                _readingNotesCompleted
+                    ? 'ALL $totalPages PAGES READ & VERIFIED ✓'
+                    : 'I HAVE READ ALL $totalPages PAGES OF TODAY\'S STORY ✓',
                 style: GoogleFonts.outfit(
                   color: Colors.black,
                   fontWeight: FontWeight.w900,
@@ -7333,9 +9446,12 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                 ),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: _readingNotesCompleted ? const Color(0xFF10B981) : const Color(0xFFFFFC00),
+                backgroundColor: _readingNotesCompleted
+                    ? const Color(0xFF10B981)
+                    : const Color(0xFFFFFC00),
                 padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
               ),
             ),
           ),
@@ -7346,7 +9462,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               Expanded(
                 child: OutlinedButton.icon(
                   onPressed: _showStoryDetailModal,
-                  icon: const Icon(Icons.fullscreen_rounded, color: Color(0xFF00E5FF), size: 15),
+                  icon: const Icon(Icons.fullscreen_rounded,
+                      color: Color(0xFF00E5FF), size: 15),
                   label: Text(
                     'FULLSCREEN READER',
                     style: GoogleFonts.outfit(
@@ -7358,7 +9475,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                   style: OutlinedButton.styleFrom(
                     side: const BorderSide(color: Color(0xFF00E5FF)),
                     padding: const EdgeInsets.symmetric(vertical: 10),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)),
                   ),
                 ),
               ),
@@ -7369,10 +9487,12 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                     HapticFeedback.lightImpact();
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => const PocketLibraryPage()),
+                      MaterialPageRoute(
+                          builder: (_) => const PocketLibraryPage()),
                     );
                   },
-                  icon: const Icon(Icons.auto_stories_rounded, color: Color(0xFFFFD700), size: 15),
+                  icon: const Icon(Icons.auto_stories_rounded,
+                      color: Color(0xFFFFD700), size: 15),
                   label: Text(
                     'READ BOOKS 📚',
                     style: GoogleFonts.outfit(
@@ -7384,7 +9504,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                   style: OutlinedButton.styleFrom(
                     side: const BorderSide(color: Color(0xFFFFD700)),
                     padding: const EdgeInsets.symmetric(vertical: 10),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)),
                   ),
                 ),
               ),
@@ -7405,7 +9526,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         color: const Color(0xFF0F172A),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: _codeEnglishCompleted ? const Color(0xFF10B981) : const Color(0xFF00FFCC).withValues(alpha: 0.35),
+          color: _codeEnglishCompleted
+              ? const Color(0xFF10B981)
+              : const Color(0xFF00FFCC).withValues(alpha: 0.35),
           width: _codeEnglishCompleted ? 1.5 : 1.0,
         ),
       ),
@@ -7417,7 +9540,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                 decoration: BoxDecoration(
-                  color: _codeEnglishCompleted ? const Color(0xFF10B981) : const Color(0xFF00FFCC),
+                  color: _codeEnglishCompleted
+                      ? const Color(0xFF10B981)
+                      : const Color(0xFF00FFCC),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
@@ -7438,18 +9563,23 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                   children: [
                     Text(
                       'Pocket Code English Decoder',
-                      style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                      style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14),
                     ),
                     Text(
                       'Mnemonic Syntax Algorithms (കോഡ് ഭാഷ വെച്ച് ഇംഗ്ലീഷ് പഠിക്കാം)',
-                      style: GoogleFonts.inter(color: Colors.white54, fontSize: 10.5),
+                      style: GoogleFonts.inter(
+                          color: Colors.white54, fontSize: 10.5),
                     ),
                   ],
                 ),
               ),
               if (_codeEnglishCompleted)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
                     color: const Color(0xFF10B981).withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(6),
@@ -7458,9 +9588,14 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 14),
+                      Icon(Icons.check_circle_rounded,
+                          color: Color(0xFF10B981), size: 14),
                       SizedBox(width: 4),
-                      Text('VERIFIED', style: TextStyle(color: Color(0xFF10B981), fontSize: 10, fontWeight: FontWeight.bold)),
+                      Text('VERIFIED',
+                          style: TextStyle(
+                              color: Color(0xFF10B981),
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold)),
                     ],
                   ),
                 ),
@@ -7482,7 +9617,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
                         color: formula.color.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(6),
@@ -7500,14 +9636,18 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                     const SizedBox(width: 8),
                     Text(
                       formula.category,
-                      style: GoogleFonts.inter(color: Colors.white60, fontSize: 11),
+                      style: GoogleFonts.inter(
+                          color: Colors.white60, fontSize: 11),
                     ),
                   ],
                 ),
                 const SizedBox(height: 8),
                 Text(
                   formula.title,
-                  style: GoogleFonts.outfit(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w800),
+                  style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800),
                 ),
                 const SizedBox(height: 8),
 
@@ -7525,7 +9665,10 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                     children: [
                       Text(
                         'SYNTAX RULE:',
-                        style: GoogleFonts.firaCode(color: const Color(0xFFFFD700), fontSize: 9.5, fontWeight: FontWeight.bold),
+                        style: GoogleFonts.firaCode(
+                            color: const Color(0xFFFFD700),
+                            fontSize: 9.5,
+                            fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 4),
                       Text(
@@ -7545,7 +9688,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                 // Malayalam Explanation
                 Text(
                   formula.malayalamExplanation,
-                  style: GoogleFonts.inter(color: Colors.white70, fontSize: 12, height: 1.45),
+                  style: GoogleFonts.inter(
+                      color: Colors.white70, fontSize: 12, height: 1.45),
                 ),
 
                 // Breakdown tokens
@@ -7553,35 +9697,43 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                   const SizedBox(height: 10),
                   Text(
                     'ALGORITHM BREAKDOWN:',
-                    style: GoogleFonts.firaCode(color: Colors.white54, fontSize: 9.5, fontWeight: FontWeight.bold),
+                    style: GoogleFonts.firaCode(
+                        color: Colors.white54,
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 6),
                   ...formula.formulaBreakdown.map((item) => Padding(
-                    padding: const EdgeInsets.only(bottom: 6),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: formula.color.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            item['token'] ?? '',
-                            style: GoogleFonts.firaCode(color: formula.color, fontSize: 10.5, fontWeight: FontWeight.bold),
-                          ),
+                        padding: const EdgeInsets.only(bottom: 6),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: formula.color.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                item['token'] ?? '',
+                                style: GoogleFonts.firaCode(
+                                    color: formula.color,
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                item['desc'] ?? '',
+                                style: GoogleFonts.inter(
+                                    color: Colors.white70, fontSize: 11.5),
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            item['desc'] ?? '',
-                            style: GoogleFonts.inter(color: Colors.white70, fontSize: 11.5),
-                          ),
-                        ),
-                      ],
-                    ),
-                  )),
+                      )),
                 ],
 
                 const SizedBox(height: 8),
@@ -7600,11 +9752,17 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('✓ ', style: TextStyle(color: Color(0xFF10B981), fontWeight: FontWeight.bold)),
+                          const Text('✓ ',
+                              style: TextStyle(
+                                  color: Color(0xFF10B981),
+                                  fontWeight: FontWeight.bold)),
                           Expanded(
                             child: Text(
                               'Valid Code: "${formula.correctExample}"',
-                              style: GoogleFonts.inter(color: const Color(0xFF6EE7B7), fontSize: 11.5, fontWeight: FontWeight.w600),
+                              style: GoogleFonts.inter(
+                                  color: const Color(0xFF6EE7B7),
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w600),
                             ),
                           ),
                         ],
@@ -7613,11 +9771,17 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('✗ ', style: TextStyle(color: Color(0xFFEF4444), fontWeight: FontWeight.bold)),
+                          const Text('✗ ',
+                              style: TextStyle(
+                                  color: Color(0xFFEF4444),
+                                  fontWeight: FontWeight.bold)),
                           Expanded(
                             child: Text(
                               'Syntax Bug: "${formula.buggyExample}"',
-                              style: GoogleFonts.inter(color: const Color(0xFFFCA5A5), fontSize: 11.5, fontStyle: FontStyle.italic),
+                              style: GoogleFonts.inter(
+                                  color: const Color(0xFFFCA5A5),
+                                  fontSize: 11.5,
+                                  fontStyle: FontStyle.italic),
                             ),
                           ),
                         ],
@@ -7639,7 +9803,10 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                     ),
                     child: Text(
                       _codeCompilerOutput!,
-                      style: GoogleFonts.firaCode(color: const Color(0xFF34D399), fontSize: 11, height: 1.4),
+                      style: GoogleFonts.firaCode(
+                          color: const Color(0xFF34D399),
+                          fontSize: 11,
+                          height: 1.4),
                     ),
                   ),
                 ],
@@ -7653,27 +9820,41 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
-              onPressed: _isCodeCompiling ? null : () async {
-                setState(() => _isCodeCompiling = true);
-                await Future.delayed(const Duration(milliseconds: 300));
-                if (!mounted) return;
-                setState(() {
-                  _isCodeCompiling = false;
-                  _codeCompilerOutput = '⚡ [SYNTAX COMPILER] STATUS: PASS (0 ERRORS)\nAlgorithm validated: [${formula.codeName}] compiled successfully!\nRule: ${formula.syntaxRule}\nSample: "${formula.correctExample}"';
-                });
-                HapticFeedback.lightImpact();
-              },
+              onPressed: _isCodeCompiling
+                  ? null
+                  : () async {
+                      setState(() => _isCodeCompiling = true);
+                      await Future.delayed(const Duration(milliseconds: 300));
+                      if (!mounted) return;
+                      setState(() {
+                        _isCodeCompiling = false;
+                        _codeCompilerOutput =
+                            '⚡ [SYNTAX COMPILER] STATUS: PASS (0 ERRORS)\nAlgorithm validated: [${formula.codeName}] compiled successfully!\nRule: ${formula.syntaxRule}\nSample: "${formula.correctExample}"';
+                      });
+                      HapticFeedback.lightImpact();
+                    },
               icon: _isCodeCompiling
-                  ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.cyanAccent))
-                  : const Icon(Icons.play_arrow_rounded, color: Color(0xFF00FFCC), size: 16),
+                  ? const SizedBox(
+                      width: 14,
+                      height: 14,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: Colors.cyanAccent))
+                  : const Icon(Icons.play_arrow_rounded,
+                      color: Color(0xFF00FFCC), size: 16),
               label: Text(
-                _isCodeCompiling ? 'ANALYZING SYNTAX...' : 'TEST FORMULA COMPILER ⚡',
-                style: GoogleFonts.firaCode(color: const Color(0xFF00FFCC), fontSize: 11.5, fontWeight: FontWeight.bold),
+                _isCodeCompiling
+                    ? 'ANALYZING SYNTAX...'
+                    : 'TEST FORMULA COMPILER ⚡',
+                style: GoogleFonts.firaCode(
+                    color: const Color(0xFF00FFCC),
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.bold),
               ),
               style: OutlinedButton.styleFrom(
                 side: const BorderSide(color: Color(0xFF00FFCC)),
                 padding: const EdgeInsets.symmetric(vertical: 10),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
               ),
             ),
           ),
@@ -7691,18 +9872,23 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                     HapticFeedback.heavyImpact();
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text('⚡ Code English Formula Mastered & Verified! (+25 PTS)'),
+                        content: Text(
+                            '⚡ Code English Formula Mastered & Verified! (+25 PTS)'),
                         backgroundColor: Color(0xFF10B981),
                       ),
                     );
                   },
                   icon: Icon(
-                    _codeEnglishCompleted ? Icons.check_circle_rounded : Icons.check_rounded,
+                    _codeEnglishCompleted
+                        ? Icons.check_circle_rounded
+                        : Icons.check_rounded,
                     color: Colors.black,
                     size: 16,
                   ),
                   label: Text(
-                    _codeEnglishCompleted ? 'FORMULA MASTERED ✓' : 'MARK FORMULA DECODED ✓',
+                    _codeEnglishCompleted
+                        ? 'FORMULA MASTERED ✓'
+                        : 'MARK FORMULA DECODED ✓',
                     style: GoogleFonts.outfit(
                       color: Colors.black,
                       fontWeight: FontWeight.w900,
@@ -7710,24 +9896,34 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                     ),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: _codeEnglishCompleted ? const Color(0xFF10B981) : const Color(0xFF00FFCC),
+                    backgroundColor: _codeEnglishCompleted
+                        ? const Color(0xFF10B981)
+                        : const Color(0xFF00FFCC),
                     padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)),
                   ),
                 ),
               ),
               const SizedBox(width: 8),
               OutlinedButton.icon(
-                onPressed: () => PocketCodeEnglishDecoderModal.show(context, currentDay: widget.day),
-                icon: const Icon(Icons.code_rounded, color: Colors.white70, size: 15),
+                onPressed: () => PocketCodeEnglishDecoderModal.show(context,
+                    currentDay: widget.day),
+                icon: const Icon(Icons.code_rounded,
+                    color: Colors.white70, size: 15),
                 label: Text(
                   'ALL CODES',
-                  style: GoogleFonts.outfit(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold),
+                  style: GoogleFonts.outfit(
+                      color: Colors.white70,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold),
                 ),
                 style: OutlinedButton.styleFrom(
                   side: const BorderSide(color: Colors.white24),
-                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
                 ),
               ),
             ],
@@ -7752,7 +9948,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
             decoration: const BoxDecoration(
               color: Color(0xFF0F172A),
               borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-              border: Border(top: BorderSide(color: Color(0xFFFFD700), width: 1.5)),
+              border:
+                  Border(top: BorderSide(color: Color(0xFFFFD700), width: 1.5)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -7787,20 +9984,25 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                           ),
                           Text(
                             _storySubtitle,
-                            style: GoogleFonts.inter(color: Colors.white60, fontSize: 11),
+                            style: GoogleFonts.inter(
+                                color: Colors.white60, fontSize: 11),
                           ),
                           const SizedBox(height: 2),
                           Text(
                             _storyQuotePreview,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.inter(color: const Color(0xFF00E5FF), fontSize: 10, fontStyle: FontStyle.italic),
+                            style: GoogleFonts.inter(
+                                color: const Color(0xFF00E5FF),
+                                fontSize: 10,
+                                fontStyle: FontStyle.italic),
                           ),
                         ],
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.close_rounded, color: Colors.white54),
+                      icon: const Icon(Icons.close_rounded,
+                          color: Colors.white54),
                       onPressed: () {
                         _tts.stop();
                         if (mounted) setState(() => _isStorySpeaking = false);
@@ -7813,7 +10015,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                 // Multi-Page Story Chapters Tab Bar
                 Builder(
                   builder: (_) {
-                    final pages = PocketMissionCurriculumRegistry.getStoryPages(widget.day);
+                    final pages = PocketMissionCurriculumRegistry.getStoryPages(
+                        widget.day);
                     if (pages.length <= 1) return const SizedBox.shrink();
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 10),
@@ -7822,7 +10025,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                           final isCurrent = idx == _activeStoryPageIndex;
                           return Expanded(
                             child: Padding(
-                              padding: EdgeInsets.only(right: idx < pages.length - 1 ? 6 : 0),
+                              padding: EdgeInsets.only(
+                                  right: idx < pages.length - 1 ? 6 : 0),
                               child: InkWell(
                                 onTap: () {
                                   _tts.stop();
@@ -7837,17 +10041,25 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                                 },
                                 borderRadius: BorderRadius.circular(8),
                                 child: Container(
-                                  padding: const EdgeInsets.symmetric(vertical: 6),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 6),
                                   alignment: Alignment.center,
                                   decoration: BoxDecoration(
-                                    color: isCurrent ? const Color(0xFF00E5FF) : const Color(0xFF1E293B),
+                                    color: isCurrent
+                                        ? const Color(0xFF00E5FF)
+                                        : const Color(0xFF1E293B),
                                     borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(color: isCurrent ? const Color(0xFF00E5FF) : Colors.white24),
+                                    border: Border.all(
+                                        color: isCurrent
+                                            ? const Color(0xFF00E5FF)
+                                            : Colors.white24),
                                   ),
                                   child: Text(
                                     'Page ${idx + 1}',
                                     style: TextStyle(
-                                      color: isCurrent ? Colors.black : Colors.white70,
+                                      color: isCurrent
+                                          ? Colors.black
+                                          : Colors.white70,
                                       fontWeight: FontWeight.bold,
                                       fontSize: 11.5,
                                     ),
@@ -7864,11 +10076,13 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
                 // Audio Narrator Controller Bar + Speed Control
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
                     color: const Color(0xFF1E293B),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFFFFFC00).withValues(alpha: 0.3)),
+                    border: Border.all(
+                        color: const Color(0xFFFFFC00).withValues(alpha: 0.3)),
                   ),
                   child: Row(
                     children: [
@@ -7889,15 +10103,20 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                                 setState(() => _isStorySpeaking = false);
                               }
                             });
-                            final pages = PocketMissionCurriculumRegistry.getStoryPages(widget.day);
+                            final pages =
+                                PocketMissionCurriculumRegistry.getStoryPages(
+                                    widget.day);
                             final currentText = pages.isNotEmpty
-                                ? pages[_activeStoryPageIndex.clamp(0, pages.length - 1)]
+                                ? pages[_activeStoryPageIndex.clamp(
+                                    0, pages.length - 1)]
                                 : _storyText;
                             _tts.speak(currentText);
                           }
                         },
                         icon: Icon(
-                          _isStorySpeaking ? Icons.stop_circle_rounded : Icons.volume_up_rounded,
+                          _isStorySpeaking
+                              ? Icons.stop_circle_rounded
+                              : Icons.volume_up_rounded,
                           color: Colors.black,
                           size: 18,
                         ),
@@ -7911,14 +10130,18 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                         ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFFFFC00),
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 8),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8)),
                         ),
                       ),
                       const SizedBox(width: 8),
                       // Speed toggles: 0.8x, 1.0x, 1.2x
                       ...[0.38, 0.48, 0.58].map((rate) {
-                        final label = rate == 0.38 ? '0.8x' : (rate == 0.48 ? '1.0x' : '1.2x');
+                        final label = rate == 0.38
+                            ? '0.8x'
+                            : (rate == 0.48 ? '1.0x' : '1.2x');
                         final isSel = (_ttsSpeechRate - rate).abs() < 0.05;
                         return Padding(
                           padding: const EdgeInsets.only(right: 4),
@@ -7930,9 +10153,12 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                               setState(() {});
                             },
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 4),
                               decoration: BoxDecoration(
-                                color: isSel ? const Color(0xFFFFFC00) : Colors.white10,
+                                color: isSel
+                                    ? const Color(0xFFFFFC00)
+                                    : Colors.white10,
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
@@ -7949,7 +10175,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                       }),
                       const Spacer(),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
                           color: Colors.white10,
                           borderRadius: BorderRadius.circular(6),
@@ -7981,21 +10208,29 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                           },
                           borderRadius: BorderRadius.circular(8),
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 5),
                             decoration: BoxDecoration(
-                              color: isSelected ? const Color(0xFFFFFC00) : const Color(0xFF1E293B),
+                              color: isSelected
+                                  ? const Color(0xFFFFFC00)
+                                  : const Color(0xFF1E293B),
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(
-                                color: isSelected ? const Color(0xFFFFFC00) : Colors.white24,
+                                color: isSelected
+                                    ? const Color(0xFFFFFC00)
+                                    : Colors.white24,
                                 width: 1,
                               ),
                             ),
                             child: Text(
                               kLanguageLabels[lang] ?? lang,
                               style: TextStyle(
-                                color: isSelected ? Colors.black : Colors.white70,
+                                color:
+                                    isSelected ? Colors.black : Colors.white70,
                                 fontSize: 11,
-                                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                fontWeight: isSelected
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
                               ),
                             ),
                           ),
@@ -8019,9 +10254,12 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                           ),
                           child: Text(
                             () {
-                              final pages = PocketMissionCurriculumRegistry.getStoryPages(widget.day);
+                              final pages =
+                                  PocketMissionCurriculumRegistry.getStoryPages(
+                                      widget.day);
                               if (pages.isNotEmpty) {
-                                return pages[_activeStoryPageIndex.clamp(0, pages.length - 1)];
+                                return pages[_activeStoryPageIndex.clamp(
+                                    0, pages.length - 1)];
                               }
                               return _storyFormatted;
                             }(),
@@ -8038,7 +10276,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                           decoration: BoxDecoration(
                             color: const Color(0xFF1E293B),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.3)),
+                            border: Border.all(
+                                color: const Color(0xFF10B981)
+                                    .withValues(alpha: 0.3)),
                           ),
                           child: Text(
                             _getStorySummary(_selectedLanguage),
@@ -8068,12 +10308,14 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                       Navigator.pop(ctx);
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('🎉 Day ${widget.day} Story Reading completed!'),
+                          content: Text(
+                              '🎉 Day ${widget.day} Story Reading completed!'),
                           backgroundColor: const Color(0xFF10B981),
                         ),
                       );
                     },
-                    icon: const Icon(Icons.check_circle_rounded, color: Colors.black),
+                    icon: const Icon(Icons.check_circle_rounded,
+                        color: Colors.black),
                     label: Text(
                       'I FINISHED READING THIS STORY ✓',
                       style: GoogleFonts.outfit(
@@ -8085,7 +10327,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF10B981),
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
                     ),
                   ),
                 ),
@@ -8099,8 +10342,10 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
   // --- 🗣️ DEDICATED PRONUNCIATION & SOUND CLINIC CARD ---
   Widget _buildPronunciationClinicCard() {
-    final clinic = PocketMissionCurriculumRegistry.getPronunciationClinic(widget.day);
-    if (clinic.minimalPairs.isEmpty && clinic.practicePhrases.isEmpty) return const SizedBox.shrink();
+    final clinic =
+        PocketMissionCurriculumRegistry.getPronunciationClinic(widget.day);
+    if (clinic.minimalPairs.isEmpty && clinic.practicePhrases.isEmpty)
+      return const SizedBox.shrink();
 
     return Container(
       padding: const EdgeInsets.all(14),
@@ -8108,7 +10353,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         color: const Color(0xFF0F172A),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: _pronunciationCompleted ? const Color(0xFF10B981) : const Color(0xFFA855F7).withValues(alpha: 0.35),
+          color: _pronunciationCompleted
+              ? const Color(0xFF10B981)
+              : const Color(0xFFA855F7).withValues(alpha: 0.35),
           width: _pronunciationCompleted ? 1.5 : 1.0,
         ),
       ),
@@ -8120,7 +10367,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                 decoration: BoxDecoration(
-                  color: _pronunciationCompleted ? const Color(0xFF10B981) : const Color(0xFFA855F7),
+                  color: _pronunciationCompleted
+                      ? const Color(0xFF10B981)
+                      : const Color(0xFFA855F7),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: const Text(
@@ -8138,17 +10387,24 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               Expanded(
                 child: Text(
                   'Dedicated Pronunciation & Accent Clinic',
-                  style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                  style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14),
                 ),
               ),
               if (_pronunciationCompleted)
-                const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 18),
+                const Icon(Icons.check_circle_rounded,
+                    color: Color(0xFF10B981), size: 18),
             ],
           ),
           const SizedBox(height: 6),
           Text(
             clinic.focusSound,
-            style: GoogleFonts.inter(color: const Color(0xFFD8B4FE), fontSize: 12, fontWeight: FontWeight.w600),
+            style: GoogleFonts.inter(
+                color: const Color(0xFFD8B4FE),
+                fontSize: 12,
+                fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 4),
           Text(
@@ -8171,7 +10427,10 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                 children: [
                   Text(
                     'MINIMAL PAIRS COMPARISON (Acoustic Contrast):',
-                    style: GoogleFonts.outfit(color: const Color(0xFFFFD700), fontSize: 10, fontWeight: FontWeight.bold),
+                    style: GoogleFonts.outfit(
+                        color: const Color(0xFFFFD700),
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 6),
                   ...clinic.minimalPairs.map((pair) {
@@ -8188,18 +10447,30 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                               onTap: () => _speakWord(wordA),
                               borderRadius: BorderRadius.circular(8),
                               child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 6),
                                 decoration: BoxDecoration(
                                   color: const Color(0xFF0F172A),
                                   borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(color: const Color(0xFF00E5FF).withValues(alpha: 0.3)),
+                                  border: Border.all(
+                                      color: const Color(0xFF00E5FF)
+                                          .withValues(alpha: 0.3)),
                                 ),
                                 child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text(wordA, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
-                                    Text(ipaA, style: const TextStyle(color: Color(0xFF00E5FF), fontSize: 10.5)),
-                                    const Icon(Icons.volume_up_rounded, color: Color(0xFFFFFC00), size: 13),
+                                    Text(wordA,
+                                        style: const TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 12)),
+                                    Text(ipaA,
+                                        style: const TextStyle(
+                                            color: Color(0xFF00E5FF),
+                                            fontSize: 10.5)),
+                                    const Icon(Icons.volume_up_rounded,
+                                        color: Color(0xFFFFFC00), size: 13),
                                   ],
                                 ),
                               ),
@@ -8207,25 +10478,41 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                           ),
                           const Padding(
                             padding: EdgeInsets.symmetric(horizontal: 6),
-                            child: Text('vs', style: TextStyle(color: Colors.white38, fontSize: 11, fontWeight: FontWeight.bold)),
+                            child: Text('vs',
+                                style: TextStyle(
+                                    color: Colors.white38,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold)),
                           ),
                           Expanded(
                             child: InkWell(
                               onTap: () => _speakWord(wordB),
                               borderRadius: BorderRadius.circular(8),
                               child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 6),
                                 decoration: BoxDecoration(
                                   color: const Color(0xFF0F172A),
                                   borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(color: const Color(0xFFA855F7).withValues(alpha: 0.3)),
+                                  border: Border.all(
+                                      color: const Color(0xFFA855F7)
+                                          .withValues(alpha: 0.3)),
                                 ),
                                 child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text(wordB, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
-                                    Text(ipaB, style: const TextStyle(color: Color(0xFFD8B4FE), fontSize: 10.5)),
-                                    const Icon(Icons.volume_up_rounded, color: Color(0xFFFFFC00), size: 13),
+                                    Text(wordB,
+                                        style: const TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 12)),
+                                    Text(ipaB,
+                                        style: const TextStyle(
+                                            color: Color(0xFFD8B4FE),
+                                            fontSize: 10.5)),
+                                    const Icon(Icons.volume_up_rounded,
+                                        color: Color(0xFFFFFC00), size: 13),
                                   ],
                                 ),
                               ),
@@ -8257,11 +10544,15 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                       Expanded(
                         child: Text(
                           phrase,
-                          style: GoogleFonts.inter(color: Colors.white, fontSize: 11.5, fontStyle: FontStyle.italic),
+                          style: GoogleFonts.inter(
+                              color: Colors.white,
+                              fontSize: 11.5,
+                              fontStyle: FontStyle.italic),
                         ),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.volume_up_rounded, color: Color(0xFFFFFC00), size: 16),
+                        icon: const Icon(Icons.volume_up_rounded,
+                            color: Color(0xFFFFFC00), size: 16),
                         onPressed: () => _speakWord(phrase),
                       ),
                     ],
@@ -8280,18 +10571,23 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                 HapticFeedback.lightImpact();
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('🗣️ Pronunciation Clinic Completed! Acoustic contrast drilled ✓'),
+                    content: Text(
+                        '🗣️ Pronunciation Clinic Completed! Acoustic contrast drilled ✓'),
                     backgroundColor: Color(0xFF10B981),
                   ),
                 );
               },
               icon: Icon(
-                _pronunciationCompleted ? Icons.check_circle_rounded : Icons.record_voice_over_rounded,
+                _pronunciationCompleted
+                    ? Icons.check_circle_rounded
+                    : Icons.record_voice_over_rounded,
                 color: Colors.white,
                 size: 16,
               ),
               label: Text(
-                _pronunciationCompleted ? 'PRONUNCIATION CLINIC DONE ✓' : 'I CONTRASTED THESE SOUNDS ALOUD ✓',
+                _pronunciationCompleted
+                    ? 'PRONUNCIATION CLINIC DONE ✓'
+                    : 'I CONTRASTED THESE SOUNDS ALOUD ✓',
                 style: GoogleFonts.outfit(
                   color: Colors.white,
                   fontWeight: FontWeight.w900,
@@ -8299,9 +10595,12 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                 ),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: _pronunciationCompleted ? const Color(0xFF10B981) : const Color(0xFFA855F7),
+                backgroundColor: _pronunciationCompleted
+                    ? const Color(0xFF10B981)
+                    : const Color(0xFFA855F7),
                 padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
               ),
             ),
           ),
@@ -8312,7 +10611,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
   // --- 🧠 ENGLISH THINKING WORKOUT CARD ---
   Widget _buildEnglishThinkingCard() {
-    final workout = PocketMissionCurriculumRegistry.getEnglishThinkingWorkout(widget.day);
+    final workout =
+        PocketMissionCurriculumRegistry.getEnglishThinkingWorkout(widget.day);
     if (workout.instantResponses.isEmpty) return const SizedBox.shrink();
 
     return Container(
@@ -8321,7 +10621,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         color: const Color(0xFF0F172A),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: _englishThinkingCompleted ? const Color(0xFF10B981) : const Color(0xFF38BDF8).withValues(alpha: 0.35),
+          color: _englishThinkingCompleted
+              ? const Color(0xFF10B981)
+              : const Color(0xFF38BDF8).withValues(alpha: 0.35),
           width: _englishThinkingCompleted ? 1.5 : 1.0,
         ),
       ),
@@ -8333,7 +10635,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                 decoration: BoxDecoration(
-                  color: _englishThinkingCompleted ? const Color(0xFF10B981) : const Color(0xFF38BDF8),
+                  color: _englishThinkingCompleted
+                      ? const Color(0xFF10B981)
+                      : const Color(0xFF38BDF8),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: const Text(
@@ -8351,27 +10655,36 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               Expanded(
                 child: Text(
                   'English Thinking Workout (No Mother-Tongue Lag)',
-                  style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                  style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14),
                 ),
               ),
               if (_englishThinkingCompleted)
-                const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 18),
+                const Icon(Icons.check_circle_rounded,
+                    color: Color(0xFF10B981), size: 18),
             ],
           ),
           const SizedBox(height: 6),
           Text(
             workout.situation,
-            style: GoogleFonts.inter(color: const Color(0xFFBAE6FD), fontSize: 12, fontWeight: FontWeight.w600),
+            style: GoogleFonts.inter(
+                color: const Color(0xFFBAE6FD),
+                fontSize: 12,
+                fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 4),
           Text(
             '⚠️ Avoid: ${workout.mentalTrapMalayalam}',
-            style: GoogleFonts.inter(color: Colors.deepOrangeAccent, fontSize: 11),
+            style:
+                GoogleFonts.inter(color: Colors.deepOrangeAccent, fontSize: 11),
           ),
           const SizedBox(height: 4),
           Text(
             '💡 Thought: ${workout.directEnglishThought}',
-            style: GoogleFonts.inter(color: const Color(0xFF34D399), fontSize: 11),
+            style:
+                GoogleFonts.inter(color: const Color(0xFF34D399), fontSize: 11),
           ),
           const SizedBox(height: 10),
 
@@ -8399,7 +10712,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.volume_up_rounded, color: Color(0xFFFFFC00), size: 18),
+                      icon: const Icon(Icons.volume_up_rounded,
+                          color: Color(0xFFFFFC00), size: 18),
                       onPressed: () => _speakWord(res),
                       tooltip: 'Listen to native reflex',
                     ),
@@ -8419,18 +10733,23 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                 HapticFeedback.lightImpact();
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('🧠 English Thinking Reflex Mastered! Zero translation lag verified ✓'),
+                    content: Text(
+                        '🧠 English Thinking Reflex Mastered! Zero translation lag verified ✓'),
                     backgroundColor: Color(0xFF10B981),
                   ),
                 );
               },
               icon: Icon(
-                _englishThinkingCompleted ? Icons.check_circle_rounded : Icons.psychology_rounded,
+                _englishThinkingCompleted
+                    ? Icons.check_circle_rounded
+                    : Icons.psychology_rounded,
                 color: Colors.black,
                 size: 16,
               ),
               label: Text(
-                _englishThinkingCompleted ? 'THINKING REFLEX MASTERED ✓' : 'I DRILLED DIRECT REFLEXES ✓',
+                _englishThinkingCompleted
+                    ? 'THINKING REFLEX MASTERED ✓'
+                    : 'I DRILLED DIRECT REFLEXES ✓',
                 style: GoogleFonts.outfit(
                   color: Colors.black,
                   fontWeight: FontWeight.w900,
@@ -8438,9 +10757,12 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                 ),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: _englishThinkingCompleted ? const Color(0xFF10B981) : const Color(0xFF38BDF8),
+                backgroundColor: _englishThinkingCompleted
+                    ? const Color(0xFF10B981)
+                    : const Color(0xFF38BDF8),
                 padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
               ),
             ),
           ),
@@ -8451,7 +10773,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
   // --- 🎙️ IN-LESSON 30-SECOND SPEAKING CHALLENGE CARD ---
   Widget _buildSpeakingChallengeCard() {
-    final challenge = PocketMissionCurriculumRegistry.getSpeakingChallenge(widget.day);
+    final challenge =
+        PocketMissionCurriculumRegistry.getSpeakingChallenge(widget.day);
     if (challenge.title.isEmpty) return const SizedBox.shrink();
 
     return Container(
@@ -8460,7 +10783,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         color: const Color(0xFF0F172A),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: _speakingChallengeCompleted ? const Color(0xFF10B981) : const Color(0xFFF43F5E).withValues(alpha: 0.35),
+          color: _speakingChallengeCompleted
+              ? const Color(0xFF10B981)
+              : const Color(0xFFF43F5E).withValues(alpha: 0.35),
           width: _speakingChallengeCompleted ? 1.5 : 1.0,
         ),
       ),
@@ -8472,7 +10797,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                 decoration: BoxDecoration(
-                  color: _speakingChallengeCompleted ? const Color(0xFF10B981) : const Color(0xFFF43F5E),
+                  color: _speakingChallengeCompleted
+                      ? const Color(0xFF10B981)
+                      : const Color(0xFFF43F5E),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: const Text(
@@ -8490,22 +10817,30 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               Expanded(
                 child: Text(
                   'In-Lesson 30s Solo Speaking Challenge',
-                  style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                  style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14),
                 ),
               ),
               if (_speakingChallengeCompleted)
-                const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 18),
+                const Icon(Icons.check_circle_rounded,
+                    color: Color(0xFF10B981), size: 18),
             ],
           ),
           const SizedBox(height: 6),
           Text(
             challenge.title,
-            style: GoogleFonts.outfit(color: const Color(0xFFFDA4AF), fontSize: 13, fontWeight: FontWeight.bold),
+            style: GoogleFonts.outfit(
+                color: const Color(0xFFFDA4AF),
+                fontSize: 13,
+                fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 4),
           Text(
             challenge.contextScenario,
-            style: GoogleFonts.inter(color: Colors.white70, fontSize: 11.5, height: 1.35),
+            style: GoogleFonts.inter(
+                color: Colors.white70, fontSize: 11.5, height: 1.35),
           ),
           const SizedBox(height: 10),
 
@@ -8522,21 +10857,29 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               children: [
                 Text(
                   'SPEAKING FRAMEWORK (${challenge.targetSeconds} Seconds):',
-                  style: GoogleFonts.outfit(color: const Color(0xFFFFD700), fontSize: 10, fontWeight: FontWeight.bold),
+                  style: GoogleFonts.outfit(
+                      color: const Color(0xFFFFD700),
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 4),
                 ...challenge.guidingPoints.map((guide) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 2),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('• ', style: TextStyle(color: Color(0xFF00E5FF), fontWeight: FontWeight.bold)),
-                      Expanded(
-                        child: Text(guide, style: GoogleFonts.inter(color: Colors.white, fontSize: 11.5)),
+                      padding: const EdgeInsets.symmetric(vertical: 2),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('• ',
+                              style: TextStyle(
+                                  color: Color(0xFF00E5FF),
+                                  fontWeight: FontWeight.bold)),
+                          Expanded(
+                            child: Text(guide,
+                                style: GoogleFonts.inter(
+                                    color: Colors.white, fontSize: 11.5)),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                )),
+                    )),
               ],
             ),
           ),
@@ -8559,7 +10902,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                         _isSpeakingChallengeRecording = true;
                         _speakingChallengeSecondsRemaining = 30;
                       });
-                      _speakingTimer = Timer.periodic(const Duration(seconds: 1), (t) {
+                      _speakingTimer =
+                          Timer.periodic(const Duration(seconds: 1), (t) {
                         if (!mounted) {
                           t.cancel();
                           return;
@@ -8574,7 +10918,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                           _saveSubtask('speaking_challenge', true);
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text('🎉 30s Speaking Challenge Finished! Vocal agility activated ✓'),
+                              content: Text(
+                                  '🎉 30s Speaking Challenge Finished! Vocal agility activated ✓'),
                               backgroundColor: Color(0xFF10B981),
                             ),
                           );
@@ -8587,7 +10932,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                     }
                   },
                   icon: Icon(
-                    _isSpeakingChallengeRecording ? Icons.stop_circle_rounded : Icons.mic_rounded,
+                    _isSpeakingChallengeRecording
+                        ? Icons.stop_circle_rounded
+                        : Icons.mic_rounded,
                     color: Colors.white,
                     size: 16,
                   ),
@@ -8602,9 +10949,12 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                     ),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: _isSpeakingChallengeRecording ? Colors.redAccent : const Color(0xFFF43F5E),
+                    backgroundColor: _isSpeakingChallengeRecording
+                        ? Colors.redAccent
+                        : const Color(0xFFF43F5E),
                     padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)),
                   ),
                 ),
               ),
@@ -8621,12 +10971,17 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                 },
                 style: OutlinedButton.styleFrom(
                   side: const BorderSide(color: Color(0xFF10B981)),
-                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
                 ),
                 child: Text(
                   _speakingChallengeCompleted ? 'DONE ✓' : 'FINISH',
-                  style: const TextStyle(color: Color(0xFF10B981), fontWeight: FontWeight.bold, fontSize: 11),
+                  style: const TextStyle(
+                      color: Color(0xFF10B981),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 11),
                 ),
               ),
             ],
@@ -8638,7 +10993,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
   // --- ⚡ SOVEREIGN FLUENCY SHORTCUT / KURUKKUVAZHI CARD ---
   Widget _buildFluencyShortcutCard() {
-    final shortcut = PocketMissionCurriculumRegistry.getFluencyShortcut(widget.day);
+    final shortcut =
+        PocketMissionCurriculumRegistry.getFluencyShortcut(widget.day);
     if (shortcut.title.isEmpty) return const SizedBox.shrink();
 
     return Container(
@@ -8677,7 +11033,10 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               Expanded(
                 child: Text(
                   shortcut.malyalamHeading,
-                  style: GoogleFonts.outfit(color: const Color(0xFFFFD700), fontWeight: FontWeight.bold, fontSize: 14),
+                  style: GoogleFonts.outfit(
+                      color: const Color(0xFFFFD700),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14),
                 ),
               ),
             ],
@@ -8703,7 +11062,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                 ),
                 const SizedBox(height: 4),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFD700).withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(6),
@@ -8720,13 +11080,13 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                 if (shortcut.examples.isNotEmpty) ...[
                   const SizedBox(height: 6),
                   ...shortcut.examples.map((ex) => Text(
-                    '• $ex',
-                    style: GoogleFonts.inter(
-                      color: const Color(0xFF6EE7B7),
-                      fontSize: 11,
-                      fontStyle: FontStyle.italic,
-                    ),
-                  )),
+                        '• $ex',
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFF6EE7B7),
+                          fontSize: 11,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      )),
                 ],
               ],
             ),
@@ -8735,6 +11095,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
       ),
     );
   }
+
   // --- SUBTASK 6: ✍️ QUICK REVISION MINI-QUIZ CARD ---
   Widget _buildRevisionQuizCard() {
     return Container(
@@ -8755,10 +11116,17 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                 decoration: BoxDecoration(
-                  color: _revisionQuizPassed ? const Color(0xFF10B981) : Colors.white12,
+                  color: _revisionQuizPassed
+                      ? const Color(0xFF10B981)
+                      : Colors.white12,
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: Text('STEP 6', style: TextStyle(color: _revisionQuizPassed ? Colors.black : Colors.white70, fontSize: 10, fontWeight: FontWeight.w900)),
+                child: Text('STEP 6',
+                    style: TextStyle(
+                        color:
+                            _revisionQuizPassed ? Colors.black : Colors.white70,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w900)),
               ),
               const SizedBox(width: 8),
               const Text('✍️', style: TextStyle(fontSize: 16)),
@@ -8766,17 +11134,22 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               Expanded(
                 child: Text(
                   'Quick Revision Mini-Quiz',
-                  style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                  style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14),
                 ),
               ),
               if (_revisionQuizPassed)
-                const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 18),
+                const Icon(Icons.check_circle_rounded,
+                    color: Color(0xFF10B981), size: 18),
             ],
           ),
           const SizedBox(height: 10),
           Text(
             _quizQuestion,
-            style: GoogleFonts.outfit(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
+            style: GoogleFonts.outfit(
+                color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 10),
           ...List.generate(3, (i) {
@@ -8786,8 +11159,10 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
             Color optionBg = const Color(0xFF1E293B);
             if (_quizSubmitted) {
-              if (isCorrect) optionBg = const Color(0xFF10B981).withValues(alpha: 0.3);
-              if (isSelected && !isCorrect) optionBg = Colors.red.withValues(alpha: 0.3);
+              if (isCorrect)
+                optionBg = const Color(0xFF10B981).withValues(alpha: 0.3);
+              if (isSelected && !isCorrect)
+                optionBg = Colors.red.withValues(alpha: 0.3);
             } else if (isSelected) {
               optionBg = const Color(0xFFFFFC00).withValues(alpha: 0.2);
             }
@@ -8812,7 +11187,10 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                         setState(() => _selectedQuizAnswer = i);
                         HapticFeedback.lightImpact();
                       },
-                trailing: isSelected ? const Icon(Icons.radio_button_checked, color: Color(0xFFFFFC00), size: 18) : null,
+                trailing: isSelected
+                    ? const Icon(Icons.radio_button_checked,
+                        color: Color(0xFFFFFC00), size: 18)
+                    : null,
               ),
             );
           }),
@@ -8834,7 +11212,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(_selectedQuizAnswer == 0 ? '✅' : '💡', style: const TextStyle(fontSize: 18)),
+                  Text(_selectedQuizAnswer == 0 ? '✅' : '💡',
+                      style: const TextStyle(fontSize: 18)),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Column(
@@ -8879,11 +11258,13 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFFFFC00),
                 padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
               ),
               child: Text(
                 _revisionQuizPassed ? 'QUIZ COMPLETED ✓ NEXT' : 'SUBMIT ANSWER',
-                style: GoogleFonts.outfit(color: Colors.black, fontWeight: FontWeight.bold),
+                style: GoogleFonts.outfit(
+                    color: Colors.black, fontWeight: FontWeight.bold),
               ),
             ),
           ),
@@ -9021,7 +11402,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               ),
             ),
             child: Text(
-              _defenseTrapArmed ? 'HOME DEFENSE ACTIVE 🛡️' : 'ADD HOME DEFENSE',
+              _defenseTrapArmed
+                  ? 'HOME DEFENSE ACTIVE 🛡️'
+                  : 'ADD HOME DEFENSE',
               style: GoogleFonts.outfit(
                 color: Colors.black,
                 fontWeight: FontWeight.w900,
@@ -9123,22 +11506,36 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                         );
                       } else {
                         final prefs = await SharedPreferences.getInstance();
-                        final todayStr = '${DateTime.now().year}-${DateTime.now().month}-${DateTime.now().day}';
-                        await prefs.setBool('pocket_day_${widget.day}_completed', true);
-                        await prefs.setString('learning_day_${widget.day}_completed_date', todayStr);
-                        await prefs.setInt('learning_day_${widget.day}_completed_timestamp', DateTime.now().millisecondsSinceEpoch);
-                        await prefs.setInt('learning_last_completed_day', widget.day);
-                        await prefs.setBool('pocket_day_${nextDay}_unlocked', true);
-                        await prefs.setInt('pocket_learning_user_stage', nextDay);
+                        final todayStr =
+                            '${DateTime.now().year}-${DateTime.now().month}-${DateTime.now().day}';
+                        await prefs.setBool(
+                            'pocket_day_${widget.day}_completed', true);
+                        await prefs.setString(
+                            'learning_day_${widget.day}_completed_date',
+                            todayStr);
+                        await prefs.setInt(
+                            'learning_day_${widget.day}_completed_timestamp',
+                            DateTime.now().millisecondsSinceEpoch);
+                        await prefs.setInt(
+                            'learning_last_completed_day', widget.day);
+                        await prefs.setBool(
+                            'pocket_day_${nextDay}_unlocked', true);
+                        await prefs.setInt(
+                            'pocket_learning_user_stage', nextDay);
                       }
                       // Award 50 bonus coins to vault store
                       await PocketFortressDefenseService.awardRaidLoot(50);
 
                       final prefs = await SharedPreferences.getInstance();
-                      final todayStr = '${DateTime.now().year}-${DateTime.now().month}-${DateTime.now().day}';
-                      await prefs.setString('learning_day_${widget.day}_completed_date', todayStr);
-                      await prefs.setInt('learning_last_completed_day', widget.day);
-                      await prefs.setBool('pocket_day_${nextDay}_unlocked', true);
+                      final todayStr =
+                          '${DateTime.now().year}-${DateTime.now().month}-${DateTime.now().day}';
+                      await prefs.setString(
+                          'learning_day_${widget.day}_completed_date',
+                          todayStr);
+                      await prefs.setInt(
+                          'learning_last_completed_day', widget.day);
+                      await prefs.setBool(
+                          'pocket_day_${nextDay}_unlocked', true);
                       await prefs.setInt('pocket_learning_user_stage', nextDay);
 
                       if (uid != null) {
@@ -9149,13 +11546,15 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                             'updated_at': DateTime.now().toIso8601String(),
                           }).eq('user_id', uid);
 
-                          await EnglishHubLevelGroupService.ensureUserInLevelGroup(
+                          await EnglishHubLevelGroupService
+                              .ensureUserInLevelGroup(
                             userLevel: nextDay,
                             userId: uid,
                             forceLevelMatch: true,
                           );
                         } catch (e) {
-                          debugPrint('Error auto-migrating English Hub cohort on mission complete: $e');
+                          debugPrint(
+                              'Error auto-migrating English Hub cohort on mission complete: $e');
                         }
                       }
 
@@ -9163,7 +11562,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                       if (mounted) {
                         if (widget.day == 90) {
                           final prefs = await SharedPreferences.getInstance();
-                          final userName = prefs.getString('user_name') ?? 'Pocket Scholar';
+                          final userName =
+                              prefs.getString('user_name') ?? 'Pocket Scholar';
                           if (mounted) {
                             await Day90MasterCertificateDialog.show(
                               context,
@@ -9178,11 +11578,13 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                           SnackBar(
                             content: Text(
                               '🎉 Day ${widget.day} English Mission Complete! Earned $_currentDayPoints/200 Points! Day $nextDay is now UNLOCKED!',
-                              style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+                              style: GoogleFonts.outfit(
+                                  fontWeight: FontWeight.bold),
                             ),
                             backgroundColor: const Color(0xFF10B981),
                             behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10)),
                           ),
                         );
                       }
