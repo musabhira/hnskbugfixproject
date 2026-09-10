@@ -844,6 +844,9 @@ class PocketRobotService {
     }
   }
 
+  /// Public accessor to all 90 procedural level-appropriate robots
+  static List<PocketRobot> getAll90Robots() => _generateAll90Robots();
+
   /// Procedurally generates all 90 level-appropriate robots with distinct personas
   static List<PocketRobot> _generateAll90Robots() {
     final List<PocketRobot> list = [];

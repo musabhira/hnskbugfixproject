@@ -2495,6 +2495,7 @@ class _FlameEnglishHouseWidgetState extends State<FlameEnglishHouseWidget> {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('house_theme_palette_id', p.id);
+      await PocketFortressDefenseService.saveUserHousePalette(p.id);
     } catch (_) {}
   }
 

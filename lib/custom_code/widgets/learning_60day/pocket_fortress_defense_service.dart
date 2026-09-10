@@ -2439,6 +2439,21 @@ class PocketFortressDefenseService {
     return [];
   }
 
+  /// 🎨 Persist user selected house palette to Supabase pocket_homes
+  static Future<void> saveUserHousePalette(String paletteId) async {
+    try {
+      final myId = SupaFlow.client.auth.currentUser?.id;
+      if (myId != null) {
+        await SupaFlow.client.from('pocket_homes').upsert({
+          'user_id': myId,
+          'palette_id': paletteId,
+        }, onConflict: 'user_id');
+      }
+    } catch (e) {
+      debugPrint('saveUserHousePalette error: $e');
+    }
+  }
+
   /// 🌟 Award Points and progress level (Audio: "100 പോയിന്റ് കിട്ടിയാൽ അടുത്ത ലെവൽ... 150 പോയിന്റ്സ് ബോണസ് ആയിട്ട്")
   static Future<Map<String, dynamic>> awardPoints(int pointsToAdd) async {
     final prefs = await SharedPreferences.getInstance();
