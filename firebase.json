@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "site": "pocket-mates-app-2026",
     "public": "build/web",
     "ignore": [
       "firebase.json",
